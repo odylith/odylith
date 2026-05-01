@@ -23,6 +23,8 @@ _DEFAULT_PRIORITY = "P1"
 _DEFAULT_SIZING = "M"
 _DEFAULT_COMPLEXITY = "Medium"
 _DEFAULT_CONFIDENCE = "medium"
+_SIZING_CHOICES = ("XS", "S", "M", "L", "XL")
+_COMPLEXITY_CHOICES = ("Low", "Medium", "High", "VeryHigh")
 _RADAR_BACKLOG_INDEX_RELATIVE = Path("odylith/radar/source/INDEX.md")
 _RADAR_IDEAS_ROOT_RELATIVE = Path("odylith/radar/source/ideas")
 
@@ -68,8 +70,18 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--market-value", type=int, default=3)
     parser.add_argument("--impacted-lanes", default="", help=argparse.SUPPRESS)
     parser.add_argument("--impacted-parts", default="odylith")
-    parser.add_argument("--sizing", default=_DEFAULT_SIZING)
-    parser.add_argument("--complexity", default=_DEFAULT_COMPLEXITY)
+    parser.add_argument(
+        "--sizing",
+        choices=_SIZING_CHOICES,
+        default=_DEFAULT_SIZING,
+        help="Backlog size estimate. Use the exact enum token.",
+    )
+    parser.add_argument(
+        "--complexity",
+        choices=_COMPLEXITY_CHOICES,
+        default=_DEFAULT_COMPLEXITY,
+        help="Backlog complexity estimate. Use the exact enum token.",
+    )
     parser.add_argument("--ordering-score", type=int, default=None)
     parser.add_argument(
         "--ordering-rationale",
@@ -811,9 +823,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         }
 
     if bool(args.as_json):
+        created_ids = [str(item["idea_id"]) for item in result["created"]]
         payload = {
             "created": result["created"],
-            "created_ids": [str(item["idea_id"]) for item in result["created"]],
+            "created_ids": created_ids,
             "backlog_index": result["backlog_index"],
             "dry_run": bool(args.dry_run),
             "release_target": release_payload,
@@ -822,6 +835,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "radar": radar_refresh,
                 "compass": compass_refresh,
             },
+            "dashboard": ""
+            if args.dry_run
+            else owned_surface_refresh.dashboard_handoff(
+                surface="radar",
+                workstream=created_ids[0] if created_ids else "",
+            ),
         }
         print(json.dumps(payload, indent=2, sort_keys=True))
     else:
@@ -835,4 +854,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         print("- queued_status_preserved: yes")
         print(f"- radar_refresh: {radar_refresh['status']}")
         print(f"- compass_refresh: {compass_refresh['status']}")
+        first_created_id = str(result["created"][0]["idea_id"]) if result["created"] else ""
+        owned_surface_refresh.print_dashboard_handoff(
+            surface="radar",
+            workstream=first_created_id,
+            dry_run=bool(args.dry_run),
+        )
+        if release_selector and compass_refresh["status"] == "passed":
+            owned_surface_refresh.print_dashboard_handoff(
+                surface="compass",
+                workstream=first_created_id,
+                dry_run=bool(args.dry_run),
+            )
     return 0

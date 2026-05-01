@@ -24,10 +24,10 @@ _LIVE_BLOCK_LABELS: tuple[str, ...] = (
     "Odylith Risks:",
 )
 _PROMPT_VISIBLE_ASSIST_MARKDOWN = (
-    "**Odylith Assist:** surfaced this visibility issue in normal chat where you can inspect it."
+    "**Odylith Assist:** visibility feedback noted; this line is deliberately shown in chat."
 )
 _PROMPT_VISIBLE_ASSIST_PLAIN = (
-    "Odylith Assist: surfaced this visibility issue in normal chat where you can inspect it."
+    "Odylith Assist: visibility feedback noted; this line is deliberately shown in chat."
 )
 
 
@@ -137,6 +137,8 @@ def prompt_visible_assist_text(bundle: Mapping[str, Any] | object) -> tuple[str,
 
     existing_markdown = conversation_surface.render_closeout_text(bundle, markdown=True)
     existing_plain = conversation_surface.render_closeout_text(bundle, markdown=False)
+    if not existing_markdown and not prompt_visibility_feedback_requested(bundle):
+        return "", ""
     return (
         existing_markdown or _PROMPT_VISIBLE_ASSIST_MARKDOWN,
         existing_plain or _PROMPT_VISIBLE_ASSIST_PLAIN,
@@ -154,26 +156,23 @@ def prompt_visibility_feedback_requested(bundle: Mapping[str, Any] | object) -> 
 
 
 def ensure_prompt_visible_assist_bundle(bundle: Mapping[str, Any] | object) -> dict[str, Any]:
-    """Ensure prompt-submit rendering can close with one Assist line.
+    """Add a prompt-submit Assist only for explicit visibility feedback.
 
-    Prompt hooks may be the only user-visible Odylith lane in a host session.
-    This keeps the default Assist text owned by the shared host prompt support
-    layer instead of duplicating it across Codex, Claude, and the manual
-    visible-intervention recovery.
+    Prompt hooks may be the only visible Odylith lane in a host session, but
+    normal successful work should not pick up a generic visibility recovery
+    line. The default text stays owned here so Codex, Claude, and the manual
+    visible-intervention recovery do not drift when feedback is explicit.
     """
 
     updated = dict(bundle) if isinstance(bundle, Mapping) else {}
     if conversation_surface.render_closeout_text(updated, markdown=True):
         return updated
+    if not prompt_visibility_feedback_requested(updated):
+        return updated
     markdown_text, plain_text = prompt_visible_assist_text(updated)
-    style = (
-        "prompt_visible_feedback"
-        if prompt_visibility_feedback_requested(updated)
-        else "prompt_visible_fallback"
-    )
     updated["closeout_bundle"] = {
         "eligible": True,
-        "style": style,
+        "style": "prompt_visible_feedback",
         "label": "Odylith Assist:",
         "preferred_markdown_label": "**Odylith Assist:**",
         "text": markdown_text,
@@ -191,7 +190,9 @@ def compose_prompt_visible_markdown(*, visible_markdown: str, bundle: Mapping[st
     if contains_assist(visible):
         return visibility_contract.compose_visible_markdown(visible)
     assisted_bundle = ensure_prompt_visible_assist_bundle(bundle)
-    assist_markdown, _assist_plain = prompt_visible_assist_text(assisted_bundle)
+    assist_markdown = conversation_surface.render_closeout_text(assisted_bundle, markdown=True)
+    if not assist_markdown:
+        return visibility_contract.compose_visible_markdown(visible)
     return visibility_contract.compose_visible_markdown(visible, assist_markdown)
 
 

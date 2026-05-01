@@ -61,6 +61,17 @@ _URL_TIMEOUT_SECONDS = 30
 _DOWNLOAD_CHUNK_BYTES = 1024 * 1024
 _DOWNLOAD_RETRY_ATTEMPTS = 3
 _DOWNLOAD_RETRYABLE_HTTP_CODES = {408, 429, 500, 502, 503, 504}
+_NETWORK_ENV_NAMES = (
+    "HTTPS_PROXY",
+    "https_proxy",
+    "HTTP_PROXY",
+    "http_proxy",
+    "NO_PROXY",
+    "no_proxy",
+    "SSL_CERT_FILE",
+    "CURL_CA_BUNDLE",
+    "REQUESTS_CA_BUNDLE",
+)
 _BENIGN_SIGSTORE_WARNING_PATTERNS = (
     re.compile(
         r"(?:warning\s+)?(?:failed to load a trusted root key:\s*)?"
@@ -189,14 +200,38 @@ def _is_maintainer_release_lane(repo_root: str | Path) -> bool:
     return _is_product_repo(maintainer_root)
 
 
+def _network_env_names() -> tuple[str, ...]:
+    return tuple(name for name in _NETWORK_ENV_NAMES if str(os.environ.get(name) or "").strip())
+
+
+def _release_network_hint(url: str) -> str:
+    parsed = urlparse(str(url or ""))
+    hostname = str(parsed.hostname or "").strip()
+    hint = (
+        "Check VPN, proxy, firewall, TLS inspection, and certificate settings. "
+        "Python honors HTTPS_PROXY, HTTP_PROXY, NO_PROXY, SSL_CERT_FILE, "
+        "REQUESTS_CA_BUNDLE, and system trust settings."
+    )
+    env_names = _network_env_names()
+    if env_names:
+        hint += f" Detected proxy/TLS environment: {', '.join(env_names)}."
+    if parsed.scheme == "http" and hostname in {"127.0.0.1", "localhost", "::1"}:
+        hint += " For local release testing, keep the local HTTP server running and set ODYLITH_RELEASE_ALLOW_INSECURE_LOCALHOST=1."
+    return hint
+
+
 def fetch_release(*, repo_root: str | Path, repo: str, version: str = "latest") -> ReleaseInfo:
     local_release_base_url = str(os.environ.get(_LOCAL_RELEASE_BASE_URL_ENV) or "").strip().rstrip("/")
     if local_release_base_url:
         if not _is_maintainer_release_lane(repo_root):
             raise ValueError("ODYLITH_RELEASE_BASE_URL is only supported in the Odylith product repo maintainer lane")
         manifest_url = f"{local_release_base_url}/release-manifest.json"
-        with urllib.request.urlopen(manifest_url, timeout=_URL_TIMEOUT_SECONDS) as response:  # noqa: S310 - explicit local maintainer preflight override
-            manifest = json.loads(response.read().decode("utf-8"))
+        try:
+            with urllib.request.urlopen(manifest_url, timeout=_URL_TIMEOUT_SECONDS) as response:  # noqa: S310 - explicit local maintainer preflight override
+                manifest_bytes = response.read()
+        except Exception as exc:
+            raise ValueError(f"failed to fetch local release manifest: {exc}. {_release_network_hint(manifest_url)}") from exc
+        manifest = json.loads(manifest_bytes.decode("utf-8"))
         if not isinstance(manifest, dict):
             raise ValueError("local release manifest must be a JSON object")
         tag = str(manifest.get("tag") or "").strip()
@@ -242,8 +277,12 @@ def fetch_release(*, repo_root: str | Path, repo: str, version: str = "latest") 
 
     api_path = "latest" if version == "latest" else f"tags/v{version}"
     url = f"https://api.github.com/repos/{repo}/releases/{api_path}"
-    with _urlopen_release_url(url, timeout=_URL_TIMEOUT_SECONDS) as response:  # noqa: S310 - trusted GitHub API endpoint
-        payload = json.loads(response.read().decode("utf-8"))
+    try:
+        with _urlopen_release_url(url, timeout=_URL_TIMEOUT_SECONDS) as response:  # noqa: S310 - trusted GitHub API endpoint
+            payload_bytes = response.read()
+    except Exception as exc:
+        raise ValueError(f"failed to fetch release metadata: {exc}. {_release_network_hint(url)}") from exc
+    payload = json.loads(payload_bytes.decode("utf-8"))
     tag = str(payload.get("tag_name") or "").strip()
     match = _TAG_RE.match(tag)
     if not match:
@@ -275,8 +314,12 @@ def fetch_release_manifest(*, repo_root: str | Path, repo: str, release: Release
     except KeyError as exc:
         raise ValueError(f"release manifest asset missing for {release.tag}") from exc
     _validate_release_asset_url(repo_root=repo_root, url=manifest_asset.download_url)
-    with _urlopen_release_url(manifest_asset.download_url, timeout=_URL_TIMEOUT_SECONDS) as response:
-        payload = json.loads(response.read().decode("utf-8"))
+    try:
+        with _urlopen_release_url(manifest_asset.download_url, timeout=_URL_TIMEOUT_SECONDS) as response:
+            payload_bytes = response.read()
+    except Exception as exc:
+        raise ValueError(f"failed to fetch release manifest: {exc}. {_release_network_hint(manifest_asset.download_url)}") from exc
+    payload = json.loads(payload_bytes.decode("utf-8"))
     if not isinstance(payload, dict):
         raise ValueError("release manifest must be a JSON object")
     _validate_manifest(manifest=payload, release=release, repo=repo)
@@ -702,9 +745,9 @@ def download_asset(*, repo_root: str | Path, asset: ReleaseAsset, destination: P
         except Exception as exc:
             last_error = exc
             if attempt >= _DOWNLOAD_RETRY_ATTEMPTS or not _is_retryable_download_error(exc):
-                raise ValueError(f"failed to download {asset.name}: {exc}") from exc
+                raise ValueError(f"failed to download {asset.name}: {exc}. {_release_network_hint(asset.download_url)}") from exc
             time.sleep(float(attempt))
-    raise ValueError(f"failed to download {asset.name}: {last_error}")
+    raise ValueError(f"failed to download {asset.name}: {last_error}. {_release_network_hint(asset.download_url)}")
 
 
 def _validate_release_asset_url(*, repo_root: str | Path, url: str) -> None:

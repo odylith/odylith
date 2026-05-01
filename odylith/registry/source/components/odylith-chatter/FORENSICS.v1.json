@@ -53,18 +53,24 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md"
+        "AGENTS.md",
+        "odylith/AGENTS.md",
+        "odylith/README.md",
+        "odylith/agents-guidelines/GROUNDING_AND_NARROWING.md",
+        "odylith/maintainer/AGENTS.md",
+        "src/odylith/install/agents.py",
+        "src/odylith/install/manager.py"
       ],
       "confidence": "high",
-      "event_index": 398,
+      "event_index": 400,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "odylith-chatter"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
-      "ts_iso": "2026-04-29T23:17:51-07:00",
+      "summary": "Recent workspace activity across tracked paths: AGENTS.md, odylith/AGENTS.md +5 more",
+      "ts_iso": "2026-04-30T18:20:25-07:00",
       "workstreams": []
     },
     {

@@ -231,6 +231,8 @@ def proposal_actions(
     actions: list[CaptureAction] = []
     if not bool(signal_profile.get("proposal_signal")):
         return actions
+    if any(_normalize_token(row.kind) == "write_blocker" for row in facts):
+        return actions
     prompt_surface = (
         _normalize_string(signal_profile.get("prompt_surface"))
         or fact_producer_runtime.joined_prompt_surface(observation)

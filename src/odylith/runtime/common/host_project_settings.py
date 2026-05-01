@@ -86,3 +86,43 @@ def merge_hook_map(existing: object, additions: Mapping[str, Sequence[Mapping[st
     for event_name, event_additions in additions.items():
         merged[event_name] = merge_hook_entries(merged.get(event_name), event_additions)
     return merged
+
+
+def hook_command_contains(entry: object, tokens: Sequence[str]) -> bool:
+    if not isinstance(entry, Mapping):
+        return False
+    command = str(entry.get("command") or "")
+    return any(str(token or "").strip() and str(token).strip() in command for token in tokens)
+
+
+def remove_hook_commands(existing: object, tokens: Sequence[str]) -> tuple[dict[str, Any] | object, bool]:
+    if existing is not None and not isinstance(existing, Mapping):
+        return existing, False
+    merged: dict[str, Any] = dict(existing or {})
+    changed = False
+    for event_name, bucket in list(merged.items()):
+        if not isinstance(bucket, list):
+            continue
+        filtered_bucket: list[Any] = []
+        for group in bucket:
+            if not isinstance(group, Mapping):
+                filtered_bucket.append(group)
+                continue
+            hooks = group.get("hooks")
+            if not isinstance(hooks, list):
+                filtered_bucket.append(dict(group))
+                continue
+            filtered_hooks = [hook for hook in hooks if not hook_command_contains(hook, tokens)]
+            if len(filtered_hooks) == len(hooks):
+                filtered_bucket.append(dict(group))
+                continue
+            changed = True
+            if filtered_hooks:
+                updated_group = dict(group)
+                updated_group["hooks"] = filtered_hooks
+                filtered_bucket.append(updated_group)
+        if filtered_bucket:
+            merged[event_name] = filtered_bucket
+        else:
+            merged.pop(event_name, None)
+    return merged, changed

@@ -387,11 +387,18 @@
         });
         return deduped;
       };
+      const emptyWorkstreamCopy = () => {
+        if (state.workstream) {
+          return "No active workstreams in this scope.";
+        }
+        if (!scopedRows.length) {
+          return "No active workstreams yet. Create or open one from Radar, then Compass will summarize it here.";
+        }
+        return "No additional current workstreams. Program and release lanes already cover the active work.";
+      };
 
       if (!rows.length) {
-        target.innerHTML = state.workstream
-          ? '<p class="empty">No active workstreams in this scope.</p>'
-          : '<p class="empty">All current workstreams are already represented in Programs or Release Targets.</p>';
+        target.innerHTML = `<p class="empty">${escapeHtml(emptyWorkstreamCopy())}</p>`;
         return;
       }
 
@@ -626,9 +633,7 @@
       });
 
       if (!records.length) {
-        target.innerHTML = state.workstream
-          ? '<p class="empty">No active workstreams in this scope.</p>'
-          : '<p class="empty">All current workstreams are already represented in Programs or Release Targets.</p>';
+        target.innerHTML = `<p class="empty">${escapeHtml(emptyWorkstreamCopy())}</p>`;
         return;
       }
 
@@ -861,6 +866,17 @@
       const timelineDaySet = new Set(dayTokens);
       const relevantTransactions = txRows.filter((row) => timelineDaySet.has(toLocalDateToken(row.end_ts_iso || row.start_ts_iso)));
       const relevantEvents = eventRows.filter((row) => timelineDaySet.has(toLocalDateToken(row.ts_iso)));
+      const isInternalSyncTransaction = (row) => {
+        if (!row || typeof row !== "object") return false;
+        const transactionId = String(row.transaction_id || row.id || "").trim();
+        if (!/^txn:global:auto-global-/.test(transactionId)) return false;
+        const workstreams = Array.isArray(row.workstreams) ? row.workstreams : [];
+        if (workstreams.some((id) => WORKSTREAM_RE.test(String(id || "").trim()))) return false;
+        const rawHeadline = String(row.headline || "").trim().toLowerCase();
+        const narrativeHeadline = String(timelineSummaryNarrativeHeader(row, workstreamNarratives) || "").trim().toLowerCase();
+        return rawHeadline.startsWith("closed the active slice and synced the governance surfaces")
+          || narrativeHeadline.startsWith("closed the active slice and synced the governance surfaces");
+      };
       if (!relevantTransactions.length && !relevantEvents.length) {
         target.innerHTML = state.workstream
           ? '<div class="empty">No audit events in this scope and window.</div>'
@@ -940,7 +956,7 @@
         const dayTransactions = txRows.filter((row) => {
           const token = toLocalDateToken(row.end_ts_iso || row.start_ts_iso);
           return token === dayToken;
-        });
+        }).filter((row) => !isInternalSyncTransaction(row));
         const dayEvents = eventRows.filter((row) => {
           const token = toLocalDateToken(row.ts_iso);
           return token === dayToken;
@@ -1036,7 +1052,7 @@
             const eventsList = Array.isArray(row.events) ? row.events : [];
             const filesList = Array.isArray(row.files) ? row.files : [];
             const eventsMeta = `${Number(row.event_count || eventsList.length || 0)} events • ${Number(row.files_count || filesList.length || 0)} files`;
-            const meta = `${timeLabel} • ${eventsMeta}${sessionId ? ` • session ${sessionId}` : ""}`;
+            const detailMeta = `${eventsMeta}${sessionId ? ` • session ${sessionId}` : ""}${transactionId ? ` • ${transactionId}` : ""}`;
             const fileSplit = splitNarrativeFiles(filesList);
             const sourceFiles = fileSplit.source;
             const generatedFiles = fileSplit.generated;
@@ -1081,9 +1097,10 @@
                   <div class="tx-headline">${escapeHtml(titleText)}</div>
                   ${!narrativeHeadline && contextText ? `<div class="tx-context">${escapeHtml(contextText)}</div>` : ""}
                   ${chips}
-                  <div class="tx-meta">${escapeHtml(meta)}${transactionId ? ` • ${escapeHtml(transactionId)}` : ""}</div>
+                  <div class="tx-meta">${escapeHtml(timeLabel)}</div>
                 </summary>
                 <div class="tx-detail">
+                  <div class="tx-meta">${escapeHtml(detailMeta)}</div>
                   ${inlineNarrative}
                   ${fileHtml}
                   <div>

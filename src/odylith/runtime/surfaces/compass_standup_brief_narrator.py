@@ -1081,9 +1081,9 @@ def _unavailable_brief_message(
     if token == "timeout":
         return "Compass asked the narration provider for this brief, but the reply took too long. It will retry on backoff."
     if token == "provider_unavailable":
-        return "Compass could not reach the narration provider, and there was no exact current-packet brief to replay."
+        return "Compass is live. The optional narrated brief is not ready yet because the narration provider was not reachable and no exact replay exists for this packet."
     if token == "transport_error":
-        return "Compass could not reach the narration provider for this brief. It will retry on backoff."
+        return "Compass is live. The optional narrated brief could not reach the provider on the last attempt and will retry later."
     if token == "auth_error":
         return "Compass could not warm this brief because the narration provider rejected the request. Check provider access before trusting another retry."
     if token == "provider_empty":
@@ -1119,9 +1119,9 @@ def _unavailable_brief_title(
     if token == "timeout":
         return "Brief timed out"
     if token == "provider_unavailable":
-        return "Brief provider unavailable"
+        return "Narrated brief not ready yet"
     if token == "transport_error":
-        return "Brief provider could not be reached"
+        return "Narrated brief will retry"
     if token == "auth_error":
         return "Brief provider access failed"
     if token == "provider_empty":

@@ -76,8 +76,9 @@ Other useful lifecycle commands:
 - Turn Odylith guidance off or on without removing the runtime:
   `./.odylith/bin/odylith off --repo-root .`
   `./.odylith/bin/odylith on --repo-root .`
-- Uninstall Odylith from this repo while preserving `.odylith/` launcher and
-  audit state:
+- Uninstall Odylith from this repo by preserving `odylith/` governed source
+  truth, removing `.odylith/` runtime state, and leaving host configuration
+  directories alone:
   `./.odylith/bin/odylith uninstall --repo-root .`
 
 ## Repo Integration Contract
@@ -204,7 +205,10 @@ Other useful lifecycle commands:
   second Odylith checkout.
 - In consumer repos, repair must restage the pinned verified runtime or fail
   closed. It must not recreate Odylith through host-Python wrapper fallback.
-- Uninstall removes the consumer repo's visible `odylith/` tree and removes
-  the Odylith block from supported root guidance files such as `AGENTS.md` and
-  `CLAUDE.md`. It preserves hidden `.odylith/` launcher and audit state so the
-  repo can still report version posture or reinstall cleanly.
+- Uninstall preserves the consumer repo's `odylith/` governed source truth,
+  removes repo-local `.odylith/` runtime state, and removes the Odylith block
+  from supported root guidance files such as `AGENTS.md` and `CLAUDE.md`. It
+  leaves host configuration directories such as `.claude/`, `.codex/`, and
+  `.agents/` in place.
+- Do not delete `.claude/`, `.codex/`, or `.agents/` as part of Odylith
+  uninstall; those paths may contain non-Odylith user or enterprise config.

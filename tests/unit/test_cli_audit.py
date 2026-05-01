@@ -151,6 +151,19 @@ _HANDLER_CASES = [
         "check": lambda args, root: getattr(args, "repo_root", "") == str(root) and list(getattr(args, "forwarded", [])) == ["--check-only"],
     },
     {
+        "path": ("plan",),
+        "argv": lambda root: ["plan", f"--repo-root={root}"],
+        "handler": "_cmd_plan",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root),
+    },
+    {
+        "path": ("capabilities",),
+        "argv": lambda root: ["capabilities", f"--repo-root={root}", "--json"],
+        "handler": "_cmd_capabilities",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and (bool(getattr(args, "json", False)) or "--json" in list(getattr(args, "forwarded", []))),
+    },
+    {
         "path": ("dashboard", "refresh"),
         "argv": lambda root: ["dashboard", "refresh", f"--repo-root={root}"],
         "handler": "_cmd_dashboard_refresh",

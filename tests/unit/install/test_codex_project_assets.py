@@ -98,6 +98,39 @@ def test_live_claude_skill_shims_and_review_assets_match_bundle_content() -> Non
         assert live_path.read_text(encoding="utf-8") == bundle_path.read_text(encoding="utf-8")
 
 
+def test_claude_backlog_skill_shim_carries_exact_cli_enum_guard() -> None:
+    paths = (
+        LIVE_CLAUDE_ROOT / "skills" / "odylith-backlog-create" / "SKILL.md",
+        PROJECT_ROOT_BUNDLE / ".claude" / "skills" / "odylith-backlog-create" / "SKILL.md",
+        LIVE_CLAUDE_ROOT / "commands" / "odylith-workstream-new.md",
+        PROJECT_ROOT_BUNDLE / ".claude" / "commands" / "odylith-workstream-new.md",
+    )
+
+    for path in paths:
+        text = path.read_text(encoding="utf-8")
+        for token in ("`XS`", "`S`", "`M`", "`L`", "`XL`"):
+            assert token in text
+        for token in ("`Low`", "`Medium`", "`High`", "`VeryHigh`"):
+            assert token in text
+        assert "moderate" in text
+
+
+def test_claude_output_style_keeps_observation_rare_and_assist_concrete() -> None:
+    paths = (
+        LIVE_CLAUDE_ROOT / "output-styles" / "odylith-grounded.md",
+        PROJECT_ROOT_BUNDLE / ".claude" / "output-styles" / "odylith-grounded.md",
+    )
+
+    for path in paths:
+        text = path.read_text(encoding="utf-8")
+        assert "Use `Odylith Assist:` as the post-action lane" in text
+        assert "After a successful Odylith governance CLI mutation" in text
+        assert "Do not emit `Odylith Observation:` just because the prompt names Radar" in text
+        assert "No generic `this turn is already...` language" in text
+        assert "surfaced this visibility issue" in text
+        assert "Never use canned Assist text" in text
+
+
 def test_live_claude_hook_scripts_match_bundle_mirror_content() -> None:
     live_hooks = LIVE_CLAUDE_ROOT / "hooks"
     bundle_hooks = PROJECT_ROOT_BUNDLE / ".claude" / "hooks"
@@ -120,7 +153,12 @@ def test_claude_destructive_guard_assets_route_uninstall_to_cli() -> None:
     for path in paths:
         text = path.read_text(encoding="utf-8")
         assert "./.odylith/bin/odylith uninstall --repo-root ." in text
+        assert "./.odylith/bin/odylith uninstall --repo-root . --dry-run" in text
         assert "raw deletion and hook bypasses are blocked" in text
+        assert "removes `.odylith/` runtime state" in text
+        assert "detaches Odylith hook entries" in text
+        assert "`odylith/` governed source truth" in text
+        assert "`.claude/`, `.codex/`, and `.agents/` stay in place" in text
         assert "shutil\\.rmtree" in text
 
 

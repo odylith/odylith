@@ -44,6 +44,12 @@ _SURFACE_SOURCE_PREFIXES = (
     "odylith/casebook/bugs/",
     "odylith/registry/source/",
 )
+_GENERATED_DERIVATIVE_EXACT_PATHS = {
+    "odylith/atlas/source/catalog/diagrams.v1.json",
+}
+_GENERATED_DERIVATIVE_PREFIXES = (
+    "odylith/runtime/delivery_intelligence.v",
+)
 
 
 @dataclass(frozen=True)
@@ -290,7 +296,7 @@ def _change_fingerprint(*, repo_root: Path, paths: Sequence[str]) -> str:
                 digest.update(b"symlink\0")
                 digest.update(os.readlink(absolute).encode("utf-8", errors="surrogateescape"))
             elif absolute.is_file():
-                if _generated_surface_asset(token):
+                if _generated_surface_asset(token) or _generated_derivative_asset(token):
                     digest.update(b"generated-surface-asset\0")
                 else:
                     digest.update(b"file\0")
@@ -310,6 +316,15 @@ def _generated_surface_asset(path: str) -> bool:
     if any(token.startswith(prefix) for prefix in _SURFACE_SOURCE_PREFIXES):
         return False
     return any(token.startswith(prefix) for prefix in _GENERATED_SURFACE_PREFIXES)
+
+
+def _generated_derivative_asset(path: str) -> bool:
+    token = _normalize_path(path)
+    if token in _GENERATED_DERIVATIVE_EXACT_PATHS:
+        return True
+    if any(token.startswith(prefix) and token.endswith(".json") for prefix in _GENERATED_DERIVATIVE_PREFIXES):
+        return True
+    return token.startswith("odylith/registry/source/components/") and token.endswith("/FORENSICS.v1.json")
 
 
 def _fingerprintable_file_digest(path: Path) -> str:

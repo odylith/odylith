@@ -15,6 +15,7 @@ import io
 from pathlib import Path
 
 from odylith.runtime.common.command_surface import display_command
+from odylith.runtime.surfaces import dashboard_shell_links
 
 
 @dataclass(frozen=True)
@@ -69,15 +70,62 @@ def refresh_owned_surface(*, repo_root: Path, surface: str) -> int:
 
 def raise_for_failed_refresh(*, repo_root: Path, surface: str, operation_label: str, detail: str = "") -> None:
     policy = _policy_for_surface(surface)
-    refresh_rc = refresh_owned_surface(repo_root=repo_root, surface=policy.surface)
+    captured_output = io.StringIO()
+    with contextlib.redirect_stdout(captured_output):
+        refresh_rc = refresh_owned_surface(repo_root=repo_root, surface=policy.surface)
     if refresh_rc == 0:
         return
+    refresh_detail = " ".join(captured_output.getvalue().split())
     suffix = f" {detail.strip()}" if str(detail).strip() else ""
+    output_suffix = f" Refresh output: {refresh_detail}" if refresh_detail else ""
     retry_command = display_command(*policy.retry_command)
     raise RuntimeError(
         f"{operation_label.strip()} succeeded, but the {policy.surface} surface refresh failed; "
-        f"retry with `{retry_command}`.{suffix}"
+        f"retry with `{retry_command}`.{suffix}{output_suffix}"
     )
+
+
+def dashboard_handoff(
+    *,
+    surface: str,
+    workstream: str = "",
+    component: str = "",
+    diagram: str = "",
+    bug: str = "",
+) -> str:
+    """Return the repo-local tooling-shell route for a newly changed surface item."""
+
+    href = dashboard_shell_links.shell_href(
+        tab=surface,
+        workstream=workstream,
+        component=component,
+        diagram=diagram,
+        bug=bug,
+    )
+    return f"odylith/index.html{href}"
+
+
+def print_dashboard_handoff(
+    *,
+    surface: str,
+    workstream: str = "",
+    component: str = "",
+    diagram: str = "",
+    bug: str = "",
+    dry_run: bool = False,
+) -> None:
+    """Print the one browser action an operator needs after a governance write."""
+
+    if dry_run:
+        return
+    route = dashboard_handoff(
+        surface=surface,
+        workstream=workstream,
+        component=component,
+        diagram=diagram,
+        bug=bug,
+    )
+    print(f"view: {route} (refresh if already open)")
 
 
 def _policy_for_surface(surface: str) -> OwnedSurfaceRefreshPolicy:
@@ -118,4 +166,10 @@ def _ensure_compass_refresh_inputs(*, repo_root: Path) -> None:
             raise RuntimeError(f"Compass refresh prerequisites failed{suffix}")
 
 
-__all__ = ["OwnedSurfaceRefreshPolicy", "raise_for_failed_refresh", "refresh_owned_surface"]
+__all__ = [
+    "OwnedSurfaceRefreshPolicy",
+    "dashboard_handoff",
+    "print_dashboard_handoff",
+    "raise_for_failed_refresh",
+    "refresh_owned_surface",
+]

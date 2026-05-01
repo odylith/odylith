@@ -139,6 +139,10 @@ def test_ensure_launcher_points_at_repo_local_runtime(tmp_path: Path) -> None:
     assert 'fallback_source_root=""' in text
     assert "odylith_upgrade_bootstrap_required" in text
     assert "Odylith is bootstrapping a safe upgrade path for this older consumer install." in text
+    assert "ODYLITH_RELEASE_ALLOW_INSECURE_LOCALHOST" in text
+    assert "Odylith refused insecure localhost safe-upgrade installer." in text
+    assert "Odylith refused non-HTTPS safe-upgrade installer" in text
+    assert "Check VPN, proxy, firewall, TLS inspection, and certificate settings." in text
     assert "runtime/current/bin/python" in bootstrap_text
     assert "Odylith bootstrap could not find a trusted repo-local runtime." in bootstrap_text
     assert runtime._launcher_fallback_python(bootstrap) == (version_root / "bin" / "python").resolve()  # noqa: SLF001

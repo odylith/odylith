@@ -727,6 +727,15 @@ def _value_engine_decision(
             evidence=evidence,
         )
     if inspection.ledger_exists and inspection.ledger_valid and not inspection.verification_passed:
+        if inspection.target_in_window and (inspection.legacy_artifacts_present or not inspection.value_corpus_present):
+            return _decision(
+                migration_id=VALUE_ENGINE_MIGRATION_ID,
+                state=STATE_SELECTED,
+                reason="valid migration ledger exists, but owned value-engine artifacts need repair",
+                ledger_path=inspection.ledger_path,
+                planned_paths=inspection.planned_paths,
+                evidence=evidence,
+            )
         return _decision(
             migration_id=VALUE_ENGINE_MIGRATION_ID,
             state=STATE_LEDGER_STALE,
@@ -735,9 +744,7 @@ def _value_engine_decision(
             planned_paths=inspection.planned_paths,
             evidence=evidence,
         )
-    if inspection.legacy_artifacts_present or (
-        inspection.previous_requires_migration and not inspection.value_corpus_present
-    ):
+    if inspection.legacy_artifacts_present or (inspection.previous_requires_migration and not inspection.value_corpus_present):
         return _decision(
             migration_id=VALUE_ENGINE_MIGRATION_ID,
             state=STATE_SELECTED,

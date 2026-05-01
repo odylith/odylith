@@ -22,7 +22,22 @@ def test_evaluate_bash_command_routes_odylith_raw_deletion_to_uninstall() -> Non
 
     assert blocked is True
     assert "./.odylith/bin/odylith uninstall --repo-root ." in reason
+    assert "./.odylith/bin/odylith uninstall --repo-root . --dry-run" in reason
     assert "raw deletion and hook bypasses are blocked" in reason
+    assert "detaches Odylith hook entries" in reason
+    assert "`.claude/`, `.codex/`, and `.agents/` stay in place" in reason
+
+
+def test_evaluate_bash_command_blocks_host_config_cleanup_without_saying_uninstall_removes_it() -> None:
+    blocked, reason = claude_host_bash_guard.evaluate_bash_command("rm -rf .claude .codex .agents")
+
+    assert blocked is True
+    assert "./.odylith/bin/odylith uninstall --repo-root ." in reason
+    assert "./.odylith/bin/odylith uninstall --repo-root . --dry-run" in reason
+    assert "removes `.odylith/` runtime state" in reason
+    assert "detaches Odylith hook entries" in reason
+    assert "`odylith/` governed source truth" in reason
+    assert "`.claude/`, `.codex/`, and `.agents/` stay in place" in reason
 
 
 def test_evaluate_bash_command_blocks_python_rmtree_odylith_bypass() -> None:
@@ -47,6 +62,40 @@ def test_evaluate_bash_command_allows_non_destructive_commands() -> None:
     blocked, reason = claude_host_bash_guard.evaluate_bash_command("pytest -q")
     assert blocked is False
     assert reason == ""
+
+
+def test_evaluate_bash_command_blocks_claude_backlog_complexity_mistranslation() -> None:
+    blocked, reason = claude_host_bash_guard.evaluate_bash_command(
+        "./.odylith/bin/odylith backlog create --repo-root . "
+        "--title 'Release governance' --complexity moderate"
+    )
+
+    assert blocked is True
+    assert "Claude generated a non-canonical Odylith backlog complexity `moderate`" in reason
+    assert "--complexity Medium" in reason
+    assert "Low, Medium, High, VeryHigh" in reason
+
+
+def test_evaluate_bash_command_allows_canonical_backlog_complexity() -> None:
+    blocked, reason = claude_host_bash_guard.evaluate_bash_command(
+        "./.odylith/bin/odylith backlog create --repo-root . "
+        "--title 'Release governance' --complexity Medium --sizing M"
+    )
+
+    assert blocked is False
+    assert reason == ""
+
+
+def test_evaluate_bash_command_blocks_claude_backlog_sizing_mistranslation() -> None:
+    blocked, reason = claude_host_bash_guard.evaluate_bash_command(
+        "./.odylith/bin/odylith backlog create --repo-root . "
+        "--title 'Release governance' --sizing medium"
+    )
+
+    assert blocked is True
+    assert "Claude generated a non-canonical Odylith backlog sizing `medium`" in reason
+    assert "--sizing M" in reason
+    assert "XS, S, M, L, XL" in reason
 
 
 def test_render_deny_payload_uses_canonical_pre_tool_use_shape() -> None:

@@ -97,7 +97,7 @@ def test_render_prompt_system_message_appends_assist_for_visibility_feedback(tmp
     )
     assert rendered.count("---") == 2
     assert rendered.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
-    assert "surfaced this visibility issue in normal chat where you can inspect it" in rendered
+    assert "visibility feedback noted; this line is deliberately shown in chat" in rendered
     assert "Odylith is tracking this signal" not in rendered
     assert "**Odylith Insight:**" not in rendered
     assert "**Odylith Risks:**" not in rendered
@@ -134,7 +134,7 @@ def test_prompt_bundle_preserves_engine_alignment_proof_for_visible_assist(tmp_p
     assert lanes["subagent_orchestration"]["status"] == "policy_deferred"
 
 
-def test_render_prompt_system_message_keeps_shared_assist_visible_for_generic_failure(tmp_path: Path) -> None:
+def test_render_prompt_system_message_keeps_generic_failure_free_of_fake_assist(tmp_path: Path) -> None:
     rendered = host_intervention_support.render_prompt_system_message(
         repo_root=tmp_path,
         host_family="codex",
@@ -145,8 +145,7 @@ def test_render_prompt_system_message_keeps_shared_assist_visible_for_generic_fa
     assert rendered.startswith(
         "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
     )
-    assert rendered.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
-    assert "surfaced this visibility issue in normal chat where you can inspect it" in rendered
+    assert "**Odylith Assist:**" not in rendered
 
 
 def test_render_prompt_system_message_suppresses_help_fast_path_and_replay(tmp_path: Path) -> None:

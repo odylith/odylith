@@ -122,7 +122,7 @@ def test_stop_visible_intervention_recovers_assist_from_summary_validation(tmp_p
     assert "closing with 1 focused check" in rendered
 
 
-def test_visible_intervention_operator_visibility_failure_is_never_silent(tmp_path) -> None:
+def test_visible_intervention_generic_failure_has_observation_without_fake_assist(tmp_path) -> None:
     rendered = host_visible_intervention.render_visible_intervention(
         repo_root=tmp_path,
         host_family="codex",
@@ -134,14 +134,14 @@ def test_visible_intervention_operator_visibility_failure_is_never_silent(tmp_pa
         "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
     )
     assert rendered.count("---") == 2
-    assert rendered.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
+    assert "**Odylith Assist:**" not in rendered
     assert "Show the next Odylith" not in rendered
     assert "chat-proved" not in rendered
     assert "Odylith is tracking this signal" not in rendered
     _assert_user_facing_visible_voice(rendered)
 
 
-def test_visible_intervention_prompt_submit_defaults_to_assist_for_normal_prompt(tmp_path) -> None:
+def test_visible_intervention_prompt_submit_stays_quiet_for_normal_prompt(tmp_path) -> None:
     rendered = host_visible_intervention.render_visible_intervention(
         repo_root=tmp_path,
         host_family="codex",
@@ -149,9 +149,7 @@ def test_visible_intervention_prompt_submit_defaults_to_assist_for_normal_prompt
         prompt="Make this intervention path less brittle.",
     )
 
-    assert rendered == (
-        "**Odylith Assist:** surfaced this visibility issue in normal chat where you can inspect it."
-    )
+    assert rendered == ""
     assert host_visible_intervention.render_visible_intervention(
         repo_root=tmp_path,
         host_family="codex",
@@ -196,7 +194,7 @@ def test_visible_intervention_visibility_feedback_adds_assist_after_live_block(t
     )
     assert rendered.count("---") == 2
     assert rendered.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
-    assert "surfaced this visibility issue" in rendered
+    assert "visibility feedback noted; this line is deliberately shown in chat" in rendered
     assert "Odylith is tracking this signal" not in rendered
     assert "**Odylith Insight:**" not in rendered
     assert "**Odylith Risks:**" not in rendered
@@ -267,7 +265,7 @@ def test_visible_intervention_replays_pending_chat_block_before_generic_failure(
 
     assert rendered.startswith("---\n\n**Odylith Observation:** Replay this exact earned block in chat.\n\n---")
     assert "\n\n**Odylith Assist:**" in rendered
-    assert "surfaced this visibility issue" in rendered
+    assert "visibility feedback noted; this line is deliberately shown in chat" in rendered
     assert "This is a visibility failure" not in rendered
     _assert_user_facing_visible_voice(rendered)
 
@@ -307,7 +305,7 @@ def test_visible_intervention_can_record_manual_visible_fallback(tmp_path) -> No
     assert rendered.startswith(
         "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
     )
-    assert rendered.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
+    assert "**Odylith Assist:**" not in rendered
     assert events[-1]["delivery_status"] == "manual_visible"
     assert events[-1]["delivery_channel"] == "manual_visible_command"
     assert events[-1]["host_family"] == "codex"

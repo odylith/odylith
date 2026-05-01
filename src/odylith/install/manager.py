@@ -15,6 +15,7 @@ import shutil
 import stat
 import subprocess
 import sys
+import time
 import tomllib
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -2597,37 +2598,60 @@ def rollback_install(*, repo_root: str | Path) -> RollbackSummary:
         )
 
 
+def _deactivate_host_project_integrations(*, repo_root: Path) -> None:
+    claude_cli_capabilities.deactivate_claude_project_settings(repo_root=repo_root)
+    codex_cli_capabilities.deactivate_codex_project_hooks(repo_root=repo_root)
+
+
+def _remove_uninstall_state_root(state_root: Path) -> None:
+    for attempt in range(4):
+        try:
+            remove_path(state_root)
+            return
+        except OSError:
+            if not state_root.exists() and not state_root.is_symlink():
+                return
+            if attempt == 3:
+                raise
+            time.sleep(0.05)
+
+
 def uninstall_bundle(*, repo_root: str | Path) -> UninstallSummary:
     root = _repo_root(repo_root)
     repo_role = product_repo_role(repo_root=root)
     if repo_role == PRODUCT_REPO_ROLE:
         raise ValueError("refusing to uninstall the Odylith product repo's own odylith/ source tree")
-    with install_lock(repo_root=root):
-        state = load_install_state(repo_root=root)
+    state_root = root / ".odylith"
+    state_root_is_link = state_root.is_symlink()
+    lock_context = contextlib.nullcontext() if state_root_is_link else install_lock(repo_root=root)
+    with lock_context:
+        state = {} if state_root_is_link else load_install_state(repo_root=root)
+        _deactivate_host_project_integrations(repo_root=root)
         _update_root_guidance_files(
             repo_root=root,
             install_active=False,
             repo_role=repo_role,
         )
-        if state:
+        if state and not state_root_is_link:
             updated_state = dict(state)
             updated_state["detached"] = True
             updated_state["integration_enabled"] = False
             write_install_state(repo_root=root, payload=updated_state)
         removed_paths: list[str] = []
-        odylith_root = root / "odylith"
-        if odylith_root.exists() or odylith_root.is_symlink():
-            remove_path(odylith_root)
-            removed_paths.append("odylith/")
-        append_install_ledger(
-            repo_root=root,
-            payload={
-                "operation": "uninstall",
-                "status": "uninstalled",
-                "active_version": _observed_active_version(repo_root=root, state=state),
-                "removed_paths": removed_paths,
-            },
-        )
+        if state_root.exists() or state_root.is_symlink():
+            removed_paths.append(".odylith/")
+        if not state_root_is_link:
+            append_install_ledger(
+                repo_root=root,
+                payload={
+                    "operation": "uninstall",
+                    "status": "uninstalled",
+                    "active_version": _observed_active_version(repo_root=root, state=state),
+                    "removed_paths": removed_paths,
+                },
+            )
+        if state_root.exists() or state_root.is_symlink():
+            _remove_uninstall_state_root(state_root)
     return UninstallSummary(repo_root=root, removed_paths=tuple(removed_paths))
 
 

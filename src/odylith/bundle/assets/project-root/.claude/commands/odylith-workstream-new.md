@@ -10,3 +10,4 @@ Slice (from user): `$ARGUMENTS`
 1. Search existing Radar, plans, bugs, and Compass context first. If `$ARGUMENTS` already maps to an existing workstream, idea, bug id, or parent slice, extend that record instead of creating a new one.
 2. Only create a new workstream when the slice is truly new and cannot be truthfully attached to an existing record; use `$ARGUMENTS` as the slice title seed.
 3. Keep the new workstream scoped tightly enough that implementation and validation stay coherent; if `$ARGUMENTS` is empty, ask the user for the slice description before filing anything.
+4. If you invoke `odylith backlog create`, use exact CLI enum tokens: `--sizing` must be `XS`, `S`, `M`, `L`, or `XL`; `--complexity` must be `Low`, `Medium`, `High`, or `VeryHigh`. Do not use prose substitutes such as `moderate`.

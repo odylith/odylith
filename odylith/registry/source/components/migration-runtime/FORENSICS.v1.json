@@ -20,18 +20,19 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md"
+        "odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md",
+        "src/odylith/install/migration_runtime.py"
       ],
       "confidence": "high",
-      "event_index": 397,
+      "event_index": 398,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "migration-runtime"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md",
-      "ts_iso": "2026-04-29T23:17:51-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md, src/odylith/install/migration_runtime.py",
+      "ts_iso": "2026-04-30T22:30:52-07:00",
       "workstreams": []
     },
     {

@@ -560,6 +560,45 @@ def test_stale_ledger_blocks_normal_upgrade(tmp_path: Path) -> None:
     assert "stale" in plan.blocked_reason
 
 
+def test_valid_ledger_missing_value_corpus_repairs_same_version_install(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, active_version="0.1.12")
+    _seed_current_runtime(tmp_path, version="0.1.12", verification={"wheel_sha256": "runtime-0.1.12"})
+    ledger = tmp_path / ".odylith/state/migrations/v0.1.11-visible-intervention-value-engine.v1.json"
+    ledger.parent.mkdir(parents=True, exist_ok=True)
+    ledger.write_text(
+        json.dumps(
+            {
+                "schema_version": "odylith-value-engine-migration.v1",
+                "migration_id": "v0.1.11-visible-intervention-value-engine",
+                "applied": True,
+                "previous_version": "0.1.10",
+                "target_version": "0.1.12",
+                "written_paths": ["odylith/runtime/source/intervention-value-adjudication-corpus.v1.json"],
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.12",
+        target_version="0.1.12",
+        pinned_version="0.1.12",
+    )
+
+    decision = _decision_for(plan, MIGRATION_ID)
+    assert not plan.blocked
+    assert decision.state == migration_runtime.STATE_SELECTED
+    assert "artifacts need repair" in decision.reason
+    results = migration_runtime.apply_release_migrations(plan=plan)
+    assert results[0].state == migration_runtime.STATE_APPLIED
+    assert (tmp_path / VALUE_CORPUS_RELATIVE_PATH).is_file()
+    assert (tmp_path / results[0].ledger_path).is_file()
+
+
 def test_complete_ledger_skips_value_engine_rerun(tmp_path: Path) -> None:
     _seed_repo(tmp_path, active_version="0.1.11")
     corpus = tmp_path / VALUE_CORPUS_RELATIVE_PATH
@@ -800,6 +839,58 @@ def test_surface_migration_observer_fingerprint_ignores_rendered_observer_marker
 
     assert covered_report.ok is True
     assert covered_report.needs[0].governance_marker == marker
+    assert covered_report.blocked_need_ids == ()
+
+
+def test_surface_migration_observer_fingerprint_ignores_generated_derivative_churn(tmp_path: Path) -> None:
+    changed_paths = (
+        "odylith/runtime/delivery_intelligence.v4.json",
+        "odylith/atlas/source/catalog/diagrams.v1.json",
+        "odylith/registry/source/components/radar/FORENSICS.v1.json",
+    )
+    for index, token in enumerate(changed_paths, start=1):
+        path = tmp_path / token
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps({"generated": index, "marker": "migration-observer:0.1.12:browser-surfaces:aaaaaaaaaaaa"}),
+            encoding="utf-8",
+        )
+
+    first_report = migration_observer.observe_surface_migration_needs(
+        repo_root=tmp_path,
+        target_version="0.1.12",
+        changed_paths=changed_paths,
+    )
+    markers = [need.governance_marker for need in first_report.needs]
+    record = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "migration.md"
+    record.parent.mkdir(parents=True)
+    record.write_text(
+        "\n".join(
+            [
+                "status: finished",
+                "idea_id: B-994",
+                "title: Generated derivative churn proof",
+                "",
+                *(f"- `{marker}`" for marker in markers),
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    for index, token in enumerate(changed_paths, start=10):
+        (tmp_path / token).write_text(
+            json.dumps({"generated": index, "marker": "migration-observer:0.1.12:browser-surfaces:bbbbbbbbbbbb"}),
+            encoding="utf-8",
+        )
+
+    covered_report = migration_observer.observe_surface_migration_needs(
+        repo_root=tmp_path,
+        target_version="0.1.12",
+        changed_paths=changed_paths,
+    )
+
+    assert covered_report.ok is True
+    assert {need.governance_marker for need in covered_report.needs} == set(markers)
     assert covered_report.blocked_need_ids == ()
 
 

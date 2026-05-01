@@ -39,6 +39,41 @@ _TOPOLOGY_HINTS: tuple[str, ...] = (
 _INVARIANT_HINTS: tuple[str, ...] = ("invariant", "must", "never", "always", "guardrail", "non-negotiable")
 _BUG_HINTS: tuple[str, ...] = ("bug", "failure", "regression", "incident", "broken", "crash")
 _EXECUTION_HINTS: tuple[str, ...] = ("implement", "wire", "build", "fix", "ship", "harden", "design")
+_PLACEHOLDER_FAILURE_EVIDENCE_MARKERS: tuple[str, ...] = (
+    "<paste failing command and error>",
+    "<paste failing command",
+    "paste failing command and error",
+    "paste failing command",
+)
+_STRONG_INVARIANT_RE = re.compile(
+    r"\b("
+    r"hard rule|"
+    r"non-negotiable|"
+    r"must never|"
+    r"must not|"
+    r"never allow|"
+    r"never remove|"
+    r"do not remove|"
+    r"don't remove|"
+    r"do not ever|"
+    r"always require"
+    r")\b",
+    re.IGNORECASE,
+)
+_GOVERNED_CAPTURE_VERB_RE = re.compile(
+    r"\b("
+    r"capture|"
+    r"create|"
+    r"define|"
+    r"map|"
+    r"open|"
+    r"register|"
+    r"scaffold|"
+    r"track|"
+    r"write"
+    r")\b",
+    re.IGNORECASE,
+)
 _HELP_PROMPT_TOKENS: frozenset[str] = frozenset(
     {
         "odylith help",
@@ -50,8 +85,15 @@ _SHOW_PROMPT_TOKENS: frozenset[str] = frozenset(
     {
         "odylith show me what you can do",
         "odylith what can you do",
-        "odylith show capabilities",
     }
+)
+_CAPABILITY_INVENTORY_MARKERS: tuple[str, ...] = (
+    "capabilities and engines",
+    "capability and engine",
+    "capability map",
+    "product architecture",
+    "odylith show capabilities",
+    "odylith capabilities",
 )
 
 
@@ -113,6 +155,8 @@ def passthrough_prompt_kind(value: Any) -> str:
     token = normalized_passthrough_prompt(value)
     if token in _HELP_PROMPT_TOKENS:
         return "help"
+    if "odylith" in token and any(marker in token for marker in _CAPABILITY_INVENTORY_MARKERS):
+        return "capabilities"
     if token in _SHOW_PROMPT_TOKENS:
         return "show"
     return ""
@@ -151,63 +195,83 @@ def _fact(kind: str, headline: str, detail: str, evidence_classes: Sequence[str]
     )
 
 
-def _join_labels(values: Sequence[str]) -> str:
-    rows = [_normalize_string(value) for value in values if _normalize_string(value)]
-    if not rows:
-        return ""
-    if len(rows) == 1:
-        return rows[0]
-    if len(rows) == 2:
-        return f"{rows[0]} and {rows[1]}"
-    return f"{', '.join(rows[:-1])}, and {rows[-1]}"
-
-
-def _capture_opportunity_copy(
+def _casebook_placeholder_fact(
     *,
     prompt_surface: str,
+    evidence_classes: Sequence[str],
+) -> GovernanceFact | None:
+    text = _normalize_string(prompt_surface).casefold()
+    if not text or not any(marker in text for marker in _PLACEHOLDER_FAILURE_EVIDENCE_MARKERS):
+        return None
+    if not contains_any(prompt_surface, ("casebook", "bug", "failure", "regression", "incident")):
+        return None
+    return _fact(
+        "write_blocker",
+        "Casebook needs real failure evidence before it writes.",
+        "The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt.",
+        evidence_classes,
+        [{"kind": "component", "id": "governance-intervention-engine", "label": "governance-intervention-engine"}],
+        96,
+    )
+
+
+def _strong_invariant_fact(
+    *,
+    prompt_surface: str,
+    evidence_classes: Sequence[str],
+) -> GovernanceFact | None:
+    text = _normalize_string(prompt_surface)
+    if not text or not _STRONG_INVARIANT_RE.search(text):
+        return None
+    lowered = text.casefold()
+    if "remove" in lowered:
+        headline = "The request protects an existing lane; do not delete it to quiet the noise."
+        detail = "Fix the leaking decision rule while preserving the real Ambient, Observation, Proposal, and Assist lanes."
+    else:
+        headline = "The prompt sets a non-negotiable constraint."
+        detail = "Carry the exact constraint into the change only when code or governed truth moves."
+    return _fact(
+        "invariant",
+        headline,
+        detail,
+        evidence_classes,
+        [],
+        82,
+    )
+
+
+def _capture_opportunity_fact(
+    *,
+    observation: ObservationEnvelope,
+    prompt_surface: str,
+    evidence_classes: Sequence[str],
     signal_profile: Mapping[str, Any],
-) -> tuple[str, str]:
-    lowered = _normalize_token(prompt_surface)
-    if "proposal" in lowered:
-        headline = "This turn is already framing a governed proposal."
-    elif contains_any(prompt_surface, ("workstream", "radar")) or _normalize_string_list(
-        signal_profile.get("prompt_explicit_workstream_ids")
+) -> GovernanceFact | None:
+    text = _normalize_string(prompt_surface)
+    if not text or not _GOVERNED_CAPTURE_VERB_RE.search(text):
+        return None
+    if bool(signal_profile.get("suppress_governance_capture")):
+        return None
+    if not bool(signal_profile.get("proposal_signal")):
+        return None
+    if not (
+        observation.changed_paths
+        or bool(signal_profile.get("has_direct_refs"))
+        or bool(signal_profile.get("has_topology_hints"))
+        or bool(signal_profile.get("has_bug_hints"))
+        or bool(signal_profile.get("has_governance_hints"))
     ):
-        headline = "This turn is already naming a governed workstream move."
-    elif contains_any(prompt_surface, ("registry", "component")):
-        headline = "This turn is already naming Registry-owned truth."
-    elif contains_any(prompt_surface, ("atlas", "diagram", "topology", "architecture", "boundary")) or _normalize_string_list(
-        signal_profile.get("prompt_explicit_diagram_ids")
-    ):
-        headline = "This turn is already making Atlas-owned boundary claims."
-    elif contains_any(prompt_surface, ("casebook", "bug", "failure", "regression", "incident")) or _normalize_string_list(
-        signal_profile.get("prompt_explicit_bug_ids")
-    ):
-        headline = "This turn is already describing a governed failure lane."
-    else:
-        headline = "This turn is already asking Odylith to record this slice."
-
-    target_surfaces: list[str] = []
-    if contains_any(prompt_surface, ("workstream", "radar")) or _normalize_string_list(
-        signal_profile.get("prompt_explicit_workstream_ids")
-    ):
-        target_surfaces.append("Radar")
-    if contains_any(prompt_surface, ("registry", "component")):
-        target_surfaces.append("Registry")
-    if contains_any(prompt_surface, ("atlas", "diagram", "topology", "architecture", "boundary")) or _normalize_string_list(
-        signal_profile.get("prompt_explicit_diagram_ids")
-    ):
-        target_surfaces.append("Atlas")
-    if contains_any(prompt_surface, ("casebook", "bug", "failure", "regression", "incident")) or _normalize_string_list(
-        signal_profile.get("prompt_explicit_bug_ids")
-    ):
-        target_surfaces.append("Casebook")
-
-    if not target_surfaces:
-        detail = "Capture the exact governed change while the request is still current."
-    else:
-        detail = f"Capture the exact {_join_labels(target_surfaces)} move while the request is still current."
-    return headline, detail
+        return None
+    title = "The request is asking for a governed capture, not just a branded aside."
+    detail = "Use a proposal only if the action can be tied to the prompt, touched paths, or explicit governance references."
+    return _fact(
+        "capture_opportunity",
+        title,
+        detail,
+        evidence_classes,
+        [{"kind": "component", "id": "governance-intervention-engine", "label": "governance-intervention-engine"}],
+        78,
+    )
 
 
 def _allow_repo_fact(
@@ -342,6 +406,27 @@ def collect_facts(
         facts.append(visibility_status_fact)
     if bool(signal_profile.get("suppress_governance_capture")):
         return facts
+    casebook_placeholder_fact = _casebook_placeholder_fact(
+        prompt_surface=prompt_surface,
+        evidence_classes=evidence_classes,
+    )
+    if casebook_placeholder_fact is not None:
+        facts.append(casebook_placeholder_fact)
+    strong_invariant_fact = _strong_invariant_fact(
+        prompt_surface=prompt_surface,
+        evidence_classes=evidence_classes,
+    )
+    if strong_invariant_fact is not None:
+        facts.append(strong_invariant_fact)
+    if not any(_normalize_token(row.kind) in {"write_blocker", "invariant"} for row in facts):
+        capture_opportunity_fact = _capture_opportunity_fact(
+            observation=observation,
+            prompt_surface=prompt_surface,
+            evidence_classes=evidence_classes,
+            signal_profile=signal_profile,
+        )
+        if capture_opportunity_fact is not None:
+            facts.append(capture_opportunity_fact)
     if lookup.get("workstream_ids") and _allow_repo_fact(
         observation=observation,
         signal_profile=signal_profile,
@@ -405,43 +490,6 @@ def collect_facts(
                 evidence_classes,
                 [{"kind": "component", "id": component_id, "label": component_id}],
                 84,
-            )
-        )
-    if contains_any(prompt_surface, _INVARIANT_HINTS):
-        facts.append(
-            _fact(
-                "invariant",
-                "The conversation is setting a hard rule, not just a preference.",
-                "Capture it now or the runtime and the governed record will drift apart.",
-                evidence_classes,
-                [],
-                82,
-            )
-        )
-    if contains_any(prompt_surface, _TOPOLOGY_HINTS):
-        facts.append(
-            _fact(
-                "topology",
-                "This request is making architecture, ownership, or boundary claims.",
-                "If the claim changes product behavior or governed docs, attach it to the existing Atlas or Registry record instead of leaving it only in chat.",
-                evidence_classes,
-                [],
-                80,
-            )
-        )
-    if contains_any(prompt_surface, _GOVERNANCE_HINTS):
-        headline, detail = _capture_opportunity_copy(
-            prompt_surface=prompt_surface,
-            signal_profile=signal_profile,
-        )
-        facts.append(
-            _fact(
-                "capture_opportunity",
-                headline,
-                detail,
-                evidence_classes,
-                [],
-                78,
             )
         )
     return facts

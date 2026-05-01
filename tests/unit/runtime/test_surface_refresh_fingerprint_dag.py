@@ -56,6 +56,37 @@ def _seed_radar_fingerprint_repo(repo_root: Path) -> Path:
     return repo_root / "src/odylith/runtime/surfaces/backlog_traceability_paths.py"
 
 
+def _write(repo_root: Path, relative_path: str, content: str) -> Path:
+    path = repo_root / relative_path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+    return path
+
+
+def _seed_surface_dag_repo(repo_root: Path) -> dict[str, Path]:
+    radar_helper = _seed_radar_fingerprint_repo(repo_root)
+    registry_helper = _seed_registry_fingerprint_repo(repo_root)
+    return {
+        "compass": _write(repo_root, "odylith/runtime/delivery_intelligence.v4.json", "{\"state\":\"a\"}\n"),
+        "tooling_shell": _write(repo_root, "odylith/runtime/delivery_intelligence.v4.json", "{\"state\":\"a\"}\n"),
+        "radar": radar_helper,
+        "registry": registry_helper,
+        "casebook": _write(repo_root, "odylith/casebook/bugs/INDEX.md", "# Bugs\n\n- CB-1\n"),
+        "atlas": _write(repo_root, "odylith/atlas/source/system.mmd", "flowchart TD\n  A-->B\n"),
+    }
+
+
+def _surface_fingerprints(repo_root: Path) -> dict[str, str]:
+    return {
+        surface: surface_refresh_fingerprint_dag.surface_input_fingerprint(
+            repo_root=repo_root,
+            surface=surface,
+            atlas_sync=False,
+        )
+        for surface in ("compass", "tooling_shell", "radar", "registry", "casebook", "atlas")
+    }
+
+
 def test_registry_surface_input_fingerprint_includes_renderer_helper_source(tmp_path: Path) -> None:
     helper_path = _seed_registry_fingerprint_repo(tmp_path)
 
@@ -74,6 +105,35 @@ def test_registry_surface_input_fingerprint_includes_renderer_helper_source(tmp_
     )
 
     assert updated != baseline
+
+
+def test_all_governance_surface_dags_react_to_owned_inputs(tmp_path: Path) -> None:
+    owned_inputs = _seed_surface_dag_repo(tmp_path)
+    baseline = _surface_fingerprints(tmp_path)
+
+    owned_inputs["compass"].write_text("{\"state\":\"compass\"}\n", encoding="utf-8")
+    compass = _surface_fingerprints(tmp_path)
+    assert compass["compass"] != baseline["compass"]
+
+    owned_inputs["tooling_shell"].write_text("{\"state\":\"tooling\"}\n", encoding="utf-8")
+    tooling = _surface_fingerprints(tmp_path)
+    assert tooling["tooling_shell"] != baseline["tooling_shell"]
+
+    owned_inputs["radar"].write_text("# traceability paths\nTRACEABILITY_OWNER = True\n", encoding="utf-8")
+    radar = _surface_fingerprints(tmp_path)
+    assert radar["radar"] != baseline["radar"]
+
+    owned_inputs["registry"].write_text("# forensic evidence helper\nDIGEST = True\n", encoding="utf-8")
+    registry = _surface_fingerprints(tmp_path)
+    assert registry["registry"] != baseline["registry"]
+
+    owned_inputs["casebook"].write_text("# Bugs\n\n- CB-1\n- CB-2\n", encoding="utf-8")
+    casebook = _surface_fingerprints(tmp_path)
+    assert casebook["casebook"] != baseline["casebook"]
+
+    owned_inputs["atlas"].write_text("flowchart TD\n  A-->B\n  B-->C\n", encoding="utf-8")
+    atlas = _surface_fingerprints(tmp_path)
+    assert atlas["atlas"] != baseline["atlas"]
 
 
 def test_radar_surface_input_fingerprint_includes_traceability_helper_source(tmp_path: Path) -> None:

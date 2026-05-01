@@ -245,7 +245,21 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     mode = "dry-run" if args.dry_run else "registered"
     if args.as_json:
-        print(json.dumps({"mode": mode, **result.as_dict()}, indent=2))
+        print(
+            json.dumps(
+                {
+                    "mode": mode,
+                    **result.as_dict(),
+                    "dashboard": ""
+                    if args.dry_run
+                    else owned_surface_refresh.dashboard_handoff(
+                        surface="registry",
+                        component=result.component_id,
+                    ),
+                },
+                indent=2,
+            )
+        )
     else:
         print(f"odylith component register {mode}")
         print(f"  component_id: {result.component_id}")
@@ -253,4 +267,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"  path: {result.path}")
         print(f"  registry: {result.registry_path}")
         print(f"  spec: {result.spec_path}")
+        owned_surface_refresh.print_dashboard_handoff(
+            surface="registry",
+            component=result.component_id,
+            dry_run=bool(args.dry_run),
+        )
     return 0

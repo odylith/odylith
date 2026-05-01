@@ -708,7 +708,21 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     mode = "dry-run" if args.dry_run else "captured"
     if args.as_json:
-        print(json.dumps({"mode": mode, **result.as_dict()}, indent=2))
+        print(
+            json.dumps(
+                {
+                    "mode": mode,
+                    **result.as_dict(),
+                    "dashboard": ""
+                    if args.dry_run
+                    else owned_surface_refresh.dashboard_handoff(
+                        surface="casebook",
+                        bug=result.bug_id,
+                    ),
+                },
+                indent=2,
+            )
+        )
     else:
         print(f"odylith bug capture {mode}")
         print(f"  bug_id: {result.bug_id}")
@@ -716,4 +730,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"  severity: {result.severity}")
         print(f"  component: {result.component}")
         print(f"  path: {result.bug_path}")
+        owned_surface_refresh.print_dashboard_handoff(
+            surface="casebook",
+            bug=result.bug_id,
+            dry_run=bool(args.dry_run),
+        )
     return 0

@@ -582,9 +582,10 @@ Public docs should describe these commands, not direct module entrypoints.
 - In consumer repos, `odylith doctor --repair` must restage the pinned managed
   runtime and the pinned managed context-engine pack when the full-stack
   runtime is incomplete.
-- `odylith uninstall` detaches the managed root `AGENTS.md` block, marks the
-  local install detached, removes the consumer repo's visible `odylith/` tree,
-  and preserves local `.odylith/` launcher and audit state.
+- `odylith uninstall` detaches the managed root `AGENTS.md` block, preserves
+  the consumer repo's `odylith/` governed source truth, removes `.odylith/`
+  runtime state, and leaves `.claude/`, `.codex/`, and `.agents/` host
+  configuration directories in place.
 - `odylith on` and `odylith off` are intentional operator states and should be
   treated as valid posture, not as broken installs. `off` means repo-root
   Odylith-first guidance is detached while the runtime and context remain
@@ -677,4 +678,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-14: Tightened the forwarded-help contract so Atlas public help surfaces keep the real `odylith atlas ...` command name and user-facing descriptions instead of leaking `cli.py`, `__main__.py`, or refresh-wrapper copy. (Plan: [B-088](odylith/radar/radar.html?view=plan&workstream=B-088))
 - 2026-04-14: Reframed the host guidance so the default lane stays shared across Codex and Claude Code, while Codex-only advice is limited to capability-gated project-asset optimizations such as `odylith codex compatibility`. (Plan: [B-088](odylith/radar/radar.html?view=plan&workstream=B-088))
 - 2026-04-29: Added `odylith github issue ...` as the draft-first public issue intake and release-closeout command lane, with Codex/Claude skills and guidance mirrors for Casebook-linked GitHub issue handling. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127); Casebook: CB-136)
-- 2026-04-30: Changed `odylith uninstall` so consumer repos remove the visible `odylith/` tree while preserving hidden `.odylith/` launcher and audit state, with a product-repo self-uninstall refusal to protect Odylith source truth. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127); Casebook: CB-143)
+- 2026-04-30: Corrected `odylith uninstall` so consumer repos preserve `odylith/` governed source truth, remove only `.odylith/` runtime state, detach root guidance, and leave host config directories in place. (Plan: [B-140](odylith/radar/radar.html?view=plan&workstream=B-140); Casebook: CB-143)

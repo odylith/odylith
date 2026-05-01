@@ -306,6 +306,46 @@ def _upgrade_cycle(
     _require_compass_history_layout(repo_root=repo_root)
 
 
+def _stale_uninstall_residue_cycle(
+    *,
+    repo_root: Path,
+    install_script: Path,
+    previous_version: str,
+    target_version: str,
+    local_env: dict[str, str],
+) -> None:
+    _install_clean_previous_release(
+        repo_root=repo_root,
+        install_script=install_script,
+        previous_version=previous_version,
+    )
+    shutil.rmtree(repo_root / "odylith", ignore_errors=True)
+    migration_dir = repo_root / ".odylith" / "state" / "migrations"
+    migration_dir.mkdir(parents=True, exist_ok=True)
+    (migration_dir / "v0.1.11-visible-intervention-value-engine.v1.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "odylith-value-engine-migration.v1",
+                "migration_id": "v0.1.11-visible-intervention-value-engine",
+                "applied": True,
+                "previous_version": previous_version,
+                "target_version": target_version,
+                "written_paths": ["odylith/runtime/source/intervention-value-adjudication-corpus.v1.json"],
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    _run(cwd=_install_cwd(repo_root), env=local_env, command=["bash", str(install_script)])
+    odylith = repo_root / ".odylith" / "bin" / "odylith"
+    version = _run(cwd=repo_root, env=local_env, command=[str(odylith), "version", "--repo-root", "."]).stdout
+    _require_output_contains(output=version, expected=f"Active: {target_version}", label="stale residue version")
+    if not (repo_root / "odylith" / "AGENTS.md").is_file():
+        raise RuntimeError("stale uninstall residue install did not restore odylith/ governed source truth")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run local Odylith release smoke tests against generated assets.")
     parser.add_argument("--version", required=True, help="Release version, for example 0.1.0.")
@@ -332,6 +372,14 @@ def main(argv: list[str] | None = None) -> int:
             lifecycle_repo = _repo_root(temp_root, "upgrade-cycle")
             _upgrade_cycle(
                 repo_root=lifecycle_repo,
+                install_script=install_script,
+                previous_version=previous_version,
+                target_version=args.version,
+                local_env=local_env,
+            )
+            stale_residue_repo = _repo_root(temp_root, "stale-uninstall-residue")
+            _stale_uninstall_residue_cycle(
+                repo_root=stale_residue_repo,
                 install_script=install_script,
                 previous_version=previous_version,
                 target_version=args.version,

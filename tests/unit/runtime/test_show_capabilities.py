@@ -85,6 +85,7 @@ def test_show_text_reads_like_demo_copy_not_command_dump() -> None:
     assert text.startswith("Odylith read this repo: Python, 8 app source files found.")
     assert "Registry names ownership, Radar tracks delivery, Atlas explains shape" in text
     assert "Odylith proposes them only from app-source evidence." in text
+    assert "For more examples, open `odylith/index.html` and use the Cheatsheet." in text
     assert "It found 1 Registry component, 1 Radar workstream, 1 Atlas diagram, and 1 Casebook issue" in text
     assert "Say any prompt below verbatim, or use your own words." not in text
     assert "Best first move: **Dashboard Registry component**." in text
@@ -304,7 +305,7 @@ def test_show_empty_readme_manifest_tests_infra_and_thin_app_scenarios_are_quiet
         "thin-app": ([("src/demo/app.py", "import json\n"), ("src/demo/config.py", "")], "2 app source files found, but not enough stable structure"),
     }
     teaching = {
-        "empty": "staying quiet because there is no app-source evidence yet",
+        "empty": "start with the Cheatsheet",
         "docs-only": "will not turn documentation alone into governance records",
         "metadata-only": "Manifests identify the stack, but they are not an ownership boundary",
         "tests-only": "Tests prove behavior, but they are not the application boundary",
@@ -323,6 +324,10 @@ def test_show_empty_readme_manifest_tests_infra_and_thin_app_scenarios_are_quiet
         assert result.scenario == name
         assert expected in text
         assert teaching[name] in text
+        if name == "empty":
+            assert text.count("Cheatsheet") == 1
+        else:
+            assert "For more examples, open `odylith/index.html` and use the Cheatsheet." in text
         assert "Define an Odylith plan around <path or feature>" in text
         assert "No files changed." in text
         assert result.components == []
@@ -469,6 +474,7 @@ def test_show_json_adds_scenario_and_source_summary_fields(tmp_path: Path) -> No
 
     assert payload["scenario"] == "app-ready"
     assert payload["teaching"].startswith("Mental model: Registry names ownership")
+    assert payload["cheatsheet_hint"] == "For more examples, open `odylith/index.html` and use the Cheatsheet."
     assert payload["next_prompt"].startswith("Define the Json Demo Registry component.")
     assert payload["total_modules"] == 3
     assert payload["app_modules"] == 3

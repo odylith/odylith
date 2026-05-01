@@ -41,13 +41,21 @@
 - Plain-English uninstall requests must route to
   `./.odylith/bin/odylith uninstall --repo-root .`. Run that command directly
   when the operator explicitly asks to uninstall; do not pause for a
-  commit/snapshot preflight, do not claim uninstall removes `.odylith/`, and
+  commit/snapshot preflight, do not ask whether to remove `.claude/`,
+  `.codex/`, or `.agents/`, and
   do not remove Odylith with `rm -rf`, Python `shutil.rmtree`, or host-hook
   bypass instructions.
+- Use `./.odylith/bin/odylith uninstall --repo-root . --dry-run` only when
+  the operator asks what uninstall would touch, asks for a preview, or the
+  session is answering a scope question. Do not turn `--dry-run` into a second
+  confirmation hop for an explicit uninstall request.
 - Use the reset-local-state repair path when cache, tuning, or derived runtime state looks compromised.
 - `off`/`on` are the lightweight switch for coding agents; uninstall detaches
-  repo-root guidance, removes the local `odylith/` product surface, and
-  preserves `.odylith/` launcher and audit state.
+  repo-root guidance, preserves repo-local `odylith/` governed source truth,
+  removes the `.odylith/` runtime state, and detaches Odylith-owned Claude/Codex
+  hook entries so an already-open host stops calling the removed launcher. It
+  leaves Claude, Codex, and agent host directories in place because those trees
+  may contain non-Odylith user config.
   `off` detaches Odylith-first repo-root guidance so the current coding host falls back to the surrounding repo's default behavior; `on` restores Odylith as the default first path.
 - Install, upgrade, reinstall, and `doctor --repair` may refresh the managed
   project-root host assets under `.claude/`, `.codex/`, and `.agents/skills/`

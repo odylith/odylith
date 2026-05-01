@@ -98,8 +98,7 @@ def test_codex_prompt_system_message_replays_pending_chat_block(tmp_path: Path) 
     )
 
     assert rendered == (
-        "---\n\n**Odylith Observation:** Prompt must carry this pending block.\n\n---\n\n"
-        "**Odylith Assist:** surfaced this visibility issue in normal chat where you can inspect it."
+        "---\n\n**Odylith Observation:** Prompt must carry this pending block.\n\n---"
     )
 
 
@@ -163,8 +162,7 @@ def test_codex_prompt_system_message_prefers_pending_ambient_risk_over_observati
         "**Odylith Risks:** Prompt should surface this branded ambient beat first.\n"
         "\n"
         "**Odylith Observation:** Prompt should not hide the stronger ambient beat.\n"
-        "\n---\n\n"
-        "**Odylith Assist:** surfaced this visibility issue in normal chat where you can inspect it."
+        "\n---"
     )
 
 
@@ -190,9 +188,7 @@ def test_main_writes_user_prompt_hook_json(monkeypatch, tmp_path: Path, capsys) 
     payload = json.loads(capsys.readouterr().out)
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
     assert "src/odylith/cli.py" in payload["hookSpecificOutput"]["additionalContext"]
-    assert payload["systemMessage"] == (
-        "**Odylith Assist:** surfaced this visibility issue in normal chat where you can inspect it."
-    )
+    assert payload.get("systemMessage", "") == ""
 
 
 def test_main_emits_show_me_route_lock_without_running_prompt_observation(
@@ -275,6 +271,30 @@ def test_main_emits_help_route_lock_without_pending_replay(
     assert "systemMessage" not in payload
 
 
+def test_main_emits_capability_inventory_route_lock_without_host_taxonomy(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(json.dumps({"prompt": "List all the Odylith capabilities and engines"})),
+    )
+
+    exit_code = codex_host_prompt_context.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    payload = json.loads(capsys.readouterr().out)
+    additional_context = payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith Codex capability-inventory route lock" in additional_context
+    assert "product-owned capabilities, engines, and architecture map" in additional_context
+    assert "Do not infer the taxonomy from `odylith --help`, `odylith show`" in additional_context
+    assert "`./.odylith/bin/odylith capabilities --repo-root .`" in additional_context
+    assert "`odylith capabilities --repo-root .`" in additional_context
+    assert "Return that stdout directly" in additional_context
+    assert "systemMessage" not in payload
+
+
 def test_main_surfaces_visible_teaser_in_system_message(monkeypatch, tmp_path: Path, capsys) -> None:
     monkeypatch.setattr(
         "sys.stdin",
@@ -288,8 +308,8 @@ def test_main_surfaces_visible_teaser_in_system_message(monkeypatch, tmp_path: P
                 "candidate": {
                     "stage": "teaser",
                     "teaser_text": (
-                        "Odylith Observation: This turn is already framing a governed proposal. "
-                        "Why it matters: Capture the exact governed change while the request is still current."
+                        "Odylith Observation: Casebook needs real failure evidence before it writes. "
+            "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
                     ),
                 }
             }
@@ -304,8 +324,7 @@ def test_main_surfaces_visible_teaser_in_system_message(monkeypatch, tmp_path: P
     assert payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery recovery:")
     assert "Odylith Observation:" in payload["hookSpecificOutput"]["additionalContext"]
     assert payload["systemMessage"].startswith(f"{surface_runtime.LIVE_BOUNDARY}\n\nOdylith Observation:")
-    assert "\n---\n\n**Odylith Assist:** surfaced this visibility issue" in payload["systemMessage"]
-    assert payload["systemMessage"].rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
+    assert "**Odylith Assist:**" not in payload["systemMessage"]
 
 
 def test_main_records_prompt_events_on_stable_thread_id_not_turn_id(
@@ -397,10 +416,7 @@ def test_main_confirms_visible_prompt_replay_from_last_assistant_message(
     exit_code = codex_host_prompt_context.main(["--repo-root", str(tmp_path)])
 
     assert exit_code == 0
-    payload = json.loads(capsys.readouterr().out)
-    assert payload["systemMessage"] == (
-        "**Odylith Assist:** surfaced this visibility issue in normal chat where you can inspect it."
-    )
+    assert capsys.readouterr().out == ""
     snapshot = delivery_ledger.delivery_snapshot(
         repo_root=tmp_path,
         host_family="codex",

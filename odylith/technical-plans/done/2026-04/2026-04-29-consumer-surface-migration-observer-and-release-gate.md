@@ -68,3 +68,8 @@ record for the target release.
 - Closed on 2026-04-29 after the source release gate detected five surface
   migration-observer needs and accepted B-140 as the target-specific completed
   assessment record.
+- Maintained on 2026-04-30 after the v0.1.12 recovery-release sweep changed
+  public docs/release guidance, browser surfaces, and install-managed assets
+  again. B-140 now carries the new target-specific markers and an explicit
+  upgrade assessment for those fingerprints, keeping `release migration-gate`
+  fail-closed without creating a duplicate migration-observer workstream.

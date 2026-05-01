@@ -202,9 +202,23 @@
   repository-file inspection, branch-cleanliness reports, and follow-up
   questions. Claude must run the first available repo-root command, return
   stdout only, or report the shortest actionable Odylith blocker. The generated `.claude/settings.json`
-  allowlist must include `Bash(./.odylith/bin/odylith show:*)` and
+  allowlist must include `Bash(./.odylith/bin/odylith show:*)`,
+  `Bash(./.odylith/bin/odylith capabilities:*)`, and
   `Bash(./.odylith/bin/odylith --help:*)` so the route is executable without a
   detour through host capability prose.
+- Requests to list Odylith capabilities, engines, product architecture, or the
+  capability map must run `odylith capabilities` and print stdout only. That
+  inventory is product-owned and host-model agnostic; Claude must not infer it
+  from `odylith --help`, `odylith show`, Claude tool lists, memory, skills, or
+  generic Claude Code capability prose.
+- Claude help discovery must run the single authoritative
+  `odylith ... --help` command first. Do not batch that help call with
+  exploratory `ls`/`rg` probes whose failure can cancel the visible help
+  output. If the guessed command is invalid, fall back to `odylith --help` and
+  then the nearest listed subcommand. Technical-plan work uses
+  `odylith governance ...` and `odylith validate plan-* ...`;
+  `odylith plan --help` is only a read-only command guide and there is no
+  `odylith/technical-plans/source/` directory.
 - `PostToolUse` must not be used as a live intervention source lane in Claude.
   Claude renders hook output inline; successful edit and Bash checkpoints must
   produce no transcript text. If refresh fails or is skipped, emit one compact
@@ -318,9 +332,15 @@
   `./.odylith/bin/odylith uninstall --repo-root .` without a commit/snapshot
   preflight or second confirmation question; do not translate it into
   `rm -rf`, Python `shutil.rmtree`, or a hook-bypass instruction. The command
-  detaches root guidance and removes the repo-local `odylith/` product tree
-  while preserving `.odylith/` launcher and audit state for version reporting
-  or reinstall.
+  detaches root guidance, preserves repo-local `odylith/` governed source
+  truth, removes the `.odylith/` runtime state, and detaches Odylith-owned
+  Claude/Codex hook entries so an already-open host stops calling the removed
+  launcher. Do not ask whether to remove `.claude/`, `.codex/`, or `.agents/`;
+  those host directories may contain non-Odylith user config.
+- Use `./.odylith/bin/odylith uninstall --repo-root . --dry-run` only when the
+  operator asks what uninstall would touch, asks for a preview, or asks a
+  scope question before deciding. Do not insert a dry-run as a second
+  confirmation step after a direct uninstall request.
 - For the known 0.1.11 component-register Registry drift, do not recommend
   hand-editing `odylith/registry/source/component_registry.v1.json`. The
   operator-facing answer after 0.1.12 ships is: upgrade, then run

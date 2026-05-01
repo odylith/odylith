@@ -46,7 +46,7 @@
 - If Odylith is not installed yet and no repo-local bootstrap launcher exists, rerun the hosted installer from the repo root instead of cloning a second Odylith checkout:
   `curl -fsSL https://odylith.ai/install.sh | bash`
 - Use `./.odylith/bin/odylith off --repo-root .` and `./.odylith/bin/odylith on --repo-root .` to toggle Odylith guidance for coding agents without removing the runtime. `off` restores default coding-agent behavior for the repo; `on` restores Odylith as the default first path.
-- Use `./.odylith/bin/odylith uninstall --repo-root .` to remove the local `odylith/` product surface, detach repo-root guidance, and preserve `.odylith/` launcher and audit state.
+- Use `./.odylith/bin/odylith uninstall --repo-root .` to preserve the local `odylith/` governed source truth, remove `.odylith/` runtime state, detach repo-root guidance, and leave host configuration directories alone.
 
 ## Repo Integration Contract
 
@@ -158,9 +158,11 @@
 - Poisoned-local-state repair path: `./.odylith/bin/odylith doctor --repo-root . --repair --reset-local-state`
 - Temporary agent-off switch: `./.odylith/bin/odylith off --repo-root .`
 - Re-enable switch: `./.odylith/bin/odylith on --repo-root .`
-- Uninstall removes the consumer repo's visible `odylith/` tree and removes
-  the Odylith block from supported root guidance files such as `AGENTS.md` and
-  `CLAUDE.md`. It preserves hidden `.odylith/` launcher and audit state so the
-  repo can still report version posture or reinstall cleanly.
-- Do not delete hidden `.odylith/` local operational history to "clean" an install.
+- Uninstall preserves the consumer repo's `odylith/` governed source truth,
+  removes repo-local `.odylith/` runtime state, and removes the Odylith block
+  from supported root guidance files such as `AGENTS.md` and `CLAUDE.md`. It
+  leaves host configuration directories such as `.claude/`, `.codex/`, and
+  `.agents/` in place.
+- Do not delete `.claude/`, `.codex/`, or `.agents/` as part of Odylith
+  uninstall; those paths may contain non-Odylith user or enterprise config.
 - Do not ask users to clone Odylith for installation.

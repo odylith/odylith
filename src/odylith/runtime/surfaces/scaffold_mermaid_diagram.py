@@ -233,6 +233,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(str(exc))
         return 1
 
+    owned_surface_refresh.print_dashboard_handoff(
+        surface="atlas",
+        diagram=diagram_id,
+    )
     return 0
 
 

@@ -62,6 +62,7 @@ def test_write_effective_claude_project_settings_writes_byte_stable_json(tmp_pat
         "Bash(./.odylith/bin/odylith codex:*)",
         "Bash(./.odylith/bin/odylith doctor:*)",
         "Bash(./.odylith/bin/odylith show:*)",
+        "Bash(./.odylith/bin/odylith capabilities:*)",
         "Bash(./.odylith/bin/odylith --help:*)",
         "Bash(./.odylith/bin/odylith atlas:*)",
         "Bash(./.odylith/bin/odylith governance:*)",

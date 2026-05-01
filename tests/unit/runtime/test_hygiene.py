@@ -124,6 +124,9 @@ ODYLITH_ASSIST_LABEL = "`Odylith Assist:`"
 ODYLITH_ASSIST_MARKDOWN_LABEL = "`**Odylith Assist:**`"
 ODYLITH_ASSIST_TONE = "crisp, authentic, clear, simple, insightful"
 ODYLITH_ASSIST_MIXED_EVIDENCE = "observed counts, measured deltas, or validation outcomes"
+ODYLITH_ASSIST_DEFAULT_SILENCE = "normal non-passthrough prompts do not get an Assist line by default"
+ODYLITH_ASSIST_NO_FAKE_SUCCESS = "Do not add Assist just because Odylith ran"
+ODYLITH_ASSIST_LEGACY_DEFAULT = "supplies one shared prompt-visible Assist line"
 ODYLITH_ASSIST_USER_WIN = "Lead with the user win"
 ODYLITH_ASSIST_UPDATED_IDS = "updated governance IDs inline"
 ODYLITH_ASSIST_AFFECTED_IDS = "affected governance-contract IDs"
@@ -172,6 +175,8 @@ LEGACY_CONSUMER_CHATTER_FRAGMENTS = (
     "had already degraded earlier",
     "raw repo inspection",
     "live evidence says",
+    "supplies one shared prompt-visible Assist line",
+    "normal non-passthrough prompts get one shared prompt-visible Assist line",
     "Odylith-first guidance is active again.",
     "Odylith-first guidance is now detached.",
     "First grounded turn:",
@@ -416,6 +421,15 @@ def test_odylith_assist_closeout_contract_stays_explicit_across_shared_and_bundl
         ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "odylith-subagent-orchestrator" / "SKILL.md",
         ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "odylith-subagent-router" / "SKILL.md",
     )
+    prompt_visible_contract_paths = {
+        ROOT / "AGENTS.md",
+        ROOT / "odylith" / "AGENTS.md",
+        ROOT / "odylith" / "agents-guidelines" / "GROUNDING_AND_NARROWING.md",
+        ROOT / "src" / "odylith" / "install" / "agents.py",
+        ROOT / "src" / "odylith" / "install" / "bootstrap_assets.py",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "GROUNDING_AND_NARROWING.md",
+    }
     for path in paths:
         normalized = " ".join(path.read_text(encoding="utf-8").split())
         assert ODYLITH_ASSIST_LABEL in normalized, f"closeout Odylith assist label drifted in {path.relative_to(ROOT)}"
@@ -426,6 +440,16 @@ def test_odylith_assist_closeout_contract_stays_explicit_across_shared_and_bundl
         assert ODYLITH_ASSIST_UNGUIDED_PATH in normalized, f"closeout assist delta framing drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_ASSIST_TONE in normalized, f"closeout assist tone drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_ASSIST_MIXED_EVIDENCE in normalized, f"closeout assist evidence rule drifted in {path.relative_to(ROOT)}"
+        if path in prompt_visible_contract_paths:
+            assert ODYLITH_ASSIST_DEFAULT_SILENCE in normalized, (
+                f"default-silent assist rule drifted in {path.relative_to(ROOT)}"
+            )
+            assert ODYLITH_ASSIST_NO_FAKE_SUCCESS in normalized, (
+                f"fake assist suppression rule drifted in {path.relative_to(ROOT)}"
+            )
+        assert ODYLITH_ASSIST_LEGACY_DEFAULT not in normalized, (
+            f"legacy default assist emission remains in {path.relative_to(ROOT)}"
+        )
         assert ODYLITH_AMBIENT_SIGNAL_LABELS in normalized, f"ambient Odylith signal labels drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_SILENCE_RULE in normalized, f"silence rule drifted in {path.relative_to(ROOT)}"
 
@@ -458,6 +482,15 @@ def test_odylith_assist_closeout_contract_stays_explicit_in_maintainer_and_bench
         assert ODYLITH_ASSIST_TONE in normalized, f"maintainer/benchmark closeout assist tone drifted in {path.relative_to(ROOT)}"
         assert ODYLITH_ASSIST_MIXED_EVIDENCE in normalized or "counts, measured deltas, or validation outcomes" in normalized, (
             f"maintainer/benchmark closeout assist evidence rule drifted in {path.relative_to(ROOT)}"
+        )
+        assert ODYLITH_ASSIST_DEFAULT_SILENCE in normalized, (
+            f"maintainer/benchmark default-silent assist rule drifted in {path.relative_to(ROOT)}"
+        )
+        assert ODYLITH_ASSIST_NO_FAKE_SUCCESS in normalized, (
+            f"maintainer/benchmark fake assist suppression rule drifted in {path.relative_to(ROOT)}"
+        )
+        assert ODYLITH_ASSIST_LEGACY_DEFAULT not in normalized, (
+            f"maintainer/benchmark legacy default assist emission remains in {path.relative_to(ROOT)}"
         )
     for path in reference_paths:
         normalized = " ".join(path.read_text(encoding="utf-8").split())
@@ -872,6 +905,7 @@ def test_claude_show_me_route_lock_guidance_stays_in_contract_and_bundle() -> No
         assert "return stdout only, or report the shortest actionable Odylith blocker" in normalized
         assert "Bash(./.odylith/bin/odylith show:*)" in normalized
         assert "Bash(./.odylith/bin/odylith --help:*)" in normalized
+        assert "`odylith capabilities`" in normalized
 
 
 def test_codex_show_me_route_lock_guidance_stays_in_contract_and_bundle() -> None:
@@ -894,6 +928,78 @@ def test_codex_show_me_route_lock_guidance_stays_in_contract_and_bundle() -> Non
         assert "return stdout only, or report the shortest actionable Odylith blocker" in normalized
 
 
+def test_capability_inventory_guidance_uses_product_owned_host_agnostic_command() -> None:
+    paths = (
+        ROOT / "AGENTS.md",
+        ROOT / "odylith" / "AGENTS.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md",
+        ROOT / ".claude" / "CLAUDE.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "project-root" / ".claude" / "CLAUDE.md",
+        ROOT / "odylith" / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md",
+        ROOT / "odylith" / "agents-guidelines" / "CODEX_HOST_CONTRACT.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CODEX_HOST_CONTRACT.md",
+        ROOT / "src" / "odylith" / "install" / "agents.py",
+        ROOT / "src" / "odylith" / "install" / "bootstrap_assets.py",
+    )
+    for path in paths:
+        normalized = " ".join(path.read_text(encoding="utf-8").split())
+        assert "Odylith capabilities" in normalized
+        assert "engines" in normalized
+        assert "`odylith capabilities`" in normalized
+        assert "print stdout only" in normalized
+        assert "host-model" in normalized or "host model" in normalized
+        assert "infer" in normalized and "`odylith --help`" in normalized
+        assert "Claude" in normalized and "Codex" in normalized
+
+
+def test_cli_help_guidance_blocks_plan_command_guess_and_parallel_probe_cancellation() -> None:
+    paths = (
+        ROOT / "AGENTS.md",
+        ROOT / "odylith" / "AGENTS.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md",
+        ROOT / "odylith" / "technical-plans" / "AGENTS.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "technical-plans" / "AGENTS.md",
+        ROOT / ".claude" / "CLAUDE.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "project-root" / ".claude" / "CLAUDE.md",
+        ROOT / "odylith" / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md",
+        ROOT / "odylith" / "agents-guidelines" / "CODEX_HOST_CONTRACT.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CODEX_HOST_CONTRACT.md",
+        ROOT / "src" / "odylith" / "install" / "agents.py",
+        ROOT / "src" / "odylith" / "install" / "bootstrap_assets.py",
+    )
+    for path in paths:
+        normalized = " ".join(path.read_text(encoding="utf-8").split())
+        lowered = normalized.lower()
+        assert "`odylith plan --help`" in lowered
+        assert "read-only" in lowered
+        assert "`odylith/technical-plans/source/`" in lowered
+
+    shared_guidance_paths = (
+        ROOT / "AGENTS.md",
+        ROOT / "odylith" / "AGENTS.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md",
+        ROOT / ".claude" / "CLAUDE.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "project-root" / ".claude" / "CLAUDE.md",
+        ROOT / "odylith" / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md",
+        ROOT / "odylith" / "agents-guidelines" / "CODEX_HOST_CONTRACT.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CODEX_HOST_CONTRACT.md",
+        ROOT / "src" / "odylith" / "install" / "agents.py",
+        ROOT / "src" / "odylith" / "install" / "bootstrap_assets.py",
+    )
+    for path in shared_guidance_paths:
+        normalized = " ".join(path.read_text(encoding="utf-8").split())
+        assert "single authoritative" in normalized
+        assert (
+            "parallel exploratory" in normalized
+            or "parallel filesystem probes" in normalized
+            or "batch that help call" in normalized
+        )
+        assert "cancel the visible help" in normalized
+
+
 def test_uninstall_guidance_rejects_raw_deletion_escape_hatches() -> None:
     paths = (
         ROOT / "odylith" / "agents-guidelines" / "UPGRADE_AND_RECOVERY.md",
@@ -906,6 +1012,7 @@ def test_uninstall_guidance_rejects_raw_deletion_escape_hatches() -> None:
     for path in paths:
         normalized = " ".join(path.read_text(encoding="utf-8").split())
         assert "./.odylith/bin/odylith uninstall --repo-root ." in normalized
+        assert "./.odylith/bin/odylith uninstall --repo-root . --dry-run" in normalized
         assert "rm -rf" in normalized
         assert "shutil.rmtree" in normalized
         assert "hook" in normalized and "bypass" in normalized
@@ -913,9 +1020,16 @@ def test_uninstall_guidance_rejects_raw_deletion_escape_hatches() -> None:
             "without a commit/snapshot preflight" in normalized
             or "do not pause for a commit/snapshot preflight" in normalized
         )
+        assert "preserves repo-local `odylith/` governed source truth" in normalized
+        assert "removes the `.odylith/` runtime state" in normalized
+        assert "detaches odylith-owned claude/codex hook entries" in normalized.lower()
         assert (
-            "preserving `.odylith/` launcher and audit state" in normalized
-            or "preserves `.odylith/` launcher and audit state" in normalized
+            "do not turn `--dry-run` into a second confirmation hop" in normalized.lower()
+            or "do not insert a dry-run as a second confirmation step" in normalized.lower()
+        )
+        assert (
+            "do not ask whether to remove `.claude/`, `.codex/`, or `.agents/`"
+            in normalized.lower()
         )
 
 
@@ -976,6 +1090,33 @@ def test_component_register_recovery_guidance_rejects_registry_json_hand_edits()
         assert "component_registry.v1.json" in normalized, f"Registry manifest path missing in {path.relative_to(ROOT)}"
         assert "doctor --repo-root . --repair" in normalized, f"doctor repair path missing in {path.relative_to(ROOT)}"
         assert "hand-edit" in normalized, f"hand-edit rejection missing in {path.relative_to(ROOT)}"
+
+
+def test_v0_1_12_shared_store_release_notes_are_contract_prep_only() -> None:
+    paths = (
+        ROOT / "odylith" / "runtime" / "source" / "release-notes" / "v0.1.12.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "runtime" / "source" / "release-notes" / "v0.1.12.md",
+    )
+    for path in paths:
+        normalized = " ".join(path.read_text(encoding="utf-8").split())
+        assert "keeps the runtime model repo-local" in normalized, path.relative_to(ROOT)
+        assert "does not add `attach`" in normalized, path.relative_to(ROOT)
+        assert "odylith repos list" in normalized, path.relative_to(ROOT)
+        assert "immutable content-addressed" in normalized, path.relative_to(ROOT)
+
+    b057 = (
+        ROOT
+        / "odylith"
+        / "radar"
+        / "source"
+        / "ideas"
+        / "2026-04"
+        / "2026-04-06-odylith-machine-level-verified-runtime-store-for-cross-repo-reuse.md"
+    ).read_text(encoding="utf-8")
+    normalized_b057 = " ".join(b057.split())
+    assert "v0.1.12 Migration Contract Prep" in b057
+    assert "deliberately does not ship `attach`" in normalized_b057
+    assert "Shared store entries must be immutable" in normalized_b057
 
 
 def test_runtime_hotfile_inventory_stays_explicit_and_non_expanding() -> None:

@@ -178,7 +178,7 @@ def render_welcome_state_html(payload: Mapping[str, Any]) -> str:
     return release_spotlight_html + (
         '<section id="shellWelcomeState" class="welcome-state welcome-state-launchpad" aria-label="Odylith first-run welcome state"'
         f' data-welcome-dismiss-key="{html.escape(dismiss_key, quote=True)}">'
-        '<button id="welcomeDismiss" type="button" class="welcome-shell-dismiss" aria-label="Hide starter guide" title="Hide starter guide">&times;</button>'
+        '<button id="welcomeDismiss" type="button" class="welcome-shell-dismiss" aria-label="Close starter guide" title="Close starter guide">Close</button>'
         '<div class="welcome-guide-shell">'
         '<header class="welcome-guide-header">'
         '<div class="welcome-state-head">'

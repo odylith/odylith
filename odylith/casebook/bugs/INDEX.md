@@ -1,15 +1,16 @@
 # Bug Index
 
-Last updated (UTC): 2026-04-30
+Last updated (UTC): 2026-05-01
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
 | CB-145 | 2026-04-30 | Uninstall requests can be routed to raw deletion that odylith blocks itself | P1 | install | Fixed Pending Release | [2026-04-30-uninstall-requests-can-be-routed-to-raw-deletion-that-odylith-blocks-itself.md](2026-04-30-uninstall-requests-can-be-routed-to-raw-deletion-that-odylith-blocks-itself.md) |
-| CB-143 | 2026-04-30 | Uninstall leaves broken odylith tree behind | P1 | migration-runtime | Open | [2026-04-30-uninstall-leaves-broken-odylith-tree-behind.md](2026-04-30-uninstall-leaves-broken-odylith-tree-behind.md) |
+| CB-143 | 2026-04-30 | Uninstall leaves broken odylith tree behind | P1 | migration-runtime | Fixed Pending Release | [2026-04-30-uninstall-leaves-broken-odylith-tree-behind.md](2026-04-30-uninstall-leaves-broken-odylith-tree-behind.md) |
 | CB-140 | 2026-04-30 | Show output suggests standalone atlas prompt that scaffold rejects | P1 | odylith | Fixed Pending Release | [2026-04-30-show-output-suggests-standalone-atlas-prompt-that-scaffold-rejects.md](2026-04-30-show-output-suggests-standalone-atlas-prompt-that-scaffold-rejects.md) |
 | CB-144 | 2026-04-30 | Intervention visibility fallback leaks internal instructions into claude chat | P1 | governance-intervention-engine | Fixed Pending Release | [2026-04-30-intervention-visibility-fallback-leaks-internal-instructions-into-claude-chat.md](2026-04-30-intervention-visibility-fallback-leaks-internal-instructions-into-claude-chat.md) |
+| CB-146 | 2026-04-30 | Hosted installer misroutes stale uninstall residue and under explains enterprise | P1 | release | Fixed Pending Release | [2026-04-30-hosted-installer-misroutes-stale-uninstall-residue-and-under-explains-enterprise.md](2026-04-30-hosted-installer-misroutes-stale-uninstall-residue-and-under-explains-enterprise.md) |
 | CB-142 | 2026-04-30 | Generated python host assets break consumer ruff lint | P1 | migration-runtime | Fixed Pending Release | [2026-04-30-generated-python-host-assets-break-consumer-ruff-lint.md](2026-04-30-generated-python-host-assets-break-consumer-ruff-lint.md) |
 | CB-139 | 2026-04-30 | First install sync overlap gate leaves first run shell incomplete | P1 | odylith | Fixed Pending Release | [2026-04-30-first-install-sync-overlap-gate-leaves-first-run-shell-incomplete.md](2026-04-30-first-install-sync-overlap-gate-leaves-first-run-shell-incomplete.md) |
 | CB-141 | 2026-04-30 | Component register writes registry entries rejected by validator | P1 | registry | Fixed Pending Release | [2026-04-30-component-register-writes-registry-entries-rejected-by-validator.md](2026-04-30-component-register-writes-registry-entries-rejected-by-validator.md) |

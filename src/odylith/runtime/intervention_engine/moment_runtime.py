@@ -75,7 +75,7 @@ def _novelty_score(
         score += 18
     if kind == "topology":
         score += 12
-    if kind == "invariant":
+    if kind in {"invariant", "write_blocker"}:
         score += 10
     if observation.changed_paths:
         score += 6
@@ -87,7 +87,7 @@ def _novelty_score(
 def _urgency_score(*, fact: GovernanceFact, signal_profile: Mapping[str, Any]) -> int:
     kind = _fact_kind(fact)
     score = 38
-    if kind == "invariant":
+    if kind in {"invariant", "write_blocker"}:
         score += 42
     elif kind == "history":
         score += 26
@@ -97,7 +97,7 @@ def _urgency_score(*, fact: GovernanceFact, signal_profile: Mapping[str, Any]) -
         score += 18
     elif kind == "capture_opportunity":
         score += 14
-    if signal_profile.get("has_bug_hints") and kind in {"history", "invariant"}:
+    if signal_profile.get("has_bug_hints") and kind in {"history", "invariant", "write_blocker"}:
         score += 12
     return _clamp(score)
 
@@ -123,7 +123,7 @@ def _fact_score(
         score += 8
     if observation.assistant_summary:
         score += 4
-    if kind == "invariant":
+    if kind in {"invariant", "write_blocker"}:
         score += 18
     if kind == "history" and signal_profile.get("has_bug_hints"):
         score += 16
@@ -171,7 +171,7 @@ def _support_score(
         evidence_classes=evidence_classes,
         session_memory=session_memory,
     )
-    if _fact_kind(primary) == "governance_truth" and _fact_kind(fact) in {"topology", "history", "invariant"}:
+    if _fact_kind(primary) == "governance_truth" and _fact_kind(fact) in {"topology", "history", "invariant", "write_blocker"}:
         score += 12
     if _fact_kind(primary) == "topology" and _fact_kind(fact) == "governance_truth":
         score += 10
@@ -188,6 +188,8 @@ def _selection_priority(
     evidence_classes: Sequence[str],
 ) -> int:
     kind = _fact_kind(fact)
+    if kind == "write_blocker":
+        return 6
     if kind == "invariant" and signal_profile.get("has_invariant_hints"):
         return 5
     evidence_tokens = {_normalize_token(item) for item in evidence_classes}
@@ -206,7 +208,7 @@ def _selection_priority(
 
 def _moment_kind(*, primary: GovernanceFact, signal_profile: Mapping[str, Any], lookup: Mapping[str, Any]) -> str:
     kind = _fact_kind(primary)
-    if kind == "invariant":
+    if kind in {"invariant", "write_blocker"}:
         return "guardrail"
     if kind == "history":
         return "recovery"
@@ -228,7 +230,7 @@ def _ambient_label_kind(*, moment_kind: str, primary: GovernanceFact) -> str:
         return "risks"
     if moment_kind == "recovery":
         return "history"
-    if _fact_kind(primary) == "invariant":
+    if _fact_kind(primary) in {"invariant", "write_blocker"}:
         return "risks"
     if _fact_kind(primary) == "history":
         return "history"

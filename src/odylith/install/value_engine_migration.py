@@ -214,6 +214,7 @@ def _should_apply_migration(
     target_version: str,
     source_artifacts: Sequence[Path],
     runtime_artifacts: Sequence[Path],
+    value_corpus_present: bool,
     ledger_exists: bool,
 ) -> bool:
     """Return whether the migration still needs to run for this install posture."""
@@ -222,7 +223,11 @@ def _should_apply_migration(
     if _artifact_exists(source_artifacts) or _artifact_exists(runtime_artifacts):
         return True
     if ledger_exists:
+        return not value_corpus_present
+    if not previous_version or not is_before(previous_version, TARGET_VERSION):
         return False
+    if not value_corpus_present:
+        return True
     return not previous_version or is_before(previous_version, TARGET_VERSION)
 
 
@@ -241,11 +246,13 @@ def migrate_visible_intervention_value_engine(
     source_artifacts = _old_source_artifact_paths(repo_root=root)
     runtime_artifacts = _old_runtime_artifact_paths(runtime_root=runtime)
     ledger_path = _ledger_path(repo_root=root)
+    value_corpus_present = (root / VALUE_CORPUS_RELATIVE_PATH).is_file()
     should_run = _should_apply_migration(
         previous_version=previous,
         target_version=target,
         source_artifacts=source_artifacts,
         runtime_artifacts=runtime_artifacts,
+        value_corpus_present=value_corpus_present,
         ledger_exists=ledger_path.is_file(),
     )
     if not should_run:

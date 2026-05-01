@@ -49,8 +49,8 @@ def _shared_checkpoint_bundle() -> dict[str, object]:
             },
         },
         "closeout_bundle": {
-            "markdown_text": "**Odylith Assist:** kept this grounded.",
-            "plain_text": "Odylith Assist: kept this grounded.",
+            "markdown_text": "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract.",
+            "plain_text": "Odylith Assist: B-096 stayed tied to the refreshed intervention contract.",
         },
     }
 
@@ -61,8 +61,8 @@ def test_cross_host_prompt_teaser_rendering_stays_consistent() -> None:
         "candidate": {
             "stage": "teaser",
             "teaser_text": (
-                "Odylith Observation: This turn is already framing a governed proposal. "
-                "Capture the exact governed change while the request is still current."
+                "Odylith Observation: Casebook needs real failure evidence before it writes. "
+                    "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
             ),
         }
     }
@@ -79,7 +79,7 @@ def test_cross_host_prompt_teaser_rendering_stays_consistent() -> None:
     assert codex_text == claude_text
 
 
-def test_cross_host_prompt_submit_system_message_keeps_assist_visible() -> None:
+def test_cross_host_prompt_submit_system_message_stays_quiet_without_feedback() -> None:
     prompt = "Make the intervention visibility path reliable."
     bundle = {
         "observation": {
@@ -106,9 +106,7 @@ def test_cross_host_prompt_submit_system_message_keeps_assist_visible() -> None:
     )
 
     assert codex_text == claude_text
-    assert codex_text == (
-        "**Odylith Assist:** surfaced this visibility issue in normal chat where you can inspect it."
-    )
+    assert codex_text == ""
     assert codex_host_prompt_context.render_codex_prompt_system_message(prompt="Odylith, help.") == ""
     assert claude_host_prompt_teaser.render_prompt_teaser(prompt="Odylith, help.") == ""
 
@@ -122,8 +120,8 @@ def test_cross_host_prompt_cli_payload_stays_consistent_for_same_teaser(
         "candidate": {
             "stage": "teaser",
             "teaser_text": (
-                "Odylith Observation: This turn is already framing a governed proposal. "
-                "Capture the exact governed change while the request is still current."
+                "Odylith Observation: Casebook needs real failure evidence before it writes. "
+                    "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
             ),
         }
     }
@@ -175,14 +173,12 @@ def test_cross_host_prompt_cli_payload_stays_consistent_for_same_teaser(
     assert codex_payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery recovery:")
     assert claude_visible_text in codex_payload["hookSpecificOutput"]["additionalContext"]
     assert codex_payload["systemMessage"] == claude_visible_text
-    assert claude_visible_text.rstrip().endswith(
-        "**Odylith Assist:** surfaced this visibility issue in normal chat where you can inspect it."
-    )
+    assert "**Odylith Assist:**" not in claude_visible_text
     assert not claude_visible_text.lstrip().startswith("{")
     codex_events = stream_state.load_recent_intervention_events(
         repo_root=tmp_path,
     )
-    assert any(row.get("kind") == "assist_closeout" for row in codex_events)
+    assert not any(row.get("kind") == "assist_closeout" for row in codex_events)
 
 
 def test_cross_host_checkpoint_cli_dispatch_stays_silent_for_successful_checkpoints(
@@ -285,8 +281,8 @@ def test_cross_host_stop_rendering_stays_consistent_for_same_bundle(tmp_path: Pa
             "proposal": {"eligible": False, "suppressed_reason": ""},
         },
         "closeout_bundle": {
-            "markdown_text": "**Odylith Assist:** kept this grounded.",
-            "plain_text": "Odylith Assist: kept this grounded.",
+            "markdown_text": "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract.",
+            "plain_text": "Odylith Assist: B-096 stayed tied to the refreshed intervention contract.",
         },
     }
 

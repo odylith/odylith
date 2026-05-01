@@ -104,10 +104,11 @@ always-on first path for grounded turns.
 ./.odylith/bin/odylith uninstall --repo-root .
 ```
 
-That removes the local `odylith/` product surface and detaches Odylith blocks
-from supported repo-root guidance files such as `AGENTS.md` and `CLAUDE.md`.
-It preserves `.odylith/` launcher and audit state so the lifecycle command can
-finish cleanly. Do not uninstall with raw `rm` or Python deletion.
+That preserves the local `odylith/` governed source truth, removes
+`.odylith/` local runtime state, and detaches Odylith blocks from supported
+repo-root guidance files such as `AGENTS.md` and `CLAUDE.md`. It does not
+remove host configuration directories such as `.claude/`, `.codex/`, or
+`.agents/`. Do not uninstall with raw `rm` or Python deletion.
 
 ## What does Odylith own in this repository?
 

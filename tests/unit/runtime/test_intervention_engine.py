@@ -19,6 +19,12 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
 """
+_PREACTION_BLOCKER_PROMPT = (
+    "Capture a Casebook bug for TODO in file. "
+    "Evidence: <paste failing command and error>"
+)
+_COMPONENT_PROPOSAL_PROMPT = "Harden governance intervention visibility with topology proof."
+_PROPOSAL_PROMPT = "Implement B-321 governed intervention update with topology and proposal."
 
 
 def _seed_repo(root: Path) -> None:
@@ -133,14 +139,15 @@ def test_prompt_only_bundle_stays_teaser_and_holds_voice_contract(tmp_path: Path
             host_family="codex",
             turn_phase="prompt_submit",
             session_id="session-1",
-            prompt_excerpt="Design a conversation observation engine with governed proposal flow and human voice.",
+            prompt_excerpt=_PREACTION_BLOCKER_PROMPT,
         ),
     )
 
     assert bundle["candidate"]["stage"] == "teaser"
     assert bundle["candidate"]["teaser_text"].startswith("Odylith Observation:")
-    assert "This turn is already framing a governed proposal." in bundle["candidate"]["teaser_text"]
-    assert "Capture the exact governed change while the request is still current." in bundle["candidate"]["teaser_text"]
+    assert "Casebook needs real failure evidence before it writes." in bundle["candidate"]["teaser_text"]
+    assert "placeholder" in bundle["candidate"]["teaser_text"]
+    assert "This turn is already" not in bundle["candidate"]["teaser_text"]
     assert "Odylith is tracking this signal" not in bundle["candidate"]["teaser_text"]
     assert "One more corroborating signal" not in bundle["candidate"]["teaser_text"]
     assert bundle["candidate"]["markdown_text"] == ""
@@ -374,8 +381,9 @@ def test_changed_paths_and_prompt_upgrade_to_card_and_rendered_proposal(tmp_path
             host_family="codex",
             turn_phase="post_bash_checkpoint",
             session_id="session-2",
-            prompt_excerpt="Design a conversation observation engine with governed proposal flow and human voice.",
+            prompt_excerpt=_COMPONENT_PROPOSAL_PROMPT,
             changed_paths=["src/odylith/runtime/intervention_engine/engine.py"],
+            components=["governance-intervention-engine"],
         ),
     )
 
@@ -434,7 +442,7 @@ def test_cross_host_core_keeps_observation_and_proposal_content_consistent(tmp_p
     base = {
         "turn_phase": "post_edit_checkpoint",
         "session_id": "session-3",
-        "prompt_excerpt": "Design a conversation observation engine with governed proposal flow and human voice.",
+        "prompt_excerpt": _PROPOSAL_PROMPT,
         "changed_paths": ["src/odylith/runtime/intervention_engine/apply.py"],
     }
 
@@ -458,7 +466,7 @@ def test_cross_lane_core_keeps_observation_and_proposal_content_consistent(tmp_p
         "host_family": "codex",
         "turn_phase": "post_bash_checkpoint",
         "session_id": "session-3b",
-        "prompt_excerpt": "Design a conversation observation engine with governed proposal flow and human voice.",
+        "prompt_excerpt": _PROPOSAL_PROMPT,
         "changed_paths": ["src/odylith/runtime/intervention_engine/voice.py"],
     }
 
@@ -489,7 +497,7 @@ def test_render_blocks_requires_a_full_observation_before_showing_proposal(tmp_p
             host_family="claude",
             turn_phase="prompt_submit",
             session_id="session-4",
-            prompt_excerpt="Design a conversation observation engine with governed proposal flow and human voice.",
+            prompt_excerpt=_PREACTION_BLOCKER_PROMPT,
         ),
     )
 
@@ -504,8 +512,8 @@ def test_stop_summary_can_emit_observation_before_proposal_is_ready(tmp_path: Pa
             host_family="claude",
             turn_phase="stop_summary",
             session_id="session-observation-only",
-            prompt_excerpt="Design a conversation observation engine with governed proposal flow and human voice.",
-            assistant_summary="The conversation is leaning into governance, topology, and owned boundaries.",
+            prompt_excerpt=_PREACTION_BLOCKER_PROMPT,
+            assistant_summary="The prompt still contains placeholder failure evidence.",
         ),
     )
 
@@ -565,7 +573,7 @@ def test_render_blocks_preserve_multiline_markdown_and_heading_order(tmp_path: P
             host_family="claude",
             turn_phase="post_edit_checkpoint",
             session_id="session-4b",
-            prompt_excerpt="Design a conversation observation engine with governed proposal flow and human voice.",
+            prompt_excerpt=_PROPOSAL_PROMPT,
             changed_paths=["src/odylith/runtime/intervention_engine/voice.py"],
         ),
     )
@@ -587,7 +595,7 @@ def test_append_bundle_events_preserve_rich_markdown_in_stream(tmp_path: Path) -
             host_family="codex",
             turn_phase="post_bash_checkpoint",
             session_id="session-4c",
-            prompt_excerpt="Design a conversation observation engine with governed proposal flow and human voice.",
+            prompt_excerpt=_PROPOSAL_PROMPT,
             changed_paths=["src/odylith/runtime/intervention_engine/surface_runtime.py"],
         ),
     )
@@ -603,9 +611,7 @@ def test_append_bundle_events_preserve_rich_markdown_in_stream(tmp_path: Path) -
     assert proposal["display_markdown"].startswith("-----\nOdylith Proposal: ")
     assert proposal["display_markdown"].count("-----") >= 2
     assert "\n- Radar:" in proposal["display_markdown"]
-    assert proposal["prompt_excerpt"] == (
-        "Design a conversation observation engine with governed proposal flow and human voice."
-    )
+    assert proposal["prompt_excerpt"] == _PROPOSAL_PROMPT
 
 
 def test_bundle_events_drive_pending_proposal_state_until_apply(tmp_path: Path) -> None:
@@ -616,7 +622,7 @@ def test_bundle_events_drive_pending_proposal_state_until_apply(tmp_path: Path) 
             host_family="claude",
             turn_phase="post_edit_checkpoint",
             session_id="session-5",
-            prompt_excerpt="Design a conversation observation engine with governed proposal flow and human voice.",
+            prompt_excerpt=_PROPOSAL_PROMPT,
             changed_paths=["src/odylith/runtime/intervention_engine/contract.py"],
         ),
     )
@@ -632,9 +638,7 @@ def test_bundle_events_drive_pending_proposal_state_until_apply(tmp_path: Path) 
     assert pending["pending_count"] == 1
     assert pending["pending"][0]["confirmation_text"] == "apply this proposal"
     assert pending["pending"][0]["proposal_status"] == "pending"
-    assert pending["pending"][0]["prompt_excerpt"] == (
-        "Design a conversation observation engine with governed proposal flow and human voice."
-    )
+    assert pending["pending"][0]["prompt_excerpt"] == _PROPOSAL_PROMPT
     assert pending["pending"][0]["moment_kind"] in {"capture", "boundary", "continuation", "ownership"}
     assert pending["pending"][0]["semantic_signature"]
     assert pending["pending"][0]["display_markdown"].startswith("-----\nOdylith Proposal: ")
@@ -850,7 +854,7 @@ def test_capture_proposed_event_uses_human_summary_instead_of_pending_placeholde
             host_family="claude",
             turn_phase="post_edit_checkpoint",
             session_id="session-human-summary",
-            prompt_excerpt="Map the topology and governance boundary for this runtime slice.",
+            prompt_excerpt=_PROPOSAL_PROMPT,
             changed_paths=["src/odylith/runtime/intervention_engine/engine.py"],
         ),
     )
@@ -881,7 +885,7 @@ def test_preview_only_proposal_keeps_status_centralized_and_drops_inline_boilerp
             host_family="codex",
             turn_phase="post_edit_checkpoint",
             session_id="session-6b",
-            prompt_excerpt="Map the topology and governance boundary for this runtime slice.",
+            prompt_excerpt=_PROPOSAL_PROMPT,
             changed_paths=["src/odylith/runtime/intervention_engine/engine.py"],
         ),
     )

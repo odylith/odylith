@@ -30,6 +30,7 @@ _AGENTS_MAX_THREADS = 6
 _AGENTS_MAX_DEPTH = 1
 _CODEX_CHECKPOINT_MATCHER_TOKENS: tuple[str, ...] = ("Bash",)
 _CODEX_HOST_LAUNCHER_INVOCATION = "python3 ./.agents/bin/odylith-host-launcher.py"
+_ODYLITH_HOOK_COMMAND_TOKENS: tuple[str, ...] = ("odylith-host-launcher.py",)
 
 
 @dataclass(frozen=True)
@@ -475,4 +476,18 @@ def write_effective_codex_hooks(*, repo_root: Path | str) -> Path:
     merged = host_project_settings.merge_hook_map(existing, odylith_payload)
     if isinstance(merged, dict):
         host_project_settings.atomic_write_json_object(target_path, merged)
+    return target_path
+
+
+def deactivate_codex_project_hooks(*, repo_root: Path | str) -> Path:
+    resolved_root = _resolve_repo_root(repo_root)
+    target_path = resolved_root / ".codex" / "hooks.json"
+    if target_path.parent.is_symlink():
+        return target_path
+    existing = host_project_settings.load_json_object_for_update(target_path)
+    if existing is None:
+        return target_path
+    scrubbed, changed = host_project_settings.remove_hook_commands(existing, _ODYLITH_HOOK_COMMAND_TOKENS)
+    if changed and isinstance(scrubbed, dict):
+        host_project_settings.atomic_write_json_object(target_path, scrubbed)
     return target_path

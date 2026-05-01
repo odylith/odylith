@@ -29,8 +29,9 @@ _APP_READY_TEACHING = (
     "Mental model: Registry names ownership, Radar tracks delivery, Atlas explains shape, "
     "and Casebook captures bugs; Odylith proposes them only from app-source evidence."
 )
+_CHEATSHEET_HINT = "For more examples, open `odylith/index.html` and use the Cheatsheet."
 _SCENARIO_TEACHING = {
-    "empty": "Odylith is staying quiet because there is no app-source evidence yet; point it at the first path or feature you want governed.",
+    "empty": "Odylith did not find app-source evidence yet, so it will not invent records. Open `odylith/index.html` and start with the Cheatsheet, or name the first path or feature you want governed.",
     "metadata-only": "Manifests identify the stack, but they are not an ownership boundary; name a path or feature when you are ready.",
     "docs-only": "Docs are useful context, but Odylith will not turn documentation alone into governance records.",
     "managed-only": "Odylith-managed files belong to Odylith, not your app, so they are ignored as boundary evidence.",
@@ -370,6 +371,9 @@ def format_text(result: ShowResult) -> str:
     teaching = _scenario_teaching_line(scenario)
     if teaching:
         lines.append(teaching)
+    cheatsheet_hint = _scenario_cheatsheet_hint(scenario)
+    if cheatsheet_hint:
+        lines.append(cheatsheet_hint)
     summary = _creation_summary(result)
     if summary:
         lines.append(f"It found {summary} it can create from this scan. Nothing changed yet.")
@@ -509,6 +513,12 @@ def _scenario_teaching_line(scenario: str) -> str:
     if scenario == "app-ready":
         return _APP_READY_TEACHING
     return _SCENARIO_TEACHING.get(scenario, "")
+
+
+def _scenario_cheatsheet_hint(scenario: str) -> str:
+    if scenario == "empty":
+        return ""
+    return _CHEATSHEET_HINT
 
 
 def _effective_app_modules(result: ShowResult) -> int:
@@ -689,6 +699,7 @@ def format_json(result: ShowResult) -> str:
         },
         "scenario": scenario,
         "teaching": _scenario_teaching_line(scenario),
+        "cheatsheet_hint": _scenario_cheatsheet_hint(scenario),
         "next_prompt": _next_prompt(result),
         "total_modules": result.total_modules,
         "app_modules": result.app_modules,

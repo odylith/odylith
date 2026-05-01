@@ -107,6 +107,16 @@ def _passthrough_route_lock_context(kind: str) -> str:
             "capture stdout only: `./.odylith/bin/odylith --help`; `odylith --help`. "
             "Return that stdout directly."
         )
+    if kind == "capabilities":
+        return (
+            "Odylith Codex capability-inventory route lock: this prompt asks for "
+            "Odylith's product-owned capabilities, engines, and architecture map. "
+            "Do not infer the taxonomy from `odylith --help`, `odylith show`, Codex "
+            "tools, skills, local files, or generic host capability prose. Run the "
+            "first command that works from the repo root and capture stdout only: "
+            "`./.odylith/bin/odylith capabilities --repo-root .`; "
+            "`odylith capabilities --repo-root .`. Return that stdout directly."
+        )
     return ""
 
 

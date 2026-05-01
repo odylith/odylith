@@ -195,14 +195,16 @@ _SCENARIOS: tuple[DestructiveWriteScenario, ...] = (
     ),
     DestructiveWriteScenario(
         scenario_id="uninstall.customer-odylith-tree",
-        surface="odylith/",
+        surface=".odylith/, repo-root Odylith guidance blocks, and host hook settings",
         lifecycle_paths=("uninstall",),
-        data_at_risk="repo-owned Odylith governance truth and external files reachable through a linked odylith/ path",
-        unsafe_failure_mode="leave broken dashboard surfaces after uninstall or follow a linked odylith/ target during removal",
-        required_guardrail="uninstall detaches root guidance, removes the repo-local odylith/ entry, preserves .odylith audit/runtime state, and unlinks odylith/ symlinks without following them",
+        data_at_risk="repo-owned Odylith governance truth, runtime state, and external files reachable through linked Odylith paths",
+        unsafe_failure_mode="delete governed odylith/ truth, leave runtime state behind, follow linked runtime targets during removal, or keep host hooks calling a removed launcher",
+        required_guardrail="uninstall detaches root guidance and Odylith host hook entries, preserves repo-local odylith/ governed source truth, removes .odylith/ runtime state with late-hook retry tolerance, and unlinks symlinked .odylith/ without following it",
         proof_markers=(
-            "test_uninstall_bundle_detaches_and_removes_customer_odylith_tree",
-            "test_uninstall_bundle_unlinks_symlinked_odylith_without_following_target",
+            "test_uninstall_bundle_detaches_and_preserves_customer_odylith_tree",
+            "test_uninstall_bundle_retries_late_state_writes_from_active_hooks",
+            "test_uninstall_bundle_preserves_symlinked_odylith_without_following_target",
+            "test_uninstall_bundle_unlinks_symlinked_state_root_without_following_target",
         ),
     ),
     DestructiveWriteScenario(

@@ -685,6 +685,7 @@
   min-width: 0;
   align-content: start;
   margin: 0;
+  padding-right: 104px;
 }
 
 .upgrade-spotlight-meta-row {
@@ -794,26 +795,38 @@
   top: 18px;
   right: 18px;
   z-index: 2;
-  width: 42px;
-  height: 42px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 88px;
+  height: 38px;
+  border: 1px solid rgba(165, 196, 235, 0.9);
   border-radius: 999px;
-  padding: 0;
-  background: rgba(255, 255, 255, 0.92);
+  padding: 0 14px 0 12px;
+  background: #eef7ff;
   color: #143e7a;
-  display: grid;
-  place-items: center;
   font: inherit;
-  font-size: 26px;
+  font-size: 13px;
   font-weight: 800;
   line-height: 1;
+  letter-spacing: 0;
   cursor: pointer;
-  box-shadow: 0 14px 28px rgba(10, 24, 45, 0.14);
+  box-shadow: 0 14px 28px rgba(10, 24, 45, 0.18);
+}
+
+.upgrade-spotlight-dismiss::before {
+  content: "\00d7";
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  transform: translateY(-1px);
 }
 
 .upgrade-spotlight-dismiss:hover,
 .upgrade-spotlight-dismiss:focus-visible {
-  background: #ffffff;
+  border-color: rgba(128, 171, 224, 0.98);
+  background: #ddecff;
   color: #0f3467;
   transform: scale(1.02);
 }
@@ -861,25 +874,39 @@
   top: 16px;
   right: 16px;
   z-index: 2;
-  display: inline-grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border: 1px solid rgba(199, 214, 233, 0.96);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 84px;
+  height: 36px;
+  padding: 0 13px 0 11px;
+  border: 1px solid rgba(105, 151, 204, 0.82);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.88);
-  color: #4c6783;
+  background: #edf6ff;
+  color: #1e527e;
   font: inherit;
-  font-size: 22px;
+  font-size: 13px;
+  font-weight: 800;
   line-height: 1;
+  letter-spacing: 0;
   cursor: pointer;
-  box-shadow: 0 8px 18px rgba(31, 56, 94, 0.08);
+  box-shadow: 0 10px 22px rgba(31, 86, 148, 0.14);
+}
+
+.welcome-shell-dismiss::before {
+  content: "\00d7";
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  transform: translateY(-1px);
 }
 
 .welcome-shell-dismiss:hover,
 .welcome-shell-dismiss:focus-visible {
-  background: rgba(255, 255, 255, 0.98);
-  color: #25476f;
+  border-color: rgba(93, 143, 199, 0.96);
+  background: #deefff;
+  color: #133f68;
 }
 
 .welcome-shell-dismiss:focus-visible {
@@ -1442,7 +1469,7 @@
 
   .upgrade-spotlight {
     grid-template-columns: minmax(0, 1fr);
-    padding: 20px;
+    padding: 58px 20px 20px;
   }
 
   .upgrade-spotlight-title {
@@ -1467,11 +1494,11 @@
   }
 
   .welcome-launchpad-shell {
-    padding-right: 0;
+    padding-right: 96px;
   }
 
   .welcome-guide-shell {
-    padding-right: 0;
+    padding-right: 96px;
   }
 
   .welcome-guide-header {
@@ -1510,19 +1537,25 @@
     inset: 8px 8px auto calc(8px + var(--brief-handle-width) + 8px);
     max-width: calc(100% - (var(--brief-handle-width) + 24px));
     max-height: calc(100% - 16px);
-    padding: 12px;
+    padding: 54px 12px 12px;
     border-radius: 24px;
   }
 
   .welcome-shell-dismiss {
-    top: 8px;
-    right: 8px;
-    width: 32px;
-    height: 32px;
+    top: 10px;
+    right: 10px;
+    min-width: 78px;
+    height: 34px;
+    padding: 0 11px 0 10px;
   }
 
   .welcome-launchpad-shell {
+    padding-right: 0;
     gap: 12px;
+  }
+
+  .welcome-guide-shell {
+    padding-right: 0;
   }
 
   .welcome-launchpad-hero,

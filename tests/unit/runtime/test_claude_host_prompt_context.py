@@ -96,8 +96,7 @@ def test_claude_prompt_system_message_replays_pending_chat_block(tmp_path: Path)
     )
 
     assert rendered == (
-        "---\n\n**Odylith Observation:** Claude prompt must carry this pending block.\n\n---\n\n"
-        "**Odylith Assist:** surfaced this visibility issue in normal chat where you can inspect it."
+        "---\n\n**Odylith Observation:** Claude prompt must carry this pending block.\n\n---"
     )
 
 
@@ -161,8 +160,7 @@ def test_claude_prompt_system_message_prefers_pending_ambient_history_over_obser
         "**Odylith History:** Claude prompt should surface this branded ambient beat first.\n"
         "\n"
         "**Odylith Observation:** Claude prompt should not hide the stronger ambient beat.\n"
-        "\n---\n\n"
-        "**Odylith Assist:** surfaced this visibility issue in normal chat where you can inspect it."
+        "\n---"
     )
 
 
@@ -268,8 +266,8 @@ def test_main_keeps_teaser_in_discreet_prompt_context_when_signal_is_real(
                 "candidate": {
                     "stage": "teaser",
                     "teaser_text": (
-                        "Odylith Observation: This turn is already framing a governed proposal. "
-                        "Why it matters: Capture the exact governed change while the request is still current."
+                        "Odylith Observation: Casebook needs real failure evidence before it writes. "
+            "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
                     ),
                 }
             }
@@ -306,8 +304,8 @@ def test_prompt_teaser_main_prints_plain_best_effort_teaser_text(
                 "candidate": {
                     "stage": "teaser",
                     "teaser_text": (
-                        "Odylith Observation: This turn is already framing a governed proposal. "
-                        "Why it matters: Capture the exact governed change while the request is still current."
+                        "Odylith Observation: Casebook needs real failure evidence before it writes. "
+            "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
                     ),
                 }
             }
@@ -319,8 +317,7 @@ def test_prompt_teaser_main_prints_plain_best_effort_teaser_text(
     assert exit_code == 0
     output = capsys.readouterr().out
     assert output.startswith(f"{surface_runtime.LIVE_BOUNDARY}\n\nOdylith Observation:")
-    assert "\n---\n\n**Odylith Assist:** surfaced this visibility issue" in output
-    assert output.rstrip().rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
+    assert "**Odylith Assist:**" not in output
     assert not output.lstrip().startswith("{")
 
 
@@ -365,9 +362,7 @@ def test_main_confirms_visible_prompt_replay_from_last_assistant_message(
     exit_code = claude_host_prompt_context.main(["--repo-root", str(tmp_path)])
 
     assert exit_code == 0
-    payload = json.loads(capsys.readouterr().out)
-    assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
-    assert "**Odylith Assist:** surfaced this visibility issue" in payload["hookSpecificOutput"]["additionalContext"]
+    assert capsys.readouterr().out == ""
     snapshot = delivery_ledger.delivery_snapshot(
         repo_root=tmp_path,
         host_family="claude",

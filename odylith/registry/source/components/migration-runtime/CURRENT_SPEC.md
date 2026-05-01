@@ -61,10 +61,10 @@ contract.
   product-tree targets. Install, upgrade, reinstall, and repair must skip those
   writes instead of following external dotfile-manager or enterprise-managed
   paths.
-- `uninstall` removes the repo-local `odylith/` tree after detaching root
-  guidance, but preserves `.odylith/` runtime state for the launcher and audit
-  trail. If `odylith/` is a symlink, uninstall must unlink it without following
-  the external target.
+- `uninstall` preserves the repo-local `odylith/` governed source truth,
+  removes `.odylith/` runtime state after detaching root guidance, and unlinks
+  symlinked `.odylith/` without following the external target. It must not
+  remove `.claude/`, `.codex/`, or `.agents/` as part of Odylith cleanup.
 - Legacy `odyssey` root migration must preflight conflicts before moving or
   deleting either root. If an existing `odylith/` or `.odylith/` path would be
   overwritten or discarded, the migration plan blocks and direct apply raises
@@ -105,8 +105,8 @@ contract.
   `tests/integration/install/test_lifecycle_simulator.py` prove upgrade
   dry-run/apply parity, same-version no-op behavior, migration-required
   fail-closed behavior, rollback retention, failed-smoke recovery, and
-  uninstall removal of the repo-local `odylith/` tree without following
-  symlinked targets.
+  uninstall preservation of the repo-local `odylith/` tree and symlink-safe
+  removal of `.odylith/` runtime state.
 - CLI: `tests/unit/test_cli.py` proves `upgrade --dry-run --json` carries the
   additive migration plan fields and `release migration-gate --json` emits a
   machine-readable gate report.
@@ -133,4 +133,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-27: Added staged-runtime verification evidence to the migration plan contract after the full QA pass exposed false verification-missing blocks in upgrade integration fixtures. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127); Casebook: CB-135)
 - 2026-04-29: Added destructive-write scenario inventory and gate proof after CB-136 showed install could destroy host AI settings under enterprise SSL failure; also blocked legacy root/state conflict overwrites and narrowed `.agents/skills` pruning to known retired Odylith shims. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127); Casebook: CB-136)
 - 2026-04-29: Expanded CB-136 from direct settings overwrite into symlinked host/project managed-asset protection; the release gate now proves 21 destructive-write scenarios, including symlinked `.claude/`, `.codex/`, `.agents/`, `odylith/`, and release-note target paths. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127); Casebook: CB-136)
-- 2026-04-30: Changed consumer uninstall from detach-only to removal of the repo-local `odylith/` tree while preserving `.odylith/` launcher/audit state, with symlink-safe removal proof added to the destructive-write matrix. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127); Casebook: CB-143)
+- 2026-04-30: Corrected consumer uninstall to preserve repo-local `odylith/` governed source truth, remove `.odylith/` runtime state, and leave host config directories in place, with symlink-safe runtime-state proof in the destructive-write matrix. (Plan: [B-140](odylith/radar/radar.html?view=plan&workstream=B-140); Casebook: CB-143)

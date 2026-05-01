@@ -87,6 +87,11 @@ def test_tooling_shell_frontend_contract_loads_cheatsheet_modules() -> None:
     assert "font-weight: var(--surface-identifier-font-weight, 500);" in style_css
     assert ".agent-cheatsheet-search-input" in style_css
     assert ".agent-cheatsheet-empty[hidden]" in style_css
+    assert ".upgrade-spotlight-dismiss::before" in style_css
+    assert ".welcome-shell-dismiss::before" in style_css
+    assert 'content: "\\00d7";' in style_css
+    assert "background: #edf6ff;" in style_css
+    assert "background: #eef7ff;" in style_css
     assert "initToolingShellCheatsheetDrawer" in control_js
     assert 'document.getElementById("agentCheatsheetResults")' in control_js
     assert 'const CASEBOOK_SORT_DEFAULT = "newest";' in control_js

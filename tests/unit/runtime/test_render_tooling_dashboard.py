@@ -261,7 +261,8 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "src/app" not in html
     assert "services/api" not in html
     assert "What Odylith already sees" not in html
-    assert 'aria-label="Hide starter guide"' in html
+    assert 'aria-label="Close starter guide"' in html
+    assert ">Close</button>" in html
     assert "Hide for now" not in html
     assert "Starter Guide" in html
     assert "shellRecoveryDock" in html
@@ -893,6 +894,8 @@ def test_render_tooling_dashboard_shows_release_spotlight_for_recent_upgrade(tmp
     control_js = (tmp_path / "odylith" / "tooling-app.v1.js").read_text(encoding="utf-8")
     assert "upgrade-spotlight-stage" in html
     assert "upgradeSpotlightBackdrop" in html
+    assert 'aria-label="Close release spotlight"' in html
+    assert 'id="upgradeSpotlightDismiss" type="button" class="upgrade-spotlight-dismiss" aria-label="Close release spotlight">Close</button>' in html
     assert '>v1.2.3</h2>' in html
     assert "v1.2.2 -&gt; v1.2.3" in html
     assert "upgrade-spotlight-list" in html

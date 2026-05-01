@@ -119,6 +119,7 @@
       "Bash(./.odylith/bin/odylith context:*)",
       "Bash(./.odylith/bin/odylith query:*)",
       "Bash(./.odylith/bin/odylith show:*)",
+      "Bash(./.odylith/bin/odylith capabilities:*)",
       "Bash(./.odylith/bin/odylith --help:*)",
       "Bash(./.odylith/bin/odylith version:*)",
       "Bash(./.odylith/bin/odylith doctor:*)",

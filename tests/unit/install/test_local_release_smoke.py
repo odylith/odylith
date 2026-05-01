@@ -142,6 +142,7 @@ def test_main_skips_upgrade_cycle_when_previous_release_missing(monkeypatch, tmp
     monkeypatch.setattr(module, "_serve_directory", lambda directory: (_DummyServer(), "http://127.0.0.1:8123"))
     monkeypatch.setattr(module, "_install_and_smoke", lambda **kwargs: events.append("install"))
     monkeypatch.setattr(module, "_upgrade_cycle", lambda **kwargs: events.append("upgrade"))
+    monkeypatch.setattr(module, "_stale_uninstall_residue_cycle", lambda **kwargs: events.append("stale-residue"))
     monkeypatch.setattr(module, "_previous_release_is_published", lambda **kwargs: False)
 
     rc = module.main(["--version", "0.1.6", "--dist-dir", str(dist_dir)])
@@ -168,12 +169,13 @@ def test_main_runs_upgrade_cycle_when_previous_release_exists(monkeypatch, tmp_p
     monkeypatch.setattr(module, "_serve_directory", lambda directory: (_DummyServer(), "http://127.0.0.1:8123"))
     monkeypatch.setattr(module, "_install_and_smoke", lambda **kwargs: events.append("install"))
     monkeypatch.setattr(module, "_upgrade_cycle", lambda **kwargs: events.append("upgrade"))
+    monkeypatch.setattr(module, "_stale_uninstall_residue_cycle", lambda **kwargs: events.append("stale-residue"))
     monkeypatch.setattr(module, "_previous_release_is_published", lambda **kwargs: True)
 
     rc = module.main(["--version", "0.1.6", "--dist-dir", str(dist_dir)])
 
     assert rc == 0
-    assert events == ["install", "upgrade", "shutdown", "server_close"]
+    assert events == ["install", "upgrade", "stale-residue", "shutdown", "server_close"]
 
 
 def test_upgrade_cycle_proves_dashboard_refresh_after_each_target_activation(

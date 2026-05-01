@@ -125,6 +125,63 @@ Add a migration observer to the migration-runtime release gate. It scans changed
 - `migration-observer:0.1.12:browser-surfaces:742e1bb597ab`
 - `migration-observer:0.1.12:install-managed-assets:9431818775c2`
 - `migration-observer:0.1.12:install-managed-assets:d14d06cf271a`
+- `migration-observer:0.1.12:guidance-and-skills:45ea19466ac3`
+- `migration-observer:0.1.12:public-docs-and-release-guidance:5580fec19c37`
+- `migration-observer:0.1.12:browser-surfaces:0e52f13dc5d1`
+- `migration-observer:0.1.12:install-managed-assets:f38b248c4afc`
+- `migration-observer:0.1.12:guidance-and-skills:9fb623126d5e`
+- `migration-observer:0.1.12:operator-cli-contracts:e07ba033e117`
+- `migration-observer:0.1.12:public-docs-and-release-guidance:0f9d169af4a3`
+- `migration-observer:0.1.12:browser-surfaces:5a9b0129e994`
+- `migration-observer:0.1.12:install-managed-assets:06b85aa9c5bf`
+- `migration-observer:0.1.12:public-docs-and-release-guidance:05ba809e75b3`
+- `migration-observer:0.1.12:browser-surfaces:7810e993e4e8`
+- `migration-observer:0.1.12:install-managed-assets:1ab8cfc9a993`
+- `migration-observer:0.1.12:guidance-and-skills:1e990eefbbfb`
+- `migration-observer:0.1.12:operator-cli-contracts:731222452f92`
+- `migration-observer:0.1.12:public-docs-and-release-guidance:4264bcadc26d`
+- `migration-observer:0.1.12:browser-surfaces:74123c981071`
+- `migration-observer:0.1.12:install-managed-assets:2b43ee19c828`
+- `migration-observer:0.1.12:public-docs-and-release-guidance:fa3785ca8bb9`
+- `migration-observer:0.1.12:public-docs-and-release-guidance:619e13200222`
+- `migration-observer:0.1.12:operator-cli-contracts:95bdafb2d9c3`
+- `migration-observer:0.1.12:operator-cli-contracts:b19ea13035eb`
+- `migration-observer:0.1.12:operator-cli-contracts:5623e2b7a652`
+- `migration-observer:0.1.12:operator-cli-contracts:ea9a447849da`
+- `migration-observer:0.1.12:browser-surfaces:12abab7ee27b`
+- `migration-observer:0.1.12:install-managed-assets:d0f5ae9b528d`
+- `migration-observer:0.1.12:browser-surfaces:be89e7d8c73b`
+- `migration-observer:0.1.12:browser-surfaces:3b985886b081`
+- `migration-observer:0.1.12:guidance-and-skills:8bd324eee5c9`
+- `migration-observer:0.1.12:operator-cli-contracts:543527c37b46`
+- `migration-observer:0.1.12:browser-surfaces:78830ddaafa7`
+- `migration-observer:0.1.12:install-managed-assets:fb5694fe0011`
+- `migration-observer:0.1.12:guidance-and-skills:1210067e00a9`
+- `migration-observer:0.1.12:operator-cli-contracts:f9cbe70854c0`
+- `migration-observer:0.1.12:public-docs-and-release-guidance:e94df79bf12e`
+- `migration-observer:0.1.12:browser-surfaces:d199eea3c898`
+- `migration-observer:0.1.12:install-managed-assets:e8fc20ba7fea`
+- `migration-observer:0.1.12:browser-surfaces:ef4035484a1f`
+- `migration-observer:0.1.12:guidance-and-skills:29f7fa1bb934`
+- `migration-observer:0.1.12:operator-cli-contracts:b6b723e0ade6`
+- `migration-observer:0.1.12:browser-surfaces:72c852fe7cc9`
+- `migration-observer:0.1.12:install-managed-assets:5918fe8926c0`
+- `migration-observer:0.1.12:browser-surfaces:3f96348508b6`
+- `migration-observer:0.1.12:browser-surfaces:98854e6093b8`
+- `migration-observer:0.1.12:public-docs-and-release-guidance:84223e1b9464`
+- `migration-observer:0.1.12:browser-surfaces:f8c8cc1cb827`
+- `migration-observer:0.1.12:browser-surfaces:6dfeaacb6c70`
+- `migration-observer:0.1.12:public-docs-and-release-guidance:e54b8d215fa7`
+- `migration-observer:0.1.12:browser-surfaces:de68c95d0f21`
+- `migration-observer:0.1.12:public-docs-and-release-guidance:ce8f131e3fb2`
+- `migration-observer:0.1.12:browser-surfaces:e49d83468c2b`
+- `migration-observer:0.1.12:install-managed-assets:3dfe999afb21`
+- `migration-observer:0.1.12:install-managed-assets:365942f272bd`
+- `migration-observer:0.1.12:install-managed-assets:0a6693568dcf`
+- `migration-observer:0.1.12:install-managed-assets:b4e1e9bc8f82`
+- `migration-observer:0.1.12:operator-cli-contracts:c6e13f7283c5`
+- `migration-observer:0.1.12:operator-cli-contracts:40e56321befd`
+- `migration-observer:0.1.12:operator-cli-contracts:0be705679685`
 
 ## 0.1.12 Upgrade Assessment
 - First-run install and sync overlap: existing 0.1.11 consumer repos can safely
@@ -196,19 +253,53 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   "waiting-for-chat" instead of `chat_visible_proof`, `unproven_this_session`,
   `ledger_visible_unconfirmed`, transcript-confirmation wording, or
   `systemMessage`/`additionalContext` internals.
-- Uninstall recovery: `odylith uninstall` now removes the visible repo-local
-  `odylith/` tree instead of leaving stale or empty dashboard files behind.
-  It keeps `.odylith/` launcher and audit state so the repo can still report
-  version posture or reinstall cleanly, and symlink proof confirms it unlinks
-  a linked `odylith/` path without following the target.
+- Uninstall recovery: `odylith uninstall` now preserves the repo-local
+  `odylith/` governed truth tree, detaches root guidance, removes `.odylith/`
+  local runtime state, and removes Odylith-owned Claude/Codex hook entries
+  from host project settings before deleting the launcher. The removal path
+  tolerates late hook writes under `.odylith/`, and the host launcher now
+  silently no-ops when an already-open host fires after a clean uninstall.
+  Symlink proof confirms uninstall preserves linked `odylith/` targets and
+  unlinks linked `.odylith/` state roots without following them.
 - Uninstall request routing: Claude and Codex managed bash guards now allow the
   supported `./.odylith/bin/odylith uninstall --repo-root .` lifecycle command
   while blocking raw shell or Python removal of Odylith-managed paths with a
-  message that points back to uninstall. Existing consumer repos need an
-  upgrade to receive the patched managed host assets; until then, operators
-  should type the uninstall command explicitly and reject `rm -rf`,
+  message that points back to uninstall and says host directories such as
+  `.claude/`, `.codex/`, and `.agents/` stay in place. Existing consumer repos
+  need an upgrade to receive the patched managed host assets; until then,
+  operators should type the uninstall command explicitly and reject `rm -rf`,
   `shutil.rmtree`, hook-bypass guidance, commit/snapshot preflights, second
-  confirmation detours, or claims that uninstall removes `.odylith/`.
+  confirmation detours, or offers to remove host config directories.
+- Hosted install same-version repair: 0.1.12 hosted install now treats an
+  already-current repo as a compact install repair path instead of invoking the
+  upgrade planner, so stale but valid migration ledgers that point at missing
+  Odylith-owned value-engine corpus files are repaired without dumping an
+  upgrade plan. Malformed migration ledgers still block as corruption, but the
+  compact install path reports the problem without a Python traceback.
+- Technical-plan help routing: `odylith plan --help` is now a read-only command
+  guide that points to `odylith governance ...` and `odylith validate plan-* ...`
+  instead of failing as an invalid top-level command. Managed Codex and Claude
+  guidance now says help discovery should run one authoritative help command
+  before exploratory filesystem probes, and it names the real
+  `odylith/technical-plans/{in-progress,done,parked}/` layout instead of the
+  nonexistent `odylith/technical-plans/source/` path. Existing consumer repos
+  only need the 0.1.12 runtime/assets upgrade; no repo truth migration is
+  required.
+- Capability and engine inventory route: 0.1.12 adds the read-only
+  `odylith capabilities` product inventory so prompts such as "list all
+  Odylith capabilities and engines" return the host-model-agnostic product
+  taxonomy instead of a thin `odylith --help` command list or Claude/Codex
+  host capability prose. The inventory explicitly covers Analysis Engine,
+  Governance Engine, Delivery Intelligence, Tribunal, Reasoning Engine, Proof
+  State, Memory Substrate, Subagent Router/Orchestrator, lifecycle, trust,
+  governed surfaces, and host adapters. Existing consumer repos need no
+  source-truth migration; upgrading the managed runtime and bundled
+  Claude/Codex guidance is sufficient. Migration observer markers:
+  `migration-observer:0.1.12:guidance-and-skills:04a9b592880f`,
+  `migration-observer:0.1.12:operator-cli-contracts:aa6affcce29e`,
+  `migration-observer:0.1.12:public-docs-and-release-guidance:02ffa6495e36`,
+  `migration-observer:0.1.12:browser-surfaces:af51fa1e4800`,
+  `migration-observer:0.1.12:install-managed-assets:6915afe65bb3`.
 - Release guidance: operators upgrading from 0.1.11 should run
   `./.odylith/bin/odylith doctor --repo-root . --repair` after upgrading when
   they have existing Registry records from `component register` or missing
@@ -239,6 +330,45 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   transcript. Explicit CLI `--dry-run` and `--verbose` remain the detailed
   safety/debug lanes, so maintainers keep observability without making the
   default installer feel like an internal migration trace.
+- Final 2026-04-30 release hardening sweep: the remaining changed
+  public-doc/release-note, browser-surface, and install-managed-asset
+  fingerprints are covered by the same upgrade posture. Existing consumer
+  repos do not need a repo-truth migration; upgrade/repair brings the compact
+  hosted install route, stale-residue repair, enterprise fetch diagnostics,
+  refreshed dashboards, and bundled host/guidance assets. The release gate
+  remains the proof boundary: if these fingerprints change again, the
+  observer must produce new markers and this assessment must be revisited.
+- Uninstall scope preview: 0.1.12 adds `odylith uninstall --dry-run` as the
+  non-mutating answer to "what would uninstall touch?" The actual uninstall
+  command stays a single lifecycle command, removes `.odylith/` runtime state
+  and launcher files, detaches root guidance blocks, removes Odylith-owned
+  hook entries from Claude/Codex project settings, and preserves the repo-owned
+  `odylith/` governed truth plus host config directories. Claude and Codex
+  managed guard text now routes raw deletion attempts back to the lifecycle
+  command and names the dry-run preview only for scope questions.
+- Shared runtime store deferral: v0.1.12 remains repo-local at runtime. It does
+  not introduce `attach`, machine-global store paths, `odylith repos list`,
+  shared runtime materialization, hardlink/reflink reuse, or other user-facing
+  shared-store behavior. The only migration-prep change is read-only evidence:
+  installs keep version/platform/release digest, feature-pack, trust-receipt,
+  active-runtime-root, and activation-history data that a later dedicated
+  immutable content-addressed store migration can verify. Existing consumer
+  repos need no migration for this deferral; normal upgrade brings the helper
+  and release-note language with the managed runtime and bundled assets.
+- Upgrade transcript hygiene: normal 0.1.12 upgrade/migration output now keeps
+  the operator path compact: verified release prep, activation result,
+  dashboard refresh, report path, and rollback command. The full lifecycle
+  plan, migration ledger, asset digests, destructive-write matrix, and Compass
+  stage timings remain available through `--verbose`, `--dry-run`, `--json`,
+  and the written upgrade report. Existing consumer repos need no data
+  migration; this changes only CLI transcript shape and keeps automation JSON
+  stable.
+- Browser auto-open opt-out clarity: compact install output now makes inherited
+  `ODYLITH_NO_BROWSER` visible as the reason auto-open was skipped, prints the
+  exact local `odylith/index.html` path, and tells operators to unset the
+  variable for the next install. Existing consumer repos need no migration; the
+  change only improves the default transcript for shells where the opt-out
+  leaked from earlier local testing.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.

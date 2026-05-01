@@ -9,10 +9,10 @@
     "empty_reasons": [],
     "explicit_event_count": 112,
     "mapped_workstream_evidence_count": 91,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 31,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 112
+    "timeline_event_count": 113
   },
   "name": "Governance Intervention Engine",
   "path_prefixes": [
@@ -37,6 +37,33 @@
   ],
   "spec_ref": "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "claude/settings.json",
+        "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md",
+        "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+        "odylith/agents-guidelines/UPGRADE_AND_RECOVERY.md",
+        "src/odylith/bundle/assets/project-root/.claude/settings.json",
+        "src/odylith/runtime/common/claude_cli_capabilities.py",
+        "src/odylith/runtime/common/codex_cli_capabilities.py",
+        "src/odylith/runtime/intervention_engine/conversation_closeout.py",
+        "src/odylith/runtime/intervention_engine/fact_producer_runtime.py",
+        "src/odylith/runtime/intervention_engine/moment_runtime.py",
+        "src/odylith/runtime/intervention_engine/proposal_action_selection.py",
+        "src/odylith/runtime/surfaces/codex_host_prompt_context.py"
+      ],
+      "confidence": "high",
+      "event_index": 397,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "governance-intervention-engine"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: claude/settings.json, odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md +10 more",
+      "ts_iso": "2026-04-30T22:22:38-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "src/odylith/runtime/governance/surface_refresh_fingerprint_dag.py",

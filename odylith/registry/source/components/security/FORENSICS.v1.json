@@ -26,18 +26,20 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/components/security/CURRENT_SPEC.md"
+        "src/odylith/install/release_assets.py",
+        "src/odylith/install/runtime.py",
+        "src/odylith/install/runtime_integrity.py"
       ],
       "confidence": "high",
-      "event_index": 400,
+      "event_index": 404,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "security"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/security/CURRENT_SPEC.md",
-      "ts_iso": "2026-04-29T23:17:51-07:00",
+      "summary": "Recent workspace activity across tracked paths: src/odylith/install/release_assets.py, src/odylith/install/runtime.py +1 more",
+      "ts_iso": "2026-04-30T12:35:55-07:00",
       "workstreams": []
     },
     {

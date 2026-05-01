@@ -42,6 +42,15 @@ _FUTURE_VERSION_POLICY = "capability_based_no_max_pin"
 _DEFAULT_CLAUDE_BIN = "claude"
 _CLAUDE_POST_EDIT_MATCHER_TOKENS: tuple[str, ...] = ("Write", "Edit", "MultiEdit")
 _CLAUDE_POST_BASH_MATCHER_TOKENS: tuple[str, ...] = ("Bash",)
+_ODYLITH_HOOK_COMMAND_TOKENS: tuple[str, ...] = (
+    "odylith-host-launcher.py",
+    "show-me-prompt-guard.py",
+)
+_ODYLITH_PERMISSION_TOKENS: tuple[str, ...] = (
+    "./.odylith/bin/odylith",
+    "odylith claude:",
+    "odylith codex:",
+)
 
 
 @dataclass(frozen=True)
@@ -372,6 +381,7 @@ _BAKED_HOOK_DEFAULT_PERMISSIONS_ALLOWLIST: tuple[str, ...] = (
     "Bash(./.odylith/bin/odylith context:*)",
     "Bash(./.odylith/bin/odylith query:*)",
     "Bash(./.odylith/bin/odylith show:*)",
+    "Bash(./.odylith/bin/odylith capabilities:*)",
     "Bash(./.odylith/bin/odylith --help:*)",
     "Bash(./.odylith/bin/odylith version:*)",
     "Bash(./.odylith/bin/odylith doctor:*)",
@@ -597,4 +607,56 @@ def write_effective_claude_project_settings(
     )
     merged = merge_effective_claude_project_settings(existing, odylith_payload)
     host_project_settings.atomic_write_json_object(target_path, merged)
+    return target_path
+
+
+def _filtered_permissions(value: object) -> tuple[object, bool]:
+    if not isinstance(value, list):
+        return value, False
+    filtered = [
+        entry
+        for entry in value
+        if not any(token in str(entry or "") for token in _ODYLITH_PERMISSION_TOKENS)
+    ]
+    return filtered, len(filtered) != len(value)
+
+
+def deactivate_claude_project_settings(*, repo_root: Path | str) -> Path:
+    resolved_root = _resolve_repo_root(repo_root)
+    target_path = _project_settings_path(resolved_root)
+    if target_path.parent.is_symlink():
+        return target_path
+    existing = host_project_settings.load_json_object_for_update(target_path)
+    if existing is None:
+        return target_path
+
+    updated = dict(existing)
+    changed = False
+    hooks, hooks_changed = host_project_settings.remove_hook_commands(
+        updated.get("hooks"),
+        _ODYLITH_HOOK_COMMAND_TOKENS,
+    )
+    if hooks_changed:
+        changed = True
+        if isinstance(hooks, dict) and hooks:
+            updated["hooks"] = hooks
+        else:
+            updated.pop("hooks", None)
+
+    status_line = updated.get("statusLine")
+    if _is_odylith_statusline(status_line):
+        updated.pop("statusLine", None)
+        changed = True
+
+    permissions = updated.get("permissions")
+    if isinstance(permissions, dict):
+        permissions_updated = dict(permissions)
+        allow, allow_changed = _filtered_permissions(permissions_updated.get("allow"))
+        if allow_changed:
+            permissions_updated["allow"] = allow
+            updated["permissions"] = permissions_updated
+            changed = True
+
+    if changed:
+        host_project_settings.atomic_write_json_object(target_path, updated)
     return target_path

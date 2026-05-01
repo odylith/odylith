@@ -6,14 +6,25 @@ import re
 
 
 UNINSTALL_COMMAND = "./.odylith/bin/odylith uninstall --repo-root ."
+UNINSTALL_PREVIEW_COMMAND = "./.odylith/bin/odylith uninstall --repo-root . --dry-run"
 UNINSTALL_REMOVAL_REASON = (
-    "Odylith-managed paths must be removed with "
-    f"`{UNINSTALL_COMMAND}`; raw deletion and hook bypasses are blocked."
+    "Do not remove Odylith paths or host config directories with raw deletion. "
+    f"Use `{UNINSTALL_COMMAND}` for Odylith uninstall; raw deletion and hook bypasses are blocked. "
+    f"Use `{UNINSTALL_PREVIEW_COMMAND}` only for a scope preview. "
+    "For filesystem removal, the uninstall command removes `.odylith/` runtime state only; "
+    "it detaches Odylith hook entries "
+    "and preserves `odylith/` governed source truth. Host config directories such as "
+    "`.claude/`, `.codex/`, and `.agents/` stay in place because they may contain user config."
 )
 
-_MANAGED_PATH_RE = re.compile(
+_ODYLITH_OWNED_PATH_RE = re.compile(
     r"(?<![\w./-])(?:\./)?"
-    r"(?:\.odylith|odylith|\.agents|\.codex|\.claude|AGENTS\.md|CLAUDE\.md)"
+    r"(?:\.odylith|odylith|AGENTS\.md|CLAUDE\.md)"
+    r"/?(?![\w.-])"
+)
+_HOST_CONFIG_PATH_RE = re.compile(
+    r"(?<![\w./-])(?:\./)?"
+    r"(?:\.agents|\.codex|\.claude)"
     r"/?(?![\w.-])"
 )
 _RM_RECURSIVE_FORCE_RE = re.compile(
@@ -28,7 +39,12 @@ _GIT_CLEAN_FDX_RE = re.compile(r"git\s+clean\s+-fdx(\s|$)")
 
 def references_odylith_managed_removal_target(command: str) -> bool:
     """Return whether a command names repo-local Odylith-managed paths."""
-    return bool(_MANAGED_PATH_RE.search(str(command or "")))
+    return bool(_ODYLITH_OWNED_PATH_RE.search(str(command or "")))
+
+
+def references_host_config_removal_target(command: str) -> bool:
+    """Return whether a command names host configuration directories."""
+    return bool(_HOST_CONFIG_PATH_RE.search(str(command or "")))
 
 
 def blocked_bash_reason(command: str) -> str:
@@ -36,10 +52,16 @@ def blocked_bash_reason(command: str) -> str:
     token = str(command or "").strip()
     if not token:
         return ""
-    if _PYTHON_RMTREE_RE.search(token) and references_odylith_managed_removal_target(token):
+    if _PYTHON_RMTREE_RE.search(token) and (
+        references_odylith_managed_removal_target(token)
+        or references_host_config_removal_target(token)
+    ):
         return UNINSTALL_REMOVAL_REASON
     if _RM_RECURSIVE_FORCE_RE.search(token):
-        if references_odylith_managed_removal_target(token):
+        if (
+            references_odylith_managed_removal_target(token)
+            or references_host_config_removal_target(token)
+        ):
             return UNINSTALL_REMOVAL_REASON
         return "Destructive recursive deletion is blocked by repo policy."
     if _GIT_RESET_HARD_RE.search(token):

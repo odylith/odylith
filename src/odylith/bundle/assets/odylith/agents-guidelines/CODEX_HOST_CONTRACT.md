@@ -202,6 +202,19 @@
   module-count scans, tmp-clone warnings, spawn-policy notes, and follow-up
   questions. Codex must run the first available repo-root show/help command,
   return stdout only, or report the shortest actionable Odylith blocker.
+- Requests to list Odylith capabilities, engines, product architecture, or the
+  capability map must run `odylith capabilities` and print stdout only. That
+  inventory is product-owned and host-model agnostic; Codex must not infer it
+  from `odylith --help`, `odylith show`, tool availability, skill lists, or
+  generic Codex capability prose.
+- Codex help discovery must run the single authoritative
+  `odylith ... --help` command first. Do not batch that help call with
+  exploratory `ls`/`rg` probes whose failure can cancel the visible help
+  output. If the guessed command is invalid, fall back to `odylith --help` and
+  then the nearest listed subcommand. Technical-plan work uses
+  `odylith governance ...` and `odylith validate plan-* ...`;
+  `odylith plan --help` is only a read-only command guide and there is no
+  `odylith/technical-plans/source/` directory.
 - Post-bash checkpoint is a live intervention carrier, not a refresh receipt
   lane. When the recovered bundle earns a real Ambient Highlight,
   Observation, or Proposal, Codex may emit that visible block in hook
@@ -311,9 +324,15 @@
   `./.odylith/bin/odylith uninstall --repo-root .` without a commit/snapshot
   preflight or second confirmation question; do not translate it into
   `rm -rf`, Python `shutil.rmtree`, or a hook-bypass instruction. The command
-  detaches root guidance and removes the repo-local `odylith/` product tree
-  while preserving `.odylith/` launcher and audit state for version reporting
-  or reinstall.
+  detaches root guidance, preserves repo-local `odylith/` governed source
+  truth, removes the `.odylith/` runtime state, and detaches Odylith-owned
+  Claude/Codex hook entries so an already-open host stops calling the removed
+  launcher. Do not ask whether to remove `.claude/`, `.codex/`, or `.agents/`;
+  those host directories may contain non-Odylith user config.
+- Use `./.odylith/bin/odylith uninstall --repo-root . --dry-run` only when the
+  operator asks what uninstall would touch, asks for a preview, or asks a
+  scope question before deciding. Do not insert a dry-run as a second
+  confirmation step after a direct uninstall request.
 - For the known 0.1.11 component-register Registry drift, do not recommend
   hand-editing `odylith/registry/source/component_registry.v1.json`. The
   operator-facing answer after 0.1.12 ships is: upgrade, then run

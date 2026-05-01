@@ -2487,7 +2487,7 @@ def test_compass_unavailable_brief_hides_copy_button_and_stays_compact(
                 }
                 digest_text = compass.locator("#digest-list").inner_text()
                 assert "Brief unavailable right now" in digest_text
-                assert "Next retry" in digest_text
+                assert "Will retry after" in digest_text
 
                 _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
             finally:
@@ -3418,6 +3418,88 @@ def test_compass_timeline_mixed_local_batch_falls_back_to_transaction_headline(t
                 timeline_text = compass.locator("#timeline").inner_text()
                 assert "Advanced shared infra and env-manifest wiring in the latest audit." not in timeline_text
                 assert "Reworked Compass's inline audit narrative." not in timeline_text
+
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
+
+
+def test_compass_timeline_hides_internal_sync_transactions_and_collapsed_meta(tmp_path) -> None:  # noqa: ANN001
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+
+    runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
+    runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
+    payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+
+    event = dict((payload.get("timeline_events") or [])[0])
+    event["id"] = "atlas-create:event"
+    event["kind"] = "implementation"
+    event["summary"] = "D-001 created and rendered."
+    event["ts_iso"] = "2026-04-30T08:39:00-07:00"
+    event["author"] = "assistant"
+    event["files"] = ["odylith/atlas/source/dentoai-isb-boundary-and-ownership.mmd"]
+    event["workstreams"] = []
+
+    visible_tx = dict((payload.get("timeline_transactions") or [])[0])
+    visible_tx["id"] = "txn:global:auto-global-0003:0003"
+    visible_tx["transaction_id"] = "txn:global:auto-global-0003:0003"
+    visible_tx["session_id"] = ""
+    visible_tx["headline"] = "D-001 created and rendered."
+    visible_tx["start_ts_iso"] = "2026-04-30T08:39:00-07:00"
+    visible_tx["end_ts_iso"] = "2026-04-30T08:39:00-07:00"
+    visible_tx["event_count"] = 17
+    visible_tx["files_count"] = 15
+    visible_tx["workstreams"] = []
+    visible_tx["files"] = list(event["files"])
+    visible_tx["events"] = [event]
+
+    internal_tx = dict(visible_tx)
+    internal_tx["id"] = "txn:global:auto-global-0002:0002"
+    internal_tx["transaction_id"] = "txn:global:auto-global-0002:0002"
+    internal_tx["headline"] = "Closed the active slice and synced the governance surfaces in the latest audit."
+    internal_tx["start_ts_iso"] = "2026-04-30T08:31:00-07:00"
+    internal_tx["end_ts_iso"] = "2026-04-30T08:31:00-07:00"
+
+    payload["generated_utc"] = "2026-04-30T15:40:00Z"
+    payload["now_local_iso"] = "2026-04-30T08:40:00-07:00"
+    payload["timeline_events"] = [event]
+    payload["timeline_transactions"] = [visible_tx, internal_tx]
+    payload["history"] = {
+        "retention_days": 15,
+        "dates": ["2026-04-30"],
+        "restored_dates": [],
+        "archive": {"compressed": True, "path": "archive", "count": 0, "dates": [], "newest_date": "", "oldest_date": ""},
+    }
+
+    runtime_json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    runtime_js_path.write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(
+                    base_url + "/odylith/index.html?tab=compass&window=24h&date=live",
+                    wait_until="domcontentloaded",
+                )
+                assert response is not None and response.ok
+
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                compass.locator("#timeline .tx-headline", has_text="D-001 created and rendered.").wait_for(timeout=15000)
+                timeline_text = compass.locator("#timeline").inner_text()
+                assert "Closed the active slice and synced the governance surfaces" not in timeline_text
+
+                summary_text = compass.locator("#timeline .tx-card summary").first.inner_text()
+                assert "08:39" in summary_text
+                assert "17 events" not in summary_text
+                assert "15 files" not in summary_text
+                assert "txn:global" not in summary_text
 
                 _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
             finally:

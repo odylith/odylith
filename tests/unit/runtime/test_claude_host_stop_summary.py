@@ -124,7 +124,7 @@ def test_stop_intervention_bundle_uses_recent_prompt_excerpt_not_intervention_su
         seen["session_id"] = kwargs["session_id"]
         return {
             "intervention_bundle": {"ok": True},
-            "closeout_bundle": {"markdown_text": "**Odylith Assist:** kept this grounded."},
+            "closeout_bundle": {"markdown_text": "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract."},
         }
 
     monkeypatch.setattr(
@@ -207,8 +207,8 @@ def test_stop_intervention_bundle_can_recover_prompt_when_last_message_is_short(
             "visible in chat."
         ),
         display_plain=(
-            "Odylith Observation: This turn is already framing a governed proposal. "
-            "Why it matters: Capture the exact governed change while the request is still current."
+            "Odylith Observation: Casebook needs real failure evidence before it writes. "
+            "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
         ),
     )
     seen: dict[str, object] = {}
@@ -258,8 +258,8 @@ def test_render_stop_summary_combines_observation_and_assist(tmp_path: Path) -> 
                 "proposal": {"eligible": False, "suppressed_reason": ""},
             },
             "closeout_bundle": {
-                "markdown_text": "**Odylith Assist:** kept this grounded.",
-                "plain_text": "Odylith Assist: kept this grounded.",
+                "markdown_text": "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract.",
+                "plain_text": "Odylith Assist: B-096 stayed tied to the refreshed intervention contract.",
             },
         },
     )
@@ -268,7 +268,7 @@ def test_render_stop_summary_combines_observation_and_assist(tmp_path: Path) -> 
         "---\n\n"
         "**Odylith Observation:** The signal is real.\n"
         "\n---\n\n"
-        "**Odylith Assist:** kept this grounded."
+        "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract."
     )
 
 
@@ -301,8 +301,8 @@ def test_render_stop_summary_replays_unseen_live_beat_through_stop_lane(tmp_path
                 "proposal": {"eligible": False, "suppressed_reason": ""},
             },
             "closeout_bundle": {
-                "markdown_text": "**Odylith Assist:** kept this grounded.",
-                "plain_text": "Odylith Assist: kept this grounded.",
+                "markdown_text": "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract.",
+                "plain_text": "Odylith Assist: B-096 stayed tied to the refreshed intervention contract.",
             },
         },
     )
@@ -310,7 +310,7 @@ def test_render_stop_summary_replays_unseen_live_beat_through_stop_lane(tmp_path
     assert rendered == (
         "**Odylith Insight:** this beat was computed earlier but still needs a visible lane.\n"
         "\n"
-        "**Odylith Assist:** kept this grounded."
+        "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract."
     )
 
 
@@ -344,8 +344,8 @@ def test_render_stop_summary_replaces_teaser_with_unseen_live_beat(tmp_path: Pat
                 "proposal": {"eligible": False, "suppressed_reason": ""},
             },
             "closeout_bundle": {
-                "markdown_text": "**Odylith Assist:** kept this grounded.",
-                "plain_text": "Odylith Assist: kept this grounded.",
+                "markdown_text": "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract.",
+                "plain_text": "Odylith Assist: B-096 stayed tied to the refreshed intervention contract.",
             },
         },
     )
@@ -489,7 +489,7 @@ def test_main_does_not_block_stop_when_odylith_closeout_is_already_visible(
                     "session_id": "claude-stop-main-visible",
                     "last_assistant_message": (
                         "Implemented the stop-summary visible surface fix for B-096.\n\n"
-                        "**Odylith Assist:** kept this grounded."
+                        "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract."
                     ),
                 }
             )

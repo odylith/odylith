@@ -330,20 +330,28 @@ def test_first_install_launchpad_stays_primary_path_and_never_leaks_upgrade_popu
         assert page.locator(".welcome-card-slice").count() == 0
         assert page.locator(".welcome-slice-path code").count() == 0
         assert page.locator("#shellWelcomeState [data-welcome-tab]").count() == 0
+        dismiss = page.locator("#welcomeDismiss")
+        assert dismiss.inner_text().strip() == "Close"
 
         handle_box = page.locator("#gridBriefToggle").bounding_box()
         welcome_box = welcome.bounding_box()
+        dismiss_box = dismiss.bounding_box()
+        head_box = page.locator(".welcome-state-head").bounding_box()
         launchpad_grid_box = page.locator(".welcome-guide-grid").bounding_box()
         explainer_box = page.locator(".welcome-explainer-strip").bounding_box()
         prompt_box = page.locator(".welcome-prompt-card").bounding_box()
         process_box = page.locator(".welcome-process-card").bounding_box()
         assert handle_box is not None
         assert welcome_box is not None
+        assert dismiss_box is not None
+        assert head_box is not None
         assert launchpad_grid_box is not None
         assert explainer_box is not None
         assert prompt_box is not None
         assert process_box is not None
         assert welcome_box["x"] >= (handle_box["x"] + handle_box["width"] - 1)
+        assert dismiss_box["width"] >= 78
+        assert dismiss_box["x"] > head_box["x"] + head_box["width"]
         assert abs(explainer_box["x"] - launchpad_grid_box["x"]) < 2
         assert abs(explainer_box["width"] - launchpad_grid_box["width"]) < 2
         assert abs(prompt_box["y"] - process_box["y"]) < 2
@@ -528,6 +536,7 @@ def test_first_install_launchpad_fits_narrow_viewport(tmp_path: Path, monkeypatc
         assert page.locator(".welcome-title").inner_text().strip() == "Odylith is installed"
         assert page.locator(".welcome-prompt-text").inner_text().strip() == '"Odylith, show me what you can do."'
         assert page.locator("#welcomeCopyPrompt").is_visible()
+        assert page.locator("#welcomeDismiss").inner_text().strip() == "Close"
 
         dimensions = page.evaluate(
             "() => ({"
@@ -539,7 +548,11 @@ def test_first_install_launchpad_fits_narrow_viewport(tmp_path: Path, monkeypatc
             "})(),"
             "title: (() => {"
             "  const rect = document.querySelector('.welcome-title').getBoundingClientRect();"
-            "  return {left: rect.left, right: rect.right};"
+            "  return {left: rect.left, right: rect.right, top: rect.top};"
+            "})(),"
+            "dismiss: (() => {"
+            "  const rect = document.getElementById('welcomeDismiss').getBoundingClientRect();"
+            "  return {left: rect.left, right: rect.right, bottom: rect.bottom};"
             "})(),"
             "prompt: (() => {"
             "  const rect = document.querySelector('.welcome-prompt-block').getBoundingClientRect();"
@@ -557,6 +570,9 @@ def test_first_install_launchpad_fits_narrow_viewport(tmp_path: Path, monkeypatc
         assert max(handle["right"] for handle in dimensions["handles"]) <= dimensions["welcome"]["left"]
         assert dimensions["title"]["left"] >= dimensions["welcome"]["left"]
         assert dimensions["title"]["right"] <= dimensions["welcome"]["right"]
+        assert dimensions["title"]["top"] > dimensions["dismiss"]["bottom"]
+        assert dimensions["dismiss"]["left"] >= dimensions["welcome"]["left"]
+        assert dimensions["dismiss"]["right"] <= dimensions["welcome"]["right"]
         assert dimensions["prompt"]["left"] >= dimensions["welcome"]["left"]
         assert dimensions["prompt"]["right"] <= dimensions["welcome"]["right"]
 
@@ -748,6 +764,11 @@ def test_incremental_upgrade_spotlight_has_clear_exits_and_clean_reopen_path(tmp
         assert page.locator(".toolbar-version").inner_text().strip() == "v1.2.3"
         assert page.locator("#toolbarVersionStoryLink").count() == 0
         assert page.locator("#upgradeSpotlightTitle").inner_text().strip() == "v1.2.3"
+        upgrade_dismiss = page.locator("#upgradeSpotlightDismiss")
+        assert upgrade_dismiss.inner_text().strip() == "Close"
+        upgrade_dismiss_box = upgrade_dismiss.bounding_box()
+        assert upgrade_dismiss_box is not None
+        assert upgrade_dismiss_box["width"] >= 82
         assert "Upgrade complete." not in page.locator("#shellUpgradeSpotlight .upgrade-spotlight-main").inner_text()
         assert (
             "The dashboard is already refreshed, so the repo is ready to use immediately."

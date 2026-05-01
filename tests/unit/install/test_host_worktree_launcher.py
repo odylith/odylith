@@ -96,3 +96,61 @@ def test_helper_repairs_external_worktree_from_git_listed_peer(monkeypatch, tmp_
     assert captured["launcher"] == external / ".odylith" / "bin" / "odylith"
     assert captured["argv"] == ["claude", "prompt-context", "--repo-root", "."]
     assert captured["cwd"] == external
+
+
+def test_helper_noops_after_uninstall_when_guidance_is_detached(monkeypatch, tmp_path: Path, capsys) -> None:
+    module = _load_helper()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    (repo_root / "AGENTS.md").write_text("# Repo guidance\n", encoding="utf-8")
+    (repo_root / ".odylith" / "compass").mkdir(parents=True)
+    (repo_root / ".odylith" / "compass" / "standup-brief-maintenance-state.v1.json").write_text(
+        "{}\n",
+        encoding="utf-8",
+    )
+
+    def _fake_run(args, cwd, capture_output, text, check, timeout):
+        del cwd, capture_output, text, check, timeout
+        if args[:3] == ["git", "worktree", "list"]:
+            return subprocess.CompletedProcess(args, 0, stdout="", stderr="")
+        raise AssertionError(f"unexpected subprocess call: {args}")
+
+    def _fail_exec(launcher: Path, argv, cwd: Path) -> int:
+        raise AssertionError(f"uninstalled repo must not exec {launcher} {argv} {cwd}")
+
+    monkeypatch.setattr(module.subprocess, "run", _fake_run)
+
+    exit_code = module.run(
+        ["claude", "stop-summary", "--repo-root", "."],
+        cwd=repo_root,
+        exec_runner=_fail_exec,
+    )
+    captured = capsys.readouterr()
+
+    assert exit_code == 0
+    assert captured.err == ""
+
+
+def test_helper_reports_missing_launcher_when_guidance_is_still_active(monkeypatch, tmp_path: Path, capsys) -> None:
+    module = _load_helper()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    (repo_root / "AGENTS.md").write_text("<!-- odylith-scope:start -->\n<!-- odylith-scope:end -->\n", encoding="utf-8")
+
+    def _fake_run(args, cwd, capture_output, text, check, timeout):
+        del cwd, capture_output, text, check, timeout
+        if args[:3] == ["git", "worktree", "list"]:
+            return subprocess.CompletedProcess(args, 0, stdout="", stderr="")
+        raise AssertionError(f"unexpected subprocess call: {args}")
+
+    monkeypatch.setattr(module.subprocess, "run", _fake_run)
+
+    exit_code = module.run(
+        ["claude", "stop-summary", "--repo-root", "."],
+        cwd=repo_root,
+        exec_runner=lambda *_: 0,
+    )
+    captured = capsys.readouterr()
+
+    assert exit_code == 1
+    assert "could not find a usable launcher" in captured.err

@@ -31,6 +31,11 @@ def _clear_github_tokens(monkeypatch) -> None:  # noqa: ANN001
     monkeypatch.delenv("GITHUB_TOKEN", raising=False)
 
 
+def _clear_network_env(monkeypatch) -> None:  # noqa: ANN001
+    for name in release_assets._NETWORK_ENV_NAMES:  # noqa: SLF001
+        monkeypatch.delenv(name, raising=False)
+
+
 def _full_matrix_release() -> release_assets.ReleaseInfo:
     return release_assets.ReleaseInfo(
         version="1.2.3",
@@ -430,6 +435,32 @@ def test_download_asset_cleans_temporary_files_after_failed_download(monkeypatch
 
     leftovers = sorted(path.name for path in tmp_path.glob(".odylith.whl*.tmp"))
     assert leftovers == []
+
+
+def test_download_asset_failure_adds_enterprise_network_hint_without_secret_values(monkeypatch, tmp_path: Path) -> None:
+    _clear_network_env(monkeypatch)
+    monkeypatch.setenv("HTTPS_PROXY", "http://proxy.local:8080/token")
+    monkeypatch.setenv("REQUESTS_CA_BUNDLE", "/tmp/company-ca.pem")
+    asset = release_assets.ReleaseAsset(
+        name="odylith.whl",
+        download_url="https://github.com/odylith/odylith/releases/download/v1.2.3/odylith.whl",
+    )
+    monkeypatch.setattr(
+        release_assets.urllib.request,
+        "urlopen",
+        lambda *args, **kwargs: (_ for _ in ()).throw(release_assets.urllib_error.URLError("proxy reset")),
+    )
+    monkeypatch.setattr(release_assets.time, "sleep", lambda *_: None)
+
+    with pytest.raises(ValueError) as exc_info:
+        release_assets.download_asset(repo_root=tmp_path, asset=asset, destination=tmp_path / "odylith.whl")
+
+    message = str(exc_info.value)
+    assert "proxy reset" in message
+    assert "Check VPN, proxy, firewall, TLS inspection, and certificate settings." in message
+    assert "Detected proxy/TLS environment: HTTPS_PROXY, REQUESTS_CA_BUNDLE." in message
+    assert "proxy.local" not in message
+    assert "company-ca.pem" not in message
 
 
 def test_download_verified_release_validates_manifest_and_signed_assets(monkeypatch, tmp_path: Path, capsys) -> None:

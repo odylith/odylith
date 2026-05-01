@@ -512,8 +512,8 @@ def test_main_routes_checkpoint_context_through_additional_context(
                 },
             },
             "closeout_bundle": {
-                "markdown_text": "**Odylith Assist:** kept this grounded.",
-                "plain_text": "Odylith Assist: kept this grounded.",
+                "markdown_text": "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract.",
+                "plain_text": "Odylith Assist: B-096 stayed tied to the refreshed intervention contract.",
             },
         },
     )
@@ -526,10 +526,10 @@ def test_main_routes_checkpoint_context_through_additional_context(
     assert "Odylith visible delivery recovery:" in payload["hookSpecificOutput"]["additionalContext"]
     assert "**Odylith Observation:** The signal is real." in payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith Proposal:" in payload["hookSpecificOutput"]["additionalContext"]
-    assert "**Odylith Assist:** kept this grounded." not in payload["hookSpecificOutput"]["additionalContext"]
+    assert "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract." not in payload["hookSpecificOutput"]["additionalContext"]
     assert "**Odylith Observation:** The signal is real." in payload["systemMessage"]
     assert "Odylith Proposal:" in payload["systemMessage"]
-    assert "**Odylith Assist:** kept this grounded." not in payload["systemMessage"]
+    assert "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract." not in payload["systemMessage"]
 
 
 def test_command_scoped_governed_paths_skips_repo_wide_dirty_files_when_command_lacks_exact_target(

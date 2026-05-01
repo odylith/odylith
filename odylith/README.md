@@ -93,6 +93,13 @@ Once concrete nouns exist, use:
 ./.odylith/bin/odylith query --repo-root . "<text>"
 ```
 
+To list Odylith's host-agnostic capabilities, engines, surfaces, and adapters,
+use:
+
+```bash
+./.odylith/bin/odylith capabilities --repo-root .
+```
+
 For the common governance authoring fast paths, use:
 
 ```bash
@@ -276,9 +283,9 @@ If you want to uninstall Odylith from this repo, run:
 ./.odylith/bin/odylith uninstall --repo-root .
 ```
 
-That removes the local `odylith/` product surface and detaches repo-root
-guidance while preserving `.odylith/` launcher and audit state. Do not replace
-it with raw deletion.
+That preserves the local `odylith/` governed source truth, detaches repo-root
+guidance, and removes `.odylith/` local runtime state. Do not replace it with
+raw deletion.
 
 Compass keeps today plus the previous 15 days active in
 `odylith/compass/runtime/history/`. Older days are deleted when they age out of

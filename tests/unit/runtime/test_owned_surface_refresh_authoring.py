@@ -6,6 +6,7 @@ from pathlib import Path
 from odylith.runtime.common import log_compass_timeline_event
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import component_authoring
+from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import validate_component_registry_contract
 from odylith.runtime.surfaces import scaffold_mermaid_diagram
 
@@ -115,7 +116,28 @@ def _seed_compass_registry(root: Path) -> None:
     (root / "odylith" / "radar" / "source" / "ideas").mkdir(parents=True, exist_ok=True)
 
 
-def test_backlog_create_refreshes_radar_surface(tmp_path: Path, monkeypatch) -> None:
+def test_owned_surface_refresh_hides_successful_refresh_internals(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    def fake_refresh_owned_surface(**_kwargs) -> int:
+        print("dashboard refresh plan")
+        print("- noisy internals")
+        return 0
+
+    monkeypatch.setattr(owned_surface_refresh, "refresh_owned_surface", fake_refresh_owned_surface)
+
+    owned_surface_refresh.raise_for_failed_refresh(
+        repo_root=tmp_path,
+        surface="registry",
+        operation_label="Component register",
+    )
+
+    assert capsys.readouterr().out == ""
+
+
+def test_backlog_create_refreshes_radar_surface(tmp_path: Path, monkeypatch, capsys) -> None:
     calls: list[dict[str, object]] = []
     _seed_backlog_repo(tmp_path)
     monkeypatch.setattr(
@@ -135,6 +157,7 @@ def test_backlog_create_refreshes_radar_surface(tmp_path: Path, monkeypatch) -> 
     )
 
     assert rc == 0
+    output = capsys.readouterr().out
     assert calls == [
         {
             "repo_root": tmp_path.resolve(),
@@ -142,9 +165,10 @@ def test_backlog_create_refreshes_radar_surface(tmp_path: Path, monkeypatch) -> 
             "operation_label": "Backlog create",
         }
     ]
+    assert "view: odylith/index.html?tab=radar&workstream=B-001 (refresh if already open)" in output
 
 
-def test_component_register_refreshes_registry_surface(tmp_path: Path, monkeypatch) -> None:
+def test_component_register_refreshes_registry_surface(tmp_path: Path, monkeypatch, capsys) -> None:
     calls: list[dict[str, object]] = []
     catalog_path = tmp_path / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
     catalog_path.parent.mkdir(parents=True, exist_ok=True)
@@ -168,6 +192,7 @@ def test_component_register_refreshes_registry_surface(tmp_path: Path, monkeypat
     )
 
     assert rc == 0
+    output = capsys.readouterr().out
     assert calls == [
         {
             "repo_root": tmp_path.resolve(),
@@ -175,6 +200,10 @@ def test_component_register_refreshes_registry_surface(tmp_path: Path, monkeypat
             "operation_label": "Component register",
         }
     ]
+    assert (
+        "view: odylith/index.html?tab=registry&component=registry-refresh "
+        "(refresh if already open)"
+    ) in output
     registry_path = tmp_path / "odylith" / "registry" / "source" / "component_registry.v1.json"
     registry = json.loads(registry_path.read_text(encoding="utf-8"))
     entry = registry["components"][0]
@@ -204,7 +233,7 @@ def test_component_register_refreshes_registry_surface(tmp_path: Path, monkeypat
     )
 
 
-def test_atlas_scaffold_refreshes_atlas_with_shared_lane(tmp_path: Path, monkeypatch) -> None:
+def test_atlas_scaffold_refreshes_atlas_with_shared_lane(tmp_path: Path, monkeypatch, capsys) -> None:
     calls: list[dict[str, object]] = []
     catalog_path = tmp_path / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
     catalog_path.parent.mkdir(parents=True, exist_ok=True)
@@ -250,6 +279,7 @@ def test_atlas_scaffold_refreshes_atlas_with_shared_lane(tmp_path: Path, monkeyp
     )
 
     assert rc == 0
+    output = capsys.readouterr().out
     assert calls == [
         {
             "repo_root": tmp_path.resolve(),
@@ -257,11 +287,13 @@ def test_atlas_scaffold_refreshes_atlas_with_shared_lane(tmp_path: Path, monkeyp
             "operation_label": "Atlas scaffold",
         }
     ]
+    assert "view: odylith/index.html?tab=atlas&diagram=D-999 (refresh if already open)" in output
 
 
 def test_atlas_scaffold_allows_atlas_first_draft_without_governance_links(
     tmp_path: Path,
     monkeypatch,
+    capsys,
 ) -> None:
     calls: list[dict[str, object]] = []
     catalog_path = tmp_path / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
@@ -304,6 +336,7 @@ def test_atlas_scaffold_allows_atlas_first_draft_without_governance_links(
         encoding="utf-8"
     )
     assert rc == 0
+    output = capsys.readouterr().out
     assert entry["status"] == "draft"
     assert entry["link_state"] == "atlas_first_draft"
     assert entry["related_backlog"] == []
@@ -319,6 +352,7 @@ def test_atlas_scaffold_allows_atlas_first_draft_without_governance_links(
             "operation_label": "Atlas scaffold",
         }
     ]
+    assert "view: odylith/index.html?tab=atlas&diagram=D-100 (refresh if already open)" in output
 
 
 def test_atlas_scaffold_can_still_require_governance_links(tmp_path: Path, monkeypatch) -> None:
@@ -355,7 +389,7 @@ def test_atlas_scaffold_can_still_require_governance_links(tmp_path: Path, monke
     assert json.loads(catalog_path.read_text(encoding="utf-8"))["diagrams"] == []
 
 
-def test_compass_log_refreshes_compass_surface(tmp_path: Path, monkeypatch) -> None:
+def test_compass_log_refreshes_compass_surface(tmp_path: Path, monkeypatch, capsys) -> None:
     calls: list[dict[str, object]] = []
     _seed_compass_registry(tmp_path)
     monkeypatch.setattr(
@@ -378,6 +412,7 @@ def test_compass_log_refreshes_compass_surface(tmp_path: Path, monkeypatch) -> N
     )
 
     assert rc == 0
+    output = capsys.readouterr().out
     assert calls == [
         {
             "repo_root": tmp_path.resolve(),
@@ -385,3 +420,4 @@ def test_compass_log_refreshes_compass_surface(tmp_path: Path, monkeypatch) -> N
             "operation_label": "Compass timeline append",
         }
     ]
+    assert "view: odylith/index.html?tab=compass (refresh if already open)" in output

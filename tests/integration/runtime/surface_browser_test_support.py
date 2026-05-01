@@ -283,6 +283,7 @@ def _select_radar_row_with_link(
 ) -> tuple[str, str, str]:  # noqa: ANN001
     """Return the first Radar workstream whose detail pane renders a deep link."""
     row_buttons = radar.locator("button[data-idea-id]")
+    row_buttons.first.wait_for(timeout=15000)
     count = row_buttons.count()
     for index in range(count):
         button = row_buttons.nth(index)
@@ -363,6 +364,7 @@ def _select_radar_workstream_with_detail_selector(
     """Select the first Radar workstream whose detail pane renders a selector."""
     radar = page.frame_locator("#frame-radar")
     row_buttons = radar.locator("button[data-idea-id]")
+    row_buttons.first.wait_for(timeout=15000)
     count = row_buttons.count()
     for index in range(count):
         button = row_buttons.nth(index)

@@ -60,8 +60,8 @@ def test_codex_post_bash_checkpoint_cli_dispatch_emits_visible_intervention(
                 },
             },
             "closeout_bundle": {
-                "markdown_text": "**Odylith Assist:** kept this grounded.",
-                "plain_text": "Odylith Assist: kept this grounded.",
+                "markdown_text": "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract.",
+                "plain_text": "Odylith Assist: B-096 stayed tied to the refreshed intervention contract.",
             },
         },
     )
@@ -73,10 +73,10 @@ def test_codex_post_bash_checkpoint_cli_dispatch_emits_visible_intervention(
     assert payload["hookSpecificOutput"]["hookEventName"] == "PostToolUse"
     assert "**Odylith Observation:** Radar already owns this slice." in payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith Proposal:" in payload["hookSpecificOutput"]["additionalContext"]
-    assert "**Odylith Assist:** kept this grounded." not in payload["hookSpecificOutput"]["additionalContext"]
+    assert "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract." not in payload["hookSpecificOutput"]["additionalContext"]
     assert "**Odylith Observation:** Radar already owns this slice." in payload["systemMessage"]
     assert "Odylith Proposal:" in payload["systemMessage"]
-    assert "**Odylith Assist:** kept this grounded." not in payload["systemMessage"]
+    assert "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract." not in payload["systemMessage"]
 
 
 def test_claude_post_edit_checkpoint_cli_dispatch_stays_silent_on_success(

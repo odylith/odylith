@@ -20,7 +20,7 @@
 
 - Detected By: Maintainer transcript from dentoai-isb uninstall attempt
 
-- Failure Signature: Assistant either ran `rm -rf .odylith odylith .agents .codex .claude AGENTS.md CLAUDE.md`, which Odylith PreToolUse denied, or paused an explicit `odylith uninstall` request with a destructive/no-dry-run warning, a commit/snapshot preflight, and incorrect claims that uninstall removes `.odylith/`.
+- Failure Signature: Assistant either ran `rm -rf .odylith odylith .agents .codex .claude AGENTS.md CLAUDE.md`, which Odylith PreToolUse denied, or paused an explicit `odylith uninstall` request with a destructive/no-dry-run warning, a commit/snapshot preflight, and an offer to delete `.claude/`, `.codex/`, or `.agents/` host directories.
 
 - Trigger Path: User says 'just uninstall Odylith' in a Claude Code session with Odylith project hooks installed.
 
@@ -40,21 +40,21 @@
 
 - Root Cause: Managed host guidance and bash-guard remediation did not encode uninstall as a sanctioned Odylith CLI lifecycle path, while the guard only returned a generic destructive-deletion denial.
 
-- Solution: Allow the Odylith uninstall CLI command through the guard, block raw shell/Python removal of Odylith-managed paths with a message naming odylith uninstall, and update guidance/tests so agents never suggest rm or shutil bypasses, commit/snapshot preflights, second confirmation detours, or `.odylith/` removal claims for explicit uninstall requests.
+- Solution: Allow the Odylith uninstall CLI command through the guard, block raw shell/Python removal of Odylith-managed paths with a message naming odylith uninstall, and update guidance/tests so agents never suggest rm or shutil bypasses, commit/snapshot preflights, second confirmation detours, or host-directory cleanup for explicit uninstall requests. The guard now says uninstall removes only `.odylith/` runtime state; `odylith/` governed source truth plus `.claude/`, `.codex/`, and `.agents/` directories stay in place. The uninstall lifecycle also detaches Odylith hook entries from Claude/Codex project settings so preserved host directories do not keep calling a removed launcher. The CLI exposes `odylith uninstall --dry-run` as a non-mutating scope preview so hosts can answer "what will this touch?" without inventing a backup or deletion plan.
 
 - Rollback/Forward Fix: Forward fix in v0.1.12; do not ask consumers to bypass hooks.
 
 - Workaround: Before v0.1.12, type the exact repo-local lifecycle command yourself: `./.odylith/bin/odylith uninstall --repo-root .`. Do not accept an agent rewrite to raw deletion, a hook bypass, or a commit-first detour when you explicitly asked to uninstall.
 
-- Verification: `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_claude_host_bash_guard.py tests/unit/runtime/test_codex_host_bash_guard.py tests/unit/install/test_codex_project_assets.py tests/integration/install/test_bundle.py tests/unit/runtime/test_source_bundle_mirror.py tests/unit/runtime/test_hygiene.py::test_uninstall_guidance_rejects_raw_deletion_escape_hatches tests/unit/test_cli.py::test_uninstall_uses_uninstall_bundle tests/unit/test_cli.py::test_uninstall_reports_refusal_without_traceback tests/integration/install/test_manager.py::test_uninstall_bundle_detaches_and_removes_customer_odylith_tree tests/integration/install/test_manager.py::test_install_and_uninstall_remove_existing_customer_truth_tree tests/integration/install/test_manager.py::test_uninstall_bundle_unlinks_symlinked_odylith_without_following_target` passed (`51 passed`).
+- Verification: `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_claude_host_bash_guard.py tests/unit/runtime/test_codex_host_bash_guard.py tests/unit/install/test_codex_project_assets.py tests/integration/install/test_bundle.py tests/unit/runtime/test_source_bundle_mirror.py tests/unit/runtime/test_hygiene.py::test_uninstall_guidance_rejects_raw_deletion_escape_hatches tests/unit/test_cli.py::test_uninstall_uses_uninstall_bundle tests/unit/test_cli.py::test_uninstall_help_states_exact_scope tests/unit/test_cli.py::test_uninstall_dry_run_prints_scope_without_mutating tests/unit/test_cli.py::test_uninstall_dry_run_reports_product_repo_block tests/unit/test_cli.py::test_uninstall_reports_refusal_without_traceback tests/integration/install/test_manager.py::test_uninstall_bundle_detaches_and_preserves_customer_odylith_tree tests/integration/install/test_manager.py::test_install_and_uninstall_preserve_existing_customer_truth_tree tests/integration/install/test_manager.py::test_uninstall_bundle_preserves_symlinked_odylith_without_following_target tests/integration/install/test_manager.py::test_uninstall_bundle_unlinks_symlinked_state_root_without_following_target` passed.
 
-- Prevention: Keep uninstall routing, no-bypass language, no commit/snapshot detour language, and accurate `.odylith/` preservation scope in host-contract guidance and guard tests across Claude, Codex, and shipped project-root assets.
+- Prevention: Keep uninstall routing, no-bypass language, no commit/snapshot detour language, exact `.odylith/` runtime-state removal scope, `odylith/` governed-truth preservation, host-directory preservation, host-hook detachment, and `--dry-run` preview semantics in host-contract guidance and guard tests across Claude, Codex, and shipped project-root assets.
 
-- Agent Guardrails: For plain-English uninstall requests, run ./.odylith/bin/odylith uninstall --repo-root . when available; never use rm -rf, shutil.rmtree, host-hook bypass instructions, commit/snapshot preflights, or a second confirmation question.
+- Agent Guardrails: For plain-English uninstall requests, run ./.odylith/bin/odylith uninstall --repo-root . when available; never use rm -rf, shutil.rmtree, host-hook bypass instructions, commit/snapshot preflights, or a second confirmation question. Use ./.odylith/bin/odylith uninstall --repo-root . --dry-run only when the operator asks for a preview or scope explanation before deciding.
 
 - Preflight Checks: Before uninstalling, check for the repo-local launcher and use the CLI; if missing, report the missing launcher and the hosted repair path instead of hand-deleting managed paths.
 
-- Regression Tests Added: tests/unit/runtime/test_claude_host_bash_guard.py and tests/unit/runtime/test_codex_host_bash_guard.py cover uninstall allowlist and bypass denial; install mirror tests cover shipped hook parity; hygiene tests require host guidance to reject raw deletion, hook bypasses, commit/snapshot preflights, and `.odylith/` removal claims.
+- Regression Tests Added: tests/unit/runtime/test_claude_host_bash_guard.py and tests/unit/runtime/test_codex_host_bash_guard.py cover uninstall allowlist, bypass denial, and host-config cleanup wording; install mirror tests cover shipped hook parity; hygiene tests require host guidance to reject raw deletion, hook bypasses, commit/snapshot preflights, and `.claude/` / `.codex/` / `.agents/` cleanup offers.
 
 - Monitoring Updates: Watch 0.1.12 support transcripts for uninstall requests that still produce raw deletion or hook-bypass instructions.
 

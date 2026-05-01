@@ -10,6 +10,13 @@ from odylith.runtime.intervention_engine import surface_runtime
 from odylith.runtime.intervention_engine import visibility_broker
 
 
+_PREACTION_BLOCKER_PROMPT = (
+    "Capture a Casebook bug for TODO in file. "
+    "Evidence: <paste failing command and error>"
+)
+_PROPOSAL_PROMPT = "Implement B-321 governed intervention update with topology and proposal."
+
+
 def _seed_repo(root: Path) -> None:
     (root / "odylith" / "registry" / "source").mkdir(parents=True, exist_ok=True)
     (root / "odylith" / "registry" / "source" / "component_registry.v1.json").write_text(
@@ -35,7 +42,7 @@ def test_prompt_submit_live_surface_keeps_top_level_observation_and_teaser(tmp_p
         host_family="codex",
         turn_phase="prompt_submit",
         session_id="surface-1",
-        prompt_excerpt="Design a conversation observation engine with governed proposal flow.",
+        prompt_excerpt=_PREACTION_BLOCKER_PROMPT,
     )
 
     bundle = conversation_surface.build_conversation_bundle(
@@ -52,8 +59,9 @@ def test_prompt_submit_live_surface_keeps_top_level_observation_and_teaser(tmp_p
     )
     assert rendered.startswith("---\n\nOdylith Observation:")
     assert "Odylith is tracking this signal" not in rendered
-    assert "This turn is already framing a governed proposal." in rendered
-    assert "Capture the exact governed change while the request is still current." in rendered
+    assert "Casebook needs real failure evidence before it writes." in rendered
+    assert "placeholder" in rendered
+    assert "This turn is already" not in rendered
     assert "One more corroborating signal" not in rendered
     assert rendered.endswith("\n\n---")
 
@@ -74,8 +82,8 @@ def test_render_live_text_prefers_ambient_over_teaser_after_prompt_phase() -> No
                 "stage": "teaser",
                 "suppressed_reason": "",
                 "teaser_text": (
-                    "Odylith Observation: This turn is already framing a governed proposal. "
-                    "Capture the exact governed change while the request is still current."
+                    "Odylith Observation: Casebook needs real failure evidence before it writes. "
+                    "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
                 ),
             },
             "proposal": {"eligible": False, "suppressed_reason": ""},
@@ -98,8 +106,8 @@ def test_render_live_text_prefers_ambient_over_teaser_after_prompt_phase() -> No
         "**Odylith Insight:** this is now grounded enough to keep visible."
     )
     assert old_order == surface_runtime.wrap_live_text(
-        "Odylith Observation: This turn is already framing a governed proposal. "
-        "Capture the exact governed change while the request is still current."
+        "Odylith Observation: Casebook needs real failure evidence before it writes. "
+        "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
     )
 
 
@@ -135,8 +143,8 @@ def test_render_live_text_can_stack_distinct_high_value_ambient_signals() -> Non
                 "stage": "teaser",
                 "suppressed_reason": "",
                 "teaser_text": (
-                    "Odylith Observation: This turn is already framing a governed proposal. "
-                    "Capture the exact governed change while the request is still current."
+                    "Odylith Observation: Casebook needs real failure evidence before it writes. "
+                    "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
                 ),
             },
             "proposal": {"eligible": False, "suppressed_reason": ""},
@@ -400,7 +408,7 @@ def test_post_tool_teaser_emits_ambient_signal_event(tmp_path: Path) -> None:
             host_family="codex",
             turn_phase="post_bash_checkpoint",
             session_id="ambient-event-1",
-            prompt_excerpt="Keep the governance record visible.",
+            prompt_excerpt=_PREACTION_BLOCKER_PROMPT,
         ),
     )
 
@@ -422,25 +430,14 @@ def test_post_tool_teaser_emits_ambient_signal_event(tmp_path: Path) -> None:
         session_id="ambient-event-1",
     )
 
-    assert bundle["ambient_signals"]["selected_signal"] == "insight"
-    assert rendered.startswith("---\n\n**Odylith Insight:**")
-    assert "ambient_signal" in events
-    assert "intervention_teaser" not in events
-    ambient_rows = [row for row in rows if row["kind"] == "ambient_signal"]
-    assert len(ambient_rows) == 1
-    selected_id = bundle["ambient_signals"]["selected_signal_ids"][0]
-    assert ambient_rows[0]["intervention_key"] == selected_id
-    assert (
-        ambient_rows[0]["semantic_signature"]
-        == bundle["ambient_signals"]["ambient_signal_payloads"][selected_id]["semantic_signature"]
-    )
-    metadata = ambient_rows[0]["metadata"]
-    assert metadata["value_engine_version"] == "intervention-value-engine.v1"
-    assert metadata["event_candidate_id"] == selected_id
-    assert metadata["visibility_proof"]["delivery_status"] == "assistant_fallback_ready"
-    assert metadata["value_decision"]["selected"][0]["candidate_id"] == selected_id
-    assert metadata["value_decision"]["selected"][0]["feature_vector"]["materiality"] > 0.0
-    assert metadata["value_decision"]["selected"][0]["evidence_fingerprints"]
+    assert bundle["intervention_bundle"]["candidate"]["stage"] == "teaser"
+    assert bundle["ambient_signals"]["selected_signal"] == ""
+    assert rendered.startswith("---\n\nOdylith Observation: Casebook needs real failure evidence")
+    assert events == ["intervention_teaser"]
+    assert not [row for row in rows if row["kind"] == "ambient_signal"]
+    teaser_rows = [row for row in rows if row["kind"] == "intervention_teaser"]
+    assert len(teaser_rows) == 1
+    assert "Casebook needs real failure evidence" in teaser_rows[0]["display_plain"]
 
 
 def test_high_strength_risk_and_history_stack_with_observation(tmp_path: Path) -> None:
@@ -516,8 +513,8 @@ def test_append_intervention_events_records_each_distinct_ambient_signal(tmp_pat
                 "moment": {"semantic_signature": ["ambient", "events"]},
                 "suppressed_reason": "",
                 "teaser_text": (
-                    "Odylith Observation: This turn is already framing a governed proposal. "
-                    "Capture the exact governed change while the request is still current."
+                    "Odylith Observation: Casebook needs real failure evidence before it writes. "
+                    "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
                 ),
             },
             "proposal": {"eligible": False, "suppressed_reason": ""},
@@ -551,7 +548,7 @@ def test_hidden_duplicate_teaser_can_recover_as_ambient_signal(tmp_path: Path) -
         host_family="codex",
         turn_phase="post_bash_checkpoint",
         session_id="ambient-hidden-duplicate-1",
-        prompt_excerpt="Keep the governance record visible.",
+        prompt_excerpt=_PREACTION_BLOCKER_PROMPT,
     )
     first = conversation_surface.build_conversation_bundle(
         repo_root=tmp_path,
@@ -582,8 +579,8 @@ def test_hidden_duplicate_teaser_can_recover_as_ambient_signal(tmp_path: Path) -
     )
 
     assert second["intervention_bundle"]["candidate"]["suppressed_reason"] == "duplicate_teaser"
-    assert second["ambient_signals"]["selected_signal"] == "insight"
-    assert rendered.startswith("---\n\n**Odylith Insight:**")
+    assert second["ambient_signals"]["selected_signal"] == ""
+    assert rendered == ""
 
 
 def test_visible_duplicate_teaser_still_suppresses_ambient_signal(tmp_path: Path) -> None:
@@ -592,7 +589,7 @@ def test_visible_duplicate_teaser_still_suppresses_ambient_signal(tmp_path: Path
         host_family="codex",
         turn_phase="post_bash_checkpoint",
         session_id="ambient-visible-duplicate-1",
-        prompt_excerpt="Keep the governance record visible.",
+        prompt_excerpt=_PREACTION_BLOCKER_PROMPT,
     )
     first = conversation_surface.build_conversation_bundle(
         repo_root=tmp_path,
@@ -629,7 +626,7 @@ def test_post_edit_live_surface_renders_observation_and_proposal(tmp_path: Path)
             host_family="claude",
             turn_phase="post_edit_checkpoint",
             session_id="surface-2",
-            prompt_excerpt="Design a conversation observation engine with governed proposal flow.",
+            prompt_excerpt=_PROPOSAL_PROMPT,
             changed_paths=["src/odylith/runtime/intervention_engine/voice.py"],
         ),
     )
@@ -718,14 +715,14 @@ def test_render_closeout_text_reads_closeout_bundle() -> None:
     rendered = conversation_surface.render_closeout_text(
         {
             "closeout_bundle": {
-                "markdown_text": "**Odylith Assist:** kept this grounded.",
-                "plain_text": "Odylith Assist: kept this grounded.",
+                "markdown_text": "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract.",
+                "plain_text": "Odylith Assist: B-096 stayed tied to the refreshed intervention contract.",
             }
         },
         markdown=True,
     )
 
-    assert rendered == "**Odylith Assist:** kept this grounded."
+    assert rendered == "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract."
 
 
 def test_cross_host_live_surface_rendering_stays_consistent(tmp_path: Path) -> None:
@@ -733,7 +730,7 @@ def test_cross_host_live_surface_rendering_stays_consistent(tmp_path: Path) -> N
     base = {
         "turn_phase": "post_bash_checkpoint",
         "session_id": "surface-4",
-        "prompt_excerpt": "Design a conversation observation engine with governed proposal flow.",
+        "prompt_excerpt": _PROPOSAL_PROMPT,
         "changed_paths": ["src/odylith/runtime/intervention_engine/engine.py"],
     }
     codex_bundle = conversation_surface.build_conversation_bundle(
@@ -762,7 +759,7 @@ def test_cross_lane_live_surface_rendering_stays_consistent(tmp_path: Path) -> N
         "host_family": "codex",
         "turn_phase": "post_bash_checkpoint",
         "session_id": "surface-5",
-        "prompt_excerpt": "Design a conversation observation engine with governed proposal flow.",
+        "prompt_excerpt": _PROPOSAL_PROMPT,
         "changed_paths": ["src/odylith/runtime/intervention_engine/apply.py"],
     }
     consumer_bundle = conversation_surface.build_conversation_bundle(

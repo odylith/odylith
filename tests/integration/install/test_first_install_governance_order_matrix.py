@@ -73,10 +73,7 @@ def _install_fresh_consumer_repo(monkeypatch: pytest.MonkeyPatch, repo_root: Pat
             manifest={"repo_schema_version": 1, "migration_required": False},
             python=python,
             root=runtime_root,
-            verification={
-                "runtime_bundle_sha256": f"runtime-{resolved_version}",
-                "wheel_sha256": f"wheel-{resolved_version}",
-            },
+            verification=install_test_support._release_verification(resolved_version),  # noqa: SLF001
         )
 
     def _fake_install_release_feature_pack(

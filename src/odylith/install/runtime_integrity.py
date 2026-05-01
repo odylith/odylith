@@ -128,6 +128,28 @@ def managed_runtime_integrity_reasons(*, repo_root: str | Path, runtime_root: Pa
     return _tree_manifest_reasons(repo_root=repo_root, runtime_root=runtime_root, trust_payload=trust_payload)
 
 
+def managed_runtime_trust_paths(*, repo_root: str | Path, version: str) -> tuple[Path, Path]:
+    """Return the selected hot-file and tree trust receipts for a managed runtime."""
+    return _selected_trust_paths(repo_root=repo_root, version=version)
+
+
+def load_managed_runtime_trust_env(*, repo_root: str | Path, version: str) -> dict[str, str]:
+    """Load the hot-file trust receipt without mutating install state."""
+    return _load_trust_env(repo_root=repo_root, version=version)
+
+
+def load_managed_runtime_trust_tree(*, repo_root: str | Path, version: str) -> dict[str, object]:
+    """Load the managed-runtime tree trust receipt without mutating install state."""
+    _trust_env_path_selected, trust_tree_path = _selected_trust_paths(repo_root=repo_root, version=version)
+    if trust_tree_path.is_symlink() or not trust_tree_path.is_file():
+        return {}
+    try:
+        payload = json.loads(trust_tree_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return dict(payload) if isinstance(payload, dict) else {}
+
+
 def managed_runtime_launcher_verifier_lines() -> list[str]:
     return [
         "import hashlib",

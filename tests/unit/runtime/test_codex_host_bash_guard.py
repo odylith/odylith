@@ -19,7 +19,19 @@ def test_blocked_bash_reason_routes_odylith_raw_deletion_to_uninstall() -> None:
     )
 
     assert "./.odylith/bin/odylith uninstall --repo-root ." in reason
+    assert "./.odylith/bin/odylith uninstall --repo-root . --dry-run" in reason
     assert "raw deletion and hook bypasses are blocked" in reason
+    assert "`.claude/`, `.codex/`, and `.agents/` stay in place" in reason
+
+
+def test_blocked_bash_reason_blocks_host_config_cleanup_without_saying_uninstall_removes_it() -> None:
+    reason = codex_host_bash_guard.blocked_bash_reason("rm -rf .claude .codex .agents")
+
+    assert "./.odylith/bin/odylith uninstall --repo-root ." in reason
+    assert "./.odylith/bin/odylith uninstall --repo-root . --dry-run" in reason
+    assert "removes `.odylith/` runtime state only" in reason
+    assert "`odylith/` governed source truth" in reason
+    assert "`.claude/`, `.codex/`, and `.agents/` stay in place" in reason
 
 
 def test_blocked_bash_reason_blocks_python_rmtree_odylith_bypass() -> None:

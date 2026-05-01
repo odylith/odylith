@@ -92,6 +92,10 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     assert "Keep normal commentary task-first and human." in block
     assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in block
     assert "At closeout, or when a visible-intervention recovery renders a prompt-submit or visibility-proof note" in block
+    assert "host prompt-submit runtime is stricter about silence" in block
+    assert "normal non-passthrough prompts do not get an Assist line by default" in block
+    assert "Do not add Assist just because Odylith ran" in block
+    assert "supplies one shared prompt-visible Assist line" not in block
     assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in block
     assert "Lead with the user win" in block
     assert "link updated governance IDs inline when they were actually changed" in block
