@@ -1269,12 +1269,47 @@ def test_release_candidate_is_pr_safe_non_publishing_current_checkout_lane() -> 
     assert "git clean -fd -- .agents .claude .codex odylith/compass/runtime" in text
     assert 'require_clean_worktree' in text
     assert 'run_release_proof_steps "$resolved_version" "$dist_dir"' in text
+    assert 'benchmark_override_mode="$(release_benchmark_override_mode "$resolved_version")"' in text
+    assert "skip_proof_and_compare" in text
+    assert "tracked maintainer override marks benchmark proof advisory for this exact release" in text
     assert 'benchmark compare --repo-root . --baseline last-shipped' in text
     assert 'release_version_session.py' not in text
     assert 'release_worktree.py' not in text
     assert 'release-candidate:' in makefile
     assert './bin/release-candidate "$(VERSION)"' in makefile
     assert "make release-candidate" in help_text
+
+
+def test_release_candidate_benchmark_override_is_version_scoped() -> None:
+    helper = (REPO_ROOT / "bin" / "_odylith.sh").read_text(encoding="utf-8")
+    overrides = json.loads(
+        (REPO_ROOT / "odylith" / "runtime" / "source" / "release-maintainer-overrides.v1.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    bundled_overrides = json.loads(
+        (
+            REPO_ROOT
+            / "src"
+            / "odylith"
+            / "bundle"
+            / "assets"
+            / "odylith"
+            / "runtime"
+            / "source"
+            / "release-maintainer-overrides.v1.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    assert "release_benchmark_override_mode() {" in helper
+    assert "release-maintainer-overrides.v1.json" in helper
+    assert "benchmark_proof_overrides" in helper
+    rows = {row["version"]: row for row in overrides["benchmark_proof_overrides"]}
+    bundled_rows = {row["version"]: row for row in bundled_overrides["benchmark_proof_overrides"]}
+    assert rows["0.1.12"]["mode"] == "skip_proof_and_compare"
+    assert rows["0.1.12"]["owner"] == "freedom-research"
+    assert "CB-116" in rows["0.1.12"]["reason"]
+    assert bundled_rows["0.1.12"] == rows["0.1.12"]
 
 
 def test_lane_show_wraps_lane_status() -> None:

@@ -111,6 +111,29 @@ print(version)
 PY
 }
 
+release_benchmark_override_mode() {
+  local version="${1:-}"
+  [[ -n "$version" ]] || return 0
+  require_file "$odylith_python"
+  "$odylith_python" - "$odylith_host_repo_root/odylith/runtime/source/release-maintainer-overrides.v1.json" "$version" <<'PY'
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+version = sys.argv[2].removeprefix("v")
+if not path.is_file():
+    raise SystemExit(0)
+payload = json.loads(path.read_text(encoding="utf-8"))
+for row in payload.get("benchmark_proof_overrides", []):
+    if str(row.get("version", "")).removeprefix("v") == version:
+        print(str(row.get("mode", "")).strip())
+        break
+PY
+}
+
 require_current_release_branch() {
   local branch
   branch="$(current_branch_name)"

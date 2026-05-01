@@ -1,6 +1,6 @@
 {
   "contract": "odylith_release_maintainer_overrides.v1",
-  "updated_utc": "2026-04-26T22:37:05Z",
+  "updated_utc": "2026-05-01T06:39:42Z",
   "benchmark_proof_overrides": [
     {
       "version": "0.1.9",
@@ -22,6 +22,13 @@
       "reason": "Maintainer release decision on 2026-04-26: reuse proof report 44f2a3d83d2c9975 from commit 1cfca107 after later release-UX-only commits were covered by targeted regression and browser tests instead of rerunning the full benchmark.",
       "owner": "freedom-research",
       "updated_utc": "2026-04-26T22:37:05Z"
+    },
+    {
+      "version": "0.1.12",
+      "mode": "skip_proof_and_compare",
+      "reason": "Maintainer release decision on 2026-05-01: skip full benchmark proof and benchmark compare for the v0.1.12 recovery release after candidate proof passed 3373 tests and built the release wheel, while benchmark compare correctly failed closed because no current-tree authoritative proof candidate exists (CB-116). Release remains benchmark-advisory; full proof restoration stays in the benchmark workstream.",
+      "owner": "freedom-research",
+      "updated_utc": "2026-05-01T06:39:42Z"
     }
   ]
 }

@@ -73,6 +73,13 @@ governed subsystem.
   `0047192366d8bf1c`. This release must not be narrated as benchmark
   re-proved; the override is exact-version only and the runner fix moves to the
   next release.
+- The current `v0.1.12` release uses the same tracked-exception contract for a
+  narrower recovery-release decision: candidate proof passed the full test/build
+  lane and built the wheel, but benchmark compare correctly failed closed under
+  `CB-116` because there is no current-tree authoritative proof report. The
+  release story must say benchmark proof is advisory for `v0.1.12`, not current
+  proof, and the default benchmark gate remains active for releases without an
+  exact-version override.
 - Preflight is the session initializer. Dispatch reuses the active session
   rather than recomputing a version.
 - The canonical release lane is authoritative only when it runs from the

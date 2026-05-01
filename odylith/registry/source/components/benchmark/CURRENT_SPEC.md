@@ -265,6 +265,12 @@ reviewer framing that explains how Odylith should be compared.
   did not persist a fresh release-safe report. That exception is exact-version
   only and moves benchmark runner tuning plus proof restoration to the next
   release.
+- Active release exception:
+  `v0.1.12` carries a tracked `skip_proof_and_compare` override for the
+  recovery release after candidate proof passed 3373 tests and built the wheel,
+  while benchmark compare correctly refused stale authority under `CB-116`.
+  This is an exact-version benchmark-advisory release, not current benchmark
+  proof, and the normal release compare gate remains the default.
 
 ## Current Benchmark Priorities
 
