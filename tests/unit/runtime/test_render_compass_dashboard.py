@@ -480,6 +480,7 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     assert "resolveCompassDisclosureOpen(" in waves_js
     assert "function compassExecutionProgramVisibleByDefault(program)" in waves_js
     assert "programs.filter(compassExecutionProgramVisibleByDefault)" in waves_js
+    assert "Completed Program History" not in waves_js
     assert 'bindCompassDisclosurePersistence(target, disclosureGroup, state);' in waves_js
     assert 'group.is_current || groups.length === 1' not in releases_js
     assert "function compassWorkstreamReleaseLabel(release)" in workstreams_js

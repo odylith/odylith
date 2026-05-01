@@ -50,6 +50,10 @@
         clearHost();
         return;
       }
+      if (!scopedWaveView.entries.length) {
+        clearHost();
+        return;
+      }
       const target = ensureTarget();
       if (!target) {
         clearHost();
@@ -135,54 +139,6 @@
         selectedCardClass: "is-member",
         sectionHeaderVariant: "compass",
       };
-      if (!visiblePrograms.length) {
-        const archivedLabel = `${programs.length} completed program${programs.length === 1 ? "" : "s"}`;
-        const archiveProgram = {
-          umbrella_title: "Completed Program History",
-          wave_count: 1,
-          active_wave_count: 0,
-          waves: [
-            {
-              wave_id: "archive",
-              label: "Archived program lanes",
-              status: "complete",
-              status_label: "Archived",
-              sequence: 1,
-              member_count: programs.length,
-              summary: "Completed-only program lanes are hidden from the live dashboard. Scope a related workstream to inspect its archived wave plan.",
-              compact_summary_line: `${archivedLabel} stay available through scoped drill-in.`,
-              primary_workstreams: [],
-              carried_workstreams: [],
-              in_band_workstreams: [],
-              all_workstreams: [],
-              gate_refs: [],
-            },
-          ],
-        };
-        target.innerHTML = renderExecutionWaveSection(
-          {
-            title: "Completed Program History",
-            entries: [{ program: archiveProgram, context: null }],
-            selectedWorkstreamId: "",
-            persistenceKey: "program:completed-history",
-            contextLine: "Completed-only programs are archived from the default live view.",
-            summaryLine: archivedLabel,
-            sectionChips: [
-              `<span class="label execution-wave-label wave-status-complete">${escapeHtml(archivedLabel)}</span>`,
-            ],
-            openByDefault: resolveCompassDisclosureOpen(disclosureGroup, state, "program:completed-history", false),
-          },
-          {
-            ...renderOptions,
-            hideProgramFocusTitle: true,
-            hideProgramFocusPanel: true,
-            boardWrapperClass: "",
-            sectionClassName: "execution-wave-section-program-card",
-          },
-        );
-        bindCompassDisclosurePersistence(target, disclosureGroup, state);
-        return;
-      }
       const formatExecutionWaveProgramTitle = (program) => {
         const umbrellaTitle = String(program && program.umbrella_title ? program.umbrella_title : "").trim();
         const umbrellaId = String(program && program.umbrella_id ? program.umbrella_id : "").trim();

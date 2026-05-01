@@ -3,7 +3,7 @@
 - Type: UX
 
 
-- Status: Open
+- Status: FixedPendingRelease
 
 - Created: 2026-05-01
 
@@ -28,7 +28,7 @@
 
 - Ownership: Compass dashboard governance renderer.
 
-- Timeline: 2026-05-01: operator screenshot showed old programs and past releases; source release truth confirmed 0.1.13 current/next; renderer rules were tightened.
+- Timeline: 2026-05-01: operator screenshot showed old programs and past releases; source release truth confirmed 0.1.13 current/next; renderer rules were tightened. Follow-up feedback rejected the synthetic completed-program history card, so the placeholder was removed and the default live view now omits completed-only programs entirely.
 
 - Blast Radius: Operators reading the product repo Compass dashboard during release migration or governance triage.
 
@@ -42,7 +42,7 @@
 
 - Root Cause: Release rendering kept completed_member groups visible by default, and program rendering used every execution_waves.programs row even when all waves were complete.
 
-- Solution: Filter default release groups to current, next, active, planned, draft, or targeted-member releases; filter default program rows to live current/next/active wave programs and collapse completed-only programs into one archived-history section.
+- Solution: Filter default release groups to current, next, active, planned, draft, or targeted-member releases; filter default program rows to live current/next/active wave programs; leave completed-only program history available through real scoped workstream drill-in instead of inventing a synthetic archive card.
 
 - Rollback/Forward Fix: Forward fix in v0.1.13 renderer templates and regenerated Compass assets.
 

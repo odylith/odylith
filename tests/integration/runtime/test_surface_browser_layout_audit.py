@@ -960,7 +960,7 @@ def _assert_compass_program_and_release_cards_keep_distinct_surface_tints(  # no
     context,
 ) -> None:
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    response = page.goto(base_url + "/odylith/index.html?tab=compass&scope=B-105", wait_until="domcontentloaded")
     assert response is not None and response.ok
 
     compass = page.frame_locator("#frame-compass")
@@ -1003,12 +1003,39 @@ def test_compass_program_and_release_cards_keep_distinct_surface_tints_in_compac
     _assert_compass_program_and_release_cards_keep_distinct_surface_tints(*compact_browser_context)
 
 
-def _assert_compass_programs_render_release_like_inner_card_chrome(  # noqa: ANN001
+def _assert_compass_default_hides_completed_only_programs(  # noqa: ANN001
     base_url: str,
     context,
 ) -> None:
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
     response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    compass.locator("#release-groups-host h2", has_text="Release Targets").wait_for(timeout=15000)
+
+    assert compass.locator("#execution-waves-host > .card.execution-waves-card").count() == 0
+    assert compass.locator("#execution-waves-host", has_text="Completed Program History").count() == 0
+    assert compass.locator("#execution-waves-host", has_text="Archived program lanes").count() == 0
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_compass_default_hides_completed_only_programs_in_browser(browser_context) -> None:  # noqa: ANN001
+    _assert_compass_default_hides_completed_only_programs(*browser_context)
+
+
+def test_compass_default_hides_completed_only_programs_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
+    _assert_compass_default_hides_completed_only_programs(*compact_browser_context)
+
+
+def _assert_compass_programs_render_release_like_inner_card_chrome(  # noqa: ANN001
+    base_url: str,
+    context,
+) -> None:
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=compass&scope=B-105", wait_until="domcontentloaded")
     assert response is not None and response.ok
 
     compass = page.frame_locator("#frame-compass")
@@ -1070,7 +1097,7 @@ def _assert_compass_program_box_does_not_highlight_active_inner_wave(  # noqa: A
     context,
 ) -> None:
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    response = page.goto(base_url + "/odylith/index.html?tab=compass&scope=B-105", wait_until="domcontentloaded")
     assert response is not None and response.ok
 
     compass = page.frame_locator("#frame-compass")
@@ -1133,7 +1160,7 @@ def _assert_compass_program_focus_does_not_repeat_outer_program_chip(  # noqa: A
     context,
 ) -> None:
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    response = page.goto(base_url + "/odylith/index.html?tab=compass&scope=B-105", wait_until="domcontentloaded")
     assert response is not None and response.ok
 
     compass = page.frame_locator("#frame-compass")
@@ -1170,7 +1197,7 @@ def _assert_compass_governance_disclosures_survive_runtime_rerender(  # noqa: AN
     context,
 ) -> None:
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    response = page.goto(base_url + "/odylith/index.html?tab=compass&scope=B-105", wait_until="domcontentloaded")
     assert response is not None and response.ok
 
     compass = page.frame_locator("#frame-compass")
@@ -1221,7 +1248,7 @@ def _assert_compass_outer_governance_section_titles(  # noqa: ANN001
     context,
 ) -> None:
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    response = page.goto(base_url + "/odylith/index.html?tab=compass&scope=B-105", wait_until="domcontentloaded")
     assert response is not None and response.ok
 
     compass = page.frame_locator("#frame-compass")
@@ -1245,7 +1272,7 @@ def _assert_compass_outer_governance_cards_keep_distinct_surface_tints(  # noqa:
     context,
 ) -> None:
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    response = page.goto(base_url + "/odylith/index.html?tab=compass&scope=B-105", wait_until="domcontentloaded")
     assert response is not None and response.ok
 
     compass = page.frame_locator("#frame-compass")
@@ -1299,7 +1326,7 @@ def _assert_compass_governance_summaries_use_phrasing_content(  # noqa: ANN001
     context,
 ) -> None:
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    response = page.goto(base_url + "/odylith/index.html?tab=compass&scope=B-105", wait_until="domcontentloaded")
     assert response is not None and response.ok
 
     compass = page.frame_locator("#frame-compass")

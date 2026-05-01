@@ -195,13 +195,14 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert "function numericProgressOrNull(value)" in waves_js
     assert "function compassExecutionProgramVisibleByDefault(program)" in waves_js
     assert "programs.filter(compassExecutionProgramVisibleByDefault)" in waves_js
+    assert "Completed Program History" not in waves_js
     assert '<article class="card execution-waves-card"><h2>Programs</h2><div id="execution-waves" class="muted"></div></article>' in waves_js
     assert "const hideProgramFocusPanel = Boolean(options.hideProgramFocusPanel);" in shared_js
     assert 'hideProgramFocusPanel: true,' in waves_js
     assert "execution-wave-program-stack execution-wave-program-stack-program" in waves_js
     assert 'sectionClassName: "execution-wave-section-program-card"' in waves_js
     assert 'sectionClassName: "execution-wave-section-flat"' not in waves_js
-    assert waves_js.count('sectionClassName: "execution-wave-section-program-card"') == 3
+    assert waves_js.count('sectionClassName: "execution-wave-section-program-card"') == 2
     assert 'if (value === null || value === undefined || value === "") return null;' in waves_js
     assert 'Object.prototype.hasOwnProperty.call(plan, "display_progress_ratio")' in waves_js
     assert '${renderMemberChip(ideaId, { selected: ideaId === scopedWorkstream })}' in releases_js
