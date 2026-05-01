@@ -1264,6 +1264,9 @@ def test_release_candidate_is_pr_safe_non_publishing_current_checkout_lane() -> 
     help_text = (REPO_ROOT / "bin" / "help").read_text(encoding="utf-8")
 
     assert 'resolved_version="${requested_version:-${VERSION:-$(current_source_version)}}"' in text
+    assert "candidate proof must evaluate the checked-out source tree" in text
+    assert "git restore -- AGENTS.md CLAUDE.md .agents .claude .codex odylith/compass/runtime" in text
+    assert "git clean -fd -- .agents .claude .codex odylith/compass/runtime" in text
     assert 'require_clean_worktree' in text
     assert 'run_release_proof_steps "$resolved_version" "$dist_dir"' in text
     assert 'benchmark compare --repo-root . --baseline last-shipped' in text
