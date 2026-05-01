@@ -1,5 +1,8 @@
 - Bug ID: CB-149
 
+- Type: Product
+
+
 - Status: FixedPendingRelease
 
 - Created: 2026-05-01
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Host adapters pay too much Odylith hook and startup latency
 

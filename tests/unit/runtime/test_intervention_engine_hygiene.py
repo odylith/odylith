@@ -85,8 +85,10 @@ def test_conversation_closeout_ownership_stays_decomposed() -> None:
     assert "def compose_closeout_assist(" in conversation_closeout_text
     assert "def visibility_feedback_requested(" in conversation_closeout_text
     assert "def resolve_updated_artifacts(" in conversation_artifacts_text
-    assert "conversation_closeout.visibility_feedback_requested(" in host_support_text
+    assert "prompt_signal_runtime.visibility_feedback_requested(" in conversation_closeout_text
+    assert "prompt_signal_runtime.visibility_feedback_requested(" in host_support_text
     assert "conversation_closeout.visibility_feedback_requested(" in host_visible_text
+    assert "conversation_closeout.visibility_feedback_requested(" not in host_support_text
     assert "conversation_runtime.visibility_feedback_requested(" not in host_support_text
     assert "conversation_runtime.visibility_feedback_requested(" not in host_visible_text
 

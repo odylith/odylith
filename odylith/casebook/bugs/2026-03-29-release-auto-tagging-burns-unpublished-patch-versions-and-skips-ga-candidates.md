@@ -1,5 +1,8 @@
 - Bug ID: CB-022
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-03-29
@@ -10,7 +13,6 @@
 
 - Reproducibility: Consistent
 
-- Type: Product
 
 - Description: Odylith's canonical maintainer release lane could consume patch
   versions without ever publishing them. If `make release-preflight` reserved a

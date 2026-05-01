@@ -9,6 +9,7 @@ from types import SimpleNamespace
 from odylith.runtime.intervention_engine import surface_runtime
 from odylith.runtime.surfaces import codex_host_shared
 from odylith.runtime.surfaces import codex_host_post_bash_checkpoint
+from odylith.runtime.surfaces import host_dirty_checkpoint
 
 
 def _patch_stdin(monkeypatch, command: str) -> None:
@@ -26,7 +27,7 @@ def _patch_no_governed_changes(monkeypatch) -> None:
     )
 
 
-def test_post_bash_checkpoint_runs_start_for_edit_like_commands(monkeypatch, tmp_path: Path) -> None:
+def test_post_bash_checkpoint_records_dirty_event_without_start(monkeypatch, tmp_path: Path) -> None:
     calls: list[tuple[str, list[str], int]] = []
 
     def _fake_run_odylith(*, project_dir, args, timeout=20):
@@ -38,7 +39,16 @@ def test_post_bash_checkpoint_runs_start_for_edit_like_commands(monkeypatch, tmp
         io.StringIO(
             json.dumps(
                 {
-                    "tool_input": {"command": "apply_patch <<'PATCH'"},
+                    "tool_input": {
+                        "command": "apply_patch <<'PATCH'\n"
+                        "*** Begin Patch\n"
+                        "*** Update File: src/main.py\n"
+                        "@@\n"
+                        "-old\n"
+                        "+new\n"
+                        "*** End Patch\n"
+                        "PATCH"
+                    },
                     "session_id": "codex-start-cold",
                 }
             )
@@ -50,7 +60,13 @@ def test_post_bash_checkpoint_runs_start_for_edit_like_commands(monkeypatch, tmp
     exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)])
 
     assert exit_code == 0
-    assert calls == [(str(tmp_path), ["start", "--repo-root", "."], 20)]
+    assert calls == []
+    events = host_dirty_checkpoint.read_dirty_events(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="codex-start-cold",
+    )
+    assert [event["paths"] for event in events] == [["src/main.py"]]
 
 
 def test_post_bash_checkpoint_skips_start_when_cache_is_warm(monkeypatch, tmp_path: Path) -> None:
@@ -111,7 +127,7 @@ def test_start_grounding_cache_expires(tmp_path: Path) -> None:
     )
 
 
-def test_post_bash_checkpoint_runs_start_for_native_apply_patch_payload(monkeypatch, tmp_path: Path) -> None:
+def test_post_bash_checkpoint_records_native_apply_patch_payload(monkeypatch, tmp_path: Path) -> None:
     calls: list[tuple[str, list[str], int]] = []
     observed_commands: list[str] = []
     patch = (
@@ -147,10 +163,12 @@ def test_post_bash_checkpoint_runs_start_for_native_apply_patch_payload(monkeypa
     exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)])
 
     assert exit_code == 0
-    assert calls == [(str(tmp_path), ["start", "--repo-root", "."], 20)]
+    assert calls == []
     assert observed_commands
     assert observed_commands[0].startswith("apply_patch <<'PATCH'")
     assert "src/odylith/runtime/intervention_engine/host_surface_runtime.py" in observed_commands[0]
+    events = host_dirty_checkpoint.read_dirty_events(repo_root=tmp_path, host_family="codex")
+    assert events[0]["paths"] == ["src/odylith/runtime/intervention_engine/host_surface_runtime.py"]
 
 
 def test_post_bash_checkpoint_skips_non_edit_like_commands(monkeypatch) -> None:
@@ -185,7 +203,7 @@ def test_codex_command_from_hook_payload_supports_arguments_json() -> None:
 
 
 def test_post_bash_checkpoint_runs_selective_sync_when_governed_paths_change(
-    monkeypatch, capsys, tmp_path: Path
+    monkeypatch, tmp_path: Path
 ) -> None:
     calls: list[tuple[str, list[str], int]] = []
 
@@ -195,21 +213,24 @@ def test_post_bash_checkpoint_runs_selective_sync_when_governed_paths_change(
             return SimpleNamespace(returncode=0, stdout="", stderr="")
         return None
 
-    _patch_stdin(monkeypatch, "apply_patch <<'PATCH'")
     monkeypatch.setattr(codex_host_post_bash_checkpoint.codex_host_shared, "run_odylith", _fake_run_odylith)
-    monkeypatch.setattr(
-        codex_host_post_bash_checkpoint,
-        "command_scoped_governed_paths",
-        lambda *, project_dir, command: [
+    host_dirty_checkpoint.record_dirty_event(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="codex-sync",
+        source="test",
+        governed_paths=[
             "odylith/casebook/bugs/2026-04-14-example.md",
             "odylith/radar/source/INDEX.md",
         ],
     )
 
-    exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)])
-    out = capsys.readouterr().out
+    result = codex_host_post_bash_checkpoint.settle_deferred_checkpoint_events(
+        project_dir=tmp_path,
+        session_id="codex-sync",
+    )
 
-    assert exit_code == 0
+    assert result == {}
     assert len(calls) == 2
     assert calls[0][1] == ["start", "--repo-root", "."]
     sync_project_dir, sync_args, sync_timeout = calls[1]
@@ -220,59 +241,62 @@ def test_post_bash_checkpoint_runs_selective_sync_when_governed_paths_change(
         "odylith/radar/source/INDEX.md",
     ]
     assert sync_timeout == 180
-
-    assert out == ""
+    assert host_dirty_checkpoint.read_dirty_events(repo_root=tmp_path, host_family="codex") == []
 
 
 def test_post_bash_checkpoint_emits_failure_message_on_selective_sync_error(
-    monkeypatch, capsys, tmp_path: Path
+    monkeypatch, tmp_path: Path
 ) -> None:
     def _fake_run_odylith(*, project_dir, args, timeout=20):
         if args and args[0] == "sync":
             return SimpleNamespace(returncode=2, stdout="", stderr="validate failure\n")
         return None
 
-    _patch_stdin(monkeypatch, "apply_patch <<'PATCH'")
     monkeypatch.setattr(codex_host_post_bash_checkpoint.codex_host_shared, "run_odylith", _fake_run_odylith)
-    monkeypatch.setattr(
-        codex_host_post_bash_checkpoint,
-        "command_scoped_governed_paths",
-        lambda *, project_dir, command: ["odylith/casebook/bugs/2026-04-14-example.md"],
+    host_dirty_checkpoint.record_dirty_event(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="codex-sync-fail",
+        source="test",
+        governed_paths=["odylith/casebook/bugs/2026-04-14-example.md"],
     )
 
-    exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)])
-    out = capsys.readouterr().out
+    result = codex_host_post_bash_checkpoint.settle_deferred_checkpoint_events(
+        project_dir=tmp_path,
+        session_id="codex-sync-fail",
+    )
 
-    # Fail-soft: exits 0 even when sync fails, emits systemMessage describing failure.
-    assert exit_code == 0
-    payload = json.loads(out)
-    assert "failed" in payload["systemMessage"]
-    assert "validate failure" in payload["systemMessage"]
+    assert result is not None
+    assert "failed" in result["systemMessage"]
+    assert "validate failure" in result["systemMessage"]
+    assert host_dirty_checkpoint.read_dirty_events(repo_root=tmp_path, host_family="codex")
 
 
 def test_post_bash_checkpoint_emits_skipped_message_when_launcher_unavailable(
-    monkeypatch, capsys, tmp_path: Path
+    monkeypatch, tmp_path: Path
 ) -> None:
     def _fake_run_odylith(*, project_dir, args, timeout=20):
         return None  # Launcher not available.
 
-    _patch_stdin(monkeypatch, "sed -i 's/foo/bar/g' odylith/casebook/bugs/foo.md")
     monkeypatch.setattr(codex_host_post_bash_checkpoint.codex_host_shared, "run_odylith", _fake_run_odylith)
-    monkeypatch.setattr(
-        codex_host_post_bash_checkpoint,
-        "command_scoped_governed_paths",
-        lambda *, project_dir, command: ["odylith/casebook/bugs/foo.md"],
+    host_dirty_checkpoint.record_dirty_event(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="codex-sync-skip",
+        source="test",
+        governed_paths=["odylith/casebook/bugs/foo.md"],
     )
 
-    exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)])
-    out = capsys.readouterr().out
+    result = codex_host_post_bash_checkpoint.settle_deferred_checkpoint_events(
+        project_dir=tmp_path,
+        session_id="codex-sync-skip",
+    )
 
-    assert exit_code == 0
-    payload = json.loads(out)
-    assert "skipped" in payload["systemMessage"]
+    assert result is not None
+    assert "skipped" in result["systemMessage"]
 
 
-def test_post_bash_checkpoint_prioritizes_pending_chat_replay(monkeypatch, capsys, tmp_path: Path) -> None:
+def test_post_bash_checkpoint_keeps_pending_chat_replay_off_tool_path(monkeypatch, capsys, tmp_path: Path) -> None:
     surface_runtime.stream_state.append_intervention_event(
         repo_root=tmp_path,
         kind="intervention_card",
@@ -311,11 +335,7 @@ def test_post_bash_checkpoint_prioritizes_pending_chat_replay(monkeypatch, capsy
     exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)])
 
     assert exit_code == 0
-    payload = json.loads(capsys.readouterr().out)
-    assert payload["systemMessage"] == (
-        "---\n\n**Odylith Observation:** Checkpoint must carry this pending block.\n\n---"
-    )
-    assert "Odylith visible delivery recovery:" in payload["hookSpecificOutput"]["additionalContext"]
+    assert capsys.readouterr().out == ""
 
 
 def test_governed_changed_paths_parses_porcelain_z_output(monkeypatch, tmp_path: Path) -> None:
@@ -437,7 +457,7 @@ def test_post_bash_bundle_uses_recent_prompt_excerpt_not_intervention_summary(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
-    codex_host_post_bash_checkpoint.intervention_surface_runtime.stream_state.append_intervention_event(
+    surface_runtime.stream_state.append_intervention_event(
         repo_root=tmp_path,
         kind="capture_proposed",
         summary="Odylith Proposal pending.",
@@ -463,7 +483,7 @@ def test_post_bash_bundle_uses_recent_prompt_excerpt_not_intervention_summary(
     assert bundle["observation"]["prompt_excerpt"] == "Preserve the human prompt across bash checkpoints."
 
 
-def test_main_routes_checkpoint_context_through_additional_context(
+def test_main_records_checkpoint_context_without_additional_context(
     monkeypatch,
     tmp_path: Path,
     capsys,
@@ -484,52 +504,21 @@ def test_main_routes_checkpoint_context_through_additional_context(
         lambda command: True,
     )
     monkeypatch.setattr(
-        codex_host_post_bash_checkpoint.codex_host_shared,
-        "run_odylith",
-        lambda **kwargs: None,
-    )
-    monkeypatch.setattr(
         codex_host_post_bash_checkpoint,
         "command_scoped_governed_paths",
         lambda **kwargs: [],
     )
-    monkeypatch.setattr(
-        codex_host_post_bash_checkpoint,
-        "_post_bash_bundle",
-        lambda **kwargs: {
-            "intervention_bundle": {
-                "candidate": {
-                    "stage": "card",
-                    "suppressed_reason": "",
-                    "markdown_text": "**Odylith Observation:** The signal is real.",
-                    "plain_text": "Odylith Observation: The signal is real.",
-                },
-                "proposal": {
-                    "eligible": True,
-                    "suppressed_reason": "",
-                    "markdown_text": 'Odylith Proposal: Preserve the chat-visible UX contract.\n\nTo apply, say "apply this proposal".',
-                    "plain_text": "Odylith Proposal: preserve the chat-visible UX contract.",
-                },
-            },
-            "closeout_bundle": {
-                "markdown_text": "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract.",
-                "plain_text": "Odylith Assist: B-096 stayed tied to the refreshed intervention contract.",
-            },
-        },
-    )
 
     exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)])
 
-    payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
-    assert payload["hookSpecificOutput"]["hookEventName"] == "PostToolUse"
-    assert "Odylith visible delivery recovery:" in payload["hookSpecificOutput"]["additionalContext"]
-    assert "**Odylith Observation:** The signal is real." in payload["hookSpecificOutput"]["additionalContext"]
-    assert "Odylith Proposal:" in payload["hookSpecificOutput"]["additionalContext"]
-    assert "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract." not in payload["hookSpecificOutput"]["additionalContext"]
-    assert "**Odylith Observation:** The signal is real." in payload["systemMessage"]
-    assert "Odylith Proposal:" in payload["systemMessage"]
-    assert "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract." not in payload["systemMessage"]
+    assert capsys.readouterr().out == ""
+    events = host_dirty_checkpoint.read_dirty_events(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="bash-main",
+    )
+    assert events[0]["paths"] == ["src/main.py"]
 
 
 def test_command_scoped_governed_paths_skips_repo_wide_dirty_files_when_command_lacks_exact_target(

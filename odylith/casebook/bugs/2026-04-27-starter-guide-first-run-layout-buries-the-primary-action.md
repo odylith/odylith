@@ -1,5 +1,8 @@
 - Bug ID: CB-132
 
+- Type: UX
+
+
 - Status: Closed
 
 - Created: 2026-04-27
@@ -10,7 +13,6 @@
 
 - Reproducibility: Always
 
-- Type: ux
 
 - Description: Starter Guide first-run layout buries the primary action
 

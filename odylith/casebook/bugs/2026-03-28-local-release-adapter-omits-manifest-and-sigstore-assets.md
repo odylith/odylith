@@ -1,5 +1,8 @@
 - Bug ID: CB-011
 
+- Type: Product
+
+
 - Status: Open
 
 - Created: 2026-03-28
@@ -8,7 +11,6 @@
 
 - Reproducibility: Always
 
-- Type: Product
 
 - Description: When `ODYLITH_RELEASE_BASE_URL` was set for local hosted-asset
   rehearsal, Odylith built a synthetic release index from the manifest's

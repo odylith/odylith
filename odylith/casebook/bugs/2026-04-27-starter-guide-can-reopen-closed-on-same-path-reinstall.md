@@ -1,5 +1,8 @@
 - Bug ID: CB-131
 
+- Type: UXRegression
+
+
 - Status: Closed
 
 - Created: 2026-04-27
@@ -10,7 +13,6 @@
 
 - Reproducibility: Consistent
 
-- Type: UX regression
 
 - Description: A fresh consumer install can show only the bottom-right Starter Guide recovery pill when the browser still has a dismissal bit from an older install at the same filesystem path. The guide markup is present, but the shell dismissal key did not include an install-instance token, so the old browser key matched the new first-run shape.
 

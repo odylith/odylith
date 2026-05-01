@@ -1,5 +1,8 @@
 - Bug ID: CB-100
 
+- Type: Product
+
+
 - Status: Open
 
 - Created: 2026-04-09
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Atlas now clears review-only freshness debt quickly, but a
   genuine Mermaid render still misses the sub-second target. The current

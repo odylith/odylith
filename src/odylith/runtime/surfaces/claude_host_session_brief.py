@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any, Mapping
@@ -29,6 +30,10 @@ _CURRENT_RUNTIME_PATH = "odylith/compass/runtime/current.v1.json"
 
 
 _STARTUP_PREFIX = "Odylith startup"
+
+
+def _env_truthy(name: str) -> bool:
+    return str(os.environ.get(name) or "").strip().casefold() in {"1", "true", "yes", "on"}
 
 
 def _summary_from_start_output(output: str) -> str:
@@ -71,15 +76,43 @@ def _summary_from_start_output(output: str) -> str:
     return ""
 
 
+def _summary_from_snapshot(snapshot: Mapping[str, Any] | None) -> str:
+    """Render a compact startup summary without shelling out to `odylith start`."""
+    if not isinstance(snapshot, Mapping) or not snapshot:
+        return ""
+    summary: list[str] = []
+    headline = claude_host_shared.active_workstream_headline(snapshot)
+    if headline:
+        summary.append(f"snapshot: {headline}")
+    active_lines = claude_host_shared.active_workstream_lines(snapshot)
+    if active_lines:
+        active = ", ".join(line.removeprefix("- ").strip() for line in active_lines[:3])
+        summary.append(f"active: {active}")
+    freshness = claude_host_shared.freshness_label(snapshot)
+    if freshness:
+        summary.append(f"freshness: {freshness}")
+    rendered = "\n".join(f"{_STARTUP_PREFIX}: {line}" for line in summary if line).strip()
+    if rendered:
+        return (
+            f"{rendered}\n"
+            f"{_STARTUP_PREFIX}: fast path used cached runtime state; run `odylith start` manually for full grounding."
+        )
+    return ""
+
+
 def render_session_brief(
     *,
     repo_root: Path | str = ".",
     snapshot_override: Mapping[str, Any] | None = None,
     start_output_override: str | None = None,
+    eager_start: bool = False,
 ) -> str:
     """Pure renderer used by the live hook and by tests."""
     if start_output_override is not None:
         return _summary_from_start_output(start_output_override)
+    if not eager_start and not _env_truthy("ODYLITH_HOOK_EAGER_START"):
+        snapshot = snapshot_override if snapshot_override is not None else claude_host_shared.load_runtime_snapshot(repo_root)
+        return _summary_from_snapshot(snapshot)
     completed = claude_host_shared.run_odylith(
         project_dir=repo_root,
         args=["start", "--repo-root", "."],
@@ -109,9 +142,14 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Suppress the printed summary even when one is computed.",
     )
+    parser.add_argument(
+        "--eager-start",
+        action="store_true",
+        help="Run `odylith start` during SessionStart instead of the cached fast path.",
+    )
     args = parser.parse_args(list(argv or sys.argv[1:]))
     repo_root = claude_host_shared.resolve_repo_root(args.repo_root)
-    summary = render_session_brief(repo_root=repo_root)
+    summary = render_session_brief(repo_root=repo_root, eager_start=bool(args.eager_start))
     snapshot = claude_host_shared.load_runtime_snapshot(repo_root)
     claude_host_shared.write_project_memory(
         project_dir=repo_root,

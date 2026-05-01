@@ -891,6 +891,35 @@ def test_generated_install_script_verify_sigstore_identity_suppresses_warning_wi
     assert completed.stderr == ""
 
 
+def test_generated_install_script_verify_sigstore_identity_suppresses_timestamped_warning_with_ok_stdout(
+    tmp_path: Path,
+) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    asset_path = tmp_path / "asset.txt"
+    completed = _run_verify_sigstore_identity(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        stdout_text=f"OK: {asset_path}\n",
+        stderr_text=(
+            "[10:18:47] WARNING  Failed to load a trusted root key: unsupported  trust.py:177\n"
+            "                         key type: 7\n"
+        ),
+    )
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.stdout == f"OK: {asset_path}\n"
+    assert completed.stderr == ""
+
+
 def test_generated_install_script_verify_sigstore_identity_suppresses_split_warning_label(
     tmp_path: Path,
 ) -> None:

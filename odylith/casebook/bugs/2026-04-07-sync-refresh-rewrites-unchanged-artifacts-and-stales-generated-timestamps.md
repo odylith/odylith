@@ -1,5 +1,8 @@
 - Bug ID: CB-066
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-07
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Some sync-owned JSON artifacts preserve a stable
   `generated_utc` when their semantic payload is unchanged, but the writer

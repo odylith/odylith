@@ -1,5 +1,8 @@
 - Bug ID: CB-147
 
+- Type: Product
+
+
 - Status: Open
 
 - Created: 2026-05-01
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Claude hooks spam unhealthy launcher repair errors during bootstrap repair
 

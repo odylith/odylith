@@ -1,5 +1,8 @@
 - Bug ID: CB-109
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-14
@@ -10,7 +13,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Compass live and historical `24h` and `48h` Timeline Audit
   views could collapse to the selected `audit_day` instead of showing the full

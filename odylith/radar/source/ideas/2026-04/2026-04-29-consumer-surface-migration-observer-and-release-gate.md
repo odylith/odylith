@@ -182,6 +182,9 @@ Add a migration observer to the migration-runtime release gate. It scans changed
 - `migration-observer:0.1.12:operator-cli-contracts:c6e13f7283c5`
 - `migration-observer:0.1.12:operator-cli-contracts:40e56321befd`
 - `migration-observer:0.1.12:operator-cli-contracts:0be705679685`
+- `migration-observer:0.1.12:guidance-and-skills:2d48e421d4a4`
+- `migration-observer:0.1.12:browser-surfaces:ed5db266b23d`
+- `migration-observer:0.1.12:install-managed-assets:9a3f5a953776`
 
 ## 0.1.12 Upgrade Assessment
 - First-run install and sync overlap: existing 0.1.11 consumer repos can safely
@@ -369,6 +372,32 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   variable for the next install. Existing consumer repos need no migration; the
   change only improves the default transcript for shells where the opt-out
   leaked from earlier local testing.
+- Host latency and Casebook token contract hardening: v0.1.13 host assets
+  prefer the bootstrap doctor path when repair is needed, so Claude, Codex,
+  and future host adapters do not keep re-entering the stale launcher during
+  bootstrap repair. Casebook `Status` and `Type` are now compact token fields
+  in source validation, bug capture, projections, and bundled dashboards;
+  existing records are normalized in repo-owned Casebook truth. Existing
+  consumer repos need no data migration. Upgrading installs the fixed host
+  launcher, refreshed bundle assets, and compact Casebook renderer behavior.
+  Migration observer markers:
+  `migration-observer:0.1.12:guidance-and-skills:048a2f4ecf97`,
+  `migration-observer:0.1.12:operator-cli-contracts:70c8b2cf9689`,
+  `migration-observer:0.1.12:browser-surfaces:bc447ebffb0c`,
+  `migration-observer:0.1.12:install-managed-assets:0576ffce86df`.
+- Host hook fast-path dispatch: v0.1.13 keeps the public
+  `./.odylith/bin/odylith claude|codex ...` command surface while the generated
+  trusted launcher dispatches baked host hook commands directly to their
+  runtime modules after trust selection. The low-signal prompt gate now uses a
+  shared lightweight classifier before importing the full intervention renderer
+  stack, and the Claude/Codex host contracts document that hot hooks must not
+  pay for full CLI import when they can return empty. Existing consumer repos
+  do not need repo-truth migration; upgrading installs the regenerated launcher,
+  bundled host assets, refreshed guidance, and refreshed Casebook/Radar browser
+  surfaces. Migration observer markers:
+  `migration-observer:0.1.12:guidance-and-skills:2d48e421d4a4`,
+  `migration-observer:0.1.12:browser-surfaces:ed5db266b23d`,
+  `migration-observer:0.1.12:install-managed-assets:9a3f5a953776`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.

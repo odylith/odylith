@@ -1,5 +1,8 @@
 - Bug ID: CB-012
 
+- Type: Product
+
+
 - Status: Open
 
 - Created: 2026-03-28
@@ -8,7 +11,6 @@
 
 - Reproducibility: Always
 
-- Type: Product
 
 - Description: The hosted installer's localhost allowlist accepted
   `http://127.0.0.1/...` and similar URLs without a port, but the local

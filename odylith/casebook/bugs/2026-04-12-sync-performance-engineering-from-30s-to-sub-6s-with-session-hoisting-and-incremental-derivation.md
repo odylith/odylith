@@ -1,5 +1,8 @@
 - Bug ID: CB-105
 
+- Type: PerformanceEngineeringLearning
+
+
 - Status: Resolved
 
 - Created: 2026-04-12
@@ -8,7 +11,6 @@
 
 - Reproducibility: Always
 
-- Type: Performance-Engineering-Learning
 
 - Description: Full governed sync (`odylith sync --force --impact-mode full`)
   took 30.47 seconds on the 91-workstream, 25-component, 36-diagram product

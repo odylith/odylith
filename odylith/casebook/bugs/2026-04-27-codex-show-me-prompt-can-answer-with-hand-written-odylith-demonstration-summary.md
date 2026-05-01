@@ -1,5 +1,8 @@
 - Bug ID: CB-130
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-27
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Codex show-me prompt can answer with hand-written Odylith demonstration summary
 

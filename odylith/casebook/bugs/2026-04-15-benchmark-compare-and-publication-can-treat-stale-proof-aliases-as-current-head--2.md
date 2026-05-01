@@ -1,5 +1,8 @@
 - Bug ID: CB-116
 
+- Type: Product
+
+
 - Status: Open
 
 - Created: 2026-04-15
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Benchmark compare and publication can continue to reason from an older latest-proof.v1.json report or tracked summary even after the repo head has moved forward and only diagnostic or interrupted proof evidence exists for the current tree. That makes the benchmark lane sound more authoritative and current than it is.
 

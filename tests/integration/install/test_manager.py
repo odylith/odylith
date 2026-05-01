@@ -1014,7 +1014,7 @@ def test_install_bundle_merges_host_settings_after_verified_runtime_activation(t
         for hook in group.get("hooks", [])
     ]
     assert "python3 user.py" in claude_prompt_commands
-    assert any("claude prompt-context" in command for command in claude_prompt_commands)
+    assert any("claude prompt-bundle" in command for command in claude_prompt_commands)
 
     codex_hooks = json.loads(codex_hooks_path.read_text(encoding="utf-8"))
     codex_prompt_commands = [

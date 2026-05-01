@@ -2,16 +2,10 @@
 
 When Codex finishes an edit-like Bash command or native patch tool call
 (``apply_patch``, ``cp``, ``mv``, ``sed -i``, etc. -- see
-``codex_host_shared.edit_like_bash``), this hook nudges Odylith in two
-narrow steps:
-
-1. Run ``odylith start --repo-root .`` through a short repo-local
-   cache so the session stays grounded without paying the launcher cost
-   after every edit.
-2. If the edit touched any repo-relative path under the Odylith
-   governed source-of-truth subtrees, run
-   ``odylith sync --impact-mode selective <paths>`` so the derived
-   dashboards stay aligned.
+``codex_host_shared.edit_like_bash``), this hook records a tiny dirty event
+and returns. Expensive grounding and selective governance refresh happen from
+``settle_deferred_checkpoint_events`` on Stop, where Codex can pay the work
+outside the tool-call critical path.
 
 The second step is Bash-checkpoint parity with Claude's
 ``post-edit-checkpoint`` hook
@@ -20,9 +14,8 @@ schemas expose ``PostToolUse`` for ``Bash`` only; native desktop/app tool
 payloads can still be parsed by this module in tests or manual fallback
 commands, but they are not claimed as automatically hook-dispatched.
 
-The hook never blocks the tool call. It always exits 0; successful refreshes
-stay silent, while skipped or failed refreshes emit a compact fail-soft
-``systemMessage`` so the operator can recover manually if needed.
+The hook always exits 0 and stays silent. Stop-time settlement emits a compact
+fail-soft ``systemMessage`` only when a deferred refresh is skipped or fails.
 """
 
 from __future__ import annotations
@@ -40,10 +33,9 @@ from typing import Any
 from typing import Mapping
 
 from odylith.runtime.intervention_engine import host_surface_runtime
-from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
 from odylith.runtime.surfaces import claude_host_shared
 from odylith.runtime.surfaces import codex_host_shared
-from odylith.runtime.surfaces import host_intervention_support
+from odylith.runtime.surfaces import host_dirty_checkpoint
 
 _PATCH_PATH_RE = re.compile(r"^\*\*\* (?:Add|Update|Delete) File: (.+)$", re.MULTILINE)
 _PATCH_MOVE_RE = re.compile(r"^\*\*\* Move to: (.+)$", re.MULTILINE)
@@ -723,6 +715,58 @@ def _post_bash_bundle(
     )
 
 
+def record_deferred_checkpoint_event(
+    *,
+    project_dir: Path | str,
+    command: str,
+    session_id: str = "",
+) -> str:
+    """Record a cheap Codex dirty event for later Stop-time settlement."""
+
+    project = Path(project_dir).expanduser().resolve()
+    changed_paths = inferred_command_paths(project_dir=project, command=command)
+    governed_paths = command_scoped_governed_paths(project_dir=project, command=command)
+    if not changed_paths and not governed_paths:
+        return ""
+    return host_dirty_checkpoint.record_dirty_event(
+        repo_root=project,
+        host_family="codex",
+        session_id=session_id,
+        source="post_bash_checkpoint",
+        command=command,
+        paths=changed_paths,
+        governed_paths=governed_paths,
+    )
+
+
+def settle_deferred_checkpoint_events(
+    *,
+    project_dir: Path | str,
+    session_id: str = "",
+) -> dict[str, str] | None:
+    """Run deferred Codex checkpoint refresh work and clear settled events."""
+
+    project = Path(project_dir).expanduser().resolve()
+    events = host_dirty_checkpoint.read_dirty_events(
+        repo_root=project,
+        host_family="codex",
+        session_id=session_id,
+    )
+    if not events:
+        return None
+    event_ids = [str(event.get("id") or "").strip() for event in events if str(event.get("id") or "").strip()]
+    governed_paths = host_dirty_checkpoint.deduped_governed_paths(events)
+    if not governed_paths:
+        host_dirty_checkpoint.clear_dirty_events(repo_root=project, event_ids=event_ids)
+        return None
+    run_start_grounding_if_due(project_dir=project, session_id=session_id)
+    governance_message = refresh_governance(project_dir=project, paths=governed_paths)
+    governance_status = str((governance_message or {}).get("systemMessage", "")).strip()
+    if not governance_status:
+        host_dirty_checkpoint.clear_dirty_events(repo_root=project, event_ids=event_ids)
+    return governance_message
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="odylith codex post-bash-checkpoint",
@@ -737,62 +781,11 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     project_dir = claude_host_shared.resolve_repo_root(args.repo_root)
-
-    # Keep grounding in the edit-like checkpoint lane without paying the
-    # launcher/start cost for every hook process in the same active session.
-    run_start_grounding_if_due(project_dir=project_dir, session_id=session_id)
-
-    # If the edit-like Bash command touched any governed source-of-truth
-    # subtree, refresh the derived dashboards via selective sync. This
-    # is Bash-checkpoint parity with Claude's post-edit lane; non-Bash
-    # edit surfaces would need their own hook.
-    changed = command_scoped_governed_paths(project_dir=project_dir, command=command)
-    governance_message = refresh_governance(project_dir=project_dir, paths=changed)
-    bundle = _post_bash_bundle(
+    record_deferred_checkpoint_event(
         project_dir=project_dir,
         command=command,
         session_id=session_id,
     )
-    decision = (
-        host_surface_runtime.visible_intervention_decision(
-            repo_root=project_dir,
-            bundle=bundle,
-            host_family="codex",
-            turn_phase="post_bash_checkpoint",
-            session_id=session_id,
-            include_proposal=True,
-            include_closeout=False,
-            developer_include_closeout=True,
-        )
-        if bundle
-        else None
-    )
-    developer_context = decision.developer_context if decision is not None else ""
-    live_intervention = decision.visible_markdown if decision is not None else ""
-    replay = host_intervention_support.preferred_live_replay_markdown(
-        repo_root=project_dir,
-        host_family="codex",
-        session_id=session_id,
-    )
-    developer_context = host_intervention_support.join_sections(replay, developer_context) if replay else developer_context
-    live_intervention = replay or live_intervention
-    if bundle and decision is not None and developer_context:
-        host_surface_runtime.append_visible_intervention_events(
-            repo_root=project_dir,
-            bundle=bundle,
-            decision=decision,
-            render_surface="codex_post_tool_use",
-        )
-    payload_out = host_surface_runtime.codex_post_tool_payload(
-        developer_context=developer_context,
-        system_message=host_surface_runtime.compose_checkpoint_system_message(
-            live_intervention=live_intervention,
-            governance_status=(governance_message or {}).get("systemMessage", ""),
-        ),
-        include_assist_in_visible_fallback=False,
-    )
-    if payload_out:
-        sys.stdout.write(json.dumps(payload_out))
     return 0
 
 

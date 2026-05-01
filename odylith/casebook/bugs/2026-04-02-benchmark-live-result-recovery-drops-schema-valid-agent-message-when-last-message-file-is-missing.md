@@ -1,5 +1,8 @@
 - Bug ID: CB-045
 
+- Type: Product
+
+
 - Status: Open
 
 - Created: 2026-04-02
@@ -8,7 +11,6 @@
 
 - Reproducibility: Medium
 
-- Type: Product
 
 - Description: The live proof runner could score a Codex run as
   `missing_schema_output` whenever `--output-last-message` failed to produce

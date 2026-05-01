@@ -1,5 +1,8 @@
 - Bug ID: CB-119
 
+- Type: Product
+
+
 - Status: Open
 
 - Created: 2026-04-16
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Benchmark live proof conflates support paths, write targets, and read-only sandbox policy
 

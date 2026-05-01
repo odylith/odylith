@@ -1,5 +1,8 @@
 - Bug ID: CB-148
 
+- Type: Product
+
+
 - Status: Open
 
 - Created: 2026-05-01
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Bootstrap doctor repair still surfaces trusted-root warning noise
 

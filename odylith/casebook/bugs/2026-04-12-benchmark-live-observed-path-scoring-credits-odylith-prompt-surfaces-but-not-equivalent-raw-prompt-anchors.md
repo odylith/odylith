@@ -1,5 +1,8 @@
 - Bug ID: CB-107
 
+- Type: Product
+
+
 - Status: Open
 
 - Created: 2026-04-12
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Live observed-path attribution starts from Odylith prompt-payload
   surfaces in `odylith_on` but does not symmetrically credit equivalent

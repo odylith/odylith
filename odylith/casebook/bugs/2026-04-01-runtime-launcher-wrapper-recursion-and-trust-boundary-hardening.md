@@ -1,5 +1,8 @@
 - Bug ID: CB-026
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-01
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Odylith's repo-local launcher and wrapped-runtime repair path
   could recurse through `.odylith/runtime/current`, trust mutable launcher

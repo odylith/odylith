@@ -1,5 +1,8 @@
 - Bug ID: CB-101
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-10
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: After switching the Odylith product repo from detached
   `source-local` back to pinned dogfood, the upgrade/dashboard wrapper could

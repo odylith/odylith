@@ -1,5 +1,8 @@
 - Bug ID: CB-020
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-03-29
@@ -10,7 +13,6 @@
 
 - Reproducibility: Always
 
-- Type: Product
 
 - Description: Compass kept rendering a deterministic local standup brief even
   when Odylith was running inside Codex and the local provider was available.

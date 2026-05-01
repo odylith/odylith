@@ -1,5 +1,8 @@
 - Bug ID: CB-072
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-08
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The `pytest` and `candidate-proof` release-candidate lanes still
   depended on local Codex-host assumptions inside unit tests. On GitHub-hosted

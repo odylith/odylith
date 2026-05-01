@@ -2,6 +2,9 @@
 
 - Bug ID: CB-001
 
+- Type: Tooling
+
+
 - Status: Closed
 
 - Created: 2026-02-15
@@ -12,7 +15,6 @@
 
 - Reproducibility: Intermittent
 
-- Type: Tooling
 
 - Description:
 
@@ -58,4 +60,3 @@
   - Use `Barrier(n_threads + 1)` whenever the main thread participates.
   - Always add timeouts to coordination primitives in tests (barriers/events/queues) so failures are
     bounded and observable rather than hanging indefinitely.
-

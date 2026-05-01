@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 import sys
 
@@ -46,15 +47,42 @@ def _summary_from_output(output: str) -> str:
     return "\n".join(f"Odylith startup: {line}" for line in summary if line).strip()
 
 
+def _env_truthy(name: str) -> bool:
+    return str(os.environ.get(name) or "").strip().casefold() in {"1", "true", "yes", "on"}
+
+
+def _summary_from_snapshot(snapshot: dict) -> str:
+    if not isinstance(snapshot, dict) or not snapshot:
+        return ""
+    summary: list[str] = []
+    focus = snapshot.get("execution_focus")
+    global_focus = focus.get("global") if isinstance(focus, dict) else {}
+    headline = str(global_focus.get("headline") or "").strip() if isinstance(global_focus, dict) else ""
+    if headline:
+        summary.append(f"snapshot: {' '.join(headline.split())}")
+    active = global_focus.get("workstreams") if isinstance(global_focus, dict) else []
+    if isinstance(active, list):
+        tokens = [str(token or "").strip().upper() for token in active if str(token or "").strip()]
+        if tokens:
+            summary.append(f"active: {', '.join(tokens[:3])}")
+    if snapshot.get("generated_utc"):
+        summary.append("freshness: cached")
+    return "\n".join(f"Odylith startup: {line}" for line in summary if line).strip()
+
+
 def main() -> int:
     project_dir = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path.cwd().resolve()
-    completed = run_odylith(project_dir=project_dir, args=["start", "--repo-root", "."], timeout=20)
-    if completed is None:
-        return 0
-    summary = _summary_from_output(completed.stdout)
+    snapshot = load_runtime_snapshot(project_dir)
+    if _env_truthy("ODYLITH_HOOK_EAGER_START"):
+        completed = run_odylith(project_dir=project_dir, args=["start", "--repo-root", "."], timeout=20)
+        if completed is None:
+            return 0
+        summary = _summary_from_output(completed.stdout)
+    else:
+        summary = _summary_from_snapshot(snapshot)
     write_project_memory(
         project_dir=project_dir,
-        snapshot=load_runtime_snapshot(project_dir),
+        snapshot=snapshot,
         start_output=summary,
     )
     if summary:

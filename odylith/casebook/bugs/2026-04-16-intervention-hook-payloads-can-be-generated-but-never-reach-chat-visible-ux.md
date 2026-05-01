@@ -1,6 +1,9 @@
 - Bug ID: CB-121
 
-- Status: Fixed Pending Release
+- Type: Product
+
+
+- Status: FixedPendingRelease
 
 - Created: 2026-04-16
 
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Intervention hook payloads can be generated but never reach chat-visible UX
 

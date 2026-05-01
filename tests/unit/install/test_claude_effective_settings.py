@@ -41,16 +41,17 @@ def test_write_effective_claude_project_settings_writes_byte_stable_json(tmp_pat
     assert payload["hooks"]["PostToolUse"][1]["matcher"] == "Bash"
     prompt_hooks = payload["hooks"]["UserPromptSubmit"][0]["hooks"]
     assert [hook["command"] for hook in prompt_hooks] == [
-        'python3 "$CLAUDE_PROJECT_DIR"/.claude/hooks/show-me-prompt-guard.py "$CLAUDE_PROJECT_DIR"',
-        'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude prompt-context --repo-root "$CLAUDE_PROJECT_DIR"',
-        'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude prompt-teaser --repo-root "$CLAUDE_PROJECT_DIR"',
+        'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude prompt-bundle --repo-root "$CLAUDE_PROJECT_DIR"',
     ]
-    assert prompt_hooks[0]["timeout"] == 5
+    assert prompt_hooks[0]["timeout"] == 30
     post_edit_hook = payload["hooks"]["PostToolUse"][0]["hooks"][0]
     post_bash_hook = payload["hooks"]["PostToolUse"][1]["hooks"][0]
     subagent_stop_hook = payload["hooks"]["SubagentStop"][0]["hooks"][0]
-    assert "async" not in post_edit_hook
-    assert "async" not in post_bash_hook
+    assert post_edit_hook["async"] is True
+    assert post_bash_hook["async"] is True
+    guard_if_patterns = [hook["if"] for hook in payload["hooks"]["PreToolUse"][0]["hooks"]]
+    assert "Bash(rm *)" in guard_if_patterns
+    assert "Bash(*odylith backlog create*)" in guard_if_patterns
     assert post_bash_hook["command"] == (
         'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude post-bash-checkpoint '
         '--repo-root "$CLAUDE_PROJECT_DIR"'
@@ -140,7 +141,7 @@ def test_write_effective_claude_project_settings_merges_without_destroying_user_
         for hook in group.get("hooks", [])
     ]
     assert "python3 custom_prompt_hook.py" in prompt_commands
-    assert any("claude prompt-context" in command for command in prompt_commands)
+    assert any("claude prompt-bundle" in command for command in prompt_commands)
     backup_path = settings_path.with_name("settings.json.odylith-preimage.bak")
     assert json.loads(backup_path.read_text(encoding="utf-8")) == original_payload
 

@@ -12,64 +12,7 @@ from odylith.runtime.common.value_coercion import normalize_token as _normalize_
 from odylith.runtime.intervention_engine import conversation_artifacts
 from odylith.runtime.intervention_engine import conversation_common
 from odylith.runtime.intervention_engine import conversation_metrics
-
-
-_VISIBILITY_PRODUCT_TOKENS = {
-    "ambient",
-    "assist",
-    "intervention",
-    "interventions",
-    "observation",
-    "observations",
-    "odylith",
-    "proposal",
-    "proposals",
-}
-_VISIBILITY_DELIVERY_TOKENS = {
-    "chat",
-    "hook",
-    "hooks",
-    "output",
-    "outputs",
-    "see",
-    "seen",
-    "show",
-    "showing",
-    "shown",
-    "surface",
-    "surfaced",
-    "surfacing",
-    "visible",
-    "visibility",
-    "ux",
-}
-_VISIBILITY_COMPLAINT_PHRASES = (
-    "do not see",
-    "don't see",
-    "cannot see",
-    "can't see",
-    "not seeing",
-    "not visible",
-    "still do not see",
-    "still don't see",
-    "no ambient",
-    "no intervention",
-    "no interventions",
-    "no assist",
-    "no signal",
-    "no signals",
-    "zero ambient",
-    "zero intervention",
-    "zero interventions",
-    "zero assist",
-    "zero signals",
-    "not showing",
-    "hidden hook",
-    "hidden hooks",
-    "unproven this session",
-    "not sure",
-    "unsure",
-)
+from odylith.runtime.intervention_engine import prompt_signal_runtime
 
 
 def visibility_feedback_phrase(*, request: Any, assistant_summary: str = "") -> tuple[str, str]:
@@ -81,31 +24,17 @@ def visibility_feedback_phrase(*, request: Any, assistant_summary: str = "") -> 
     closeout even when no files changed.
     """
 
-    text = _normalize_string(
-        f"{conversation_common.field(request, 'prompt') or ''} {assistant_summary or ''}"
+    return prompt_signal_runtime.visibility_feedback_phrase(
+        prompt=conversation_common.field(request, "prompt"),
+        assistant_summary=assistant_summary,
     )
-    if not text:
-        return "", ""
-    tokens = conversation_common.meaningful_tokens(text)
-    product_hits = tokens & _VISIBILITY_PRODUCT_TOKENS
-    delivery_hits = tokens & _VISIBILITY_DELIVERY_TOKENS
-    if not product_hits or not delivery_hits:
-        return "", ""
-    if "odylith" not in tokens and len(product_hits | delivery_hits) < 3:
-        return "", ""
-    lowered = text.casefold()
-    if not any(phrase in lowered for phrase in _VISIBILITY_COMPLAINT_PHRASES):
-        return "", ""
-    phrase = "visibility feedback noted; this line is deliberately shown in chat"
-    return phrase, phrase
 
 
 def visibility_feedback_requested(*, prompt: Any = "", assistant_summary: str = "") -> bool:
-    markdown_phrase, _ = visibility_feedback_phrase(
-        request={"prompt": prompt},
+    return prompt_signal_runtime.visibility_feedback_requested(
+        prompt=prompt,
         assistant_summary=assistant_summary,
     )
-    return bool(markdown_phrase)
 
 
 def _assist_has_material_turn_evidence(

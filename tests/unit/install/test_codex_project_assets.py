@@ -98,6 +98,45 @@ def test_live_claude_skill_shims_and_review_assets_match_bundle_content() -> Non
         assert live_path.read_text(encoding="utf-8") == bundle_path.read_text(encoding="utf-8")
 
 
+def test_claude_explicit_only_skills_do_not_hide_automatic_context_skills() -> None:
+    explicit_only = {
+        "odylith-atlas-auto-update",
+        "odylith-atlas-render",
+        "odylith-backlog-create",
+        "odylith-backlog-validate",
+        "odylith-compass-executive",
+        "odylith-component-registry",
+        "odylith-context-engine-operations",
+        "odylith-delivery-governance-surface-ops",
+        "odylith-diagram-catalog",
+        "odylith-registry-spec-sync",
+        "odylith-registry-sync-specs",
+        "odylith-registry-validate",
+        "odylith-release-planning",
+        "odylith-schema-registry-governance",
+        "odylith-security-hardening",
+        "odylith-subagent-orchestrator",
+        "odylith-subagent-router",
+    }
+    automatic = {
+        "odylith-casebook-bug-capture",
+        "odylith-casebook-bug-preflight",
+        "odylith-code-hygiene-guard",
+        "odylith-context",
+        "odylith-show-me",
+        "odylith-start",
+        "odylith-sync",
+    }
+
+    for root in (LIVE_CLAUDE_ROOT / "skills", PROJECT_ROOT_BUNDLE / ".claude" / "skills"):
+        for skill_name in explicit_only:
+            text = (root / skill_name / "SKILL.md").read_text(encoding="utf-8")
+            assert "disable-model-invocation: true" in text
+        for skill_name in automatic:
+            text = (root / skill_name / "SKILL.md").read_text(encoding="utf-8")
+            assert "disable-model-invocation: true" not in text
+
+
 def test_claude_backlog_skill_shim_carries_exact_cli_enum_guard() -> None:
     paths = (
         LIVE_CLAUDE_ROOT / "skills" / "odylith-backlog-create" / "SKILL.md",

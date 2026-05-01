@@ -1,5 +1,8 @@
 - Bug ID: CB-015
 
+- Type: Product
+
+
 - Status: Open
 
 - Created: 2026-03-28
@@ -8,7 +11,6 @@
 
 - Reproducibility: Intermittent
 
-- Type: Product
 
 - Description: Verified release downloads and same-version runtime restaging
   were still too fragile under interruption: release-asset downloads lacked a

@@ -1,5 +1,8 @@
 - Bug ID: CB-085
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-09
@@ -10,7 +13,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Top-line governance KPI cards and release summary tiles kept
   drifting across Compass, Radar, Registry, and Casebook because the shared

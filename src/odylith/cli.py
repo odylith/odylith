@@ -138,6 +138,7 @@ _CLAUDE_HOST_COMMAND_MODULES = {
     "intervention-status": "odylith.runtime.surfaces.claude_host_intervention_status",
     "session-start": "odylith.runtime.surfaces.claude_host_session_brief",
     "subagent-start": "odylith.runtime.surfaces.claude_host_subagent_start",
+    "prompt-bundle": "odylith.runtime.surfaces.claude_host_prompt_bundle",
     "prompt-context": "odylith.runtime.surfaces.claude_host_prompt_context",
     "prompt-teaser": "odylith.runtime.surfaces.claude_host_prompt_teaser",
     "bash-guard": "odylith.runtime.surfaces.claude_host_bash_guard",
@@ -3209,6 +3210,7 @@ def build_parser() -> argparse.ArgumentParser:
     for command, help_text in (
         ("session-start", "Render the Odylith-grounded Claude SessionStart hook output."),
         ("subagent-start", "Render the Odylith-grounded Claude SubagentStart hook output."),
+        ("prompt-bundle", "Render bundled Odylith Claude UserPromptSubmit context and teaser output."),
         ("prompt-context", "Render discreet Odylith Claude UserPromptSubmit context."),
         ("prompt-teaser", "Render best-effort Odylith Claude UserPromptSubmit teaser output."),
         ("bash-guard", "Evaluate the Odylith destructive-command guard for Claude Bash hooks."),

@@ -14,6 +14,7 @@ from odylith.runtime.surfaces import claude_host_stop_summary
 from odylith.runtime.surfaces import codex_host_post_bash_checkpoint
 from odylith.runtime.surfaces import codex_host_prompt_context
 from odylith.runtime.surfaces import codex_host_stop_summary
+from odylith.runtime.surfaces import host_intervention_support
 
 
 def _shared_checkpoint_bundle() -> dict[str, object]:
@@ -128,17 +129,7 @@ def test_cross_host_prompt_cli_payload_stays_consistent_for_same_teaser(
     bundle = {"intervention_bundle": intervention}
 
     monkeypatch.setattr(
-        codex_host_prompt_context.conversation_surface,
-        "build_conversation_bundle",
-        lambda **_: bundle,
-    )
-    monkeypatch.setattr(
-        claude_host_prompt_context.conversation_surface,
-        "build_conversation_bundle",
-        lambda **_: bundle,
-    )
-    monkeypatch.setattr(
-        claude_host_prompt_teaser.claude_host_prompt_context.conversation_surface,
+        host_intervention_support.conversation_surface,
         "build_conversation_bundle",
         lambda **_: bundle,
     )

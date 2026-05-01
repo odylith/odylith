@@ -221,7 +221,9 @@ def test_session_start_hook_refreshes_claude_auto_memory(tmp_path: Path) -> None
     )
 
     assert completed.returncode == 0
-    assert "Odylith startup: selection: focused on B-083" in completed.stdout
+    assert "Odylith startup: snapshot: Claude hardening is live for B-083" in completed.stdout
+    assert "focused on B-083" not in completed.stdout
+    assert not call_log.exists()
 
     project_dirs = sorted((config_root / "projects").iterdir())
     assert len(project_dirs) == 1

@@ -1,5 +1,8 @@
 - Bug ID: CB-067
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-08
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: After a shell-only refresh succeeds, the top-level tooling shell
   can still present an obviously stale Compass standup brief as if it were the

@@ -1,5 +1,8 @@
 - Bug ID: CB-126
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-25
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The first publication-identity fix placed new tree identity logic in the already pressure-sensitive benchmark runner, pushing the runtime hotfile inventory gate back into failure during live proof shards.
 

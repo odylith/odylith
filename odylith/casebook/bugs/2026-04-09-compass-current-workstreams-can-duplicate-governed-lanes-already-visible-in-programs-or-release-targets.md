@@ -1,5 +1,8 @@
 - Bug ID: CB-095
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-09
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Compass `Current Workstreams` could still duplicate active
   governed lanes even when those same ids were already represented in

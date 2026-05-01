@@ -1,5 +1,8 @@
 - Bug ID: CB-002
 
+- Type: Tooling
+
+
 - Status: Closed
 
 - Created: 2026-03-24
@@ -10,7 +13,6 @@
 
 - Reproducibility: Always
 
-- Type: Tooling
 
 - Description: Odylith Context Engine rich-context commands in `--client-mode auto` could detach background `serve` daemons with no ownership or idle-lifetime bound. Large test runs and normal local usage could therefore leave hundreds of orphaned Python processes alive after the triggering command exited.
 

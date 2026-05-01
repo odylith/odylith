@@ -1,5 +1,8 @@
 - Bug ID: CB-086
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-09
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Compass still carried a second minute-scale `full` refresh idea
   in product code, guidance, and release/governance memory even after the

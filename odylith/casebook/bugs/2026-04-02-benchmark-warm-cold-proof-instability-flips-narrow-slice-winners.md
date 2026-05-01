@@ -1,5 +1,8 @@
 - Bug ID: CB-040
 
+- Type: Product
+
+
 - Status: Open
 
 - Created: 2026-04-02
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The strict `proof` lane can still flip the apparent winner
   between `warm` and `cold` cache profiles on the same narrow grounded slices.

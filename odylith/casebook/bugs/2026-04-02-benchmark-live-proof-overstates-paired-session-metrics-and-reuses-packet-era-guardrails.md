@@ -1,5 +1,8 @@
 - Bug ID: CB-036
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-02
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The live benchmark proof reported matched-pair conservative
   wall-clock and full-session Codex token spend using packet-era labels such as

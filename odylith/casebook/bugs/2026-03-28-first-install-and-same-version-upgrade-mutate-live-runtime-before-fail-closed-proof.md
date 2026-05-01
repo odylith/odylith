@@ -1,5 +1,8 @@
 - Bug ID: CB-003
 
+- Type: Product
+
+
 - Status: Open
 
 - Created: 2026-03-28
@@ -8,7 +11,6 @@
 
 - Reproducibility: Intermittent
 
-- Type: Product
 
 - Description: Fresh consumer install promoted the managed runtime live before
   the full-stack context-engine pack and activation smoke had completed, and a

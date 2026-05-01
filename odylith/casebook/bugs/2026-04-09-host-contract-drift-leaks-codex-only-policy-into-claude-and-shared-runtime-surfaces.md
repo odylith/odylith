@@ -1,5 +1,8 @@
 - Bug ID: CB-084
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-09
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Odylith's shared runtime, governance, and UX surfaces still
   leak Codex-only policy into contracts that should be host-neutral. Host

@@ -432,6 +432,7 @@ for claude_command in (
     "post-bash-checkpoint",
     "post-edit-checkpoint",
     "pre-compact-snapshot",
+    "prompt-bundle",
     "prompt-context",
     "prompt-teaser",
     "session-start",

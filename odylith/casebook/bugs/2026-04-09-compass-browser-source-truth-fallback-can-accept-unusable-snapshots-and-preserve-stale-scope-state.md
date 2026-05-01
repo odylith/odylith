@@ -1,5 +1,8 @@
 - Bug ID: CB-096
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-09
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Compass browser-side runtime-truth reconciliation could accept a
   malformed or incomplete source-truth snapshot and stop there, or fall back to

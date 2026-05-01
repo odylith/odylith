@@ -6,14 +6,25 @@ from pathlib import Path
 from typing import Any
 from typing import Mapping
 
-from odylith.runtime.intervention_engine import alignment_context
-from odylith.runtime.intervention_engine import conversation_closeout
-from odylith.runtime.intervention_engine import conversation_surface
-from odylith.runtime.intervention_engine import fact_producer_runtime
-from odylith.runtime.intervention_engine import host_surface_runtime
-from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
-from odylith.runtime.intervention_engine import visibility_contract
-from odylith.runtime.intervention_engine import visibility_replay
+from odylith.runtime.intervention_engine import prompt_signal_runtime
+
+
+def __getattr__(name: str) -> Any:
+    """Load renderer-heavy intervention modules only when callers touch them."""
+
+    if name in {
+        "alignment_context",
+        "conversation_surface",
+        "host_surface_runtime",
+        "intervention_surface_runtime",
+        "visibility_contract",
+        "visibility_replay",
+    }:
+        from importlib import import_module
+
+        module_name = "surface_runtime" if name == "intervention_surface_runtime" else name
+        return import_module(f"odylith.runtime.intervention_engine.{module_name}")
+    raise AttributeError(name)
 
 
 _LIVE_BLOCK_LABELS: tuple[str, ...] = (
@@ -43,6 +54,8 @@ def _alignment_list(alignment: Mapping[str, Any], key: str) -> list[Any]:
 
 def join_sections(*values: Any) -> str:
     """Join unique normalized chat sections with one blank line between them."""
+    from odylith.runtime.intervention_engine import visibility_contract
+
     return visibility_contract.join_blocks(*values)
 
 
@@ -54,9 +67,20 @@ def contains_assist(value: object) -> bool:
 
 def suppress_prompt_live_narration(*, prompt: Any = "", assistant_summary: Any = "") -> bool:
     """Return whether a first-match stdout route should stay narration-free."""
-    return fact_producer_runtime.is_passthrough_prompt(prompt) or fact_producer_runtime.is_cli_help_output(
+    return prompt_signal_runtime.is_passthrough_prompt(prompt) or prompt_signal_runtime.is_cli_help_output(
         assistant_summary
     )
+
+
+def prompt_needs_live_bundle(*, prompt: Any, bundle_override: Mapping[str, Any] | None = None, intervention_bundle_override: Mapping[str, Any] | None = None) -> bool:
+    """Return whether prompt-submit should pay for the live intervention bundle."""
+    if suppress_prompt_live_narration(prompt=prompt):
+        return False
+    if isinstance(bundle_override, Mapping) or isinstance(intervention_bundle_override, Mapping):
+        return True
+    if prompt_signal_runtime.visibility_feedback_requested(prompt=prompt, assistant_summary=""):
+        return True
+    return prompt_signal_runtime.has_prompt_intervention_signal(prompt)
 
 
 def preferred_live_replay_markdown(
@@ -67,6 +91,8 @@ def preferred_live_replay_markdown(
     include_assist: bool = False,
 ) -> str:
     """Return the current pending live replay bundle for prompt and checkpoint recovery."""
+    from odylith.runtime.intervention_engine import visibility_replay
+
     return visibility_replay.preferred_replayable_chat_markdown(
         repo_root=repo_root,
         host_family=host_family,
@@ -90,6 +116,8 @@ def confirm_last_assistant_message(
     message = str(payload.get("last_assistant_message", "")).strip()
     if not message:
         return []
+    from odylith.runtime.intervention_engine import host_surface_runtime
+
     return host_surface_runtime.confirm_assistant_chat_delivery(
         repo_root=repo_root,
         host_family=host_family,
@@ -101,6 +129,8 @@ def confirm_last_assistant_message(
 
 def looks_like_teaser_live_text(value: str) -> bool:
     """Return whether the live text is still only a teaser beat."""
+    from odylith.runtime.intervention_engine import visibility_contract
+
     text = str(value or "").strip()
     if not text:
         return False
@@ -119,6 +149,8 @@ def merge_replay_with_closeout(
     supplemental_inside_live_with_assist: bool = False,
 ) -> str:
     """Combine replayed live blocks with a closeout without duplicating assists."""
+    from odylith.runtime.intervention_engine import visibility_contract
+
     visible_replay = str(replay or "").strip()
     closeout = str(closeout_text or "").strip()
     if not visible_replay:
@@ -134,6 +166,7 @@ def merge_replay_with_closeout(
 
 def prompt_visible_assist_text(bundle: Mapping[str, Any] | object) -> tuple[str, str]:
     """Return the prompt-submit Assist text, preferring a bundle-owned closeout."""
+    from odylith.runtime.intervention_engine import conversation_surface
 
     existing_markdown = conversation_surface.render_closeout_text(bundle, markdown=True)
     existing_plain = conversation_surface.render_closeout_text(bundle, markdown=False)
@@ -149,7 +182,7 @@ def prompt_visibility_feedback_requested(bundle: Mapping[str, Any] | object) -> 
     """Return whether the prompt explicitly reports missing Odylith visibility."""
 
     observation = _alignment_mapping(bundle, "observation") if isinstance(bundle, Mapping) else {}
-    return conversation_closeout.visibility_feedback_requested(
+    return prompt_signal_runtime.visibility_feedback_requested(
         prompt=observation.get("prompt_excerpt"),
         assistant_summary=observation.get("assistant_summary", ""),
     )
@@ -163,6 +196,7 @@ def ensure_prompt_visible_assist_bundle(bundle: Mapping[str, Any] | object) -> d
     line. The default text stays owned here so Codex, Claude, and the manual
     visible-intervention recovery do not drift when feedback is explicit.
     """
+    from odylith.runtime.intervention_engine import conversation_surface
 
     updated = dict(bundle) if isinstance(bundle, Mapping) else {}
     if conversation_surface.render_closeout_text(updated, markdown=True):
@@ -185,6 +219,8 @@ def ensure_prompt_visible_assist_bundle(bundle: Mapping[str, Any] | object) -> d
 
 def compose_prompt_visible_markdown(*, visible_markdown: str, bundle: Mapping[str, Any] | object) -> str:
     """Append prompt-submit Assist to visible Markdown, or return Assist alone."""
+    from odylith.runtime.intervention_engine import conversation_surface
+    from odylith.runtime.intervention_engine import visibility_contract
 
     visible = visibility_contract.normalize_block_string(visible_markdown)
     if contains_assist(visible):
@@ -206,6 +242,11 @@ def build_prompt_conversation_bundle(
     intervention_bundle_override: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build the prompt-submit bundle shared by Codex and Claude hooks."""
+    from odylith.runtime.intervention_engine import alignment_context
+    from odylith.runtime.intervention_engine import conversation_surface
+    from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
+    from odylith.runtime.intervention_engine import visibility_contract
+
     if suppress_prompt_live_narration(prompt=prompt):
         return {}
     if isinstance(bundle_override, Mapping):
@@ -254,6 +295,10 @@ def render_prompt_system_message(
     intervention_bundle_override: Mapping[str, Any] | None = None,
 ) -> str:
     """Render the host-visible prompt-submit fallback/system-message text."""
+    from odylith.runtime.intervention_engine import conversation_surface
+    from odylith.runtime.intervention_engine import host_surface_runtime
+    from odylith.runtime.intervention_engine import visibility_contract
+
     if suppress_prompt_live_narration(prompt=prompt):
         return ""
     root = Path(repo_root).expanduser().resolve()
@@ -308,6 +353,9 @@ def render_prompt_bundle_text(
     markdown: bool = False,
 ) -> str:
     """Render prompt-context text from an anchor summary plus live conversation state."""
+    from odylith.runtime.intervention_engine import conversation_surface
+    from odylith.runtime.intervention_engine import visibility_contract
+
     observation = bundle.get("observation") if isinstance(bundle, Mapping) else {}
     if isinstance(observation, Mapping) and suppress_prompt_live_narration(
         prompt=observation.get("prompt_excerpt")
@@ -335,6 +383,9 @@ def build_stop_conversation_bundle(
     bundle_override: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build the stop-summary bundle shared by Codex and Claude hooks."""
+    from odylith.runtime.intervention_engine import host_surface_runtime
+    from odylith.runtime.intervention_engine import visibility_contract
+
     if isinstance(bundle_override, Mapping):
         return dict(bundle_override)
     if suppress_prompt_live_narration(prompt=prompt_excerpt, assistant_summary=assistant_summary) and not any(
@@ -366,6 +417,10 @@ def render_stop_bundle_text(
     bundle: Mapping[str, Any] | dict[str, Any],
 ) -> str:
     """Render stop-summary text from a normalized host conversation bundle."""
+    from odylith.runtime.intervention_engine import conversation_surface
+    from odylith.runtime.intervention_engine import visibility_contract
+    from odylith.runtime.intervention_engine import visibility_replay
+
     if not bundle:
         return ""
     observation = bundle.get("observation") if isinstance(bundle, Mapping) else {}

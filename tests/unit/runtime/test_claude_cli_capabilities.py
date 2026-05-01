@@ -109,11 +109,7 @@ def _seed_repo(repo_root: Path, *, with_settings: bool = True) -> None:
                                 "hooks": [
                                     {
                                         "type": "command",
-                                        "command": 'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude prompt-context --repo-root "$CLAUDE_PROJECT_DIR"',
-                                    },
-                                    {
-                                        "type": "command",
-                                        "command": 'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude prompt-teaser --repo-root "$CLAUDE_PROJECT_DIR"',
+                                        "command": 'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude prompt-bundle --repo-root "$CLAUDE_PROJECT_DIR"',
                                     },
                                 ]
                             }
@@ -159,6 +155,7 @@ def test_inspect_claude_cli_capabilities_marks_baseline_safe_assistant_visible_r
     assert snapshot.supports_subagent_hooks is True
     assert snapshot.supports_pre_compact_hook is True
     assert snapshot.supports_statusline_command is True
+    assert snapshot.supports_prompt_bundle_hook is True
     assert snapshot.supports_prompt_context_hook is True
     assert snapshot.supports_prompt_teaser_hook is True
     assert snapshot.supports_post_edit_checkpoint_hook is True
@@ -206,6 +203,7 @@ def test_inspect_claude_cli_capabilities_marks_assistant_visible_ready_without_l
 
     assert snapshot.claude_available is False
     assert snapshot.project_settings_present is True
+    assert snapshot.supports_prompt_bundle_hook is True
     assert snapshot.supports_prompt_context_hook is True
     assert snapshot.supports_prompt_teaser_hook is True
     assert snapshot.supports_post_edit_checkpoint_hook is True

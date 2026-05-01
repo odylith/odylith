@@ -34,6 +34,37 @@ def _write_bug(path: Path, *, reproducibility: str = "High") -> None:
     )
 
 
+def _write_bug_with_metadata(
+    path: Path,
+    *,
+    status: str = "Open",
+    bug_type: str = "Product",
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "\n".join(
+            [
+                "- Bug ID: CB-001",
+                "",
+                f"- Status: {status}",
+                "",
+                "- Created: 2026-04-16",
+                "",
+                "- Severity: P1",
+                "",
+                "- Reproducibility: High",
+                "",
+                f"- Type: {bug_type}",
+                "",
+                "- Description: Example source validation bug.",
+                "",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def _write_bug_text(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
@@ -63,6 +94,38 @@ def test_casebook_source_validation_rejects_prose_reproducibility(tmp_path: Path
     assert result.issues[0].field == "Reproducibility"
     assert result.issues[0].line == 9
     assert "one compact token" in result.issues[0].message
+
+
+def test_casebook_source_validation_rejects_prose_status(tmp_path: Path) -> None:
+    _write_bug_with_metadata(
+        tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-16-prose-status.md",
+        status="Fixed Pending Release",
+    )
+
+    result = casebook_source_validation.validate_casebook_sources(repo_root=tmp_path)
+
+    assert not result.passed
+    assert result.records_checked == 1
+    assert len(result.issues) == 1
+    assert result.issues[0].field == "Status"
+    assert "single-word token" in result.issues[0].message
+    assert "`FixedPendingRelease`" in result.issues[0].message
+
+
+def test_casebook_source_validation_rejects_prose_type(tmp_path: Path) -> None:
+    _write_bug_with_metadata(
+        tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-16-prose-type.md",
+        bug_type="UX / lifecycle",
+    )
+
+    result = casebook_source_validation.validate_casebook_sources(repo_root=tmp_path)
+
+    assert not result.passed
+    assert result.records_checked == 1
+    assert len(result.issues) == 1
+    assert result.issues[0].field == "Type"
+    assert "single-word token" in result.issues[0].message
+    assert "`UXLifecycle`" in result.issues[0].message
 
 
 def test_casebook_source_validation_rejects_missing_reproducibility_field(tmp_path: Path) -> None:

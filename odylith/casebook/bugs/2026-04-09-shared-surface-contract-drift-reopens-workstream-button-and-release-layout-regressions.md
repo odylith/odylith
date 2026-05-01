@@ -1,5 +1,8 @@
 - Bug ID: CB-080
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-09
@@ -10,7 +13,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Shared shell-surface contracts for interactive `B-###`
   workstream controls and Compass release layout kept reopening after local

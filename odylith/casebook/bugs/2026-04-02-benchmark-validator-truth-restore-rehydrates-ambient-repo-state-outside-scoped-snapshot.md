@@ -1,5 +1,8 @@
 - Bug ID: CB-043
 
+- Type: Product
+
+
 - Status: Open
 
 - Created: 2026-04-02
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The live benchmark clean-room still restored stripped
   validator-truth files from the ambient repo root instead of from the scoped

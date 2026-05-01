@@ -1,5 +1,8 @@
 - Bug ID: CB-035
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-02
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The live benchmark runner trusted lane-emitted workspace path
   tokens too much. When a Codex lane surfaced an impossible file name in a

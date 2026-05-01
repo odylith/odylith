@@ -1,6 +1,9 @@
 - Bug ID: CB-145
 
-- Status: Fixed Pending Release
+- Type: UXLifecycle
+
+
+- Status: FixedPendingRelease
 
 - Created: 2026-04-30
 
@@ -8,7 +11,6 @@
 
 - Reproducibility: Always
 
-- Type: UX / lifecycle
 
 - Description: Uninstall requests can be routed to raw deletion that Odylith blocks itself
 

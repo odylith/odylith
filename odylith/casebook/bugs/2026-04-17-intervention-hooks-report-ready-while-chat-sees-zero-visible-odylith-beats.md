@@ -1,5 +1,8 @@
 - Bug ID: CB-122
 
+- Type: Product
+
+
 - Status: Closed
 
 - Closed: 2026-04-26
@@ -12,7 +15,6 @@
 
 - Reproducibility: Always
 
-- Type: Product
 
 - Description: Recurrence of CB-121: Codex and Claude intervention-status can report static activation ready while the active session has chat_visible_proof=unproven_this_session, zero recent intervention events, and zero proven-visible events. The user observed no ambient highlights, no intervention blocks, and no Odylith Assist across the session, proving generated hook payloads and hidden additionalContext are not sufficient product proof.
 

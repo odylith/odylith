@@ -1,6 +1,9 @@
 - Bug ID: CB-143
 
-- Status: Fixed Pending Release
+- Type: Product
+
+
+- Status: FixedPendingRelease
 
 - Created: 2026-04-30
 
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The first 0.1.12 uninstall fix overcorrected by treating `odylith/` as disposable product output even though it is repo-local governed source truth. The second pass preserved `odylith/` but still left a race: active Claude hooks could write `.odylith/compass/standup-brief-maintenance-state.v1.json` while uninstall removed `.odylith/`, causing `OSError: Directory not empty`, and remaining project hooks then kept calling a missing launcher.
 

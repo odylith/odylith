@@ -1,5 +1,8 @@
 - Bug ID: CB-051
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-03
@@ -8,7 +11,6 @@
 
 - Reproducibility: Always
 
-- Type: Product
 
 - Description: The consumer upgrade browser path can auto-refresh the shell
   strongly enough to swap the toolbar version label to the newly activated

@@ -4,8 +4,9 @@
 
 Hook commands live in tracked project assets, but the repo-local Odylith launcher
 under ``.odylith/bin/odylith`` lives in mutable runtime state and may be absent in
-new Git worktrees. This helper prefers the current repo launcher, falls back to a
-bootstrap launcher or another worktree's launcher, repairs the current root when
+new Git worktrees. This helper prefers the repo bootstrap launcher when present
+because bootstrap can recover from a stale main launcher. It falls back to the
+main launcher or another worktree's launcher, repairs the current root when
 possible, and then forwards the requested host command.
 """
 
@@ -148,7 +149,9 @@ def run(
     resolved_cwd = (cwd or Path.cwd()).resolve()
     repo_root = _resolve_repo_root(command_argv, cwd=resolved_cwd)
     local_launcher, local_bootstrap = _launcher_candidates(repo_root)
-    target = local_launcher if local_launcher.is_file() else None
+    target = local_bootstrap if local_bootstrap.is_file() else None
+    if target is None and local_launcher.is_file():
+        target = local_launcher
     if target is None:
         peer = local_bootstrap if local_bootstrap.is_file() else find_launcher(repo_root)
         if peer is None:

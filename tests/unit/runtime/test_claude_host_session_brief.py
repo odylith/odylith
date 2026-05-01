@@ -64,6 +64,23 @@ def test_render_session_brief_returns_empty_string_when_start_output_empty() -> 
     assert rendered == ""
 
 
+def test_render_session_brief_uses_cached_snapshot_without_start(tmp_path: Path, monkeypatch) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_runtime_snapshot(repo_root)
+
+    def _unexpected_run(**_: object) -> None:
+        raise AssertionError("cached SessionStart fast path must not run odylith start")
+
+    monkeypatch.setattr(claude_host_session_brief.claude_host_shared, "run_odylith", _unexpected_run)
+
+    rendered = claude_host_session_brief.render_session_brief(repo_root=repo_root)
+
+    assert "Odylith startup: snapshot: Claude hardening is live for B-083" in rendered
+    assert "Odylith startup: active: B-083: Claude support hardening" in rendered
+    assert "fast path used cached runtime state" in rendered
+
+
 def test_main_writes_project_memory_and_prints_summary(monkeypatch, tmp_path: Path, capsys) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()

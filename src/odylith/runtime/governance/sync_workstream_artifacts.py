@@ -1162,18 +1162,23 @@ def _runtime_retry_command(command: Sequence[str]) -> tuple[str, ...]:
 
 
 def _casebook_index_refresh_step(*, repo_root: Path, next_command_on_failure: str, label: str) -> ExecutionStep:
+    def _refresh_index() -> int:
+        try:
+            sync_casebook_bug_index.sync_casebook_bug_index(
+                repo_root=repo_root,
+                migrate_bug_ids=True,
+            )
+        except ValueError as exc:
+            print(str(exc))
+            return 2
+        return 0
+
     return _execution_step(
         label,
         surface="casebook",
         mutation_classes=("repo_owned_truth",),
         paths=("odylith/casebook/bugs/INDEX.md",),
-        action=lambda: (
-            sync_casebook_bug_index.sync_casebook_bug_index(
-                repo_root=repo_root,
-                migrate_bug_ids=True,
-            ),
-            0,
-        )[1],
+        action=_refresh_index,
         next_command_on_failure=next_command_on_failure,
     )
 
@@ -1389,16 +1394,10 @@ def _dashboard_surface_steps(
         return steps
     if surface == "casebook":
         steps.append(
-            _casebook_source_validation_step(
-                repo_root=repo_root,
-                label="Validate Casebook bug source before index or render writes.",
-            )
-        )
-        steps.append(
             _casebook_index_refresh_step(
                 repo_root=repo_root,
                 next_command_on_failure=refresh_command,
-                label="Refresh the Casebook bug index before rerendering the Casebook dashboard.",
+                label="Normalize and validate Casebook bugs before rerendering the Casebook dashboard.",
             )
         )
         steps.append(
@@ -2303,24 +2302,10 @@ def build_sync_execution_plan(
     )
     if bool(getattr(impact, "casebook", False)):
         steps.append(
-            _casebook_source_validation_step(
+            _casebook_index_refresh_step(
                 repo_root=repo_root,
-                label="Validate Casebook bug source before index or render writes.",
-            )
-        )
-        steps.append(
-            _execution_step(
-                "Refresh the Casebook bug index before any shell-facing renders consume it.",
-                mutation_classes=("repo_owned_truth",),
-                paths=("odylith/casebook/bugs/INDEX.md",),
-                action=lambda: (
-                    sync_casebook_bug_index.sync_casebook_bug_index(
-                        repo_root=repo_root,
-                        migrate_bug_ids=True,
-                    ),
-                    0,
-                )[1],
                 next_command_on_failure=sync_failure_command,
+                label="Normalize and validate the Casebook bug index before shell-facing renders consume it.",
             )
         )
     if bool(getattr(impact, "atlas", False)):

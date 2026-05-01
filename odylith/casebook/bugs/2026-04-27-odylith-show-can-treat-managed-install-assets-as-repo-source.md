@@ -1,5 +1,8 @@
 - Bug ID: CB-128
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-27
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: An empty or migrated consumer repo with only Odylith-managed files under root-level odylith/ can receive a fake show report: managed compass runtime JavaScript is counted as application source, then Registry/Radar/Atlas candidates such as Core Engine, documentation, CI/CD, and a boundary map are suggested even though no app source exists.
 

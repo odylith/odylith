@@ -12,17 +12,17 @@ from __future__ import annotations
 import json
 import re
 import subprocess
-import sys
 from pathlib import Path
 from typing import Any, Mapping
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.intervention_engine import prompt_signal_runtime
 from odylith.runtime.surfaces import bash_guard_policy
 from odylith.runtime.surfaces import claude_host_shared
+from odylith.runtime.surfaces import host_hook_payload
 
 
 _WORKSTREAM_RE = re.compile(r"\bB-\d{3,}\b")
-_ANCHOR_RE = re.compile(r"\b(?:B|CB|D)-\d{3,}\b")
 _ACTION_TOKEN_RE = re.compile(
     r"\b("
     r"added|aligned|closed|fixed|hardened|implemented|materialized|passed|"
@@ -38,7 +38,6 @@ _EDIT_LIKE_RE = re.compile(
     r"apply_patch|cp|mv|touch|mkdir|sed\s+-i|perl\s+-0pi|tee|cat\s+>|python3?\s+-c|node\s+-e"
     r")\b"
 )
-_PATCH_START_RE = re.compile(r"^\s*\*\*\* Begin Patch\b", re.MULTILINE)
 
 
 resolve_repo_root = claude_host_shared.resolve_repo_root
@@ -49,56 +48,15 @@ collapse_whitespace = claude_host_shared.collapse_whitespace
 
 
 def load_payload(raw: str | None = None) -> dict[str, Any]:
-    text = raw if raw is not None else sys.stdin.read()
-    try:
-        payload = json.loads(text or "{}")
-    except json.JSONDecodeError:
-        return {}
-    return payload if isinstance(payload, dict) else {}
+    return host_hook_payload.load_payload(raw)
 
 
 def hook_session_id(payload: Mapping[str, Any] | None) -> str:
     return agent_runtime_contract.resolve_hook_session_id(payload, host_family="codex")
 
 
-def _mapping_payload(value: Any) -> Mapping[str, Any]:
-    if isinstance(value, Mapping):
-        return value
-    if not isinstance(value, str):
-        return {}
-    token = value.strip()
-    if not token.startswith("{"):
-        return {}
-    try:
-        parsed = json.loads(token)
-    except json.JSONDecodeError:
-        return {}
-    return parsed if isinstance(parsed, Mapping) else {}
-
-
 def command_from_hook_payload(payload: Mapping[str, Any] | None) -> str:
-    if not isinstance(payload, Mapping):
-        return ""
-    tool_name = str(
-        payload.get("tool_name")
-        or payload.get("toolName")
-        or payload.get("name")
-        or ""
-    ).strip()
-    for tool_input in (
-        _mapping_payload(payload.get("tool_input")),
-        _mapping_payload(payload.get("arguments")),
-    ):
-        command = str(tool_input.get("command") or tool_input.get("cmd") or payload.get("command") or "").strip()
-        if command:
-            return command
-        patch = str(tool_input.get("patch") or tool_input.get("input") or "").strip()
-        if patch and (tool_name == "apply_patch" or _PATCH_START_RE.search(patch)):
-            return f"apply_patch <<'PATCH'\n{patch}\nPATCH"
-    patch = str(payload.get("patch") or payload.get("input") or "").strip()
-    if patch and (tool_name == "apply_patch" or _PATCH_START_RE.search(patch)):
-        return f"apply_patch <<'PATCH'\n{patch}\nPATCH"
-    return str(payload.get("command") or "").strip()
+    return host_hook_payload.command_from_hook_payload(payload)
 
 
 def project_launcher(project_dir: Path | str) -> Path:
@@ -203,8 +161,7 @@ def context_summary(
 
 
 def prompt_anchor(prompt: str) -> str:
-    matches = list(dict.fromkeys(_ANCHOR_RE.findall(str(prompt or ""))))
-    return matches[0] if matches else ""
+    return prompt_signal_runtime.prompt_anchor(prompt)
 
 
 def active_workstreams(payload: Mapping[str, Any] | None) -> list[str]:

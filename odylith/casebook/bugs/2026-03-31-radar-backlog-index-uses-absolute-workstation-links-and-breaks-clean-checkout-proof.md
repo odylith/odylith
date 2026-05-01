@@ -1,5 +1,8 @@
 - Bug ID: CB-024
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-03-31
@@ -10,7 +13,6 @@
 
 - Reproducibility: Always
 
-- Type: Product
 
 - Description: `odylith/radar/source/INDEX.md` had drifted to absolute
   workstation file links under `/Users/freedom/code/odylith/...` instead of

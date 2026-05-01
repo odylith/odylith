@@ -1,5 +1,8 @@
 - Bug ID: CB-013
 
+- Type: Product
+
+
 - Status: Open
 
 - Created: 2026-03-28
@@ -8,7 +11,6 @@
 
 - Reproducibility: Always
 
-- Type: Product
 
 - Description: The first hosted consumer rehearsal for the abandoned Odylith
   `v0.1.0` prelaunch drill failed because the installer still depended on a

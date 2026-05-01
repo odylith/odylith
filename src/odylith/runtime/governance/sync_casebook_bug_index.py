@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Sequence
 
+from odylith.runtime.common import casebook_metadata
 from odylith.runtime.common.casebook_bug_ids import BUG_ID_FIELD, normalize_casebook_bug_id, resolve_casebook_bug_id
 from odylith.runtime.common.consumer_profile import truth_root_path
 from odylith.runtime.governance import casebook_source_validation
@@ -18,15 +19,6 @@ _BUG_METADATA_LINE_RE = re.compile(r"^-?\s*([A-Za-z0-9/() _.-]+):\s*(.*)$")
 _BUG_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _SLUG_DATE_RE = re.compile(r"^(?P<date>\d{4}-\d{2}-\d{2})-(?P<title>.+)$")
 _EXPLICIT_CASEBOOK_BUG_ID_RE = re.compile(r"^CB-(?P<number>\d{3,})$")
-_CANONICAL_STATUS = {
-    "open": "Open",
-    "mitigated": "Mitigated",
-    "monitoring": "Monitoring",
-    "fixed": "Closed",
-    "closed": "Closed",
-}
-
-
 @dataclass(frozen=True)
 class BugIndexRow:
     """One rendered row in the authoritative Casebook bug index."""
@@ -65,10 +57,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 def _canonical_status(value: str) -> str:
     """Normalize raw bug status text onto the canonical index labels."""
-    token = str(value or "").strip()
-    if not token:
-        return "Open"
-    return _CANONICAL_STATUS.get(token.lower(), token)
+    return casebook_metadata.canonical_casebook_status(value) or "Open"
 
 
 def _slug_to_title(slug: str) -> str:
@@ -207,6 +196,49 @@ def _render_bug_text_with_bug_id(*, text: str, bug_id: str) -> str:
     return "\n".join(rendered).rstrip() + "\n"
 
 
+def _render_bug_text_with_compact_metadata_defaults(*, text: str) -> str:
+    """Backfill and compact migration-sensitive Casebook metadata fields."""
+
+    lines = str(text).splitlines()
+    type_values: list[str] = []
+    for raw in lines:
+        match = _BUG_METADATA_LINE_RE.fullmatch(raw.strip())
+        if match is not None and str(match.group(1)).strip() == "Type":
+            type_values.append(str(match.group(2)).strip())
+    canonical_type = casebook_metadata.canonical_casebook_type(type_values[-1] if type_values else "") or "Product"
+    rendered: list[str] = []
+    type_written = False
+    for raw in lines:
+        stripped = raw.strip()
+        match = _BUG_METADATA_LINE_RE.fullmatch(stripped)
+        if match is not None:
+            field = str(match.group(1)).strip()
+            value = str(match.group(2)).strip()
+            if field == "Status":
+                canonical = casebook_metadata.canonical_casebook_status(value) or "Open"
+                rendered.append(f"- Status: {canonical}")
+                continue
+            if field == "Type":
+                if not type_written:
+                    rendered.append(f"- Type: {canonical_type}")
+                    type_written = True
+                continue
+            rendered.append(raw)
+            if not type_written and field == BUG_ID_FIELD:
+                rendered.extend(["", f"- Type: {canonical_type}"])
+                type_written = True
+            continue
+        rendered.append(raw)
+    if not type_written:
+        insert_at = 0
+        while insert_at < len(rendered) and (
+            not str(rendered[insert_at]).strip() or str(rendered[insert_at]).lstrip().startswith("#")
+        ):
+            insert_at += 1
+        rendered[insert_at:insert_at] = [f"- Type: {canonical_type}", ""]
+    return "\n".join(rendered).rstrip() + "\n"
+
+
 def migrate_casebook_bug_ids(*, repo_root: Path) -> list[Path]:
     """Backfill missing Casebook Bug IDs while preserving existing numbering."""
     root = Path(repo_root).resolve()
@@ -234,6 +266,22 @@ def migrate_casebook_bug_ids(*, repo_root: Path) -> list[Path]:
         if original != rendered:
             path.write_text(rendered, encoding="utf-8")
             updated.append(path)
+    return updated
+
+
+def migrate_casebook_bug_metadata(*, repo_root: Path) -> list[Path]:
+    """Backfill legacy Casebook metadata required by strict source validation."""
+
+    root = Path(repo_root).resolve()
+    bug_root = truth_root_path(repo_root=root, key="casebook_bugs")
+    updated: list[Path] = []
+    for path in _bug_files(bug_root):
+        original = path.read_text(encoding="utf-8")
+        rendered = _render_bug_text_with_compact_metadata_defaults(text=original)
+        if original == rendered:
+            continue
+        path.write_text(rendered, encoding="utf-8")
+        updated.append(path)
     return updated
 
 
@@ -292,6 +340,7 @@ def sync_casebook_bug_index(*, repo_root: Path, migrate_bug_ids: bool = True) ->
     bug_root.mkdir(parents=True, exist_ok=True)
     if migrate_bug_ids:
         migrate_casebook_bug_ids(repo_root=root)
+        migrate_casebook_bug_metadata(repo_root=root)
     validation = casebook_source_validation.validate_casebook_sources(repo_root=root)
     if not validation.passed:
         first_issue = validation.issues[0]

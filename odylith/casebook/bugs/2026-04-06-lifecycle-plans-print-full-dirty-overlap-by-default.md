@@ -1,5 +1,8 @@
 - Bug ID: CB-060
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-06
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Install, reinstall, and sync lifecycle plans currently print
   the full `dirty_overlap` listing by default, which can flood the terminal

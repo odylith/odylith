@@ -1,6 +1,9 @@
 - Bug ID: CB-144
 
-- Status: Fixed Pending Release
+- Type: Product
+
+
+- Status: FixedPendingRelease
 
 - Created: 2026-04-30
 
@@ -8,7 +11,6 @@
 
 - Reproducibility: Always
 
-- Type: Product
 
 - Description: Intervention visibility fallback leaks internal instructions into Claude chat
 

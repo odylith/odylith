@@ -1,6 +1,9 @@
 - Bug ID: CB-140
 
-- Status: Fixed Pending Release
+- Type: Product
+
+
+- Status: FixedPendingRelease
 
 - Created: 2026-04-30
 
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: A first-run consumer show report listed an Atlas candidate and gave a plain-English prompt to create the Dentoai Isb Boundary and Ownership Map Atlas diagram. Following that prompt made the agent call atlas scaffold, which failed because the scaffold CLI required at least one Radar workstream, technical plan, and doc link. The product contract was wrong: an operator must be able to start with a topology diagram, see it rendered, and link Radar/plan/doc truth later.
 

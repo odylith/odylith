@@ -1,6 +1,9 @@
 - Bug ID: CB-139
 
-- Status: Fixed Pending Release
+- Type: Product
+
+
+- Status: FixedPendingRelease
 
 - Created: 2026-04-30
 
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: A first-time hosted install into an existing Git repo activated Odylith 0.1.11 successfully, then attempted to render first-run shell surfaces. The full sync dry-run saw 61 overlapping local worktree entries, mostly freshly seeded Odylith managed guidance/repo truth, crossed the overlap threshold, and blocked. The installer then reported missing radar, atlas, compass, registry, and casebook HTML surfaces, leaving the first-run shell incomplete even though the runtime install succeeded.
 

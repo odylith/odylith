@@ -1,5 +1,8 @@
 - Bug ID: CB-006
 
+- Type: Product
+
+
 - Status: Open
 
 - Created: 2026-03-28
@@ -8,7 +11,6 @@
 
 - Reproducibility: Always
 
-- Type: Product
 
 - Description: The generated installer validated the release and unpacked the
   bootstrap runtime, but then attempted to move the runtime into

@@ -129,10 +129,18 @@
 - Session-start grounding runs through the CLI-backed
   `./.odylith/bin/odylith codex session-start-ground --repo-root .` hook
   command, which summarizes the active Odylith slice into hook-added developer
-  context.
+  context from cached runtime state. The normal hook does not run
+  `odylith start`; maintainers can opt into eager start explicitly for
+  diagnostics.
 - User-prompt context can narrow explicit `B-###`, `CB-###`, or `D-###`
   references through the CLI-backed
   `./.odylith/bin/odylith codex prompt-context --repo-root .` hook command.
+  Low-signal prompts without anchors, visibility complaints, or governance
+  hints must return without building the prompt intervention bundle.
+- The public command surface stays `./.odylith/bin/odylith codex ...`, but
+  the repo-local launcher may dispatch baked Codex hook commands directly to
+  their runtime modules after trust selection. Hot hook commands must not pay
+  for the full `odylith.cli` import before prompt gating can return empty.
 - Destructive Bash blocking runs through a repo-managed Codex `PreToolUse`
   Bash hook command
   (`./.odylith/bin/odylith codex bash-guard --repo-root .`) and denies a
@@ -147,43 +155,36 @@
   are parsed by the runtime for manual/test fallback but must not be claimed
   as automatically hook-dispatched until the host exposes those tool names in
   the hook input schema.
-- The checkpoint does two things, in order: first it runs
-  `./.odylith/bin/odylith start --repo-root .` to keep the session
-  grounded; then, if the edit-like Bash tool call (Bash `apply_patch`,
-  ``sed -i``, ``cp``, ``mv``, ``tee``, ``cat >``,
-  inline `python -c` / `node -e`, etc.) actually touched any
-  repo-relative path under the Odylith governed source-of-truth
-  subtrees (``odylith/radar/source/``, ``odylith/technical-plans/``,
-  ``odylith/casebook/bugs/``, ``odylith/registry/source/``,
-  ``odylith/atlas/source/``), it runs
-  `./.odylith/bin/odylith sync --impact-mode selective <paths>` so the
-  derived dashboards stay aligned. The changed-path set is inferred from
-  the current tool payload itself, then intersected with the current
-  dirty governed path set so the hook does not widen refresh to
-  unrelated repo dirtiness. If the command does not expose an exact
-  governed target, the checkpoint skips selective refresh instead of
-  guessing. Scoped `AGENTS.md` and `CLAUDE.md` companions inside
-  governed subtrees are ignored.
+- The PostToolUse checkpoint is deliberately cheap: it infers changed paths
+  from the current tool payload, intersects those paths with the dirty
+  governed source-of-truth set, records a tiny dirty event under
+  `.odylith/runtime/host-hooks/`, and returns silently. It must not run
+  `odylith start`, `odylith sync`, or conversation rendering on the tool-call
+  critical path. Stop-time settlement drains those dirty events, then runs
+  `./.odylith/bin/odylith sync --impact-mode selective <paths>` only when an
+  exact governed target was recorded. Scoped `AGENTS.md` and `CLAUDE.md`
+  companions inside governed subtrees are ignored.
 - The command-scoped inference must stay exact under dirty worktrees and
   shell edge cases: rename and move operations preserve the old governed path
   when truth leaves a governed subtree, shell control operators and
   redirection tails cannot widen the target set, and explicit inline
   `python -c` / `node -e` file-write one-liners may refresh only when the
   hook can recover an exact governed path literal from the current command.
-- The checkpoint never blocks the tool call: sync failures exit the hook with
-  code 0 and emit a fail-soft `systemMessage` plus assistant-visible fallback
-  context describing the failure so the operator can recover manually.
+- The checkpoint never blocks the tool call. Sync failures happen during
+  Stop-time settlement, keep pending dirty events in place, exit the hook path
+  with code 0, and emit a fail-soft `systemMessage` describing the failure so
+  the operator can recover manually.
 - This is **checkpoint parity** with Claude's direct-edit and Bash checkpoint
   lanes for hookable Bash edits. Native desktop write payloads remain
   supported by the parser and `visible-intervention` fallback command, but
   they are not automatic hook coverage until Codex exposes those tools to
   `PostToolUse`.
-- Codex prompt-context, stop-summary, and post-bash checkpoint lanes all feed
+- Codex prompt-context and stop-summary lanes feed
   the same shared conversation-observation core in
   `src/odylith/runtime/intervention_engine/`. Prompt submit may emit one
   earned teaser plus one shared `Odylith Assist:` visibility line for
-  non-passthrough prompts; stop-summary or post-bash may upgrade that into a
-  full `**Odylith Observation**`; governed writes stay inside one
+  non-passthrough prompts; stop-summary may replay an already-earned ambient
+  block, Observation, or Proposal. Governed writes stay inside one
   confirmation-gated `Odylith Proposal`.
 - When prompt submit earns a teaser, Codex should carry that sentence in the
   hook `systemMessage` and also place an assistant-render fallback in
@@ -215,13 +216,11 @@
   `odylith governance ...` and `odylith validate plan-* ...`;
   `odylith plan --help` is only a read-only command guide and there is no
   `odylith/technical-plans/source/` directory.
-- Post-bash checkpoint is a live intervention carrier, not a refresh receipt
-  lane. When the recovered bundle earns a real Ambient Highlight,
-  Observation, or Proposal, Codex may emit that visible block in hook
-  `systemMessage` and keep assistant-render fallback in
-  `hookSpecificOutput.additionalContext`. Successful governed refreshes stay
-  silent; if refresh fails or is skipped, Codex may emit only the compact
-  failure-level status, optionally after an already-earned visible block.
+- Post-bash checkpoint is a dirty-event recorder, not a live intervention
+  carrier and not a refresh receipt lane. Successful dirty-event recording
+  stays silent. If deferred refresh fails or is skipped, Stop may emit only
+  the compact failure-level status, optionally after an already-earned visible
+  block.
 - Stop-summary is a logging and replay lane, not a fresh visible-intervention
   author. It confirms what the assistant already showed, logs meaningful
   summaries to Compass, and may replay a pending Ambient Highlight,

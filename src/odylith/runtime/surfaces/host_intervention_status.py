@@ -101,6 +101,7 @@ def _claude_static_readiness(repo_root: Path) -> dict[str, Any]:
         "launcher": bool(snapshot.launcher_present),
         "repo_guidance": bool(snapshot.repo_claude_md_present or snapshot.repo_agents_md_present),
         "project_settings": bool(snapshot.project_settings_present),
+        "prompt_bundle_hook": bool(snapshot.supports_prompt_bundle_hook),
         "prompt_context_hook": bool(snapshot.supports_prompt_context_hook),
         "prompt_teaser_hook": bool(snapshot.supports_prompt_teaser_hook),
         "post_edit_checkpoint_hook": bool(snapshot.supports_post_edit_checkpoint_hook),

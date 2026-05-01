@@ -6,6 +6,7 @@ import time
 from typing import Any
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common import casebook_metadata
 from odylith.runtime.common.casebook_bug_ids import BUG_ID_FIELD, resolve_casebook_bug_id
 from odylith.runtime.context_engine import odylith_context_engine_process_state
 from odylith.runtime.context_engine import projection_repo_state_runtime
@@ -843,13 +844,10 @@ def _bug_archive_bucket_from_link_target(link_target: str) -> str:
     return ""
 
 def canonicalize_bug_status(status: str) -> str:
-    raw = str(status or "").strip()
-    if not raw:
-        return ""
-    return context_engine_store._BUG_CANONICAL_STATUS_LABELS.get(raw.lower(), raw)
+    return casebook_metadata.canonical_casebook_status(status)
 
 def _bug_is_open(status: str) -> bool:
-    return str(status or "").strip().lower() not in context_engine_store._BUG_TERMINAL_STATUSES
+    return not casebook_metadata.casebook_status_is_terminal(status)
 
 def _ordered_bug_detail_sections(fields: Mapping[str, str]) -> list[dict[str, Any]]:
     normalized_fields: dict[str, dict[str, str]] = {}

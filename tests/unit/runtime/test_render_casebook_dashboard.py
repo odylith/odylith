@@ -8,7 +8,10 @@ from odylith.runtime.surfaces import render_casebook_dashboard as renderer
 
 def _write_minimal_casebook_bug(path: Path, *, title: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(f"# {title}\n\n- Reproducibility: High\n", encoding="utf-8")
+    path.write_text(
+        f"# {title}\n\n- Status: Open\n\n- Reproducibility: High\n\n- Type: Product\n",
+        encoding="utf-8",
+    )
 
 
 def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -183,6 +186,8 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     assert "Loading selected bug…" not in app_js
     assert "No structured detail sections were parsed from this entry." not in app_js
     assert "No bugs match the current filters and search text." not in app_js
+    assert 'data-tooltip="${escapeHtml(intelTooltip)}">Intel</span>' in app_js
+    assert 'Intel ${capturedCount}/${totalFields}' not in app_js
 
 
 def test_casebook_payload_dedupes_overlapping_proof_links_from_evidence_refs(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -244,6 +249,63 @@ def test_casebook_payload_dedupes_overlapping_proof_links_from_evidence_refs(tmp
     assert bug["code_ref_links"]
     assert bug["test_ref_links"]
     assert bug["agent_guidance"]["proof_links"] == []
+
+
+def test_casebook_payload_compacts_status_and_type_tokens(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    bug_path = tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-01-token-bug.md"
+    _write_minimal_casebook_bug(bug_path, title="Token bug")
+
+    monkeypatch.setattr(
+        renderer.odylith_context_engine_store,
+        "load_bug_snapshot",
+        lambda **kwargs: [
+            {
+                "bug_id": "CB-998",
+                "bug_key": "odylith/casebook/bugs/2026-04-01-token-bug.md",
+                "title": "Casebook metadata leaked prose",
+                "date": "2026-04-01",
+                "severity": "P1",
+                "severity_token": "p1",
+                "status": "Mitigated locally; pending platform release",
+                "status_token": "mitigated locally",
+                "components": "casebook",
+                "component_tokens": ["casebook"],
+                "archive_bucket": "",
+                "source_path": "odylith/casebook/bugs/2026-04-01-token-bug.md",
+                "source_exists": True,
+                "is_open": True,
+                "is_open_critical": True,
+                "workstreams": [],
+                "summary": "Metadata was too verbose for the Casebook chip contract.",
+                "fields": {"Status": "Mitigated locally; pending platform release", "Type": "UX / lifecycle"},
+                "detail_sections": [],
+                "code_refs": [],
+                "doc_refs": [],
+                "test_refs": [],
+                "contract_refs": [],
+                "component_matches": [],
+                "diagram_refs": [],
+                "related_bug_refs": [{"bug_id": "CB-001", "bug_key": "CB-001", "status": "Fixed Pending Release"}],
+                "agent_guidance": {},
+                "intelligence_coverage": {},
+                "search_text": "casebook metadata leaked prose",
+            }
+        ],
+    )
+
+    payload = renderer._build_payload(  # noqa: SLF001
+        repo_root=tmp_path,
+        output_path=tmp_path / "odylith" / "casebook" / "casebook.html",
+        runtime_mode="standalone",
+    )
+
+    bug = payload["bugs"][0]
+    assert bug["status"] == "Mitigated"
+    assert bug["status_token"] == "mitigated"
+    assert bug["fields"]["Status"] == "Mitigated"
+    assert bug["fields"]["Type"] == "UXLifecycle"
+    assert bug["related_bug_links"][0]["status"] == "FixedPendingRelease"
+    assert payload["filters"]["status_tokens"] == ["mitigated"]
 
 
 def test_casebook_payload_preserves_proof_state_contract_fields(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001

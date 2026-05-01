@@ -1,5 +1,8 @@
 - Bug ID: CB-008
 
+- Type: Product
+
+
 - Status: Open
 
 - Created: 2026-03-28
@@ -8,7 +11,6 @@
 
 - Reproducibility: Always
 
-- Type: Product
 
 - Description: The GitHub test workflow still booted the repo with direct
   `pip install -e . pytest` commands even after the relaunch moved Odylith's

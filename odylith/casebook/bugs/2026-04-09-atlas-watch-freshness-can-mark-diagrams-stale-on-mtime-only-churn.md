@@ -1,5 +1,8 @@
 - Bug ID: CB-097
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-09
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Atlas freshness and `--all-stale` selection could mark diagrams
   stale when watched files only changed mtime and not content. A checkout,

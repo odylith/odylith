@@ -1,6 +1,9 @@
 - Bug ID: CB-103
 
-- Status: In progress
+- Type: Product
+
+
+- Status: InProgress
 
 - Created: 2026-04-11
 
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Odylith's shared host capability contract declares
   `supports_explicit_model_selection=False` for the Claude host family,

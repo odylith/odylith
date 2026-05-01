@@ -1,5 +1,8 @@
 - Bug ID: CB-032
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-01
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The benchmark acceptance contract compared Odylith's relative
   latency and token cost against `odylith_off` even when the raw Codex lane

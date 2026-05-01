@@ -1,5 +1,8 @@
 - Bug ID: CB-123
 
+- Type: ProductTrust
+
+
 - Status: Closed
 
 - Closed: 2026-04-26
@@ -12,7 +15,6 @@
 
 - Reproducibility: Consistent
 
-- Type: product-trust
 
 - Description: Bootstrap signal corpus can be mistaken for calibrated ML quality
 

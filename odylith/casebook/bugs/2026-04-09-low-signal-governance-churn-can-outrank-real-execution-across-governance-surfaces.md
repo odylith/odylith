@@ -1,5 +1,8 @@
 - Bug ID: CB-090
 
+- Type: Product
+
+
 - Status: Open
 
 - Created: 2026-04-09
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Odylith's governance surfaces were still deriving urgency and
   visibility locally. A scope could look important in Compass, quiet in Radar,

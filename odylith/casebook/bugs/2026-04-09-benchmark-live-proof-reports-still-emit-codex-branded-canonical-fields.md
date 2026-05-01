@@ -1,5 +1,8 @@
 - Bug ID: CB-089
 
+- Type: Product
+
+
 - Status: Open
 
 - Created: 2026-04-09
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The shared host contract is now host-neutral across runtime,
   guidance, Registry, Atlas, and Compass, but the benchmark subsystem still

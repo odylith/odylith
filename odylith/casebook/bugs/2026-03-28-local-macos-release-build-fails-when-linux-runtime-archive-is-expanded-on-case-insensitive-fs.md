@@ -1,5 +1,8 @@
 - Bug ID: CB-010
 
+- Type: Product
+
+
 - Status: Open
 
 - Created: 2026-03-28
@@ -8,7 +11,6 @@
 
 - Reproducibility: Always
 
-- Type: Product
 
 - Description: Local maintainer release-asset builds on macOS failed while
   assembling Linux managed runtime bundles because the upstream

@@ -1,5 +1,8 @@
 - Bug ID: CB-136
 
+- Type: DataLoss
+
+
 - Status: Closed
 
 - Created: 2026-04-29
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: data-loss
 
 - Description: Install overwrites Claude settings before verified runtime activation
 

@@ -1,5 +1,8 @@
 - Bug ID: CB-052
 
+- Type: Product
+
+
 - Status: Open
 
 - Created: 2026-04-04
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Registry live forensic coverage could leave a component marked
   `baseline_forensic_only` even while its source-owned bundled mirror files

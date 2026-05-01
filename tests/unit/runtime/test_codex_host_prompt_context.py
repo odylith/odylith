@@ -8,6 +8,7 @@ from odylith.runtime.intervention_engine import delivery_ledger
 from odylith.runtime.intervention_engine import surface_runtime
 from odylith.runtime.intervention_engine import stream_state
 from odylith.runtime.surfaces import codex_host_prompt_context
+from odylith.runtime.surfaces import host_intervention_support
 
 
 def test_render_codex_prompt_context_uses_first_explicit_anchor(monkeypatch) -> None:
@@ -31,6 +32,19 @@ def test_render_codex_prompt_context_uses_first_explicit_anchor(monkeypatch) -> 
 
 def test_render_codex_prompt_context_returns_empty_without_anchor() -> None:
     assert codex_host_prompt_context.render_codex_prompt_context(prompt="Explain the change.") == ""
+
+
+def test_render_codex_prompt_context_skips_bundle_for_low_signal_prompt(monkeypatch) -> None:
+    def _unexpected_bundle(**_: object) -> dict[str, object]:
+        raise AssertionError("low-signal prompt should not build prompt intervention bundle")
+
+    monkeypatch.setattr(
+        host_intervention_support.conversation_surface,
+        "build_conversation_bundle",
+        _unexpected_bundle,
+    )
+
+    assert codex_host_prompt_context.render_codex_prompt_context(prompt="Odylith, you there?") == ""
 
 
 def test_render_codex_prompt_context_returns_empty_for_show_me_fast_path() -> None:
@@ -177,7 +191,7 @@ def test_main_writes_user_prompt_hook_json(monkeypatch, tmp_path: Path, capsys) 
         lambda **_: "Odylith anchor B-088: primary target src/odylith/cli.py.",
     )
     monkeypatch.setattr(
-        codex_host_prompt_context.conversation_surface,
+        host_intervention_support.conversation_surface,
         "build_conversation_bundle",
         lambda **_: {},
     )
@@ -211,7 +225,7 @@ def test_main_emits_show_me_route_lock_without_running_prompt_observation(
         ),
     )
     monkeypatch.setattr(
-        codex_host_prompt_context.conversation_surface,
+        host_intervention_support.conversation_surface,
         "build_conversation_bundle",
         _unexpected_bundle,
     )
@@ -271,6 +285,30 @@ def test_main_emits_help_route_lock_without_pending_replay(
     assert "systemMessage" not in payload
 
 
+def test_main_prints_nothing_for_low_signal_prompt_without_bundle(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    def _unexpected_bundle(**_: object) -> dict[str, object]:
+        raise AssertionError("low-signal prompt should not build prompt intervention bundle")
+
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(json.dumps({"prompt": "Odylith, you there?", "session_id": "codex-low-signal"})),
+    )
+    monkeypatch.setattr(
+        host_intervention_support.conversation_surface,
+        "build_conversation_bundle",
+        _unexpected_bundle,
+    )
+
+    exit_code = codex_host_prompt_context.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    assert capsys.readouterr().out == ""
+
+
 def test_main_emits_capability_inventory_route_lock_without_host_taxonomy(
     monkeypatch,
     tmp_path: Path,
@@ -301,7 +339,7 @@ def test_main_surfaces_visible_teaser_in_system_message(monkeypatch, tmp_path: P
         io.StringIO(json.dumps({"prompt": "Design a conversation observation engine with governed proposal flow."})),
     )
     monkeypatch.setattr(
-        codex_host_prompt_context.conversation_surface,
+        host_intervention_support.conversation_surface,
         "build_conversation_bundle",
         lambda **_: {
             "intervention_bundle": {
@@ -345,7 +383,7 @@ def test_main_records_prompt_events_on_stable_thread_id_not_turn_id(
         ),
     )
     monkeypatch.setattr(
-        codex_host_prompt_context.conversation_surface,
+        host_intervention_support.conversation_surface,
         "build_conversation_bundle",
         lambda **_: {
             "intervention_bundle": {
@@ -408,7 +446,7 @@ def test_main_confirms_visible_prompt_replay_from_last_assistant_message(
         ),
     )
     monkeypatch.setattr(
-        codex_host_prompt_context.conversation_surface,
+        host_intervention_support.conversation_surface,
         "build_conversation_bundle",
         lambda **_: {},
     )

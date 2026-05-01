@@ -48,9 +48,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
     }
     __ODYLITH_PAGE_BODY__
     __ODYLITH_SURFACE_SHELL_ROOT__
-
     __ODYLITH_SURFACE_SHELL__
-
     __ODYLITH_HERO_PANEL__
 
     __ODYLITH_HEADER_TYPOGRAPHY__

@@ -26,6 +26,7 @@ def _make_snapshot(
     supports_subagent_hooks: bool = True,
     supports_pre_compact_hook: bool = True,
     supports_statusline_command: bool = True,
+    supports_prompt_bundle_hook: bool = True,
     supports_prompt_context_hook: bool = True,
     supports_prompt_teaser_hook: bool = True,
     supports_post_edit_checkpoint_hook: bool = True,
@@ -57,6 +58,7 @@ def _make_snapshot(
         supports_subagent_hooks=supports_subagent_hooks,
         supports_pre_compact_hook=supports_pre_compact_hook,
         supports_statusline_command=supports_statusline_command,
+        supports_prompt_bundle_hook=supports_prompt_bundle_hook,
         supports_prompt_context_hook=supports_prompt_context_hook,
         supports_prompt_teaser_hook=supports_prompt_teaser_hook,
         supports_post_edit_checkpoint_hook=supports_post_edit_checkpoint_hook,
@@ -78,6 +80,7 @@ def test_render_claude_compatibility_includes_capability_truth(tmp_path: Path) -
     assert "Claude CLI: claude 1.0.30" in rendered
     assert "Trusted project required for `.claude/` activation: no" in rendered
     assert "PreToolUse / PostToolUse hooks wired: yes" in rendered
+    assert "UserPromptSubmit prompt-bundle hook wired: yes" in rendered
     assert "UserPromptSubmit prompt-context hook wired: yes" in rendered
     assert "UserPromptSubmit prompt-teaser hook wired: yes" in rendered
     assert "PostToolUse post-edit-checkpoint hook wired for Write/Edit/MultiEdit: yes" in rendered
@@ -101,6 +104,7 @@ def test_render_claude_compatibility_degrades_to_baseline_safe_when_claude_missi
         supports_subagent_hooks=False,
         supports_pre_compact_hook=False,
         supports_statusline_command=False,
+        supports_prompt_bundle_hook=False,
         supports_prompt_context_hook=False,
         supports_prompt_teaser_hook=False,
         supports_post_edit_checkpoint_hook=False,
@@ -113,6 +117,7 @@ def test_render_claude_compatibility_degrades_to_baseline_safe_when_claude_missi
 
     assert "Claude CLI: not detected on PATH" in rendered
     assert "PreToolUse / PostToolUse hooks wired: no" in rendered
+    assert "UserPromptSubmit prompt-bundle hook wired: no" in rendered
     assert "UserPromptSubmit prompt-context hook wired: no" in rendered
     assert "UserPromptSubmit prompt-teaser hook wired: no" in rendered
     assert "Overall posture: baseline_safe" in rendered

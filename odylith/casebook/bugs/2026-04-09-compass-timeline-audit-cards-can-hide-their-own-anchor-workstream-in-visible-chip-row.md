@@ -1,5 +1,8 @@
 - Bug ID: CB-092
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-09
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Compass Timeline Audit could show a transaction headline that
   clearly anchored on one workstream, while the visible chip row underneath

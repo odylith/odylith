@@ -1,5 +1,8 @@
 - Bug ID: CB-065
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-07
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: `odylith sync` already supports selective versus full impact,
   dry-run preview, verbose overlap output, runtime-mode selection, and other

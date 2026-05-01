@@ -1,5 +1,8 @@
 - Bug ID: CB-029
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-01
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The live benchmark runner built Odylith packets with the correct
   supporting docs and contracts, then dropped those selected docs from the

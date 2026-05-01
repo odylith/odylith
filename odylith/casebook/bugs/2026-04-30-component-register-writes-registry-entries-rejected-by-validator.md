@@ -1,6 +1,9 @@
 - Bug ID: CB-141
 
-- Status: Fixed Pending Release
+- Type: Product
+
+
+- Status: FixedPendingRelease
 
 - Created: 2026-04-30
 
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Component register writes Registry entries rejected by validator
 

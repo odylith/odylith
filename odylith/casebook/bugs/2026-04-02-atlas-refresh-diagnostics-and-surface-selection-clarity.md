@@ -1,5 +1,8 @@
 - Bug ID: CB-038
 
+- Type: Product
+
+
 - Status: Closed
 
 - Created: 2026-04-02
@@ -8,7 +11,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: In the consumer lane, `odylith dashboard refresh --repo-root .`
   refreshed only `tooling_shell` and `radar` by default but did not say
