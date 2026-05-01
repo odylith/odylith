@@ -40,6 +40,10 @@ _PROMPT_VISIBLE_ASSIST_MARKDOWN = (
 _PROMPT_VISIBLE_ASSIST_PLAIN = (
     "Odylith Assist: visibility feedback noted; this line is deliberately shown in chat."
 )
+_PROMPT_FIRST_RECEIPT = (
+    "Odylith prompt-first receipt: the host hook ran before assistant work. "
+    "No live Odylith note earned; keep chat quiet unless a pending Odylith block needs visible recovery."
+)
 
 
 def _alignment_mapping(alignment: Mapping[str, Any], key: str) -> Mapping[str, Any]:
@@ -81,6 +85,16 @@ def prompt_needs_live_bundle(*, prompt: Any, bundle_override: Mapping[str, Any] 
     if prompt_signal_runtime.visibility_feedback_requested(prompt=prompt, assistant_summary=""):
         return True
     return prompt_signal_runtime.has_prompt_intervention_signal(prompt)
+
+
+def prompt_first_receipt_context(*, prompt: Any) -> str:
+    """Return the cheap Odylith-first receipt for low-signal prompt hooks."""
+
+    if suppress_prompt_live_narration(prompt=prompt):
+        return ""
+    if not prompt_signal_runtime.normalize_string(prompt):
+        return ""
+    return _PROMPT_FIRST_RECEIPT
 
 
 def preferred_live_replay_markdown(

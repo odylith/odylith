@@ -110,7 +110,7 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
         return 0
-    host_intervention_support.confirm_last_assistant_message(
+    confirmed_events = host_intervention_support.confirm_last_assistant_message(
         repo_root=args.repo_root,
         host_family="codex",
         session_id=session_id,
@@ -121,6 +121,22 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     ref = prompt_signal_runtime.prompt_anchor(prompt)
     if not ref and not host_intervention_support.prompt_needs_live_bundle(prompt=prompt):
+        receipt = (
+            ""
+            if confirmed_events
+            else host_intervention_support.prompt_first_receipt_context(prompt=prompt)
+        )
+        if receipt:
+            sys.stdout.write(
+                json.dumps(
+                    {
+                        "hookSpecificOutput": {
+                            "hookEventName": "UserPromptSubmit",
+                            "additionalContext": receipt,
+                        }
+                    }
+                )
+            )
         return 0
     bundle = _prompt_conversation_bundle(
         repo_root=args.repo_root,

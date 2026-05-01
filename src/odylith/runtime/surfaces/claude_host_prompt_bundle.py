@@ -35,6 +35,7 @@ def render_prompt_bundle_payload(
     repo_root: Path | str = ".",
     prompt: str,
     session_id: str = "",
+    suppress_prompt_first_receipt: bool = False,
 ) -> dict[str, object]:
     """Render Claude's single prompt-submit payload, if the prompt earns one."""
 
@@ -46,7 +47,10 @@ def render_prompt_bundle_payload(
         return {}
     refs = list(dict.fromkeys(prompt_signal_runtime.ANCHOR_RE.findall(str(prompt or ""))))
     if not refs and not host_intervention_support.prompt_needs_live_bundle(prompt=prompt):
-        return {}
+        if suppress_prompt_first_receipt:
+            return {}
+        receipt = host_intervention_support.prompt_first_receipt_context(prompt=prompt)
+        return _cheap_bundle_payload(additional_context=receipt) if receipt else {}
 
     from odylith.runtime.intervention_engine import host_surface_runtime
 
@@ -124,17 +128,20 @@ def main(argv: list[str] | None = None) -> int:
     prompt = str(payload.get("prompt", "")).strip()
     session_id = claude_host_shared.hook_session_id(payload)
     if not host_prompt_route_locks.route_lock_context(host_family="claude", prompt=prompt):
-        host_intervention_support.confirm_last_assistant_message(
+        confirmed_events = host_intervention_support.confirm_last_assistant_message(
             repo_root=repo_root,
             host_family="claude",
             session_id=session_id,
             payload=payload,
             render_surface="claude_user_prompt_submit",
         )
+    else:
+        confirmed_events = []
     payload_out = render_prompt_bundle_payload(
         repo_root=repo_root,
         prompt=prompt,
         session_id=session_id,
+        suppress_prompt_first_receipt=bool(confirmed_events),
     )
     if payload_out:
         sys.stdout.write(json.dumps(payload_out))

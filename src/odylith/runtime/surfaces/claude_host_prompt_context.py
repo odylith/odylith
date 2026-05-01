@@ -161,7 +161,7 @@ def main(argv: list[str] | None = None) -> int:
     payload = claude_host_shared.load_payload(raw)
     prompt = str(payload.get("prompt", "")).strip()
     session_id = claude_host_shared.hook_session_id(payload)
-    host_intervention_support.confirm_last_assistant_message(
+    confirmed_events = host_intervention_support.confirm_last_assistant_message(
         repo_root=repo_root,
         host_family="claude",
         session_id=session_id,
@@ -172,6 +172,22 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     refs = list(dict.fromkeys(_ANCHOR_RE.findall(str(prompt or ""))))
     if not refs and not host_intervention_support.prompt_needs_live_bundle(prompt=prompt):
+        receipt = (
+            ""
+            if confirmed_events
+            else host_intervention_support.prompt_first_receipt_context(prompt=prompt)
+        )
+        if receipt:
+            sys.stdout.write(
+                json.dumps(
+                    {
+                        "hookSpecificOutput": {
+                            "hookEventName": "UserPromptSubmit",
+                            "additionalContext": receipt,
+                        }
+                    }
+                )
+            )
         return 0
     bundle = _prompt_conversation_bundle(
         repo_root=repo_root,

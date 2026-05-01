@@ -285,7 +285,7 @@ def test_main_emits_help_route_lock_without_pending_replay(
     assert "systemMessage" not in payload
 
 
-def test_main_prints_nothing_for_low_signal_prompt_without_bundle(
+def test_main_emits_prompt_first_receipt_for_low_signal_prompt_without_bundle(
     monkeypatch,
     tmp_path: Path,
     capsys,
@@ -306,7 +306,12 @@ def test_main_prints_nothing_for_low_signal_prompt_without_bundle(
     exit_code = codex_host_prompt_context.main(["--repo-root", str(tmp_path)])
 
     assert exit_code == 0
-    assert capsys.readouterr().out == ""
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
+    assert payload["hookSpecificOutput"]["additionalContext"].startswith(
+        "Odylith prompt-first receipt:"
+    )
+    assert "systemMessage" not in payload
 
 
 def test_main_emits_capability_inventory_route_lock_without_host_taxonomy(

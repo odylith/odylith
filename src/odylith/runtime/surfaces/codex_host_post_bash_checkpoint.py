@@ -36,6 +36,7 @@ from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.surfaces import claude_host_shared
 from odylith.runtime.surfaces import codex_host_shared
 from odylith.runtime.surfaces import host_dirty_checkpoint
+from odylith.runtime.surfaces import host_intervention_support
 
 _PATCH_PATH_RE = re.compile(r"^\*\*\* (?:Add|Update|Delete) File: (.+)$", re.MULTILINE)
 _PATCH_MOVE_RE = re.compile(r"^\*\*\* Move to: (.+)$", re.MULTILINE)
@@ -682,10 +683,8 @@ def refresh_governance(*, project_dir: Path | str, paths: list[str]) -> dict[str
         }
     if completed.returncode == 0:
         return {}
-    detail = "\n".join(
-        line.strip()
-        for line in (completed.stderr or completed.stdout or "").splitlines()[-8:]
-        if line.strip()
+    detail = host_intervention_support.join_sections(
+        *((completed.stderr or completed.stdout or "").splitlines()[-8:])
     )
     if not detail:
         detail = f"exit code {completed.returncode}"

@@ -318,7 +318,7 @@ def test_prompt_bundle_routes_show_me_what_you_got_without_replay(tmp_path: Path
     assert "systemMessage" not in payload
 
 
-def test_main_prints_nothing_for_low_signal_prompt_without_bundle(
+def test_main_emits_prompt_first_receipt_for_low_signal_prompt_without_bundle(
     monkeypatch,
     tmp_path: Path,
     capsys,
@@ -339,7 +339,89 @@ def test_main_prints_nothing_for_low_signal_prompt_without_bundle(
     exit_code = claude_host_prompt_context.main(["--repo-root", str(tmp_path)])
 
     assert exit_code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
+    assert payload["hookSpecificOutput"]["additionalContext"].startswith(
+        "Odylith prompt-first receipt:"
+    )
+    assert "systemMessage" not in payload
+
+
+def test_prompt_bundle_emits_prompt_first_receipt_for_low_signal_prompt(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    def _unexpected_bundle(**_: object) -> dict[str, object]:
+        raise AssertionError("low-signal prompt should not build prompt bundle")
+
+    monkeypatch.setattr(
+        host_intervention_support.conversation_surface,
+        "build_conversation_bundle",
+        _unexpected_bundle,
+    )
+
+    payload = claude_host_prompt_bundle.render_prompt_bundle_payload(
+        repo_root=tmp_path,
+        prompt="Odylith, you there?",
+        session_id="claude-bundle-low-signal",
+    )
+
+    assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
+    assert payload["hookSpecificOutput"]["additionalContext"].startswith(
+        "Odylith prompt-first receipt:"
+    )
+    assert "systemMessage" not in payload
+
+
+def test_prompt_bundle_main_suppresses_receipt_after_chat_confirmation(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Pending Claude prompt replay awaiting transcript proof.",
+        session_id="claude-bundle-confirm-prompt",
+        host_family="claude",
+        intervention_key="claude-bundle-confirm-prompt-key",
+        turn_phase="post_edit_checkpoint",
+        display_markdown="---\n**Odylith Observation:** Claude bundle already rendered this block.\n---",
+        delivery_channel="assistant_visible_fallback",
+        delivery_status="assistant_render_required",
+        render_surface="claude_post_tool_use",
+    )
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(
+            json.dumps(
+                {
+                    "prompt": "Continue with the next slice.",
+                    "session_id": "claude-bundle-confirm-prompt",
+                    "last_assistant_message": (
+                        "Done.\n\n---\n**Odylith Observation:** Claude bundle already rendered this block.\n---"
+                    ),
+                }
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        host_intervention_support.conversation_surface,
+        "build_conversation_bundle",
+        lambda **_: {},
+    )
+
+    exit_code = claude_host_prompt_bundle.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
     assert capsys.readouterr().out == ""
+    snapshot = delivery_ledger.delivery_snapshot(
+        repo_root=tmp_path,
+        host_family="claude",
+        session_id="claude-bundle-confirm-prompt",
+    )
+    assert snapshot["chat_confirmed_event_count"] == 1
+    assert snapshot["unconfirmed_event_count"] == 0
 
 
 def test_main_keeps_teaser_in_discreet_prompt_context_when_signal_is_real(
