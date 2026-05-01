@@ -1,6 +1,9 @@
 # Install
 
-1. Run the latest Odylith release bootstrap command from the repository or folder you want to augment. A repo root is ideal, but Odylith also supports subdirectories and folder-only installs.
+1. Open a terminal in the project folder on your laptop, then run the latest
+   Odylith release bootstrap command. Odylith installs into that folder on your
+   laptop, not GitHub or any external service. The folder can be a Git repo,
+   but it does not have to be.
 2. Use a supported platform: macOS (Apple Silicon) or Linux
    (`x86_64` or `ARM64`).
 3. Let that bootstrap detect the install boundary, create any missing root

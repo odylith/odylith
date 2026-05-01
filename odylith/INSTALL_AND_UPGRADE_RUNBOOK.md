@@ -13,8 +13,10 @@ curl -fsSL https://odylith.ai/install.sh | bash
 
 ## Happy Path
 
-- Run the hosted installer from the repo you want to augment, ideally from the
-  repo root.
+- Open a terminal in the project folder on your laptop, then run the hosted
+  installer. Odylith installs into that folder on your laptop, not GitHub or
+  any external service. The folder can be a Git repo, but it does not have to
+  be.
 - Supported public install platforms today are macOS (Apple Silicon) and
   Linux (`x86_64`, `ARM64`). Intel macOS and Windows are out of scope for the
   current public contract.

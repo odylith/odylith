@@ -11,7 +11,7 @@
 
 ## Intro
 
-Install Odylith into any repo. Use it through Codex or Claude Code.
+Install Odylith into a project folder on your laptop. Use it through Codex or Claude Code.
 
 Without Odylith, every agent session starts from scratch. Reading the repo,
 inferring the architecture, guessing intent and constraints, discovering what
@@ -35,16 +35,19 @@ More on the operating frame:
 
 ## Quick Start
 
-Install Odylith from the Git-backed repository you want to augment:
+Install Odylith in a project folder on your laptop:
 
 ```bash
 curl -fsSL https://odylith.ai/install.sh | bash
 ```
 
-Run it from the repo root when you can; Odylith can also detect that root from
-any subdirectory inside the same repo. The current GA platform contract covers
-macOS (Apple Silicon) and Linux (`x86_64`, `ARM64`). Intel macOS and Windows
-are not part of the current GA platform set.
+Open a terminal in the project folder on your laptop, then run the command.
+Odylith installs into that folder on your laptop. It does not install into
+GitHub or any external service. The folder can be a Git repo, but it does not
+have to be.
+The current GA platform contract covers macOS (Apple Silicon) and Linux
+(`x86_64`, `ARM64`). Intel macOS and Windows are not part of the current GA
+platform set.
 
 ## Prove It In 2 Minutes
 
