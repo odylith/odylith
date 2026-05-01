@@ -2,7 +2,10 @@
 
 ## Happy Path
 
-- From the repository root you want to augment, run the release bootstrap command.
+- Open a terminal in the project folder on your laptop, then run the release
+  bootstrap command. Odylith installs into that folder on your laptop, not
+  GitHub or any external service. The folder can be a Git repo, but it does
+  not have to be.
 - The supported public install platforms are macOS (Apple Silicon) and Linux
   (`x86_64`, `ARM64`). Intel macOS and Windows are not supported in this
   slice.
