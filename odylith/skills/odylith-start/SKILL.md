@@ -4,6 +4,9 @@ Use this skill only when the user explicitly invokes `$odylith-start` or
 directly asks to run the repo-local Odylith startup contract.
 
 1. Run `./.odylith/bin/odylith start --repo-root .` for substantive work.
+   Do not run `odylith context`, `odylith query`, `git status`, or broad
+   repo search in parallel with this step; let startup finish first so the
+   host transcript reflects the real grounding order.
 2. If startup cannot narrow the slice but the user already named a workstream,
    bug, component, or path, follow with
    `./.odylith/bin/odylith context --repo-root . <ref>`.

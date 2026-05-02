@@ -136,6 +136,30 @@ def test_casebook_metadata_migration_skips_pre_v013_targets(tmp_path: Path) -> N
     assert "Mitigated locally; pending platform release" in bug_path.read_text(encoding="utf-8")
 
 
+def test_casebook_metadata_migration_skips_index_only_casebook(tmp_path: Path) -> None:
+    index_path = tmp_path / "odylith" / "casebook" / "bugs" / "INDEX.md"
+    index_path.parent.mkdir(parents=True, exist_ok=True)
+    index_path.write_text("# Bugs Index\n", encoding="utf-8")
+
+    result = casebook_metadata_migration.migrate_casebook_compact_metadata(
+        repo_root=tmp_path,
+        previous_version="0.1.12",
+        target_version="0.1.13",
+    )
+    inspection = casebook_metadata_migration.inspect_casebook_compact_metadata_migration(
+        repo_root=tmp_path,
+        previous_version="0.1.12",
+        target_version="0.1.13",
+    )
+
+    assert result.applied is False
+    assert result.skipped_reason == "no_casebook_bug_source_records"
+    assert inspection.casebook_bug_source_exists is False
+    assert inspection.migration_required is False
+    assert index_path.read_text(encoding="utf-8") == "# Bugs Index\n"
+    assert not (tmp_path / "odylith" / "casebook" / "casebook.html").exists()
+
+
 def test_casebook_metadata_migration_reports_unreadable_generated_payload(tmp_path: Path) -> None:
     bug_path = tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-26-legacy-casebook-labels.md"
     _write_legacy_bug(bug_path)

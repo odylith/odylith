@@ -37,6 +37,7 @@ class CasebookMetadataMigrationInspection:
     target_version: str
     target_in_window: bool
     previous_requires_migration: bool
+    casebook_bug_source_exists: bool
     source_paths_needing_migration: tuple[str, ...]
     generated_surface_violations: tuple[str, ...]
     ledger_exists: bool
@@ -59,6 +60,8 @@ class CasebookMetadataMigrationInspection:
         """Return whether applying the migration would still write local state."""
         if not self.target_in_window:
             return False
+        if not self.casebook_bug_source_exists and not self.generated_surface_violations:
+            return False
         if self.source_paths_needing_migration or self.generated_surface_violations:
             return True
         return self.previous_requires_migration and not self.ledger_exists
@@ -71,6 +74,7 @@ class CasebookMetadataMigrationInspection:
             "target_version": self.target_version,
             "target_in_window": self.target_in_window,
             "previous_requires_migration": self.previous_requires_migration,
+            "casebook_bug_source_exists": self.casebook_bug_source_exists,
             "source_paths_needing_migration": list(self.source_paths_needing_migration),
             "generated_surface_violations": list(self.generated_surface_violations),
             "ledger_exists": self.ledger_exists,
@@ -218,7 +222,8 @@ def _source_paths_needing_migration(*, repo_root: Path) -> tuple[str, ...]:
 
 def _casebook_bug_source_exists(*, repo_root: Path) -> bool:
     root = repo_root / CASEBOOK_BUGS_RELATIVE_PATH
-    return root.is_dir() and any(path.is_file() for path in root.rglob("*.md") if path.name != "INDEX.md")
+    skipped_names = {"AGENTS.md", "CLAUDE.md", "INDEX.md"}
+    return root.is_dir() and any(path.is_file() for path in root.rglob("*.md") if path.name not in skipped_names)
 
 
 def _generated_surface_violations(*, repo_root: Path) -> tuple[str, ...]:
@@ -334,6 +339,7 @@ def inspect_casebook_compact_metadata_migration(
         target_version=target,
         target_in_window=is_at_least(target, TARGET_VERSION),
         previous_requires_migration=not previous or is_before(previous, TARGET_VERSION),
+        casebook_bug_source_exists=_casebook_bug_source_exists(repo_root=root),
         source_paths_needing_migration=_source_paths_needing_migration(repo_root=root),
         generated_surface_violations=_generated_surface_violations(repo_root=root),
         ledger_exists=ledger.is_file(),
@@ -368,6 +374,8 @@ def casebook_compact_metadata_decision_state(
         return "ledger_stale", f"migration ledger is stale: {inspection.ledger_stale_reason}"
     if inspection.verification_passed:
         return "skipped", "ledger and verification already satisfy the v0.1.13 Casebook metadata migration"
+    if not inspection.casebook_bug_source_exists and not inspection.generated_surface_violations:
+        return "skipped", "repo has no Casebook bug source records to migrate"
     if inspection.migration_required:
         return "selected", "legacy Casebook metadata or stale generated Casebook surfaces require automatic migration"
     return "skipped", "migration predicates do not require local Casebook metadata changes"
@@ -406,6 +414,16 @@ def migrate_casebook_compact_metadata(
             skipped_reason="ledger_and_casebook_metadata_already_verify",
             ledger_path=inspection.ledger_path,
             verification_result={"status": "passed", "mode": "already_verified"},
+        )
+    if not inspection.casebook_bug_source_exists and not inspection.generated_surface_violations:
+        return CasebookMetadataMigrationResult(
+            migration_id=MIGRATION_ID,
+            applied=False,
+            previous_version=previous,
+            target_version=target,
+            skipped_reason="no_casebook_bug_source_records",
+            ledger_path=inspection.ledger_path,
+            verification_result={"status": "skipped", "mode": "no_casebook_bug_source_records"},
         )
     before = _casebook_path_fingerprints(repo_root=root)
     sync_casebook_bug_index.sync_casebook_bug_index(repo_root=root, migrate_bug_ids=True)

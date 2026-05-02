@@ -6,7 +6,7 @@
 
 - This project-level Claude memory bridge exists for setups that prefer `.claude/CLAUDE.md` over the repo-root `CLAUDE.md`.
 - Use `/odylith-start` to ground substantive work through the repo-local launcher before broad repo search.
-- Use `/odylith-context` when you already know the exact workstream, component, path, or bug id.
+- Use `/odylith-context` after `/odylith-start` has completed for the current turn, or when a fresh session-start packet already exists and you know the exact workstream, component, path, or bug id. Do not launch it in parallel with startup.
 - Use `/odylith-query` only after concrete anchors exist and you need narrow local search.
 - Use `/odylith-sync-governance` when you need a manual governance refresh beyond the automatic post-edit hook.
 - The SessionStart hook mirrors a compact Compass-derived brief into Claude's documented auto-memory directory under `projects/<project>/memory/`. Treat that note as fresh project memory, not as optional decoration.

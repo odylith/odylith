@@ -4,9 +4,11 @@ Odylith changes how a coding agent starts, stays grounded, and closes work.
 Tracked files under `odylith/` hold guidance and repo-local governance truth.
 Mutable runtime state lives under `.odylith/`.
 
-The default posture is Odylith-first:
+The default posture is Odylith-first and serial at the first step:
 
-- start with Odylith grounding before broad repo search
+- run `odylith start` before broad repo search or repo-inspection fan-out
+- run `odylith context <ref>` only after startup completes and an exact anchor
+  is known
 - recover existing workstream, plan, bug, component, diagram, and recent
   session or Compass truth before creating new records
 - keep runtime, write, and validation boundaries separate

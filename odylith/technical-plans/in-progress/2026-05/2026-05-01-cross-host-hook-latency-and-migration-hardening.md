@@ -114,6 +114,10 @@ Related Bugs:
       status, and owned Radar/Atlas/Registry/Casebook refresh commands under
       latency budgets with a provider tripwire that fails if the local path
       tries to spend reasoning credits.
+- [x] Startup grounding order is part of latency UX, not just correctness.
+      `odylith start` must be the first visible grounding gate on substantive
+      turns; `odylith context`, `odylith query`, `git status`, and broad repo
+      search run only after startup completes and an exact anchor is known.
 
 ## Must-Ship
 - [x] Add shared prompt route locks so help/show/capabilities prompts bypass
@@ -159,6 +163,10 @@ Related Bugs:
       skills from model invocation.
 - [x] Update host contracts, source bundle mirrors, Radar, Casebook, and
       release assignments for v0.1.13.
+- [x] Update shared guidance, Claude commands, Codex and Claude skill shims,
+      source skills, bundle mirrors, and enforcement tests so all hosts honor
+      serial `start` before `context` grounding without weakening Context
+      Engine or intervention kickoff.
 
 ## Should-Ship
 - [ ] Convert the host hook daemon proposal into a separate design slice with
@@ -232,6 +240,13 @@ Related Bugs:
   - [x] Mitigation: Compass Release Targets now defaults to current/next
         alias groups when aliases exist, while preserving active/planned/draft
         fallback for repos that have not adopted release aliases yet.
+- [x] Risk: Agents could optimize for lower wall-clock latency by launching
+      `start`, `context`, `git status`, and repo search together, making the
+      transcript imply the Context Engine ran before startup.
+  - [x] Mitigation: Cross-host guidance and skill surfaces now make startup a
+        serial gate. Tests pin root guidance, install-generated guidance,
+        Claude command assets, Codex/Claude skill shims, source skills, and
+        bundle mirrors to the same rule.
 
 ## Validation
 - [x] `PYTHONPATH=src pytest -q tests/unit/runtime/test_claude_host_prompt_context.py tests/unit/runtime/test_codex_host_post_bash_checkpoint.py tests/unit/runtime/test_codex_host_stop_summary.py tests/unit/runtime/test_casebook_bug_index.py tests/unit/runtime/test_host_runtime_contract.py tests/unit/runtime/test_claude_cli_capabilities.py tests/unit/install/test_claude_effective_settings.py tests/unit/runtime/test_claude_host_compatibility.py tests/unit/test_claude_host_cli.py tests/unit/test_cli_audit.py tests/unit/install/test_codex_project_assets.py tests/unit/runtime/test_source_bundle_mirror.py tests/unit/runtime/test_hygiene.py tests/integration/install/test_manager.py::test_doctor_bundle_repair_backfills_legacy_casebook_bug_ids tests/integration/install/test_manager.py::test_upgrade_same_version_backfills_legacy_casebook_bug_ids tests/integration/install/test_manager.py::test_consumer_upgrade_backfills_legacy_casebook_bug_ids_during_runtime_activation`

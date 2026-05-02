@@ -170,6 +170,75 @@ def test_claude_output_style_keeps_observation_rare_and_assist_concrete() -> Non
         assert "Never use canned Assist text" in text
 
 
+def test_grounding_assets_enforce_serial_start_before_context() -> None:
+    paths = (
+        REPO_ROOT / "odylith" / "skills" / "odylith-start" / "SKILL.md",
+        REPO_ROOT / "odylith" / "skills" / "odylith-context" / "SKILL.md",
+        REPO_ROOT / "odylith" / "agents-guidelines" / "GROUNDING_AND_NARROWING.md",
+        LIVE_AGENTS_ROOT / "skills" / "odylith-start" / "SKILL.md",
+        LIVE_AGENTS_ROOT / "skills" / "odylith-context" / "SKILL.md",
+        PROJECT_ROOT_BUNDLE / ".agents" / "skills" / "odylith-start" / "SKILL.md",
+        PROJECT_ROOT_BUNDLE / ".agents" / "skills" / "odylith-context" / "SKILL.md",
+        PROJECT_ROOT_BUNDLE / ".claude" / "CLAUDE.md",
+        PROJECT_ROOT_BUNDLE / ".claude" / "skills" / "odylith-start" / "SKILL.md",
+        PROJECT_ROOT_BUNDLE / ".claude" / "skills" / "odylith-context" / "SKILL.md",
+        PROJECT_ROOT_BUNDLE / ".claude" / "commands" / "odylith-start.md",
+        PROJECT_ROOT_BUNDLE / ".claude" / "commands" / "odylith-context.md",
+        LIVE_CLAUDE_ROOT / "CLAUDE.md",
+        LIVE_CLAUDE_ROOT / "skills" / "odylith-start" / "SKILL.md",
+        LIVE_CLAUDE_ROOT / "skills" / "odylith-context" / "SKILL.md",
+        LIVE_CLAUDE_ROOT / "commands" / "odylith-start.md",
+        LIVE_CLAUDE_ROOT / "commands" / "odylith-context.md",
+    )
+
+    for path in paths:
+        text = path.read_text(encoding="utf-8")
+        assert "parallel" in text or "fan out" in text
+        assert "start" in text
+        assert "context" in text
+
+    start_skill_path = REPO_ROOT / "odylith" / "skills" / "odylith-start" / "SKILL.md"
+    context_skill_path = REPO_ROOT / "odylith" / "skills" / "odylith-context" / "SKILL.md"
+    bundle_start_skill_path = (
+        REPO_ROOT
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "skills"
+        / "odylith-start"
+        / "SKILL.md"
+    )
+    bundle_grounding_guideline_path = (
+        REPO_ROOT
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "agents-guidelines"
+        / "GROUNDING_AND_NARROWING.md"
+    )
+    start_skill = start_skill_path.read_text(encoding="utf-8")
+    context_skill = context_skill_path.read_text(encoding="utf-8")
+    assert "Do not run `odylith context`, `odylith query`, `git status`, or broad" in start_skill
+    assert "Use this only after the current turn has run `odylith start`" in context_skill
+    assert "description: Use first, before context/search fan out, when a task needs" in (
+        LIVE_AGENTS_ROOT / "skills" / "odylith-start" / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    assert "description: Use after startup, never in parallel with startup" in (
+        LIVE_AGENTS_ROOT / "skills" / "odylith-context" / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    assert start_skill == bundle_start_skill_path.read_text(encoding="utf-8")
+    assert (
+        (REPO_ROOT / "odylith" / "agents-guidelines" / "GROUNDING_AND_NARROWING.md").read_text(
+            encoding="utf-8"
+        )
+        == bundle_grounding_guideline_path.read_text(encoding="utf-8")
+    )
+
+
 def test_live_claude_hook_scripts_match_bundle_mirror_content() -> None:
     live_hooks = LIVE_CLAUDE_ROOT / "hooks"
     bundle_hooks = PROJECT_ROOT_BUNDLE / ".claude" / "hooks"

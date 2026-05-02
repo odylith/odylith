@@ -10,56 +10,19 @@ from odylith.runtime.common.value_coercion import mapping_copy as _mapping
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.surfaces import compass_standup_brief_narrator as narrator
+from odylith.runtime.surfaces import compass_standup_brief_provider_contract
 from odylith.runtime.surfaces import compass_standup_brief_substrate
 
 
 DEFAULT_SCOPED_PROVIDER_PACK_SIZE = 12
 DEFAULT_SCOPED_PROVIDER_PACK_MAX_CHARS = 18000
-DEFAULT_BUNDLE_PROVIDER_MAX_CHARS = 18000
-DEFAULT_BUNDLE_PROVIDER_MAX_ENTRIES = 4
-_PARALLEL_PACK_TARGET_ENTRIES = 12
-
-# Context window budgets per host family. Use ~40% of the model's context window
-# for the prompt payload to leave room for system prompt, schema, and output.
-_HOST_CONTEXT_BUDGET: dict[str, tuple[int, int]] = {
-    # (max_chars, max_entries) — chars is a rough proxy for tokens at ~4 chars/token
-    "claude": (160000, 24),    # Haiku/Sonnet/Opus: 200K context → 160K budget
-    "codex": (160000, 24),     # Codex Spark/Codex: 200K context → 160K budget
-    "unknown": (18000, 4),     # Conservative fallback for unknown hosts
-}
-
-
-def _host_aware_bundle_budget(
-    config: odylith_reasoning.ReasoningConfig | None = None,
-) -> tuple[int, int]:
-    """Return (max_chars, max_entries) based on the resolved provider's host family."""
-    if config is None:
-        return DEFAULT_BUNDLE_PROVIDER_MAX_CHARS, DEFAULT_BUNDLE_PROVIDER_MAX_ENTRIES
-    provider_token = str(config.provider or "").strip().lower()
-    if "claude" in provider_token:
-        return _HOST_CONTEXT_BUDGET["claude"]
-    if "codex" in provider_token:
-        return _HOST_CONTEXT_BUDGET["codex"]
-    import os
-    from odylith.runtime.common import host_runtime as host_runtime_contract
-    detected = host_runtime_contract.detect_host_runtime(environ=os.environ)
-    if detected == "claude_cli":
-        return _HOST_CONTEXT_BUDGET["claude"]
-    if detected == "codex_cli":
-        return _HOST_CONTEXT_BUDGET["codex"]
-    return _HOST_CONTEXT_BUDGET["unknown"]
-_ABORT_FANOUT_FAILURE_CODES = frozenset(
-    {
-        "rate_limited",
-        "credits_exhausted",
-        "timeout",
-        "provider_unavailable",
-        "transport_error",
-        "auth_error",
-        "provider_error",
-        "unavailable",
-    }
+DEFAULT_BUNDLE_PROVIDER_MAX_CHARS = (
+    compass_standup_brief_provider_contract.DEFAULT_BUNDLE_PROVIDER_MAX_CHARS
 )
+DEFAULT_BUNDLE_PROVIDER_MAX_ENTRIES = (
+    compass_standup_brief_provider_contract.DEFAULT_BUNDLE_PROVIDER_MAX_ENTRIES
+)
+_PARALLEL_PACK_TARGET_ENTRIES = 12
 
 
 def _scope_packet_payload_chars(*, fact_packet: Mapping[str, Any]) -> int:
@@ -130,31 +93,6 @@ def _split_scope_packets(
 def _sections_schema() -> dict[str, Any]:
     section_schema = narrator._provider_output_schema()["properties"]["sections"]  # noqa: SLF001
     return json.loads(json.dumps(section_schema))
-
-
-def _provider_failure_should_abort_fanout(provider: odylith_reasoning.ReasoningProvider) -> bool:
-    metadata = odylith_reasoning.provider_failure_metadata(provider)
-    return str(metadata.get("code", "")).strip().lower() in _ABORT_FANOUT_FAILURE_CODES
-
-
-def _batch_provider_system_prompt() -> str:
-    return (
-        narrator._provider_system_prompt()  # noqa: SLF001
-        + " You are writing multiple scoped briefs in one batch. "
-        "Return one independent four-section brief per scope_id. "
-        "Never mix facts, fact ids, or workstream meaning across scopes. "
-        "If one scope has thin evidence, keep that scope plainer rather than borrowing tone or detail from another scope."
-    )
-
-
-def _window_batch_provider_system_prompt() -> str:
-    return (
-        narrator._provider_system_prompt()  # noqa: SLF001
-        + " You are writing multiple global Compass briefs in one batch. "
-        "Return one independent four-section brief per window_key. "
-        "Keep the 24h and 48h briefs isolated to their own fact packets. "
-        "Do not flatten the two windows into one shared answer."
-    )
 
 
 def _batch_provider_output_schema(*, scope_ids: Sequence[str]) -> dict[str, Any]:
@@ -675,7 +613,7 @@ def _batch_provider_request(
     scope_ids = list(scope_packets)
     profile = narrator._provider_request_profile(config=config)  # noqa: SLF001
     return odylith_reasoning.StructuredReasoningRequest(
-        system_prompt=_batch_provider_system_prompt(),
+        system_prompt=compass_standup_brief_provider_contract.batch_provider_system_prompt(),
         schema_name="compass_standup_brief_batch",
         output_schema=_batch_provider_output_schema(scope_ids=scope_ids),
         prompt_payload=_batch_provider_request_payload(scope_packets=scope_packets),
@@ -693,7 +631,7 @@ def _window_batch_provider_request(
     window_keys = list(window_packets)
     profile = narrator._provider_request_profile(config=config)  # noqa: SLF001
     return odylith_reasoning.StructuredReasoningRequest(
-        system_prompt=_window_batch_provider_system_prompt(),
+        system_prompt=compass_standup_brief_provider_contract.window_batch_provider_system_prompt(),
         schema_name="compass_standup_brief_window_batch",
         output_schema=_window_batch_provider_output_schema(window_keys=window_keys),
         prompt_payload=_window_batch_provider_request_payload(window_packets=window_packets),
@@ -714,7 +652,7 @@ def _batch_repair_provider_request(
     profile = narrator._provider_request_profile(config=config)  # noqa: SLF001
     return odylith_reasoning.StructuredReasoningRequest(
         system_prompt=(
-            _batch_provider_system_prompt()
+            compass_standup_brief_provider_contract.batch_provider_system_prompt()
             + " You are repairing a prior invalid batch reply. Fix only the cited scope failures and keep valid scopes valid."
         ),
         schema_name="compass_standup_brief_batch_repair",
@@ -741,7 +679,7 @@ def _window_batch_repair_provider_request(
     profile = narrator._provider_request_profile(config=config)  # noqa: SLF001
     return odylith_reasoning.StructuredReasoningRequest(
         system_prompt=(
-            _window_batch_provider_system_prompt()
+            compass_standup_brief_provider_contract.window_batch_provider_system_prompt()
             + " You are repairing a prior invalid batch reply. Fix only the cited window failures and keep valid windows valid."
         ),
         schema_name="compass_standup_brief_window_batch_repair",
@@ -1536,7 +1474,7 @@ def _resolve_window_pack(
         request=_window_batch_provider_request(window_packets=pack_mapping, config=config)
     )
     if not isinstance(raw_result, Mapping):
-        if _provider_failure_should_abort_fanout(provider):
+        if compass_standup_brief_provider_contract.provider_failure_should_abort_fanout(provider):
             return {}
         if not fallback_to_single:
             return {}
@@ -1580,7 +1518,7 @@ def _resolve_window_pack(
                 generated_utc=generated_utc,
             )
             ready.update(repaired_ready)
-        elif _provider_failure_should_abort_fanout(provider):
+        elif compass_standup_brief_provider_contract.provider_failure_should_abort_fanout(provider):
             return ready
 
     unresolved_window_packets = {
@@ -1620,7 +1558,7 @@ def _resolve_scope_pack(
         request=_batch_provider_request(scope_packets=pack_mapping, config=config)
     )
     if not isinstance(raw_result, Mapping):
-        if _provider_failure_should_abort_fanout(provider):
+        if compass_standup_brief_provider_contract.provider_failure_should_abort_fanout(provider):
             return {}
         if len(pack_mapping) == 1:
             scope_id, fact_packet = next(iter(pack_mapping.items()))
@@ -1671,7 +1609,7 @@ def _resolve_scope_pack(
                 generated_utc=generated_utc,
             )
             ready.update(repaired_ready)
-        elif _provider_failure_should_abort_fanout(provider):
+        elif compass_standup_brief_provider_contract.provider_failure_should_abort_fanout(provider):
             return ready
 
     unresolved_scope_packets = {
@@ -1891,7 +1829,7 @@ def build_brief_bundle(
     blocked_scoped: dict[str, dict[str, dict[str, Any]]] = {}
     use_host_aware_budget = max_bundle_payload_chars == DEFAULT_BUNDLE_PROVIDER_MAX_CHARS
     if use_host_aware_budget:
-        host_max_chars, host_max_entries = _host_aware_bundle_budget(config=resolved_config)
+        host_max_chars, host_max_entries = compass_standup_brief_provider_contract.host_aware_bundle_budget(config=resolved_config)
     else:
         host_max_chars, host_max_entries = max_bundle_payload_chars, DEFAULT_BUNDLE_PROVIDER_MAX_ENTRIES
     immediate_global = cold_global
@@ -1961,7 +1899,7 @@ def build_brief_bundle(
                 merged_window = dict(provider_scoped.get(window_key, {}))
                 merged_window.update(window_results)
                 provider_scoped[window_key] = merged_window
-            if _provider_failure_should_abort_fanout(resolved_provider):
+            if compass_standup_brief_provider_contract.provider_failure_should_abort_fanout(resolved_provider):
                 remaining_global: dict[str, Mapping[str, Any]] = {}
                 remaining_scoped: dict[str, dict[str, Mapping[str, Any]]] = {}
                 for remaining_globals, remaining_scoped_window in bundle_packs[pack_index:]:

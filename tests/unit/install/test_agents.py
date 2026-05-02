@@ -62,6 +62,8 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     assert "keep the active workstream, component, or packet in scope" in block
     assert "Direct repo scan before that start step is a policy violation unless the task is trivial or Odylith is unavailable." in block
     assert "Start substantive turns with `./.odylith/bin/odylith start --repo-root .`" in block
+    assert "Do not run `odylith context`, `odylith query`, `git status`, broad repo search, or other repo-inspection commands in parallel with that start step." in block
+    assert "Let `start` finish first; then run `odylith context --repo-root . <ref>` only when the user, the start output, or prior governed truth gives an exact anchor." in block
     assert "`./.odylith/bin/odylith context --repo-root . <ref>` before raw repo search." in block
     assert "CLI-first is non-negotiable for both Codex and Claude Code." in block
     assert "Remove all hand-authoring for places where Odylith CLI should be doing the heavy-lifting." in block
@@ -109,7 +111,8 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     assert "At most one supplemental closeout line may appear" in block
     assert "never say `fixed`, `cleared`, or `resolved` without qualification" in block
     assert "same fingerprint as the last falsification or not" in block
-    assert "follow this workflow check in order: read the nearest `AGENTS.md`; run the repo-local `odylith start`/`odylith context` step" in block
+    assert "follow this workflow check in order: read the nearest `AGENTS.md`; run repo-local `odylith start` first; when a precise anchor is known after that, run `odylith context`" in block
+    assert "run the repo-local `odylith start`/`odylith context` step" not in block
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in block
     assert "stop at diagnosis and maintainer-ready feedback" in block
     assert "Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes" in block

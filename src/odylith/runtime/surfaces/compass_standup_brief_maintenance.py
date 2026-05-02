@@ -28,6 +28,7 @@ from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.surfaces import compass_standup_brief_batch
 from odylith.runtime.surfaces import compass_standup_brief_narrator
+from odylith.runtime.surfaces import compass_standup_brief_provider_contract
 from odylith.runtime.surfaces import compass_standup_brief_runtime_patch
 
 _REQUEST_VERSION = "v1"
@@ -47,6 +48,7 @@ _MAX_SCOPED_REQUESTS_PER_WINDOW = 4
 _WORKER_EPOCH_RELATIVE_PATHS = (
     "src/odylith/runtime/surfaces/compass_standup_brief_maintenance.py",
     "src/odylith/runtime/surfaces/compass_standup_brief_batch.py",
+    "src/odylith/runtime/surfaces/compass_standup_brief_provider_contract.py",
     "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py",
     "src/odylith/runtime/surfaces/compass_standup_brief_substrate.py",
 )
@@ -1141,7 +1143,10 @@ def run_pending_request(
                 provider=provider,
                 defer_scoped=True,
             )
-            if not compass_standup_brief_batch._provider_failure_should_abort_fanout(provider) and scoped_packets:
+            if (
+                not compass_standup_brief_provider_contract.provider_failure_should_abort_fanout(provider)
+                and scoped_packets
+            ):
                 scoped_bundle = compass_standup_brief_batch.build_brief_bundle(
                     repo_root=repo_root,
                     global_fact_packets_by_window={},

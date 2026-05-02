@@ -532,6 +532,24 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.13:browser-surfaces:fcd4ad300aac`,
   `migration-observer:0.1.13:browser-surfaces:3822d2354e1c`,
   `migration-observer:0.1.13:install-managed-assets:b45cab51875d`.
+- Startup grounding order and index-only Casebook migration guard: v0.1.13
+  makes `odylith start` the serial first gate before follow-on `context`,
+  `query`, `git status`, or broad repo inspection across Codex, Claude, and
+  installed guidance/skill mirrors. The same pass fixes Casebook compact-label
+  migration so guidance-only `AGENTS.md` files under `odylith/casebook/bugs/`
+  do not count as bug records and do not trigger empty index/dashboard rewrites
+  over customer truth. Existing consumer repos do not need manual migration;
+  upgrades refresh managed guidance, host command assets, skills, and rendered
+  browser assets while preserving repo-owned Casebook source truth when no bug
+  records exist. Migration observer markers:
+  `migration-observer:0.1.13:guidance-and-skills:633944f92664`,
+  `migration-observer:0.1.13:operator-cli-contracts:b0183d029a95`,
+  `migration-observer:0.1.13:browser-surfaces:de6df3fb3057`,
+  `migration-observer:0.1.13:install-managed-assets:d0e3fe35c626`,
+  `migration-observer:0.1.13:browser-surfaces:8e66cd173155`,
+  `migration-observer:0.1.13:install-managed-assets:2f2e3b612696`,
+  `migration-observer:0.1.13:browser-surfaces:b065a42fa247`,
+  `migration-observer:0.1.13:browser-surfaces:36a9b304f8a5`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.

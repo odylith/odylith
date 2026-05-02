@@ -64,6 +64,27 @@ def _seed_repo(repo_root: Path, *, active_version: str = "0.1.10") -> None:
     )
 
 
+def _seed_casebook_bug(repo_root: Path) -> None:
+    bug_path = repo_root / "odylith" / "casebook" / "bugs" / "2026-04-26-legacy-casebook-labels.md"
+    bug_path.parent.mkdir(parents=True, exist_ok=True)
+    bug_path.write_text(
+        "\n".join(
+            [
+                "- Bug ID: CB-155",
+                "- Status: Mitigated locally; pending platform release",
+                "- Created: 2026-04-26",
+                "- Fixed: Pending release/deploy",
+                "- Severity: P1",
+                "- Type: OSW template upgrade repair / coroutine scheduler runtime / LocalStack proof UX",
+                "",
+                "- Description: Legacy Casebook metadata leaked prose into detail labels.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+
 def _write_install_state(repo_root: Path, payload: dict[str, object]) -> None:
     (repo_root / ".odylith").mkdir(parents=True, exist_ok=True)
     (repo_root / ".odylith" / "install.json").write_text(
@@ -690,6 +711,7 @@ def test_casebook_metadata_migration_is_selected_for_prior_versions_to_v013(tmp_
         repo_root = tmp_path / previous_version.replace(".", "_")
         repo_root.mkdir()
         _seed_repo(repo_root, active_version=previous_version)
+        _seed_casebook_bug(repo_root)
 
         plan = migration_runtime.plan_release_migrations(
             repo_root=repo_root,
@@ -703,6 +725,27 @@ def test_casebook_metadata_migration_is_selected_for_prior_versions_to_v013(tmp_
         assert decision.state == migration_runtime.STATE_SELECTED
         assert plan.satisfies_manifest_requirement() is True
         assert "no registered migration" not in plan.blocked_reason
+
+
+def test_casebook_metadata_migration_skips_index_only_repos_without_blocking_manifest(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, active_version="0.1.12")
+    index_path = tmp_path / "odylith" / "casebook" / "bugs" / "INDEX.md"
+    index_path.parent.mkdir(parents=True, exist_ok=True)
+    index_path.write_text("# Bugs Index\n", encoding="utf-8")
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.12",
+        target_version="0.1.13",
+        release_manifest={"migration_required": True, "repo_schema_version": 1},
+    )
+
+    decision = _decision_for(plan, CASEBOOK_METADATA_MIGRATION_ID)
+    assert decision.state == migration_runtime.STATE_SKIPPED
+    assert decision.reason == "repo has no Casebook bug source records to migrate"
+    assert plan.satisfies_manifest_requirement() is True
+    assert "no registered migration" not in plan.blocked_reason
 
 
 def test_casebook_metadata_migration_ledger_stale_blocks_upgrade(tmp_path: Path) -> None:

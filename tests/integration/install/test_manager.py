@@ -765,6 +765,8 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "Before any substantive repo scan or code change outside trivial fixes, the agent must start from the repo-local Odylith entrypoint" in guidance_text
     assert "keep the active workstream, component, or packet in scope" in guidance_text
     assert "Direct repo scan before that start step is a policy violation unless the task is trivial or Odylith is unavailable." in guidance_text
+    assert "Do not run `odylith context`, `odylith query`, `git status`, broad repo search, or other repo-inspection commands in parallel with that start step." in guidance_text
+    assert "Let `start` finish first; then run `odylith context --repo-root . <ref>` only when the user, the start output, or prior governed truth gives an exact anchor." in guidance_text
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in guidance_text
     assert "the exact file/workstream, the bug under test, or the validation in flight" in guidance_text
     assert "If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history." in guidance_text
@@ -790,7 +792,8 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "Ground the line in concrete observed counts, measured deltas, or validation outcomes" in guidance_text
     assert "or a concrete chat-visibility complaint" in guidance_text
     assert "Silence is better than filler." in guidance_text
-    assert "follow this workflow check in order: read the nearest `AGENTS.md`; run the repo-local `odylith start`/`odylith context` step" in guidance_text
+    assert "follow this workflow check in order: read the nearest `AGENTS.md`; run repo-local `odylith start` first; when a precise anchor is known after that, run `odylith context`" in guidance_text
+    assert "run the repo-local `odylith start`/`odylith context` step" not in guidance_text
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in guidance_text
     assert "stop at diagnosis and maintainer-ready feedback" in guidance_text
     assert "Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes" in guidance_text
@@ -826,6 +829,8 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "Before any substantive repo scan or code change outside trivial fixes, the agent must start from the repo-local Odylith entrypoint" in root_agents
     assert "keep the active workstream, component, or packet in scope" in root_agents
     assert "Direct repo scan before that start step is a policy violation unless the task is trivial or Odylith is unavailable." in root_agents
+    assert "Do not run `odylith context`, `odylith query`, `git status`, broad repo search, or other repo-inspection commands in parallel with that start step." in root_agents
+    assert "Let `start` finish first; then run `odylith context --repo-root . <ref>` only when the user, the start output, or prior governed truth gives an exact anchor." in root_agents
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in root_agents
     assert "the exact file/workstream, the bug under test, or the validation in flight" in root_agents
     assert "If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history." in root_agents
@@ -851,7 +856,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "Ground the line in concrete observed counts, measured deltas, or validation outcomes" in root_agents
     assert "or a concrete chat-visibility complaint" in root_agents
     assert "Silence is better than filler." in root_agents
-    assert "follow this workflow check in order: read the nearest `AGENTS.md`; run the repo-local `odylith start`/`odylith context` step" in root_agents
+    assert "follow this workflow check in order: read the nearest `AGENTS.md`; run repo-local `odylith start` first; when a precise anchor is known after that, run `odylith context`" in root_agents
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in root_agents
     assert "stop at diagnosis and maintainer-ready feedback" in root_agents
     assert "Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes" in root_agents
@@ -1638,6 +1643,7 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
 
     guidance_text = (repo_root / "odylith" / "AGENTS.md").read_text(encoding="utf-8")
     assert "Before any substantive repo scan or code change outside trivial fixes, the agent must start from the repo-local Odylith entrypoint" in guidance_text
+    assert "Do not run `odylith context`, `odylith query`, `git status`, broad repo search, or other repo-inspection commands in parallel with that start step." in guidance_text
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in guidance_text
     assert "the exact file/workstream, the bug under test, or the validation in flight" in guidance_text
     assert "If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history." in guidance_text
@@ -1738,6 +1744,7 @@ def test_install_bundle_product_repo_preserves_source_owned_odylith_guidance_and
     root_agents = (repo_root / "AGENTS.md").read_text(encoding="utf-8")
     assert "odylith/maintainer/AGENTS.md" in root_agents
     assert "Before any substantive repo scan or code change outside trivial fixes, the agent must start from the repo-local Odylith entrypoint" in root_agents
+    assert "Do not run `odylith context`, `odylith query`, `git status`, broad repo search, or other repo-inspection commands in parallel with that start step." in root_agents
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in root_agents
     assert "the exact file/workstream, the bug under test, or the validation in flight" in root_agents
     assert "If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history." in root_agents

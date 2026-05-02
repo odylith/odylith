@@ -50,11 +50,24 @@
 
 - Solution: Implement B-141 as a host-general latency slice: measure Claude and Codex hook/startup latency, enforce budgeted fast paths for low-signal and show/help/status prompts, keep the compact alignment substrate active on quiet prompt and SessionStart lanes, collapse Claude prompt-submit work into one prompt-bundle path, defer Codex governed refresh work to Stop-time settlement, seed host-launched hooks for context-engine warm-daemon reuse, and have generated launchers dispatch baked host hook commands directly to runtime modules instead of importing the full CLI dispatcher first.
 
+- Follow-up Correction: Operator feedback on 2026-05-02 showed that running
+  `odylith start`, `odylith context`, and `git status` in parallel creates the
+  wrong visible sequence and can make the Context Engine appear to precede the
+  startup contract. The fix is cross-host guidance, not feature removal:
+  startup is now a serial gate, and follow-on `context`, `query`, repo status,
+  or broad search runs only after `start` completes and an exact anchor is
+  known.
+
 - Rollback/Forward Fix: Forward-fix in v0.1.13; do not remove grounding or safety hooks without replacing them with measured fast-path equivalents.
 
 - Verification: Local v0.1.13 timing showed low-signal direct hook modules returning empty in about 42-44 ms median for Claude prompt-context, Claude prompt-teaser, and Codex prompt-context; full CLI fallback paths dropped to about 106-116 ms median. Follow-up substrate validation proved quiet Codex and Claude prompt hooks now emit compact Context Engine, memory, Execution Engine, delivery, Tribunal, and proof evidence while still skipping the full conversation bundle; SessionStart uses the same substrate instead of manual-start fallback text; context-engine autospawn reached a live watchdog-backed daemon. Focused tests cover Claude prompt-bundle route locks plus hidden/visible prompt output parity, async Claude PostToolUse settings, Codex dirty-event deferral, Stop-time governed refresh settlement, substrate-backed prompt gating, direct launcher hook dispatch, cross-host prompt parity, host-launcher warm-daemon defaults, install launcher generation, and mixed-version prompt-bundle fallback when current-source launchers run against the shipped v0.1.12 runtime.
 
 - Prevention: Require latency-budget and substrate-integrity tests for host hook changes, keep show/help/status passthrough paths stdout-clean and direct across Claude, Codex, and future adapters, and prevent low-signal prompt gates from constructing full conversation bundles while still proving memory, execution, delivery, Tribunal, and intervention alignment.
+
+- Prevention Update: Guidance, skills, Claude project commands, and bundle
+  mirrors must keep the serial startup contract aligned across Codex, Claude,
+  and future hosts; enforcement tests reject drift back to combined
+  `start`/`context` wording or parallel kickoff guidance.
 
 - Monitoring Updates: Track prompt-submit, prompt-context, prompt-teaser, stop-summary, and startup grounding latency in local benchmark or smoke outputs for each supported host adapter.
 

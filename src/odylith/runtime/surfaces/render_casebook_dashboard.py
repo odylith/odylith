@@ -1,8 +1,7 @@
 """Render the Casebook bug knowledge surface.
 
-Casebook is a shell-owned, read-only explorer over the repo bug knowledge base.
-Markdown under ``odylith/casebook/bugs/`` remains authoritative; this renderer only projects a
-searchable/filterable local view.
+Casebook is a shell-owned, read-only explorer over repo bug knowledge.
+Markdown under ``odylith/casebook/bugs/`` remains authoritative; this renderer projects a searchable/filterable local view.
 """
 
 from __future__ import annotations

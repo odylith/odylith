@@ -71,6 +71,7 @@ Make Odylith feel native across supported hosts by enforcing a low-latency hook/
 
 ## Proposed Solution
 Add host-general prompt and startup fast paths: low-signal prompt hooks skip the full conversation bundle but still emit a compact substrate proof, SessionStart uses the same local alignment substrate instead of telling operators to run startup manually, show/help/capability prompts stay locked to direct stdout routes, Claude prompt-submit work collapses into one prompt-bundle hook, Codex PostToolUse records dirty events and defers governed refresh to Stop-time settlement, and generated launchers dispatch host hook commands directly to baked runtime modules with context-engine warm-daemon defaults.
+Preserve the visible grounding sequence across hosts: `odylith start` is the first substantive turn gate, and `odylith context`, `odylith query`, `git status`, or broad repo search must wait until startup finishes and an exact anchor is known.
 
 ## Scope
 - Define and land the bounded work for cross-host hook latency budget and fast-path startup.
@@ -96,6 +97,10 @@ Prompt-submit and stop hooks stay under a documented local latency budget on war
 - Mixed-version fresh-host validation on 2026-05-02 proved current-source generated launchers remain accepted by the shipped v0.1.12 runtime health checker while keeping direct host-hook dispatch intact.
 - Historical upgrade validation on 2026-05-02 proves consumer installs can upgrade from 0.1.10, 0.1.11, and 0.1.12 to the v0.1.13 target through the normal lifecycle. The 0.1.10 fixture applies the v0.1.11 value-engine migration from legacy signal-ranker state; the 0.1.11 and 0.1.12 fixtures skip it cleanly.
 - End-to-end governed sync performance validation on 2026-05-02 runs full sync dry-run, all-surface dashboard refresh, Compass status, and owned Radar/Atlas/Registry/Casebook refresh commands in a temporary consumer repo under latency budgets. The same test installs a provider tripwire so accidental Codex, Claude, OpenAI, or Anthropic reasoning calls fail the test instead of silently burning credits.
+- 2026-05-02 grounding-order hardening pins root guidance, install-generated
+  guidance, Claude project bridge assets, Claude slash commands, Codex and
+  Claude skill shims, source skills, and bundle mirrors to serial `start`
+  before follow-on `context` or repo-inspection work.
 
 ## Rollout
 - Execute through the bound v0.1.13 technical plan and keep the first implementation wave focused on hook latency, prompt hot-path gating, launcher dispatch, and governed migration capture.
@@ -114,11 +119,16 @@ Claude, Codex, and future host adapters should get the same grounded value witho
 
 ## Migration/Compatibility
 - Existing consumer repos need no manual data migration. Upgrading from 0.1.10, 0.1.11, or 0.1.12 installs the host-launcher preference fix, direct host-hook launcher dispatch, substrate-backed SessionStart behavior, prompt hot-path gating, context-engine warm-daemon defaults, v0.1.12-compatible launcher-health anchors, refreshed host guidance/bundle assets, and any automatic release migration still required by local state.
+- v0.1.13 also refreshes managed guidance and skill assets so supported hosts
+  inherit the serial startup-grounding contract on upgrade.
 
 ## Test Strategy
 - Unit tests cover low-signal Claude and Codex prompt hooks skipping conversation-bundle construction while keeping substrate evidence, Claude prompt-bundle route locks and visible teaser preservation, SessionStart using substrate state by default, direct show/help/capability route locks, launcher bootstrap fallback preference, legacy launcher-health parser compatibility, Codex dirty-event settlement, context-engine warm-daemon env defaults, and direct host-hook launcher dispatch.
 - Integration tests cover 0.1.10 -> 0.1.13, 0.1.11 -> 0.1.13, and 0.1.12 -> 0.1.13 upgrade activation, migration-plan state, migration-result state, pin adoption, and runtime pointer convergence.
 - Integration tests also cover governed sync/operator latency, no-provider credit burn, dashboard all-surface refresh behavior, and parallel multi-surface dashboard execution.
+- Guidance tests cover serial start/context ordering across root guidance,
+  install-generated guidance, Claude project assets, Codex/Claude skill shims,
+  and source/bundle skill mirrors.
 
 ## Open Questions
 - No blocking open question for lifecycle promotion; follow-up design work for a long-lived hook daemon remains deferred outside this release-critical slice.
