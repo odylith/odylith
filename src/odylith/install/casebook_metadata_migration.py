@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from dataclasses import dataclass
@@ -165,22 +166,27 @@ def _write_ledger(
     return display_path(repo_root=repo_root, path=path)
 
 
-def _casebook_paths_snapshot(*, repo_root: Path) -> dict[str, str]:
+def _file_digest(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _casebook_path_fingerprints(*, repo_root: Path) -> dict[str, str]:
     roots = (
         repo_root / CASEBOOK_BUGS_RELATIVE_PATH,
         repo_root / "odylith" / "casebook",
     )
-    snapshot: dict[str, str] = {}
+    fingerprints: dict[str, str] = {}
     for root in roots:
         if not root.is_dir():
             continue
         for path in root.rglob("*"):
             if path.is_file():
-                snapshot[display_path(repo_root=repo_root, path=path)] = path.read_text(
-                    encoding="utf-8",
-                    errors="ignore",
-                )
-    return snapshot
+                fingerprints[display_path(repo_root=repo_root, path=path)] = _file_digest(path)
+    return fingerprints
 
 
 def _changed_paths(before: Mapping[str, str], after: Mapping[str, str]) -> tuple[str, ...]:
@@ -232,13 +238,19 @@ def _generated_surface_violations(*, repo_root: Path) -> tuple[str, ...]:
     for path in payload_paths:
         if not path.is_file():
             continue
-        for payload in _json_payloads_from_js(path):
+        try:
+            payloads = _json_payloads_from_js(path)
+        except (OSError, UnicodeDecodeError) as exc:
+            rel = display_path(repo_root=repo_root, path=path)
+            violations.append(f"{rel}: unreadable generated Casebook surface: {exc.__class__.__name__}")
+            continue
+        for payload in payloads:
             violations.extend(_metadata_payload_violations(repo_root=repo_root, path=path, payload=payload))
     return tuple(dict.fromkeys(violations))
 
 
 def _json_payloads_from_js(path: Path) -> tuple[dict[str, Any], ...]:
-    text = path.read_text(encoding="utf-8", errors="ignore")
+    text = path.read_text(encoding="utf-8")
     decoder = json.JSONDecoder()
     payloads: list[dict[str, Any]] = []
     for match in re.finditer(r"\{", text):
@@ -290,8 +302,10 @@ def _status_is_compact(value: str) -> bool:
 def _fixed_is_compact(value: str) -> bool:
     return (
         _FIXED_DATE_RE.fullmatch(value) is not None
-        or casebook_metadata.casebook_token_is_valid(value)
-        and casebook_metadata.canonical_casebook_fixed(value) == value
+        or (
+            casebook_metadata.casebook_token_is_valid(value)
+            and casebook_metadata.canonical_casebook_fixed(value) == value
+        )
     )
 
 
@@ -393,7 +407,7 @@ def migrate_casebook_compact_metadata(
             ledger_path=inspection.ledger_path,
             verification_result={"status": "passed", "mode": "already_verified"},
         )
-    before = _casebook_paths_snapshot(repo_root=root)
+    before = _casebook_path_fingerprints(repo_root=root)
     sync_casebook_bug_index.sync_casebook_bug_index(repo_root=root, migrate_bug_ids=True)
     from odylith.runtime.surfaces import render_casebook_dashboard
 
@@ -409,7 +423,7 @@ def migrate_casebook_compact_metadata(
     )
     if render_rc != 0:
         raise RuntimeError("Casebook dashboard render failed during v0.1.13 Casebook metadata migration")
-    after = _casebook_paths_snapshot(repo_root=root)
+    after = _casebook_path_fingerprints(repo_root=root)
     verification = inspect_casebook_compact_metadata_migration(
         repo_root=root,
         previous_version=previous,

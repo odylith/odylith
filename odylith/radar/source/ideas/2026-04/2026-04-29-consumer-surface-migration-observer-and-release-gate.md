@@ -482,7 +482,9 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   through the registered v0.1.13 Casebook compact-metadata migration, which
   normalizes source labels, rebuilds the Casebook index, rerenders Casebook
   browser payloads, and writes a migration ledger for 0.1.10, 0.1.11, and
-  0.1.12 upgrades. Migration observer markers:
+  0.1.12 upgrades. The release-path cleanup keeps the same behavior while
+  using content fingerprints instead of whole-file snapshots for changed-path
+  reporting. Migration observer markers:
   `migration-observer:0.1.13:operator-cli-contracts:b870d25c57e8`,
   `migration-observer:0.1.13:browser-surfaces:f2c4d30f468f`,
   `migration-observer:0.1.13:browser-surfaces:f56cbbad5b96`,
@@ -491,7 +493,11 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.13:install-managed-assets:d5ce300448b1`,
   `migration-observer:0.1.13:operator-cli-contracts:1c7ce3ac7fe4`,
   `migration-observer:0.1.13:browser-surfaces:e0801e363df8`,
-  `migration-observer:0.1.13:install-managed-assets:b62c9c457cb1`.
+  `migration-observer:0.1.13:install-managed-assets:b62c9c457cb1`,
+  `migration-observer:0.1.13:install-managed-assets:2c261b3fa6e6`,
+  `migration-observer:0.1.13:browser-surfaces:ef3937feff8b`,
+  `migration-observer:0.1.13:install-managed-assets:e021b3887dda`,
+  `migration-observer:0.1.13:install-managed-assets:c0dc04317b0c`.
 - Casebook detail gutter hardening: v0.1.13 tightens the selected-bug detail
   gutter in live and bundled Casebook HTML, repairs the media-block brace shape
   so padding no longer depends on CSS parser recovery, and keeps existing

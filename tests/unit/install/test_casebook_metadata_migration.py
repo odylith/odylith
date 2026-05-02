@@ -64,7 +64,13 @@ def test_casebook_metadata_migration_normalizes_source_and_rendered_payloads(tmp
     assert '"Status": "Mitigated"' in detail_text
     assert '"Fixed": "Pending"' in detail_text
     assert '"Type": "UX"' in detail_text
+    assert len(result.written_paths) == len(set(result.written_paths))
+    assert result.removed_paths == ()
+    assert "odylith/casebook/bugs/2026-04-26-legacy-casebook-labels.md" in result.written_paths
+    assert "odylith/casebook/casebook-payload.v1.js" in result.written_paths
+    assert any(path.startswith("odylith/casebook/casebook-detail-shard-") for path in result.written_paths)
     assert ledger["migration_id"] == casebook_metadata_migration.MIGRATION_ID
+    assert ledger["written_paths"] == list(result.written_paths)
     assert ledger["verification_result"]["status"] == "passed"
 
 
@@ -128,3 +134,23 @@ def test_casebook_metadata_migration_skips_pre_v013_targets(tmp_path: Path) -> N
     assert result.applied is False
     assert result.skipped_reason == "target_not_in_v0_1_13_migration_window"
     assert "Mitigated locally; pending platform release" in bug_path.read_text(encoding="utf-8")
+
+
+def test_casebook_metadata_migration_reports_unreadable_generated_payload(tmp_path: Path) -> None:
+    bug_path = tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-26-legacy-casebook-labels.md"
+    _write_legacy_bug(bug_path)
+    casebook_root = tmp_path / "odylith" / "casebook"
+    (casebook_root / "casebook.html").write_text("", encoding="utf-8")
+    (casebook_root / "casebook-app.v1.js").write_text("", encoding="utf-8")
+    (casebook_root / "casebook-payload.v1.js").write_bytes(b"\xff")
+
+    inspection = casebook_metadata_migration.inspect_casebook_compact_metadata_migration(
+        repo_root=tmp_path,
+        previous_version="0.1.12",
+        target_version="0.1.13",
+    )
+
+    assert any(
+        violation.endswith("casebook-payload.v1.js: unreadable generated Casebook surface: UnicodeDecodeError")
+        for violation in inspection.generated_surface_violations
+    )
