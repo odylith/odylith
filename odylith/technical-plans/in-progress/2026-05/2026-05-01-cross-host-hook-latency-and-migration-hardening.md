@@ -150,6 +150,13 @@ Related Bugs:
       release is shipped; local closeout then updates compact `Status` and
       `Fixed` tokens through `odylith release casebook-closeout`, while the
       GitHub issue pipeline separately waits for public release availability.
+- [x] The remaining root guidance surface should be trimmed by routing, not by
+      deleting capability. The detailed anti-slop bans belong in
+      `ANTI_SLOP_AND_DECOMPOSITION.md` and the code-hygiene skill; root
+      `AGENTS.md` keeps the hard-law pointer, compact identity and file-size
+      rules, and the explicit engine-preservation contract. Local
+      `odylith-start` and `odylith-context` skill shims stay checked in for
+      both Codex and Claude because they own the serial startup/context rule.
 
 ## Must-Ship
 - [x] Add shared prompt route locks so help/show/capabilities prompts bypass
@@ -220,6 +227,13 @@ Related Bugs:
       casebook-closeout --apply` closes only shipped-release records with
       validation evidence, and `odylith release update --status shipped`
       invokes the same sweep automatically unless explicitly skipped.
+- [x] Finish the safe root guidance surface diet: compact the maintainer-root
+      contributor identity and file-size rules, route detailed anti-slop
+      examples to the playbook and skill, and remove duplicate Casebook Claude
+      closeout wording while preserving the sibling AGENTS import.
+- [x] Decompose Radar topology validation out of the oversized backlog
+      validator so B-141 topology enforcement does not keep growing a red-zone
+      runtime file.
 
 ## Should-Ship
 - [ ] Convert the host hook daemon proposal into a separate design slice with
@@ -230,9 +244,9 @@ Related Bugs:
 ## Defer
 - [ ] MCP server scope cleanup remains local host configuration work, not a
       repo-shipped v0.1.13 product contract.
-- [ ] Further root and maintainer-lane kernel splitting is deferred until
-      path-scoped guidance behavior can be proven without weakening safety,
-      CLI-first policy, release-gate proof, or migration-observer obligations.
+- [ ] Further maintainer-lane kernel splitting is deferred until path-scoped
+      guidance behavior can be proven without weakening safety, CLI-first
+      policy, release-gate proof, or migration-observer obligations.
 
 ## Risks & Mitigations
 - [x] Risk: Moving checkpoint work off the critical path could lose governance
@@ -336,10 +350,18 @@ Related Bugs:
 - [x] `PYTHONPATH=src pytest -q tests/unit/install/test_agents.py tests/unit/install/test_manager.py tests/unit/install/test_codex_project_assets.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_show_capabilities.py` (`119 passed`; consumer guidance byte budgets, explicit engine preservation, Claude model-invocable skill diet, Codex/Claude skill separation, and anti-slop/show-capability contracts)
 - [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_validate_backlog_contract.py` (`30 passed`; topology-sensitive implementation workstreams opened on or after 2026-05-01 must declare `related_diagram_ids` or an explicit topology rationale)
 - [x] Post-change surface measurement: root `AGENTS.md` moved from 28,982
-      bytes to 21,291 bytes; consumer `odylith/AGENTS.md` and its bundle
-      mirror moved from 26,958 bytes to 16,211 bytes; Claude
-      model-invocable project skills are capped at seven while twenty-eight
-      lower-frequency workflows remain explicit/slash-invocable.
+      bytes to 17,381 bytes; consumer `odylith/AGENTS.md` and its bundle
+      mirror measure 16,307 bytes; Claude model-invocable project skills are
+      capped at seven while twenty-eight lower-frequency workflows remain
+      explicit/slash-invocable. Codex in this session exposes one
+      `odylith-start` and one `odylith-context` skill; the checked-in local
+      shims remain because they preserve serial startup before context.
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_hygiene.py::test_anti_slop_contract_stays_explicit_across_guidance_surfaces tests/unit/runtime/test_hygiene.py::test_root_agents_keeps_anti_slop_detailed_rules_routed tests/unit/runtime/test_hygiene.py::test_casebook_claude_bridge_defers_release_closeout_rule_to_agents` (`3 passed`; root anti-slop detail stays routed to playbooks and Casebook Claude imports the closeout rule instead of restating it)
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/install/test_agents.py tests/unit/runtime/test_source_bundle_mirror.py` (`15 passed`; generated guidance block and bundle mirror contracts still match)
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_validate_backlog_contract.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_casebook_bug_index.py tests/unit/runtime/test_casebook_source_validation.py tests/unit/install/test_agents.py tests/unit/runtime/test_source_bundle_mirror.py tests/unit/runtime/test_validate_guidance_behavior.py tests/unit/runtime/test_validate_discipline.py` (`170 passed`; includes topology-sensitive workstream enforcement and oversized-hotfile inventory)
+- [x] `./.odylith/bin/odylith release migration-gate --repo-root . --target-version 0.1.13 --json` (`ok: true`, `blocked: 0`, `ungated: 0`; root guidance routing, topology-validator decomposition, and refreshed browser/install-managed surfaces covered by B-140 migration-observer markers)
+- [x] `./.odylith/bin/odylith casebook validate --repo-root . && ./.odylith/bin/odylith validate guidance-behavior --repo-root . && ./.odylith/bin/odylith validate discipline --repo-root . && ./.odylith/bin/odylith validate backlog-contract --repo-root .`
+- [x] `git diff --check`
 - [x] Mixed-version fresh-host proof in `/private/tmp/odylith-fresh-host-final-aezgVP`: current-source install succeeded against shipped `0.1.12`; `version` and `doctor` ran healthy through the generated launcher; Codex prompt context, Claude prompt-bundle context/visible fallback, Codex and Claude `intervention-status`, and Codex/Claude visible-intervention smokes all passed; `start` reached Context/Execution Engine narrowing and returned only the expected empty-repo fallback.
 - [x] Targeted browser regression rerun for default Compass completed-program
       hiding and Radar date sort (`3 passed`), followed by the full browser

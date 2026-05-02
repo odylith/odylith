@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import datetime as dt
 from pathlib import Path
 
 from odylith.runtime.governance import sync_session
+from odylith.runtime.governance import backlog_topology_contract
 from odylith.runtime.governance import validate_backlog_contract as gate
 
 
@@ -329,7 +331,7 @@ def test_backlog_contract_rejects_topology_sensitive_workstream_without_diagram_
     monkeypatch,  # noqa: ANN001 - pytest fixture
     capsys,  # noqa: ANN001 - pytest fixture
 ) -> None:
-    monkeypatch.setattr(gate, "_TOPOLOGY_GATE_START", gate.dt.date(2026, 2, 1))
+    monkeypatch.setattr(backlog_topology_contract, "_TOPOLOGY_GATE_START", dt.date(2026, 2, 1))
     _seed_minimal_repo(tmp_path)
     implementation_path = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-02" / "2026-02-23-promoted.md"
     text = implementation_path.read_text(encoding="utf-8").replace(

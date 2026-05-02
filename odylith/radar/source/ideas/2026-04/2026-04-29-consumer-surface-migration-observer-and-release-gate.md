@@ -607,6 +607,21 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.13:operator-cli-contracts:dbdb5bb92f21`,
   `migration-observer:0.1.13:browser-surfaces:af4b4c0ff738`,
   `migration-observer:0.1.13:install-managed-assets:92cac291c52f`.
+- Root guidance routing and topology validator decomposition: v0.1.13 keeps
+  root guidance as a compact contract, routes detailed anti-slop examples to
+  the playbook and skill, removes duplicate Casebook Claude companion wording,
+  and moves Radar topology validation out of the oversized backlog validator
+  into a focused runtime module. Existing consumer installs need no data
+  migration; upgrade installs receive refreshed guidance, command/runtime
+  code, rendered governance surfaces, and bundle mirrors through the normal
+  additive managed-asset refresh. Migration observer markers:
+  `migration-observer:0.1.13:guidance-and-skills:361e66bc060e`,
+  `migration-observer:0.1.13:operator-cli-contracts:114d91bc9afa`,
+  `migration-observer:0.1.13:public-docs-and-release-guidance:c8276a3cb8e8`,
+  `migration-observer:0.1.13:browser-surfaces:7aa82e9853a8`,
+  `migration-observer:0.1.13:browser-surfaces:8138268c6173`,
+  `migration-observer:0.1.13:browser-surfaces:0ce09f5edbc9`,
+  `migration-observer:0.1.13:install-managed-assets:db520dee14e4`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.

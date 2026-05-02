@@ -13,9 +13,9 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 75,
-    "mapped_workstream_evidence_count": 52,
-    "recent_path_match_count": 1,
+    "explicit_event_count": 76,
+    "mapped_workstream_evidence_count": 53,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 8,
     "status": "forensic_coverage_present",
     "timeline_event_count": 76
@@ -45,20 +45,44 @@
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
     {
-      "artifacts": [
-        "src/odylith/runtime/governance/release_planning_authoring.py"
-      ],
+      "artifacts": [],
       "confidence": "high",
-      "event_index": 426,
-      "explicit_components": [],
-      "kind": "workspace_activity",
+      "event_index": 419,
+      "explicit_components": [
+        "casebook",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
       "mapped_components": [
-        "release"
+        "casebook",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/governance/release_planning_authoring.py",
-      "ts_iso": "2026-05-02T15:17:20-07:00",
-      "workstreams": []
+      "summary": "Added automated Casebook release closeout for FixedPendingRelease records, gated by shipped release truth and validation evidence, and refreshed the v0.1.13 migration-observer markers.",
+      "ts_iso": "2026-05-02T15:22:02-07:00",
+      "workstreams": [
+        "B-141"
+      ]
     },
     {
       "artifacts": [],

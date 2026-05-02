@@ -66,6 +66,16 @@
   `.agents/skills` policy and supported command-hook shape; no Claude-only
   fields are emitted into Codex configuration.
 
+- Guidance Surface Update: The follow-up v0.1.13 pass removed root
+  long-form duplication that already routes to playbooks: contributor identity,
+  source-size discipline, and anti-slop details now stay compact in root
+  `AGENTS.md`, while the detailed anti-slop bans remain in
+  `odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md` and the
+  code-hygiene skill. The checked-in Codex and Claude `odylith-start` and
+  `odylith-context` skill shims remain because they preserve the serial
+  startup/context contract; no local Codex duplicate registration was
+  reproduced.
+
 - Follow-up Correction: Operator feedback on 2026-05-02 showed that running
   `odylith start`, `odylith context`, and `git status` in parallel creates the
   wrong visible sequence and can make the Context Engine appear to precede the
@@ -76,7 +86,7 @@
 
 - Rollback/Forward Fix: Forward-fix in v0.1.13; do not remove grounding or safety hooks without replacing them with measured fast-path equivalents.
 
-- Verification: Local v0.1.13 timing showed low-signal direct hook modules returning empty in about 42-44 ms median for Claude prompt-context, Claude prompt-teaser, and Codex prompt-context; full CLI fallback paths dropped to about 106-116 ms median. Follow-up substrate validation proved quiet Codex and Claude prompt hooks now emit compact Context Engine, memory, Execution Engine, delivery, Tribunal, and proof evidence while still skipping the full conversation bundle; SessionStart uses the same substrate instead of manual-start fallback text; context-engine autospawn reached a live watchdog-backed daemon. Focused tests cover Claude prompt-bundle route locks plus hidden/visible prompt output parity, async Claude PostToolUse settings, Codex dirty-event deferral, Stop-time governed refresh settlement, substrate-backed prompt gating, direct launcher hook dispatch, cross-host prompt parity, host-launcher warm-daemon defaults, install launcher generation, and mixed-version prompt-bundle fallback when current-source launchers run against the shipped v0.1.12 runtime. The consumer guidance diet measured root `AGENTS.md` at 21,291 bytes and consumer `odylith/AGENTS.md` plus its bundle mirror at 16,211 bytes after preserving the engine contract. `PYTHONPATH=src pytest -q tests/unit/install/test_agents.py tests/unit/install/test_manager.py tests/unit/install/test_codex_project_assets.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_show_capabilities.py` passed with 119 tests covering byte budgets, engine-preservation wording, Claude model-invocable skill capping, Codex/Claude skill separation, anti-slop guidance, and show/capabilities behavior.
+- Verification: Local v0.1.13 timing showed low-signal direct hook modules returning empty in about 42-44 ms median for Claude prompt-context, Claude prompt-teaser, and Codex prompt-context; full CLI fallback paths dropped to about 106-116 ms median. Follow-up substrate validation proved quiet Codex and Claude prompt hooks now emit compact Context Engine, memory, Execution Engine, delivery, Tribunal, and proof evidence while still skipping the full conversation bundle; SessionStart uses the same substrate instead of manual-start fallback text; context-engine autospawn reached a live watchdog-backed daemon. Focused tests cover Claude prompt-bundle route locks plus hidden/visible prompt output parity, async Claude PostToolUse settings, Codex dirty-event deferral, Stop-time governed refresh settlement, substrate-backed prompt gating, direct launcher hook dispatch, cross-host prompt parity, host-launcher warm-daemon defaults, install launcher generation, and mixed-version prompt-bundle fallback when current-source launchers run against the shipped v0.1.12 runtime. The guidance diet measured root `AGENTS.md` at 17,381 bytes and consumer `odylith/AGENTS.md` plus its bundle mirror at 16,307 bytes after preserving the engine contract. `PYTHONPATH=src pytest -q tests/unit/install/test_agents.py tests/unit/install/test_manager.py tests/unit/install/test_codex_project_assets.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_show_capabilities.py` passed with 119 tests covering byte budgets, engine-preservation wording, Claude model-invocable skill capping, Codex/Claude skill separation, anti-slop guidance, and show/capabilities behavior. The follow-up root-routing proof ran `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_hygiene.py::test_anti_slop_contract_stays_explicit_across_guidance_surfaces tests/unit/runtime/test_hygiene.py::test_root_agents_keeps_anti_slop_detailed_rules_routed tests/unit/runtime/test_hygiene.py::test_casebook_claude_bridge_defers_release_closeout_rule_to_agents` and `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/install/test_agents.py tests/unit/runtime/test_source_bundle_mirror.py`.
 
 - Prevention: Require latency-budget and substrate-integrity tests for host hook changes, keep show/help/status passthrough paths stdout-clean and direct across Claude, Codex, and future adapters, and prevent low-signal prompt gates from constructing full conversation bundles while still proving memory, execution, delivery, Tribunal, and intervention alignment.
 
@@ -89,6 +99,12 @@
   mirrors must keep the serial startup contract aligned across Codex, Claude,
   and future hosts; enforcement tests reject drift back to combined
   `start`/`context` wording or parallel kickoff guidance.
+
+- Prevention Update: Radar topology enforcement now lives in
+  `backlog_topology_contract.py` instead of growing the oversized backlog
+  validator. `validate_backlog_contract.py` dropped back below its pinned
+  hotfile limit, and the topology-sensitive B-141 prevention stays covered by
+  the same backlog-contract tests.
 
 - Monitoring Updates: Track prompt-submit, prompt-context, prompt-teaser, stop-summary, and startup grounding latency in local benchmark or smoke outputs for each supported host adapter.
 

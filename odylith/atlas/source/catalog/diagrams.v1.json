@@ -3190,7 +3190,7 @@
         "odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md": "4362ab9e76969e76de4c7cbd143e4a606a1155bd10e3b1844a704b7fa2ddbd7f",
         "odylith/technical-plans/in-progress/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md": "c125ea93a09f17c0a42688120fb6aa906a6e00ccfe952b34ea75452b78f8ef8b",
         "CLAUDE.md": "0b0e7606ef3a8bc2ce5c1b2a035d4523c508583893eddd9f2bb6652c2c0cd606",
-        "AGENTS.md": "05252fe8bd884d1ced8075e1d770abee95f0f566c1359840492df89027ca8880",
+        "AGENTS.md": "ca43fa993cba0f50e84879c1a7425ba3e209d5da8063c181ed124a9216a17e7c",
         "odylith/CLAUDE.md": "2a3c6dedc1c45d09a5a40fdb82406a4b62eaab63f620ec30b69b0c2100a04543",
         "odylith/AGENTS.md": "7aaa6cac3c707fc229792d2aed44854dc1cbf19ff04602a1b33fccea1410a45e",
         "src/odylith/install/agents.py": "c40c2a7aa95b59641d83697d5606bb02df1a65df5e8e56212fc26d2c36fc0eb3",
@@ -3372,7 +3372,7 @@
         "tests/unit/runtime/test_workstream_inference.py": "83426ae92a27cc68dd5b6be2de9ff05823498a21ce782ae27c216f11fe100ace",
         "tests/unit/runtime/test_tooling_context_routing.py": "2437fe6137c7d6b72ccf29bc28e65337e65021b9589e51e4d9389e20d08cf6a8",
         "tests/unit/runtime/test_odylith_benchmark_runner.py": "12b3851eae24d878695396412cb8a485c7c75422a2d3f4e14b9bba0c08c46d40",
-        "tests/unit/runtime/test_hygiene.py": "6a90fe1534ff5065f25e1ae0d41560a7f97df4f34c7d101cb42d68237400ca06",
+        "tests/unit/runtime/test_hygiene.py": "9be5a1f54488b0c5be53a5dde6edb28b45910ee755faf133f9ba3f51dacc5355",
         "odylith/casebook/bugs/2026-04-09-host-contract-drift-leaks-codex-only-policy-into-claude-and-shared-runtime-surfaces.md": "12e0d9d1b31dca776cf53e16b4e151bd5fa0af5fa6a050015abcf7075aad903c"
       },
       "render_source_fingerprint": "1302917574ed628c60ccccf8e46ee9302614cee8891be8210351bf7d43ba2628"
@@ -3437,7 +3437,7 @@
         "odylith/technical-plans/in-progress/2026-04/2026-04-12-governed-sync-shared-read-models-incremental-derivation-and-content-addressed-writes.md": "f09dace0986df16b21d2d360e6df87bd18e8b77e28f484640af106f756853307",
         "src/odylith/runtime/governance/sync_workstream_artifacts.py": "8942c199d9abc21840e268a880fc81f0e73ec4e2cfd051abe79cc8e4d01e9f34",
         "src/odylith/runtime/governance/workstream_inference.py": "10f67c97d32fefb6b3c1d4fd01be7d4f6dfb52cbab21780fff5b7bda079ac4e0",
-        "src/odylith/runtime/governance/validate_backlog_contract.py": "02ba5db69f07179088f01961a10f063906af84450b63e2334ef2cdb7d9fad424",
+        "src/odylith/runtime/governance/validate_backlog_contract.py": "5c31342b41a3a932f01519fc24fde3ee44eea2f47d4b646aa09383c4999be145",
         "src/odylith/runtime/governance/component_registry_intelligence.py": "fc4d997b86c492b0a7c5536ccb6fb35a4011adf12e0709885ed51b2cfc735dc5",
         "src/odylith/runtime/governance/delivery_intelligence_engine.py": "ffef91400594d031fb0b850bc883a77658d25d53fcf1812bd7881f6d4845d1cc"
       },
@@ -3826,7 +3826,7 @@
         "src/odylith/install/bootstrap_assets.py": "dd34b6b9ef2300b25006ac4ea5d09fa9898b13f67aa2d313d6a162b766594ba9",
         "src/odylith/runtime/evaluation/odylith_benchmark_acceptance.py": "7d9020681e33a717fb1af1a3e0a542a190cadc523f3a21bb5fa8a1fc063fb0a1",
         "src/odylith/runtime/common/repo_path_resolver.py": "27530be9ae5d162479a4ec322460aacce500298ae8d3d8eababaa5c92ab3f6b5",
-        "tests/unit/runtime/test_hygiene.py": "6a90fe1534ff5065f25e1ae0d41560a7f97df4f34c7d101cb42d68237400ca06"
+        "tests/unit/runtime/test_hygiene.py": "9be5a1f54488b0c5be53a5dde6edb28b45910ee755faf133f9ba3f51dacc5355"
       },
       "render_source_fingerprint": "8140e1b44a6f9f9aede79b8b836b2f7b00b4fd41ccc53191e759f69c39153037"
     },

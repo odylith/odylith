@@ -14,12 +14,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 121,
-    "mapped_workstream_evidence_count": 113,
+    "explicit_event_count": 122,
+    "mapped_workstream_evidence_count": 114,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 121
+    "timeline_event_count": 122
   },
   "name": "Execution Engine",
   "path_prefixes": [
@@ -27,6 +27,46 @@
   ],
   "spec_ref": "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 419,
+      "explicit_components": [
+        "casebook",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Added automated Casebook release closeout for FixedPendingRelease records, gated by shipped release truth and validation evidence, and refreshed the v0.1.13 migration-observer markers.",
+      "ts_iso": "2026-05-02T15:22:02-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "high",

@@ -12,6 +12,7 @@ from odylith.runtime.common.consumer_profile import truth_root_path
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import execution_wave_contract
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
+from odylith.runtime.governance.backlog_topology_contract import validate_topology_contract
 
 _REQUIRED_BULLETS = (
     "- why now:",
@@ -168,7 +169,7 @@ def collect_backlog_contract_errors(*, repo_root: str | Path) -> tuple[str, ...]
     errors: list[str] = []
     ideas, idea_errors = backlog_contract._validate_idea_specs(idea_root)  # noqa: SLF001
     errors.extend(idea_errors)
-    errors.extend(backlog_contract._validate_topology_contract(ideas=ideas))  # noqa: SLF001
+    errors.extend(validate_topology_contract(ideas=ideas))
     errors.extend(backlog_contract._validate_lineage_contract(ideas=ideas))  # noqa: SLF001
     errors.extend(backlog_contract._validate_promotion_links(ideas=ideas, repo_root=root))  # noqa: SLF001
     _programs, program_errors = execution_wave_contract.collect_execution_programs(

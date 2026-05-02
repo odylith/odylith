@@ -12,9 +12,9 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 129,
-    "mapped_workstream_evidence_count": 107,
-    "recent_path_match_count": 1,
+    "explicit_event_count": 130,
+    "mapped_workstream_evidence_count": 108,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 31,
     "status": "forensic_coverage_present",
     "timeline_event_count": 130
@@ -42,6 +42,46 @@
   ],
   "spec_ref": "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 419,
+      "explicit_components": [
+        "casebook",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Added automated Casebook release closeout for FixedPendingRelease records, gated by shipped release truth and validation evidence, and refreshed the v0.1.13 migration-observer markers.",
+      "ts_iso": "2026-05-02T15:22:02-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "high",
@@ -111,22 +151,6 @@
       "workstreams": [
         "B-141"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md"
-      ],
-      "confidence": "high",
-      "event_index": 421,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "governance-intervention-engine"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
-      "ts_iso": "2026-05-02T14:35:53-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [],

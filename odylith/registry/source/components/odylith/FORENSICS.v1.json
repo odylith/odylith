@@ -43,12 +43,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 240,
-    "mapped_workstream_evidence_count": 117,
+    "explicit_event_count": 241,
+    "mapped_workstream_evidence_count": 118,
     "recent_path_match_count": 1,
     "spec_history_event_count": 28,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 241
+    "timeline_event_count": 242
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -62,6 +62,62 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "AGENTS.md"
+      ],
+      "confidence": "high",
+      "event_index": 421,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: AGENTS.md",
+      "ts_iso": "2026-05-02T15:31:32-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 419,
+      "explicit_components": [
+        "casebook",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Added automated Casebook release closeout for FixedPendingRelease records, gated by shipped release truth and validation evidence, and refreshed the v0.1.13 migration-observer markers.",
+      "ts_iso": "2026-05-02T15:22:02-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "high",
@@ -101,23 +157,6 @@
       "workstreams": [
         "B-141"
       ]
-    },
-    {
-      "artifacts": [
-        "AGENTS.md",
-        "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
-      ],
-      "confidence": "high",
-      "event_index": 423,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "odylith"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: AGENTS.md, odylith/registry/source/components/odylith/CURRENT_SPEC.md",
-      "ts_iso": "2026-05-02T14:38:22-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [],

@@ -851,6 +851,29 @@ def test_anti_slop_contract_stays_explicit_across_guidance_surfaces() -> None:
         assert "consumer-safe guidance" in normalized, f"maintainer shared anti-slop propagation drifted in {path.relative_to(ROOT)}"
 
 
+def test_root_agents_keeps_anti_slop_detailed_rules_routed() -> None:
+    root_text = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+    normalized = " ".join(root_text.split())
+
+    assert len(root_text.encode("utf-8")) <= 19_000
+    assert "ANTI_SLOP_AND_DECOMPOSITION.md" in root_text
+    assert "odylith-code-hygiene-guard" in root_text
+    assert ANTI_SLOP_TREAT_AS_REGRESSION in normalized
+    assert ANTI_SLOP_FAKE_MODULARIZATION not in normalized
+    assert ANTI_SLOP_DUPLICATE_HELPERS not in normalized
+    assert ANTI_SLOP_DOCSTRING_RULE not in normalized
+
+
+def test_casebook_claude_bridge_defers_release_closeout_rule_to_agents() -> None:
+    for path in (
+        ROOT / "odylith" / "casebook" / "bugs" / "CLAUDE.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "casebook" / "bugs" / "CLAUDE.md",
+    ):
+        text = path.read_text(encoding="utf-8")
+        assert "@AGENTS.md" in text
+        assert "casebook-closeout" not in text
+
+
 def test_anti_slop_live_narration_rule_stays_dev_maintainer_only() -> None:
     maintainer_paths = (
         ROOT / "odylith" / "maintainer" / "AGENTS.md",

@@ -5,10 +5,10 @@
     "empty_reasons": [],
     "explicit_event_count": 4,
     "mapped_workstream_evidence_count": 4,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 2,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 5
+    "timeline_event_count": 4
   },
   "name": "GitHub Issue Pipeline",
   "path_prefixes": [
@@ -22,22 +22,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/github-issue-pipeline/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "src/odylith/runtime/governance/github_issue_casebook.py"
-      ],
-      "confidence": "high",
-      "event_index": 420,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "github-issue-pipeline"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/governance/github_issue_casebook.py",
-      "ts_iso": "2026-05-02T15:16:57-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [
         "odylith/radar/source/ideas/2026-04/2026-04-27-migration-runtime-release-gate.md",
