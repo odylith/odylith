@@ -316,8 +316,10 @@ def _build_payload(
         fields = dict(row.get("fields", {})) if isinstance(row.get("fields"), dict) else {}
         if fields.get("Status"):
             fields["Status"] = casebook_metadata.canonical_casebook_status(fields["Status"])
+        if fields.get("Fixed"):
+            fields["Fixed"] = casebook_metadata.canonical_casebook_fixed(fields["Fixed"])
         if fields.get("Type"):
-            fields["Type"] = casebook_metadata.canonical_casebook_type(fields["Type"])
+            fields["Type"] = casebook_metadata.canonical_casebook_display_type(fields["Type"])
         if status:
             fields["Status"] = status
         payload_rows.append(

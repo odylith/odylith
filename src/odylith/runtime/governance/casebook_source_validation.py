@@ -20,10 +20,12 @@ REPRODUCIBILITY_HELP = (
 )
 STATUS_HELP = "one compact single-word token such as Open, InProgress, FixedPendingRelease, Resolved, or Closed"
 TYPE_HELP = "one compact single-word token such as Product, Tooling, UX, OperatorUX, or DataLoss"
+FIXED_HELP = "a YYYY-MM-DD date or one compact single-word token such as Pending, Fixed, Released, or Closed"
 
 _SKIPPED_MARKDOWN_NAMES = frozenset({"AGENTS.md", "CLAUDE.md", "INDEX.md"})
-_VALIDATED_FIELD_RE = re.compile(r"^\s*-\s*(?P<field>Reproducibility|Status|Type):\s*(?P<value>.*)$")
+_VALIDATED_FIELD_RE = re.compile(r"^\s*-\s*(?P<field>Fixed|Reproducibility|Status|Type):\s*(?P<value>.*)$")
 _REPRODUCIBILITY_TOKEN_RE = re.compile(r"^[A-Za-z]{2,24}$")
+_FIXED_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _PLACEHOLDER_RE = re.compile(
     r"^(?:tbd|todo|unknown|n/?a|pending|to be determined|not yet known|not yet determined)(?:\b|[^A-Za-z0-9].*)?$",
     re.IGNORECASE,
@@ -178,6 +180,7 @@ def _validate_casebook_bug_file(path: Path) -> list[CasebookSourceIssue]:
             )
         ]
     matches: dict[str, list[tuple[int, str]]] = {
+        "Fixed": [],
         "Reproducibility": [],
         "Status": [],
         "Type": [],
@@ -212,6 +215,18 @@ def _validate_casebook_bug_file(path: Path) -> list[CasebookSourceIssue]:
                         message="duplicate Casebook bug field",
                     )
                 )
+    fixed_matches = matches["Fixed"]
+    if len(fixed_matches) > 1:
+        for line_number, value in fixed_matches[1:]:
+            issues.append(
+                _issue(
+                    path=path,
+                    line=line_number,
+                    field="Fixed",
+                    value=value,
+                    message="duplicate Casebook bug field",
+                )
+            )
     reproducibility_matches = matches["Reproducibility"]
     if not reproducibility_matches:
         return issues
@@ -226,6 +241,22 @@ def _validate_casebook_bug_file(path: Path) -> list[CasebookSourceIssue]:
                 message=f"must be {REPRODUCIBILITY_HELP}; put repro steps in evidence fields",
             )
         )
+    if fixed_matches:
+        line_number, value = fixed_matches[0]
+        canonical = casebook_metadata.canonical_casebook_fixed(value)
+        fixed_is_valid = _FIXED_DATE_RE.fullmatch(value) is not None or (
+            casebook_metadata.casebook_token_is_valid(value) and canonical == value
+        )
+        if not fixed_is_valid:
+            issues.append(
+                _issue(
+                    path=path,
+                    line=line_number,
+                    field="Fixed",
+                    value=value,
+                    message=f"must be {FIXED_HELP}; use `{canonical or 'Pending'}` for this value",
+                )
+            )
     status_matches = matches["Status"]
     if status_matches:
         line_number, value = status_matches[0]

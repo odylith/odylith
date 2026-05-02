@@ -476,6 +476,18 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.13:browser-surfaces:a33e8d0e6dab`,
   `migration-observer:0.1.13:browser-surfaces:adfbbaeec25e`,
   `migration-observer:0.1.13:install-managed-assets:583b3a29cb60`.
+- Casebook compact metadata detail hardening: v0.1.13 keeps legacy consumer
+  Casebook records readable without allowing prose Status, Fixed, or Type
+  values to leak into detail-card labels. Existing consumer records do not need
+  destructive migration; upgrade/repair compacts source metadata where governed
+  sync owns the field, and the browser projection now compacts legacy snapshot
+  prose at render time. Migration observer markers:
+  `migration-observer:0.1.13:operator-cli-contracts:b870d25c57e8`,
+  `migration-observer:0.1.13:browser-surfaces:f2c4d30f468f`,
+  `migration-observer:0.1.13:browser-surfaces:f56cbbad5b96`,
+  `migration-observer:0.1.13:browser-surfaces:5c6e158288a8`,
+  `migration-observer:0.1.13:install-managed-assets:b85c3e788eab`,
+  `migration-observer:0.1.13:install-managed-assets:d5ce300448b1`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.

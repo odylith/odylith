@@ -39,30 +39,32 @@ def _write_bug_with_metadata(
     *,
     status: str = "Open",
     bug_type: str = "Product",
+    fixed: str = "",
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        "\n".join(
-            [
-                "- Bug ID: CB-001",
-                "",
-                f"- Status: {status}",
-                "",
-                "- Created: 2026-04-16",
-                "",
-                "- Severity: P1",
-                "",
-                "- Reproducibility: High",
-                "",
-                f"- Type: {bug_type}",
-                "",
-                "- Description: Example source validation bug.",
-                "",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    lines = [
+        "- Bug ID: CB-001",
+        "",
+        f"- Status: {status}",
+        "",
+        "- Created: 2026-04-16",
+        "",
+    ]
+    if fixed:
+        lines.extend([f"- Fixed: {fixed}", ""])
+    lines.extend(
+        [
+            "- Severity: P1",
+            "",
+            "- Reproducibility: High",
+            "",
+            f"- Type: {bug_type}",
+            "",
+            "- Description: Example source validation bug.",
+            "",
+        ]
     )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def _write_bug_text(path: Path, text: str) -> None:
@@ -126,6 +128,34 @@ def test_casebook_source_validation_rejects_prose_type(tmp_path: Path) -> None:
     assert result.issues[0].field == "Type"
     assert "single-word token" in result.issues[0].message
     assert "`UXLifecycle`" in result.issues[0].message
+
+
+def test_casebook_source_validation_rejects_prose_fixed(tmp_path: Path) -> None:
+    _write_bug_with_metadata(
+        tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-16-prose-fixed.md",
+        fixed="Pending release/deploy",
+    )
+
+    result = casebook_source_validation.validate_casebook_sources(repo_root=tmp_path)
+
+    assert not result.passed
+    assert result.records_checked == 1
+    assert len(result.issues) == 1
+    assert result.issues[0].field == "Fixed"
+    assert "YYYY-MM-DD date or one compact single-word token" in result.issues[0].message
+    assert "`Pending`" in result.issues[0].message
+
+
+def test_casebook_source_validation_accepts_fixed_date(tmp_path: Path) -> None:
+    _write_bug_with_metadata(
+        tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-16-fixed-date.md",
+        fixed="2026-04-16",
+    )
+
+    result = casebook_source_validation.validate_casebook_sources(repo_root=tmp_path)
+
+    assert result.passed
+    assert result.records_checked == 1
 
 
 def test_casebook_source_validation_rejects_missing_reproducibility_field(tmp_path: Path) -> None:

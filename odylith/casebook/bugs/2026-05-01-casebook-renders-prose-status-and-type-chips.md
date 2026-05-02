@@ -20,15 +20,15 @@
 
 - Description: Casebook renders prose status and type chips
 
-- Impact: Casebook cards can display long prose labels in Status or Type/asset chips, which violates the product contract that these fields are always single compact words and makes cards harder to scan.
+- Impact: Casebook cards can display long prose labels in Status, Fixed, or Type chips, which violates the product contract that these fields are always short compact labels and makes cards harder to scan.
 
 - Components Affected: casebook
 
-- Environment(s): Odylith Casebook dashboard during v0.1.13 branch work; screenshot from 2026-05-01 showed a long Status chip and an Intel count chip.
+- Environment(s): Odylith Casebook dashboard during v0.1.13 branch work; screenshots from 2026-05-01 and 2026-05-02 showed long Status, Fixed, and Type labels.
 
-- Detected By: Operator screenshot and explicit feedback that Casebook status and asset type must always be a single word.
+- Detected By: Operator screenshot and explicit feedback that Casebook status, fixed, and asset type must always be short one-word labels.
 
-- Failure Signature: Casebook card shows a visible chip like 'Mitigated locally; pending platform release, shared Kafka preview/deploy, OSW upgrade, publish, and wave retry' instead of a compact token such as Mitigated.
+- Failure Signature: Casebook detail cards show visible values like 'Mitigated locally; pending platform release...', 'Pending release/deploy', or 'OSW template upgrade repair / coroutine scheduler runtime / LocalStack proof UX' instead of compact labels such as Mitigated, Pending, or UX.
 
 - Trigger Path: Open Casebook and inspect a bug card whose source or projection contains prose Status or Type metadata.
 
@@ -44,19 +44,19 @@
 
 - Security/Compliance: No direct security exposure.
 
-- Invariant Violated: Casebook Status and Type must be one compact single-word token in source truth, projection payloads, and visible chips.
+- Invariant Violated: Casebook Status, Fixed, and Type must be short compact labels in source truth, projection payloads, and visible chips.
 
-- Root Cause: Casebook validation only enforced Reproducibility compactness, while Status and Type values flowed through source, index, projection, and dashboard rendering without the same token contract.
+- Root Cause: Casebook validation only enforced Reproducibility compactness originally, and the first Status/Type hardening still left the optional Fixed field and some legacy Type display fallbacks able to reach the detail-card renderer as prose.
 
-- Solution: Added shared Casebook metadata canonicalization, fail-closed Status/Type source validation, bug capture Type rejection, projection normalization, compact visible Intel chips, checked-in source normalization, and legacy sync migration that backfills missing Type as Product while compacting prose Status values during repair/upgrade.
+- Solution: Added shared Casebook metadata canonicalization, fail-closed Status/Type/Fixed source validation, bug capture Type rejection, projection normalization for Status, Fixed, and Type, compact visible Intel chips, checked-in source normalization, and legacy sync migration that backfills missing Type as Product while compacting prose Status values during repair/upgrade.
 
-- Rollback/Forward Fix: Forward fix in v0.1.13; do not restore prose Status or Type labels in generated Casebook surfaces.
+- Rollback/Forward Fix: Forward fix in v0.1.13; do not restore prose Status, Fixed, or Type labels in generated Casebook surfaces.
 
-- Verification: PYTHONPATH=src pytest -q tests/unit/runtime/test_casebook_source_validation.py tests/unit/runtime/test_render_casebook_dashboard.py tests/unit/test_cli.py tests/unit/runtime/test_casebook_bug_index.py -q; focused install migration tests cover doctor and upgrade backfilling legacy Casebook records; odylith casebook validate --repo-root .; rg found no visible Intel count chip or prose Status/Type metadata.
+- Verification: PYTHONPATH=src pytest -q tests/unit/runtime/test_casebook_source_validation.py tests/unit/runtime/test_render_casebook_dashboard.py tests/unit/test_cli.py tests/unit/runtime/test_casebook_bug_index.py -q; focused install migration tests cover doctor and upgrade backfilling legacy Casebook records; odylith casebook validate --repo-root .; rg found no visible Intel count chip or prose Status/Type metadata. 2026-05-02 follow-up proof: `./.odylith/bin/odylith casebook validate --repo-root .` (`151 records`), `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_casebook_bug_index.py tests/unit/runtime/test_casebook_source_validation.py tests/unit/runtime/test_render_casebook_dashboard.py` (`37 passed`), `PYTHONPATH=src .venv/bin/python -m pytest -q tests/integration/runtime/test_casebook_sort_browser.py tests/integration/runtime/test_casebook_list_layout_browser.py` (`5 passed`), and `./.odylith/bin/odylith release migration-gate --repo-root . --target-version 0.1.13 --json` (`ok: true`).
 
-- Prevention: Keep source validation and renderer tests covering compact Status/Type tokens and visible chip labels.
+- Prevention: Keep source validation and renderer tests covering compact Status, Fixed, and Type tokens plus visible chip labels.
 
-- Regression Tests Added: tests/unit/runtime/test_casebook_source_validation.py; tests/unit/runtime/test_render_casebook_dashboard.py; tests/unit/test_cli.py
+- Regression Tests Added: tests/unit/runtime/test_casebook_source_validation.py; tests/unit/runtime/test_render_casebook_dashboard.py; tests/unit/test_cli.py; tests/integration/runtime/test_casebook_sort_browser.py; tests/integration/runtime/test_casebook_list_layout_browser.py
 - Migration Compatibility: Legacy consumer Casebook records without Type must not break `doctor --repair` or same-version/runtime upgrade. The sync migration backfills Type before strict source validation so the single-word contract hardens without stranding older repos.
 
 - Related Incidents/Bugs: B-141; operator screenshot 2026-05-01

@@ -188,6 +188,75 @@ def test_sync_casebook_bug_index_collapses_duplicate_casebook_type_metadata(tmp_
     assert "- Type: Tooling" in text
 
 
+def test_sync_casebook_bug_index_keeps_compact_metadata_idempotent(tmp_path: Path) -> None:
+    bug_root = tmp_path / "odylith" / "casebook" / "bugs"
+    bug_root.mkdir(parents=True, exist_ok=True)
+    path = bug_root / "2026-03-26-example-open-bug.md"
+    path.write_text(
+        "\n".join(
+            [
+                "- Bug ID: CB-001",
+                "",
+                "- Type: Product",
+                "",
+                "- Status: Open",
+                "",
+                "- Created: 2026-03-26",
+                "",
+                "- Severity: P1",
+                "",
+                "- Reproducibility: High",
+                "",
+                "- Description: Example bug.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    sync_casebook_bug_index.sync_casebook_bug_index(repo_root=tmp_path)
+    first = path.read_text(encoding="utf-8")
+    sync_casebook_bug_index.sync_casebook_bug_index(repo_root=tmp_path)
+    second = path.read_text(encoding="utf-8")
+
+    assert second == first
+    assert "\n\n\n\n\n- Status:" not in second
+
+
+def test_sync_casebook_bug_index_compacts_fixed_metadata(tmp_path: Path) -> None:
+    bug_root = tmp_path / "odylith" / "casebook" / "bugs"
+    bug_root.mkdir(parents=True, exist_ok=True)
+    path = bug_root / "2026-03-26-example-open-bug.md"
+    path.write_text(
+        "\n".join(
+            [
+                "- Bug ID: CB-001",
+                "",
+                "- Type: Product",
+                "",
+                "- Fixed: Pending release/deploy",
+                "",
+                "- Status: Open",
+                "",
+                "- Created: 2026-03-26",
+                "",
+                "- Severity: P1",
+                "",
+                "- Reproducibility: High",
+                "",
+                "- Description: Example bug.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    sync_casebook_bug_index.sync_casebook_bug_index(repo_root=tmp_path)
+
+    text = path.read_text(encoding="utf-8")
+    assert "- Fixed: Pending" in text
+
+
 def test_sync_casebook_bug_index_cli_reports_duplicate_bug_ids_directly(tmp_path: Path, capsys) -> None:
     bug_root = tmp_path / "odylith" / "casebook" / "bugs"
     bug_root.mkdir(parents=True, exist_ok=True)

@@ -16,6 +16,7 @@ Scope: applies to all files under `odylith/casebook/bugs/`.
 - Individual bug markdown files remain the source of truth for case detail.
 - Individual bug markdown files should carry a stable `- Bug ID: CB-###` field near the top of the record.
 - `- Status:` must be one compact single-word token such as `Open`, `InProgress`, `FixedPendingRelease`, `Resolved`, or `Closed`; put rollout notes and mitigation context in evidence fields.
+- `- Fixed:` is optional, but when present it must be a `YYYY-MM-DD` date or one compact single-word token such as `Pending`, `Fixed`, `Released`, or `Closed`; put rollout/deploy notes in evidence fields.
 - `- Type:` must be one compact single-word token such as `Product`, `Tooling`, `UX`, `OperatorUX`, or `DataLoss`; do not use slashes, spaces, counts, or prose labels.
 - `- Reproducibility:` must be one compact token such as `High`, `Medium`, `Low`, `Always`, `Intermittent`, or `Consistent`; put commands, repro steps, screenshots, and environment details in `Trigger Path`, `Failure Signature`, `Environment(s)`, or `Description`.
 - Run `odylith casebook validate --repo-root .` when checking Casebook source truth directly; `odylith casebook refresh` must fail closed on invalid bug markdown before rewriting the index, payload shards, HTML, or bundle mirrors.

@@ -7,6 +7,7 @@ from collections.abc import Sequence
 
 _COMPACT_TOKEN_RE = re.compile(r"^[A-Za-z][A-Za-z0-9]*$")
 _NON_TOKEN_RE = re.compile(r"[^A-Za-z0-9]+")
+_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 _ACRONYMS = {
     "ai": "AI",
@@ -32,6 +33,20 @@ _STATUS_ALIASES = {
     "resolved": "Resolved",
 }
 _TERMINAL_STATUSES = frozenset({"closed", "fixed", "fixedpendingrelease", "resolved"})
+_TYPE_DISPLAY_FALLBACKS = (
+    ("operator ux", "OperatorUX"),
+    ("data loss", "DataLoss"),
+    ("dataloss", "DataLoss"),
+    ("security", "Security"),
+    ("migration", "Migration"),
+    ("install", "Install"),
+    ("release", "Release"),
+    ("tooling", "Tooling"),
+    ("ux", "UX"),
+    ("ui", "UI"),
+    ("runtime", "Runtime"),
+    ("product", "Product"),
+)
 
 
 def normalize_casebook_scalar(value: str | Sequence[str] | None) -> str:
@@ -86,6 +101,48 @@ def canonical_casebook_type(value: str | Sequence[str] | None) -> str:
     if not raw:
         return ""
     return compact_casebook_token(raw)
+
+
+def canonical_casebook_display_type(value: str | Sequence[str] | None) -> str:
+    """Canonicalize verbose legacy Type prose into a short display token."""
+    raw = normalize_casebook_scalar(value)
+    if not raw:
+        return ""
+    token = canonical_casebook_type(raw)
+    if casebook_token_is_valid(token) and len(token) <= 24:
+        return token
+    folded = _fold_metadata_value(raw)
+    for needle, label in _TYPE_DISPLAY_FALLBACKS:
+        if needle in folded:
+            return label
+    return token[:24] if token else ""
+
+
+def canonical_casebook_fixed(value: str | Sequence[str] | None) -> str:
+    """Canonicalize legacy Fixed prose into a short display token or date."""
+    raw = normalize_casebook_scalar(value)
+    if not raw:
+        return ""
+    if _DATE_RE.fullmatch(raw):
+        return raw
+    if casebook_token_is_valid(raw):
+        return _preserve_known_acronym_token(raw)
+    folded = _fold_metadata_value(raw)
+    words = set(folded.split())
+    if "pending" in words:
+        return "Pending"
+    if words & {"release", "released", "ship", "shipped"}:
+        return "Released"
+    if words & {"deploy", "deployed"}:
+        return "Deployed"
+    if "fixed" in words:
+        return "Fixed"
+    if "closed" in words:
+        return "Closed"
+    if "none" in words or folded in {"na", "n a"}:
+        return "None"
+    token = compact_casebook_token(raw)
+    return token[:24] if token else ""
 
 
 def casebook_status_is_terminal(value: str | Sequence[str] | None) -> bool:

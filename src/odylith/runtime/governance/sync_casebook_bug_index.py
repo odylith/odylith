@@ -205,6 +205,7 @@ def _render_bug_text_with_compact_metadata_defaults(*, text: str) -> str:
         match = _BUG_METADATA_LINE_RE.fullmatch(raw.strip())
         if match is not None and str(match.group(1)).strip() == "Type":
             type_values.append(str(match.group(2)).strip())
+    has_type = bool(type_values)
     canonical_type = casebook_metadata.canonical_casebook_type(type_values[-1] if type_values else "") or "Product"
     rendered: list[str] = []
     type_written = False
@@ -218,13 +219,17 @@ def _render_bug_text_with_compact_metadata_defaults(*, text: str) -> str:
                 canonical = casebook_metadata.canonical_casebook_status(value) or "Open"
                 rendered.append(f"- Status: {canonical}")
                 continue
+            if field == "Fixed":
+                canonical = casebook_metadata.canonical_casebook_fixed(value)
+                rendered.append(f"- Fixed: {canonical or value}")
+                continue
             if field == "Type":
                 if not type_written:
                     rendered.append(f"- Type: {canonical_type}")
                     type_written = True
                 continue
             rendered.append(raw)
-            if not type_written and field == BUG_ID_FIELD:
+            if not has_type and not type_written and field == BUG_ID_FIELD:
                 rendered.extend(["", f"- Type: {canonical_type}"])
                 type_written = True
             continue

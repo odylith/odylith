@@ -277,7 +277,11 @@ def test_casebook_payload_compacts_status_and_type_tokens(tmp_path: Path, monkey
                 "is_open_critical": True,
                 "workstreams": [],
                 "summary": "Metadata was too verbose for the Casebook chip contract.",
-                "fields": {"Status": "Mitigated locally; pending platform release", "Type": "UX / lifecycle"},
+                "fields": {
+                    "Status": "Mitigated locally; pending platform release",
+                    "Fixed": "Pending release/deploy",
+                    "Type": "OSW template upgrade repair / coroutine scheduler runtime / LocalStack proof UX",
+                },
                 "detail_sections": [],
                 "code_refs": [],
                 "doc_refs": [],
@@ -303,7 +307,8 @@ def test_casebook_payload_compacts_status_and_type_tokens(tmp_path: Path, monkey
     assert bug["status"] == "Mitigated"
     assert bug["status_token"] == "mitigated"
     assert bug["fields"]["Status"] == "Mitigated"
-    assert bug["fields"]["Type"] == "UXLifecycle"
+    assert bug["fields"]["Fixed"] == "Pending"
+    assert bug["fields"]["Type"] == "UX"
     assert bug["related_bug_links"][0]["status"] == "FixedPendingRelease"
     assert payload["filters"]["status_tokens"] == ["mitigated"]
 
