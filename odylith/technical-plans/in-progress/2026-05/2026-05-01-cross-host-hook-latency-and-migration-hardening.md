@@ -108,6 +108,12 @@ Related Bugs:
       posture, `0.1.12` remains the pinned dogfood baseline, and the default
       Compass release-target view must follow the explicit current/next
       release aliases instead of rendering every older active release lane.
+- [x] Governed surface refresh performance needs end-to-end protection too,
+      not only hook microbenchmarks. v0.1.13 now has a temporary consumer-repo
+      test that runs full sync dry-run, all-surface dashboard refresh, Compass
+      status, and owned Radar/Atlas/Registry/Casebook refresh commands under
+      latency budgets with a provider tripwire that fails if the local path
+      tries to spend reasoning credits.
 
 ## Must-Ship
 - [x] Add shared prompt route locks so help/show/capabilities prompts bypass
@@ -144,6 +150,10 @@ Related Bugs:
 - [x] Enforce Casebook single-word Status, Fixed, and Type metadata in
       validation, capture, projection, dashboard rendering, sync normalization,
       and the registered v0.1.13 migration from 0.1.10, 0.1.11, and 0.1.12.
+- [x] Add end-to-end governed sync performance coverage for `odylith sync`,
+      `odylith dashboard refresh`, `odylith compass refresh --status`, and the
+      owned Radar, Atlas, Registry, and Casebook refresh commands, including a
+      no-provider credit-burn tripwire and multi-surface parallelism guard.
 - [x] Mark explicit-only Claude workflow skills as slash-invocable without
       removing automatic context, bug-capture, start, show, sync, or hygiene
       skills from model invocation.

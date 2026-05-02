@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-05-02T18:57:02Z",
+  "generated_utc": "2026-05-02T20:20:21Z",
   "release_summary": {
     "catalog": [
       {
@@ -249,17 +249,17 @@
         "plan": {
           "created": "2026-05-01",
           "updated": "2026-05-02",
-          "all_total_tasks": 90,
-          "all_done_tasks": 86,
-          "total_tasks": 55,
-          "done_tasks": 53,
-          "progress_ratio": 0.9636,
+          "all_total_tasks": 92,
+          "all_done_tasks": 88,
+          "total_tasks": 56,
+          "done_tasks": 54,
+          "progress_ratio": 0.9643,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": 0.9636,
+          "display_progress_ratio": 0.9643,
           "display_progress_label": "96% progress",
           "display_progress_state": "percent",
           "progress_classification": "tracked",
-          "checklist_label": "Checklist 53/55",
+          "checklist_label": "Checklist 54/56",
           "next_tasks": [
             "Convert the host hook daemon proposal into a separate design slice with",
             "Add a repeatable cross-host SDK benchmark harness for release evidence"
@@ -267,19 +267,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 262
+            "commit_count": 6,
+            "local_change_count": 2,
+            "file_touch_count": 269
           },
           "48h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 262
+            "commit_count": 6,
+            "local_change_count": 2,
+            "file_touch_count": 269
           }
         },
         "timeline": {
           "start_date": "2026-05-01",
-          "last_activity_iso": "2026-05-02T11:56:48-07:00",
+          "last_activity_iso": "2026-05-02T13:16:47-07:00",
           "age_days": 1,
           "eta_days": null,
           "eta_confidence": "low"
@@ -295,11 +295,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 53,
+            "index": 55,
             "band": "Medium"
           },
           "48h": {
-            "index": 53,
+            "index": 55,
             "band": "Medium"
           }
         },
@@ -461,19 +461,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 9,
+            "commit_count": 11,
             "local_change_count": 1,
-            "file_touch_count": 360
+            "file_touch_count": 364
           },
           "48h": {
-            "commit_count": 10,
+            "commit_count": 12,
             "local_change_count": 1,
-            "file_touch_count": 729
+            "file_touch_count": 732
           }
         },
         "timeline": {
           "start_date": "2026-04-29",
-          "last_activity_iso": "2026-05-02T11:56:13-07:00",
+          "last_activity_iso": "2026-05-02T13:18:31-07:00",
           "age_days": 3,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -762,166 +762,6 @@
         "proof_summary_lines": []
       },
       {
-        "idea_id": "B-127",
-        "title": "Migration Runtime Release Gate",
-        "status": "finished",
-        "priority": "P0",
-        "sizing": "L",
-        "complexity": "High",
-        "ordering_score": "100",
-        "implemented_summary": "",
-        "why": {
-          "problem": "Odylith release upgrades currently derive migration behavior from scattered install-manager branches, one-off migration helpers, manifest flags, doctor/version readouts, and lifecycle simulator fixtures. That makes first-adopter upgrades feel risky because dry-run, apply, doctor, and release proof can disagree about what must migrate.",
-          "customer": "Odylith maintainers and downstream consumer-repo operators who need upgrades from 0.1.10, 0.1.11, source-local dogfood, legacy installs, or partial-failure states to be precise, idempotent, and auditable before mutation.",
-          "proposed_solution": "Create `migration-runtime` as the release/install migration component, route the v0.1.11 visible-intervention value-engine migration through its registry, make dry-run/apply/doctor consume one `MigrationPlan`, and add a release migration gate that fails when manifest requirements, fixture coverage, or lifecycle paths bypass the runtime. The runtime also owns legacy Odyssey root migration, separates live active state from historical migration range, and treats lock/cache sludge and generated dashboard staleness as repair or refresh signals rather than release migration failures. The 2026-04-29 CB-136 follow-up adds an executable destructive-write scenario matrix to the release gate so migration proof now covers host settings, project-root skill pruning, symlinked host/project managed-asset destinations, governance source preservation, legacy root/state conflict blocking, runtime activation atomicity, ledger idempotency, repair-only cleanup, and generated-surface separation. The GitHub issue pipeline follow-up adds public issue intake and release closeout to the same 0.1.12 adoption-risk lane so GitHub issue #21, CB-136, labels, public comments, and release closure cannot drift apart.",
-          "opportunity": "Create a first-class migration runtime that classifies repo state, selects registered migrations, writes durable ledgers, and gates releases so every upgrade has one transaction-shaped source of truth.",
-          "why_now": "This slice is active enough that it should exist as explicit backlog truth now.",
-          "founder_pov": "Migration becomes the first gating function for a release: upgrade dry-run, upgrade apply, doctor, reinstall, and release validation all consume the same migration plan and report the same scenario, selected migrations, skipped reasons, blocked reasons, write sets, ledger state, and rollback scope."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-27-migration-runtime-release-gate.md",
-          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-27-migration-runtime-release-gate.md"
-        },
-        "registry_components": [
-          {
-            "component_id": "github-issue-pipeline",
-            "name": "GitHub Issue Pipeline"
-          },
-          {
-            "component_id": "migration-runtime",
-            "name": "Migration Runtime"
-          },
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "Removed from 0.1.12",
-        "plan": {
-          "created": "2026-04-27",
-          "updated": "2026-04-27",
-          "all_total_tasks": 45,
-          "all_done_tasks": 45,
-          "total_tasks": 34,
-          "done_tasks": 34,
-          "progress_ratio": 1.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": 1.0,
-          "display_progress_label": "100% progress",
-          "display_progress_state": "percent",
-          "progress_classification": "closed",
-          "checklist_label": "Checklist 34/34",
-          "next_tasks": []
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 2,
-            "local_change_count": 3,
-            "file_touch_count": 51
-          },
-          "48h": {
-            "commit_count": 3,
-            "local_change_count": 3,
-            "file_touch_count": 529
-          }
-        },
-        "timeline": {
-          "start_date": "2026-04-27",
-          "last_activity_iso": "2026-05-02T11:55:53-07:00",
-          "age_days": 5,
-          "eta_days": 0,
-          "eta_confidence": "high"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [],
-          "split_from": [],
-          "split_into": [],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 55,
-          "24h": {
-            "index": 67,
-            "band": "Medium"
-          },
-          "48h": {
-            "index": 70,
-            "band": "High"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {
-          "lane_ids": [],
-          "state": "none"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "contract-level",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 16,
-            "decision_evidence": true,
-            "explicit_count": 121,
-            "frontier_phase": "",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 57,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 135,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "",
-            "stale_authority": false,
-            "synthetic_count": 0,
-            "unsafe_closeout": false,
-            "verified_completion": true
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A recent verified completion was recorded.",
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-127"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-127"
-          }
-        ],
-        "proof_summary_lines": []
-      },
-      {
         "idea_id": "B-071",
         "title": "Scope Signal Ladder, Cross-Surface Focus Gating, and Low-Signal Suppression",
         "status": "implementation",
@@ -1168,19 +1008,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 1,
-            "file_touch_count": 310
+            "commit_count": 4,
+            "local_change_count": 0,
+            "file_touch_count": 315
           },
           "48h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 706
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 709
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-05-02T11:54:18-07:00",
+          "last_activity_iso": "2026-05-02T12:03:05-07:00",
           "age_days": 35,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1196,11 +1036,11 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 67,
+            "index": 68,
             "band": "Medium"
           },
           "48h": {
-            "index": 73,
+            "index": 75,
             "band": "High"
           }
         },
@@ -6057,6 +5897,166 @@
             "label": "Deployment truth",
             "surface": "compass",
             "value": "B-117"
+          }
+        ],
+        "proof_summary_lines": []
+      },
+      {
+        "idea_id": "B-127",
+        "title": "Migration Runtime Release Gate",
+        "status": "finished",
+        "priority": "P0",
+        "sizing": "L",
+        "complexity": "High",
+        "ordering_score": "100",
+        "implemented_summary": "",
+        "why": {
+          "problem": "Odylith release upgrades currently derive migration behavior from scattered install-manager branches, one-off migration helpers, manifest flags, doctor/version readouts, and lifecycle simulator fixtures. That makes first-adopter upgrades feel risky because dry-run, apply, doctor, and release proof can disagree about what must migrate.",
+          "customer": "Odylith maintainers and downstream consumer-repo operators who need upgrades from 0.1.10, 0.1.11, source-local dogfood, legacy installs, or partial-failure states to be precise, idempotent, and auditable before mutation.",
+          "proposed_solution": "Create `migration-runtime` as the release/install migration component, route the v0.1.11 visible-intervention value-engine migration through its registry, make dry-run/apply/doctor consume one `MigrationPlan`, and add a release migration gate that fails when manifest requirements, fixture coverage, or lifecycle paths bypass the runtime. The runtime also owns legacy Odyssey root migration, separates live active state from historical migration range, and treats lock/cache sludge and generated dashboard staleness as repair or refresh signals rather than release migration failures. The 2026-04-29 CB-136 follow-up adds an executable destructive-write scenario matrix to the release gate so migration proof now covers host settings, project-root skill pruning, symlinked host/project managed-asset destinations, governance source preservation, legacy root/state conflict blocking, runtime activation atomicity, ledger idempotency, repair-only cleanup, and generated-surface separation. The GitHub issue pipeline follow-up adds public issue intake and release closeout to the same 0.1.12 adoption-risk lane so GitHub issue #21, CB-136, labels, public comments, and release closure cannot drift apart.",
+          "opportunity": "Create a first-class migration runtime that classifies repo state, selects registered migrations, writes durable ledgers, and gates releases so every upgrade has one transaction-shaped source of truth.",
+          "why_now": "This slice is active enough that it should exist as explicit backlog truth now.",
+          "founder_pov": "Migration becomes the first gating function for a release: upgrade dry-run, upgrade apply, doctor, reinstall, and release validation all consume the same migration plan and report the same scenario, selected migrations, skipped reasons, blocked reasons, write sets, ledger state, and rollback scope."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-27-migration-runtime-release-gate.md",
+          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-27-migration-runtime-release-gate.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "github-issue-pipeline",
+            "name": "GitHub Issue Pipeline"
+          },
+          {
+            "component_id": "migration-runtime",
+            "name": "Migration Runtime"
+          },
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "Removed from 0.1.12",
+        "plan": {
+          "created": "2026-04-27",
+          "updated": "2026-04-27",
+          "all_total_tasks": 45,
+          "all_done_tasks": 45,
+          "total_tasks": 34,
+          "done_tasks": 34,
+          "progress_ratio": 1.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": 1.0,
+          "display_progress_label": "100% progress",
+          "display_progress_state": "percent",
+          "progress_classification": "closed",
+          "checklist_label": "Checklist 34/34",
+          "next_tasks": []
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 3,
+            "local_change_count": 0,
+            "file_touch_count": 63
+          },
+          "48h": {
+            "commit_count": 4,
+            "local_change_count": 0,
+            "file_touch_count": 539
+          }
+        },
+        "timeline": {
+          "start_date": "2026-04-27",
+          "last_activity_iso": "2026-05-02T12:03:05-07:00",
+          "age_days": 5,
+          "eta_days": 0,
+          "eta_confidence": "high"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [],
+          "split_from": [],
+          "split_into": [],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 55,
+          "24h": {
+            "index": 65,
+            "band": "Medium"
+          },
+          "48h": {
+            "index": 68,
+            "band": "Medium"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {
+          "lane_ids": [],
+          "state": "none"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "contract-level",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 16,
+            "decision_evidence": true,
+            "explicit_count": 121,
+            "frontier_phase": "",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 57,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 135,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "",
+            "stale_authority": false,
+            "synthetic_count": 0,
+            "unsafe_closeout": false,
+            "verified_completion": true
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A recent verified completion was recorded.",
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-127"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-127"
           }
         ],
         "proof_summary_lines": []
@@ -28330,17 +28330,17 @@
         "plan": {
           "created": "2026-05-01",
           "updated": "2026-05-02",
-          "all_total_tasks": 90,
-          "all_done_tasks": 86,
-          "total_tasks": 55,
-          "done_tasks": 53,
-          "progress_ratio": 0.9636,
+          "all_total_tasks": 92,
+          "all_done_tasks": 88,
+          "total_tasks": 56,
+          "done_tasks": 54,
+          "progress_ratio": 0.9643,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": 0.9636,
+          "display_progress_ratio": 0.9643,
           "display_progress_label": "96% progress",
           "display_progress_state": "percent",
           "progress_classification": "tracked",
-          "checklist_label": "Checklist 53/55",
+          "checklist_label": "Checklist 54/56",
           "next_tasks": [
             "Convert the host hook daemon proposal into a separate design slice with",
             "Add a repeatable cross-host SDK benchmark harness for release evidence"
@@ -28348,19 +28348,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 262
+            "commit_count": 6,
+            "local_change_count": 2,
+            "file_touch_count": 269
           },
           "48h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 262
+            "commit_count": 6,
+            "local_change_count": 2,
+            "file_touch_count": 269
           }
         },
         "timeline": {
           "start_date": "2026-05-01",
-          "last_activity_iso": "2026-05-02T11:56:48-07:00",
+          "last_activity_iso": "2026-05-02T13:16:47-07:00",
           "age_days": 1,
           "eta_days": null,
           "eta_confidence": "low"
@@ -28376,11 +28376,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 53,
+            "index": 55,
             "band": "Medium"
           },
           "48h": {
-            "index": 53,
+            "index": 55,
             "band": "Medium"
           }
         },
@@ -28542,19 +28542,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 9,
+            "commit_count": 11,
             "local_change_count": 1,
-            "file_touch_count": 360
+            "file_touch_count": 364
           },
           "48h": {
-            "commit_count": 10,
+            "commit_count": 12,
             "local_change_count": 1,
-            "file_touch_count": 729
+            "file_touch_count": 732
           }
         },
         "timeline": {
           "start_date": "2026-04-29",
-          "last_activity_iso": "2026-05-02T11:56:13-07:00",
+          "last_activity_iso": "2026-05-02T13:18:31-07:00",
           "age_days": 3,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -29089,19 +29089,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 1,
-            "file_touch_count": 310
+            "commit_count": 4,
+            "local_change_count": 0,
+            "file_touch_count": 315
           },
           "48h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 706
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 709
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-05-02T11:54:18-07:00",
+          "last_activity_iso": "2026-05-02T12:03:05-07:00",
           "age_days": 35,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -29117,11 +29117,11 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 67,
+            "index": 68,
             "band": "Medium"
           },
           "48h": {
-            "index": 73,
+            "index": 75,
             "band": "High"
           }
         },
@@ -29189,166 +29189,6 @@
             "label": "Deployment truth",
             "surface": "compass",
             "value": "B-005"
-          }
-        ],
-        "proof_summary_lines": []
-      },
-      {
-        "idea_id": "B-127",
-        "title": "Migration Runtime Release Gate",
-        "status": "finished",
-        "priority": "P0",
-        "sizing": "L",
-        "complexity": "High",
-        "ordering_score": "100",
-        "implemented_summary": "",
-        "why": {
-          "problem": "Odylith release upgrades currently derive migration behavior from scattered install-manager branches, one-off migration helpers, manifest flags, doctor/version readouts, and lifecycle simulator fixtures. That makes first-adopter upgrades feel risky because dry-run, apply, doctor, and release proof can disagree about what must migrate.",
-          "customer": "Odylith maintainers and downstream consumer-repo operators who need upgrades from 0.1.10, 0.1.11, source-local dogfood, legacy installs, or partial-failure states to be precise, idempotent, and auditable before mutation.",
-          "proposed_solution": "Create `migration-runtime` as the release/install migration component, route the v0.1.11 visible-intervention value-engine migration through its registry, make dry-run/apply/doctor consume one `MigrationPlan`, and add a release migration gate that fails when manifest requirements, fixture coverage, or lifecycle paths bypass the runtime. The runtime also owns legacy Odyssey root migration, separates live active state from historical migration range, and treats lock/cache sludge and generated dashboard staleness as repair or refresh signals rather than release migration failures. The 2026-04-29 CB-136 follow-up adds an executable destructive-write scenario matrix to the release gate so migration proof now covers host settings, project-root skill pruning, symlinked host/project managed-asset destinations, governance source preservation, legacy root/state conflict blocking, runtime activation atomicity, ledger idempotency, repair-only cleanup, and generated-surface separation. The GitHub issue pipeline follow-up adds public issue intake and release closeout to the same 0.1.12 adoption-risk lane so GitHub issue #21, CB-136, labels, public comments, and release closure cannot drift apart.",
-          "opportunity": "Create a first-class migration runtime that classifies repo state, selects registered migrations, writes durable ledgers, and gates releases so every upgrade has one transaction-shaped source of truth.",
-          "why_now": "This slice is active enough that it should exist as explicit backlog truth now.",
-          "founder_pov": "Migration becomes the first gating function for a release: upgrade dry-run, upgrade apply, doctor, reinstall, and release validation all consume the same migration plan and report the same scenario, selected migrations, skipped reasons, blocked reasons, write sets, ledger state, and rollback scope."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-27-migration-runtime-release-gate.md",
-          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-27-migration-runtime-release-gate.md"
-        },
-        "registry_components": [
-          {
-            "component_id": "github-issue-pipeline",
-            "name": "GitHub Issue Pipeline"
-          },
-          {
-            "component_id": "migration-runtime",
-            "name": "Migration Runtime"
-          },
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "Removed from 0.1.12",
-        "plan": {
-          "created": "2026-04-27",
-          "updated": "2026-04-27",
-          "all_total_tasks": 45,
-          "all_done_tasks": 45,
-          "total_tasks": 34,
-          "done_tasks": 34,
-          "progress_ratio": 1.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": 1.0,
-          "display_progress_label": "100% progress",
-          "display_progress_state": "percent",
-          "progress_classification": "closed",
-          "checklist_label": "Checklist 34/34",
-          "next_tasks": []
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 2,
-            "local_change_count": 3,
-            "file_touch_count": 51
-          },
-          "48h": {
-            "commit_count": 3,
-            "local_change_count": 3,
-            "file_touch_count": 529
-          }
-        },
-        "timeline": {
-          "start_date": "2026-04-27",
-          "last_activity_iso": "2026-05-02T11:55:53-07:00",
-          "age_days": 5,
-          "eta_days": 0,
-          "eta_confidence": "high"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [],
-          "split_from": [],
-          "split_into": [],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 55,
-          "24h": {
-            "index": 67,
-            "band": "Medium"
-          },
-          "48h": {
-            "index": 70,
-            "band": "High"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {
-          "lane_ids": [],
-          "state": "none"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "contract-level",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 16,
-            "decision_evidence": true,
-            "explicit_count": 121,
-            "frontier_phase": "",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 57,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 135,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "",
-            "stale_authority": false,
-            "synthetic_count": 0,
-            "unsafe_closeout": false,
-            "verified_completion": true
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A recent verified completion was recorded.",
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-127"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-127"
           }
         ],
         "proof_summary_lines": []
@@ -34454,6 +34294,166 @@
             "label": "Deployment truth",
             "surface": "compass",
             "value": "B-117"
+          }
+        ],
+        "proof_summary_lines": []
+      },
+      {
+        "idea_id": "B-127",
+        "title": "Migration Runtime Release Gate",
+        "status": "finished",
+        "priority": "P0",
+        "sizing": "L",
+        "complexity": "High",
+        "ordering_score": "100",
+        "implemented_summary": "",
+        "why": {
+          "problem": "Odylith release upgrades currently derive migration behavior from scattered install-manager branches, one-off migration helpers, manifest flags, doctor/version readouts, and lifecycle simulator fixtures. That makes first-adopter upgrades feel risky because dry-run, apply, doctor, and release proof can disagree about what must migrate.",
+          "customer": "Odylith maintainers and downstream consumer-repo operators who need upgrades from 0.1.10, 0.1.11, source-local dogfood, legacy installs, or partial-failure states to be precise, idempotent, and auditable before mutation.",
+          "proposed_solution": "Create `migration-runtime` as the release/install migration component, route the v0.1.11 visible-intervention value-engine migration through its registry, make dry-run/apply/doctor consume one `MigrationPlan`, and add a release migration gate that fails when manifest requirements, fixture coverage, or lifecycle paths bypass the runtime. The runtime also owns legacy Odyssey root migration, separates live active state from historical migration range, and treats lock/cache sludge and generated dashboard staleness as repair or refresh signals rather than release migration failures. The 2026-04-29 CB-136 follow-up adds an executable destructive-write scenario matrix to the release gate so migration proof now covers host settings, project-root skill pruning, symlinked host/project managed-asset destinations, governance source preservation, legacy root/state conflict blocking, runtime activation atomicity, ledger idempotency, repair-only cleanup, and generated-surface separation. The GitHub issue pipeline follow-up adds public issue intake and release closeout to the same 0.1.12 adoption-risk lane so GitHub issue #21, CB-136, labels, public comments, and release closure cannot drift apart.",
+          "opportunity": "Create a first-class migration runtime that classifies repo state, selects registered migrations, writes durable ledgers, and gates releases so every upgrade has one transaction-shaped source of truth.",
+          "why_now": "This slice is active enough that it should exist as explicit backlog truth now.",
+          "founder_pov": "Migration becomes the first gating function for a release: upgrade dry-run, upgrade apply, doctor, reinstall, and release validation all consume the same migration plan and report the same scenario, selected migrations, skipped reasons, blocked reasons, write sets, ledger state, and rollback scope."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-27-migration-runtime-release-gate.md",
+          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-27-migration-runtime-release-gate.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "github-issue-pipeline",
+            "name": "GitHub Issue Pipeline"
+          },
+          {
+            "component_id": "migration-runtime",
+            "name": "Migration Runtime"
+          },
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "Removed from 0.1.12",
+        "plan": {
+          "created": "2026-04-27",
+          "updated": "2026-04-27",
+          "all_total_tasks": 45,
+          "all_done_tasks": 45,
+          "total_tasks": 34,
+          "done_tasks": 34,
+          "progress_ratio": 1.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": 1.0,
+          "display_progress_label": "100% progress",
+          "display_progress_state": "percent",
+          "progress_classification": "closed",
+          "checklist_label": "Checklist 34/34",
+          "next_tasks": []
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 3,
+            "local_change_count": 0,
+            "file_touch_count": 63
+          },
+          "48h": {
+            "commit_count": 4,
+            "local_change_count": 0,
+            "file_touch_count": 539
+          }
+        },
+        "timeline": {
+          "start_date": "2026-04-27",
+          "last_activity_iso": "2026-05-02T12:03:05-07:00",
+          "age_days": 5,
+          "eta_days": 0,
+          "eta_confidence": "high"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [],
+          "split_from": [],
+          "split_into": [],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 55,
+          "24h": {
+            "index": 65,
+            "band": "Medium"
+          },
+          "48h": {
+            "index": 68,
+            "band": "Medium"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {
+          "lane_ids": [],
+          "state": "none"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "contract-level",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 16,
+            "decision_evidence": true,
+            "explicit_count": 121,
+            "frontier_phase": "",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 57,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 135,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "",
+            "stale_authority": false,
+            "synthetic_count": 0,
+            "unsafe_closeout": false,
+            "verified_completion": true
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A recent verified completion was recorded.",
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-127"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-127"
           }
         ],
         "proof_summary_lines": []
@@ -56412,17 +56412,17 @@
       "plan": {
         "created": "2026-05-01",
         "updated": "2026-05-02",
-        "all_total_tasks": 90,
-        "all_done_tasks": 86,
-        "total_tasks": 55,
-        "done_tasks": 53,
-        "progress_ratio": 0.9636,
+        "all_total_tasks": 92,
+        "all_done_tasks": 88,
+        "total_tasks": 56,
+        "done_tasks": 54,
+        "progress_ratio": 0.9643,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": 0.9636,
+        "display_progress_ratio": 0.9643,
         "display_progress_label": "96% progress",
         "display_progress_state": "percent",
         "progress_classification": "tracked",
-        "checklist_label": "Checklist 53/55",
+        "checklist_label": "Checklist 54/56",
         "next_tasks": [
           "Convert the host hook daemon proposal into a separate design slice with",
           "Add a repeatable cross-host SDK benchmark harness for release evidence"
@@ -56430,19 +56430,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 262
+          "commit_count": 6,
+          "local_change_count": 2,
+          "file_touch_count": 269
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 262
+          "commit_count": 6,
+          "local_change_count": 2,
+          "file_touch_count": 269
         }
       },
       "timeline": {
         "start_date": "2026-05-01",
-        "last_activity_iso": "2026-05-02T11:56:48-07:00",
+        "last_activity_iso": "2026-05-02T13:16:47-07:00",
         "age_days": 1,
         "eta_days": null,
         "eta_confidence": "low"
@@ -56458,11 +56458,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 53,
+          "index": 55,
           "band": "Medium"
         },
         "48h": {
-          "index": 53,
+          "index": 55,
           "band": "Medium"
         }
       },
@@ -56624,19 +56624,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 9,
+          "commit_count": 11,
           "local_change_count": 1,
-          "file_touch_count": 360
+          "file_touch_count": 364
         },
         "48h": {
-          "commit_count": 10,
+          "commit_count": 12,
           "local_change_count": 1,
-          "file_touch_count": 729
+          "file_touch_count": 732
         }
       },
       "timeline": {
         "start_date": "2026-04-29",
-        "last_activity_iso": "2026-05-02T11:56:13-07:00",
+        "last_activity_iso": "2026-05-02T13:18:31-07:00",
         "age_days": 3,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -57171,19 +57171,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 1,
-          "file_touch_count": 310
+          "commit_count": 4,
+          "local_change_count": 0,
+          "file_touch_count": 315
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 706
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 709
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-05-02T11:54:18-07:00",
+        "last_activity_iso": "2026-05-02T12:03:05-07:00",
         "age_days": 35,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -57199,11 +57199,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 67,
+          "index": 68,
           "band": "Medium"
         },
         "48h": {
-          "index": 73,
+          "index": 75,
           "band": "High"
         }
       },
@@ -57271,166 +57271,6 @@
           "label": "Deployment truth",
           "surface": "compass",
           "value": "B-005"
-        }
-      ],
-      "proof_summary_lines": []
-    },
-    {
-      "idea_id": "B-127",
-      "title": "Migration Runtime Release Gate",
-      "status": "finished",
-      "priority": "P0",
-      "sizing": "L",
-      "complexity": "High",
-      "ordering_score": "100",
-      "implemented_summary": "",
-      "why": {
-        "problem": "Odylith release upgrades currently derive migration behavior from scattered install-manager branches, one-off migration helpers, manifest flags, doctor/version readouts, and lifecycle simulator fixtures. That makes first-adopter upgrades feel risky because dry-run, apply, doctor, and release proof can disagree about what must migrate.",
-        "customer": "Odylith maintainers and downstream consumer-repo operators who need upgrades from 0.1.10, 0.1.11, source-local dogfood, legacy installs, or partial-failure states to be precise, idempotent, and auditable before mutation.",
-        "proposed_solution": "Create `migration-runtime` as the release/install migration component, route the v0.1.11 visible-intervention value-engine migration through its registry, make dry-run/apply/doctor consume one `MigrationPlan`, and add a release migration gate that fails when manifest requirements, fixture coverage, or lifecycle paths bypass the runtime. The runtime also owns legacy Odyssey root migration, separates live active state from historical migration range, and treats lock/cache sludge and generated dashboard staleness as repair or refresh signals rather than release migration failures. The 2026-04-29 CB-136 follow-up adds an executable destructive-write scenario matrix to the release gate so migration proof now covers host settings, project-root skill pruning, symlinked host/project managed-asset destinations, governance source preservation, legacy root/state conflict blocking, runtime activation atomicity, ledger idempotency, repair-only cleanup, and generated-surface separation. The GitHub issue pipeline follow-up adds public issue intake and release closeout to the same 0.1.12 adoption-risk lane so GitHub issue #21, CB-136, labels, public comments, and release closure cannot drift apart.",
-        "opportunity": "Create a first-class migration runtime that classifies repo state, selects registered migrations, writes durable ledgers, and gates releases so every upgrade has one transaction-shaped source of truth.",
-        "why_now": "This slice is active enough that it should exist as explicit backlog truth now.",
-        "founder_pov": "Migration becomes the first gating function for a release: upgrade dry-run, upgrade apply, doctor, reinstall, and release validation all consume the same migration plan and report the same scenario, selected migrations, skipped reasons, blocked reasons, write sets, ledger state, and rollback scope."
-      },
-      "links": {
-        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-27-migration-runtime-release-gate.md",
-        "plan_file": "odylith/technical-plans/done/2026-04/2026-04-27-migration-runtime-release-gate.md"
-      },
-      "registry_components": [
-        {
-          "component_id": "github-issue-pipeline",
-          "name": "GitHub Issue Pipeline"
-        },
-        {
-          "component_id": "migration-runtime",
-          "name": "Migration Runtime"
-        },
-        {
-          "component_id": "odylith",
-          "name": "Odylith"
-        }
-      ],
-      "execution_wave_programs": [],
-      "release": {},
-      "release_history_summary": "Removed from 0.1.12",
-      "plan": {
-        "created": "2026-04-27",
-        "updated": "2026-04-27",
-        "all_total_tasks": 45,
-        "all_done_tasks": 45,
-        "total_tasks": 34,
-        "done_tasks": 34,
-        "progress_ratio": 1.0,
-        "progress_basis": "execution_checklist",
-        "display_progress_ratio": 1.0,
-        "display_progress_label": "100% progress",
-        "display_progress_state": "percent",
-        "progress_classification": "closed",
-        "checklist_label": "Checklist 34/34",
-        "next_tasks": []
-      },
-      "activity": {
-        "24h": {
-          "commit_count": 2,
-          "local_change_count": 3,
-          "file_touch_count": 51
-        },
-        "48h": {
-          "commit_count": 3,
-          "local_change_count": 3,
-          "file_touch_count": 529
-        }
-      },
-      "timeline": {
-        "start_date": "2026-04-27",
-        "last_activity_iso": "2026-05-02T11:55:53-07:00",
-        "age_days": 5,
-        "eta_days": 0,
-        "eta_confidence": "high"
-      },
-      "lineage": {
-        "reopens": [],
-        "reopened_by": [],
-        "split_from": [],
-        "split_into": [],
-        "merged_into": [],
-        "merged_from": []
-      },
-      "cost": {
-        "base_index": 55,
-        "24h": {
-          "index": 67,
-          "band": "Medium"
-        },
-        "48h": {
-          "index": 70,
-          "band": "High"
-        }
-      },
-      "proof_state": {},
-      "claim_guard": {},
-      "proof_state_resolution": {
-        "lane_ids": [],
-        "state": "none"
-      },
-      "scope_signal": {
-        "budget_class": "fast_simple",
-        "caps": [],
-        "feature_vector": {
-          "blast_radius_class": "contract-level",
-          "broad_fanout": false,
-          "cross_surface_conflict": false,
-          "decision_count": 16,
-          "decision_evidence": true,
-          "explicit_count": 121,
-          "frontier_phase": "",
-          "generated_only_churn": false,
-          "governance_only_local_change": false,
-          "has_any_signal": true,
-          "implementation_count": 57,
-          "implementation_evidence": true,
-          "linked_child_count": 0,
-          "linked_surface_count": 5,
-          "meaningful_change_count": 135,
-          "meaningful_scope_activity": true,
-          "narrow_verified_signal": true,
-          "open_warning": false,
-          "proof_blocker": false,
-          "proof_status": "",
-          "stale_authority": false,
-          "synthetic_count": 0,
-          "unsafe_closeout": false,
-          "verified_completion": true
-        },
-        "label": "Active scope",
-        "promoted_default": true,
-        "rank": 3,
-        "reasons": [
-          "A recent verified completion was recorded.",
-          "A narrow verified scoped signal was recorded.",
-          "Explicit decision evidence is present.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
-        ],
-        "rung": "R3",
-        "token": "active_scope"
-      },
-      "proof_refs": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-127"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-127"
         }
       ],
       "proof_summary_lines": []
@@ -62536,6 +62376,166 @@
           "label": "Deployment truth",
           "surface": "compass",
           "value": "B-117"
+        }
+      ],
+      "proof_summary_lines": []
+    },
+    {
+      "idea_id": "B-127",
+      "title": "Migration Runtime Release Gate",
+      "status": "finished",
+      "priority": "P0",
+      "sizing": "L",
+      "complexity": "High",
+      "ordering_score": "100",
+      "implemented_summary": "",
+      "why": {
+        "problem": "Odylith release upgrades currently derive migration behavior from scattered install-manager branches, one-off migration helpers, manifest flags, doctor/version readouts, and lifecycle simulator fixtures. That makes first-adopter upgrades feel risky because dry-run, apply, doctor, and release proof can disagree about what must migrate.",
+        "customer": "Odylith maintainers and downstream consumer-repo operators who need upgrades from 0.1.10, 0.1.11, source-local dogfood, legacy installs, or partial-failure states to be precise, idempotent, and auditable before mutation.",
+        "proposed_solution": "Create `migration-runtime` as the release/install migration component, route the v0.1.11 visible-intervention value-engine migration through its registry, make dry-run/apply/doctor consume one `MigrationPlan`, and add a release migration gate that fails when manifest requirements, fixture coverage, or lifecycle paths bypass the runtime. The runtime also owns legacy Odyssey root migration, separates live active state from historical migration range, and treats lock/cache sludge and generated dashboard staleness as repair or refresh signals rather than release migration failures. The 2026-04-29 CB-136 follow-up adds an executable destructive-write scenario matrix to the release gate so migration proof now covers host settings, project-root skill pruning, symlinked host/project managed-asset destinations, governance source preservation, legacy root/state conflict blocking, runtime activation atomicity, ledger idempotency, repair-only cleanup, and generated-surface separation. The GitHub issue pipeline follow-up adds public issue intake and release closeout to the same 0.1.12 adoption-risk lane so GitHub issue #21, CB-136, labels, public comments, and release closure cannot drift apart.",
+        "opportunity": "Create a first-class migration runtime that classifies repo state, selects registered migrations, writes durable ledgers, and gates releases so every upgrade has one transaction-shaped source of truth.",
+        "why_now": "This slice is active enough that it should exist as explicit backlog truth now.",
+        "founder_pov": "Migration becomes the first gating function for a release: upgrade dry-run, upgrade apply, doctor, reinstall, and release validation all consume the same migration plan and report the same scenario, selected migrations, skipped reasons, blocked reasons, write sets, ledger state, and rollback scope."
+      },
+      "links": {
+        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-27-migration-runtime-release-gate.md",
+        "plan_file": "odylith/technical-plans/done/2026-04/2026-04-27-migration-runtime-release-gate.md"
+      },
+      "registry_components": [
+        {
+          "component_id": "github-issue-pipeline",
+          "name": "GitHub Issue Pipeline"
+        },
+        {
+          "component_id": "migration-runtime",
+          "name": "Migration Runtime"
+        },
+        {
+          "component_id": "odylith",
+          "name": "Odylith"
+        }
+      ],
+      "execution_wave_programs": [],
+      "release": {},
+      "release_history_summary": "Removed from 0.1.12",
+      "plan": {
+        "created": "2026-04-27",
+        "updated": "2026-04-27",
+        "all_total_tasks": 45,
+        "all_done_tasks": 45,
+        "total_tasks": 34,
+        "done_tasks": 34,
+        "progress_ratio": 1.0,
+        "progress_basis": "execution_checklist",
+        "display_progress_ratio": 1.0,
+        "display_progress_label": "100% progress",
+        "display_progress_state": "percent",
+        "progress_classification": "closed",
+        "checklist_label": "Checklist 34/34",
+        "next_tasks": []
+      },
+      "activity": {
+        "24h": {
+          "commit_count": 3,
+          "local_change_count": 0,
+          "file_touch_count": 63
+        },
+        "48h": {
+          "commit_count": 4,
+          "local_change_count": 0,
+          "file_touch_count": 539
+        }
+      },
+      "timeline": {
+        "start_date": "2026-04-27",
+        "last_activity_iso": "2026-05-02T12:03:05-07:00",
+        "age_days": 5,
+        "eta_days": 0,
+        "eta_confidence": "high"
+      },
+      "lineage": {
+        "reopens": [],
+        "reopened_by": [],
+        "split_from": [],
+        "split_into": [],
+        "merged_into": [],
+        "merged_from": []
+      },
+      "cost": {
+        "base_index": 55,
+        "24h": {
+          "index": 65,
+          "band": "Medium"
+        },
+        "48h": {
+          "index": 68,
+          "band": "Medium"
+        }
+      },
+      "proof_state": {},
+      "claim_guard": {},
+      "proof_state_resolution": {
+        "lane_ids": [],
+        "state": "none"
+      },
+      "scope_signal": {
+        "budget_class": "fast_simple",
+        "caps": [],
+        "feature_vector": {
+          "blast_radius_class": "contract-level",
+          "broad_fanout": false,
+          "cross_surface_conflict": false,
+          "decision_count": 16,
+          "decision_evidence": true,
+          "explicit_count": 121,
+          "frontier_phase": "",
+          "generated_only_churn": false,
+          "governance_only_local_change": false,
+          "has_any_signal": true,
+          "implementation_count": 57,
+          "implementation_evidence": true,
+          "linked_child_count": 0,
+          "linked_surface_count": 5,
+          "meaningful_change_count": 135,
+          "meaningful_scope_activity": true,
+          "narrow_verified_signal": true,
+          "open_warning": false,
+          "proof_blocker": false,
+          "proof_status": "",
+          "stale_authority": false,
+          "synthetic_count": 0,
+          "unsafe_closeout": false,
+          "verified_completion": true
+        },
+        "label": "Active scope",
+        "promoted_default": true,
+        "rank": 3,
+        "reasons": [
+          "A recent verified completion was recorded.",
+          "A narrow verified scoped signal was recorded.",
+          "Explicit decision evidence is present.",
+          "Explicit implementation evidence is present.",
+          "Meaningful scope-local implementation evidence is present."
+        ],
+        "rung": "R3",
+        "token": "active_scope"
+      },
+      "proof_refs": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-127"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-127"
         }
       ],
       "proof_summary_lines": []
@@ -89030,17 +89030,17 @@
       "plan": {
         "created": "2026-05-01",
         "updated": "2026-05-02",
-        "all_total_tasks": 90,
-        "all_done_tasks": 86,
-        "total_tasks": 55,
-        "done_tasks": 53,
-        "progress_ratio": 0.9636,
+        "all_total_tasks": 92,
+        "all_done_tasks": 88,
+        "total_tasks": 56,
+        "done_tasks": 54,
+        "progress_ratio": 0.9643,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": 0.9636,
+        "display_progress_ratio": 0.9643,
         "display_progress_label": "96% progress",
         "display_progress_state": "percent",
         "progress_classification": "tracked",
-        "checklist_label": "Checklist 53/55",
+        "checklist_label": "Checklist 54/56",
         "next_tasks": [
           "Convert the host hook daemon proposal into a separate design slice with",
           "Add a repeatable cross-host SDK benchmark harness for release evidence"
@@ -89048,19 +89048,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 262
+          "commit_count": 6,
+          "local_change_count": 2,
+          "file_touch_count": 269
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 262
+          "commit_count": 6,
+          "local_change_count": 2,
+          "file_touch_count": 269
         }
       },
       "timeline": {
         "start_date": "2026-05-01",
-        "last_activity_iso": "2026-05-02T11:56:48-07:00",
+        "last_activity_iso": "2026-05-02T13:16:47-07:00",
         "age_days": 1,
         "eta_days": null,
         "eta_confidence": "low"
@@ -89076,11 +89076,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 53,
+          "index": 55,
           "band": "Medium"
         },
         "48h": {
-          "index": 53,
+          "index": 55,
           "band": "Medium"
         }
       },
@@ -89961,19 +89961,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 1,
-          "file_touch_count": 310
+          "commit_count": 4,
+          "local_change_count": 0,
+          "file_touch_count": 315
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 706
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 709
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-05-02T11:54:18-07:00",
+        "last_activity_iso": "2026-05-02T12:03:05-07:00",
         "age_days": 35,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -89989,11 +89989,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 67,
+          "index": 68,
           "band": "Medium"
         },
         "48h": {
-          "index": 73,
+          "index": 75,
           "band": "High"
         }
       },
@@ -110446,19 +110446,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 2,
-          "local_change_count": 3,
-          "file_touch_count": 51
+          "commit_count": 3,
+          "local_change_count": 0,
+          "file_touch_count": 63
         },
         "48h": {
-          "commit_count": 3,
-          "local_change_count": 3,
-          "file_touch_count": 529
+          "commit_count": 4,
+          "local_change_count": 0,
+          "file_touch_count": 539
         }
       },
       "timeline": {
         "start_date": "2026-04-27",
-        "last_activity_iso": "2026-05-02T11:55:53-07:00",
+        "last_activity_iso": "2026-05-02T12:03:05-07:00",
         "age_days": 5,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -110474,12 +110474,12 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 67,
+          "index": 65,
           "band": "Medium"
         },
         "48h": {
-          "index": 70,
-          "band": "High"
+          "index": 68,
+          "band": "Medium"
         }
       },
       "proof_state": {},
@@ -112410,19 +112410,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 9,
+          "commit_count": 11,
           "local_change_count": 1,
-          "file_touch_count": 360
+          "file_touch_count": 364
         },
         "48h": {
-          "commit_count": 10,
+          "commit_count": 12,
           "local_change_count": 1,
-          "file_touch_count": 729
+          "file_touch_count": 732
         }
       },
       "timeline": {
         "start_date": "2026-04-29",
-        "last_activity_iso": "2026-05-02T11:56:13-07:00",
+        "last_activity_iso": "2026-05-02T13:18:31-07:00",
         "age_days": 3,
         "eta_days": 0,
         "eta_confidence": "high"

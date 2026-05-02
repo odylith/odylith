@@ -521,6 +521,17 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.12:install-managed-assets:07f37c277434`,
   `migration-observer:0.1.13:browser-surfaces:154862df3418`,
   `migration-observer:0.1.13:install-managed-assets:07f37c277434`.
+- Governed sync performance proof surfaces: v0.1.13 adds end-to-end latency
+  and no-provider credit-burn tests for full sync dry-run, all-surface
+  dashboard refresh, Compass status, owned Radar/Atlas/Registry/Casebook
+  refresh commands, and multi-surface dashboard parallelism. The source change
+  adds tests and B-141 governance notes; refreshed Radar and Compass browser
+  surfaces plus bundle mirrors are install-managed output updates only.
+  Existing consumer repos do not need data migration; upgrading installs the
+  refreshed browser assets. Migration observer markers:
+  `migration-observer:0.1.13:browser-surfaces:fcd4ad300aac`,
+  `migration-observer:0.1.13:browser-surfaces:3822d2354e1c`,
+  `migration-observer:0.1.13:install-managed-assets:b45cab51875d`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.
