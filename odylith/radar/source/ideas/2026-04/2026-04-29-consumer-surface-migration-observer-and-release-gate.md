@@ -636,6 +636,20 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.13:install-managed-assets:3b63012c3b68`,
   `migration-observer:0.1.13:browser-surfaces:533f5e4374a6`,
   `migration-observer:0.1.13:install-managed-assets:06c877ec7676`.
+- Source-local memory activation and Assist visibility recovery: v0.1.13
+  keeps consumer pinned runtimes isolated on the managed feature pack while
+  dev-maintainer `source-local` launchers prefer the source checkout `.venv`
+  so full LanceDB/PyArrow/Tantivy memory stays active. The same pass maps
+  exact Assist-visibility complaints to the shared visible recovery line
+  without changing ordinary low-signal prompt silence, and makes forced
+  Compass daemon refresh autospawn the local Context Engine daemon instead of
+  failing when it idles out. Existing consumer installs need no data migration;
+  upgrade refreshes managed runtime code, browser governance surfaces, and
+  bundle mirrors through the additive install-managed asset path. Migration
+  observer markers:
+  `migration-observer:0.1.13:browser-surfaces:b9d0ec78e453`,
+  `migration-observer:0.1.13:browser-surfaces:2bbecacc6d56`,
+  `migration-observer:0.1.13:install-managed-assets:82e3cd8ed4c1`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.

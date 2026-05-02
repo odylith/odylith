@@ -160,12 +160,24 @@ VISIBILITY_COMPLAINT_PHRASES = (
     "zero interventions",
     "zero assist",
     "zero signals",
+    "want to see odylith assist",
+    "need to see odylith assist",
+    "show odylith assist",
+    "assist in every prompt",
+    "assist every prompt",
     "not showing",
     "hidden hook",
     "hidden hooks",
     "unproven this session",
     "not sure",
     "unsure",
+)
+ASSIST_VISIBILITY_COMPLAINT_PHRASES = (
+    "want to see odylith assist",
+    "need to see odylith assist",
+    "show odylith assist",
+    "assist in every prompt",
+    "assist every prompt",
 )
 VISIBILITY_FEEDBACK_PHRASE = "visibility feedback noted; this line is deliberately shown in chat"
 _WORD_RE = re.compile(r"[a-z0-9']+")
@@ -323,3 +335,12 @@ def visibility_feedback_requested(*, prompt: Any = "", assistant_summary: Any = 
         assistant_summary=assistant_summary,
     )
     return bool(markdown_phrase)
+
+
+def assist_visibility_feedback_requested(*, prompt: Any = "", assistant_summary: Any = "") -> bool:
+    """Return whether feedback specifically asks for the Assist recovery line."""
+
+    if not visibility_feedback_requested(prompt=prompt, assistant_summary=assistant_summary):
+        return False
+    text = normalize_string(f"{prompt or ''} {assistant_summary or ''}").casefold()
+    return any(phrase in text for phrase in ASSIST_VISIBILITY_COMPLAINT_PHRASES)

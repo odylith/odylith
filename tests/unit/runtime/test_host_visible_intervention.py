@@ -202,6 +202,34 @@ def test_visible_intervention_visibility_feedback_adds_assist_after_live_block(t
     _assert_user_facing_visible_voice(rendered)
 
 
+def test_visible_intervention_assist_every_prompt_feedback_adds_assist(tmp_path) -> None:
+    rendered = host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
+        host_family="codex",
+        phase="prompt_submit",
+        prompt=(
+            "Make sure all observations are optimal across all lanes and all host models. "
+            "I want to see Odylith Assist in every prompt."
+        ),
+    )
+
+    assert rendered.startswith("**Odylith Assist:**")
+    assert rendered.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
+    assert "visibility feedback noted; this line is deliberately shown in chat" in rendered
+    assert "hook" not in rendered
+
+
+def test_visible_intervention_assist_feedback_suppresses_stale_blocks(tmp_path) -> None:
+    rendered = host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
+        host_family="claude",
+        phase="prompt_submit",
+        prompt="I want to see Odylith Assist in every prompt.",
+    )
+
+    assert rendered == "**Odylith Assist:** visibility feedback noted; this line is deliberately shown in chat."
+
+
 def test_visible_intervention_suppresses_cli_help_passthrough(tmp_path) -> None:
     rendered = host_visible_intervention.render_visible_intervention(
         repo_root=tmp_path,

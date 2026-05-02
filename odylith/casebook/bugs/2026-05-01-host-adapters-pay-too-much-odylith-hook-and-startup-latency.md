@@ -84,9 +84,39 @@
   or broad search runs only after `start` completes and an exact anchor is
   known.
 
+- Source-Local Memory Update: The 2026-05-02 activation audit found that
+  detached source-local launchers could run unreleased `src/odylith/*` through
+  the pinned managed Python and therefore miss the source checkout's
+  LanceDB/PyArrow/Tantivy dev dependencies. Generated source-local launchers
+  now prefer the source checkout `.venv` before the managed wrapper when the
+  active runtime is `source-local`, while consumer pinned runtimes remain on
+  the managed feature-pack path.
+
+- Visibility Recovery Update: Explicit feedback such as "I want to see
+  Odylith Assist in every prompt" now maps to the shared prompt-visible
+  recovery line across Codex and Claude. The detector uses precise Assist
+  visibility phrases so ordinary low-signal prompts still stay quiet and
+  show/help/capability passthrough prompts remain stdout-clean. Exact
+  Assist-visibility feedback renders the recovery Assist only, so stale
+  Observation or Proposal blocks cannot be prepended to the recovery line.
+
 - Rollback/Forward Fix: Forward-fix in v0.1.13; do not remove grounding or safety hooks without replacing them with measured fast-path equivalents.
 
 - Verification: Local v0.1.13 timing showed low-signal direct hook modules returning empty in about 42-44 ms median for Claude prompt-context, Claude prompt-teaser, and Codex prompt-context; full CLI fallback paths dropped to about 106-116 ms median. Follow-up substrate validation proved quiet Codex and Claude prompt hooks now emit compact Context Engine, memory, Execution Engine, delivery, Tribunal, and proof evidence while still skipping the full conversation bundle; SessionStart uses the same substrate instead of manual-start fallback text; context-engine autospawn reached a live watchdog-backed daemon. Focused tests cover Claude prompt-bundle route locks plus hidden/visible prompt output parity, async Claude PostToolUse settings, Codex dirty-event deferral, Stop-time governed refresh settlement, substrate-backed prompt gating, direct launcher hook dispatch, cross-host prompt parity, host-launcher warm-daemon defaults, install launcher generation, and mixed-version prompt-bundle fallback when current-source launchers run against the shipped v0.1.12 runtime. The guidance diet measured root `AGENTS.md` at 17,381 bytes and consumer `odylith/AGENTS.md` plus its bundle mirror at 16,307 bytes after preserving the engine contract. `PYTHONPATH=src pytest -q tests/unit/install/test_agents.py tests/unit/install/test_manager.py tests/unit/install/test_codex_project_assets.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_show_capabilities.py` passed with 119 tests covering byte budgets, engine-preservation wording, Claude model-invocable skill capping, Codex/Claude skill separation, anti-slop guidance, and show/capabilities behavior. The follow-up root-routing proof ran `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_hygiene.py::test_anti_slop_contract_stays_explicit_across_guidance_surfaces tests/unit/runtime/test_hygiene.py::test_root_agents_keeps_anti_slop_detailed_rules_routed tests/unit/runtime/test_hygiene.py::test_casebook_claude_bridge_defers_release_closeout_rule_to_agents` and `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/install/test_agents.py tests/unit/runtime/test_source_bundle_mirror.py`.
+
+- Verification Update: The 2026-05-02 source-local activation audit proved the
+  repo-local launcher reports `Context engine mode: full_local_memory`;
+  `memory-snapshot` reports `lance_local_columnar` plus
+  `tantivy_sparse_recall`, ready dependencies, and no backend-transition gaps;
+  autospawned `context B-141` brought the daemon live with watchdog; and
+  `context-engine status` reported `daemon_alive: yes`,
+  `watcher_backend: watchdog`, and `memory_backend_fallback: no`. Focused
+  install and intervention tests passed for the source-local launcher handoff
+  and the exact Assist visibility-feedback phrase across Codex and Claude,
+  including suppression of stale replay blocks for that exact recovery prompt.
+  Compass forced daemon refresh now autospawns the same local daemon contract
+  instead of failing when the daemon is idle; the first live run passed with
+  `resolved_runtime_mode: daemon`, and the warm rerun completed in 4.1s.
 
 - Prevention: Require latency-budget and substrate-integrity tests for host hook changes, keep show/help/status passthrough paths stdout-clean and direct across Claude, Codex, and future adapters, and prevent low-signal prompt gates from constructing full conversation bundles while still proving memory, execution, delivery, Tribunal, and intervention alignment.
 
@@ -115,6 +145,17 @@
   assert that split instead of requiring every shared rule to be restated in the
   nested file.
 
+- Prevention Update: Source-local maintainer launchers must not silently fall
+  back to a pinned managed interpreter when proving unreleased engine work.
+  Consumer installs keep the managed feature pack, but maintainer
+  `source-local` uses the source checkout Python so full local memory,
+  context-engine daemon reuse, and target recall backends stay active.
+
+- Prevention Update: Compass daemon runtime mode is an explicit low-latency
+  contract. Forced daemon refresh may autospawn the local Context Engine daemon;
+  `auto` remains conservative and may fall back to standalone instead of
+  leaving a daemon behind.
+
 - Monitoring Updates: Track prompt-submit, prompt-context, prompt-teaser, stop-summary, and startup grounding latency in local benchmark or smoke outputs for each supported host adapter.
 
 - Version/Build: Observed during v0.1.13 branch work; issue exists after v0.1.12 migration.
@@ -132,6 +173,7 @@
 - src/odylith/install/runtime.py
 - src/odylith/runtime/intervention_engine/prompt_signal_runtime.py
 - src/odylith/runtime/intervention_engine/host_surface_runtime.py
+- src/odylith/runtime/surfaces/host_visible_intervention.py
 - src/odylith/runtime/surfaces/claude_host_prompt_bundle.py
 - src/odylith/runtime/surfaces/claude_host_prompt_context.py
 - src/odylith/runtime/surfaces/claude_host_session_brief.py
@@ -141,5 +183,9 @@
 - src/odylith/runtime/surfaces/codex_host_session_brief.py
 - src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py
 - src/odylith/runtime/surfaces/codex_host_stop_summary.py
+- src/odylith/runtime/surfaces/compass_refresh_runtime.py
 - .agents/bin/odylith-host-launcher.py
 - tests/unit/install/test_runtime_host_hook_launcher.py
+- tests/integration/install/test_manager.py
+- tests/unit/runtime/test_compass_refresh_runtime.py
+- tests/unit/runtime/test_host_visible_intervention.py

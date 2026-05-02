@@ -568,7 +568,7 @@ def _decision_odylith_adoption(
         changed_path_source=changed_path_source,
     )
     closeout_bundle = dict(conversation_bundle.get("closeout_bundle", {}))
-    summary["conversation_bundle"] = conversation_bundle
+    summary["conversation_bundle"] = _orchestration_conversation_summary(conversation_bundle)
     summary["ambient_signals"] = dict(conversation_bundle.get("ambient_signals", {}))
     summary["closeout_bundle"] = closeout_bundle
     summary["closeout_assist"] = (
@@ -576,6 +576,31 @@ def _decision_odylith_adoption(
         if isinstance(closeout_bundle.get("assist"), Mapping)
         else {}
     )
+    return summary
+
+
+def _orchestration_conversation_summary(bundle: Mapping[str, Any]) -> dict[str, Any]:
+    """Keep orchestration proof output out of the live intervention render lane.
+
+    The orchestrator decides whether to delegate; it is not a host-visible
+    intervention renderer. Keeping the live proposal bundle in this diagnostic
+    payload makes stale or preview-only proposal candidates look actionable in a
+    surface that cannot apply them. Host prompt/checkpoint surfaces still build
+    the full bundle through their own renderer.
+    """
+
+    summary: dict[str, Any] = {
+        "ambient_signals": dict(bundle.get("ambient_signals", {}))
+        if isinstance(bundle.get("ambient_signals"), Mapping)
+        else {},
+        "closeout_bundle": dict(bundle.get("closeout_bundle", {}))
+        if isinstance(bundle.get("closeout_bundle"), Mapping)
+        else {},
+    }
+    if "live_ambient_signals" in bundle:
+        summary["live_ambient_signals_suppressed"] = True
+    if "intervention_bundle" in bundle:
+        summary["intervention_bundle_suppressed"] = True
     return summary
 
 

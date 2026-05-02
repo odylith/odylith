@@ -129,6 +129,25 @@ Prompt-submit and stop hooks stay under a documented local latency budget on war
   `disable-model-invocation` field so only seven high-frequency skills remain
   model-invocable by default; twenty-eight lower-frequency workflows stay
   slash-invocable. Codex `.agents/skills` stays separate and unchanged.
+- 2026-05-02 source-local activation proof keeps the full memory substrate
+  active while preserving consumer-lane isolation: detached source-local
+  launchers now prefer the source checkout `.venv`, `memory-snapshot` reports
+  `lance_local_columnar` and `tantivy_sparse_recall` with ready dependencies,
+  the context-engine daemon autospawns through the warm local path, and
+  consumer pinned runtimes still use the managed feature-pack environment.
+- 2026-05-02 Compass daemon proof makes explicit `--runtime-mode daemon`
+  autospawn and wait for the local Context Engine daemon instead of failing
+  when the daemon is idle. `auto` remains conservative and falls back to
+  standalone when no daemon is available.
+- 2026-05-02 visibility-feedback proof maps exact "Odylith Assist in every
+  prompt" complaints to the shared visible recovery line on Codex and Claude
+  without broadening ordinary low-signal prompts or show/help passthrough
+  prompts. Exact Assist recovery suppresses stale Observation/Proposal replay,
+  while generic missing-block feedback still replays the earned block first.
+- 2026-05-02 orchestration proof output keeps live intervention rendering
+  separate from subagent planning diagnostics: the orchestrator still emits
+  route/local-only decisions and closeout summaries, but suppresses live
+  proposal bundles that belong to host-visible intervention surfaces.
 
 ## Rollout
 - Execute through the bound v0.1.13 technical plan and keep the first implementation wave focused on hook latency, prompt hot-path gating, launcher dispatch, and governed migration capture.

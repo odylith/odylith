@@ -1950,6 +1950,10 @@ def test_source_repo_upgrade_normalizes_current_runtime_symlink_fallback(monkeyp
     assert "runtime/current/bin/python" not in wrapper_text
     assert f'fallback_source_root="{source_root / "src"}"' in launcher_text
     assert f'fallback_python="{repo_root / ".odylith" / "runtime" / "versions" / "source-local" / "bin" / "python"}"' not in launcher_text
+    assert 'source_root_candidate="${fallback_source_root%/src}"' in launcher_text
+    assert launcher_text.rindex("if odylith_current_runtime_is_source_local") < launcher_text.rindex(
+        "if odylith_current_python_trusted"
+    )
 
 
 def test_version_status_prefers_live_runtime_over_stale_install_state(tmp_path: Path) -> None:
@@ -2168,7 +2172,8 @@ def test_doctor_bundle_repairs_consumer_source_local_lane_back_to_pinned_release
     assert repaired_state["active_version"] == "1.2.3"
     assert repaired_state["detached"] is False
     assert (repo_root / ".odylith" / "runtime" / "current").resolve().name == "1.2.3"
-    assert "source-local" not in launcher_text
+    assert str(source_root) not in launcher_text
+    assert f'fallback_source_root="{source_root / "src"}"' not in launcher_text
 
 
 def test_doctor_bundle_repairs_missing_bootstrap_paths_without_copying_product_payload(tmp_path: Path) -> None:

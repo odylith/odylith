@@ -240,6 +240,20 @@ Related Bugs:
 - [x] Decompose Radar topology validation out of the oversized backlog
       validator so B-141 topology enforcement does not keep growing a red-zone
       runtime file.
+- [x] Keep source-local memory fully active during maintainer development:
+      regenerated source-local launchers hand off to the source checkout
+      `.venv` before the managed wrapper, so LanceDB/PyArrow/Tantivy remain
+      available while unreleased `src/odylith/*` code is under test.
+- [x] Extend visibility-feedback recognition for the exact Assist-in-every-
+      prompt complaint across Codex and Claude without broadening normal
+      prompt-submit Assist output.
+- [x] Keep exact Assist visibility recovery clean: when the user is reporting
+      missing Assist, Codex and Claude render the recovery Assist line without
+      prepending stale Observation or Proposal blocks from prior session state.
+- [x] Make forced Compass daemon mode honor its low-latency contract: explicit
+      `--runtime-mode daemon` now autospawns the local Context Engine daemon
+      when idle, while `auto` stays conservative and can fall back to
+      standalone.
 
 ## Should-Ship
 - [ ] Convert the host hook daemon proposal into a separate design slice with
@@ -331,6 +345,30 @@ Related Bugs:
         serial gate. Tests pin root guidance, install-generated guidance,
         Claude command assets, Codex/Claude skill shims, source skills, and
         bundle mirrors to the same rule.
+- [x] Risk: Source-local maintainer posture could test unreleased runtime code
+      with the pinned managed interpreter and miss the target Lance/Tantivy
+      memory backend, making memory look degraded during the most important
+      product QA lane.
+  - [x] Mitigation: Source-local launchers now prefer the source checkout
+        `.venv` when present, then fall back to repo `.venv`, then host
+        Python. Consumer pinned runtime remains isolated and continues to rely
+        on the managed memory feature pack.
+- [x] Risk: Visibility feedback phrased as "I want to see Odylith Assist..."
+      could be treated as a normal prompt and skip the recovery line.
+  - [x] Mitigation: The shared prompt signal detector recognizes precise
+        Assist visibility phrases and keeps passthrough/help/show prompts
+        stdout-clean.
+- [x] Risk: Exact Assist visibility feedback could replay an older Observation
+      or Proposal before the recovery Assist and make the response look noisy or
+      mis-scoped.
+  - [x] Mitigation: Prompt-submit visible-intervention fallback now renders
+        Assist-only recovery for exact Assist visibility feedback unless the
+        caller explicitly forces proposal content.
+- [x] Risk: Operators could request Compass daemon mode for latency proof and
+      receive `mode_resolution_failed` whenever the local daemon had idled out.
+  - [x] Mitigation: Forced daemon mode starts the same local Context Engine
+        daemon contract and waits for readiness; `auto` still avoids spawning
+        a background process unless a daemon is already available.
 
 ## Validation
 - [x] `PYTHONPATH=src pytest -q tests/unit/runtime/test_claude_host_prompt_context.py tests/unit/runtime/test_codex_host_post_bash_checkpoint.py tests/unit/runtime/test_codex_host_stop_summary.py tests/unit/runtime/test_casebook_bug_index.py tests/unit/runtime/test_host_runtime_contract.py tests/unit/runtime/test_claude_cli_capabilities.py tests/unit/install/test_claude_effective_settings.py tests/unit/runtime/test_claude_host_compatibility.py tests/unit/test_claude_host_cli.py tests/unit/test_cli_audit.py tests/unit/install/test_codex_project_assets.py tests/unit/runtime/test_source_bundle_mirror.py tests/unit/runtime/test_hygiene.py tests/integration/install/test_manager.py::test_doctor_bundle_repair_backfills_legacy_casebook_bug_ids tests/integration/install/test_manager.py::test_upgrade_same_version_backfills_legacy_casebook_bug_ids tests/integration/install/test_manager.py::test_consumer_upgrade_backfills_legacy_casebook_bug_ids_during_runtime_activation`
@@ -368,6 +406,17 @@ Related Bugs:
 - [x] `./.odylith/bin/odylith release migration-gate --repo-root . --target-version 0.1.13 --json` (`ok: true`, `blocked: 0`, `ungated: 0`; root guidance routing, topology-validator decomposition, and refreshed browser/install-managed surfaces covered by B-140 migration-observer markers)
 - [x] `./.odylith/bin/odylith casebook validate --repo-root . && ./.odylith/bin/odylith validate guidance-behavior --repo-root . && ./.odylith/bin/odylith validate discipline --repo-root . && ./.odylith/bin/odylith validate backlog-contract --repo-root .`
 - [x] `git diff --check`
+- [x] `hatch run python -m pytest -q tests/unit/runtime/test_host_visible_intervention.py::test_visible_intervention_assist_every_prompt_feedback_adds_assist tests/integration/install/test_manager.py::test_source_repo_upgrade_normalizes_current_runtime_symlink_fallback` (`2 passed`)
+- [x] `hatch run python -m pytest -q tests/unit/runtime/test_host_visible_intervention.py tests/unit/runtime/test_host_intervention_support.py tests/unit/runtime/test_intervention_cross_host_parity.py tests/unit/runtime/test_codex_host_prompt_context.py tests/unit/runtime/test_claude_host_prompt_context.py tests/integration/install/test_manager.py::test_source_repo_upgrade_normalizes_current_runtime_symlink_fallback` (`81 passed`; includes Assist-only recovery for exact visibility-feedback prompts and replay preservation for generic missing-block feedback)
+- [x] `./.odylith/bin/odylith context-engine --repo-root . memory-snapshot` proved `status: active`, `storage: lance_local_columnar`, `sparse_recall: tantivy_sparse_recall`, and no backend-transition gaps after source-local launcher regeneration.
+- [x] `ODYLITH_CONTEXT_ENGINE_ALLOW_BACKGROUND_AUTOSPAWN=1 ./.odylith/bin/odylith context-engine --repo-root . --client-mode auto context B-141` proved daemon autospawn on the active launcher path.
+- [x] `./.odylith/bin/odylith context-engine --repo-root . status` proved `daemon_alive: yes`, `watcher_backend: watchdog`, `memory_backend_fallback: no`, and target memory `lance_local_columnar / tantivy_sparse_recall`.
+- [x] `./.odylith/bin/odylith codex visible-intervention --repo-root . --phase prompt_submit --prompt "Make sure all observations are optimal across all lanes and all host models. I want to see Odylith Assist in every prompt."` rendered the shared visibility-feedback Assist line.
+- [x] `./.odylith/bin/odylith claude visible-intervention --repo-root . --phase prompt_submit --prompt "Make sure all observations are optimal across all lanes and all host models. I want to see Odylith Assist in every prompt."` rendered the shared visibility-feedback Assist line without stale Observation/Proposal prelude.
+- [x] `hatch run python -m pytest -q tests/unit/runtime/test_compass_refresh_runtime.py` (`19 passed`; forced Compass daemon mode autospawns, while `auto` does not spawn when no daemon is available)
+- [x] `./.odylith/bin/odylith compass deep-refresh --repo-root . --runtime-mode daemon` passed with `resolved_runtime_mode: daemon` after autospawn; a warm rerun also passed with `resolved_runtime_mode: daemon` in 4.1s.
+- [x] `hatch run python -m pytest -q tests/unit/runtime/test_odylith_assist_closeout.py::test_orchestrator_threads_conversation_bundle_into_odylith_adoption` (`1 passed`; orchestration diagnostics keep closeout and ambient summaries but suppress live intervention/proposal bundles owned by host-visible surfaces).
+- [x] `./.odylith/bin/odylith subagent-orchestrator plan --repo-root . --json ...` for the B-141 host/lane audit returned `mode: local_only`, `delegate: false`, and `execution-engine-critical-path` without leaking stale Radar proposal candidates.
 - [x] Mixed-version fresh-host proof in `/private/tmp/odylith-fresh-host-final-aezgVP`: current-source install succeeded against shipped `0.1.12`; `version` and `doctor` ran healthy through the generated launcher; Codex prompt context, Claude prompt-bundle context/visible fallback, Codex and Claude `intervention-status`, and Codex/Claude visible-intervention smokes all passed; `start` reached Context/Execution Engine narrowing and returned only the expected empty-repo fallback.
 - [x] Targeted browser regression rerun for default Compass completed-program
       hiding and Radar date sort (`3 passed`), followed by the full browser

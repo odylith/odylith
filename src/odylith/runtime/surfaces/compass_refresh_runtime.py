@@ -19,7 +19,7 @@ from typing import Any, Iterator, Mapping, Sequence
 
 from odylith.install.fs import atomic_write_text
 from odylith.runtime.common import agent_runtime_contract
-from odylith.runtime.common.command_surface import display_command
+from odylith.runtime.common.command_surface import display_command, module_invocation
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import odylith_context_engine_workspace_daemon
 from odylith.runtime.surfaces import compass_refresh_contract
@@ -31,6 +31,8 @@ _POLL_INTERVAL_SECONDS = 0.5
 _SHELL_SAFE_TIMEOUT_SECONDS = 600.0
 _DEFAULT_MAX_REVIEW_AGE_DAYS = 21
 _DEFAULT_ACTIVE_WINDOW_MINUTES = 15
+_DAEMON_STARTUP_TIMEOUT_SECONDS = 5.0
+_DAEMON_AUTOSPAWN_IDLE_TIMEOUT_SECONDS = 120
 _STAGE_LABELS = {
     "input_resolution": "input resolution",
     "projection_inputs_loaded": "projection inputs loaded",
@@ -404,12 +406,60 @@ def _finalize_state(
     return updated
 
 
+def _runtime_daemon_available(*, repo_root: Path) -> bool:
+    return odylith_context_engine_workspace_daemon.runtime_daemon_transport(repo_root=repo_root) is not None
+
+
+def _spawn_runtime_daemon(*, repo_root: Path) -> bool:
+    """Start the Context Engine daemon for an explicit Compass daemon request."""
+
+    root = Path(repo_root).resolve()
+    if not (root / ".git").exists():
+        return False
+    if _runtime_daemon_available(repo_root=root):
+        return True
+    command = module_invocation(
+        "context-engine",
+        "--repo-root",
+        str(root),
+        "serve",
+        "--scope",
+        "full",
+        "--watcher-backend",
+        "auto",
+        "--spawn-reason",
+        "autospawn",
+        "--idle-timeout-seconds",
+        str(_DAEMON_AUTOSPAWN_IDLE_TIMEOUT_SECONDS),
+    )
+    try:
+        subprocess.Popen(  # noqa: S603
+            command,
+            cwd=str(root),
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+            close_fds=True,
+        )
+    except OSError:
+        return False
+    deadline = time.perf_counter() + _DAEMON_STARTUP_TIMEOUT_SECONDS
+    while time.perf_counter() < deadline:
+        if _runtime_daemon_available(repo_root=root):
+            return True
+        time.sleep(0.05)
+    return _runtime_daemon_available(repo_root=root)
+
+
 def _resolve_runtime_mode(*, repo_root: Path, requested_runtime_mode: str) -> str:
     normalized = _normalize_runtime_mode(requested_runtime_mode)
-    daemon_available = odylith_context_engine_workspace_daemon.runtime_daemon_transport(repo_root=repo_root) is not None
+    daemon_available = _runtime_daemon_available(repo_root=repo_root)
     if normalized == "auto":
         return "daemon" if daemon_available else "standalone"
     if normalized == "daemon" and not daemon_available:
+        if _spawn_runtime_daemon(repo_root=repo_root):
+            return "daemon"
         raise CompassRefreshError("Compass refresh requires daemon runtime mode, but the local runtime daemon is unavailable.")
     return normalized
 

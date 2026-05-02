@@ -13,6 +13,11 @@ class _FakeWorker:
         self.pid = pid
 
 
+class _FakeDaemonProcess:
+    def __init__(self, pid: int = 4321) -> None:
+        self.pid = pid
+
+
 def test_parse_args_rejects_removed_refresh_profile_flag() -> None:
     with pytest.raises(SystemExit):
         runtime._parse_args(["--refresh-profile", "full"])  # noqa: SLF001
@@ -355,6 +360,64 @@ def test_shell_safe_daemon_unavailable_fails_cleanly_without_raise(
     assert result["rc"] == 1
     assert result["status"] == "failed"
     assert result["state"]["terminal_reason"] == "mode_resolution_failed"
+
+
+def test_daemon_runtime_mode_autospawns_when_idle(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    (tmp_path / ".git").mkdir()
+    checks = {"count": 0}
+    commands: list[list[str]] = []
+
+    def _fake_available(*, repo_root: Path) -> bool:
+        del repo_root
+        checks["count"] += 1
+        return checks["count"] >= 4
+
+    def _fake_popen(command, **kwargs):  # noqa: ANN001
+        del kwargs
+        commands.append([str(part) for part in command])
+        return _FakeDaemonProcess()
+
+    monkeypatch.setattr(runtime, "_runtime_daemon_available", _fake_available)
+    monkeypatch.setattr(runtime.subprocess, "Popen", _fake_popen)
+    monkeypatch.setattr(runtime.time, "sleep", lambda _seconds: None)
+
+    resolved = runtime._resolve_runtime_mode(  # noqa: SLF001
+        repo_root=tmp_path,
+        requested_runtime_mode="daemon",
+    )
+
+    assert resolved == "daemon"
+    assert len(commands) == 1
+    command = commands[0]
+    assert "context-engine" in command
+    assert "serve" in command
+    assert "--idle-timeout-seconds" in command
+    assert "120" in command
+    assert command[command.index("--scope") + 1] == "full"
+    assert command[command.index("--watcher-backend") + 1] == "auto"
+    assert command[command.index("--spawn-reason") + 1] == "autospawn"
+
+
+def test_auto_runtime_mode_does_not_autospawn_daemon(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    monkeypatch.setattr(runtime, "_runtime_daemon_available", lambda **_: False)
+    monkeypatch.setattr(
+        runtime.subprocess,
+        "Popen",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("auto must not spawn daemon")),
+    )
+
+    resolved = runtime._resolve_runtime_mode(  # noqa: SLF001
+        repo_root=tmp_path,
+        requested_runtime_mode="auto",
+    )
+
+    assert resolved == "standalone"
 
 
 def test_wait_mode_repairs_stale_worker_and_returns_terminal_state(

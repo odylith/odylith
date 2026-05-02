@@ -10,6 +10,7 @@ from typing import Sequence
 from odylith.runtime.intervention_engine import conversation_closeout
 from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import host_surface_runtime
+from odylith.runtime.intervention_engine import prompt_signal_runtime
 from odylith.runtime.intervention_engine import stream_state
 from odylith.runtime.intervention_engine import visibility_replay
 from odylith.runtime.surfaces import host_intervention_support
@@ -80,6 +81,15 @@ def render_visible_intervention(
     )
     if include_closeout is not None:
         closeout = bool(include_closeout)
+    prompt_visibility_feedback_only = (
+        prompt_signal_runtime.assist_visibility_feedback_requested(
+            prompt=prompt,
+            assistant_summary=summary,
+        )
+        and normalized_phase in _PROMPT_SUBMIT_PHASES
+        and include_proposal is None
+        and not changed_paths
+    )
     resolved_session = host_surface_runtime.normalized_session_id(session_id, host_family=host_family)
     replay = visibility_replay.replayable_chat_markdown(
         repo_root=repo_root,
@@ -109,7 +119,9 @@ def render_visible_intervention(
     if normalized_phase in _PROMPT_SUBMIT_PHASES and closeout:
         bundle = host_intervention_support.ensure_prompt_visible_assist_bundle(bundle)
     visible_override = ""
-    if replay and closeout:
+    if prompt_visibility_feedback_only:
+        visible_override = conversation_surface.render_closeout_text(bundle, markdown=True)
+    elif replay and closeout:
         visible_override = host_intervention_support.merge_replay_with_closeout(
             replay=replay,
             closeout_text=conversation_surface.render_closeout_text(bundle, markdown=True),
