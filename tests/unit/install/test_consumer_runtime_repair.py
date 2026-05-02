@@ -78,6 +78,39 @@ def test_repair_stale_consumer_intervention_noise_preserves_local_matching_recor
     assert stream_path.read_text(encoding="utf-8") == before
 
 
+def test_repair_stale_consumer_intervention_noise_scans_agent_and_legacy_codex_streams(
+    tmp_path: Path,
+) -> None:
+    agent_stream = tmp_path / "odylith" / "compass" / "runtime" / "agent-stream.v1.jsonl"
+    codex_stream = tmp_path / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl"
+    stale_event = {
+        "host_family": "claude",
+        "kind": "intervention_card",
+        "summary": "Odylith is ready to speak, but this chat has not shown the Odylith moment yet.",
+        "workstreams": ["B-096"],
+    }
+    kept_event = {
+        "host_family": "codex",
+        "kind": "workspace_activity",
+        "summary": "Recent workspace activity across tracked paths: src/app.py",
+    }
+    _write_jsonl(agent_stream, [stale_event, kept_event])
+    _write_jsonl(codex_stream, [stale_event, kept_event])
+
+    result = repair_stale_consumer_intervention_noise(repo_root=tmp_path, consumer_repo=True)
+
+    assert result.changed is True
+    assert result.removed_events == 2
+    assert result.repaired_streams == (
+        "odylith/compass/runtime/agent-stream.v1.jsonl",
+        "odylith/compass/runtime/codex-stream.v1.jsonl",
+    )
+    assert "B-096" not in agent_stream.read_text(encoding="utf-8")
+    assert "B-096" not in codex_stream.read_text(encoding="utf-8")
+    assert "Recent workspace activity" in agent_stream.read_text(encoding="utf-8")
+    assert "Recent workspace activity" in codex_stream.read_text(encoding="utf-8")
+
+
 def test_repair_stale_consumer_intervention_noise_skips_product_repo(tmp_path: Path) -> None:
     stream_path = tmp_path / "odylith" / "compass" / "runtime" / "agent-stream.v1.jsonl"
     _write_jsonl(

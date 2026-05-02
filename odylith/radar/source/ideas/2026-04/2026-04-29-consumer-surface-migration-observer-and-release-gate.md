@@ -398,6 +398,20 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.12:guidance-and-skills:2d48e421d4a4`,
   `migration-observer:0.1.12:browser-surfaces:ed5db266b23d`,
   `migration-observer:0.1.12:install-managed-assets:9a3f5a953776`.
+- Upgrade-residue dashboard recovery: v0.1.13 makes post-upgrade dashboard
+  refresh resilient when a consumer repo is midway through surface generation.
+  The top-level shell now treats missing child dashboard HTML as a warning,
+  Compass refresh creates the Casebook index and Radar traceability graph before
+  render, shell refresh waits until owned child surfaces have settled, and
+  registry validation ignores host-visibility chatter while preserving failures
+  for meaningful unmapped implementation events. Existing consumer repos do not
+  need repo-truth migration; upgrades from 0.1.10+ receive the fixed runtime and
+  can repair stale 0.1.11/0.1.12 dashboard residue in place. Migration observer
+  markers:
+  `migration-observer:0.1.12:guidance-and-skills:20383b041e00`,
+  `migration-observer:0.1.12:operator-cli-contracts:3f7f46e3c07b`,
+  `migration-observer:0.1.12:browser-surfaces:48a6b76069b3`,
+  `migration-observer:0.1.12:install-managed-assets:81225e1e602e`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.

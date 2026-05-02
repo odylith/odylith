@@ -132,6 +132,17 @@ _GOVERNANCE_NON_MEANINGFUL_SUMMARY_PREFIXES: tuple[str, ...] = (
     "plan binding:",
 )
 _FORENSIC_ONLY_KINDS: frozenset[str] = frozenset({"workspace_activity"})
+_HOST_VISIBILITY_EVENT_KINDS: frozenset[str] = frozenset(
+    {
+        "ambient_signal",
+        "assist_closeout",
+        "capture_applied",
+        "capture_declined",
+        "capture_proposed",
+        "intervention_card",
+        "proposal",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -1841,7 +1852,12 @@ def is_meaningful_event(
     summary: str = "",
     kind: str = "",
 ) -> bool:
+    kind_token = str(kind or "").strip().lower()
+    if kind_token in _HOST_VISIBILITY_EVENT_KINDS:
+        return False
     summary_token = str(summary or "").strip().lower()
+    if kind_token == "subagent_stop" and not summary_token:
+        return False
     if any(summary_token.startswith(prefix) for prefix in _GOVERNANCE_NON_MEANINGFUL_SUMMARY_PREFIXES):
         return False
     if any(normalize_workstream_id(token) for token in workstreams):

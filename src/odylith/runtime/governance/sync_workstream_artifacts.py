@@ -1259,6 +1259,80 @@ def _normalize_radar_source_before_surface_refresh(*, repo_root: Path) -> None:
     print(f"  source: {normalization.backlog_index.relative_to(repo_root)}")
 
 
+def _ensure_compass_dashboard_inputs(*, repo_root: Path) -> dict[str, Any]:
+    root = Path(repo_root).resolve()
+    bug_index = root / "odylith" / "casebook" / "bugs" / "INDEX.md"
+    if not bug_index.is_file():
+        try:
+            from odylith.runtime.governance import sync_casebook_bug_index
+
+            sync_casebook_bug_index.sync_casebook_bug_index(repo_root=root)
+        except Exception as exc:
+            return {
+                "rc": 1,
+                "status": "failed",
+                "next_command": display_command("casebook", "refresh", "--repo-root", "."),
+                "failed_step": "Create the Casebook bug index required by Compass.",
+                "detail": f"{type(exc).__name__}: {exc}".strip(),
+            }
+
+    traceability_graph = root / "odylith" / "radar" / "traceability-graph.v1.json"
+    if traceability_graph.is_file():
+        return {"rc": 0, "status": "passed"}
+
+    try:
+        from odylith.runtime.governance import build_traceability_graph
+
+        captured = io.StringIO()
+        with contextlib.redirect_stdout(captured):
+            rc = build_traceability_graph.main(
+                [
+                    "--repo-root",
+                    str(root),
+                    "--output",
+                    "odylith/radar/traceability-graph.v1.json",
+                ]
+            )
+    except Exception as exc:
+        return {
+            "rc": 1,
+            "status": "failed",
+            "next_command": display_command("radar", "refresh", "--repo-root", "."),
+            "failed_step": "Create the Radar traceability graph required by Compass.",
+            "detail": f"{type(exc).__name__}: {exc}".strip(),
+        }
+    if int(rc or 0) != 0:
+        detail = " ".join(captured.getvalue().split())
+        return {
+            "rc": int(rc or 1),
+            "status": "failed",
+            "next_command": display_command("radar", "refresh", "--repo-root", "."),
+            "failed_step": "Create the Radar traceability graph required by Compass.",
+            "detail": detail,
+        }
+    print("- compass preflight: generated missing Radar traceability graph")
+    return {"rc": 0, "status": "passed"}
+
+
+def _run_compass_dashboard_refresh(
+    *,
+    repo_root: Path,
+    normalized_runtime_mode: str,
+) -> dict[str, Any]:
+    prerequisite_result = _ensure_compass_dashboard_inputs(repo_root=repo_root)
+    if int(prerequisite_result.get("rc", 0) or 0) != 0:
+        return prerequisite_result
+    return compass_refresh_runtime.run_refresh(
+        repo_root=repo_root,
+        requested_profile=compass_refresh_contract.DEFAULT_REFRESH_PROFILE,
+        requested_runtime_mode=normalized_runtime_mode,
+        wait=True,
+        status_only=False,
+        emit_output=True,
+        skip_settlement=True,
+    )
+
+
 def _dashboard_surface_steps(
     *,
     repo_root: Path,
@@ -1311,14 +1385,9 @@ def _dashboard_surface_steps(
             _execution_step(
                 "Run Compass through the shared refresh engine and wait for the bounded result.",
                 surface=surface,
-                action=lambda: compass_refresh_runtime.run_refresh(
+                action=lambda: _run_compass_dashboard_refresh(
                     repo_root=repo_root,
-                    requested_profile=compass_refresh_contract.DEFAULT_REFRESH_PROFILE,
-                    requested_runtime_mode=normalized_runtime_mode,
-                    wait=True,
-                    status_only=False,
-                    emit_output=True,
-                    skip_settlement=True,
+                    normalized_runtime_mode=normalized_runtime_mode,
                 ),
                 mutation_classes=("generated_surfaces",),
                 paths=_surface_render_outputs("compass"),
@@ -1903,16 +1972,29 @@ def refresh_dashboard_surfaces(
         print("- runtime_fallback: standalone (runtime prerequisites missing)")
         runtime_fallback_used = True
     with session_context:
-        if len(selected) >= 2:
-            surface_results = _refresh_surfaces_parallel(
-                repo_root=repo_root,
-                selected=selected,
-                runtime_mode=normalized_runtime_mode,
-                atlas_sync=atlas_sync,
-                run_impl=run_impl,
-            )
+        surface_groups: list[list[str]]
+        if "tooling_shell" in selected and len(selected) > 1:
+            surface_groups = [
+                [surface for surface in selected if surface != "tooling_shell"],
+                ["tooling_shell"],
+            ]
         else:
-            for surface in selected:
+            surface_groups = [list(selected)]
+        for surface_group in surface_groups:
+            if not surface_group:
+                continue
+            if len(surface_group) >= 2:
+                surface_results.extend(
+                    _refresh_surfaces_parallel(
+                        repo_root=repo_root,
+                        selected=surface_group,
+                        runtime_mode=normalized_runtime_mode,
+                        atlas_sync=atlas_sync,
+                        run_impl=run_impl,
+                    )
+                )
+                continue
+            for surface in surface_group:
                 output, result = _run_surface_worker(
                     repo_root=repo_root,
                     surface=surface,
