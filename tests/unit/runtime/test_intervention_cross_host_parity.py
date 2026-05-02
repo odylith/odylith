@@ -172,7 +172,7 @@ def test_cross_host_prompt_cli_payload_stays_consistent_for_same_teaser(
     assert not any(row.get("kind") == "assist_closeout" for row in codex_events)
 
 
-def test_cross_host_checkpoint_cli_dispatch_stays_silent_for_successful_checkpoints(
+def test_cross_host_checkpoint_cli_dispatch_surfaces_codex_live_only_and_keeps_claude_silent(
     monkeypatch,
     tmp_path: Path,
     capsys,
@@ -209,7 +209,14 @@ def test_cross_host_checkpoint_cli_dispatch_stays_silent_for_successful_checkpoi
     )
 
     assert cli.main(["codex", "post-bash-checkpoint", "--repo-root", str(tmp_path)]) == 0
-    assert capsys.readouterr().out == ""
+    codex_payload = json.loads(capsys.readouterr().out)
+    codex_context = codex_payload["hookSpecificOutput"]["additionalContext"]
+    assert codex_payload["hookSpecificOutput"]["hookEventName"] == "PostToolUse"
+    assert "Odylith visible delivery recovery:" in codex_context
+    assert "Odylith Observation:" in codex_context
+    assert "Odylith Proposal:" in codex_context
+    assert "Odylith Assist:" not in codex_context
+    assert "Odylith Assist:" not in codex_payload["systemMessage"]
 
     monkeypatch.setattr(
         "sys.stdin",

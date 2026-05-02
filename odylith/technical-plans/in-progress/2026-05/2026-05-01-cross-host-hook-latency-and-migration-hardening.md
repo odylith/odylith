@@ -98,6 +98,16 @@ Related Bugs:
       The 0.1.10 path must apply the v0.1.11 value-engine migration when
       legacy signal-ranker artifacts remain; 0.1.11 and 0.1.12 must skip that
       migration cleanly.
+- [x] Codex dirty-event deferral must not make the intervention engine feel
+      absent. Post-bash checkpoints still defer heavy governed refresh work,
+      but an already-earned Observation/Proposal payload must surface through
+      Codex PostToolUse output; Assist remains excluded from that live hook
+      payload.
+- [x] Dev-maintainer source-local proof must separate runtime posture from
+      release planning truth. `source-local` is the active maintainer runtime
+      posture, `0.1.12` remains the pinned dogfood baseline, and the default
+      Compass release-target view must follow the explicit current/next
+      release aliases instead of rendering every older active release lane.
 
 ## Must-Ship
 - [x] Add shared prompt route locks so help/show/capabilities prompts bypass
@@ -108,6 +118,9 @@ Related Bugs:
       Bash guard filters, and async PostToolUse checkpoints where supported.
 - [x] Keep Codex PostToolUse on a cheap dirty-event recorder and settle
       governed refresh work during Stop or the next grounding cycle.
+- [x] Keep Codex PostToolUse chat-visible for earned live intervention beats:
+      Observation/Proposal payloads render in the hook response while the
+      durable dirty-event record owns later governance settlement.
 - [x] Preserve automatic context/intervention semantics with focused parity
       tests for hidden context, visible teaser output, and route locks.
 - [x] Replace bare low-signal prompt receipts and manual SessionStart fallback
@@ -154,6 +167,12 @@ Related Bugs:
   - [x] Mitigation: Codex records durable dirty events synchronously and Stop
         settlement replays governed refresh or keeps unsettled events for the
         next prompt when refresh fails.
+- [x] Risk: The latency fix could make Codex checkpoint hooks silent and hide
+      live Intervention Engine output from the chat.
+  - [x] Mitigation: Codex post-bash now emits the earned live
+        Observation/Proposal payload from the existing intervention bundle
+        while continuing to exclude Assist from the hook-visible path and
+        defer heavy governance refresh.
 - [x] Risk: Claude prompt-bundle could accidentally drop visible teaser output
       or hidden prompt context.
   - [x] Mitigation: Prompt-bundle tests compare route-lock behavior and
@@ -196,6 +215,12 @@ Related Bugs:
         the value corpus and seeds a legacy signal-ranker artifact so the
         value-engine migration applies, removes the old artifact, writes the
         replacement corpus, activates 0.1.13, and records the result.
+- [x] Risk: Switching to dev-maintainer source-local could still leave the
+      UI looking pinned to 0.1.12 because stale active release lanes remained
+      visible beside the true 0.1.13 current/next target.
+  - [x] Mitigation: Compass Release Targets now defaults to current/next
+        alias groups when aliases exist, while preserving active/planned/draft
+        fallback for repos that have not adopted release aliases yet.
 
 ## Validation
 - [x] `PYTHONPATH=src pytest -q tests/unit/runtime/test_claude_host_prompt_context.py tests/unit/runtime/test_codex_host_post_bash_checkpoint.py tests/unit/runtime/test_codex_host_stop_summary.py tests/unit/runtime/test_casebook_bug_index.py tests/unit/runtime/test_host_runtime_contract.py tests/unit/runtime/test_claude_cli_capabilities.py tests/unit/install/test_claude_effective_settings.py tests/unit/runtime/test_claude_host_compatibility.py tests/unit/test_claude_host_cli.py tests/unit/test_cli_audit.py tests/unit/install/test_codex_project_assets.py tests/unit/runtime/test_source_bundle_mirror.py tests/unit/runtime/test_hygiene.py tests/integration/install/test_manager.py::test_doctor_bundle_repair_backfills_legacy_casebook_bug_ids tests/integration/install/test_manager.py::test_upgrade_same_version_backfills_legacy_casebook_bug_ids tests/integration/install/test_manager.py::test_consumer_upgrade_backfills_legacy_casebook_bug_ids_during_runtime_activation`
@@ -211,11 +236,18 @@ Related Bugs:
 - [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/install/test_runtime.py tests/integration/install/test_manager.py -k "launcher or fallback or start_preflight"` (`30 passed, 107 deselected`)
 - [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/integration/install/test_lifecycle_simulator.py::test_lifecycle_simulator_proves_historical_upgrades_to_0_1_13` (`1 passed`)
 - [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/install/test_migration_runtime.py tests/unit/install/test_value_engine_migration.py tests/integration/install/test_lifecycle_simulator.py` (`53 passed`)
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/install/test_migration_runtime.py tests/unit/install/test_value_engine_migration.py tests/unit/install/test_migration_readiness.py tests/unit/install/test_migration_audit.py tests/integration/install/test_lifecycle_simulator.py` (`59 passed`)
 - [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/integration/install/test_manager.py` (`92 passed`)
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_codex_host_prompt_context.py tests/unit/runtime/test_codex_host_bash_guard.py tests/unit/runtime/test_codex_host_post_bash_checkpoint.py tests/unit/runtime/test_codex_host_stop_summary.py tests/unit/runtime/test_claude_host_prompt_context.py tests/unit/runtime/test_claude_host_bash_guard.py tests/unit/runtime/test_claude_host_post_bash_checkpoint.py tests/unit/runtime/test_claude_host_post_edit_checkpoint.py tests/unit/runtime/test_claude_host_stop_summary.py tests/unit/runtime/test_host_hook_cli_dispatch.py tests/unit/runtime/test_intervention_cross_host_parity.py tests/unit/runtime/test_host_visible_intervention.py` (`146 passed`)
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_tooling_dashboard_runtime_builder.py tests/unit/runtime/test_tooling_dashboard_shell_render_integration.py tests/unit/runtime/test_render_compass_dashboard.py tests/unit/runtime/test_compass_dashboard_runtime.py tests/unit/runtime/test_compass_refresh_runtime.py tests/unit/runtime/test_render_casebook_dashboard.py tests/unit/runtime/test_render_registry_dashboard.py` (`137 passed`)
+- [x] `./.odylith/bin/odylith upgrade --repo-root . --source-repo . --json` switched the product repo to detached `source-local`, kept the pin at `0.1.12`, marked release eligibility false, and refreshed tooling shell, Radar, and Compass surfaces for dev-maintainer proof.
 - [x] Mixed-version fresh-host proof in `/private/tmp/odylith-fresh-host-final-aezgVP`: current-source install succeeded against shipped `0.1.12`; `version` and `doctor` ran healthy through the generated launcher; Codex prompt context, Claude prompt-bundle context/visible fallback, Codex and Claude `intervention-status`, and Codex/Claude visible-intervention smokes all passed; `start` reached Context/Execution Engine narrowing and returned only the expected empty-repo fallback.
 - [x] Targeted browser regression rerun for default Compass completed-program
       hiding and Radar date sort (`3 passed`), followed by the full browser
       matrix (`182 passed, 1 skipped`).
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_render_compass_dashboard.py::test_render_compass_dashboard_emits_release_summary_and_workstream_release_ui tests/integration/runtime/test_surface_browser_smoke.py::test_compass_and_radar_target_release_cards_show_labeled_release_version` (`2 passed`; default Compass Release Targets renders only the 0.1.13 current/next group and excludes 0.1.12)
+- [x] `PYTHONPATH=src ODYLITH_BROWSER_FAILURE_SCREENSHOTS=.odylith/browser-failures .venv/bin/python -m pytest -q tests/integration/runtime/test_compass_browser_regression_matrix.py::test_compass_browser_traceability_fallback_prioritizes_active_release_truth_when_source_snapshot_is_missing tests/integration/runtime/test_compass_browser_regression_matrix.py::test_compass_browser_ignores_unusable_source_truth_snapshot_and_continues_to_traceability_fallback tests/integration/runtime/test_surface_browser_deep.py::test_compass_release_targets_show_checklist_label_instead_of_fake_zero_progress tests/integration/runtime/test_surface_browser_deep.py::test_compass_release_targets_show_tracked_execution_percent_for_partial_progress` (`4 passed`; fixture release aliases now match the current-release target they assert)
+- [x] `PYTHONPATH=src ODYLITH_BROWSER_FAILURE_SCREENSHOTS=.odylith/browser-failures .venv/bin/python -m pytest -q tests/integration/runtime/test_*browser*.py` (`182 passed, 1 skipped`; post-alias release-target filtering proof)
 - [x] `PYTHONPATH=src .venv/bin/python -m odylith.cli release migration-gate --repo-root . --target-version 0.1.13`
 - [x] `./.odylith/bin/odylith release migration-gate --repo-root . --target-version 0.1.13 --json` (`ok: true`; no blocked manual migrations; no ungated lifecycle paths)
 - [x] `PYTHONPATH=src .venv/bin/python -m odylith.cli validate guidance-behavior --repo-root .`

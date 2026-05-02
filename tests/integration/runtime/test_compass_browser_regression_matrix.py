@@ -102,6 +102,12 @@ def _rewrite_traceability_release_truth(
         release["active_workstreams"] = list(active_ids)
         release["completed_workstreams"] = list(completed_ids)
     if isinstance(traceability.get("current_release"), dict):
+        traceability["current_release"]["release_id"] = "release-0-1-11"
+        traceability["current_release"]["display_label"] = "0.1.11"
+        traceability["current_release"]["version"] = "0.1.11"
+        traceability["current_release"]["tag"] = "v0.1.11"
+        traceability["current_release"]["status"] = "active"
+        traceability["current_release"]["aliases"] = ["current"]
         traceability["current_release"]["active_workstreams"] = list(active_ids)
         traceability["current_release"]["completed_workstreams"] = list(completed_ids)
         traceability["generated_utc"] = "2026-04-09T12:00:00Z"

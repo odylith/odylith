@@ -946,6 +946,7 @@ def test_release_gate_reports_registered_migrations_and_no_lifecycle_bypass() ->
     report = migration_runtime.validate_release_migration_gate(
         repo_root=repo_root,
         target_version="0.1.12",
+        changed_paths=(),
     )
 
     assert report.ok is True

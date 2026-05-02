@@ -454,6 +454,28 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.13:browser-surfaces:f7b7e4cdba20`,
   `migration-observer:0.1.13:browser-surfaces:02ebed1744ff`,
   `migration-observer:0.1.13:install-managed-assets:20e8ce49c04a`.
+- Dev-maintainer source-local visibility proof: v0.1.13 restores the Codex
+  post-bash live Observation/Proposal payload while keeping governed refresh
+  work deferred to the dirty-event settlement lane. The source-local maintainer
+  switch regenerated the tooling shell, Radar, Compass, and bundle mirror
+  surfaces so the dashboard now reflects detached source-local posture instead
+  of pinned dogfood. Existing consumer repos do not need repo-truth migration;
+  upgrading installs the fixed Codex hook runtime and refreshed managed browser
+  assets, while release proof must still return to pinned dogfood before
+  shipping. Migration observer markers:
+  `migration-observer:0.1.13:public-docs-and-release-guidance:c8276a3cb8e8`,
+  `migration-observer:0.1.13:browser-surfaces:cc8a7f297f08`,
+  `migration-observer:0.1.13:install-managed-assets:d2de2ef4649d`.
+- Dev-maintainer Release Targets alias filtering: v0.1.13 keeps release
+  registry history intact while making the default Compass release-target view
+  follow explicit current/next aliases when those aliases exist. Older active
+  release lanes remain in source truth and scoped drill-in paths, but they no
+  longer make the live default view look pinned to 0.1.12 after B-141 moves to
+  0.1.13. Existing consumer repos do not need data migration; upgrading
+  installs refreshed browser and bundle assets. Migration observer markers:
+  `migration-observer:0.1.13:browser-surfaces:a33e8d0e6dab`,
+  `migration-observer:0.1.13:browser-surfaces:adfbbaeec25e`,
+  `migration-observer:0.1.13:install-managed-assets:583b3a29cb60`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.

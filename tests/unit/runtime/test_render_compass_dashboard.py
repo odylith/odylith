@@ -456,11 +456,13 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     assert 'sectionClassName: "execution-wave-section-flat"' not in waves_js
     assert "Targeted Workstreams" in releases_js
     assert "Completed Workstreams" in releases_js
+    assert "hasAliasedRelease" in releases_js
+    assert "return Boolean(group.is_current) || Boolean(group.is_next);" in releases_js
     assert 'status === "planned"' in releases_js
     assert 'status === "draft"' in releases_js
-    assert "function compassReleaseGroupVisibleByDefault(group)" in releases_js
-    assert "return compassReleaseGroupVisibleByDefault(group);" in releases_js
-    assert 'return groups;' in releases_js
+    assert "function compassReleaseGroupVisibleByDefault(group, hasAliasedRelease)" in releases_js
+    assert "return compassReleaseGroupVisibleByDefault(group, hasAliasedRelease);" in releases_js
+    assert 'return visibleGroups;' in releases_js
     assert 'const currentOnlyGroups = currentReleaseId' not in releases_js
     assert 'Target Release</span>' in releases_js
     assert "No targeted workstreams." in releases_js

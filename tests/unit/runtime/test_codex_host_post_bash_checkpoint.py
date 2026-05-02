@@ -483,7 +483,7 @@ def test_post_bash_bundle_uses_recent_prompt_excerpt_not_intervention_summary(
     assert bundle["observation"]["prompt_excerpt"] == "Preserve the human prompt across bash checkpoints."
 
 
-def test_main_records_checkpoint_context_without_additional_context(
+def test_main_records_checkpoint_context_with_live_intervention_payload(
     monkeypatch,
     tmp_path: Path,
     capsys,
@@ -508,11 +508,33 @@ def test_main_records_checkpoint_context_without_additional_context(
         "command_scoped_governed_paths",
         lambda **kwargs: [],
     )
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint,
+        "_post_bash_bundle",
+        lambda **kwargs: {
+            "intervention_bundle": {
+                "candidate": {
+                    "stage": "card",
+                    "suppressed_reason": "",
+                    "markdown_text": "**Odylith Observation:** Codex kept the live intervention lane.",
+                    "plain_text": "Odylith Observation: Codex kept the live intervention lane.",
+                },
+                "proposal": {"eligible": False, "suppressed_reason": ""},
+            },
+            "closeout_bundle": {
+                "markdown_text": "**Odylith Assist:** Deferred checkpoint evidence stayed intact.",
+                "plain_text": "Odylith Assist: Deferred checkpoint evidence stayed intact.",
+            },
+        },
+    )
 
     exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)])
 
     assert exit_code == 0
-    assert capsys.readouterr().out == ""
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["hookSpecificOutput"]["hookEventName"] == "PostToolUse"
+    assert "**Odylith Observation:** Codex kept the live intervention lane." in payload["systemMessage"]
+    assert "Odylith Assist:" not in payload["systemMessage"]
     events = host_dirty_checkpoint.read_dirty_events(
         repo_root=tmp_path,
         host_family="codex",

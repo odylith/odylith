@@ -374,10 +374,11 @@ def test_compass_and_radar_target_release_cards_show_labeled_release_version(bro
     assert compass_release_label == "TARGET RELEASE"
     assert compass_release == current_release_label
     assert compass.locator(".stat .kpi-label", has_text="NEXT RELEASE").count() == 0
-    assert compass.locator("#release-groups .execution-wave-section").count() >= 2
+    assert compass.locator("#release-groups .execution-wave-section").count() == 1
     release_targets_text = compass.locator("#release-groups").inner_text().strip()
     assert "Target Release" in release_targets_text
     assert current_release_label in release_targets_text
+    assert "0.1.12" not in release_targets_text
     assert "release target across active workstreams." in release_targets_text
 
     page.locator("#tab-radar").click()

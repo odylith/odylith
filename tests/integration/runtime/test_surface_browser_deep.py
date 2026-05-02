@@ -452,6 +452,14 @@ class _CompassProvider:
 def _write_fixture_current_release_assignments(fixture_root, *workstream_ids: str) -> None:  # noqa: ANN001
     releases_root = fixture_root / "odylith" / "radar" / "source" / "releases"
     releases_root.mkdir(parents=True, exist_ok=True)
+    registry_path = releases_root / "releases.v1.json"
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    registry["aliases"] = {"current": "release-0-1-11", "next": "release-0-1-11"}
+    for release in registry.get("releases", []):
+        if str(release.get("release_id", "")).strip() == "release-0-1-11":
+            release["status"] = "active"
+            release["shipped_utc"] = ""
+    registry_path.write_text(json.dumps(registry, indent=2) + "\n", encoding="utf-8")
     events_path = releases_root / "release-assignment-events.v1.jsonl"
     rows = [
         {

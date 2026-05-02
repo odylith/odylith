@@ -14,8 +14,9 @@ schemas expose ``PostToolUse`` for ``Bash`` only; native desktop/app tool
 payloads can still be parsed by this module in tests or manual fallback
 commands, but they are not claimed as automatically hook-dispatched.
 
-The hook always exits 0 and stays silent. Stop-time settlement emits a compact
-fail-soft ``systemMessage`` only when a deferred refresh is skipped or fails.
+The hook always exits 0. It records deferred governance work cheaply, then
+emits only the already-earned live Observation/Proposal payload when the
+intervention engine has one. Heavy governance refresh still settles at Stop.
 """
 
 from __future__ import annotations
@@ -738,6 +739,40 @@ def record_deferred_checkpoint_event(
     )
 
 
+def _codex_post_bash_payload(
+    *,
+    project_dir: Path,
+    command: str,
+    session_id: str,
+) -> dict[str, Any]:
+    bundle = _post_bash_bundle(
+        project_dir=project_dir,
+        command=command,
+        session_id=session_id,
+    )
+    if not bundle:
+        return {}
+    developer_context = host_surface_runtime.render_developer_context(
+        bundle,
+        markdown=True,
+        include_proposal=True,
+        include_closeout=False,
+    )
+    visible_intervention = host_surface_runtime.render_visible_live_intervention(
+        bundle,
+        markdown=True,
+        include_proposal=True,
+    )
+    system_message = host_surface_runtime.compose_checkpoint_system_message(
+        live_intervention=visible_intervention,
+    )
+    return host_surface_runtime.codex_post_tool_payload(
+        developer_context=developer_context,
+        system_message=system_message,
+        include_assist_in_visible_fallback=False,
+    )
+
+
 def settle_deferred_checkpoint_events(
     *,
     project_dir: Path | str,
@@ -785,6 +820,13 @@ def main(argv: list[str] | None = None) -> int:
         command=command,
         session_id=session_id,
     )
+    payload = _codex_post_bash_payload(
+        project_dir=project_dir,
+        command=command,
+        session_id=session_id,
+    )
+    if payload:
+        print(json.dumps(payload))
     return 0
 
 

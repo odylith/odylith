@@ -4,6 +4,11 @@
       return Number.isFinite(numericValue) ? numericValue : null;
     }
 
+    function compassExecutionProgramVisibleByDefault(program) {
+      if (!program || typeof program !== "object") return false;
+      return Number(program.active_wave_count || 0) > 0;
+    }
+
     function renderExecutionWaves(payload, state) {
       const host = document.getElementById("execution-waves-host");
       if (!host) return;
@@ -23,8 +28,22 @@
         ? String(state.workstream || "")
         : "";
       const disclosureGroup = "programs";
-      const scopedWaveView = executionWaveEntriesForScope(payload, scopedWorkstream);
+      const visiblePrograms = scopedWorkstream
+        ? programs
+        : programs.filter(compassExecutionProgramVisibleByDefault);
+      const scopedWaveView = scopedWorkstream
+        ? executionWaveEntriesForScope(payload, scopedWorkstream)
+        : {
+          entries: visiblePrograms.map((program) => ({ program, context: null })),
+          scopedContexts: [],
+          scopedUmbrellaProgram: null,
+          hasRelevantScope: false,
+        };
       if (scopedWorkstream && !scopedWaveView.hasRelevantScope) {
+        clearHost();
+        return;
+      }
+      if (!scopedWaveView.entries.length) {
         clearHost();
         return;
       }
