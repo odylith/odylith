@@ -40,8 +40,11 @@ _PROMPT_VISIBLE_ASSIST_MARKDOWN = (
 _PROMPT_VISIBLE_ASSIST_PLAIN = (
     "Odylith Assist: visibility feedback noted; this line is deliberately shown in chat."
 )
-_PROMPT_FIRST_RECEIPT = (
-    "Odylith prompt-first receipt: the host hook ran before assistant work. "
+_PROMPT_FIRST_FALLBACK = (
+    "Odylith prompt-start substrate: alignment unavailable; keep the prompt Odylith-first, "
+    "but do not claim full engine coverage without a fresh status check."
+)
+_PROMPT_FIRST_QUIET_SUFFIX = (
     "No live Odylith note earned; keep chat quiet unless a pending Odylith block needs visible recovery."
 )
 
@@ -54,6 +57,89 @@ def _alignment_mapping(alignment: Mapping[str, Any], key: str) -> Mapping[str, A
 def _alignment_list(alignment: Mapping[str, Any], key: str) -> list[Any]:
     value = alignment.get(key)
     return value if isinstance(value, list) else []
+
+
+def _compact_string(value: Any, *, fallback: str = "") -> str:
+    return prompt_signal_runtime.normalize_string(value) or fallback
+
+
+def _format_substrate_alignment(
+    alignment: Mapping[str, Any],
+    *,
+    prefix: str,
+    suffix: str = "",
+) -> str:
+    packet = _alignment_mapping(alignment, "context_packet")
+    runtime_summary = _alignment_mapping(packet, "runtime_surface_summary")
+    execution = _alignment_mapping(alignment, "execution_engine_summary")
+    visibility = _alignment_mapping(alignment, "visibility_summary")
+    tribunal = _alignment_mapping(alignment, "tribunal_summary")
+    proof = _alignment_mapping(alignment, "alignment_proof")
+
+    packet_kind = _compact_string(packet.get("packet_kind"), fallback="unknown")
+    packet_state = _compact_string(packet.get("packet_state"), fallback="unknown")
+    memory_backend = _compact_string(
+        runtime_summary.get("memory_backend_label"),
+        fallback=_compact_string(runtime_summary.get("memory_status"), fallback="unavailable"),
+    )
+    memory_state = _compact_string(runtime_summary.get("memory_standardization_state"))
+    memory = f"{memory_backend} ({memory_state})" if memory_state else memory_backend
+    execution_mode = _compact_string(execution.get("execution_engine_mode"), fallback="unavailable")
+    execution_next = _compact_string(execution.get("execution_engine_next_move"), fallback="n/a")
+    execution_outcome = _compact_string(execution.get("execution_engine_outcome"))
+    execution_text = f"{execution_mode}/{execution_next}"
+    if execution_outcome:
+        execution_text = f"{execution_text} ({execution_outcome})"
+    delivery = _compact_string(visibility.get("chat_visible_proof"), fallback="unproven_this_session")
+    proof_status = _compact_string(proof.get("status"), fallback="unknown")
+    missing_lanes = [
+        _compact_string(value)
+        for value in _alignment_list(proof, "missing_required_lanes")
+        if _compact_string(value)
+    ]
+    covered_lanes = [
+        _compact_string(value)
+        for value in _alignment_list(proof, "covered_lanes")[:8]
+        if _compact_string(value)
+    ]
+    tribunal_state = "active" if tribunal else "quiet"
+    parts = [
+        f"context={packet_kind}/{packet_state}",
+        f"memory={memory}",
+        f"execution={execution_text}",
+        f"tribunal={tribunal_state}",
+        f"delivery={delivery}",
+        f"proof={proof_status}",
+    ]
+    if covered_lanes:
+        parts.append("lanes=" + ",".join(covered_lanes))
+    if missing_lanes:
+        parts.append("missing=" + ",".join(missing_lanes))
+    rendered = f"{prefix}: " + "; ".join(parts) + "."
+    suffix_text = _compact_string(suffix)
+    return f"{rendered} {suffix_text}".strip() if suffix_text else rendered
+
+
+def _host_alignment_context(
+    *,
+    repo_root: Path | str,
+    host_family: str,
+    turn_phase: str,
+    prompt_excerpt: str = "",
+    session_id: str = "",
+) -> Mapping[str, Any]:
+    from odylith.runtime.intervention_engine import alignment_context
+
+    try:
+        return alignment_context.build_host_alignment_context(
+            repo_root=repo_root,
+            host_family=host_family,
+            turn_phase=turn_phase,
+            session_id=session_id,
+            prompt_excerpt=prompt_excerpt,
+        )
+    except Exception:
+        return {}
 
 
 def join_sections(*values: Any) -> str:
@@ -87,14 +173,58 @@ def prompt_needs_live_bundle(*, prompt: Any, bundle_override: Mapping[str, Any] 
     return prompt_signal_runtime.has_prompt_intervention_signal(prompt)
 
 
-def prompt_first_receipt_context(*, prompt: Any) -> str:
-    """Return the cheap Odylith-first receipt for low-signal prompt hooks."""
+def prompt_first_receipt_context(
+    *,
+    prompt: Any,
+    repo_root: Path | str = ".",
+    host_family: str = "",
+    session_id: str = "",
+) -> str:
+    """Return a low-latency prompt-start substrate proof for quiet prompts."""
 
     if suppress_prompt_live_narration(prompt=prompt):
         return ""
-    if not prompt_signal_runtime.normalize_string(prompt):
+    normalized_prompt = prompt_signal_runtime.normalize_string(prompt)
+    if not normalized_prompt:
         return ""
-    return _PROMPT_FIRST_RECEIPT
+    alignment = _host_alignment_context(
+        repo_root=repo_root,
+        host_family=host_family or "unknown",
+        turn_phase="prompt_submit",
+        prompt_excerpt=normalized_prompt,
+        session_id=session_id,
+    )
+    if not alignment:
+        return f"{_PROMPT_FIRST_FALLBACK} {_PROMPT_FIRST_QUIET_SUFFIX}"
+    return _format_substrate_alignment(
+        alignment,
+        prefix="Odylith prompt-start substrate",
+        suffix=_PROMPT_FIRST_QUIET_SUFFIX,
+    )
+
+
+def session_start_substrate_context(
+    *,
+    repo_root: Path | str,
+    host_family: str,
+    session_id: str = "",
+) -> str:
+    """Return the compact SessionStart substrate proof without shelling out."""
+
+    alignment = _host_alignment_context(
+        repo_root=repo_root,
+        host_family=host_family,
+        turn_phase="session_start",
+        prompt_excerpt="session start",
+        session_id=session_id,
+    )
+    if not alignment:
+        return "Odylith startup substrate: alignment unavailable; use the next anchored prompt for full grounding."
+    return _format_substrate_alignment(
+        alignment,
+        prefix="Odylith startup substrate",
+        suffix="Full grounding stays automatic on anchored prompts; no manual startup command is required.",
+    )
 
 
 def preferred_live_replay_markdown(

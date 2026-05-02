@@ -49,7 +49,12 @@ def render_prompt_bundle_payload(
     if not refs and not host_intervention_support.prompt_needs_live_bundle(prompt=prompt):
         if suppress_prompt_first_receipt:
             return {}
-        receipt = host_intervention_support.prompt_first_receipt_context(prompt=prompt)
+        receipt = host_intervention_support.prompt_first_receipt_context(
+            prompt=prompt,
+            repo_root=repo_root,
+            host_family="claude",
+            session_id=session_id,
+        )
         return _cheap_bundle_payload(additional_context=receipt) if receipt else {}
 
     from odylith.runtime.intervention_engine import host_surface_runtime

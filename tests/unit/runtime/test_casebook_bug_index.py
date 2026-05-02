@@ -123,6 +123,36 @@ def test_sync_casebook_bug_index_backfills_compact_casebook_metadata(tmp_path: P
     assert "- Status: FixedPendingRelease" in text
 
 
+def test_sync_casebook_bug_index_groups_terminal_statuses_with_closed_bugs(tmp_path: Path) -> None:
+    bug_root = tmp_path / "odylith" / "casebook" / "bugs"
+    bug_root.mkdir(parents=True, exist_ok=True)
+    _write_bug(
+        bug_root / "2026-03-26-fixed-pending-bug.md",
+        bug_id="CB-001",
+        status="FixedPendingRelease",
+        created="2026-03-26",
+        severity="P1",
+        components="tooling",
+    )
+    _write_bug(
+        bug_root / "2026-03-27-open-bug.md",
+        bug_id="CB-002",
+        status="Open",
+        created="2026-03-27",
+        severity="P1",
+        components="tooling",
+    )
+
+    index_path = sync_casebook_bug_index.sync_casebook_bug_index(repo_root=tmp_path)
+    text = index_path.read_text(encoding="utf-8")
+    open_section = text.split("## Open Bugs", 1)[1].split("## Closed Bugs", 1)[0]
+    closed_section = text.split("## Closed Bugs", 1)[1]
+
+    assert "CB-002" in open_section
+    assert "CB-001" not in open_section
+    assert "CB-001" in closed_section
+
+
 def test_sync_casebook_bug_index_collapses_duplicate_casebook_type_metadata(tmp_path: Path) -> None:
     bug_root = tmp_path / "odylith" / "casebook" / "bugs"
     bug_root.mkdir(parents=True, exist_ok=True)

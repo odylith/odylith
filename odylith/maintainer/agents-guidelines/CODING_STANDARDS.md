@@ -81,6 +81,13 @@
   pass is incomplete.
 - Do not keep host-mirror files near-identical when a shared helper, shared
   renderer, or shared formatter would remove the duplicated control flow.
+- In dev-maintainer lane, do not encode templatized conversations, canned
+  narration, or patterned voice rails in maintainer-owned Odylith product
+  surfaces. Prompts, hooks, renderers, tests, fixtures, skills, docs, and
+  governance generators must preserve live narration assembled from current
+  evidence. Tests may pin labels, schemas, evidence use, and anti-mechanical
+  constraints, but must not force one canned sentence shape or reusable
+  conversation script.
 - Do not leave giant renderers, payload builders, routers, or score engines
   phase-mixed when a real owner can separate data prep, view model,
   template/render, or gather/score/decide stages.

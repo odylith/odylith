@@ -13,6 +13,37 @@ from odylith.runtime.surfaces import claude_host_prompt_teaser
 from odylith.runtime.surfaces import host_intervention_support
 
 
+def _prompt_substrate_alignment(**_: object) -> dict[str, object]:
+    return {
+        "context_packet": {
+            "packet_kind": "host_intervention_context",
+            "packet_state": "observing",
+            "runtime_surface_summary": {
+                "memory_backend_label": "Lance / Tantivy",
+                "memory_standardization_state": "standardized",
+            },
+        },
+        "execution_engine_summary": {
+            "execution_engine_mode": "explore",
+            "execution_engine_next_move": "explore.narrow_scope",
+            "execution_engine_outcome": "admit",
+        },
+        "visibility_summary": {"chat_visible_proof": "unproven_this_session"},
+        "tribunal_summary": {},
+        "alignment_proof": {
+            "status": "quiet",
+            "covered_lanes": [
+                "context_engine",
+                "execution_engine",
+                "intervention_engine",
+                "delivery",
+                "memory_substrate",
+            ],
+            "missing_required_lanes": [],
+        },
+    }
+
+
 def test_render_prompt_context_resolves_first_anchor_via_override() -> None:
     payload = {
         "target_resolution": {
@@ -335,15 +366,22 @@ def test_main_emits_prompt_first_receipt_for_low_signal_prompt_without_bundle(
         "build_conversation_bundle",
         _unexpected_bundle,
     )
+    monkeypatch.setattr(
+        host_intervention_support.alignment_context,
+        "build_host_alignment_context",
+        _prompt_substrate_alignment,
+    )
 
     exit_code = claude_host_prompt_context.main(["--repo-root", str(tmp_path)])
 
     assert exit_code == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
-    assert payload["hookSpecificOutput"]["additionalContext"].startswith(
-        "Odylith prompt-first receipt:"
-    )
+    additional_context = payload["hookSpecificOutput"]["additionalContext"]
+    assert additional_context.startswith("Odylith prompt-start substrate:")
+    assert "memory=Lance / Tantivy (standardized)" in additional_context
+    assert "execution=explore/explore.narrow_scope (admit)" in additional_context
+    assert "lanes=context_engine,execution_engine,intervention_engine,delivery,memory_substrate" in additional_context
     assert "systemMessage" not in payload
 
 
@@ -359,6 +397,11 @@ def test_prompt_bundle_emits_prompt_first_receipt_for_low_signal_prompt(
         "build_conversation_bundle",
         _unexpected_bundle,
     )
+    monkeypatch.setattr(
+        host_intervention_support.alignment_context,
+        "build_host_alignment_context",
+        _prompt_substrate_alignment,
+    )
 
     payload = claude_host_prompt_bundle.render_prompt_bundle_payload(
         repo_root=tmp_path,
@@ -367,9 +410,10 @@ def test_prompt_bundle_emits_prompt_first_receipt_for_low_signal_prompt(
     )
 
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
-    assert payload["hookSpecificOutput"]["additionalContext"].startswith(
-        "Odylith prompt-first receipt:"
-    )
+    additional_context = payload["hookSpecificOutput"]["additionalContext"]
+    assert additional_context.startswith("Odylith prompt-start substrate:")
+    assert "memory=Lance / Tantivy (standardized)" in additional_context
+    assert "execution=explore/explore.narrow_scope (admit)" in additional_context
     assert "systemMessage" not in payload
 
 

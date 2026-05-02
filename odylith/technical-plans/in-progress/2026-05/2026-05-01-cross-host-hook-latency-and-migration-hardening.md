@@ -24,6 +24,9 @@ Assumptions:
   governed refresh evidence are product features, not optional debug output.
 - Direct-dispatch host hooks remain the reliable fallback until a long-lived
   hook daemon is separately designed, secured, and proven.
+- Low-signal prompt and SessionStart fast paths must still read the compact
+  alignment substrate: Context Engine packet state, memory backend, Execution
+  Engine decision, delivery visibility, Tribunal state, and proof status.
 - Legacy consumer Casebook records may be missing newer metadata fields and
   must migrate before stricter v0.1.13 validation runs.
 
@@ -69,6 +72,9 @@ Related Bugs:
       not part of its project hook contract.
 - [x] Hardening Casebook metadata needs legacy migration before strict
       validation, otherwise repair and upgrade can strand older repos.
+- [x] A prompt hook that only proves "the hook ran" is not Odylith-first enough;
+      the cheap path must still prove the substrate handshake without building
+      the full conversation/intervention bundle.
 
 ## Must-Ship
 - [x] Add shared prompt route locks so help/show/capabilities prompts bypass
@@ -81,6 +87,12 @@ Related Bugs:
       governed refresh work during Stop or the next grounding cycle.
 - [x] Preserve automatic context/intervention semantics with focused parity
       tests for hidden context, visible teaser output, and route locks.
+- [x] Replace bare low-signal prompt receipts and manual SessionStart fallback
+      copy with compact substrate summaries covering context, memory, execution,
+      delivery, Tribunal, and proof lanes.
+- [x] Seed host-launched hooks with context-engine workspace-Python and
+      background-autospawn defaults so warm daemon reuse is available without
+      changing the public hook command contract.
 - [x] Enforce Casebook single-word Status and Type metadata in validation,
       capture, projection, dashboard rendering, and migration backfills.
 - [x] Mark explicit-only Claude workflow skills as slash-invocable without
@@ -121,9 +133,27 @@ Related Bugs:
   - [x] Mitigation: Explicit-only flags are limited to manual workflow skills;
         tests assert automatic context and bug-capture skills remain
         model-invokable.
+- [x] Risk: Low-signal prompt optimization could bypass memory, Execution
+      Engine, Tribunal, or intervention alignment.
+  - [x] Mitigation: The quiet path now builds the compact local alignment
+        substrate and tests assert the emitted context carries memory,
+        execution, and lane-proof evidence without constructing the full
+        conversation bundle.
 
 ## Validation
 - [x] `PYTHONPATH=src pytest -q tests/unit/runtime/test_claude_host_prompt_context.py tests/unit/runtime/test_codex_host_post_bash_checkpoint.py tests/unit/runtime/test_codex_host_stop_summary.py tests/unit/runtime/test_casebook_bug_index.py tests/unit/runtime/test_host_runtime_contract.py tests/unit/runtime/test_claude_cli_capabilities.py tests/unit/install/test_claude_effective_settings.py tests/unit/runtime/test_claude_host_compatibility.py tests/unit/test_claude_host_cli.py tests/unit/test_cli_audit.py tests/unit/install/test_codex_project_assets.py tests/unit/runtime/test_source_bundle_mirror.py tests/unit/runtime/test_hygiene.py tests/integration/install/test_manager.py::test_doctor_bundle_repair_backfills_legacy_casebook_bug_ids tests/integration/install/test_manager.py::test_upgrade_same_version_backfills_legacy_casebook_bug_ids tests/integration/install/test_manager.py::test_consumer_upgrade_backfills_legacy_casebook_bug_ids_during_runtime_activation`
+- [x] `PYTHONPATH=src ODYLITH_BROWSER_FAILURE_SCREENSHOTS=.odylith/browser-failures .venv/bin/python -m pytest -q tests/integration/runtime/test_*browser*.py` (`182 passed, 1 skipped`)
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_odylith_reasoning.py tests/unit/runtime/test_compass_standup_brief_maintenance.py tests/unit/runtime/test_compass_refresh_wait_settlement.py tests/unit/runtime/test_compass_refresh_runtime.py tests/unit/runtime/test_render_compass_dashboard.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_validate_component_registry_contract.py tests/unit/runtime/test_component_registry_intelligence.py tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_casebook_bug_index.py tests/unit/runtime/test_render_casebook_dashboard.py tests/unit/install/test_host_worktree_launcher.py tests/unit/runtime/test_codex_host_prompt_context.py tests/unit/runtime/test_claude_host_prompt_context.py tests/unit/runtime/test_codex_host_session_brief.py tests/unit/runtime/test_claude_host_session_brief.py tests/unit/runtime/test_codex_host_post_bash_checkpoint.py tests/unit/runtime/test_codex_host_stop_summary.py tests/unit/runtime/test_host_runtime_contract.py tests/unit/runtime/test_claude_cli_capabilities.py tests/unit/install/test_claude_effective_settings.py tests/unit/runtime/test_claude_host_compatibility.py tests/unit/test_claude_host_cli.py tests/unit/test_cli_audit.py tests/unit/install/test_codex_project_assets.py tests/unit/runtime/test_source_bundle_mirror.py` (`588 passed`)
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/integration/install/test_manager.py::test_doctor_bundle_repair_backfills_legacy_casebook_bug_ids tests/integration/install/test_manager.py::test_upgrade_same_version_backfills_legacy_casebook_bug_ids tests/integration/install/test_manager.py::test_consumer_upgrade_backfills_legacy_casebook_bug_ids_during_runtime_activation` (`3 passed`)
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_source_bundle_mirror.py tests/unit/install/test_codex_project_assets.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_component_registry_intelligence.py tests/unit/runtime/test_casebook_bug_index.py tests/unit/runtime/test_compass_standup_brief_maintenance.py tests/unit/runtime/test_compass_refresh_wait_settlement.py` (`140 passed`)
+- [x] `PYTHONPATH=src .venv/bin/python -m odylith.cli release migration-gate --repo-root . --target-version 0.1.13`
+- [x] `PYTHONPATH=src .venv/bin/python -m odylith.cli validate guidance-behavior --repo-root .`
+- [x] `PYTHONPATH=src .venv/bin/python -m odylith.cli validate discipline --repo-root .`
+- [x] `PYTHONPATH=src .venv/bin/python -m odylith.cli validate self-host-posture --repo-root . --mode local-runtime`
+- [x] `PYTHONPATH=src .venv/bin/python -m odylith.cli codex intervention-status --repo-root .`
+- [x] `PYTHONPATH=src .venv/bin/python -m odylith.cli claude intervention-status --repo-root .`
+- [x] `PYTHONPATH=src .venv/bin/python -m odylith.cli codex visible-intervention --repo-root . --phase prompt_submit --prompt "I do not think it is working"`
+- [x] `PYTHONPATH=src .venv/bin/python -m odylith.cli claude visible-intervention --repo-root . --phase prompt_submit --prompt "I do not think it is working"`
 - [x] `./.odylith/bin/odylith casebook validate --repo-root .`
 - [x] `./.odylith/bin/odylith validate version-truth --repo-root .`
 - [x] `./.odylith/bin/odylith validate backlog-contract --repo-root .`

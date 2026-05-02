@@ -1000,6 +1000,41 @@ def test_run_pending_request_records_global_provider_unavailable_and_patches_run
     assert brief["diagnostics"]["next_retry_utc"] == entry["next_retry_utc"]
 
 
+def test_record_result_leaves_immediate_retry_when_provider_ladder_can_advance() -> None:
+    state: dict[str, object] = {}
+
+    recorded = maintenance._record_result(  # noqa: SLF001
+        state=state,
+        window_key="24h",
+        fingerprint="global-fp",
+        status="failed",
+        source="unavailable",
+        diagnostics={
+            "provider": "codex-cli",
+            "provider_model": "gpt-5.3-codex-spark",
+            "provider_failure_code": "credits_exhausted",
+            "provider_failure_detail": "Switch to another model now.",
+        },
+        immediate_retry=True,
+    )
+
+    delay = maintenance._pending_request_delay_seconds(  # noqa: SLF001
+        request={
+            "global": {
+                "24h": {
+                    "fingerprint": "global-fp",
+                    "fact_packet": {"scope_id": "global-24h"},
+                }
+            },
+            "scoped": {},
+        },
+        state_entries=dict(state["entries"]),  # type: ignore[index]
+    )
+
+    assert "next_retry_utc" not in recorded
+    assert delay == 0.0
+
+
 def test_stamp_request_runtime_input_fingerprint_patches_current_runtime_from_existing_failure_state(
     tmp_path: Path,
 ) -> None:
@@ -1093,6 +1128,89 @@ def test_stamp_request_runtime_input_fingerprint_patches_current_runtime_from_ex
     assert runtime_payload["standup_brief"]["24h"]["diagnostics"]["reason"] == "provider_error"
     assert runtime_payload["standup_brief"]["24h"]["diagnostics"]["provider_failure_code"] == "provider_error"
     assert runtime_payload["standup_brief"]["24h"]["diagnostics"]["next_retry_utc"] == "2026-04-09T00:21:00Z"
+
+
+def test_stamp_request_runtime_input_fingerprint_patches_terminal_skipped_state_without_request(
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path
+    current_json_path = repo_root / "odylith/compass/runtime/current.v1.json"
+    current_js_path = repo_root / "odylith/compass/runtime/current.v1.js"
+    current_json_path.parent.mkdir(parents=True, exist_ok=True)
+    current_json_path.write_text(
+        json.dumps(
+            {
+                "generated_utc": "2026-04-09T00:00:00Z",
+                "runtime_contract": {"input_fingerprint": "runtime-fp"},
+                "standup_brief": {
+                    "24h": {
+                        **_brief(source="unavailable", status="unavailable"),
+                        "fingerprint": "global-fp",
+                        "diagnostics": {"reason": "provider_deferred"},
+                    }
+                },
+                "standup_brief_scoped": {
+                    "24h": {
+                        "B-141": {
+                            **_brief(source="unavailable", status="unavailable"),
+                            "fingerprint": "scoped-fp",
+                            "diagnostics": {"reason": "provider_deferred"},
+                        }
+                    }
+                },
+                "digest": {"24h": []},
+                "digest_scoped": {"24h": {"B-141": []}},
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    current_js_path.write_text("window.__ODYLITH_COMPASS_RUNTIME__ = {};\n", encoding="utf-8")
+
+    state_path = maintenance.maintenance_state_path(repo_root=repo_root)
+    state_path.parent.mkdir(parents=True, exist_ok=True)
+    state_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "entries": {
+                    "global:24h": {
+                        "fingerprint": "global-fp",
+                        "status": "skipped",
+                        "diagnostics": {
+                            "reason": "skipped_not_worth_calling",
+                            "provider_decision": "skipped_not_worth_calling",
+                        },
+                    },
+                    "scoped:24h:B-141": {
+                        "fingerprint": "scoped-fp",
+                        "status": "skipped",
+                        "diagnostics": {
+                            "reason": "skipped_not_worth_calling",
+                            "provider_decision": "skipped_not_worth_calling",
+                        },
+                    }
+                },
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    maintenance.stamp_request_runtime_input_fingerprint(
+        repo_root=repo_root,
+        runtime_input_fingerprint="runtime-fp",
+    )
+
+    updated_payload = json.loads(current_json_path.read_text(encoding="utf-8"))
+    brief = updated_payload["standup_brief"]["24h"]
+    scoped_brief = updated_payload["standup_brief_scoped"]["24h"]["B-141"]
+    assert brief["diagnostics"]["reason"] == "skipped_not_worth_calling"
+    assert "provider deferred" not in json.dumps(brief).lower()
+    assert scoped_brief["diagnostics"]["reason"] == "skipped_not_worth_calling"
+    assert "provider deferred" not in json.dumps(scoped_brief).lower()
 
 
 def test_run_pending_request_preserves_stamped_runtime_input_fingerprint_when_rewriting_request(

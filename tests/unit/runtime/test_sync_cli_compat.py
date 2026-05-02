@@ -807,7 +807,7 @@ def test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh(tm
     monkeypatch.setattr(sync_workstream_artifacts, "_use_runtime_fast_path", lambda _mode: False)
     monkeypatch.setattr(sync_workstream_artifacts, "_run_command", _fake_run_command)
     monkeypatch.setattr(
-        sync_workstream_artifacts.compass_refresh_runtime,
+        sync_workstream_artifacts.compass_dashboard_refresh_inputs.compass_refresh_runtime,
         "run_refresh",
         lambda **kwargs: compass_calls.append(dict(kwargs))
         or {
@@ -884,7 +884,7 @@ def test_dashboard_refresh_bootstraps_upgrade_residue_before_shell_render(
 
     monkeypatch.setattr(sync_workstream_artifacts, "_use_runtime_fast_path", lambda _mode: False)
     monkeypatch.setattr(sync_workstream_artifacts, "_run_command", _fake_run_command)
-    monkeypatch.setattr(sync_workstream_artifacts.compass_refresh_runtime, "run_refresh", _fake_compass_refresh)
+    monkeypatch.setattr(sync_workstream_artifacts.compass_dashboard_refresh_inputs.compass_refresh_runtime, "run_refresh", _fake_compass_refresh)
     monkeypatch.setattr(
         render_tooling_dashboard.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
@@ -1631,7 +1631,7 @@ def test_dashboard_refresh_continues_after_surface_failure_and_returns_non_zero(
 
     monkeypatch.setattr(sync_workstream_artifacts, "_run_command", _fake_run_command)
     monkeypatch.setattr(
-        sync_workstream_artifacts.compass_refresh_runtime,
+        sync_workstream_artifacts.compass_dashboard_refresh_inputs.compass_refresh_runtime,
         "run_refresh",
         lambda **kwargs: {
             "rc": 1,
@@ -1670,7 +1670,7 @@ def test_dashboard_refresh_compass_waits_for_shared_engine_and_reports_failure(
         lambda **kwargs: (_ for _ in ()).throw(AssertionError("Compass compatibility path should not shell out directly")),
     )
     monkeypatch.setattr(
-        sync_workstream_artifacts.compass_refresh_runtime,
+        sync_workstream_artifacts.compass_dashboard_refresh_inputs.compass_refresh_runtime,
         "run_refresh",
         lambda **kwargs: refresh_calls.append(dict(kwargs))
         or {
@@ -1713,7 +1713,7 @@ def test_dashboard_refresh_compass_waits_for_terminal_success(tmp_path: Path, mo
         lambda **kwargs: (_ for _ in ()).throw(AssertionError("Compass compatibility path should not shell out directly")),
     )
     monkeypatch.setattr(
-        sync_workstream_artifacts.compass_refresh_runtime,
+        sync_workstream_artifacts.compass_dashboard_refresh_inputs.compass_refresh_runtime,
         "run_refresh",
         lambda **kwargs: refresh_calls.append(dict(kwargs))
         or {

@@ -124,7 +124,12 @@ def main(argv: list[str] | None = None) -> int:
         receipt = (
             ""
             if confirmed_events
-            else host_intervention_support.prompt_first_receipt_context(prompt=prompt)
+            else host_intervention_support.prompt_first_receipt_context(
+                prompt=prompt,
+                repo_root=args.repo_root,
+                host_family="codex",
+                session_id=session_id,
+            )
         )
         if receipt:
             sys.stdout.write(

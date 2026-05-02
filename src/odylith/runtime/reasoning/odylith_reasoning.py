@@ -547,7 +547,7 @@ def cheap_structured_reasoning_profile(
                 _CHEAP_STRUCTURED_MODEL_UNAVAILABLE_PATTERNS,
                 haystack=_normalized_failure_text(failure_detail),
             )
-        selected_model = ladder[0]
+        selected_model = model if model in ladder else ladder[0]
         if advance and prior_model in ladder:
             selected_model = ladder[min(ladder.index(prior_model) + 1, len(ladder) - 1)]
         return StructuredReasoningProfile(
@@ -570,6 +570,38 @@ def cheap_structured_reasoning_profile(
     if provider == "openai-compatible":
         return StructuredReasoningProfile(provider=provider, model=model, reasoning_effort="")
     return StructuredReasoningProfile(provider=provider, model=model, reasoning_effort="")
+
+
+def cheap_structured_reasoning_failure_can_advance(
+    *,
+    provider: str,
+    previous_model: str,
+    failure_code: str = "",
+    failure_detail: str = "",
+) -> bool:
+    """Return whether a local structured-reasoning failure has another cheap rung."""
+
+    provider_token = _normalize_provider(provider)
+    if provider_token == "codex-cli":
+        ladder = _CHEAP_STRUCTURED_CODEX_MODEL_LADDER
+    elif provider_token == "claude-cli":
+        ladder = _CHEAP_STRUCTURED_CLAUDE_MODEL_LADDER
+    else:
+        return False
+
+    prior_model = _normalize_local_provider_model(provider_token, previous_model)
+    if not prior_model:
+        return False
+    if prior_model not in ladder or ladder.index(prior_model) >= len(ladder) - 1:
+        return False
+
+    advance = str(failure_code or "").strip().lower() in _CHEAP_STRUCTURED_LADDER_ADVANCE_FAILURE_CODES
+    if not advance and failure_detail:
+        advance = _match_failure_pattern(
+            _CHEAP_STRUCTURED_MODEL_UNAVAILABLE_PATTERNS,
+            haystack=_normalized_failure_text(failure_detail),
+        )
+    return bool(advance)
 
 
 def _provider_system_prompt() -> str:
@@ -1384,6 +1416,7 @@ __all__ = [
     "StructuredReasoningProfile",
     "StructuredReasoningRequest",
     "build_reasoning_payload",
+    "cheap_structured_reasoning_failure_can_advance",
     "cheap_structured_reasoning_profile",
     "persisted_reasoning_config_payload",
     "provider_failure_metadata",

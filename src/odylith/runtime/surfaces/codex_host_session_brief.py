@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from odylith.runtime.surfaces import codex_host_shared
+from odylith.runtime.surfaces import host_intervention_support
 from odylith.runtime.surfaces import session_brief_refresh_queue
 
 _BRIEF_STALENESS_THRESHOLD_SECONDS = 4 * 60 * 60  # 4 hours
@@ -52,11 +53,14 @@ def render_codex_session_brief(
     startup_source = start_summary_override
     if not startup_source and (eager_start or _env_truthy("ODYLITH_HOOK_EAGER_START")):
         startup_source = codex_host_shared.start_summary(project_dir=repo_root)
-    startup = codex_host_shared.collapse_whitespace(startup_source, limit=240)
+    if not startup_source:
+        startup_source = host_intervention_support.session_start_substrate_context(
+            repo_root=repo_root,
+            host_family="codex",
+        )
+    startup = codex_host_shared.collapse_whitespace(startup_source, limit=480)
     if startup:
         lines.append(f"Startup: {startup}")
-    else:
-        lines.append("Startup: cached runtime fast path; run `odylith start` manually for full grounding.")
     return "\n".join(lines).rstrip()
 
 

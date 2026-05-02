@@ -700,6 +700,55 @@ def test_cheap_structured_reasoning_profile_advances_codex_ladder_after_budget_f
     assert profile.reasoning_effort == "medium"
 
 
+def test_cheap_structured_reasoning_failure_can_advance_until_last_rung() -> None:
+    assert odylith_reasoning.cheap_structured_reasoning_failure_can_advance(
+        provider="codex-cli",
+        previous_model="gpt-5.3-codex-spark",
+        failure_code="credits_exhausted",
+        failure_detail="Switch to another model now.",
+    )
+    assert not odylith_reasoning.cheap_structured_reasoning_failure_can_advance(
+        provider="codex-cli",
+        previous_model="gpt-5.4-mini",
+        failure_code="credits_exhausted",
+        failure_detail="Switch to another model now.",
+    )
+
+
+def test_cheap_structured_reasoning_profile_respects_advanced_codex_model(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    codex_bin = tmp_path / "bin" / "codex"
+    codex_bin.parent.mkdir(parents=True, exist_ok=True)
+    codex_bin.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    codex_bin.chmod(0o755)
+    monkeypatch.setattr(
+        odylith_reasoning.shutil,
+        "which",
+        lambda token: str(codex_bin) if token == "codex" else None,
+    )
+
+    profile = odylith_reasoning.cheap_structured_reasoning_profile(
+        odylith_reasoning.ReasoningConfig(
+            mode="auto",
+            provider="codex-cli",
+            model="gpt-5.3-codex",
+            base_url="",
+            api_key="",
+            scope_cap=5,
+            timeout_seconds=20.0,
+            codex_bin="codex",
+            claude_bin="claude",
+        ),
+        environ={"CODEX_THREAD_ID": "thread-1"},
+    )
+
+    assert profile.provider == "codex-cli"
+    assert profile.model == "gpt-5.3-codex"
+    assert profile.reasoning_effort == "medium"
+
+
 def test_cheap_structured_reasoning_profile_advances_claude_ladder_after_budget_failure(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

@@ -291,10 +291,24 @@ def test_normalize_workspace_activity_path_skips_retired_surface_modules(tmp_pat
         repo_root=tmp_path,
         token="src/odylith/runtime/surfaces/compass_standup_brief_batch.py",
     )
+    active_runtime_patch = registry._normalize_workspace_activity_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        token="src/odylith/runtime/surfaces/compass_standup_brief_runtime_patch.py",
+    )
 
     assert retired == ""
     assert retired_test == ""
     assert active == "src/odylith/runtime/surfaces/compass_standup_brief_batch.py"
+    assert active_runtime_patch == "src/odylith/runtime/surfaces/compass_standup_brief_runtime_patch.py"
+
+
+def test_normalize_workspace_activity_path_skips_sentinel_residue(tmp_path: Path) -> None:
+    normalized = registry._normalize_workspace_activity_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        token="src/odylith/runtime/surfaces/compass_standup_brief_sentinel.py",
+    )
+
+    assert normalized == ""
 
 
 def test_normalize_workspace_activity_path_skips_deindexed_missing_casebook_bug(tmp_path: Path) -> None:

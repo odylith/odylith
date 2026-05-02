@@ -1092,12 +1092,13 @@ def test_casebook_proof_control_panel_stays_pinned_to_the_selected_bug_lane(tmp_
     bug_root = fixture_root / "odylith" / "casebook" / "bugs"
     bug_root.mkdir(parents=True, exist_ok=True)
     (bug_root / "2026-04-08-proof-control-primary.md").write_text(
-        (
-            "# Proof Control Primary\n\n"
-            "- Bug ID: CB-999\n"
-            "- Severity: P1\n"
-            "- Reproducibility: High\n"
-            "- Status: Open\n"
+            (
+                "# Proof Control Primary\n\n"
+                "- Bug ID: CB-999\n"
+                "- Type: Product\n"
+                "- Severity: P1\n"
+                "- Reproducibility: High\n"
+                "- Status: Open\n"
             "- Components Affected: `src/odylith/runtime/governance/proof_state/resolver.py`\n"
             "- Linked Workstream: B-062\n"
             "- Proof Lane ID: casebook-proof-browser-primary\n"
@@ -1111,12 +1112,13 @@ def test_casebook_proof_control_panel_stays_pinned_to_the_selected_bug_lane(tmp_
         encoding="utf-8",
     )
     (bug_root / "2026-04-08-proof-control-secondary.md").write_text(
-        (
-            "# Proof Control Secondary\n\n"
-            "- Bug ID: CB-998\n"
-            "- Severity: P1\n"
-            "- Reproducibility: High\n"
-            "- Status: Open\n"
+            (
+                "# Proof Control Secondary\n\n"
+                "- Bug ID: CB-998\n"
+                "- Type: Product\n"
+                "- Severity: P1\n"
+                "- Reproducibility: High\n"
+                "- Status: Open\n"
             "- Components Affected: `src/odylith/runtime/governance/proof_state/resolver.py`\n"
             "- Linked Workstream: B-062\n"
             "- Proof Lane ID: casebook-proof-browser-secondary\n"
@@ -2638,12 +2640,12 @@ def test_compass_provider_deferred_warm_poll_only_rerenders_brief(tmp_path) -> N
                     statuses=("unavailable",),
                 )
 
-                program_section = compass.locator("#execution-waves-host .execution-wave-section").first
-                program_section.wait_for(timeout=15000)
-                if program_section.get_attribute("open") is None:
-                    program_section.locator("> summary").first.click()
-                program_section.evaluate("(node) => { node.dataset.codexWarmBriefProbe = '1'; }")
-                assert program_section.evaluate("(node) => node.dataset.codexWarmBriefProbe") == "1"
+                release_section = compass.locator("#release-groups-host .execution-wave-section").first
+                release_section.wait_for(timeout=15000)
+                if release_section.get_attribute("open") is None:
+                    release_section.locator("> summary").first.click()
+                release_section.evaluate("(node) => { node.dataset.odylithWarmBriefProbe = '1'; }")
+                assert release_section.evaluate("(node) => node.dataset.odylithWarmBriefProbe") == "1"
 
                 compass.locator("body").evaluate(
                     """() => {
@@ -2709,8 +2711,8 @@ def test_compass_provider_deferred_warm_poll_only_rerenders_brief(tmp_path) -> N
                 )
                 page.wait_for_timeout(250)
 
-                assert program_section.evaluate("(node) => node.dataset.codexWarmBriefProbe") == "1"
-                assert program_section.evaluate("(node) => node.hasAttribute('open')") is True
+                assert release_section.evaluate("(node) => node.dataset.odylithWarmBriefProbe") == "1"
+                assert release_section.evaluate("(node) => node.hasAttribute('open')") is True
                 assert "The live brief warmed successfully." in compass.locator("#digest-list").inner_text()
                 assert compass.locator("body").evaluate("() => window.__codexWarmBriefLoadRuntimeCalls__") == 1
 

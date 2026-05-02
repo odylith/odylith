@@ -412,6 +412,22 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.12:operator-cli-contracts:3f7f46e3c07b`,
   `migration-observer:0.1.12:browser-surfaces:48a6b76069b3`,
   `migration-observer:0.1.12:install-managed-assets:81225e1e602e`.
+- Cross-host prompt-first and Compass settlement hardening: v0.1.13 preserves
+  the Context Engine, memory substrate, execution handshake, Tribunal-backed
+  proof posture, and Intervention/Assist hidden context while reducing hot
+  hook latency through direct host dispatch and compact startup substrate
+  packets. Maintainer-only narration guidance remains confined to the
+  dev-maintainer subtree and is guarded from consumer-safe guidance, bundled
+  host contracts, install-generated guidance, and shared skills. Compass
+  dashboard refresh now settles provider-backed global standup briefs before
+  reporting success and can repair upgrade-residue inputs in place. Existing
+  consumer repos do not need repo-truth or data migration; upgrading installs
+  the regenerated host launcher, host prompt/session assets, refreshed
+  dashboards, and fixed Compass refresh runtime. Migration observer markers:
+  `migration-observer:0.1.13:guidance-and-skills:20383b041e00`,
+  `migration-observer:0.1.13:operator-cli-contracts:9d82eb895c46`,
+  `migration-observer:0.1.13:browser-surfaces:d2c7362d19c2`,
+  `migration-observer:0.1.13:install-managed-assets:81225e1e602e`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.

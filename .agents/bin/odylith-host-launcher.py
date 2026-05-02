@@ -24,6 +24,11 @@ _LAUNCHER_RELATIVE = Path(".odylith") / "bin" / "odylith"
 _BOOTSTRAP_RELATIVE = Path(".odylith") / "bin" / "odylith-bootstrap"
 _GUIDANCE_FILES = ("AGENTS.md", "CLAUDE.md")
 _ODYLITH_SCOPE_MARKER = "<!-- odylith-scope:start -->"
+_HOT_CONTEXT_ENV_DEFAULTS = {
+    "ODYLITH_CONTEXT_ENGINE_ALLOW_WORKSPACE_PYTHON": "1",
+    "ODYLITH_CONTEXT_ENGINE_ALLOW_BACKGROUND_AUTOSPAWN": "1",
+    "ODYLITH_CONTEXT_ENGINE_AUTOSPAWN_IDLE_TIMEOUT_SECONDS": "120",
+}
 
 
 def _resolve_repo_root(argv: Sequence[str], *, cwd: Path) -> Path:
@@ -163,6 +168,8 @@ def run(
             )
             return 1
         target = _repair_current_repo(repo_root=repo_root, launcher=peer) or peer
+    for name, value in _HOT_CONTEXT_ENV_DEFAULTS.items():
+        os.environ.setdefault(name, value)
     return exec_runner(target, command_argv, repo_root)
 
 

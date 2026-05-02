@@ -81,6 +81,13 @@ No transitional states. Do not replace one slop class with another.
 - Do not hide the same slop class in Codex-only or Claude-only project assets,
   hooks, prompt builders, command shims, config templates, or generated
   guidance.
+- In dev-maintainer lane, do not encode templatized conversations, canned
+  narration, or patterned voice rails in maintainer-owned Odylith product
+  surfaces. Prompts, hooks, renderers, tests, fixtures, skills, docs, and
+  governance generators must preserve live narration assembled from current
+  evidence. Tests may pin labels, schemas, evidence use, and anti-mechanical
+  constraints, but must not force one canned sentence shape or reusable
+  conversation script.
 - Do not leave giant renderers, payload builders, or routers phase-mixed when
   the pass can split them into data prep, view model, and template/render
   stages, or gather, score, and decide stages.

@@ -19,6 +19,7 @@ from zoneinfo import ZoneInfo
 from odylith.common.json_objects import load_json_object as _load_json
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import repo_path_resolver
+from odylith.runtime.governance import component_registry_activity_policy
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance import plan_progress
 from odylith.runtime.context_engine import odylith_context_engine_store
@@ -36,23 +37,9 @@ _CONVENTIONAL_COMMIT_PREFIX_RE = re.compile(
     r"^(?:feat|fix|chore|refactor|docs|test|perf|ci|build)(?:\([^)]+\))?!?:\s*",
     re.IGNORECASE,
 )
-_RETIRED_SURFACE_MARKER = "sen" "tinel"
+_RETIRED_SURFACE_MARKER = "sentinel"
 _RETIRED_SURFACE_LABEL = "retired control surface"
 _CASEBOOK_BUG_PATH_PREFIX = "odylith/casebook/bugs/"
-_UNIT_RUNTIME_TEST_PREFIX = "tests/unit/runtime/"
-_ACTIVE_SURFACE_MODULE_STEMS: frozenset[str] = frozenset(
-    {
-        "compass_standup_brief_batch",
-        "compass_standup_brief_maintenance",
-        "compass_standup_brief_narrator",
-        "compass_standup_brief_substrate",
-        "compass_standup_brief_voice_validation",
-        "tooling_dashboard_cheatsheet_presenter",
-        "tooling_dashboard_release_presenter",
-        "tooling_dashboard_shell_presenter",
-        "tooling_dashboard_welcome_presenter",
-    }
-)
 _GENERIC_TX_HEADLINE_RE = re.compile(
     r"^(?:"
     r"(?:edited|updated|modified|changed)\s+(?:\d+\s+)?files?"
@@ -849,30 +836,11 @@ def _should_skip_deleted_legacy_bug_path(
 
 
 def _contains_retired_surface_marker(text: str) -> bool:
-    token = str(text or "").strip().lower()
-    return bool(token) and _RETIRED_SURFACE_MARKER in token
-
-
-def _surface_module_stem_from_activity_path(path: str) -> str:
-    token = str(path or "").strip().replace("\\", "/").lower()
-    if token.startswith("src/odylith/runtime/surfaces/") and token.endswith(".py"):
-        return Path(token).stem
-    if token.startswith(_UNIT_RUNTIME_TEST_PREFIX) and token.endswith(".py"):
-        stem = Path(token).stem
-        if stem.startswith("test_"):
-            return stem.removeprefix("test_")
-    return ""
+    return component_registry_activity_policy.hides_retired_surface_marker(text)
 
 
 def _is_retired_surface_module_path(path: str) -> bool:
-    stem = _surface_module_stem_from_activity_path(path)
-    if not stem:
-        return False
-    governed_family = stem.startswith("compass_standup_brief_")
-    shell_presenter_family = stem.startswith("tooling_dashboard_") and stem.endswith("_presenter")
-    if not governed_family and not shell_presenter_family:
-        return False
-    return stem not in _ACTIVE_SURFACE_MODULE_STEMS
+    return component_registry_activity_policy.is_retired_surface_module_path(path)
 
 
 def _sanitize_retired_surface_text(text: str) -> str:

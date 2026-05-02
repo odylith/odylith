@@ -162,6 +162,9 @@ Odylith is a product repo, not a host repo.
   or historical material that cannot be rewritten.
 - When configuring local Git for this repo, use the `freedom-research`
   identity.
+- When using GitHub CLI keyring authentication in this repository, the
+  keyring-backed account must be `freedom-research`; do not run `gh`
+  operations here with a keyring login under any other account.
 - Git commit messages count as repo metadata under this rule. Do not add
   `Co-Authored-By:` (or any other trailer) for Claude, Claude Code,
   Anthropic, Codex, OpenAI, "Generated with ...", "Made with ...",

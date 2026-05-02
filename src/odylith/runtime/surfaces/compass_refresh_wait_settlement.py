@@ -27,6 +27,7 @@ _UNSETTLED_BRIEF_REASONS: frozenset[str] = frozenset(
         "rate_limited",
     }
 )
+_SETTLED_UNAVAILABLE_BRIEF_REASONS: frozenset[str] = frozenset({"skipped_not_worth_calling"})
 
 
 def unsettled_global_windows(*, repo_root: Path, force: bool = False) -> tuple[str, ...]:
@@ -50,6 +51,8 @@ def unsettled_global_windows(*, repo_root: Path, force: bool = False) -> tuple[s
         status = str(brief.get("status", "")).strip().lower()
         diagnostics = brief.get("diagnostics") if isinstance(brief.get("diagnostics"), Mapping) else {}
         reason = str(diagnostics.get("reason", "")).strip().lower()
+        if reason in _SETTLED_UNAVAILABLE_BRIEF_REASONS:
+            continue
         if reason in _UNSETTLED_BRIEF_REASONS:
             unsettled.append(str(window_key).strip())
             continue

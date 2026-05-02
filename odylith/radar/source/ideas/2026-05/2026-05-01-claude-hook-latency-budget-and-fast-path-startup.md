@@ -70,7 +70,7 @@ Developers using Odylith through Claude Code in consumer repos and the Odylith p
 Make Odylith feel native on Claude by enforcing a low-latency hook/startup budget, avoiding expensive prompt-turn work when no high-value intervention is available, and keeping show/help fast paths direct instead of fanning into broad tool calls.
 
 ## Proposed Solution
-Add host-general prompt and startup fast paths: low-signal prompt hooks return before building intervention alignment bundles, SessionStart uses cached runtime state by default instead of running `odylith start`, show/help/capability prompts stay locked to direct stdout routes, Claude prompt-submit work collapses into one prompt-bundle hook, Codex PostToolUse records dirty events and defers governed refresh to Stop-time settlement, and generated launchers dispatch host hook commands directly to baked runtime modules instead of importing the full `odylith.cli` dispatcher first.
+Add host-general prompt and startup fast paths: low-signal prompt hooks skip the full conversation bundle but still emit a compact substrate proof, SessionStart uses the same local alignment substrate instead of telling operators to run startup manually, show/help/capability prompts stay locked to direct stdout routes, Claude prompt-submit work collapses into one prompt-bundle hook, Codex PostToolUse records dirty events and defers governed refresh to Stop-time settlement, and generated launchers dispatch host hook commands directly to baked runtime modules with context-engine warm-daemon defaults.
 
 ## Scope
 - Define and land the bounded work for Claude hook latency budget and fast-path startup.
@@ -88,11 +88,11 @@ Add host-general prompt and startup fast paths: low-signal prompt hooks return b
 - No blocking dependency remains; the active technical plan carries the related bug and host-runtime scope.
 
 ## Success Metrics
-Prompt-submit and stop hooks stay under a documented local latency budget on warm Claude sessions; plain show/help/status prompts avoid startup fanout; tests cover low-signal prompt fast paths; release notes can cite measured before/after latency for Claude and Codex hook paths.
+Prompt-submit and stop hooks stay under a documented local latency budget on warm Claude sessions; plain show/help/status prompts avoid startup fanout; tests cover low-signal prompt fast paths with memory, execution, delivery, Tribunal, and proof evidence; release notes can cite measured before/after latency for Claude and Codex hook paths.
 
 ## Validation
 - 2026-05-01 local timing on the v0.1.13 source tree: low-signal direct hook modules returned empty in about 42-44 ms median for Claude prompt-context, Claude prompt-teaser, and Codex prompt-context; the full CLI fallback path dropped to about 106-116 ms median after lazy package imports.
-- Focused runtime/install validation covers Claude prompt-bundle hidden/visible parity, automatic route locks, Codex deferred dirty-event checkpointing, Stop-time governed refresh settlement, low-signal prompt gates, direct launcher dispatch, host parity, Casebook migration validation, and generated launcher syntax.
+- Focused runtime/install validation covers Claude prompt-bundle hidden/visible parity, automatic route locks, Codex deferred dirty-event checkpointing, Stop-time governed refresh settlement, substrate-backed low-signal prompt gates, direct launcher dispatch, host parity, Casebook migration validation, and generated launcher syntax.
 
 ## Rollout
 - Execute through the bound v0.1.13 technical plan and keep the first implementation wave focused on hook latency, prompt hot-path gating, launcher dispatch, and governed migration capture.
@@ -101,7 +101,7 @@ Prompt-submit and stop hooks stay under a documented local latency budget on war
 This slice is active enough that it should exist as explicit backlog truth now.
 
 ## Product View
-Claude should get the same grounded value without every prompt paying for heavy context, auto-memory, or intervention status work. The product needs explicit hot-path budgets, measured hook latency, and deterministic bypasses for low-signal prompts and stdout-clean command intents.
+Claude should get the same grounded value without every prompt paying for heavy context or full intervention-bundle work. The product needs explicit hot-path budgets, measured hook latency, compact substrate proofs for quiet prompts, and deterministic bypasses for stdout-clean command intents.
 
 ## Impacted Components
 - `odylith`
@@ -110,10 +110,10 @@ Claude should get the same grounded value without every prompt paying for heavy 
 - None decided yet; record interface changes once implementation is scoped.
 
 ## Migration/Compatibility
-- Existing consumer repos need no data migration. Upgrading installs the host-launcher preference fix, direct host-hook launcher dispatch, cached SessionStart behavior, prompt hot-path gating, and refreshed host guidance/bundle assets.
+- Existing consumer repos need no data migration. Upgrading installs the host-launcher preference fix, direct host-hook launcher dispatch, substrate-backed SessionStart behavior, prompt hot-path gating, context-engine warm-daemon defaults, and refreshed host guidance/bundle assets.
 
 ## Test Strategy
-- Unit tests cover low-signal Claude and Codex prompt hooks skipping bundle construction, host-intervention support staying lazy on low-signal prompts, Claude prompt-bundle route locks and visible teaser preservation, SessionStart using cached runtime state by default, direct show/help/capability route locks, launcher bootstrap fallback preference, Codex dirty-event settlement, and direct host-hook launcher dispatch.
+- Unit tests cover low-signal Claude and Codex prompt hooks skipping conversation-bundle construction while keeping substrate evidence, Claude prompt-bundle route locks and visible teaser preservation, SessionStart using substrate state by default, direct show/help/capability route locks, launcher bootstrap fallback preference, Codex dirty-event settlement, context-engine warm-daemon env defaults, and direct host-hook launcher dispatch.
 
 ## Open Questions
 - No blocking open question for lifecycle promotion; follow-up design work for a long-lived hook daemon remains deferred outside this release-critical slice.

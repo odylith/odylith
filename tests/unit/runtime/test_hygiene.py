@@ -159,6 +159,13 @@ ANTI_SLOP_KERNEL_ADOPTION = "partial shared-kernel adoption is still incomplete"
 ANTI_SLOP_TWO_PROOF_LAYERS = "fresh behavior proof for the touched slice and a fresh structural inventory for the claimed scope"
 ANTI_SLOP_BROWSER_MATRIX = "headless browser matrix"
 ANTI_SLOP_BROWSER_STATES = "normal, empty/fallback, and degraded or error states"
+ANTI_SLOP_NO_TEMPLATIZED_NARRATION = (
+    "In dev-maintainer lane, do not encode templatized conversations, canned narration, or patterned voice rails"
+)
+ANTI_SLOP_NO_TEMPLATIZED_NARRATION_LEAK = "templatized conversations, canned narration, or patterned voice rails"
+ANTI_SLOP_LIVE_NARRATION_TEST_BAR = (
+    "Tests may pin labels, schemas, evidence use, and anti-mechanical constraints, but must not force one canned sentence shape or reusable conversation script."
+)
 LEGACY_CONSUMER_CHATTER_FRAGMENTS = (
     "must ground in Odylith first",
     "Direct repo scan before Odylith grounding is a policy violation",
@@ -842,6 +849,42 @@ def test_anti_slop_contract_stays_explicit_across_guidance_surfaces() -> None:
         assert ANTI_SLOP_ALIAS_WALL in normalized.lower(), f"maintainer alias-wall bar drifted in {path.relative_to(ROOT)}"
         assert ANTI_SLOP_PHASE_OWNER in normalized, f"maintainer phase-owner decomposition bar drifted in {path.relative_to(ROOT)}"
         assert "consumer-safe guidance" in normalized, f"maintainer shared anti-slop propagation drifted in {path.relative_to(ROOT)}"
+
+
+def test_anti_slop_live_narration_rule_stays_dev_maintainer_only() -> None:
+    maintainer_paths = (
+        ROOT / "odylith" / "maintainer" / "AGENTS.md",
+        ROOT / "odylith" / "maintainer" / "agents-guidelines" / "CODING_STANDARDS.md",
+        ROOT / "odylith" / "maintainer" / "skills" / "fail-closed-code-hygiene" / "SKILL.md",
+    )
+    for path in maintainer_paths:
+        normalized = " ".join(path.read_text(encoding="utf-8").split())
+        assert ANTI_SLOP_NO_TEMPLATIZED_NARRATION in normalized, (
+            f"dev-maintainer live-narration rule drifted in {path.relative_to(ROOT)}"
+        )
+        assert ANTI_SLOP_LIVE_NARRATION_TEST_BAR in normalized, (
+            f"maintainer test bar for live narration drifted in {path.relative_to(ROOT)}"
+        )
+
+    consumer_safe_paths = (
+        ROOT / "odylith" / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md",
+        ROOT / "odylith" / "agents-guidelines" / "CODING_STANDARDS.md",
+        ROOT / "odylith" / "agents-guidelines" / "CODEX_HOST_CONTRACT.md",
+        ROOT / "odylith" / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md",
+        ROOT / "odylith" / "skills" / "odylith-code-hygiene-guard" / "SKILL.md",
+        ROOT / "src" / "odylith" / "install" / "agents.py",
+        ROOT / "src" / "odylith" / "install" / "bootstrap_assets.py",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CODING_STANDARDS.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CODEX_HOST_CONTRACT.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "odylith-code-hygiene-guard" / "SKILL.md",
+    )
+    for path in consumer_safe_paths:
+        normalized = " ".join(path.read_text(encoding="utf-8").split())
+        assert ANTI_SLOP_NO_TEMPLATIZED_NARRATION_LEAK not in normalized, (
+            f"dev-maintainer-only live-narration rule leaked into {path.relative_to(ROOT)}"
+        )
 
 
 def test_anti_slop_guidance_and_skill_bundle_assets_stay_synced() -> None:

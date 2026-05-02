@@ -3,6 +3,7 @@
 - Type: Product
 
 
+
 - Status: FixedPendingRelease
 
 - Created: 2026-05-01
@@ -42,13 +43,13 @@
 
 - Root Cause: Likely compounded cost across large guidance/context payloads, prompt/stop hook execution, startup fallback work, and show/help prompt paths that can shell out instead of using direct route locks.
 
-- Solution: Implement B-141 as a host-general latency slice: measure Claude and Codex hook/startup latency, enforce budgeted fast paths for low-signal and show/help/status prompts, keep heavy context/intervention work off routine turns unless current evidence earns it, collapse Claude prompt-submit work into one prompt-bundle path, defer Codex governed refresh work to Stop-time settlement, and have generated launchers dispatch baked host hook commands directly to runtime modules instead of importing the full CLI dispatcher first.
+- Solution: Implement B-141 as a host-general latency slice: measure Claude and Codex hook/startup latency, enforce budgeted fast paths for low-signal and show/help/status prompts, keep the compact alignment substrate active on quiet prompt and SessionStart lanes, collapse Claude prompt-submit work into one prompt-bundle path, defer Codex governed refresh work to Stop-time settlement, seed host-launched hooks for context-engine warm-daemon reuse, and have generated launchers dispatch baked host hook commands directly to runtime modules instead of importing the full CLI dispatcher first.
 
 - Rollback/Forward Fix: Forward-fix in v0.1.13; do not remove grounding or safety hooks without replacing them with measured fast-path equivalents.
 
-- Verification: Local v0.1.13 timing showed low-signal direct hook modules returning empty in about 42-44 ms median for Claude prompt-context, Claude prompt-teaser, and Codex prompt-context; full CLI fallback paths dropped to about 106-116 ms median. Focused tests now cover Claude prompt-bundle route locks plus hidden/visible prompt output parity, async Claude PostToolUse settings, Codex dirty-event deferral, Stop-time governed refresh settlement, lazy prompt gating, direct launcher hook dispatch, cross-host prompt parity, and install launcher generation.
+- Verification: Local v0.1.13 timing showed low-signal direct hook modules returning empty in about 42-44 ms median for Claude prompt-context, Claude prompt-teaser, and Codex prompt-context; full CLI fallback paths dropped to about 106-116 ms median. Follow-up substrate validation proved quiet Codex and Claude prompt hooks now emit compact Context Engine, memory, Execution Engine, delivery, Tribunal, and proof evidence while still skipping the full conversation bundle; SessionStart uses the same substrate instead of manual-start fallback text; context-engine autospawn reached a live watchdog-backed daemon. Focused tests cover Claude prompt-bundle route locks plus hidden/visible prompt output parity, async Claude PostToolUse settings, Codex dirty-event deferral, Stop-time governed refresh settlement, substrate-backed prompt gating, direct launcher hook dispatch, cross-host prompt parity, host-launcher warm-daemon defaults, and install launcher generation.
 
-- Prevention: Require latency-budget tests for host hook changes, keep show/help/status passthrough paths stdout-clean and direct across Claude, Codex, and future adapters, and prevent low-signal prompt gates from importing the renderer stack.
+- Prevention: Require latency-budget and substrate-integrity tests for host hook changes, keep show/help/status passthrough paths stdout-clean and direct across Claude, Codex, and future adapters, and prevent low-signal prompt gates from constructing full conversation bundles while still proving memory, execution, delivery, Tribunal, and intervention alignment.
 
 - Monitoring Updates: Track prompt-submit, prompt-context, prompt-teaser, stop-summary, and startup grounding latency in local benchmark or smoke outputs for each supported host adapter.
 
@@ -69,7 +70,11 @@
 - src/odylith/runtime/intervention_engine/host_surface_runtime.py
 - src/odylith/runtime/surfaces/claude_host_prompt_bundle.py
 - src/odylith/runtime/surfaces/claude_host_prompt_context.py
+- src/odylith/runtime/surfaces/claude_host_session_brief.py
 - src/odylith/runtime/surfaces/host_dirty_checkpoint.py
+- src/odylith/runtime/surfaces/host_intervention_support.py
 - src/odylith/runtime/surfaces/codex_host_prompt_context.py
+- src/odylith/runtime/surfaces/codex_host_session_brief.py
 - src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py
 - src/odylith/runtime/surfaces/codex_host_stop_summary.py
+- .agents/bin/odylith-host-launcher.py

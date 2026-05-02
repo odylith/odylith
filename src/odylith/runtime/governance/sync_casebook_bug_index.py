@@ -306,12 +306,12 @@ def render_bug_index(*, repo_root: Path) -> str:
     """Render the authoritative markdown Casebook bug index from source files."""
     rows = load_bug_rows_from_source(repo_root=repo_root)
     open_rows = sorted(
-        [row for row in rows if row.status != "Closed"],
+        [row for row in rows if not casebook_metadata.casebook_status_is_terminal(row.status)],
         key=lambda row: (row.date, row.title.lower()),
         reverse=True,
     )
     closed_rows = sorted(
-        [row for row in rows if row.status == "Closed"],
+        [row for row in rows if casebook_metadata.casebook_status_is_terminal(row.status)],
         key=lambda row: (row.date, row.title.lower()),
         reverse=True,
     )

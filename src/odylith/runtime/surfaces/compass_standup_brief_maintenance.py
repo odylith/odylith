@@ -28,13 +28,12 @@ from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.surfaces import compass_standup_brief_batch
 from odylith.runtime.surfaces import compass_standup_brief_narrator
+from odylith.runtime.surfaces import compass_standup_brief_runtime_patch
 
 _REQUEST_VERSION = "v1"
 _STATE_VERSION = "v1"
 _REQUEST_PATH = ".odylith/compass/standup-brief-maintenance-request.v1.json"
 _STATE_PATH = ".odylith/compass/standup-brief-maintenance-state.v1.json"
-_RUNTIME_CURRENT_JSON = "odylith/compass/runtime/current.v1.json"
-_RUNTIME_CURRENT_JS = "odylith/compass/runtime/current.v1.js"
 _FAILED_RETRY_BASE_SECONDS = 300
 _FAILED_RETRY_MAX_SECONDS = 3600
 _INVALID_BATCH_RETRY_BASE_SECONDS = 1800
@@ -564,9 +563,14 @@ def stamp_request_runtime_input_fingerprint(
     repo_root = Path(repo_root).resolve()
     request_path = maintenance_request_path(repo_root=repo_root)
     payload = _load_json(request_path)
-    if not _request_has_entries(payload):
-        return
     runtime_fingerprint = str(runtime_input_fingerprint).strip()
+    if not _request_has_entries(payload):
+        if runtime_fingerprint:
+            _patch_current_runtime_from_terminal_state(
+                repo_root=repo_root,
+                runtime_input_fingerprint=runtime_fingerprint,
+            )
+        return
     if not runtime_fingerprint:
         return
     payload["runtime_input_fingerprint"] = runtime_fingerprint
@@ -586,6 +590,33 @@ def stamp_request_runtime_input_fingerprint(
             global_failures=global_failures,
             scoped_failures=scoped_failures,
         )
+
+
+def apply_terminal_state_to_runtime_payload(
+    *,
+    repo_root: Path,
+    payload: Mapping[str, Any],
+    runtime_input_fingerprint: str = "",
+) -> dict[str, Any]:
+    state = _load_state(repo_root=Path(repo_root).resolve())
+    return compass_standup_brief_runtime_patch.apply_terminal_state_to_runtime_payload(
+        payload=payload,
+        state_entries=dict(state.get("entries", {})),
+        runtime_input_fingerprint=runtime_input_fingerprint,
+    )
+
+
+def _patch_current_runtime_from_terminal_state(
+    *,
+    repo_root: Path,
+    runtime_input_fingerprint: str,
+) -> bool:
+    state = _load_state(repo_root=repo_root)
+    return compass_standup_brief_runtime_patch.patch_current_runtime_from_terminal_state(
+        repo_root=repo_root,
+        runtime_input_fingerprint=runtime_input_fingerprint,
+        state_entries=dict(state.get("entries", {})),
+    )
 
 
 def maybe_spawn_background(*, repo_root: Path) -> int:
@@ -646,6 +677,7 @@ def _record_result(
     source: str = "",
     diagnostics: Mapping[str, Any] | None = None,
     provider_name: str = "",
+    immediate_retry: bool = False,
 ) -> dict[str, Any]:
     entries = dict(state.get("entries", {}))
     key = _candidate_key(window_key=window_key, scope_id=scope_id)
@@ -671,7 +703,7 @@ def _record_result(
         payload["status"] = "skipped"
     if normalized_diagnostics:
         payload["diagnostics"] = normalized_diagnostics
-    if payload["status"] not in {"ready", "skipped"}:
+    if payload["status"] not in {"ready", "skipped"} and not immediate_retry:
         retry_at = dt.datetime.now(tz=dt.timezone.utc) + dt.timedelta(
             seconds=_retry_backoff_seconds(
                 status=payload["status"],
@@ -685,6 +717,24 @@ def _record_result(
     entries[key] = payload
     state["entries"] = entries
     return payload
+
+
+def _provider_failure_can_retry_immediately(diagnostics: Mapping[str, Any] | None) -> bool:
+    """Return whether the same local provider has a cheaper next model to try now."""
+
+    if not isinstance(diagnostics, Mapping):
+        return False
+    failure_code = (
+        str(diagnostics.get("provider_failure_code", "")).strip().lower()
+        or str(diagnostics.get("reason", "")).strip().lower()
+    )
+    return odylith_reasoning.cheap_structured_reasoning_failure_can_advance(
+        provider=str(diagnostics.get("provider", "")).strip(),
+        previous_model=str(diagnostics.get("provider_model", "")).strip(),
+        failure_code=failure_code,
+        failure_detail=str(diagnostics.get("provider_failure_detail", "")).strip()
+        or str(diagnostics.get("message", "")).strip(),
+    )
 
 
 def _diagnostics_from_state_entry(state_entry: Mapping[str, Any]) -> dict[str, Any]:
@@ -964,104 +1014,15 @@ def _patch_current_runtime_payload(
     global_failures: Mapping[str, Mapping[str, Any]] | None = None,
     scoped_failures: Mapping[str, Mapping[str, Mapping[str, Any]]] | None = None,
 ) -> bool:
-    current_json_path = (repo_root / _RUNTIME_CURRENT_JSON).resolve()
-    current_js_path = (repo_root / _RUNTIME_CURRENT_JS).resolve()
-    current_json_signature = odylith_context_cache.path_signature(current_json_path)
-    payload = _load_json(current_json_path)
-    runtime_contract = payload.get("runtime_contract")
-    if not isinstance(runtime_contract, Mapping):
-        return False
-    if str(runtime_contract.get("input_fingerprint", "")).strip() != str(runtime_input_fingerprint).strip():
-        return False
-    current_generated_utc = str(payload.get("generated_utc", "")).strip()
-    expected_generated_utc = str(runtime_generated_utc).strip()
-    if current_generated_utc and expected_generated_utc and current_generated_utc != expected_generated_utc:
-        return False
-    changed = False
-    standup_brief = payload.get("standup_brief")
-    digest = payload.get("digest")
-    standup_brief_scoped = payload.get("standup_brief_scoped")
-    digest_scoped = payload.get("digest_scoped")
-    if not isinstance(standup_brief, Mapping):
-        standup_brief = {}
-    if not isinstance(digest, Mapping):
-        digest = {}
-    if not isinstance(standup_brief_scoped, Mapping):
-        standup_brief_scoped = {}
-    if not isinstance(digest_scoped, Mapping):
-        digest_scoped = {}
-    mutable_standup_brief = {str(key): value for key, value in standup_brief.items()}
-    mutable_digest = {str(key): value for key, value in digest.items()}
-    mutable_standup_brief_scoped = {
-        str(key): dict(value) if isinstance(value, Mapping) else {}
-        for key, value in standup_brief_scoped.items()
-    }
-    mutable_digest_scoped = {
-        str(key): dict(value) if isinstance(value, Mapping) else {}
-        for key, value in digest_scoped.items()
-    }
-    for window_key, brief in global_results.items():
-        if not isinstance(brief, Mapping):
-            continue
-        mutable_standup_brief[str(window_key).strip()] = dict(brief)
-        mutable_digest[str(window_key).strip()] = compass_standup_brief_narrator.brief_to_digest_lines(brief)
-        changed = True
-    for window_key, brief in (global_failures or {}).items():
-        if not isinstance(brief, Mapping):
-            continue
-        window_token = str(window_key).strip()
-        mutable_standup_brief[window_token] = dict(brief)
-        mutable_digest[window_token] = compass_standup_brief_narrator.brief_to_digest_lines(brief)
-        changed = True
-    for window_key, window_results in scoped_results.items():
-        if not isinstance(window_results, Mapping):
-            continue
-        scoped_window = dict(mutable_standup_brief_scoped.get(str(window_key).strip(), {}))
-        digest_window = dict(mutable_digest_scoped.get(str(window_key).strip(), {}))
-        for scope_id, brief in window_results.items():
-            if not isinstance(brief, Mapping):
-                continue
-            scope_token = str(scope_id).strip()
-            if not scope_token:
-                continue
-            scoped_window[scope_token] = dict(brief)
-            digest_window[scope_token] = compass_standup_brief_narrator.brief_to_digest_lines(brief)
-            changed = True
-        mutable_standup_brief_scoped[str(window_key).strip()] = scoped_window
-        mutable_digest_scoped[str(window_key).strip()] = digest_window
-    for window_key, window_failures in (scoped_failures or {}).items():
-        if not isinstance(window_failures, Mapping):
-            continue
-        window_token = str(window_key).strip()
-        scoped_window = dict(mutable_standup_brief_scoped.get(window_token, {}))
-        digest_window = dict(mutable_digest_scoped.get(window_token, {}))
-        for scope_id, brief in window_failures.items():
-            if not isinstance(brief, Mapping):
-                continue
-            scope_token = str(scope_id).strip()
-            if not scope_token:
-                continue
-            scoped_window[scope_token] = dict(brief)
-            digest_window[scope_token] = compass_standup_brief_narrator.brief_to_digest_lines(brief)
-            changed = True
-        mutable_standup_brief_scoped[window_token] = scoped_window
-        mutable_digest_scoped[window_token] = digest_window
-    if not changed:
-        return False
-    if odylith_context_cache.path_signature(current_json_path) != current_json_signature:
-        return False
-    payload["standup_brief"] = mutable_standup_brief
-    payload["digest"] = mutable_digest
-    payload["standup_brief_scoped"] = mutable_standup_brief_scoped
-    payload["digest_scoped"] = mutable_digest_scoped
-    _write_json(repo_root=repo_root, path=current_json_path, payload=payload)
-    odylith_context_cache.write_text_if_changed(
+    return compass_standup_brief_runtime_patch.patch_current_runtime_payload(
         repo_root=repo_root,
-        path=current_js_path,
-        content="window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
-        lock_key=str(current_js_path),
+        runtime_input_fingerprint=runtime_input_fingerprint,
+        runtime_generated_utc=runtime_generated_utc,
+        global_results=global_results,
+        scoped_results=scoped_results,
+        global_failures=global_failures,
+        scoped_failures=scoped_failures,
     )
-    return True
 
 
 def run_pending_request(
@@ -1248,14 +1209,20 @@ def run_pending_request(
                         fallback_reason=failure_reason,
                         diagnostics=diagnostics,
                     )
+                    failed_diagnostics = (
+                        failed_brief.get("diagnostics")
+                        if isinstance(failed_brief.get("diagnostics"), Mapping)
+                        else {}
+                    )
                     recorded = _record_result(
                         state=state,
                         window_key=window_token,
                         fingerprint=fingerprint,
                         status="skipped" if is_skipped else "failed",
                         source=source or str(failed_brief.get("source", "")).strip().lower(),
-                        diagnostics=failed_brief.get("diagnostics"),
+                        diagnostics=failed_diagnostics,
                         provider_name=type(provider).__name__ if provider is not None else "",
+                        immediate_retry=(not is_skipped) and _provider_failure_can_retry_immediately(failed_diagnostics),
                     )
                     failed_brief = (
                         dict(brief)
@@ -1322,6 +1289,11 @@ def run_pending_request(
                             fallback_reason=failure_reason,
                             diagnostics=diagnostics,
                         )
+                        failed_diagnostics = (
+                            failed_brief.get("diagnostics")
+                            if isinstance(failed_brief.get("diagnostics"), Mapping)
+                            else {}
+                        )
                         recorded = _record_result(
                             state=state,
                             window_key=str(window_key).strip(),
@@ -1329,7 +1301,8 @@ def run_pending_request(
                             fingerprint=fingerprint,
                             status="skipped" if is_skipped else "failed",
                             source=source or str(failed_brief.get("source", "")).strip().lower(),
-                            diagnostics=failed_brief.get("diagnostics"),
+                            diagnostics=failed_diagnostics,
+                            immediate_retry=(not is_skipped) and _provider_failure_can_retry_immediately(failed_diagnostics),
                         )
                         failed_brief = (
                             dict(brief)

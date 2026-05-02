@@ -1105,6 +1105,7 @@ def test_refresh_runtime_artifacts_shell_safe_stamps_and_spawns_narration_mainte
     runtime_dir.mkdir(parents=True)
     expected_paths = _runtime_paths(runtime_dir)
     stamped: list[str] = []
+    terminal_applied: list[str] = []
     spawned: list[Path] = []
 
     monkeypatch.setattr(
@@ -1126,6 +1127,18 @@ def test_refresh_runtime_artifacts_shell_safe_stamps_and_spawns_narration_mainte
         "stamp_request_runtime_input_fingerprint",
         lambda **kwargs: stamped.append(str(kwargs["runtime_input_fingerprint"])),
     )
+
+    def _apply_terminal_state(**kwargs):  # noqa: ANN003
+        terminal_applied.append(str(kwargs["runtime_input_fingerprint"]))
+        updated = dict(kwargs["payload"])
+        updated["terminal_state_applied"] = True
+        return updated
+
+    monkeypatch.setattr(
+        render_compass_dashboard.compass_standup_brief_maintenance,
+        "apply_terminal_state_to_runtime_payload",
+        _apply_terminal_state,
+    )
     monkeypatch.setattr(
         render_compass_dashboard.compass_standup_brief_maintenance,
         "maybe_spawn_background",
@@ -1139,6 +1152,8 @@ def test_refresh_runtime_artifacts_shell_safe_stamps_and_spawns_narration_mainte
 
     assert payload["runtime_contract"]["input_fingerprint"] == "fresh-fingerprint"
     assert stamped == ["fresh-fingerprint"]
+    assert terminal_applied == ["fresh-fingerprint"]
+    assert payload["terminal_state_applied"] is True
     assert spawned == [repo_root.resolve()]
     assert paths == expected_paths
 

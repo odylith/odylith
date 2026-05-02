@@ -6,11 +6,11 @@ Claude Code fires the ``SessionStart`` hook when a project session begins
 runtime entry, invoked through ``odylith claude session-start`` from
 ``.claude/settings.json``.
 
-The baked module reads the live Compass runtime snapshot, runs the
-repo-local launcher's ``start`` command, materializes the auto-memory
-``odylith-governed-brief.md`` note, and prints a compact human-readable
-``Odylith startup: ...`` summary on stdout. Failures degrade to a no-op
-return so Claude Code's session start is never blocked by Odylith.
+The baked module reads the live Compass runtime snapshot, adds a compact
+substrate proof from already-local runtime summaries, materializes the
+auto-memory ``odylith-governed-brief.md`` note, and prints a compact
+human-readable ``Odylith startup: ...`` summary on stdout. Failures degrade to
+a no-op return so Claude Code's session start is never blocked by Odylith.
 """
 
 from __future__ import annotations
@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from odylith.runtime.surfaces import claude_host_shared
+from odylith.runtime.surfaces import host_intervention_support
 from odylith.runtime.surfaces import session_brief_refresh_queue
 
 _BRIEF_STALENESS_THRESHOLD_SECONDS = 4 * 60 * 60  # 4 hours
@@ -76,10 +77,15 @@ def _summary_from_start_output(output: str) -> str:
     return ""
 
 
-def _summary_from_snapshot(snapshot: Mapping[str, Any] | None) -> str:
+def _summary_from_snapshot(
+    snapshot: Mapping[str, Any] | None,
+    *,
+    substrate_context: str = "",
+) -> str:
     """Render a compact startup summary without shelling out to `odylith start`."""
+    substrate = str(substrate_context or "").strip()
     if not isinstance(snapshot, Mapping) or not snapshot:
-        return ""
+        return substrate
     summary: list[str] = []
     headline = claude_host_shared.active_workstream_headline(snapshot)
     if headline:
@@ -93,10 +99,9 @@ def _summary_from_snapshot(snapshot: Mapping[str, Any] | None) -> str:
         summary.append(f"freshness: {freshness}")
     rendered = "\n".join(f"{_STARTUP_PREFIX}: {line}" for line in summary if line).strip()
     if rendered:
-        return (
-            f"{rendered}\n"
-            f"{_STARTUP_PREFIX}: fast path used cached runtime state; run `odylith start` manually for full grounding."
-        )
+        if substrate:
+            rendered = f"{rendered}\n{substrate}"
+        return rendered
     return ""
 
 
@@ -112,7 +117,11 @@ def render_session_brief(
         return _summary_from_start_output(start_output_override)
     if not eager_start and not _env_truthy("ODYLITH_HOOK_EAGER_START"):
         snapshot = snapshot_override if snapshot_override is not None else claude_host_shared.load_runtime_snapshot(repo_root)
-        return _summary_from_snapshot(snapshot)
+        substrate = host_intervention_support.session_start_substrate_context(
+            repo_root=repo_root,
+            host_family="claude",
+        )
+        return _summary_from_snapshot(snapshot, substrate_context=substrate)
     completed = claude_host_shared.run_odylith(
         project_dir=repo_root,
         args=["start", "--repo-root", "."],
