@@ -30,6 +30,59 @@ def test_lifecycle_simulator_covers_first_install_upgrade_and_rollback(tmp_path:
     assert sim.active_runtime_name() == "1.2.3"
 
 
+def test_lifecycle_simulator_proves_historical_upgrades_to_0_1_13(tmp_path: Path, monkeypatch) -> None:
+    target_version = "0.1.13"
+    expected_plan_state = {
+        "0.1.10": "selected",
+        "0.1.11": "skipped",
+        "0.1.12": "skipped",
+    }
+
+    for from_version, migration_state in expected_plan_state.items():
+        case_root = tmp_path / from_version.replace(".", "_")
+        case_root.mkdir()
+        sim = InstallLifecycleSimulator(tmp_path=case_root, monkeypatch=monkeypatch)
+        sim.register_release(target_version)
+
+        assert sim.install(from_version) == 0
+
+        if from_version == "0.1.10":
+            value_corpus = sim.repo_root / "odylith/runtime/source/intervention-value-adjudication-corpus.v1.json"
+            value_corpus.unlink(missing_ok=True)
+            old_ranker = sim.repo_root / "odylith/runtime/source/intervention-signal-ranker-corpus.v1.json"
+            old_ranker.parent.mkdir(parents=True, exist_ok=True)
+            old_ranker.write_text('{"schema_version":"legacy-signal-ranker-test"}\n', encoding="utf-8")
+
+        sim.write_pin(target_version)
+
+        assert sim.upgrade() == 0
+        assert sim.status().active_version == target_version
+        assert sim.pin().odylith_version == target_version
+        assert sim.active_runtime_name() == target_version
+
+        activated_events = [
+            entry
+            for entry in sim.install_ledger()
+            if entry.get("operation") == "upgrade" and entry.get("status") == "activated"
+        ]
+        assert activated_events
+        upgrade_event = activated_events[-1]
+        assert upgrade_event["previous_version"] == from_version
+        assert upgrade_event["active_version"] == target_version
+        assert upgrade_event["migration_plan"]["target_version"] == target_version
+
+        value_engine_state = upgrade_event["migration_plan"]["ledger_state"][
+            "v0.1.11-visible-intervention-value-engine"
+        ]
+        assert value_engine_state == migration_state
+        assert not upgrade_event["migration_plan"]["blocked"]
+
+        if from_version == "0.1.10":
+            assert (sim.repo_root / "odylith/runtime/source/intervention-value-adjudication-corpus.v1.json").is_file()
+            assert not (sim.repo_root / "odylith/runtime/source/intervention-signal-ranker-corpus.v1.json").exists()
+            assert upgrade_event["migration_results"][0]["state"] == "applied"
+
+
 def test_lifecycle_simulator_blocks_migration_release_activation(tmp_path: Path, monkeypatch) -> None:
     sim = InstallLifecycleSimulator(tmp_path=tmp_path, monkeypatch=monkeypatch)
     sim.register_release("1.2.4", migration_required=True)

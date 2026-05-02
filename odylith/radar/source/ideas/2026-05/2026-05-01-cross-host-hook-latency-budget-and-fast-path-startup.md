@@ -94,6 +94,7 @@ Prompt-submit and stop hooks stay under a documented local latency budget on war
 - 2026-05-01 local timing on the v0.1.13 source tree: low-signal direct hook modules returned empty in about 42-44 ms median for Claude prompt-context, Claude prompt-teaser, and Codex prompt-context; the full CLI fallback path dropped to about 106-116 ms median after lazy package imports.
 - Focused runtime/install validation covers Claude prompt-bundle hidden/visible parity, automatic route locks, Codex deferred dirty-event checkpointing, Stop-time governed refresh settlement, substrate-backed low-signal prompt gates, direct launcher dispatch, host parity, Casebook migration validation, and generated launcher syntax.
 - Mixed-version fresh-host validation on 2026-05-02 proved current-source generated launchers remain accepted by the shipped v0.1.12 runtime health checker while keeping direct host-hook dispatch intact.
+- Historical upgrade validation on 2026-05-02 proves consumer installs can upgrade from 0.1.10, 0.1.11, and 0.1.12 to the v0.1.13 target through the normal lifecycle. The 0.1.10 fixture applies the v0.1.11 value-engine migration from legacy signal-ranker state; the 0.1.11 and 0.1.12 fixtures skip it cleanly.
 
 ## Rollout
 - Execute through the bound v0.1.13 technical plan and keep the first implementation wave focused on hook latency, prompt hot-path gating, launcher dispatch, and governed migration capture.
@@ -111,10 +112,11 @@ Claude, Codex, and future host adapters should get the same grounded value witho
 - None decided yet; record interface changes once implementation is scoped.
 
 ## Migration/Compatibility
-- Existing consumer repos need no data migration. Upgrading installs the host-launcher preference fix, direct host-hook launcher dispatch, substrate-backed SessionStart behavior, prompt hot-path gating, context-engine warm-daemon defaults, v0.1.12-compatible launcher-health anchors, and refreshed host guidance/bundle assets.
+- Existing consumer repos need no manual data migration. Upgrading from 0.1.10, 0.1.11, or 0.1.12 installs the host-launcher preference fix, direct host-hook launcher dispatch, substrate-backed SessionStart behavior, prompt hot-path gating, context-engine warm-daemon defaults, v0.1.12-compatible launcher-health anchors, refreshed host guidance/bundle assets, and any automatic release migration still required by local state.
 
 ## Test Strategy
 - Unit tests cover low-signal Claude and Codex prompt hooks skipping conversation-bundle construction while keeping substrate evidence, Claude prompt-bundle route locks and visible teaser preservation, SessionStart using substrate state by default, direct show/help/capability route locks, launcher bootstrap fallback preference, legacy launcher-health parser compatibility, Codex dirty-event settlement, context-engine warm-daemon env defaults, and direct host-hook launcher dispatch.
+- Integration tests cover 0.1.10 -> 0.1.13, 0.1.11 -> 0.1.13, and 0.1.12 -> 0.1.13 upgrade activation, migration-plan state, migration-result state, pin adoption, and runtime pointer convergence.
 
 ## Open Questions
 - No blocking open question for lifecycle promotion; follow-up design work for a long-lived hook daemon remains deferred outside this release-critical slice.

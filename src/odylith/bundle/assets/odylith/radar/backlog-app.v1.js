@@ -268,7 +268,7 @@ const __ODYLITH_SHELL_REDIRECT_IN_PROGRESS__ = (function enforceShellOwnedSurfac
       activity: "all",
       priority: "all",
       release: "all",
-      sort: "date",
+      sort: "rank",
       mixBy: "complexity",
       selectedIdeaId: ""
     };
@@ -606,7 +606,6 @@ initSharedQuickTooltips();
       el.activity.value = state.activity;
       el.priority.value = state.priority;
       el.release.value = state.release;
-      el.sort.value = state.sort;
     }
 
     // Explicit deep-link navigation must reveal the requested workstream instead of
@@ -3152,7 +3151,6 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
       setAnalyticsExpanded(true);
     }
 
-    syncFilterControls();
     render();
 
     if (viewParam === "graph") {

@@ -443,6 +443,17 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.13:operator-cli-contracts:4eb40da3c1d9`,
   `migration-observer:0.1.13:browser-surfaces:ab0df3cd03b7`,
   `migration-observer:0.1.13:install-managed-assets:7b6ed784455c`.
+- Historical upgrade matrix proof: v0.1.13 adds explicit lifecycle coverage
+  for consumer upgrades from 0.1.10, 0.1.11, and 0.1.12 into the 0.1.13
+  target. The 0.1.10 fixture proves the value-engine migration still applies
+  from legacy signal-ranker state; 0.1.11 and 0.1.12 prove the same migration
+  skips cleanly while activation, pin adoption, and runtime pointer convergence
+  still complete. Existing consumer repos do not need manual data migration;
+  this adds release proof and refreshed Radar/Compass render artifacts only.
+  Migration observer markers:
+  `migration-observer:0.1.13:browser-surfaces:f7b7e4cdba20`,
+  `migration-observer:0.1.13:browser-surfaces:02ebed1744ff`,
+  `migration-observer:0.1.13:install-managed-assets:20e8ce49c04a`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.

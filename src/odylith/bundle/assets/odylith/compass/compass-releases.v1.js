@@ -73,19 +73,6 @@
       return Number.isFinite(ratio) ? ratio : null;
     }
 
-    function compassReleaseGroupVisibleByDefault(group) {
-      if (!group || typeof group !== "object") return false;
-      const status = String(group.status || "").trim().toLowerCase();
-      return (
-        Boolean(group.is_current)
-        || Boolean(group.is_next)
-        || status === "active"
-        || status === "planned"
-        || status === "draft"
-        || Number(group.members && group.members.length || 0) > 0
-      );
-    }
-
     function compassReleaseGroups(payload, state) {
       const summary = compassReleaseSummaryPayload(payload);
       const catalog = Array.isArray(summary.catalog) ? summary.catalog.filter((row) => row && typeof row === "object") : [];
@@ -164,7 +151,15 @@
         })
         .filter((group) => {
           if (scopedWorkstream) return group.member_ids.includes(scopedWorkstream) || group.completed_member_ids.includes(scopedWorkstream);
-          return compassReleaseGroupVisibleByDefault(group);
+          return (
+            group.is_current
+            || group.is_next
+            || group.status === "active"
+            || group.status === "planned"
+            || group.status === "draft"
+            || group.members.length > 0
+            || group.completed_members.length > 0
+          );
         });
 
       groups.sort((left, right) => {
