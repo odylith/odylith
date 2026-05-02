@@ -17,7 +17,7 @@
   are first-class host families, dev/dogfood/consumer are first-class lanes,
   and host model aliases resolve to adapter families without turning Odylith Discipline
   classification into a model-consuming path.
-Last updated: 2026-04-15
+Last updated: 2026-05-02
 
 
 Last updated (UTC): 2026-04-14
@@ -635,6 +635,13 @@ Public docs should describe these commands, not direct module entrypoints.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-05-02 · Implementation:** Host-surface diet kept startup/context/intervention substrate intact while removing duplicate Claude guidance, no-op prompt marker hooks, generic low-signal receipts, and exact non-governed Claude Bash checkpoint cost; 0.1.13 migration-observer markers pass.
+  - Scope: B-141
+- **2026-05-02 · Implementation:** B-141 now enforces serial Odylith startup before context/search across host guidance, skills, and installed bundle assets, with Casebook index-only migration guard proof.
+  - Scope: B-141
+  - Evidence: AGENTS.md, agents/skills/odylith-start/SKILL.md +2 more
+- **2026-05-02 · Implementation:** Fresh-host proof for v0.1.13 B-141 passed in /private/tmp/odylith-fresh-host-final-aezgVP: current-source install against shipped 0.1.12 verified version, doctor, Codex prompt context, Claude prompt-bundle fallback, both intervention-status surfaces, visible-intervention smokes, stale-label scans, and expected start narrowing.
+  - Scope: B-141
 - **2026-04-11 · Implementation:** B-090 is closed.
   - Scope: B-090
 - **2026-04-11 · Implementation:** B-089 has landed on 2026/freedom/v0.1.11 as the planned two-commit pair, working tree clean: 9402f5d — Mirror Codex host parity into Claude with baked CLI dispatchers (56 files:...
@@ -642,12 +649,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-04-05 · Implementation:** Refreshed the benchmark publication story to the April 5 source-local full proof pass 52aa3f76538cf12f: README, benchmark docs, registry spec, plans, and radar now reflect that odylith_on clears the hard gate and secondary guardrails against odylith_off while benchmark_compare still warns until the first shipped release baseline exists.
   - Scope: B-021, B-022
   - Evidence: README.md, docs/benchmarks/README.md +3 more
-- **2026-03-23 · Decision:** Successor created: B-280 reopens B-279 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md +1 more
-- **2026-03-23 · Decision:** Successor created: B-279 reopens B-278 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +3 more
-- **2026-03-23 · Decision:** Successor created: B-276 reopens B-275 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md +2 more
 <!-- registry-requirements:end -->
 
 ## Feature History

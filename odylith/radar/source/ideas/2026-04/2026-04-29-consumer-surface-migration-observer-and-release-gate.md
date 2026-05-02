@@ -42,7 +42,7 @@ workstream_depends_on:
 
 workstream_blocks: 
 
-related_diagram_ids: 
+related_diagram_ids: D-019,D-020,D-036,D-042
 
 workstream_reopens: 
 
@@ -568,6 +568,45 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.13:operator-cli-contracts:8480b8f26127`,
   `migration-observer:0.1.13:browser-surfaces:8b10e3560e2d`,
   `migration-observer:0.1.13:install-managed-assets:f87bf182fdad`.
+- Consumer guidance and Claude skill invocation surface diet: v0.1.13 trims
+  installed consumer guidance and model-visible Claude workflow skills without
+  removing Odylith startup, Context Engine, Execution Engine, memory,
+  Tribunal, Intervention Engine, observers, governance, Surface DAGs,
+  delivery, analysis, or migration-breakage observation. Existing consumer
+  repos do not need data migration; upgrading refreshes managed guidance,
+  host skill shims, rendered browser assets, and generated bundle assets
+  through the normal additive install/upgrade path. Maintainer-only
+  release-gate and migration-observer rules remain confined to the product
+  repo maintainer lane. Migration observer markers:
+  `migration-observer:0.1.13:guidance-and-skills:87630690d87a`,
+  `migration-observer:0.1.13:guidance-and-skills:59639ab45ae1`,
+  `migration-observer:0.1.13:guidance-and-skills:89d6d904843f`,
+  `migration-observer:0.1.13:operator-cli-contracts:b09578c9b18f`,
+  `migration-observer:0.1.13:browser-surfaces:e3adbd2d8288`,
+  `migration-observer:0.1.13:install-managed-assets:d7d268bdf746`,
+  `migration-observer:0.1.13:install-managed-assets:6b654b4be78e`,
+  `migration-observer:0.1.13:install-managed-assets:e3b4249862a5`.
+- B-141 topology and Casebook sidepanel card display: v0.1.13 refreshes
+  Radar traceability so B-141 advertises the runtime/topology diagrams that
+  actually bound the cross-host latency work, and refreshes Casebook browser
+  assets so sidepanel bug-card body text is clamped to two preview lines.
+  Existing consumer installs need no data migration; upgrade/dashboard
+  refresh replaces the generated browser assets and Radar traceability graph.
+  Migration observer markers:
+  `migration-observer:0.1.13:browser-surfaces:3951dfb049aa`,
+  `migration-observer:0.1.13:operator-cli-contracts:f64f4820aa8e`,
+  `migration-observer:0.1.13:operator-cli-contracts:3e98e8bddd13`,
+  `migration-observer:0.1.13:browser-surfaces:4c75930a07c1`.
+- Casebook release closeout automation: v0.1.13 adds the
+  `odylith release casebook-closeout` command and wires shipped release
+  updates to close eligible `FixedPendingRelease` records automatically after
+  validation evidence is present. Existing consumer installs need no data
+  migration; upgrade installs receive the managed CLI, Casebook guidance, and
+  refreshed browser surfaces, while local bug source stays repo-owned.
+  Migration observer markers:
+  `migration-observer:0.1.13:operator-cli-contracts:dbdb5bb92f21`,
+  `migration-observer:0.1.13:browser-surfaces:af4b4c0ff738`,
+  `migration-observer:0.1.13:install-managed-assets:92cac291c52f`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.

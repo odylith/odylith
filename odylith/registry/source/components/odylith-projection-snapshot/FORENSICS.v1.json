@@ -1294,7 +1294,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has CB-122 in the decision path.",
       "ts_iso": "2026-04-20T20:17:50Z",
       "workstreams": [
@@ -1859,7 +1859,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has CB-122 in the decision path.",
       "ts_iso": "2026-04-20T03:26:23Z",
       "workstreams": [
@@ -2022,7 +2022,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has CB-122 in the decision path.",
       "ts_iso": "2026-04-20T03:26:09Z",
       "workstreams": [
@@ -2470,7 +2470,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-001.",
       "ts_iso": "2026-04-17T03:48:35Z",
       "workstreams": [

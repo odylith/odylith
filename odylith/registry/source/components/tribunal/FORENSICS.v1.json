@@ -30,12 +30,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 107,
-    "mapped_workstream_evidence_count": 97,
+    "explicit_event_count": 108,
+    "mapped_workstream_evidence_count": 98,
     "recent_path_match_count": 0,
     "spec_history_event_count": 6,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 107
+    "timeline_event_count": 108
   },
   "name": "Tribunal",
   "path_prefixes": [
@@ -44,6 +44,47 @@
   ],
   "spec_ref": "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "agents/bin/odylith-host-launcher.py",
+        "src/odylith/runtime/surfaces/claude_host_prompt_bundle.py",
+        "src/odylith/runtime/surfaces/claude_host_prompt_context.py",
+        "src/odylith/runtime/surfaces/claude_host_session_brief.py",
+        "src/odylith/runtime/surfaces/codex_host_prompt_context.py",
+        "src/odylith/runtime/surfaces/codex_host_session_brief.py",
+        "src/odylith/runtime/surfaces/host_intervention_support.py"
+      ],
+      "confidence": "high",
+      "event_index": 396,
+      "explicit_components": [
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Restored substrate-backed quiet prompt and SessionStart fast paths for B-141 while keeping conversation bundles off the low-signal path.",
+      "ts_iso": "2026-05-01T15:22:30-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "low",
@@ -199,7 +240,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine on this path.",
       "ts_iso": "2026-04-26T12:46:32Z",
       "workstreams": [
@@ -1400,7 +1441,7 @@
         "odylith",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Odylith Risks: Host-local visibility policy cannot be trusted without a delivery ledger proof. consume one broker decision across Context, Execution, Memory, and Tribunal signals.",
       "ts_iso": "2026-04-20T20:17:50Z",
       "workstreams": []
@@ -1446,7 +1487,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has CB-122 in the decision path.",
       "ts_iso": "2026-04-20T20:17:50Z",
       "workstreams": [
@@ -1664,7 +1705,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:29:15Z",
       "workstreams": [
@@ -1725,7 +1766,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:29:15Z",
       "workstreams": [
@@ -1767,7 +1808,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "**Odylith Assist:** kept this on the shortest safe path instead of cracking open an `odylith_off`-style repo sweep by staying inside affected governance contracts [governance-intervention-engine](?tab=registry&component=governance-intervention-engine), then grounding the work to 1 candidate path. **Odylith Risks:** Tribunal already has Governance Intervention Engine in unsafe closeout, so capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
       "ts_iso": "2026-04-20T18:29:15Z",
       "workstreams": []
@@ -1805,7 +1846,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:29:13Z",
       "workstreams": [
@@ -1866,7 +1907,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:29:13Z",
       "workstreams": [
@@ -1908,7 +1949,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "**Odylith Assist:** kept this on the shortest safe path instead of cracking open an `odylith_off`-style repo sweep by staying inside affected governance contracts [governance-intervention-engine](?tab=registry&component=governance-intervention-engine), then grounding the work to 1 candidate path. **Odylith Risks:** Tribunal already has Governance Intervention Engine in unsafe closeout, so capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
       "ts_iso": "2026-04-20T18:29:13Z",
       "workstreams": []
@@ -1977,7 +2018,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "**Odylith Assist:** kept this on the shortest safe path instead of cracking open an `odylith_off`-style repo sweep by staying inside affected governance contracts [governance-intervention-engine](?tab=registry&component=governance-intervention-engine), then grounding the work to 1 candidate path. **Odylith Risks:** Tribunal already has Governance Intervention Engine in unsafe closeout, so capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
       "ts_iso": "2026-04-20T18:29:09Z",
       "workstreams": []
@@ -2015,7 +2056,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:29:09Z",
       "workstreams": [
@@ -2076,7 +2117,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:29:09Z",
       "workstreams": [
@@ -2118,7 +2159,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "**Odylith Assist:** kept this on the shortest safe path instead of cracking open an `odylith_off`-style repo sweep by staying inside affected governance contracts [governance-intervention-engine](?tab=registry&component=governance-intervention-engine), then grounding the work to 1 candidate path. **Odylith Risks:** Tribunal already has Governance Intervention Engine in unsafe closeout, so capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
       "ts_iso": "2026-04-20T18:29:00Z",
       "workstreams": []
@@ -2156,7 +2197,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:29:00Z",
       "workstreams": [
@@ -2217,7 +2258,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:29:00Z",
       "workstreams": [
@@ -2309,7 +2350,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "**Odylith Assist:** kept this on the shortest safe path instead of cracking open an `odylith_off`-style repo sweep by staying inside affected governance contracts [governance-intervention-engine](?tab=registry&component=governance-intervention-engine), then grounding the work to 1 candidate path. **Odylith Risks:** Tribunal already has Governance Intervention Engine in unsafe closeout, so capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
       "ts_iso": "2026-04-20T18:26:33Z",
       "workstreams": []
@@ -2347,7 +2388,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:26:33Z",
       "workstreams": [
@@ -2408,7 +2449,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:26:33Z",
       "workstreams": [
@@ -2450,7 +2491,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "**Odylith Assist:** kept this on the shortest safe path instead of cracking open an `odylith_off`-style repo sweep by staying inside affected governance contracts [governance-intervention-engine](?tab=registry&component=governance-intervention-engine), then grounding the work to 1 candidate path. **Odylith Risks:** Tribunal already has Governance Intervention Engine in unsafe closeout, so capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
       "ts_iso": "2026-04-20T18:26:01Z",
       "workstreams": []
@@ -2488,7 +2529,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:26:01Z",
       "workstreams": [
@@ -2549,7 +2590,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:26:01Z",
       "workstreams": [
@@ -2976,7 +3017,7 @@
         "odylith-chatter",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Odylith Risks: Host-local visibility policy cannot be trusted without a delivery ledger proof. consume one broker decision across Context, Execution, Memory, and Tribunal signals.",
       "ts_iso": "2026-04-20T03:26:23Z",
       "workstreams": []
@@ -3025,7 +3066,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has CB-122 in the decision path.",
       "ts_iso": "2026-04-20T03:26:23Z",
       "workstreams": [
@@ -3203,7 +3244,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has CB-122 in the decision path.",
       "ts_iso": "2026-04-20T03:26:09Z",
       "workstreams": [
@@ -4214,7 +4255,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-001.",
       "ts_iso": "2026-04-17T03:48:35Z",
       "workstreams": [
@@ -4465,7 +4506,7 @@
         "radar",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T03:58:01Z",
       "workstreams": [
@@ -4493,7 +4534,7 @@
         "radar",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T03:57:49Z",
       "workstreams": [
@@ -4523,7 +4564,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
       "ts_iso": "2026-04-16T03:57:38Z",
       "workstreams": [
@@ -4551,7 +4592,7 @@
         "radar",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T03:57:38Z",
       "workstreams": [
@@ -4581,7 +4622,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
       "ts_iso": "2026-04-16T02:54:42Z",
       "workstreams": [
@@ -4609,7 +4650,7 @@
         "radar",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T02:54:42Z",
       "workstreams": [
@@ -4639,7 +4680,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
       "ts_iso": "2026-04-16T02:54:32Z",
       "workstreams": [
@@ -4667,7 +4708,7 @@
         "radar",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T02:54:32Z",
       "workstreams": [
@@ -4725,7 +4766,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
       "ts_iso": "2026-04-16T02:37:58Z",
       "workstreams": [
@@ -4753,7 +4794,7 @@
         "radar",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T02:37:58Z",
       "workstreams": [
@@ -4811,7 +4852,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-16T02:29:52Z",
       "workstreams": [
@@ -4839,7 +4880,7 @@
         "radar",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T02:29:52Z",
       "workstreams": [
@@ -4869,7 +4910,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
       "ts_iso": "2026-04-16T02:29:51Z",
       "workstreams": [
@@ -4897,7 +4938,7 @@
         "radar",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T02:29:51Z",
       "workstreams": [
@@ -4927,7 +4968,7 @@
         "subagent-orchestrator",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-005.",
       "ts_iso": "2026-04-16T01:31:39Z",
       "workstreams": [
@@ -5082,7 +5123,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-15T06:58:39Z",
       "workstreams": [
@@ -5110,7 +5151,7 @@
         "radar",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-15T06:58:39Z",
       "workstreams": [
@@ -5168,7 +5209,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-15T06:57:32Z",
       "workstreams": [
@@ -5196,7 +5237,7 @@
         "radar",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-15T06:57:32Z",
       "workstreams": [
@@ -5310,7 +5351,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-15T06:55:30Z",
       "workstreams": [
@@ -5338,7 +5379,7 @@
         "radar",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-15T06:55:30Z",
       "workstreams": [
@@ -5393,7 +5434,7 @@
         "odylith-memory-contracts",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Observation rendered.",
       "ts_iso": "2026-04-15T06:39:28Z",
       "workstreams": [
@@ -5420,7 +5461,7 @@
         "odylith-memory-contracts",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Observation rendered.",
       "ts_iso": "2026-04-15T06:38:54Z",
       "workstreams": [
@@ -5447,7 +5488,7 @@
         "odylith-memory-contracts",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Observation rendered.",
       "ts_iso": "2026-04-15T06:38:18Z",
       "workstreams": [
@@ -5506,7 +5547,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "",
       "ts_iso": "2026-04-13T23:57:57Z",
       "workstreams": [

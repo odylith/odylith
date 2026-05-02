@@ -41,6 +41,8 @@ class ReleaseInfo:
     version: str
     tag: str
     status: str
+    shipped_utc: str = ""
+    closed_utc: str = ""
 
 
 def iter_casebook_records(repo_root: Path) -> tuple[CasebookRecord, ...]:
@@ -166,6 +168,8 @@ def resolve_release(*, repo_root: Path, release: str) -> ReleaseInfo:
                 version=version,
                 tag=str(item.get("tag", "") or f"v{version}"),
                 status=str(item.get("status", "") or "unknown"),
+                shipped_utc=str(item.get("shipped_utc", "") or ""),
+                closed_utc=str(item.get("closed_utc", "") or ""),
             )
     if re.fullmatch(r"\d+\.\d+\.\d+", release):
         return ReleaseInfo(

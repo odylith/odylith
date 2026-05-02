@@ -8027,7 +8027,12 @@
       "workstream_split_into": [],
       "workstream_merged_into": "",
       "workstream_merged_from": [],
-      "related_diagram_ids": [],
+      "related_diagram_ids": [
+        "D-019",
+        "D-020",
+        "D-036",
+        "D-042"
+      ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
       "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
       "plan_traceability": {
@@ -8066,7 +8071,7 @@
       "release_history_summary": "Removed from 0.1.12",
       "coverage": {
         "linked_plan_count": 1,
-        "linked_diagram_count": 0,
+        "linked_diagram_count": 4,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
@@ -8088,7 +8093,15 @@
       "workstream_split_into": [],
       "workstream_merged_into": "",
       "workstream_merged_from": [],
-      "related_diagram_ids": [],
+      "related_diagram_ids": [
+        "D-002",
+        "D-018",
+        "D-020",
+        "D-037",
+        "D-038",
+        "D-041",
+        "D-042"
+      ],
       "idea_file": "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
       "promoted_to_plan": "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md",
       "plan_traceability": {
@@ -8140,7 +8153,7 @@
       "release_history_summary": "Active: 0.1.13 \u00b7 Added to 0.1.13",
       "coverage": {
         "linked_plan_count": 1,
-        "linked_diagram_count": 0,
+        "linked_diagram_count": 7,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
@@ -14060,8 +14073,63 @@
     },
     {
       "source": "B-140",
+      "target": "diagram:D-019",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-140",
+      "target": "diagram:D-020",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-140",
+      "target": "diagram:D-036",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-140",
+      "target": "diagram:D-042",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-140",
       "target": "plan:odylith/technical-plans/done/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
       "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-141",
+      "target": "diagram:D-002",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-141",
+      "target": "diagram:D-018",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-141",
+      "target": "diagram:D-020",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-141",
+      "target": "diagram:D-037",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-141",
+      "target": "diagram:D-038",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-141",
+      "target": "diagram:D-041",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-141",
+      "target": "diagram:D-042",
+      "edge_type": "diagram_linkage"
     },
     {
       "source": "B-141",
@@ -15050,14 +15118,14 @@
     },
     "B-140": {
       "linked_plan_count": 1,
-      "linked_diagram_count": 0,
+      "linked_diagram_count": 4,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
     },
     "B-141": {
       "linked_plan_count": 1,
-      "linked_diagram_count": 0,
+      "linked_diagram_count": 7,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
@@ -15129,9 +15197,9 @@
     "execution_program_count": 4,
     "execution_wave_count": 23,
     "node_count": 305,
-    "edge_count": 621,
+    "edge_count": 632,
     "warning_count": 5,
     "warning_item_count": 5
   },
-  "generated_utc": "2026-05-02 15:26:12Z"
+  "generated_utc": "2026-05-02 22:07:39Z"
 }

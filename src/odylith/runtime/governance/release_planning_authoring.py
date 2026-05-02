@@ -11,6 +11,7 @@ from typing import Mapping
 from typing import Sequence
 
 from odylith.runtime.governance import authoring_execution_policy
+from odylith.runtime.governance import casebook_release_closeout
 from odylith.runtime.governance import release_planning_contract
 from odylith.runtime.governance import release_planning_view_model
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
@@ -45,6 +46,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     update.add_argument("--alias", action="append", default=[])
     update.add_argument("--drop-alias", action="append", default=[])
     update.add_argument("--clear-aliases", action="store_true")
+    update.add_argument(
+        "--skip-casebook-closeout",
+        action="store_true",
+        help="Do not auto-close FixedPendingRelease Casebook records when marking a release shipped.",
+    )
     update.add_argument("--dry-run", action="store_true")
     update.add_argument("--json", action="store_true", dest="as_json")
 
@@ -405,16 +411,41 @@ def _run_update(args: argparse.Namespace) -> dict[str, Any]:
         preferred_alternative=f"odylith release show {release.release_id}",
     )
     authoring_execution_policy.enforce_governed_authoring_action(governance)
+    closeout_payload: dict[str, Any] | None = None
+    should_closeout_casebook = (
+        str(field_updates.get("status", "")).strip() in {"shipped", "closed"}
+        and not bool(getattr(args, "skip_casebook_closeout", False))
+    )
+    if should_closeout_casebook:
+        closeout_preflight = casebook_release_closeout.build_casebook_release_closeout_plan(
+            repo_root=repo_root,
+            release=release.release_id,
+            release_state_override=str(field_updates.get("status", "")).strip(),
+        )
+        if closeout_preflight.blocked:
+            blocked_ids = ", ".join(item.bug_id for item in closeout_preflight.blocked)
+            raise ValueError(
+                "release update blocked because Casebook closeout is not safe for "
+                f"{blocked_ids}"
+            )
     if not bool(args.dry_run):
         _write_registry_document(repo_root=repo_root, document=document)
+        if should_closeout_casebook:
+            closeout_payload = casebook_release_closeout.apply_casebook_release_closeout(
+                repo_root=repo_root,
+                release=release.release_id,
+            ).as_dict()
     updated = next(row for row in payload["catalog"] if row["release_id"] == release.release_id)
-    return {
+    result = {
         "command": "update",
         "dry_run": bool(args.dry_run),
         "release": updated,
         "registry_path": str(state.registry_path),
         "execution_engine": governance.to_dict(),
     }
+    if closeout_payload is not None:
+        result["casebook_release_closeout"] = closeout_payload
+    return result
 
 
 def _run_list(args: argparse.Namespace) -> dict[str, Any]:

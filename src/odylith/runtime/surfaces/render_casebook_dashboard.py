@@ -1115,7 +1115,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     .bug-row-summary {{
       display: -webkit-box;
       -webkit-box-orient: vertical;
-      -webkit-line-clamp: 4;
+      -webkit-line-clamp: 2;
       overflow: hidden;
     }}
     .detail-copy p {{

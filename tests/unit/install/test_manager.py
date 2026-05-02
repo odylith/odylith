@@ -57,10 +57,13 @@ def test_ensure_odylith_gitignore_entry_is_noop_when_rules_already_present(tmp_p
 def test_customer_bootstrap_guidance_carries_live_proof_claim_gate() -> None:
     guidance = manager._customer_bootstrap_guidance()  # noqa: SLF001
 
+    assert len(guidance.encode("utf-8")) < 17000
+    assert "Keep startup, Context Engine, Execution Engine, memory substrate, Tribunal, Intervention Engine" in guidance
     assert "never say `fixed`, `cleared`, or `resolved` without qualification" in guidance
     assert "same fingerprint as the last falsification or not" in guidance
     assert "`odylith codex intervention-status` or `odylith claude" in guidance
     assert "low-latency delivery record for Teaser, Ambient Highlight, Observation," in guidance
-    assert "Assist readiness; hook payload generation alone is not enough" in guidance
-    assert "reports `Activation: ready` and a chat-visibility line confirmed in this" in guidance
+    assert "Proposal, and Assist readiness" in guidance
+    assert "Hook `systemMessage` or `additionalContext` generation is not proof of chat-visible UX" in guidance
+    assert "reports `Activation: ready` and a chat-visibility line is confirmed" in guidance
     assert "Treat recorded-only and waiting-for-chat states as partial proof" in guidance

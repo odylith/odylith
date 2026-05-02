@@ -58,15 +58,32 @@ install assets.
 Before publish:
 
 ```bash
+./.odylith/bin/odylith release casebook-closeout \
+  --release current --json
 ./.odylith/bin/odylith github issue release-closeout \
   --repo odylith/odylith --release current --json
 ```
 
-- Linked fixed issues should remain pending.
+- Local `FixedPendingRelease` Casebook records should remain pending until the
+  release registry is marked shipped.
+- Linked fixed public issues should remain pending.
 - P0/P1 issues without Casebook validation evidence must block.
 - No issue may close before the release is public.
 
-After publish and maintainer approval:
+After publish:
+
+```bash
+./.odylith/bin/odylith release casebook-closeout \
+  --release current --apply --json
+```
+
+- The command changes eligible local records to `Status: Closed` and
+  `Fixed: Released`; it preserves `Fixed In` as the version carrier.
+- `odylith release update --status shipped` runs this local Casebook closeout
+  automatically unless explicitly skipped.
+- Missing Casebook validation evidence blocks the sweep before records close.
+
+After public publish and maintainer approval:
 
 ```bash
 ./.odylith/bin/odylith github issue release-closeout \

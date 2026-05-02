@@ -9,6 +9,7 @@
 - Search existing `CB-*` truth first, extend the right bug when it already exists, and keep bug markdown as the canonical record instead of editing rendered Casebook output directly.
 - Keep `Status`, `Fixed`, and `Type` to compact values such as `Open`, `FixedPendingRelease`, `Pending`, `2026-04-16`, `Product`, or `UX`; put longer rollout, classification, and evidence notes in concrete evidence fields.
 - Keep `Reproducibility` to one compact token such as `High`, `Medium`, `Low`, `Always`, `Intermittent`, or `Consistent`; put repro steps and evidence in the concrete evidence fields.
+- Do not manually close `FixedPendingRelease` records; use `odylith release casebook-closeout --repo-root . --release <selector> --apply` or the automatic shipped-release closeout.
 - Use `odylith casebook validate --repo-root .` for source-only checks; refresh must fail closed if Casebook markdown violates the compact-field contract.
 - For broader Odylith context outside this subtree, follow `odylith/AGENTS.md` and the repo-root bridge.
 - Do not treat this file as a bug record; it is only the Claude companion for this scope.

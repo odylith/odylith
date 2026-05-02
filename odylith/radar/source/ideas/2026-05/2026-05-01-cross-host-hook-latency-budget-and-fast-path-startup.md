@@ -42,7 +42,7 @@ workstream_depends_on:
 
 workstream_blocks:
 
-related_diagram_ids:
+related_diagram_ids: D-002,D-018,D-020,D-037,D-038,D-041,D-042
 
 workstream_reopens:
 
@@ -72,6 +72,11 @@ Make Odylith feel native across supported hosts by enforcing a low-latency hook/
 ## Proposed Solution
 Add host-general prompt and startup fast paths: generic low-signal prompt hooks skip the full conversation bundle and substrate receipt, Odylith-directed quiet prompts keep a compact substrate proof, SessionStart writes the same local alignment substrate to memory without duplicate stdout, show/help/capability prompts stay locked to direct stdout routes, Claude prompt-submit work collapses into one prompt-bundle hook, Codex PostToolUse records dirty events and defers governed refresh to Stop-time settlement, Claude exact non-governed Bash edits skip startup/checkpoint work, and generated launchers dispatch host hook commands directly to baked runtime modules with context-engine warm-daemon defaults.
 Preserve the visible grounding sequence across hosts: `odylith start` is the first substantive turn gate, and `odylith context`, `odylith query`, `git status`, or broad repo search must wait until startup finishes and an exact anchor is known.
+Use host-native surface controls where the host actually supports them: Claude
+uses one prompt-bundle hook, async/filterable hook configuration, and
+`disable-model-invocation` for manual workflow skills; Codex keeps to its
+supported command-hook shape, concise `.agents/skills` metadata, and separate
+dirty-event settlement without Claude-only fields.
 
 ## Scope
 - Define and land the bounded work for cross-host hook latency budget and fast-path startup.
@@ -107,6 +112,17 @@ Prompt-submit and stop hooks stay under a documented local latency budget on war
   memory-only by default, suppressed generic low-signal receipts on Claude and
   Codex, and kept Odylith-directed quiet prompts plus visible prompt-bundle
   intervention paths intact.
+- 2026-05-02 consumer-lane guidance diet reduced always-loaded managed
+  guidance without removing capabilities: root `AGENTS.md` measured 21,291
+  bytes after the pass, consumer `odylith/AGENTS.md` and its bundle mirror
+  measured 16,211 bytes, and the hard-law kernel still names startup,
+  Context Engine, Execution Engine, memory substrate, Tribunal, Intervention
+  Engine, observers, governance, subagent routing, Surface DAGs, delivery,
+  analysis, and migration-breakage observation.
+- 2026-05-02 Claude skill curation uses the host-native
+  `disable-model-invocation` field so only seven high-frequency skills remain
+  model-invocable by default; twenty-eight lower-frequency workflows stay
+  slash-invocable. Codex `.agents/skills` stays separate and unchanged.
 
 ## Rollout
 - Execute through the bound v0.1.13 technical plan and keep the first implementation wave focused on hook latency, prompt hot-path gating, launcher dispatch, and governed migration capture.
@@ -119,6 +135,16 @@ Claude, Codex, and future host adapters should get the same grounded value witho
 
 ## Impacted Components
 - `odylith`
+- `odylith-context-engine`
+- `execution-engine`
+- `governance-intervention-engine`
+- `migration-runtime`
+- `odylith-chatter`
+- `subagent-orchestrator`
+- `subagent-router`
+- `radar`
+- `casebook`
+- `compass`
 
 ## Interface Changes
 - None decided yet; record interface changes once implementation is scoped.
@@ -127,6 +153,9 @@ Claude, Codex, and future host adapters should get the same grounded value witho
 - Existing consumer repos need no manual data migration. Upgrading from 0.1.10, 0.1.11, or 0.1.12 installs the host-launcher preference fix, direct host-hook launcher dispatch, memory-backed quiet SessionStart behavior, prompt hot-path gating, context-engine warm-daemon defaults, v0.1.12-compatible launcher-health anchors, refreshed host guidance/bundle assets, and any automatic release migration still required by local state.
 - v0.1.13 also refreshes managed guidance and skill assets so supported hosts
   inherit the serial startup-grounding contract on upgrade.
+- v0.1.13 keeps maintainer-only release and migration-observer guidance inside
+  `odylith/maintainer/`; consumer installs receive the low-latency runtime and
+  engine-preservation contract without product-repo release-gate obligations.
 
 ## Test Strategy
 - Unit tests cover generic low-signal Claude and Codex prompt hooks skipping conversation-bundle and substrate construction, Odylith-directed quiet prompts keeping substrate evidence, Claude prompt-bundle route locks and visible teaser preservation, SessionStart using substrate state by default without duplicate hook stdout, direct show/help/capability route locks, launcher bootstrap fallback preference, legacy launcher-health parser compatibility, Codex dirty-event settlement, Claude exact non-governed Bash checkpoint skips, context-engine warm-daemon env defaults, and direct host-hook launcher dispatch.
@@ -135,6 +164,9 @@ Claude, Codex, and future host adapters should get the same grounded value witho
 - Guidance tests cover serial start/context ordering across root guidance,
   install-generated guidance, Claude project assets, Codex/Claude skill shims,
   and source/bundle skill mirrors.
+- Guidance and skill-surface tests also cover consumer guidance byte budgets,
+  explicit engine-preservation language, Claude model-invocable skill capping,
+  and Codex/Claude host separation.
 
 ## Open Questions
 - No blocking open question for lifecycle promotion; follow-up design work for a long-lived hook daemon remains deferred outside this release-critical slice.

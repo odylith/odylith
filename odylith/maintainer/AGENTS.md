@@ -220,5 +220,8 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
 - Use `--apply-github` only after the maintainer accepts the exact labels,
   comment body, and close decision.
 - During release closeout, run
+  `odylith release casebook-closeout --release current --json` for local
+  Casebook truth and
   `odylith github issue release-closeout --release current --json`; do not
-  close public issues before the release is publicly available.
+  close local Casebook bugs by hand or close public issues before the release
+  is publicly available.

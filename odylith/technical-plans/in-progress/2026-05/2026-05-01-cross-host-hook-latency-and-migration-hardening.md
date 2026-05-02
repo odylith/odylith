@@ -69,6 +69,9 @@ Related Bugs:
 - [CB-152](../../../casebook/bugs/2026-05-02-generated-launchers-are-not-parseable-by-shipped-health-checks.md)
   tracks the mixed-version launcher-health compatibility failure found during
   fresh-host proof.
+- [CB-155](../../../casebook/bugs/2026-05-02-radar-allowed-topology-sensitive-workstream-to-render-without-topology.md)
+  tracks the Radar topology-completeness gap found when B-141 rendered without
+  the Atlas diagrams that bound the cross-host/runtime slice.
 
 ## Learnings
 - [x] The original Claude-led report was a symptom, not the product boundary:
@@ -124,6 +127,29 @@ Related Bugs:
       restated several root rules, SessionStart printed a brief already written
       to auto-memory, and generic low-signal prompt receipts spent alignment
       work on turns that carried no Odylith signal.
+- [x] Consumer-lane surface trimming must be a feature-preserving routing
+      change, not a capability reduction. The v0.1.13 pass now keeps startup,
+      Context Engine, Execution Engine, memory substrate, Tribunal,
+      Intervention Engine, observers, governance, subagent routing, Surface
+      DAGs, delivery, analysis, and migration-breakage observation named in
+      the always-loaded consumer contract while moving long-form policy to
+      routed guidance and skills.
+- [x] Native host features should be used asymmetrically. Claude can hide
+      manual workflow skills from automatic model invocation with
+      `disable-model-invocation: true`; Codex should keep its separate
+      `.agents/skills` layer concise and must not receive Claude-only hook or
+      skill fields.
+- [x] Topology is a governing spine, not optional decoration. v0.1.13 now
+      links B-141 to its runtime, host, intervention, discipline, and
+      migration diagrams, backfills B-140 to the migration/runtime topology,
+      and rejects new topology-sensitive implementation records that omit
+      `related_diagram_ids` unless they carry an explicit no-topology
+      rationale.
+- [x] Casebook bug closure is a release lifecycle action, not a manual field
+      edit. `FixedPendingRelease` records stay pending until the `Fixed In`
+      release is shipped; local closeout then updates compact `Status` and
+      `Fixed` tokens through `odylith release casebook-closeout`, while the
+      GitHub issue pipeline separately waits for public release availability.
 
 ## Must-Ship
 - [x] Add shared prompt route locks so help/show/capabilities prompts bypass
@@ -180,6 +206,20 @@ Related Bugs:
       generic low-signal prompt receipts are suppressed on Claude and Codex,
       Odylith-directed quiet prompts still emit substrate proof, and Claude
       exact non-governed Bash edits skip startup/checkpoint work.
+- [x] Slim consumer-lane guidance without muting Odylith engines: generated
+      installed root guidance and consumer `odylith/AGENTS.md` now carry a
+      hard-law kernel, explicit engine-preservation language, and routed
+      pointers instead of duplicating the long intervention, anti-slop, and
+      governance manual on every host turn.
+- [x] Use Claude-native skill invocation controls to reduce the model-visible
+      surface: lower-frequency workflow skills remain slash-invocable with
+      `disable-model-invocation: true`, while automatic bug capture,
+      preflight, code hygiene, startup, context, show, and sync stay
+      model-invocable. Codex skill policy remains separate and unchanged.
+- [x] Add automated Casebook release closeout: `odylith release
+      casebook-closeout --apply` closes only shipped-release records with
+      validation evidence, and `odylith release update --status shipped`
+      invokes the same sweep automatically unless explicitly skipped.
 
 ## Should-Ship
 - [ ] Convert the host hook daemon proposal into a separate design slice with
@@ -190,8 +230,9 @@ Related Bugs:
 ## Defer
 - [ ] MCP server scope cleanup remains local host configuration work, not a
       repo-shipped v0.1.13 product contract.
-- [ ] Root `AGENTS.md` kernel splitting is deferred until path-scoped guidance
-      behavior can be proven without weakening safety or CLI-first policy.
+- [ ] Further root and maintainer-lane kernel splitting is deferred until
+      path-scoped guidance behavior can be proven without weakening safety,
+      CLI-first policy, release-gate proof, or migration-observer obligations.
 
 ## Risks & Mitigations
 - [x] Risk: Moving checkpoint work off the critical path could lose governance
@@ -219,6 +260,14 @@ Related Bugs:
   - [x] Mitigation: Explicit-only flags are limited to manual workflow skills;
         tests assert automatic context and bug-capture skills remain
         model-invokable.
+- [x] Risk: Consumer-lane guidance slimming could accidentally drop the
+      product philosophy: prompt context assessment, observations,
+      interventions, ambient assists, memory, execution, or governance capture.
+  - [x] Mitigation: The consumer hard-law kernel names the preserved engines,
+        keeps `start` as the serial first gate, keeps context/query ordering,
+        keeps intervention-status and visible-intervention proof, and routes
+        long-form behavior to the existing skills and guidance rather than
+        deleting it.
 - [x] Risk: Low-signal prompt optimization could bypass memory, Execution
       Engine, Tribunal, or intervention alignment when the user is asking
       Odylith about its own presence or visibility.
@@ -284,6 +333,13 @@ Related Bugs:
 - [x] `pytest -q tests/unit/install/test_agents.py tests/unit/install/test_claude_effective_settings.py tests/unit/install/test_codex_project_assets.py` (`46 passed`)
 - [x] `pytest -q tests/unit/runtime/test_claude_host_prompt_context.py tests/unit/runtime/test_codex_host_prompt_context.py tests/unit/runtime/test_claude_host_post_bash_checkpoint.py tests/unit/test_claude_project_hooks.py` (`55 passed`)
 - [x] `./.odylith/bin/odylith upgrade --repo-root . --source-repo . --json` switched the product repo to detached `source-local`, kept the pin at `0.1.12`, marked release eligibility false, and refreshed tooling shell, Radar, and Compass surfaces for dev-maintainer proof.
+- [x] `PYTHONPATH=src pytest -q tests/unit/install/test_agents.py tests/unit/install/test_manager.py tests/unit/install/test_codex_project_assets.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_show_capabilities.py` (`119 passed`; consumer guidance byte budgets, explicit engine preservation, Claude model-invocable skill diet, Codex/Claude skill separation, and anti-slop/show-capability contracts)
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_validate_backlog_contract.py` (`30 passed`; topology-sensitive implementation workstreams opened on or after 2026-05-01 must declare `related_diagram_ids` or an explicit topology rationale)
+- [x] Post-change surface measurement: root `AGENTS.md` moved from 28,982
+      bytes to 21,291 bytes; consumer `odylith/AGENTS.md` and its bundle
+      mirror moved from 26,958 bytes to 16,211 bytes; Claude
+      model-invocable project skills are capped at seven while twenty-eight
+      lower-frequency workflows remain explicit/slash-invocable.
 - [x] Mixed-version fresh-host proof in `/private/tmp/odylith-fresh-host-final-aezgVP`: current-source install succeeded against shipped `0.1.12`; `version` and `doctor` ran healthy through the generated launcher; Codex prompt context, Claude prompt-bundle context/visible fallback, Codex and Claude `intervention-status`, and Codex/Claude visible-intervention smokes all passed; `start` reached Context/Execution Engine narrowing and returned only the expected empty-repo fallback.
 - [x] Targeted browser regression rerun for default Compass completed-program
       hiding and Radar date sort (`3 passed`), followed by the full browser

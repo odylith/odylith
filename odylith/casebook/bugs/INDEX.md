@@ -145,6 +145,7 @@ Last updated (UTC): 2026-05-02
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-155 | 2026-05-02 | Radar allowed topology sensitive workstream to render without topology | P1 | radar | FixedPendingRelease | [2026-05-02-radar-allowed-topology-sensitive-workstream-to-render-without-topology.md](2026-05-02-radar-allowed-topology-sensitive-workstream-to-render-without-topology.md) |
 | CB-152 | 2026-05-02 | Generated launchers are not parseable by shipped health checks | P1 | odylith | FixedPendingRelease | [2026-05-02-generated-launchers-are-not-parseable-by-shipped-health-checks.md](2026-05-02-generated-launchers-are-not-parseable-by-shipped-health-checks.md) |
 | CB-154 | 2026-05-02 | Compass skipped narration warning replaced last standup brief | P2 | compass | FixedPendingRelease | [2026-05-02-compass-skipped-narration-warning-replaced-last-standup-brief.md](2026-05-02-compass-skipped-narration-warning-replaced-last-standup-brief.md) |
 | CB-153 | 2026-05-02 | Casebook detail view leaves excessive left gutter | P2 | casebook | FixedPendingRelease | [2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md](2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md) |

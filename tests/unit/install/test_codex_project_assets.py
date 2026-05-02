@@ -129,19 +129,30 @@ def test_claude_explicit_only_skills_do_not_hide_automatic_context_skills() -> N
         "odylith-atlas-render",
         "odylith-backlog-create",
         "odylith-backlog-validate",
+        "odylith-casebook-bug-investigation",
+        "odylith-compass-log",
+        "odylith-compass-refresh",
         "odylith-compass-executive",
+        "odylith-compass-timeline-stream",
         "odylith-component-registry",
         "odylith-context-engine-operations",
         "odylith-delivery-governance-surface-ops",
         "odylith-diagram-catalog",
+        "odylith-discipline",
+        "odylith-doctor",
+        "odylith-guidance-behavior",
+        "odylith-query",
         "odylith-registry-spec-sync",
         "odylith-registry-sync-specs",
         "odylith-registry-validate",
         "odylith-release-planning",
         "odylith-schema-registry-governance",
         "odylith-security-hardening",
+        "odylith-session-brief",
+        "odylith-session-context",
         "odylith-subagent-orchestrator",
         "odylith-subagent-router",
+        "odylith-version",
     }
     automatic = {
         "odylith-casebook-bug-capture",
@@ -154,12 +165,19 @@ def test_claude_explicit_only_skills_do_not_hide_automatic_context_skills() -> N
     }
 
     for root in (LIVE_CLAUDE_ROOT / "skills", PROJECT_ROOT_BUNDLE / ".claude" / "skills"):
+        model_invocable: set[str] = set()
+        for skill_path in root.glob("*/SKILL.md"):
+            text = skill_path.read_text(encoding="utf-8")
+            if "disable-model-invocation: true" not in text:
+                model_invocable.add(skill_path.parent.name)
         for skill_name in explicit_only:
             text = (root / skill_name / "SKILL.md").read_text(encoding="utf-8")
             assert "disable-model-invocation: true" in text
         for skill_name in automatic:
             text = (root / skill_name / "SKILL.md").read_text(encoding="utf-8")
             assert "disable-model-invocation: true" not in text
+        assert model_invocable == automatic
+        assert len(model_invocable) <= 7
 
 
 def test_claude_backlog_skill_shim_carries_exact_cli_enum_guard() -> None:

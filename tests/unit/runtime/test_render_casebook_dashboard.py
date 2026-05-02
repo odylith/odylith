@@ -126,6 +126,8 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     assert ".summary-facts {" in html
     assert "grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));" in html
     assert "padding: 10px 12px;" in html
+    assert "-webkit-line-clamp: 2;" in html
+    assert "-webkit-line-clamp: 4;" not in html
     assert "Odylith Agent Learnings" in app_js
     assert '<h2 class="detail-title">${escapeHtml(detail.title || detail.bug_key || "Bug detail")}</h2>' in app_js
     assert '<h1 class="detail-title">' not in app_js

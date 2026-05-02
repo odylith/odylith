@@ -50,6 +50,22 @@
 
 - Solution: Implement B-141 as a host-general latency slice: measure Claude and Codex hook/startup latency, enforce budgeted fast paths for low-signal and show/help/status prompts, keep the compact alignment substrate active on quiet prompt and SessionStart lanes, collapse Claude prompt-submit work into one prompt-bundle path, defer Codex governed refresh work to Stop-time settlement, seed host-launched hooks for context-engine warm-daemon reuse, and have generated launchers dispatch baked host hook commands directly to runtime modules instead of importing the full CLI dispatcher first.
 
+- Solution Update: v0.1.13 also slims the consumer-lane guidance surface
+  without deleting Odylith capability. Installed root guidance and consumer
+  `odylith/AGENTS.md` now keep a hard-law kernel plus explicit preservation
+  of startup, Context Engine, Execution Engine, memory substrate, Tribunal,
+  Intervention Engine, observers, governance, subagent routing, Surface DAGs,
+  delivery, analysis, and migration-breakage observation. Long-form policy is
+  routed to guidance and skills instead of duplicated in the hot prompt
+  surface.
+
+- Host-Native Update: Claude uses host-supported
+  `disable-model-invocation: true` for lower-frequency manual workflow skills
+  while leaving automatic startup, context, show, sync, bug-capture,
+  preflight, and hygiene skills model-invocable. Codex keeps its separate
+  `.agents/skills` policy and supported command-hook shape; no Claude-only
+  fields are emitted into Codex configuration.
+
 - Follow-up Correction: Operator feedback on 2026-05-02 showed that running
   `odylith start`, `odylith context`, and `git status` in parallel creates the
   wrong visible sequence and can make the Context Engine appear to precede the
@@ -60,9 +76,14 @@
 
 - Rollback/Forward Fix: Forward-fix in v0.1.13; do not remove grounding or safety hooks without replacing them with measured fast-path equivalents.
 
-- Verification: Local v0.1.13 timing showed low-signal direct hook modules returning empty in about 42-44 ms median for Claude prompt-context, Claude prompt-teaser, and Codex prompt-context; full CLI fallback paths dropped to about 106-116 ms median. Follow-up substrate validation proved quiet Codex and Claude prompt hooks now emit compact Context Engine, memory, Execution Engine, delivery, Tribunal, and proof evidence while still skipping the full conversation bundle; SessionStart uses the same substrate instead of manual-start fallback text; context-engine autospawn reached a live watchdog-backed daemon. Focused tests cover Claude prompt-bundle route locks plus hidden/visible prompt output parity, async Claude PostToolUse settings, Codex dirty-event deferral, Stop-time governed refresh settlement, substrate-backed prompt gating, direct launcher hook dispatch, cross-host prompt parity, host-launcher warm-daemon defaults, install launcher generation, and mixed-version prompt-bundle fallback when current-source launchers run against the shipped v0.1.12 runtime.
+- Verification: Local v0.1.13 timing showed low-signal direct hook modules returning empty in about 42-44 ms median for Claude prompt-context, Claude prompt-teaser, and Codex prompt-context; full CLI fallback paths dropped to about 106-116 ms median. Follow-up substrate validation proved quiet Codex and Claude prompt hooks now emit compact Context Engine, memory, Execution Engine, delivery, Tribunal, and proof evidence while still skipping the full conversation bundle; SessionStart uses the same substrate instead of manual-start fallback text; context-engine autospawn reached a live watchdog-backed daemon. Focused tests cover Claude prompt-bundle route locks plus hidden/visible prompt output parity, async Claude PostToolUse settings, Codex dirty-event deferral, Stop-time governed refresh settlement, substrate-backed prompt gating, direct launcher hook dispatch, cross-host prompt parity, host-launcher warm-daemon defaults, install launcher generation, and mixed-version prompt-bundle fallback when current-source launchers run against the shipped v0.1.12 runtime. The consumer guidance diet measured root `AGENTS.md` at 21,291 bytes and consumer `odylith/AGENTS.md` plus its bundle mirror at 16,211 bytes after preserving the engine contract. `PYTHONPATH=src pytest -q tests/unit/install/test_agents.py tests/unit/install/test_manager.py tests/unit/install/test_codex_project_assets.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_show_capabilities.py` passed with 119 tests covering byte budgets, engine-preservation wording, Claude model-invocable skill capping, Codex/Claude skill separation, anti-slop guidance, and show/capabilities behavior.
 
 - Prevention: Require latency-budget and substrate-integrity tests for host hook changes, keep show/help/status passthrough paths stdout-clean and direct across Claude, Codex, and future adapters, and prevent low-signal prompt gates from constructing full conversation bundles while still proving memory, execution, delivery, Tribunal, and intervention alignment.
+
+- Prevention Update: Consumer-lane guidance reductions must include explicit
+  engine-preservation assertions and host-separation tests. Maintainer-only
+  release-gate and migration-observer guidance stays in `odylith/maintainer/`
+  and must not be mirrored into consumer install assets as a latency shortcut.
 
 - Prevention Update: Guidance, skills, Claude project commands, and bundle
   mirrors must keep the serial startup contract aligned across Codex, Claude,

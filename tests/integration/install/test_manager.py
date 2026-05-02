@@ -762,37 +762,32 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     guidance_text = guidance_path.read_text(encoding="utf-8")
     assert "local repo truth, not a copy of the Odylith product repo" in guidance_text
     assert "`.claude/`, `.codex/`, `.agents/skills/`, `odylith/AGENTS.md`, `odylith/CLAUDE.md`, the shipped scoped guidance companions under `odylith/**/AGENTS.md` and `odylith/**/CLAUDE.md`, `odylith/agents-guidelines/`, and `odylith/skills/` are Odylith-managed guidance assets" in guidance_text
-    assert "Before any substantive repo scan or code change outside trivial fixes, the agent must start from the repo-local Odylith entrypoint" in guidance_text
+    assert "Before any substantive repo scan or code change outside trivial fixes, run `./.odylith/bin/odylith start --repo-root .` first" in guidance_text
     assert "keep the active workstream, component, or packet in scope" in guidance_text
     assert "Direct repo scan before that start step is a policy violation unless the task is trivial or Odylith is unavailable." in guidance_text
     assert "Do not run `odylith context`, `odylith query`, `git status`, broad repo search, or other repo-inspection commands in parallel with that start step." in guidance_text
-    assert "Let `start` finish first; then run `odylith context --repo-root . <ref>` only when the user, the start output, or prior governed truth gives an exact anchor." in guidance_text
+    assert "Let `start` finish first; then run `odylith context --repo-root . <ref>` only when the user, start output, or governed truth gives an exact anchor." in guidance_text
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in guidance_text
-    assert "the exact file/workstream, the bug under test, or the validation in flight" in guidance_text
-    assert "If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history." in guidance_text
+    assert "Describe progress in task terms like the exact file/workstream, the bug under test, or the validation in flight" in guidance_text
     assert "Do not surface routine `odylith start`, `odylith context`, or `odylith query` commands in progress updates" in guidance_text
     assert "never prefix commentary with control-plane receipt labels" in guidance_text
-    assert "Mention Odylith during the work only when the user explicitly asks for the command, a real blocker requires it, or a consumer-versus-maintainer lane distinction matters." in guidance_text
     assert "direct-edit and Bash PostToolUse hooks stay silent on success" in guidance_text
     assert "Claude Stop is memory/logging only" in guidance_text
     assert "literal commands" not in guidance_text
     assert "Keep normal commentary task-first and human." in guidance_text
-    assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in guidance_text
+    assert "Reserve `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` for rare high-signal moments." in guidance_text
     assert "At closeout, or when a visible-intervention recovery renders a prompt-submit or visibility-proof note" in guidance_text
-    assert "host prompt-submit runtime is stricter about silence" in guidance_text
     assert "normal non-passthrough prompts do not get an Assist line by default" in guidance_text
     assert "Do not add Assist just because Odylith ran" in guidance_text
     assert "supplies one shared prompt-visible Assist line" not in guidance_text
-    assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in guidance_text
     assert "Lead with the user win" in guidance_text
-    assert "link updated governance IDs inline when they were actually changed" in guidance_text
-    assert "name the affected governance-contract IDs" in guidance_text
-    assert "Frame the edge against `odylith_off` or the broader unguided path" in guidance_text
-    assert "Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual." in guidance_text
-    assert "Ground the line in concrete observed counts, measured deltas, or validation outcomes" in guidance_text
+    assert "updated governance IDs inline when changed" in guidance_text
+    assert "affected governance-contract IDs when no governed file moved" in guidance_text
+    assert "`odylith_off` or broader unguided path edge when supported" in guidance_text
+    assert "keep it crisp, authentic, clear, simple, insightful" in guidance_text
+    assert "ground the line in concrete observed counts, measured deltas, or validation outcomes" in guidance_text
     assert "or a concrete chat-visibility complaint" in guidance_text
     assert "Silence is better than filler." in guidance_text
-    assert "follow this workflow check in order: read the nearest `AGENTS.md`; run repo-local `odylith start` first; when a precise anchor is known after that, run `odylith context`" in guidance_text
     assert "run the repo-local `odylith start`/`odylith context` step" not in guidance_text
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in guidance_text
     assert "stop at diagnosis and maintainer-ready feedback" in guidance_text
@@ -803,11 +798,11 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "do not pick it up automatically" in guidance_text
     assert "Search existing workstream, plan, bug, component, diagram, and recent session/Compass context first" in guidance_text
     assert "If the slice is genuinely new and it is repo-owned non-product work, create the missing workstream and bound plan before non-trivial implementation" in guidance_text
-    assert "Default to the nearest `AGENTS.md`, the repo-local launcher, and truthful `odylith ... --help` for routine backlog, technical-plan, bug, spec, component, and diagram upkeep." in guidance_text
+    assert "repo-local launcher, and truthful `odylith ... --help` for routine backlog, technical-plan, bug, spec, component, and diagram upkeep" in guidance_text
     assert "When a routine governance task already maps to a first-class CLI family such as `odylith bug capture`, `odylith backlog create`, `odylith component register`, `odylith atlas scaffold`, or `odylith compass log`" in guidance_text
     assert "rerender only the owned surface" in guidance_text
     assert "Codex and Claude Code share the same default Odylith lane" in guidance_text
-    assert "On Codex, the managed `.codex/` project assets and curated `.agents/skills/` command shims are best-effort enhancements" in guidance_text
+    assert "Use native host capabilities where they exist: Codex uses `.codex/` hooks/config/agents plus curated `.agents/skills/` command shims" in guidance_text
     assert "Treat the managed guidance files under `.claude/`, `.codex/`, the curated `.agents/skills/` command shims" in guidance_text
     assert "## Common Fast Paths" in guidance_text
     assert "./.odylith/bin/odylith bug capture --help" in guidance_text
@@ -826,11 +821,11 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert ".claude/CLAUDE.md" in root_claude
     assert "<!-- odylith-scope:start -->" in root_claude
     root_agents = (repo_root / "AGENTS.md").read_text(encoding="utf-8")
-    assert "Before any substantive repo scan or code change outside trivial fixes, the agent must start from the repo-local Odylith entrypoint" in root_agents
-    assert "keep the active workstream, component, or packet in scope" in root_agents
+    assert "For substantive work, read the nearest `AGENTS.md`, run `./.odylith/bin/odylith start --repo-root .` first" in root_agents
+    assert "Keep startup, Context Engine, Execution Engine, memory substrate, Tribunal, Intervention Engine, observers, governance, subagent routing" in root_agents
     assert "Direct repo scan before that start step is a policy violation unless the task is trivial or Odylith is unavailable." in root_agents
     assert "Do not run `odylith context`, `odylith query`, `git status`, broad repo search, or other repo-inspection commands in parallel with that start step." in root_agents
-    assert "Let `start` finish first; then run `odylith context --repo-root . <ref>` only when the user, the start output, or prior governed truth gives an exact anchor." in root_agents
+    assert "Let `start` finish first; then narrow." in root_agents
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in root_agents
     assert "the exact file/workstream, the bug under test, or the validation in flight" in root_agents
     assert "If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history." in root_agents
@@ -840,29 +835,25 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "direct-edit and Bash PostToolUse hooks stay silent on success" in root_agents
     assert "Claude Stop is memory/logging only" in root_agents
     assert "literal commands" not in root_agents
-    assert "Keep normal commentary task-first and human." in root_agents
-    assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in root_agents
-    assert "At closeout, or when a visible-intervention recovery renders a prompt-submit or visibility-proof note" in root_agents
-    assert "host prompt-submit runtime is stricter about silence" in root_agents
+    assert "Keep normal commentary task-first and human;" in root_agents
+    assert "reserve `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` for rare high-signal moments" in root_agents
+    assert "At closeout, add at most one `Odylith Assist:` or `**Odylith Assist:**` line only when it materially helps" in root_agents
     assert "normal non-passthrough prompts do not get an Assist line by default" in root_agents
     assert "Do not add Assist just because Odylith ran" in root_agents
     assert "supplies one shared prompt-visible Assist line" not in root_agents
-    assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in root_agents
     assert "Lead with the user win" in root_agents
-    assert "link updated governance IDs inline when they were actually changed" in root_agents
-    assert "name the affected governance-contract IDs" in root_agents
-    assert "Frame the edge against `odylith_off` or the broader unguided path" in root_agents
-    assert "Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual." in root_agents
-    assert "Ground the line in concrete observed counts, measured deltas, or validation outcomes" in root_agents
+    assert "link updated governance IDs inline when they changed" in root_agents
+    assert "name affected governance-contract IDs only when no governed file moved" in root_agents
+    assert "frame the edge against `odylith_off` or the broader unguided path" in root_agents
+    assert "keep it crisp, authentic, clear, simple, insightful" in root_agents
+    assert "ground the line in concrete observed counts, measured deltas, or validation outcomes" in root_agents
     assert "or a concrete chat-visibility complaint" in root_agents
     assert "Silence is better than filler." in root_agents
-    assert "follow this workflow check in order: read the nearest `AGENTS.md`; run repo-local `odylith start` first; when a precise anchor is known after that, run `odylith context`" in root_agents
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in root_agents
     assert "stop at diagnosis and maintainer-ready feedback" in root_agents
     assert "Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes" in root_agents
-    assert "search existing workstream, plan, bug, component, diagram, and recent session/Compass context first" in root_agents
-    assert "Default to the nearest `AGENTS.md`, the repo-local launcher, and truthful `odylith ... --help` for routine backlog, technical-plan, bug, spec, component, and diagram upkeep." in root_agents
-    assert "When a routine governance task already maps to a first-class CLI family such as `odylith bug capture`, `odylith backlog create`, `odylith component register`, `odylith atlas scaffold`, or `odylith compass log`" in root_agents
+    assert "search existing truth first" in root_agents
+    assert "repo-local launcher, truthful `odylith ... --help`" in root_agents
     assert "rerender only the owned surface" in root_agents
     assert "odylith radar refresh" in root_agents
     assert "odylith registry refresh" in root_agents
@@ -1642,24 +1633,21 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     upgrade_install(repo_root=repo_root, release_repo="odylith/odylith")
 
     guidance_text = (repo_root / "odylith" / "AGENTS.md").read_text(encoding="utf-8")
-    assert "Before any substantive repo scan or code change outside trivial fixes, the agent must start from the repo-local Odylith entrypoint" in guidance_text
+    assert "Before any substantive repo scan or code change outside trivial fixes, run `./.odylith/bin/odylith start --repo-root .` first" in guidance_text
     assert "Do not run `odylith context`, `odylith query`, `git status`, broad repo search, or other repo-inspection commands in parallel with that start step." in guidance_text
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in guidance_text
-    assert "the exact file/workstream, the bug under test, or the validation in flight" in guidance_text
-    assert "If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history." in guidance_text
+    assert "Describe progress in task terms like the exact file/workstream, the bug under test, or the validation in flight" in guidance_text
     assert "Keep normal commentary task-first and human." in guidance_text
-    assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in guidance_text
+    assert "Reserve `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` for rare high-signal moments." in guidance_text
     assert "At closeout, or when a visible-intervention recovery renders a prompt-submit or visibility-proof note" in guidance_text
-    assert "host prompt-submit runtime is stricter about silence" in guidance_text
     assert "normal non-passthrough prompts do not get an Assist line by default" in guidance_text
     assert "Do not add Assist just because Odylith ran" in guidance_text
     assert "supplies one shared prompt-visible Assist line" not in guidance_text
-    assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in guidance_text
     assert "Lead with the user win" in guidance_text
-    assert "link updated governance IDs inline when they were actually changed" in guidance_text
-    assert "name the affected governance-contract IDs" in guidance_text
-    assert "Frame the edge against `odylith_off` or the broader unguided path" in guidance_text
-    assert "Ground the line in concrete observed counts, measured deltas, or validation outcomes" in guidance_text
+    assert "updated governance IDs inline when changed" in guidance_text
+    assert "affected governance-contract IDs when no governed file moved" in guidance_text
+    assert "`odylith_off` or broader unguided path edge when supported" in guidance_text
+    assert "ground the line in concrete observed counts, measured deltas, or validation outcomes" in guidance_text
     assert "or a concrete chat-visibility complaint" in guidance_text
     assert "Silence is better than filler." in guidance_text
     assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in guidance_text
@@ -1668,7 +1656,7 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in guidance_text
     assert "Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes" in guidance_text
     assert "If the slice is genuinely new and it is repo-owned non-product work, create the missing workstream and bound plan before non-trivial implementation" in guidance_text
-    assert "Default to the nearest `AGENTS.md`, the repo-local launcher, and truthful `odylith ... --help` for routine backlog, technical-plan, bug, spec, component, and diagram upkeep." in guidance_text
+    assert "repo-local launcher, and truthful `odylith ... --help` for routine backlog, technical-plan, bug, spec, component, and diagram upkeep" in guidance_text
     assert "When a routine governance task already maps to a first-class CLI family such as `odylith bug capture`, `odylith backlog create`, `odylith component register`, `odylith atlas scaffold`, or `odylith compass log`" in guidance_text
     assert "rerender only the owned surface" in guidance_text
     assert "Codex and Claude Code share the same default Odylith lane" in guidance_text
@@ -1743,30 +1731,27 @@ def test_install_bundle_product_repo_preserves_source_owned_odylith_guidance_and
     assert (repo_root / "odylith" / "AGENTS.md").read_text(encoding="utf-8") == original_guidance
     root_agents = (repo_root / "AGENTS.md").read_text(encoding="utf-8")
     assert "odylith/maintainer/AGENTS.md" in root_agents
-    assert "Before any substantive repo scan or code change outside trivial fixes, the agent must start from the repo-local Odylith entrypoint" in root_agents
+    assert "For substantive work, read the nearest `AGENTS.md`, run `./.odylith/bin/odylith start --repo-root .` first" in root_agents
     assert "Do not run `odylith context`, `odylith query`, `git status`, broad repo search, or other repo-inspection commands in parallel with that start step." in root_agents
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in root_agents
-    assert "the exact file/workstream, the bug under test, or the validation in flight" in root_agents
-    assert "If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history." in root_agents
-    assert "Keep normal commentary task-first and human." in root_agents
-    assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in root_agents
-    assert "At closeout, or when a visible-intervention recovery renders a prompt-submit or visibility-proof note" in root_agents
-    assert "host prompt-submit runtime is stricter about silence" in root_agents
+    assert "Describe task progress, not control-plane receipts" in root_agents
+    assert "Keep normal commentary task-first and human;" in root_agents
+    assert "reserve `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` for rare high-signal moments" in root_agents
+    assert "At closeout, add at most one `Odylith Assist:` or `**Odylith Assist:**` line only when it materially helps" in root_agents
     assert "normal non-passthrough prompts do not get an Assist line by default" in root_agents
     assert "Do not add Assist just because Odylith ran" in root_agents
     assert "supplies one shared prompt-visible Assist line" not in root_agents
-    assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in root_agents
     assert "Lead with the user win" in root_agents
-    assert "link updated governance IDs inline when they were actually changed" in root_agents
-    assert "name the affected governance-contract IDs" in root_agents
-    assert "Frame the edge against `odylith_off` or the broader unguided path" in root_agents
-    assert "Ground the line in concrete observed counts, measured deltas, or validation outcomes" in root_agents
+    assert "link updated governance IDs inline when they changed" in root_agents
+    assert "name affected governance-contract IDs only when no governed file moved" in root_agents
+    assert "frame the edge against `odylith_off` or the broader unguided path" in root_agents
+    assert "ground the line in concrete observed counts, measured deltas, or validation outcomes" in root_agents
     assert "or a concrete chat-visibility complaint" in root_agents
     assert "Silence is better than filler." in root_agents
     assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in root_agents
     assert "Odylith grounding:" not in root_agents
     assert "Odylith didn't return immediately" not in root_agents
-    assert "search existing workstream, plan, bug, component, diagram, and recent session/Compass context first" in root_agents
+    assert "search existing truth first" in root_agents
 
 
 def test_upgrade_backfills_odylith_state_root_in_gitignore(tmp_path: Path) -> None:

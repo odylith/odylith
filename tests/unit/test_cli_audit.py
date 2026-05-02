@@ -292,6 +292,14 @@ _HANDLER_CASES = [
         and bool(getattr(args, "json", False)),
     },
     {
+        "path": ("release", "casebook-closeout"),
+        "argv": lambda root: ["release", "casebook-closeout", f"--repo-root={root}", "--release", "current", "--json"],
+        "handler": "_cmd_release",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "release_command", "") == "casebook-closeout"
+        and list(getattr(args, "forwarded", [])) == ["--release", "current", "--json"],
+    },
+    {
         "path": ("compass", "log"),
         "argv": lambda root: ["compass", "log", f"--repo-root={root}"],
         "handler": "_cmd_compass_log",

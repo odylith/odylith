@@ -163,6 +163,7 @@ _CAPABILITY_INVENTORY_MODULE = "odylith.runtime.analysis_engine.capability_inven
 _COMPONENT_AUTHORING_MODULE = "odylith.runtime.governance.component_authoring"
 _BUG_AUTHORING_MODULE = "odylith.runtime.governance.bug_authoring"
 _GITHUB_ISSUE_PIPELINE_MODULE = "odylith.runtime.governance.github_issue_cli"
+_CASEBOOK_RELEASE_CLOSEOUT_MODULE = "odylith.runtime.governance.casebook_release_closeout"
 
 
 def _load_module(name: str):
@@ -2227,13 +2228,20 @@ def _cmd_release(args: argparse.Namespace) -> int:
             for note in report.notes:
                 print(f"- note: {note}")
         return 0 if report.ok else 1
-    if args.release_command in {"create", "update", "add", "remove", "move"} and not _forwarded_has_flag(
+    release_command_writes = args.release_command in {"create", "update", "add", "remove", "move"} and not _forwarded_has_flag(
         args.forwarded,
         "--dry-run",
-    ):
+    )
+    closeout_writes = args.release_command == "casebook-closeout" and _forwarded_has_flag(args.forwarded, "--apply")
+    if release_command_writes or closeout_writes:
         blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
         if blocked:
             return blocked
+    if args.release_command == "casebook-closeout":
+        return _run_module_main(
+            _CASEBOOK_RELEASE_CLOSEOUT_MODULE,
+            ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded),
+        )
     return _run_module_main(
         "odylith.runtime.governance.release_planning_authoring",
         ensure_repo_root_args(
@@ -2930,6 +2938,7 @@ def build_parser() -> argparse.ArgumentParser:
         ("add", "Assign one workstream to a release."),
         ("remove", "Remove one workstream from its active release."),
         ("move", "Move one workstream between releases."),
+        ("casebook-closeout", "Close FixedPendingRelease Casebook records after a shipped release."),
     ):
         child_parser = release_subparsers.add_parser(command, help=help_text)
         child_parser.add_argument("--repo-root", default=".", help="Consumer repository root.")
