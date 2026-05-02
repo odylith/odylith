@@ -764,6 +764,7 @@ def test_claude_intervention_status_checks_prompt_teaser_and_edit_hooks(tmp_path
     checks = report["static_readiness"]["checks"]
 
     assert report["activation"] == "ready"
+    assert checks["prompt_submit_hook"] is True
     assert checks["prompt_context_hook"] is True
     assert checks["prompt_teaser_hook"] is True
     assert checks["post_edit_checkpoint_hook"] is True

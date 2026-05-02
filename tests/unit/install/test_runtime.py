@@ -3,6 +3,7 @@ from __future__ import annotations
 import io
 import json
 import os
+import re
 import subprocess
 import sys
 import tarfile
@@ -23,6 +24,11 @@ from odylith.install.managed_runtime import (
     supported_platform_labels,
     supported_managed_runtime_platforms,
     supported_platform_slugs,
+)
+
+_LEGACY_0_1_12_FALLBACK_PYTHON_RE = re.compile(
+    r'^\s*exec "(?P<python>/[^"]+)"(?: -I)? -m odylith\.cli "\$@"$',
+    re.MULTILINE,
 )
 
 
@@ -146,6 +152,21 @@ def test_ensure_launcher_points_at_repo_local_runtime(tmp_path: Path) -> None:
     assert "runtime/current/bin/python" in bootstrap_text
     assert "Odylith bootstrap could not find a trusted repo-local runtime." in bootstrap_text
     assert runtime._launcher_fallback_python(bootstrap) == (version_root / "bin" / "python").resolve()  # noqa: SLF001
+
+
+def test_generated_launchers_stay_parseable_by_0_1_12_health_checks(tmp_path: Path) -> None:
+    repo_root = _repo_root(tmp_path)
+    version_root = _make_runtime(repo_root)
+    fallback_python = version_root / "bin" / "python"
+
+    launcher_text = runtime._launcher_script(fallback_python=fallback_python)  # noqa: SLF001
+    bootstrap_text = runtime._bootstrap_launcher_script(fallback_python=fallback_python)  # noqa: SLF001
+
+    for text in (launcher_text, bootstrap_text):
+        match = _LEGACY_0_1_12_FALLBACK_PYTHON_RE.search(text)
+        assert match is not None
+        assert Path(match.group("python")) == fallback_python
+        assert f'odylith_exec_odylith "{fallback_python}" isolated "$@"' in text
 
 
 def test_legacy_consumer_launcher_bootstraps_plain_upgrade_via_installer(tmp_path: Path) -> None:

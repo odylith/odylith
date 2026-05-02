@@ -6,9 +6,6 @@ Last updated (UTC): 2026-05-02
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
-| CB-147 | 2026-05-01 | Claude hooks spam unhealthy launcher repair errors during bootstrap repair | P1 | governance-intervention-engine | Open | [2026-05-01-claude-hooks-spam-unhealthy-launcher-repair-errors-during-bootstrap-repair.md](2026-05-01-claude-hooks-spam-unhealthy-launcher-repair-errors-during-bootstrap-repair.md) |
-| CB-150 | 2026-05-01 | Casebook renders prose status and type chips | P1 | casebook | Open | [2026-05-01-casebook-renders-prose-status-and-type-chips.md](2026-05-01-casebook-renders-prose-status-and-type-chips.md) |
-| CB-148 | 2026-05-01 | Bootstrap doctor repair still surfaces trusted root warning noise | P1 | release | Open | [2026-05-01-bootstrap-doctor-repair-still-surfaces-trusted-root-warning-noise.md](2026-05-01-bootstrap-doctor-repair-still-surfaces-trusted-root-warning-noise.md) |
 | CB-119 | 2026-04-16 | Benchmark live proof conflates support paths write targets and read only sandbox | P1 | benchmark | Open | [2026-04-16-benchmark-live-proof-conflates-support-paths-write-targets-and-read-only-sandbox.md](2026-04-16-benchmark-live-proof-conflates-support-paths-write-targets-and-read-only-sandbox.md) |
 | CB-114 | 2026-04-15 | Bug capture can publish placeholder tbd records before the maintainer has enough | P0 | `src/odylith/runtime/governance/bug_authoring.py`,
   `src/odylith/runtime/intervention_engine/apply.py`,
@@ -148,8 +145,12 @@ Last updated (UTC): 2026-05-02
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-152 | 2026-05-02 | Generated launchers are not parseable by shipped health checks | P1 | odylith | FixedPendingRelease | [2026-05-02-generated-launchers-are-not-parseable-by-shipped-health-checks.md](2026-05-02-generated-launchers-are-not-parseable-by-shipped-health-checks.md) |
 | CB-149 | 2026-05-01 | Host adapters pay too much odylith hook and startup latency | P1 | governance-intervention-engine | FixedPendingRelease | [2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md](2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md) |
 | CB-151 | 2026-05-01 | Compass default governance view surfaces completed programs and shipped releases | P2 | dashboard | FixedPendingRelease | [2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md](2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md) |
+| CB-147 | 2026-05-01 | Claude hooks spam unhealthy launcher repair errors during bootstrap repair | P1 | governance-intervention-engine | FixedPendingRelease | [2026-05-01-claude-hooks-spam-unhealthy-launcher-repair-errors-during-bootstrap-repair.md](2026-05-01-claude-hooks-spam-unhealthy-launcher-repair-errors-during-bootstrap-repair.md) |
+| CB-150 | 2026-05-01 | Casebook renders prose status and type chips | P1 | casebook | FixedPendingRelease | [2026-05-01-casebook-renders-prose-status-and-type-chips.md](2026-05-01-casebook-renders-prose-status-and-type-chips.md) |
+| CB-148 | 2026-05-01 | Bootstrap doctor repair still surfaces trusted root warning noise | P1 | release | FixedPendingRelease | [2026-05-01-bootstrap-doctor-repair-still-surfaces-trusted-root-warning-noise.md](2026-05-01-bootstrap-doctor-repair-still-surfaces-trusted-root-warning-noise.md) |
 | CB-145 | 2026-04-30 | Uninstall requests can be routed to raw deletion that odylith blocks itself | P1 | install | FixedPendingRelease | [2026-04-30-uninstall-requests-can-be-routed-to-raw-deletion-that-odylith-blocks-itself.md](2026-04-30-uninstall-requests-can-be-routed-to-raw-deletion-that-odylith-blocks-itself.md) |
 | CB-143 | 2026-04-30 | Uninstall leaves broken odylith tree behind | P1 | migration-runtime | FixedPendingRelease | [2026-04-30-uninstall-leaves-broken-odylith-tree-behind.md](2026-04-30-uninstall-leaves-broken-odylith-tree-behind.md) |
 | CB-140 | 2026-04-30 | Show output suggests standalone atlas prompt that scaffold rejects | P1 | odylith | FixedPendingRelease | [2026-04-30-show-output-suggests-standalone-atlas-prompt-that-scaffold-rejects.md](2026-04-30-show-output-suggests-standalone-atlas-prompt-that-scaffold-rejects.md) |

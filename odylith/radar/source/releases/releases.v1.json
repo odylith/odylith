@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "updated_utc": "2026-05-01",
+  "updated_utc": "2026-05-02",
   "aliases": {
     "current": "release-0-1-13",
     "next": "release-0-1-13"
@@ -34,7 +34,7 @@
       "version": "0.1.13",
       "tag": "v0.1.13",
       "name": "",
-      "notes": "Target release for B-141 cross-host hook latency, migration repair feedback, and host UX hardening.",
+      "notes": "Target release for B-141 cross-host hook latency, prompt substrate integrity, migration repair feedback, Casebook token hardening, and Compass live-governance UX.",
       "created_utc": "2026-05-01",
       "shipped_utc": "",
       "closed_utc": ""

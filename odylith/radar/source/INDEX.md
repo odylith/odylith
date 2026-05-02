@@ -1,6 +1,6 @@
 # Backlog Index
 
-Last updated (UTC): 2026-05-01
+Last updated (UTC): 2026-05-02
 ## Ranked Active Backlog
 
 | rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |
@@ -64,7 +64,7 @@ Last updated (UTC): 2026-05-01
 | - | B-088 | Codex Host Runtime Parity, CLI Dispatch, and Target-Release Wording Hardening | P1 | 100 | 3 | 3 | 3 | M | Medium | implementation | [codex-host-runtime-parity-cli-dispatch-and-target-release-wording-hardening](odylith/radar/source/ideas/2026-04/2026-04-11-codex-host-runtime-parity-cli-dispatch-and-target-release-wording-hardening.md) |
 | - | B-089 | Claude Host Capability Layer Cli Backed Baked Hooks And Compatibility Surface | P1 | 100 | 5 | 5 | 4 | L | Medium | implementation | [claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface](odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md) |
 | - | B-090 | Bounded test contract catch-up for orchestrator profile inference benchmark routing and governance refactors | P1 | 100 | 4 | 4 | 3 | M | Medium | implementation | [bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors](odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md) |
-| - | B-141 | Claude hook latency budget and fast-path startup | P1 | 100 | 5 | 5 | 5 | M | High | implementation | [claude-hook-latency-budget-and-fast-path-startup](odylith/radar/source/ideas/2026-05/2026-05-01-claude-hook-latency-budget-and-fast-path-startup.md) |
+| - | B-141 | Cross-host hook latency budget and fast-path startup | P1 | 100 | 5 | 5 | 5 | M | High | implementation | [cross-host-hook-latency-budget-and-fast-path-startup](odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md) |
 | - | B-092 | Execution Governance Benchmark Family and Honest Ablation Proof | P0 | 100 | 4 | 5 | 4 | M | High | implementation | [execution-governance-benchmark-family-and-honest-ablation-proof](odylith/radar/source/ideas/2026-04/2026-04-12-execution-governance-benchmark-family-and-honest-ablation-proof.md) |
 | - | B-093 | Benchmark Full-Product Contract, Live-Lane Fairness, and Real-World Corpus Hardening | P0 | 100 | 5 | 5 | 5 | L | High | implementation | [benchmark-full-product-contract-live-lane-fairness-and-real-world-corpus-hardening](odylith/radar/source/ideas/2026-04/2026-04-12-benchmark-full-product-contract-live-lane-fairness-and-real-world-corpus-hardening.md) |
 | - | B-097 | Casebook Bug Capture Fail-Closed Evidence Contract and Cross-Host Guidance Hardening | P0 | 100 | 5 | 5 | 4 | M | High | implementation | [casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening](odylith/radar/source/ideas/2026-04/2026-04-15-casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening.md) |

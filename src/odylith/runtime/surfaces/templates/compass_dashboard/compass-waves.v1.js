@@ -6,14 +6,7 @@
 
     function compassExecutionProgramVisibleByDefault(program) {
       if (!program || typeof program !== "object") return false;
-      if (Number(program.active_wave_count || 0) > 0) return true;
-      const currentWave = program.current_wave && typeof program.current_wave === "object"
-        ? String(program.current_wave.wave_id || program.current_wave.label || "").trim()
-        : "";
-      const nextWave = program.next_wave && typeof program.next_wave === "object"
-        ? String(program.next_wave.wave_id || program.next_wave.label || "").trim()
-        : "";
-      return Boolean(currentWave || nextWave);
+      return Number(program.active_wave_count || 0) > 0;
     }
 
     function renderExecutionWaves(payload, state) {

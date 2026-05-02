@@ -4,6 +4,11 @@
 
 
 
+
+
+
+
+
 - Status: FixedPendingRelease
 
 - Created: 2026-05-01
@@ -43,11 +48,11 @@
 
 - Root Cause: Release rendering kept completed_member groups visible by default, and program rendering used every execution_waves.programs row even when all waves were complete.
 
-- Solution: Filter default release groups to current, next, active, planned, draft, or targeted-member releases; filter default program rows to live current/next/active wave programs; leave completed-only program history available through real scoped workstream drill-in instead of inventing a synthetic archive card.
+- Solution: Filter default release groups to current, next, active, planned, draft, or targeted-member releases; filter default program rows to programs with active waves; leave completed-only program history available through real scoped workstream drill-in instead of inventing a synthetic archive card.
 
 - Rollback/Forward Fix: Forward fix in v0.1.13 renderer templates and regenerated Compass assets.
 
-- Verification: Focused Compass renderer tests, focused browser governance-section checks, source-local Compass refresh, casebook validation, backlog and plan validators, and git diff --check.
+- Verification: Focused Compass renderer tests, focused browser governance-section checks, source-local Compass refresh, source-local Radar refresh, `PYTHONPATH=src ODYLITH_BROWSER_FAILURE_SCREENSHOTS=.odylith/browser-failures .venv/bin/python -m pytest -q tests/integration/runtime/test_*browser*.py` (`182 passed, 1 skipped`), casebook validation, backlog and plan validators, and git diff --check.
 
 - Prevention: Keep default Compass governance sections anchored to live-work visibility; require scoped drill-in for completed-only history.
 

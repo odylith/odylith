@@ -183,8 +183,8 @@ Add a migration observer to the migration-runtime release gate. It scans changed
 - `migration-observer:0.1.12:operator-cli-contracts:40e56321befd`
 - `migration-observer:0.1.12:operator-cli-contracts:0be705679685`
 - `migration-observer:0.1.12:guidance-and-skills:2d48e421d4a4`
-- `migration-observer:0.1.12:browser-surfaces:ed5db266b23d`
-- `migration-observer:0.1.12:install-managed-assets:9a3f5a953776`
+- `migration-observer:0.1.12:browser-surfaces:d6d3e6d10f84`
+- `migration-observer:0.1.12:install-managed-assets:1d47c001ac50`
 
 ## 0.1.12 Upgrade Assessment
 - First-run install and sync overlap: existing 0.1.11 consumer repos can safely
@@ -396,8 +396,8 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   bundled host assets, refreshed guidance, and refreshed Casebook/Radar browser
   surfaces. Migration observer markers:
   `migration-observer:0.1.12:guidance-and-skills:2d48e421d4a4`,
-  `migration-observer:0.1.12:browser-surfaces:ed5db266b23d`,
-  `migration-observer:0.1.12:install-managed-assets:9a3f5a953776`.
+  `migration-observer:0.1.12:browser-surfaces:d6d3e6d10f84`,
+  `migration-observer:0.1.12:install-managed-assets:1d47c001ac50`.
 - Upgrade-residue dashboard recovery: v0.1.13 makes post-upgrade dashboard
   refresh resilient when a consumer repo is midway through surface generation.
   The top-level shell now treats missing child dashboard HTML as a warning,
@@ -426,8 +426,23 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   dashboards, and fixed Compass refresh runtime. Migration observer markers:
   `migration-observer:0.1.13:guidance-and-skills:20383b041e00`,
   `migration-observer:0.1.13:operator-cli-contracts:9d82eb895c46`,
-  `migration-observer:0.1.13:browser-surfaces:d2c7362d19c2`,
-  `migration-observer:0.1.13:install-managed-assets:81225e1e602e`.
+  `migration-observer:0.1.13:browser-surfaces:7cf0ebcb5035`,
+  `migration-observer:0.1.13:install-managed-assets:73dadb319858`.
+- Mixed-version launcher compatibility: v0.1.13 generated launchers preserve
+  direct host-hook dispatch for the warm path while remaining readable by the
+  shipped v0.1.12 launcher health parser. Claude `prompt-bundle` launchers
+  detect whether the active runtime or source `PYTHONPATH` contains the new
+  bundle module; if not, they merge the shipped `prompt-context` and
+  `prompt-teaser` commands so fresh installs keep prompt context and visible
+  teaser behavior before the v0.1.13 runtime ships. Existing consumer repos do
+  not need data migration; upgrading installs regenerated launchers and
+  refreshed browser assets. Migration observer markers:
+  `migration-observer:0.1.12:operator-cli-contracts:4eb40da3c1d9`,
+  `migration-observer:0.1.12:browser-surfaces:ab0df3cd03b7`,
+  `migration-observer:0.1.12:install-managed-assets:7b6ed784455c`,
+  `migration-observer:0.1.13:operator-cli-contracts:4eb40da3c1d9`,
+  `migration-observer:0.1.13:browser-surfaces:ab0df3cd03b7`,
+  `migration-observer:0.1.13:install-managed-assets:7b6ed784455c`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.

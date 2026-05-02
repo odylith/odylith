@@ -8075,7 +8075,7 @@
     },
     {
       "idea_id": "B-141",
-      "title": "Claude hook latency budget and fast-path startup",
+      "title": "Cross-host hook latency budget and fast-path startup",
       "status": "implementation",
       "workstream_type": "standalone",
       "workstream_parent": "",
@@ -8089,8 +8089,8 @@
       "workstream_merged_into": "",
       "workstream_merged_from": [],
       "related_diagram_ids": [],
-      "idea_file": "odylith/radar/source/ideas/2026-05/2026-05-01-claude-hook-latency-budget-and-fast-path-startup.md",
-      "promoted_to_plan": "",
+      "idea_file": "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -8106,7 +8106,7 @@
         "inherited_name": "",
         "effective_name": "0.1.13",
         "display_label": "0.1.13",
-        "notes": "Target release for B-141 cross-host hook latency, migration repair feedback, and host UX hardening.",
+        "notes": "Target release for B-141 cross-host hook latency, prompt substrate integrity, migration repair feedback, Casebook token hardening, and Compass live-governance UX.",
         "created_utc": "2026-05-01",
         "shipped_utc": "",
         "closed_utc": "",
@@ -8139,7 +8139,7 @@
       ],
       "release_history_summary": "Active: 0.1.13 \u00b7 Added to 0.1.13",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 0,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -8259,7 +8259,7 @@
       "inherited_name": "",
       "effective_name": "0.1.13",
       "display_label": "0.1.13",
-      "notes": "Target release for B-141 cross-host hook latency, migration repair feedback, and host UX hardening.",
+      "notes": "Target release for B-141 cross-host hook latency, prompt substrate integrity, migration repair feedback, Casebook token hardening, and Compass live-governance UX.",
       "created_utc": "2026-05-01",
       "shipped_utc": "",
       "closed_utc": "",
@@ -8287,7 +8287,7 @@
       "inherited_name": "",
       "effective_name": "0.1.13",
       "display_label": "0.1.13",
-      "notes": "Target release for B-141 cross-host hook latency, migration repair feedback, and host UX hardening.",
+      "notes": "Target release for B-141 cross-host hook latency, prompt substrate integrity, migration repair feedback, Casebook token hardening, and Compass live-governance UX.",
       "created_utc": "2026-05-01",
       "shipped_utc": "",
       "closed_utc": "",
@@ -8313,7 +8313,7 @@
       "inherited_name": "",
       "effective_name": "0.1.13",
       "display_label": "0.1.13",
-      "notes": "Target release for B-141 cross-host hook latency, migration repair feedback, and host UX hardening.",
+      "notes": "Target release for B-141 cross-host hook latency, prompt substrate integrity, migration repair feedback, Casebook token hardening, and Compass live-governance UX.",
       "created_utc": "2026-05-01",
       "shipped_utc": "",
       "closed_utc": "",
@@ -8340,7 +8340,7 @@
     "inherited_name": "",
     "effective_name": "0.1.13",
     "display_label": "0.1.13",
-    "notes": "Target release for B-141 cross-host hook latency, migration repair feedback, and host UX hardening.",
+    "notes": "Target release for B-141 cross-host hook latency, prompt substrate integrity, migration repair feedback, Casebook token hardening, and Compass live-governance UX.",
     "created_utc": "2026-05-01",
     "shipped_utc": "",
     "closed_utc": "",
@@ -8366,7 +8366,7 @@
     "inherited_name": "",
     "effective_name": "0.1.13",
     "display_label": "0.1.13",
-    "notes": "Target release for B-141 cross-host hook latency, migration repair feedback, and host UX hardening.",
+    "notes": "Target release for B-141 cross-host hook latency, prompt substrate integrity, migration repair feedback, Casebook token hardening, and Compass live-governance UX.",
     "created_utc": "2026-05-01",
     "shipped_utc": "",
     "closed_utc": "",
@@ -9891,9 +9891,9 @@
     {
       "id": "B-141",
       "type": "workstream",
-      "label": "Claude hook latency budget and fast-path startup",
+      "label": "Cross-host hook latency budget and fast-path startup",
       "status": "implementation",
-      "file": "odylith/radar/source/ideas/2026-05/2026-05-01-claude-hook-latency-budget-and-fast-path-startup.md"
+      "file": "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md"
     },
     {
       "id": "artifact:docs/specs/odylith-repo-integration-contract.md",
@@ -10932,6 +10932,12 @@
       "type": "plan",
       "label": "odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md",
       "file": "odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md",
+      "file": "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md"
     },
     {
       "id": "release:release-0-1-12",
@@ -14059,6 +14065,11 @@
     },
     {
       "source": "B-141",
+      "target": "plan:odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-141",
       "target": "release:release-0-1-13",
       "edge_type": "active_release"
     }
@@ -15045,7 +15056,7 @@
       "code_reference_count": 0
     },
     "B-141": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 0,
       "runbook_count": 0,
       "developer_doc_count": 0,
@@ -15117,10 +15128,10 @@
     "active_release_assignment_count": 19,
     "execution_program_count": 4,
     "execution_wave_count": 23,
-    "node_count": 304,
-    "edge_count": 620,
+    "node_count": 305,
+    "edge_count": 621,
     "warning_count": 5,
     "warning_item_count": 5
   },
-  "generated_utc": "2026-05-01 19:31:50Z"
+  "generated_utc": "2026-05-02 15:26:12Z"
 }

@@ -392,6 +392,14 @@ def _baked_hook_command(claude_command: str, *extra_flags: str) -> str:
     return " ".join(parts)
 
 
+def _legacy_prompt_status_marker_hook(claude_command: str) -> dict[str, Any]:
+    return {
+        "type": "command",
+        "command": f": # odylith-host-launcher.py claude {claude_command} compatibility marker; prompt-bundle owns this lane",
+        "timeout": 1,
+    }
+
+
 def _bash_guard_hook_entries() -> list[dict[str, Any]]:
     command = _baked_hook_command("bash-guard")
     return [
@@ -459,7 +467,9 @@ def _baked_hooks_block() -> dict[str, Any]:
                         "type": "command",
                         "command": _baked_hook_command("prompt-bundle"),
                         "timeout": 30,
-                    }
+                    },
+                    _legacy_prompt_status_marker_hook("prompt-context"),
+                    _legacy_prompt_status_marker_hook("prompt-teaser"),
                 ]
             }
         ],

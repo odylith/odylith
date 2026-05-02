@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-05-01
 
-Updated: 2026-05-01
+Updated: 2026-05-02
 
 Backlog: B-141
 
@@ -63,8 +63,17 @@ Related Bugs:
   tracks the host latency architecture failure.
 - [CB-150](../../../casebook/bugs/2026-05-01-casebook-renders-prose-status-and-type-chips.md)
   tracks the Casebook single-word Status and Type contract.
+- [CB-151](../../../casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md)
+  tracks the Compass default live-governance view filtering contract.
+- [CB-152](../../../casebook/bugs/2026-05-02-generated-launchers-are-not-parseable-by-shipped-health-checks.md)
+  tracks the mixed-version launcher-health compatibility failure found during
+  fresh-host proof.
 
 ## Learnings
+- [x] The original Claude-led report was a symptom, not the product boundary:
+      B-141 is cross-host because Codex shares the same hot-path risk class
+      around prompt context, launcher dispatch, dirty-event settlement, and
+      compact intervention substrate proof.
 - [x] Latency reductions that silence prompt hooks are regressions unless the
       hidden prompt context and visible intervention lanes remain equivalent.
 - [x] Claude can collapse prompt work and async refreshes natively; Codex needs
@@ -75,6 +84,15 @@ Related Bugs:
 - [x] A prompt hook that only proves "the hook ran" is not Odylith-first enough;
       the cheap path must still prove the substrate handshake without building
       the full conversation/intervention bundle.
+- [x] Current-source launcher templates must stay parseable by the latest
+      shipped runtime health checker until the managed runtime release advances
+      past that parser.
+- [x] Current-source Claude prompt-bundle launchers must also run on the
+      shipped v0.1.12 runtime by falling back to its existing prompt-context
+      and prompt-teaser commands until the new bundled module ships.
+- [x] Current-source Claude settings must keep shipped v0.1.12
+      intervention-status readiness truthful by exposing legacy prompt hook
+      names as no-op status markers while prompt-bundle owns the real work.
 
 ## Must-Ship
 - [x] Add shared prompt route locks so help/show/capabilities prompts bypass
@@ -93,6 +111,14 @@ Related Bugs:
 - [x] Seed host-launched hooks with context-engine workspace-Python and
       background-autospawn defaults so warm daemon reuse is available without
       changing the public hook command contract.
+- [x] Keep generated repo and bootstrap launchers compatible with v0.1.12
+      fallback-health parsing while preserving direct host-hook dispatch.
+- [x] Keep `claude prompt-bundle` compatible with shipped v0.1.12 runtimes by
+      detecting module availability and merging legacy prompt-context plus
+      prompt-teaser outputs only when the bundled module is absent.
+- [x] Keep shipped `claude intervention-status` compatible with prompt-bundle
+      settings by adding no-op legacy prompt-context and prompt-teaser marker
+      hooks that avoid duplicate Python prompt analysis.
 - [x] Enforce Casebook single-word Status and Type metadata in validation,
       capture, projection, dashboard rendering, and migration backfills.
 - [x] Mark explicit-only Claude workflow skills as slash-invocable without
@@ -139,6 +165,21 @@ Related Bugs:
         substrate and tests assert the emitted context carries memory,
         execution, and lane-proof evidence without constructing the full
         conversation bundle.
+- [x] Risk: New generated launchers could look unhealthy to the shipped
+      v0.1.12 runtime during fresh install or repair.
+  - [x] Mitigation: Generated launchers now include a legacy health-check
+        fallback anchor and a regression test that mimics the v0.1.12 parser
+        while keeping the active direct-dispatch path.
+- [x] Risk: Current-source generated launchers could route Claude
+      prompt-bundle to a module missing from the shipped v0.1.12 runtime.
+  - [x] Mitigation: Generated launchers now detect the module in the active
+        runtime or source `PYTHONPATH`; if absent, they run the shipped
+        prompt-context and prompt-teaser commands and merge their outputs.
+- [x] Risk: Shipped v0.1.12 `claude intervention-status` could report
+      degraded when the current-source prompt-bundle hook is actually ready.
+  - [x] Mitigation: Generated Claude settings include no-op legacy prompt hook
+        markers for status compatibility, and current-source status treats
+        prompt-bundle as the prompt-submit readiness owner.
 
 ## Validation
 - [x] `PYTHONPATH=src pytest -q tests/unit/runtime/test_claude_host_prompt_context.py tests/unit/runtime/test_codex_host_post_bash_checkpoint.py tests/unit/runtime/test_codex_host_stop_summary.py tests/unit/runtime/test_casebook_bug_index.py tests/unit/runtime/test_host_runtime_contract.py tests/unit/runtime/test_claude_cli_capabilities.py tests/unit/install/test_claude_effective_settings.py tests/unit/runtime/test_claude_host_compatibility.py tests/unit/test_claude_host_cli.py tests/unit/test_cli_audit.py tests/unit/install/test_codex_project_assets.py tests/unit/runtime/test_source_bundle_mirror.py tests/unit/runtime/test_hygiene.py tests/integration/install/test_manager.py::test_doctor_bundle_repair_backfills_legacy_casebook_bug_ids tests/integration/install/test_manager.py::test_upgrade_same_version_backfills_legacy_casebook_bug_ids tests/integration/install/test_manager.py::test_consumer_upgrade_backfills_legacy_casebook_bug_ids_during_runtime_activation`
@@ -146,6 +187,16 @@ Related Bugs:
 - [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_odylith_reasoning.py tests/unit/runtime/test_compass_standup_brief_maintenance.py tests/unit/runtime/test_compass_refresh_wait_settlement.py tests/unit/runtime/test_compass_refresh_runtime.py tests/unit/runtime/test_render_compass_dashboard.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_validate_component_registry_contract.py tests/unit/runtime/test_component_registry_intelligence.py tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_casebook_bug_index.py tests/unit/runtime/test_render_casebook_dashboard.py tests/unit/install/test_host_worktree_launcher.py tests/unit/runtime/test_codex_host_prompt_context.py tests/unit/runtime/test_claude_host_prompt_context.py tests/unit/runtime/test_codex_host_session_brief.py tests/unit/runtime/test_claude_host_session_brief.py tests/unit/runtime/test_codex_host_post_bash_checkpoint.py tests/unit/runtime/test_codex_host_stop_summary.py tests/unit/runtime/test_host_runtime_contract.py tests/unit/runtime/test_claude_cli_capabilities.py tests/unit/install/test_claude_effective_settings.py tests/unit/runtime/test_claude_host_compatibility.py tests/unit/test_claude_host_cli.py tests/unit/test_cli_audit.py tests/unit/install/test_codex_project_assets.py tests/unit/runtime/test_source_bundle_mirror.py` (`588 passed`)
 - [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/integration/install/test_manager.py::test_doctor_bundle_repair_backfills_legacy_casebook_bug_ids tests/integration/install/test_manager.py::test_upgrade_same_version_backfills_legacy_casebook_bug_ids tests/integration/install/test_manager.py::test_consumer_upgrade_backfills_legacy_casebook_bug_ids_during_runtime_activation` (`3 passed`)
 - [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_source_bundle_mirror.py tests/unit/install/test_codex_project_assets.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_component_registry_intelligence.py tests/unit/runtime/test_casebook_bug_index.py tests/unit/runtime/test_compass_standup_brief_maintenance.py tests/unit/runtime/test_compass_refresh_wait_settlement.py` (`140 passed`)
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/install/test_runtime.py` (`45 passed`)
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/install/test_runtime_host_hook_launcher.py` (`4 passed`)
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/install/test_runtime.py tests/unit/install/test_runtime_host_hook_launcher.py` (`49 passed`)
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/install/test_claude_effective_settings.py tests/unit/runtime/test_claude_cli_capabilities.py tests/unit/runtime/test_claude_host_compatibility.py tests/unit/runtime/test_intervention_delivery_status.py::test_claude_intervention_status_checks_prompt_teaser_and_edit_hooks tests/unit/test_claude_host_cli.py` (`34 passed`)
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_intervention_delivery_status.py` (`17 passed`)
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/install/test_runtime.py tests/integration/install/test_manager.py -k "launcher or fallback or start_preflight"` (`30 passed, 107 deselected`)
+- [x] Mixed-version fresh-host proof in `/private/tmp/odylith-fresh-host-final-aezgVP`: current-source install succeeded against shipped `0.1.12`; `version` and `doctor` ran healthy through the generated launcher; Codex prompt context, Claude prompt-bundle context/visible fallback, Codex and Claude `intervention-status`, and Codex/Claude visible-intervention smokes all passed; `start` reached Context/Execution Engine narrowing and returned only the expected empty-repo fallback.
+- [x] Targeted browser regression rerun for default Compass completed-program
+      hiding and Radar date sort (`3 passed`), followed by the full browser
+      matrix (`182 passed, 1 skipped`).
 - [x] `PYTHONPATH=src .venv/bin/python -m odylith.cli release migration-gate --repo-root . --target-version 0.1.13`
 - [x] `PYTHONPATH=src .venv/bin/python -m odylith.cli validate guidance-behavior --repo-root .`
 - [x] `PYTHONPATH=src .venv/bin/python -m odylith.cli validate discipline --repo-root .`
