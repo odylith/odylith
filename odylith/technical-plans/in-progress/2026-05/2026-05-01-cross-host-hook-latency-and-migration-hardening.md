@@ -231,6 +231,12 @@ Related Bugs:
       contributor identity and file-size rules, route detailed anti-slop
       examples to the playbook and skill, and remove duplicate Casebook Claude
       closeout wording while preserving the sibling AGENTS import.
+- [x] Finish the Odylith-tree consumer guidance de-dup: keep installed
+      `odylith/AGENTS.md` explicit for startup, context ordering, engine
+      activation, intervention visibility, consumer write boundaries, CLI-first,
+      anti-slop, and host-specific capability separation, while routing repeated
+      help/show/commentary/governance detail back to the repo-root hard-law
+      kernel that loads first.
 - [x] Decompose Radar topology validation out of the oversized backlog
       validator so B-141 topology enforcement does not keep growing a red-zone
       runtime file.

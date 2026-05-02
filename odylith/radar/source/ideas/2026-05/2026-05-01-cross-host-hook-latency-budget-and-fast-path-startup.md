@@ -119,6 +119,12 @@ Prompt-submit and stop hooks stay under a documented local latency budget on war
   Context Engine, Execution Engine, memory substrate, Tribunal, Intervention
   Engine, observers, governance, subagent routing, Surface DAGs, delivery,
   analysis, and migration-breakage observation.
+- 2026-05-02 Odylith-tree de-dup reduced consumer `odylith/AGENTS.md` and its
+  bundle mirror to 15,299 bytes while preserving explicit startup, context
+  ordering, engine activation, intervention visibility, consumer write
+  boundaries, CLI-first, anti-slop, and host-specific capability separation.
+  Repeated help/show/commentary/governance detail now routes to the repo-root
+  hard-law kernel that loads before the nested file.
 - 2026-05-02 Claude skill curation uses the host-native
   `disable-model-invocation` field so only seven high-frequency skills remain
   model-invocable by default; twenty-eight lower-frequency workflows stay

@@ -767,10 +767,21 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "Direct repo scan before that start step is a policy violation unless the task is trivial or Odylith is unavailable." in guidance_text
     assert "Do not run `odylith context`, `odylith query`, `git status`, broad repo search, or other repo-inspection commands in parallel with that start step." in guidance_text
     assert "Let `start` finish first; then run `odylith context --repo-root . <ref>` only when the user, start output, or governed truth gives an exact anchor." in guidance_text
+    assert "The repo-root managed `AGENTS.md` block is the shared hard-law kernel for both Codex and Claude Code." in guidance_text
+    assert "help/show/capabilities fast paths" in guidance_text
+    assert "Codex and Claude Code share the same default Odylith lane" in guidance_text
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in guidance_text
     assert "Describe progress in task terms like the exact file/workstream, the bug under test, or the validation in flight" in guidance_text
     assert "Do not surface routine `odylith start`, `odylith context`, or `odylith query` commands in progress updates" in guidance_text
     assert "never prefix commentary with control-plane receipt labels" in guidance_text
+    assert "Capability inventory is product-owned and host-agnostic" in guidance_text
+    assert "run `odylith capabilities` and print stdout only" in guidance_text
+    assert "Help and technical-plan command discovery use the single authoritative help path" in guidance_text
+    assert "cancel the visible help call" in guidance_text
+    assert "`odylith plan --help` is read-only" in guidance_text
+    assert "probe `odylith/technical-plans/source/`" in guidance_text
+    assert "CLI-first is non-negotiable here too" in guidance_text
+    assert "Do not hand-edit governed files where a CLI exists" in guidance_text
     assert "direct-edit and Bash PostToolUse hooks stay silent on success" in guidance_text
     assert "Claude Stop is memory/logging only" in guidance_text
     assert "literal commands" not in guidance_text
@@ -796,12 +807,13 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "Treat backlog/workstream, plan, Registry, Atlas, Casebook, Compass, and session upkeep as part of the same grounded Odylith workflow" in guidance_text
     assert "Queued backlog items" in guidance_text
     assert "do not pick it up automatically" in guidance_text
-    assert "Search existing workstream, plan, bug, component, diagram, and recent session/Compass context first" in guidance_text
+    assert "search existing workstream, plan, bug, component, diagram, and recent session/Compass context first" in guidance_text
     assert "If the slice is genuinely new and it is repo-owned non-product work, create the missing workstream and bound plan before non-trivial implementation" in guidance_text
-    assert "repo-local launcher, and truthful `odylith ... --help` for routine backlog, technical-plan, bug, spec, component, and diagram upkeep" in guidance_text
+    assert "default to the nearest `AGENTS.md`, the repo-local launcher, and truthful `odylith ... --help`" in guidance_text
     assert "When a routine governance task already maps to a first-class CLI family such as `odylith bug capture`, `odylith backlog create`, `odylith component register`, `odylith atlas scaffold`, or `odylith compass log`" in guidance_text
     assert "rerender only the owned surface" in guidance_text
-    assert "Codex and Claude Code share the same default Odylith lane" in guidance_text
+    assert "Treat AI slop as a regression" in guidance_text
+    assert "For guidance behavior pressure cases" in guidance_text
     assert "Use native host capabilities where they exist: Codex uses `.codex/` hooks/config/agents plus curated `.agents/skills/` command shims" in guidance_text
     assert "Treat the managed guidance files under `.claude/`, `.codex/`, the curated `.agents/skills/` command shims" in guidance_text
     assert "## Common Fast Paths" in guidance_text
@@ -1635,8 +1647,13 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     guidance_text = (repo_root / "odylith" / "AGENTS.md").read_text(encoding="utf-8")
     assert "Before any substantive repo scan or code change outside trivial fixes, run `./.odylith/bin/odylith start --repo-root .` first" in guidance_text
     assert "Do not run `odylith context`, `odylith query`, `git status`, broad repo search, or other repo-inspection commands in parallel with that start step." in guidance_text
+    assert "The repo-root managed `AGENTS.md` block is the shared hard-law kernel for both Codex and Claude Code." in guidance_text
+    assert "Codex and Claude Code share the same default Odylith lane" in guidance_text
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in guidance_text
     assert "Describe progress in task terms like the exact file/workstream, the bug under test, or the validation in flight" in guidance_text
+    assert "Capability inventory is product-owned and host-agnostic" in guidance_text
+    assert "Help and technical-plan command discovery use the single authoritative help path" in guidance_text
+    assert "CLI-first is non-negotiable here too" in guidance_text
     assert "Keep normal commentary task-first and human." in guidance_text
     assert "Reserve `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` for rare high-signal moments." in guidance_text
     assert "At closeout, or when a visible-intervention recovery renders a prompt-submit or visibility-proof note" in guidance_text
@@ -1656,10 +1673,10 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in guidance_text
     assert "Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes" in guidance_text
     assert "If the slice is genuinely new and it is repo-owned non-product work, create the missing workstream and bound plan before non-trivial implementation" in guidance_text
-    assert "repo-local launcher, and truthful `odylith ... --help` for routine backlog, technical-plan, bug, spec, component, and diagram upkeep" in guidance_text
+    assert "default to the nearest `AGENTS.md`, the repo-local launcher, and truthful `odylith ... --help`" in guidance_text
     assert "When a routine governance task already maps to a first-class CLI family such as `odylith bug capture`, `odylith backlog create`, `odylith component register`, `odylith atlas scaffold`, or `odylith compass log`" in guidance_text
     assert "rerender only the owned surface" in guidance_text
-    assert "Codex and Claude Code share the same default Odylith lane" in guidance_text
+    assert "Treat AI slop as a regression" in guidance_text
     assert "## Common Fast Paths" in guidance_text
     assert "./.odylith/bin/odylith radar refresh --repo-root ." in guidance_text
     assert "./.odylith/bin/odylith registry refresh --repo-root ." in guidance_text

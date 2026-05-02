@@ -106,6 +106,15 @@
   hotfile limit, and the topology-sensitive B-141 prevention stays covered by
   the same backlog-contract tests.
 
+- Prevention Update: The Odylith-tree consumer guidance diet keeps
+  `odylith/AGENTS.md` and its bundle mirror explicit for startup, context
+  ordering, engine activation, intervention visibility, consumer write
+  boundaries, CLI-first, anti-slop, and host-specific capability separation
+  while deferring repeated help/show/commentary/governance detail to the
+  repo-root hard-law kernel that loads first. Focused install and hygiene tests
+  assert that split instead of requiring every shared rule to be restated in the
+  nested file.
+
 - Monitoring Updates: Track prompt-submit, prompt-context, prompt-teaser, stop-summary, and startup grounding latency in local benchmark or smoke outputs for each supported host adapter.
 
 - Version/Build: Observed during v0.1.13 branch work; issue exists after v0.1.12 migration.

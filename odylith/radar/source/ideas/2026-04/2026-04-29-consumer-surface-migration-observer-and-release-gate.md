@@ -622,6 +622,20 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.13:browser-surfaces:8138268c6173`,
   `migration-observer:0.1.13:browser-surfaces:0ce09f5edbc9`,
   `migration-observer:0.1.13:install-managed-assets:db520dee14e4`.
+- Odylith-tree guidance de-dup: v0.1.13 trims duplicated consumer-lane
+  `odylith/AGENTS.md` working rules while preserving explicit startup, context,
+  execution, memory, Tribunal, Intervention Engine, observer, governance,
+  subagent, Surface DAG, delivery, analysis, migration-observer, CLI-first,
+  visibility-proof, consumer-boundary, and host-specific capability contracts.
+  Existing consumer installs need no data migration; upgrade refreshes managed
+  guidance and bundle mirrors through the additive managed-asset path, while
+  Compass browser/runtime artifacts refresh through the usual governed surface
+  render lane. Migration observer markers:
+  `migration-observer:0.1.13:guidance-and-skills:15c190e29627`,
+  `migration-observer:0.1.13:browser-surfaces:7bef9ce648f9`,
+  `migration-observer:0.1.13:install-managed-assets:3b63012c3b68`,
+  `migration-observer:0.1.13:browser-surfaces:533f5e4374a6`,
+  `migration-observer:0.1.13:install-managed-assets:06c877ec7676`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.
