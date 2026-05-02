@@ -248,7 +248,23 @@
       return notice;
     }
 
+    function briefNoticeBelongsInHeaderStatus(brief) {
+      const notice = visibleBriefNotice(brief);
+      const reason = String(notice.reason || "").trim().toLowerCase();
+      return reason === "skipped_not_worth_calling";
+    }
+
+    function briefHeaderStatusNotice(brief) {
+      if (!briefNoticeBelongsInHeaderStatus(brief)) return "";
+      const notice = visibleBriefNotice(brief);
+      const title = String(notice.title || "").trim();
+      const message = String(notice.message || "").trim();
+      if (title && message) return `${title}: ${message}`;
+      return title || message;
+    }
+
     function renderBriefNotice(brief) {
+      if (briefNoticeBelongsInHeaderStatus(brief)) return "";
       const notice = visibleBriefNotice(brief);
       const title = String(notice.title || "").trim();
       const message = String(notice.message || "").trim();

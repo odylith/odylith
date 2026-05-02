@@ -501,6 +501,57 @@ def test_compass_copy_brief_notice_stays_below_brief_title_instead_of_header(
     _run_in_browser_thread(_exercise)
 
 
+def test_compass_skipped_narration_notice_uses_header_status_not_brief_body(
+    tmp_path: Path,
+) -> None:
+    fixture_root = _ready_compass_fixture_root(tmp_path)
+    runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
+    payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+    standup_brief = payload.get("standup_brief") if isinstance(payload.get("standup_brief"), dict) else {}
+    brief = standup_brief.get("24h") if isinstance(standup_brief.get("24h"), dict) else {}
+    brief["source"] = "cache"
+    brief["cache_mode"] = "fallback"
+    brief["provider_decision"] = "skipped_not_worth_calling"
+    brief["notice"] = {
+        "title": "Brief reused last validated narration",
+        "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
+        "reason": "skipped_not_worth_calling",
+    }
+    standup_brief["24h"] = brief
+    payload["standup_brief"] = standup_brief
+    _write_compass_fixture_runtime_payloads(fixture_root, runtime_payload=payload)
+
+    def _exercise() -> None:
+        with _static_server(root=fixture_root) as base_url:
+            for _pw, browser in _browser():
+                context = browser.new_context(viewport={"width": 1440, "height": 1100})
+                try:
+                    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                    response = page.goto(
+                        base_url + "/odylith/index.html?tab=compass&window=24h&date=live",
+                        wait_until="domcontentloaded",
+                    )
+                    assert response is not None and response.ok
+
+                    compass = page.frame_locator("#frame-compass")
+                    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                    _assert_compass_live_state(compass, window_token="24h")
+                    status_banner = compass.locator("#status-banner")
+                    status_banner.wait_for(timeout=15000)
+                    status_text = status_banner.inner_text().strip()
+                    assert status_banner.evaluate("(node) => node.classList.contains('warn')") is True
+                    assert "Brief reused last validated narration" in status_text
+                    assert "winning narrative facts did not materially change" in status_text
+                    assert compass.locator("#digest-list .brief-status-card").count() == 0
+                    assert compass.locator("#digest-list .standup-brief-sections").count() == 1
+
+                    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+                finally:
+                    context.close()
+
+    _run_in_browser_thread(_exercise)
+
+
 def test_compass_current_workstreams_excludes_rows_already_represented_in_programs_or_release_targets(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)

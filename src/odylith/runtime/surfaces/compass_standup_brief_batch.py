@@ -586,7 +586,51 @@ def _skip_brief(
     fingerprint: str,
     generated_utc: str,
     decision_reason: str,
+    prepared: Mapping[str, Any] | None = None,
+    fact_packet: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
+    previous_brief = (
+        prepared.get("previous_brief")
+        if isinstance(prepared, Mapping) and isinstance(prepared.get("previous_brief"), Mapping)
+        else None
+    )
+    if isinstance(previous_brief, Mapping) and isinstance(fact_packet, Mapping):
+        raw_sections = previous_brief.get("sections")
+        if isinstance(raw_sections, Sequence):
+            sections = narrator._validated_cached_sections(  # noqa: SLF001
+                raw_sections=[dict(item) for item in raw_sections if isinstance(item, Mapping)],
+                fact_packet=fact_packet,
+                cached_evidence_lookup=(
+                    previous_brief.get("evidence_lookup", {})
+                    if isinstance(previous_brief.get("evidence_lookup"), Mapping)
+                    else {}
+                ),
+            )
+            if sections:
+                previous_fingerprint = (
+                    str(previous_brief.get("last_successful_narration_fingerprint", "")).strip()
+                    or str(previous_brief.get("substrate_fingerprint", "")).strip()
+                    or str(previous_brief.get("fingerprint", "")).strip()
+                )
+                return narrator._ready_brief(  # noqa: SLF001
+                    source="cache",
+                    fingerprint=str(fingerprint).strip(),
+                    generated_utc=generated_utc,
+                    sections=sections,
+                    evidence_lookup=narrator._brief_evidence_lookup(fact_packet=fact_packet),  # noqa: SLF001
+                    cache_mode="fallback",
+                    notice={
+                        "title": "Brief reused last validated narration",
+                        "message": (
+                            "Compass skipped a fresh narrator call because the winning narrative facts "
+                            "did not materially change."
+                        ),
+                        "reason": "skipped_not_worth_calling",
+                    },
+                    substrate_fingerprint=str(fingerprint).strip(),
+                    provider_decision="skipped_not_worth_calling",
+                    last_successful_narration_fingerprint=previous_fingerprint,
+                )
     return narrator._unavailable_ready_brief(  # noqa: SLF001
         fingerprint=fingerprint,
         generated_utc=generated_utc,
@@ -1783,6 +1827,8 @@ def build_brief_bundle(
                     fingerprint=fingerprint,
                     generated_utc=generated_utc,
                     decision_reason=str(prepared.get("decision_reason", "")).strip() or "no_winner_change",
+                    prepared=prepared,
+                    fact_packet=fact_packet,
                 )
 
     for window_key, window_packets in scoped_fact_packets_by_window.items():
@@ -1819,6 +1865,8 @@ def build_brief_bundle(
                         fingerprint=fingerprint,
                         generated_utc=generated_utc,
                         decision_reason=str(prepared.get("decision_reason", "")).strip() or "no_winner_change",
+                        prepared=prepared,
+                        fact_packet=fact_packet,
                     )
                     skipped_scoped[str(window_key).strip()] = skipped_window
         if cached_window:

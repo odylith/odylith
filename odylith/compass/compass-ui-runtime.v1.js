@@ -290,7 +290,11 @@
 
       const notices = [];
       const freshnessNotice = staleRuntimeNotice(payload, state);
+      const briefNotice = typeof briefHeaderStatusNotice === "function"
+        ? briefHeaderStatusNotice(standupBriefForState(payload, summaryState))
+        : "";
       if (freshnessNotice) notices.push(freshnessNotice);
+      if (briefNotice) notices.push(briefNotice);
       if (runtime.warning) notices.push(runtime.warning);
       if (normalized.warnings.length) notices.push(...normalized.warnings);
       if (runtime.source.startsWith("history:")) {
@@ -343,11 +347,14 @@
           const notice = brief.notice && typeof brief.notice === "object" ? brief.notice : {};
           const noticeTitle = String(notice.title || "").trim();
           const noticeMessage = String(notice.message || "").trim();
-          if (noticeTitle && noticeMessage) {
+          const includeNotice = typeof briefNoticeBelongsInHeaderStatus === "function"
+            ? !briefNoticeBelongsInHeaderStatus(brief)
+            : true;
+          if (includeNotice && noticeTitle && noticeMessage) {
             lines.push(`${noticeTitle}: ${noticeMessage}`);
-          } else if (noticeTitle) {
+          } else if (includeNotice && noticeTitle) {
             lines.push(noticeTitle);
-          } else if (noticeMessage) {
+          } else if (includeNotice && noticeMessage) {
             lines.push(noticeMessage);
           }
           const sections = Array.isArray(brief.sections) ? brief.sections : [];

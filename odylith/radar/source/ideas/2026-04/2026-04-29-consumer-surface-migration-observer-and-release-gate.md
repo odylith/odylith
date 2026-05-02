@@ -500,6 +500,17 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.13:install-managed-assets:8afd5be2970e`,
   `migration-observer:0.1.13:install-managed-assets:6aad0d78490e`,
   `migration-observer:0.1.13:install-managed-assets:352b7f58e4df`.
+- Compass skipped-narration status routing: v0.1.13 keeps the last validated
+  Standup Brief visible when fresh narration is skipped for non-material fact
+  churn, and routes the provider-spend warning to the existing Compass header
+  status banner. Existing consumer repos do not need data migration; upgrading
+  installs refreshed Compass and Casebook browser assets plus the bundled
+  Compass dashboard runtime assets.
+  Migration observer markers:
+  `migration-observer:0.1.12:browser-surfaces:154862df3418`,
+  `migration-observer:0.1.12:install-managed-assets:07f37c277434`,
+  `migration-observer:0.1.13:browser-surfaces:154862df3418`,
+  `migration-observer:0.1.13:install-managed-assets:07f37c277434`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.
