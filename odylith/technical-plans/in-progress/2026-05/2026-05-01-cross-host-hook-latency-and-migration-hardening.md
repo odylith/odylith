@@ -141,8 +141,9 @@ Related Bugs:
       0.1.11 -> 0.1.13, and 0.1.12 -> 0.1.13 activation, migration-plan
       state, migration-result state, pin adoption, and runtime pointer
       convergence.
-- [x] Enforce Casebook single-word Status and Type metadata in validation,
-      capture, projection, dashboard rendering, and migration backfills.
+- [x] Enforce Casebook single-word Status, Fixed, and Type metadata in
+      validation, capture, projection, dashboard rendering, sync normalization,
+      and the registered v0.1.13 migration from 0.1.10, 0.1.11, and 0.1.12.
 - [x] Mark explicit-only Claude workflow skills as slash-invocable without
       removing automatic context, bug-capture, start, show, sync, or hygiene
       skills from model invocation.

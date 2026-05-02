@@ -206,7 +206,7 @@ def _render_bug_text_with_compact_metadata_defaults(*, text: str) -> str:
         if match is not None and str(match.group(1)).strip() == "Type":
             type_values.append(str(match.group(2)).strip())
     has_type = bool(type_values)
-    canonical_type = casebook_metadata.canonical_casebook_type(type_values[-1] if type_values else "") or "Product"
+    canonical_type = casebook_metadata.canonical_casebook_display_type(type_values[-1] if type_values else "") or "Product"
     rendered: list[str] = []
     type_written = False
     for raw in lines:
@@ -288,6 +288,19 @@ def migrate_casebook_bug_metadata(*, repo_root: Path) -> list[Path]:
         path.write_text(rendered, encoding="utf-8")
         updated.append(path)
     return updated
+
+
+def casebook_bug_metadata_migration_targets(*, repo_root: Path) -> tuple[Path, ...]:
+    """Return bug records whose migration-sensitive metadata would be normalized."""
+
+    root = Path(repo_root).resolve()
+    bug_root = truth_root_path(repo_root=root, key="casebook_bugs")
+    targets: list[Path] = []
+    for path in _bug_files(bug_root):
+        original = path.read_text(encoding="utf-8")
+        if original != _render_bug_text_with_compact_metadata_defaults(text=original):
+            targets.append(path)
+    return tuple(targets)
 
 
 def _render_table(rows: Iterable[BugIndexRow]) -> list[str]:

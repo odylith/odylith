@@ -257,6 +257,42 @@ def test_sync_casebook_bug_index_compacts_fixed_metadata(tmp_path: Path) -> None
     assert "- Fixed: Pending" in text
 
 
+def test_sync_casebook_bug_index_compacts_legacy_type_to_display_label(tmp_path: Path) -> None:
+    bug_root = tmp_path / "odylith" / "casebook" / "bugs"
+    bug_root.mkdir(parents=True, exist_ok=True)
+    path = bug_root / "2026-03-26-example-open-bug.md"
+    path.write_text(
+        "\n".join(
+            [
+                "- Bug ID: CB-001",
+                "",
+                "- Type: OSW template upgrade repair / coroutine scheduler runtime / LocalStack proof UX",
+                "",
+                "- Fixed: Pending release/deploy",
+                "",
+                "- Status: Mitigated locally; pending platform release",
+                "",
+                "- Created: 2026-03-26",
+                "",
+                "- Severity: P1",
+                "",
+                "- Reproducibility: High",
+                "",
+                "- Description: Example bug.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    sync_casebook_bug_index.sync_casebook_bug_index(repo_root=tmp_path)
+
+    text = path.read_text(encoding="utf-8")
+    assert "- Type: UX" in text
+    assert "- Fixed: Pending" in text
+    assert "- Status: Mitigated" in text
+
+
 def test_sync_casebook_bug_index_cli_reports_duplicate_bug_ids_directly(tmp_path: Path, capsys) -> None:
     bug_root = tmp_path / "odylith" / "casebook" / "bugs"
     bug_root.mkdir(parents=True, exist_ok=True)

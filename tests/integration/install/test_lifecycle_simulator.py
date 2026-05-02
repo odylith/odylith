@@ -3,7 +3,40 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
+from odylith.install.casebook_metadata_migration import MIGRATION_ID as CASEBOOK_METADATA_MIGRATION_ID
+
 from tests.integration.install.simulator import InstallLifecycleSimulator, VerifiedReleaseLifecycleSimulator
+
+VALUE_ENGINE_MIGRATION_ID = "v0.1.11-visible-intervention-value-engine"
+
+
+def _write_legacy_casebook_metadata_bug(repo_root: Path) -> Path:
+    bug_path = repo_root / "odylith" / "casebook" / "bugs" / "2026-05-01-legacy-casebook-labels.md"
+    bug_path.parent.mkdir(parents=True, exist_ok=True)
+    bug_path.write_text(
+        "\n".join(
+            [
+                "- Bug ID: CB-999",
+                "",
+                "- Status: Mitigated locally; pending platform release",
+                "",
+                "- Created: 2026-05-01",
+                "",
+                "- Fixed: Pending release/deploy",
+                "",
+                "- Severity: P1",
+                "",
+                "- Reproducibility: Consistent",
+                "",
+                "- Type: OSW template upgrade repair / coroutine scheduler runtime / LocalStack proof UX",
+                "",
+                "- Description: Legacy Casebook metadata migration fixture.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    return bug_path
 
 
 def test_lifecycle_simulator_covers_first_install_upgrade_and_rollback(tmp_path: Path, monkeypatch) -> None:
@@ -45,6 +78,7 @@ def test_lifecycle_simulator_proves_historical_upgrades_to_0_1_13(tmp_path: Path
         sim.register_release(target_version)
 
         assert sim.install(from_version) == 0
+        legacy_bug_path = _write_legacy_casebook_metadata_bug(sim.repo_root)
 
         if from_version == "0.1.10":
             value_corpus = sim.repo_root / "odylith/runtime/source/intervention-value-adjudication-corpus.v1.json"
@@ -71,16 +105,26 @@ def test_lifecycle_simulator_proves_historical_upgrades_to_0_1_13(tmp_path: Path
         assert upgrade_event["active_version"] == target_version
         assert upgrade_event["migration_plan"]["target_version"] == target_version
 
-        value_engine_state = upgrade_event["migration_plan"]["ledger_state"][
-            "v0.1.11-visible-intervention-value-engine"
-        ]
+        value_engine_state = upgrade_event["migration_plan"]["ledger_state"][VALUE_ENGINE_MIGRATION_ID]
         assert value_engine_state == migration_state
+        assert upgrade_event["migration_plan"]["ledger_state"][CASEBOOK_METADATA_MIGRATION_ID] == "selected"
         assert not upgrade_event["migration_plan"]["blocked"]
+
+        migration_results = {result["migration_id"]: result for result in upgrade_event["migration_results"]}
+        assert migration_results[CASEBOOK_METADATA_MIGRATION_ID]["state"] == "applied"
+        legacy_text = legacy_bug_path.read_text(encoding="utf-8")
+        assert "- Status: Mitigated" in legacy_text
+        assert "- Fixed: Pending" in legacy_text
+        assert "- Type: UX" in legacy_text
+        payload_text = (sim.repo_root / "odylith" / "casebook" / "casebook-payload.v1.js").read_text(encoding="utf-8")
+        assert "Mitigated locally; pending platform release" not in payload_text
+        assert "Pending release/deploy" not in payload_text
+        assert "OSW template upgrade repair" not in payload_text
 
         if from_version == "0.1.10":
             assert (sim.repo_root / "odylith/runtime/source/intervention-value-adjudication-corpus.v1.json").is_file()
             assert not (sim.repo_root / "odylith/runtime/source/intervention-signal-ranker-corpus.v1.json").exists()
-            assert upgrade_event["migration_results"][0]["state"] == "applied"
+            assert migration_results[VALUE_ENGINE_MIGRATION_ID]["state"] == "applied"
 
 
 def test_lifecycle_simulator_blocks_migration_release_activation(tmp_path: Path, monkeypatch) -> None:

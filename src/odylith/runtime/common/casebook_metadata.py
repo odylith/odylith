@@ -40,6 +40,9 @@ _TYPE_DISPLAY_FALLBACKS = (
     ("security", "Security"),
     ("migration", "Migration"),
     ("install", "Install"),
+    ("performance", "Performance"),
+    ("dashboard", "UX"),
+    ("rendering", "UX"),
     ("release", "Release"),
     ("tooling", "Tooling"),
     ("ux", "UX"),
@@ -108,13 +111,15 @@ def canonical_casebook_display_type(value: str | Sequence[str] | None) -> str:
     raw = normalize_casebook_scalar(value)
     if not raw:
         return ""
-    token = canonical_casebook_type(raw)
-    if casebook_token_is_valid(token) and len(token) <= 24:
-        return token
+    if casebook_token_is_valid(raw) and len(raw) <= 24:
+        return _preserve_known_acronym_token(raw)
     folded = _fold_metadata_value(raw)
     for needle, label in _TYPE_DISPLAY_FALLBACKS:
         if needle in folded:
             return label
+    token = canonical_casebook_type(raw)
+    if casebook_token_is_valid(token) and len(token) <= 24:
+        return token
     return token[:24] if token else ""
 
 

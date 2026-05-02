@@ -1,6 +1,6 @@
 - Bug ID: CB-105
 
-- Type: PerformanceEngineeringLearning
+- Type: Performance
 
 
 

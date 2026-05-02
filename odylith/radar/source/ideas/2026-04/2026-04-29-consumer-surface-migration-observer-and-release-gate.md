@@ -478,16 +478,20 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.13:install-managed-assets:583b3a29cb60`.
 - Casebook compact metadata detail hardening: v0.1.13 keeps legacy consumer
   Casebook records readable without allowing prose Status, Fixed, or Type
-  values to leak into detail-card labels. Existing consumer records do not need
-  destructive migration; upgrade/repair compacts source metadata where governed
-  sync owns the field, and the browser projection now compacts legacy snapshot
-  prose at render time. Migration observer markers:
+  values to leak into detail-card labels. Existing consumer records now flow
+  through the registered v0.1.13 Casebook compact-metadata migration, which
+  normalizes source labels, rebuilds the Casebook index, rerenders Casebook
+  browser payloads, and writes a migration ledger for 0.1.10, 0.1.11, and
+  0.1.12 upgrades. Migration observer markers:
   `migration-observer:0.1.13:operator-cli-contracts:b870d25c57e8`,
   `migration-observer:0.1.13:browser-surfaces:f2c4d30f468f`,
   `migration-observer:0.1.13:browser-surfaces:f56cbbad5b96`,
   `migration-observer:0.1.13:browser-surfaces:5c6e158288a8`,
   `migration-observer:0.1.13:install-managed-assets:b85c3e788eab`,
-  `migration-observer:0.1.13:install-managed-assets:d5ce300448b1`.
+  `migration-observer:0.1.13:install-managed-assets:d5ce300448b1`,
+  `migration-observer:0.1.13:operator-cli-contracts:1c7ce3ac7fe4`,
+  `migration-observer:0.1.13:browser-surfaces:e0801e363df8`,
+  `migration-observer:0.1.13:install-managed-assets:b62c9c457cb1`.
 - Casebook detail gutter hardening: v0.1.13 tightens the selected-bug detail
   gutter in live and bundled Casebook HTML, repairs the media-block brace shape
   so padding no longer depends on CSS parser recovery, and keeps existing

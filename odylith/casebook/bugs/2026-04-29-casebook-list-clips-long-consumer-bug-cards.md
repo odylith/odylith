@@ -1,6 +1,6 @@
 - Bug ID: CB-138
 
-- Type: DashboardRenderingRegression
+- Type: UX
 
 
 

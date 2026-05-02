@@ -274,7 +274,7 @@ def _validate_casebook_bug_file(path: Path) -> list[CasebookSourceIssue]:
     type_matches = matches["Type"]
     if type_matches:
         line_number, value = type_matches[0]
-        canonical = casebook_metadata.canonical_casebook_type(value)
+        canonical = casebook_metadata.canonical_casebook_display_type(value)
         if _looks_placeholder(value) or not casebook_metadata.casebook_token_is_valid(value) or canonical != value:
             issues.append(
                 _issue(
