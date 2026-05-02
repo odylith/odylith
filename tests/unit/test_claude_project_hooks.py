@@ -221,8 +221,7 @@ def test_session_start_hook_refreshes_claude_auto_memory(tmp_path: Path) -> None
     )
 
     assert completed.returncode == 0
-    assert "Odylith startup: snapshot: Claude hardening is live for B-083" in completed.stdout
-    assert "focused on B-083" not in completed.stdout
+    assert completed.stdout == ""
     assert not call_log.exists()
 
     project_dirs = sorted((config_root / "projects").iterdir())
@@ -252,6 +251,19 @@ def test_session_start_hook_refreshes_claude_auto_memory(tmp_path: Path) -> None
     refreshed_text = memory_index.read_text(encoding="utf-8")
     assert "## Personal" in refreshed_text
     assert refreshed_text.count("<!-- odylith-auto-memory:start -->") == 1
+
+    completed = _run_hook(
+        "session-start-ground.py",
+        repo_root,
+        env={
+            "ODYLITH_HOOK_CALLS": str(call_log),
+            "CLAUDE_CONFIG_DIR": str(config_root),
+            "ODYLITH_HOOK_SESSION_START_STDOUT": "1",
+        },
+    )
+    assert completed.returncode == 0
+    assert "Odylith startup: snapshot: Claude hardening is live for B-083" in completed.stdout
+    assert "focused on B-083" not in completed.stdout
 
 
 def test_subagent_start_hook_injects_odlyith_slice_context(tmp_path: Path) -> None:

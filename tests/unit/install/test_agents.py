@@ -5,6 +5,7 @@ from odylith.install.agents import (
     SCOPE_START,
     inject_managed_block,
     managed_block,
+    managed_claude_bridge_block,
     remove_managed_block,
 )
 
@@ -158,3 +159,24 @@ def test_managed_block_matches_repo_root_product_scope_truth() -> None:
     expected = _extract_scope_block((REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8"))
 
     assert managed_block(repo_role="product_repo") == expected
+
+
+def test_managed_claude_bridge_stays_lean_and_imports_agents() -> None:
+    original = "# CLAUDE.md\n\n@AGENTS.md\n\nBody\n"
+    rendered = inject_managed_block(
+        original,
+        repo_role="product_repo",
+        path=Path("CLAUDE.md"),
+    )
+    scope_block = _extract_scope_block(rendered)
+
+    assert scope_block == managed_claude_bridge_block(repo_role="product_repo")
+    assert "@AGENTS.md" in rendered
+    assert "Treat AI slop as a regression." not in scope_block
+    assert len(scope_block.encode("utf-8")) < 2200
+
+
+def test_managed_claude_bridge_matches_repo_root_scope_truth() -> None:
+    expected = _extract_scope_block((REPO_ROOT / "CLAUDE.md").read_text(encoding="utf-8"))
+
+    assert managed_claude_bridge_block(repo_role="product_repo") == expected

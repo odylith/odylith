@@ -173,6 +173,20 @@ def prompt_needs_live_bundle(*, prompt: Any, bundle_override: Mapping[str, Any] 
     return prompt_signal_runtime.has_prompt_intervention_signal(prompt)
 
 
+def prompt_first_receipt_eligible(prompt: Any) -> bool:
+    """Return whether a quiet prompt should still get a substrate receipt.
+
+    Generic low-signal prompts do not need a hidden receipt on every turn. Keep
+    the receipt for Odylith-directed prompts so the user can ask about Odylith
+    health without paying for the full intervention bundle.
+    """
+
+    if suppress_prompt_live_narration(prompt=prompt):
+        return False
+    token = prompt_signal_runtime.normalized_passthrough_prompt(prompt)
+    return bool(token and "odylith" in token)
+
+
 def prompt_first_receipt_context(
     *,
     prompt: Any,

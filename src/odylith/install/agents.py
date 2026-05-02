@@ -107,9 +107,51 @@ def managed_block(*, repo_role: str = "consumer_repo") -> str:
     return "\n".join(lines)
 
 
-def inject_managed_block(text: str, *, repo_role: str = "consumer_repo") -> str:
+def managed_claude_bridge_block(*, repo_role: str = "consumer_repo") -> str:
+    """Return the lean Claude bridge block for root `CLAUDE.md`.
+
+    Claude already imports `AGENTS.md`; duplicating the full managed contract in
+    `CLAUDE.md` materially increases every Claude turn. Keep only the ordering
+    and host-delta rules that must be visible before the import lands.
+    """
+
+    lines = [
+        SCOPE_START,
+        "## Odylith Scope",
+        "",
+        "- Load `@AGENTS.md` as the authoritative shared Odylith contract; do not duplicate that contract in Claude-specific memory.",
+        "- For substantive work, run repo-local `odylith start` first. Run `odylith context --repo-root . <ref>` only after startup and only when an exact anchor is known.",
+        "- Keep routine startup, context, query, fallback, and packet-selection internals out of normal chat updates unless the user asks for the command or a real blocker requires it.",
+        "- Preserve the intervention pipeline: prompt-bundle may surface earned Observation or Proposal output, while normal low-signal prompts stay quiet unless a visibility recovery or Odylith-directed receipt is needed.",
+        "- Claude PostToolUse hooks stay silent on success; Claude Stop is memory/logging only.",
+        "- Claude Code uses the checked-in `.claude/` project assets for hooks, commands, rules, skills, subagents, statusline, and auto-memory; keep those assets aligned with the shared `AGENTS.md` contract.",
+        "- First-match help, show-me, and capability inventory routes stay stdout-clean: use `odylith --help`, `odylith show`, or `odylith capabilities` as appropriate before any diagnostics.",
+        "- Commit messages must use only the `freedom-research` contributor identity and must not include coding-assistant trailers.",
+    ]
+    if str(repo_role).strip() == "product_repo":
+        lines.append(
+            "- In the Odylith product repo, maintainer-only release and benchmark publishing work follows `odylith/maintainer/AGENTS.md`."
+        )
+        lines.append(
+            "- In maintainer mode, pinned dogfood is the default proof posture and detached `source-local` is the explicit live-source posture."
+        )
+    lines.extend(["", SCOPE_END, ""])
+    return "\n".join(lines)
+
+
+def _managed_block_for_path(path: Path, *, repo_role: str) -> str:
+    if path.name == "CLAUDE.md":
+        return managed_claude_bridge_block(repo_role=repo_role)
+    return managed_block(repo_role=repo_role)
+
+
+def inject_managed_block(text: str, *, repo_role: str = "consumer_repo", path: Path | None = None) -> str:
     current = remove_managed_block(text).rstrip("\n")
-    block = managed_block(repo_role=repo_role).rstrip("\n")
+    block = (
+        _managed_block_for_path(path, repo_role=repo_role)
+        if path is not None
+        else managed_block(repo_role=repo_role)
+    ).rstrip("\n")
     if not current:
         return block + "\n"
     lines = current.splitlines()
@@ -137,7 +179,11 @@ def has_managed_block(text: str) -> bool:
 
 def update_guidance_file(path: Path, *, install_active: bool, repo_role: str = "consumer_repo") -> None:
     original = path.read_text(encoding="utf-8")
-    updated = inject_managed_block(original, repo_role=repo_role) if install_active else remove_managed_block(original)
+    updated = (
+        inject_managed_block(original, repo_role=repo_role, path=path)
+        if install_active
+        else remove_managed_block(original)
+    )
     if updated != original:
         path.write_text(updated, encoding="utf-8")
 

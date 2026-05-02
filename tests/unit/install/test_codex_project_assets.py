@@ -98,6 +98,31 @@ def test_live_claude_skill_shims_and_review_assets_match_bundle_content() -> Non
         assert live_path.read_text(encoding="utf-8") == bundle_path.read_text(encoding="utf-8")
 
 
+def test_claude_project_bridge_and_hooks_stay_low_surface() -> None:
+    bridge_paths = (
+        LIVE_CLAUDE_ROOT / "CLAUDE.md",
+        PROJECT_ROOT_BUNDLE / ".claude" / "CLAUDE.md",
+    )
+    for path in bridge_paths:
+        text = path.read_text(encoding="utf-8")
+        assert "@../AGENTS.md" in text
+        assert "Treat AI slop as a regression." not in text
+        assert len(text.encode("utf-8")) < 1600
+
+    settings_paths = (
+        LIVE_CLAUDE_ROOT / "settings.json",
+        PROJECT_ROOT_BUNDLE / ".claude" / "settings.json",
+    )
+    for path in settings_paths:
+        text = path.read_text(encoding="utf-8")
+        payload = json.loads(text)
+        assert "compatibility marker" not in text
+        assert "prompt-context compatibility" not in text
+        assert "prompt-teaser compatibility" not in text
+        session_command = payload["hooks"]["SessionStart"][0]["hooks"][0]["command"]
+        assert session_command.endswith('claude session-start --repo-root "$CLAUDE_PROJECT_DIR" --quiet')
+
+
 def test_claude_explicit_only_skills_do_not_hide_automatic_context_skills() -> None:
     explicit_only = {
         "odylith-atlas-auto-update",

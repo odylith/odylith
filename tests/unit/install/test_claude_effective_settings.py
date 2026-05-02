@@ -42,12 +42,11 @@ def test_write_effective_claude_project_settings_writes_byte_stable_json(tmp_pat
     prompt_hooks = payload["hooks"]["UserPromptSubmit"][0]["hooks"]
     assert [hook["command"] for hook in prompt_hooks] == [
         'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude prompt-bundle --repo-root "$CLAUDE_PROJECT_DIR"',
-        ": # odylith-host-launcher.py claude prompt-context compatibility marker; prompt-bundle owns this lane",
-        ": # odylith-host-launcher.py claude prompt-teaser compatibility marker; prompt-bundle owns this lane",
     ]
     assert prompt_hooks[0]["timeout"] == 30
-    assert prompt_hooks[1]["timeout"] == 1
-    assert prompt_hooks[2]["timeout"] == 1
+    assert len(prompt_hooks) == 1
+    session_hook = payload["hooks"]["SessionStart"][0]["hooks"][0]
+    assert session_hook["command"].endswith('claude session-start --repo-root "$CLAUDE_PROJECT_DIR" --quiet')
     post_edit_hook = payload["hooks"]["PostToolUse"][0]["hooks"][0]
     post_bash_hook = payload["hooks"]["PostToolUse"][1]["hooks"][0]
     subagent_stop_hook = payload["hooks"]["SubagentStop"][0]["hooks"][0]

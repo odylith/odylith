@@ -52,6 +52,21 @@ def inferred_command_paths(*, project_dir: Path | str, command: str) -> list[str
     )
 
 
+def should_run_checkpoint_grounding(*, project_dir: Path | str, command: str) -> bool:
+    """Return whether Claude should pay the startup/checkpoint cost for Bash.
+
+    If the command parser can see exact targets and none are governed
+    source-of-truth paths, there is no governance refresh to settle. Commands
+    with no exact targets still take the conservative path because they may
+    mutate governed files indirectly.
+    """
+
+    paths = inferred_command_paths(project_dir=project_dir, command=command)
+    if not paths:
+        return True
+    return any(claude_host_shared.should_refresh_governed_edit(path) for path in paths)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="odylith claude post-bash-checkpoint",
@@ -69,6 +84,8 @@ def main(argv: list[str] | None = None) -> int:
     payload = claude_host_shared.load_payload(raw)
     command = command_from_payload(payload)
     if not should_checkpoint(command):
+        return 0
+    if not should_run_checkpoint_grounding(project_dir=repo_root, command=command):
         return 0
 
     claude_host_shared.run_odylith(

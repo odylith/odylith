@@ -22,7 +22,10 @@ def _patch_stdin(monkeypatch, command: str, *, session_id: str = "claude-bash-1"
     )
 
 
-def test_post_bash_checkpoint_runs_start_for_edit_like_bash(monkeypatch, tmp_path: Path) -> None:
+def test_post_bash_checkpoint_skips_start_for_exact_non_governed_edit_like_bash(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
     calls: list[tuple[str, list[str], int]] = []
 
     def _fake_run_odylith(*, project_dir, args, timeout=20):
@@ -39,6 +42,36 @@ def test_post_bash_checkpoint_runs_start_for_edit_like_bash(monkeypatch, tmp_pat
         claude_host_post_bash_checkpoint,
         "command_scoped_governed_paths",
         lambda **kwargs: [],
+    )
+    monkeypatch.setattr(
+        claude_host_post_bash_checkpoint,
+        "refresh_governance",
+        lambda **kwargs: None,
+    )
+
+    exit_code = claude_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    assert calls == []
+
+
+def test_post_bash_checkpoint_runs_start_for_governed_edit_like_bash(monkeypatch, tmp_path: Path) -> None:
+    calls: list[tuple[str, list[str], int]] = []
+
+    def _fake_run_odylith(*, project_dir, args, timeout=20):
+        calls.append((str(project_dir), list(args), timeout))
+        return None
+
+    _patch_stdin(monkeypatch, "python -c \"open('odylith/radar/source/item.md', 'w').write('x')\"")
+    monkeypatch.setattr(
+        claude_host_post_bash_checkpoint.claude_host_shared,
+        "run_odylith",
+        _fake_run_odylith,
+    )
+    monkeypatch.setattr(
+        claude_host_post_bash_checkpoint,
+        "command_scoped_governed_paths",
+        lambda **kwargs: ["odylith/radar/source/item.md"],
     )
     monkeypatch.setattr(
         claude_host_post_bash_checkpoint,

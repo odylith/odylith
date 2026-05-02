@@ -7,10 +7,11 @@ runtime entry, invoked through ``odylith claude session-start`` from
 ``.claude/settings.json``.
 
 The baked module reads the live Compass runtime snapshot, adds a compact
-substrate proof from already-local runtime summaries, materializes the
-auto-memory ``odylith-governed-brief.md`` note, and prints a compact
-human-readable ``Odylith startup: ...`` summary on stdout. Failures degrade to
-a no-op return so Claude Code's session start is never blocked by Odylith.
+substrate proof from already-local runtime summaries, and materializes the
+auto-memory ``odylith-governed-brief.md`` note. Installed hooks pass
+``--quiet`` so Claude does not receive the same brief twice; explicit CLI use
+can still print the compact ``Odylith startup: ...`` summary. Failures degrade
+to a no-op return so Claude Code's session start is never blocked by Odylith.
 """
 
 from __future__ import annotations

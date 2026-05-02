@@ -47,7 +47,7 @@ def render_prompt_bundle_payload(
         return {}
     refs = list(dict.fromkeys(prompt_signal_runtime.ANCHOR_RE.findall(str(prompt or ""))))
     if not refs and not host_intervention_support.prompt_needs_live_bundle(prompt=prompt):
-        if suppress_prompt_first_receipt:
+        if suppress_prompt_first_receipt or not host_intervention_support.prompt_first_receipt_eligible(prompt):
             return {}
         receipt = host_intervention_support.prompt_first_receipt_context(
             prompt=prompt,

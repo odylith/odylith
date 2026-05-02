@@ -123,7 +123,7 @@ def main(argv: list[str] | None = None) -> int:
     if not ref and not host_intervention_support.prompt_needs_live_bundle(prompt=prompt):
         receipt = (
             ""
-            if confirmed_events
+            if confirmed_events or not host_intervention_support.prompt_first_receipt_eligible(prompt)
             else host_intervention_support.prompt_first_receipt_context(
                 prompt=prompt,
                 repo_root=args.repo_root,

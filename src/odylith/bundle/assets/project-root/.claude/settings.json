@@ -89,7 +89,7 @@
       {
         "hooks": [
           {
-            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude session-start --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude session-start --repo-root \"$CLAUDE_PROJECT_DIR\" --quiet",
             "timeout": 30,
             "type": "command"
           }
@@ -136,16 +136,6 @@
           {
             "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude prompt-bundle --repo-root \"$CLAUDE_PROJECT_DIR\"",
             "timeout": 30,
-            "type": "command"
-          },
-          {
-            "command": ": # odylith-host-launcher.py claude prompt-context compatibility marker; prompt-bundle owns this lane",
-            "timeout": 1,
-            "type": "command"
-          },
-          {
-            "command": ": # odylith-host-launcher.py claude prompt-teaser compatibility marker; prompt-bundle owns this lane",
-            "timeout": 1,
             "type": "command"
           }
         ]

@@ -417,6 +417,36 @@ def test_prompt_bundle_emits_prompt_first_receipt_for_low_signal_prompt(
     assert "systemMessage" not in payload
 
 
+def test_prompt_bundle_skips_generic_low_signal_prompt_receipt(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    def _unexpected_bundle(**_: object) -> dict[str, object]:
+        raise AssertionError("generic low-signal prompt should not build prompt bundle")
+
+    def _unexpected_alignment(**_: object) -> dict[str, object]:
+        raise AssertionError("generic low-signal prompt should not build substrate receipt")
+
+    monkeypatch.setattr(
+        host_intervention_support.conversation_surface,
+        "build_conversation_bundle",
+        _unexpected_bundle,
+    )
+    monkeypatch.setattr(
+        host_intervention_support.alignment_context,
+        "build_host_alignment_context",
+        _unexpected_alignment,
+    )
+
+    payload = claude_host_prompt_bundle.render_prompt_bundle_payload(
+        repo_root=tmp_path,
+        prompt="What time is it?",
+        session_id="claude-bundle-generic-low-signal",
+    )
+
+    assert payload == {}
+
+
 def test_prompt_bundle_main_suppresses_receipt_after_chat_confirmation(
     monkeypatch,
     tmp_path: Path,

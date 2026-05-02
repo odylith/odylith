@@ -24,9 +24,10 @@ Assumptions:
   governed refresh evidence are product features, not optional debug output.
 - Direct-dispatch host hooks remain the reliable fallback until a long-lived
   hook daemon is separately designed, secured, and proven.
-- Low-signal prompt and SessionStart fast paths must still read the compact
-  alignment substrate: Context Engine packet state, memory backend, Execution
-  Engine decision, delivery visibility, Tribunal state, and proof status.
+- Odylith-directed quiet prompts and SessionStart memory updates must still
+  read the compact alignment substrate: Context Engine packet state, memory
+  backend, Execution Engine decision, delivery visibility, Tribunal state, and
+  proof status. Generic low-signal prompts may stay fully silent.
 - Legacy consumer Casebook records may be missing newer metadata fields and
   must migrate before stricter v0.1.13 validation runs.
 
@@ -90,9 +91,9 @@ Related Bugs:
 - [x] Current-source Claude prompt-bundle launchers must also run on the
       shipped v0.1.12 runtime by falling back to its existing prompt-context
       and prompt-teaser commands until the new bundled module ships.
-- [x] Current-source Claude settings must keep shipped v0.1.12
-      intervention-status readiness truthful by exposing legacy prompt hook
-      names as no-op status markers while prompt-bundle owns the real work.
+- [x] Current-source Claude readiness treats prompt-bundle as the
+      prompt-submit owner, so generated settings no longer fork no-op legacy
+      prompt-context or prompt-teaser marker commands on every prompt.
 - [x] Historical consumer upgrade starts from 0.1.10, 0.1.11, and 0.1.12
       must activate the v0.1.13 target through the normal upgrade lifecycle.
       The 0.1.10 path must apply the v0.1.11 value-engine migration when
@@ -118,6 +119,11 @@ Related Bugs:
       `odylith start` must be the first visible grounding gate on substantive
       turns; `odylith context`, `odylith query`, `git status`, and broad repo
       search run only after startup completes and an exact anchor is known.
+- [x] Claude's measured surface issue was real: root `CLAUDE.md` duplicated the
+      managed `AGENTS.md` contract before importing it, `.claude/CLAUDE.md`
+      restated several root rules, SessionStart printed a brief already written
+      to auto-memory, and generic low-signal prompt receipts spent alignment
+      work on turns that carried no Odylith signal.
 
 ## Must-Ship
 - [x] Add shared prompt route locks so help/show/capabilities prompts bypass
@@ -145,8 +151,9 @@ Related Bugs:
       detecting module availability and merging legacy prompt-context plus
       prompt-teaser outputs only when the bundled module is absent.
 - [x] Keep shipped `claude intervention-status` compatible with prompt-bundle
-      settings by adding no-op legacy prompt-context and prompt-teaser marker
-      hooks that avoid duplicate Python prompt analysis.
+      settings by treating prompt-bundle as the prompt-submit readiness owner
+      in current-source capability/status checks instead of emitting no-op
+      prompt-context and prompt-teaser marker hooks.
 - [x] Add an explicit historical upgrade matrix proving 0.1.10 -> 0.1.13,
       0.1.11 -> 0.1.13, and 0.1.12 -> 0.1.13 activation, migration-plan
       state, migration-result state, pin adoption, and runtime pointer
@@ -167,6 +174,12 @@ Related Bugs:
       source skills, bundle mirrors, and enforcement tests so all hosts honor
       serial `start` before `context` grounding without weakening Context
       Engine or intervention kickoff.
+- [x] Remove duplicate Claude guidance and hook tax without dropping features:
+      root `CLAUDE.md` is a lean bridge into `AGENTS.md`, `.claude/CLAUDE.md`
+      is pointer-only, generated Claude SessionStart hooks run `--quiet`,
+      generic low-signal prompt receipts are suppressed on Claude and Codex,
+      Odylith-directed quiet prompts still emit substrate proof, and Claude
+      exact non-governed Bash edits skip startup/checkpoint work.
 
 ## Should-Ship
 - [ ] Convert the host hook daemon proposal into a separate design slice with
@@ -207,11 +220,13 @@ Related Bugs:
         tests assert automatic context and bug-capture skills remain
         model-invokable.
 - [x] Risk: Low-signal prompt optimization could bypass memory, Execution
-      Engine, Tribunal, or intervention alignment.
-  - [x] Mitigation: The quiet path now builds the compact local alignment
-        substrate and tests assert the emitted context carries memory,
-        execution, and lane-proof evidence without constructing the full
-        conversation bundle.
+      Engine, Tribunal, or intervention alignment when the user is asking
+      Odylith about its own presence or visibility.
+  - [x] Mitigation: Generic low-signal prompts stay silent, while
+        Odylith-directed quiet prompts still build the compact local alignment
+        substrate. Tests assert the emitted context carries memory, execution,
+        and lane-proof evidence without constructing the full conversation
+        bundle.
 - [x] Risk: New generated launchers could look unhealthy to the shipped
       v0.1.12 runtime during fresh install or repair.
   - [x] Mitigation: Generated launchers now include a legacy health-check
@@ -224,9 +239,9 @@ Related Bugs:
         prompt-context and prompt-teaser commands and merge their outputs.
 - [x] Risk: Shipped v0.1.12 `claude intervention-status` could report
       degraded when the current-source prompt-bundle hook is actually ready.
-  - [x] Mitigation: Generated Claude settings include no-op legacy prompt hook
-        markers for status compatibility, and current-source status treats
-        prompt-bundle as the prompt-submit readiness owner.
+  - [x] Mitigation: Current-source status treats prompt-bundle as the
+        prompt-submit readiness owner and the v0.1.13 settings renderer no
+        longer emits marker hooks that fork shells without doing product work.
 - [x] Risk: v0.1.13 could pass latest-runtime proof while older supported
       installs fail during direct upgrade.
   - [x] Mitigation: Added a lifecycle simulator matrix for 0.1.10 -> 0.1.13,
@@ -266,6 +281,8 @@ Related Bugs:
 - [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/integration/install/test_manager.py` (`92 passed`)
 - [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_codex_host_prompt_context.py tests/unit/runtime/test_codex_host_bash_guard.py tests/unit/runtime/test_codex_host_post_bash_checkpoint.py tests/unit/runtime/test_codex_host_stop_summary.py tests/unit/runtime/test_claude_host_prompt_context.py tests/unit/runtime/test_claude_host_bash_guard.py tests/unit/runtime/test_claude_host_post_bash_checkpoint.py tests/unit/runtime/test_claude_host_post_edit_checkpoint.py tests/unit/runtime/test_claude_host_stop_summary.py tests/unit/runtime/test_host_hook_cli_dispatch.py tests/unit/runtime/test_intervention_cross_host_parity.py tests/unit/runtime/test_host_visible_intervention.py` (`146 passed`)
 - [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_tooling_dashboard_runtime_builder.py tests/unit/runtime/test_tooling_dashboard_shell_render_integration.py tests/unit/runtime/test_render_compass_dashboard.py tests/unit/runtime/test_compass_dashboard_runtime.py tests/unit/runtime/test_compass_refresh_runtime.py tests/unit/runtime/test_render_casebook_dashboard.py tests/unit/runtime/test_render_registry_dashboard.py` (`137 passed`)
+- [x] `pytest -q tests/unit/install/test_agents.py tests/unit/install/test_claude_effective_settings.py tests/unit/install/test_codex_project_assets.py` (`46 passed`)
+- [x] `pytest -q tests/unit/runtime/test_claude_host_prompt_context.py tests/unit/runtime/test_codex_host_prompt_context.py tests/unit/runtime/test_claude_host_post_bash_checkpoint.py tests/unit/test_claude_project_hooks.py` (`55 passed`)
 - [x] `./.odylith/bin/odylith upgrade --repo-root . --source-repo . --json` switched the product repo to detached `source-local`, kept the pin at `0.1.12`, marked release eligibility false, and refreshed tooling shell, Radar, and Compass surfaces for dev-maintainer proof.
 - [x] Mixed-version fresh-host proof in `/private/tmp/odylith-fresh-host-final-aezgVP`: current-source install succeeded against shipped `0.1.12`; `version` and `doctor` ran healthy through the generated launcher; Codex prompt context, Claude prompt-bundle context/visible fallback, Codex and Claude `intervention-status`, and Codex/Claude visible-intervention smokes all passed; `start` reached Context/Execution Engine narrowing and returned only the expected empty-repo fallback.
 - [x] Targeted browser regression rerun for default Compass completed-program

@@ -352,6 +352,38 @@ def test_main_emits_prompt_first_receipt_for_low_signal_prompt_without_bundle(
     assert "systemMessage" not in payload
 
 
+def test_main_skips_generic_low_signal_prompt_receipt(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    def _unexpected_bundle(**_: object) -> dict[str, object]:
+        raise AssertionError("generic low-signal prompt should not build prompt bundle")
+
+    def _unexpected_alignment(**_: object) -> dict[str, object]:
+        raise AssertionError("generic low-signal prompt should not build substrate receipt")
+
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(json.dumps({"prompt": "What time is it?", "session_id": "codex-generic-low-signal"})),
+    )
+    monkeypatch.setattr(
+        host_intervention_support.conversation_surface,
+        "build_conversation_bundle",
+        _unexpected_bundle,
+    )
+    monkeypatch.setattr(
+        host_intervention_support.alignment_context,
+        "build_host_alignment_context",
+        _unexpected_alignment,
+    )
+
+    exit_code = codex_host_prompt_context.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    assert capsys.readouterr().out == ""
+
+
 def test_main_emits_capability_inventory_route_lock_without_host_taxonomy(
     monkeypatch,
     tmp_path: Path,

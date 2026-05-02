@@ -85,7 +85,7 @@ def main() -> int:
         snapshot=snapshot,
         start_output=summary,
     )
-    if summary:
+    if summary and _env_truthy("ODYLITH_HOOK_SESSION_START_STDOUT"):
         print(summary)
     return 0
 

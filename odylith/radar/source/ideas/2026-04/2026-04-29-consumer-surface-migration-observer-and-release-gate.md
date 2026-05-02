@@ -550,6 +550,24 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.13:install-managed-assets:2f2e3b612696`,
   `migration-observer:0.1.13:browser-surfaces:b065a42fa247`,
   `migration-observer:0.1.13:browser-surfaces:36a9b304f8a5`.
+- Cross-host host-surface diet and prompt receipt fast path: v0.1.13 removes
+  duplicated Claude guidance bytes, removes no-op Claude prompt marker shell
+  hooks, makes Claude SessionStart quiet while preserving auto-memory writes,
+  skips full prompt receipts only for generic low-signal prompts, keeps
+  Odylith-directed prompt receipts and live Observation/Proposal eligibility,
+  and lets exact non-governed Claude Bash commands bypass heavy checkpoint
+  grounding. Codex receives the same generic low-signal prompt fast path while
+  preserving Odylith-directed receipt behavior. Existing consumer repos do not
+  need data migration; upgrading refreshes managed host guidance, hook
+  settings, bundle assets, and runtime surfaces while preserving user-owned
+  host settings through the additive install merge. Migration observer markers:
+  `migration-observer:0.1.13:guidance-and-skills:355461e98fe5`,
+  `migration-observer:0.1.13:operator-cli-contracts:e167a3c7d9d7`,
+  `migration-observer:0.1.13:browser-surfaces:2870c7b4909c`,
+  `migration-observer:0.1.13:install-managed-assets:e825f6f123e1`,
+  `migration-observer:0.1.13:operator-cli-contracts:8480b8f26127`,
+  `migration-observer:0.1.13:browser-surfaces:8b10e3560e2d`,
+  `migration-observer:0.1.13:install-managed-assets:f87bf182fdad`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.

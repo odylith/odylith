@@ -70,7 +70,7 @@ Developers using Odylith through Claude Code, Codex, or future host adapters in 
 Make Odylith feel native across supported hosts by enforcing a low-latency hook/startup budget, avoiding expensive prompt-turn work when no high-value intervention is available, and keeping show/help fast paths direct instead of fanning into broad tool calls.
 
 ## Proposed Solution
-Add host-general prompt and startup fast paths: low-signal prompt hooks skip the full conversation bundle but still emit a compact substrate proof, SessionStart uses the same local alignment substrate instead of telling operators to run startup manually, show/help/capability prompts stay locked to direct stdout routes, Claude prompt-submit work collapses into one prompt-bundle hook, Codex PostToolUse records dirty events and defers governed refresh to Stop-time settlement, and generated launchers dispatch host hook commands directly to baked runtime modules with context-engine warm-daemon defaults.
+Add host-general prompt and startup fast paths: generic low-signal prompt hooks skip the full conversation bundle and substrate receipt, Odylith-directed quiet prompts keep a compact substrate proof, SessionStart writes the same local alignment substrate to memory without duplicate stdout, show/help/capability prompts stay locked to direct stdout routes, Claude prompt-submit work collapses into one prompt-bundle hook, Codex PostToolUse records dirty events and defers governed refresh to Stop-time settlement, Claude exact non-governed Bash edits skip startup/checkpoint work, and generated launchers dispatch host hook commands directly to baked runtime modules with context-engine warm-daemon defaults.
 Preserve the visible grounding sequence across hosts: `odylith start` is the first substantive turn gate, and `odylith context`, `odylith query`, `git status`, or broad repo search must wait until startup finishes and an exact anchor is known.
 
 ## Scope
@@ -101,6 +101,12 @@ Prompt-submit and stop hooks stay under a documented local latency budget on war
   guidance, Claude project bridge assets, Claude slash commands, Codex and
   Claude skill shims, source skills, and bundle mirrors to serial `start`
   before follow-on `context` or repo-inspection work.
+- 2026-05-02 host-surface diet removed the duplicated Claude root contract
+  from `CLAUDE.md`, made `.claude/CLAUDE.md` a pointer bridge, removed two
+  no-op Claude prompt marker commands, made generated SessionStart hooks
+  memory-only by default, suppressed generic low-signal receipts on Claude and
+  Codex, and kept Odylith-directed quiet prompts plus visible prompt-bundle
+  intervention paths intact.
 
 ## Rollout
 - Execute through the bound v0.1.13 technical plan and keep the first implementation wave focused on hook latency, prompt hot-path gating, launcher dispatch, and governed migration capture.
@@ -118,12 +124,12 @@ Claude, Codex, and future host adapters should get the same grounded value witho
 - None decided yet; record interface changes once implementation is scoped.
 
 ## Migration/Compatibility
-- Existing consumer repos need no manual data migration. Upgrading from 0.1.10, 0.1.11, or 0.1.12 installs the host-launcher preference fix, direct host-hook launcher dispatch, substrate-backed SessionStart behavior, prompt hot-path gating, context-engine warm-daemon defaults, v0.1.12-compatible launcher-health anchors, refreshed host guidance/bundle assets, and any automatic release migration still required by local state.
+- Existing consumer repos need no manual data migration. Upgrading from 0.1.10, 0.1.11, or 0.1.12 installs the host-launcher preference fix, direct host-hook launcher dispatch, memory-backed quiet SessionStart behavior, prompt hot-path gating, context-engine warm-daemon defaults, v0.1.12-compatible launcher-health anchors, refreshed host guidance/bundle assets, and any automatic release migration still required by local state.
 - v0.1.13 also refreshes managed guidance and skill assets so supported hosts
   inherit the serial startup-grounding contract on upgrade.
 
 ## Test Strategy
-- Unit tests cover low-signal Claude and Codex prompt hooks skipping conversation-bundle construction while keeping substrate evidence, Claude prompt-bundle route locks and visible teaser preservation, SessionStart using substrate state by default, direct show/help/capability route locks, launcher bootstrap fallback preference, legacy launcher-health parser compatibility, Codex dirty-event settlement, context-engine warm-daemon env defaults, and direct host-hook launcher dispatch.
+- Unit tests cover generic low-signal Claude and Codex prompt hooks skipping conversation-bundle and substrate construction, Odylith-directed quiet prompts keeping substrate evidence, Claude prompt-bundle route locks and visible teaser preservation, SessionStart using substrate state by default without duplicate hook stdout, direct show/help/capability route locks, launcher bootstrap fallback preference, legacy launcher-health parser compatibility, Codex dirty-event settlement, Claude exact non-governed Bash checkpoint skips, context-engine warm-daemon env defaults, and direct host-hook launcher dispatch.
 - Integration tests cover 0.1.10 -> 0.1.13, 0.1.11 -> 0.1.13, and 0.1.12 -> 0.1.13 upgrade activation, migration-plan state, migration-result state, pin adoption, and runtime pointer convergence.
 - Integration tests also cover governed sync/operator latency, no-provider credit burn, dashboard all-surface refresh behavior, and parallel multi-surface dashboard execution.
 - Guidance tests cover serial start/context ordering across root guidance,

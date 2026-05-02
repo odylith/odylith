@@ -130,11 +130,12 @@
   locally proven first-class project-surface support instead of treating
   every Claude build as the same frozen capability set.
 - Session-start grounding runs through the CLI-backed
-  `./.odylith/bin/odylith claude session-start --repo-root .` hook command,
-  which mirrors a compact Compass-derived brief into Claude's documented
-  auto-memory directory under `~/.claude/projects/<project>/memory/`. The
-  normal hook uses cached runtime state and does not run `odylith start`;
-  maintainers can opt into eager start explicitly for diagnostics.
+  `./.odylith/bin/odylith claude session-start --repo-root . --quiet` hook
+  command, which mirrors a compact Compass-derived brief into Claude's
+  documented auto-memory directory under
+  `~/.claude/projects/<project>/memory/`. The normal hook uses cached runtime
+  state, does not run `odylith start`, and does not print duplicate stdout;
+  maintainers can opt into eager start or stdout explicitly for diagnostics.
 - Subagent-start grounding runs through the CLI-backed
   `./.odylith/bin/odylith claude subagent-start --repo-root .` hook command,
   which injects the active Odylith slice into Claude project subagents via
@@ -143,9 +144,9 @@
   `./.odylith/bin/odylith claude prompt-bundle --repo-root .` hook command.
   It preserves the old show/help/capabilities route lock, anchor context,
   hidden continuity context, and earned visible teaser behavior in one
-  prompt-submit process. Low-signal prompts without anchors, visibility
-  complaints, or governance hints must return without building the prompt
-  intervention bundle.
+  prompt-submit process. Generic low-signal prompts without anchors,
+  visibility complaints, governance hints, or Odylith-directed wording must
+  return without building the prompt intervention bundle or substrate receipt.
 - The public command surface stays `./.odylith/bin/odylith claude ...`, but
   the repo-local launcher may dispatch baked Claude hook commands directly to
   their runtime modules after trust selection. Hot hook commands must not pay
@@ -153,8 +154,8 @@
 - User-prompt teaser visibility is part of `prompt-bundle`: the hook emits
   discreet `hookSpecificOutput.additionalContext` plus a `systemMessage` for
   the earned visible teaser. The legacy `prompt-context` and `prompt-teaser`
-  commands remain compatibility surfaces, not the default installed hook
-  shape.
+  commands remain manual compatibility surfaces, but the default installed
+  hook shape no longer forks marker commands for them.
 - Destructive Bash blocking runs through a repo-managed Claude `PreToolUse`
   Bash hook command
   (`./.odylith/bin/odylith claude bash-guard --repo-root .`) and denies a
@@ -176,6 +177,9 @@
   patch-style Bash payloads get the same governed-refresh coverage as direct
   Claude edits without turning hook receipts into visible intervention copy.
   The generated Claude settings mark this checkpoint async as well.
+- The Bash checkpoint first uses exact command-path inference. Exact
+  non-governed edits return immediately; governed edits and uncertain
+  edit-like commands keep the conservative startup/checkpoint path.
 - Claude's governed-refresh precision comes from the exact edited path in the
   direct edit `PostToolUse` payload itself; Bash-command target inference is a
   separate parity lane and must stay command-scoped so it never widens refresh
