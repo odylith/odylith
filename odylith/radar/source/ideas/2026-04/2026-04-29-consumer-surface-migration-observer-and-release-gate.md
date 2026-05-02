@@ -488,6 +488,18 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.13:browser-surfaces:5c6e158288a8`,
   `migration-observer:0.1.13:install-managed-assets:b85c3e788eab`,
   `migration-observer:0.1.13:install-managed-assets:d5ce300448b1`.
+- Casebook detail gutter hardening: v0.1.13 tightens the selected-bug detail
+  gutter in live and bundled Casebook HTML, repairs the media-block brace shape
+  so padding no longer depends on CSS parser recovery, and keeps existing
+  consumer Casebook data compatible because only rendered layout changes.
+  Migration observer markers:
+  `migration-observer:0.1.13:browser-surfaces:1c8a6979a09c`,
+  `migration-observer:0.1.13:browser-surfaces:83f738bbae83`,
+  `migration-observer:0.1.13:browser-surfaces:262b63ed190c`,
+  `migration-observer:0.1.13:browser-surfaces:c72b1df630d2`,
+  `migration-observer:0.1.13:install-managed-assets:8afd5be2970e`,
+  `migration-observer:0.1.13:install-managed-assets:6aad0d78490e`,
+  `migration-observer:0.1.13:install-managed-assets:352b7f58e4df`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.

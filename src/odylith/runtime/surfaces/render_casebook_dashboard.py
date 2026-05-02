@@ -455,6 +455,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     surface_shell_root_css = dashboard_ui_primitives.standard_surface_shell_root_css()
     surface_shell_css = dashboard_ui_primitives.standard_surface_shell_css(
         selector=".shell",
+        padding="18px 12px 30px",
         display="grid",
         gap_px=12,
     )
@@ -818,7 +819,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     }}
     .detail {{
       min-width: 0;
-      padding: 18px 20px 22px;
+      padding: 14px 12px 18px;
       display: grid;
       gap: 18px;
       align-content: start;
@@ -1176,7 +1177,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     }}
     @media (max-width: 760px) {{
       .shell {{
-        padding: 18px 14px 28px;
+        padding: 16px 10px 28px;
       }}
       .filters-bar {{
         grid-template-columns: 1fr;
@@ -1192,9 +1193,8 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       .summary-facts {{
         grid-template-columns: 1fr;
       }}
-    }}
       .detail {{
-        padding: 16px 14px 18px;
+        padding: 14px 10px 16px;
       }}
     }}
   </style>
