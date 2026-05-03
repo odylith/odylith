@@ -1402,6 +1402,17 @@ def test_dogfood_activate_uses_source_upgrade_across_release_boundaries() -> Non
     assert 'launcher_cli upgrade --repo-root .' in text
 
 
+def test_consumer_rehearsal_reset_stops_runtime_and_retries_cleanup() -> None:
+    text = (REPO_ROOT / "bin" / "consumer-rehearsal").read_text(encoding="utf-8")
+
+    assert "stop_rehearsal_runtime()" in text
+    assert "context-engine stop --repo-root ." in text
+    assert "remove_rehearsal_path()" in text
+    assert "for attempt in 1 2 3 4 5; do" in text
+    assert 'remove_rehearsal_path "$repo_dir/.odylith"' in text
+    assert 'rm -rf "$repo_dir/.odylith" "$repo_dir/odylith" "$repo_dir/.agents" "$repo_dir/.claude"' not in text
+
+
 def test_dev_validate_surfaces_detached_source_local_lane() -> None:
     makefile = (REPO_ROOT / "Makefile").read_text(encoding="utf-8")
     help_text = (REPO_ROOT / "bin" / "help").read_text(encoding="utf-8")
