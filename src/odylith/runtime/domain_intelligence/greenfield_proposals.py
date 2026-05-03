@@ -20,10 +20,14 @@ from odylith.runtime.analysis_engine import repo_analysis
 from odylith.runtime.analysis_engine.types import SourceSummary, slugify
 from odylith.runtime.domain_intelligence.archetypes import Archetype
 from odylith.runtime.domain_intelligence.archetypes import ComponentBlueprint
-from odylith.runtime.domain_intelligence.archetypes import select_archetype
+from odylith.runtime.domain_intelligence.archetypes import rank_archetypes
 from odylith.runtime.domain_intelligence.proposal_planning import build_greenfield_ux
+from odylith.runtime.domain_intelligence.proposal_planning import build_program_blueprint
 from odylith.runtime.domain_intelligence.proposal_planning import build_program_waves
 from odylith.runtime.domain_intelligence.proposal_planning import build_release_plan
+from odylith.runtime.domain_intelligence.proposal_planning import first_slice_validation_instruction
+from odylith.runtime.domain_intelligence.proposal_rendering import build_apply_commands
+from odylith.runtime.domain_intelligence.proposal_rendering import format_proposal_text
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import component_authoring
 from odylith.runtime.governance import owned_surface_refresh
@@ -66,8 +70,43 @@ def _intent_title(prompt: str, archetype: Archetype) -> str:
     text = re.sub(r"\b(for me|please|with backlog.*|and diagrams.*|and atlas.*)$", "", text, flags=re.IGNORECASE).strip(" .")
     if not text or len(text) < 4:
         return archetype.label
-    words = [word.capitalize() if word.lower() not in {"ai", "crm", "cli", "sdk"} else word.upper() for word in text.split()]
-    return " ".join(words[:8])
+    words = [_title_token(word) for word in text.split()]
+    return " ".join(words[:10])
+
+
+_TITLE_ACRONYMS = {
+    "ai": "AI",
+    "api": "API",
+    "b2b": "B2B",
+    "cli": "CLI",
+    "crm": "CRM",
+    "gis": "GIS",
+    "iot": "IoT",
+    "llm": "LLM",
+    "ml": "ML",
+    "nasa": "NASA",
+    "ode": "ODE",
+    "pde": "PDE",
+    "rag": "RAG",
+    "sdk": "SDK",
+    "soc2": "SOC2",
+    "ui": "UI",
+    "ux": "UX",
+}
+
+
+def _title_token(token: str) -> str:
+    parts = str(token).split("-")
+    rendered: list[str] = []
+    for index, part in enumerate(parts):
+        key = part.casefold()
+        if key in _TITLE_ACRONYMS:
+            rendered.append(_TITLE_ACRONYMS[key])
+        elif index > 0 and part.islower():
+            rendered.append(part)
+        else:
+            rendered.append(part[:1].upper() + part[1:] if part else part)
+    return "-".join(rendered)
 
 
 def _complexity(prompt: str) -> str:
@@ -135,6 +174,7 @@ def _workstream_drafts(intent_title: str, archetype: Archetype, components: Sequ
     parent_title = f"Govern {intent_title}"
     component_labels = [str(row.get("label", "")).strip() for row in components if str(row.get("label", "")).strip()]
     first_slice = component_labels[0] if component_labels else archetype.label
+    first_slice_proof = first_slice_validation_instruction(archetype)
     problem = (
         f"The repo has a user-stated intent to build {intent_title}, but no confirmed governance plan yet. "
         "Without a first proposal, backlog, component ownership, and topology would be invented ad hoc by later sessions."
@@ -165,7 +205,7 @@ def _workstream_drafts(intent_title: str, archetype: Archetype, components: Sequ
             "priority": "P1",
             "sizing": "L" if complexity == "complex" else "M",
             "complexity": "High" if complexity == "complex" else "Medium",
-            "recommended_first_slice": f"Start with {first_slice} and the validation proof that keeps it honest.",
+            "recommended_first_slice": f"Start with {first_slice} and {first_slice_proof}.",
             "evidence_tier": "user_intent",
         }
     ]
@@ -187,7 +227,7 @@ def _workstream_drafts(intent_title: str, archetype: Archetype, components: Sequ
                     "priority": "P1",
                     "sizing": "M",
                     "complexity": "Medium",
-                    "recommended_first_slice": f"Write the first {label} contract and proof harness.",
+                    "recommended_first_slice": f"Write the first {label} contract and {first_slice_proof}.",
                     "evidence_tier": "user_intent",
                 }
             )
@@ -303,7 +343,8 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
     """Compile a provider-free greenfield proposal from prompt and shallow repo evidence."""
 
     root = Path(repo_root).expanduser().resolve()
-    archetype, confidence = select_archetype(prompt)
+    ranked_archetypes = rank_archetypes(prompt, limit=3)
+    archetype, _raw_score, confidence = ranked_archetypes[0]
     intent_title = _intent_title(prompt, archetype)
     project_slug = slugify(intent_title)
     complexity = _complexity(prompt)
@@ -328,6 +369,24 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
             "confidence": round(confidence, 2),
             "evidence_tier": "user_intent",
         },
+        "classification": {
+            "method": "deterministic_keyword_archetype_scoring",
+            "primary": {
+                "archetype": archetype.archetype_id,
+                "archetype_label": archetype.label,
+                "confidence": round(confidence, 2),
+            },
+            "alternatives": [
+                {
+                    "archetype": candidate.archetype_id,
+                    "archetype_label": candidate.label,
+                    "confidence": round(candidate_confidence, 2),
+                }
+                for candidate, _candidate_score, candidate_confidence in ranked_archetypes[1:]
+            ],
+            "fit_policy": "Use the primary fit by default; ask the operator before switching when alternate fits would change topology or validation.",
+            "provider_calls": 0,
+        },
         "observed_source": evidence,
         "greenfield_ux": build_greenfield_ux(
             intent_title=intent_title,
@@ -342,6 +401,12 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
             "shape": "program_with_waves" if len(workstreams) > 1 else "single_slice_with_wave_plan",
             "wave_count": len(waves),
             "recommended_first_wave": str(waves[0].get("label", "Discovery")).strip() if waves else "Discovery",
+            "blueprint": build_program_blueprint(
+                intent_title=intent_title,
+                archetype=archetype,
+                workstreams=workstreams,
+                waves=waves,
+            ),
             "waves": waves,
         },
         "release_plan": build_release_plan(intent_title, archetype, waves),
@@ -349,120 +414,8 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
         "components": components,
         "diagrams": diagrams,
     }
-    proposal["apply_commands"] = _apply_commands(proposal)
+    proposal["apply_commands"] = build_apply_commands(proposal)
     return proposal
-
-
-def _shell_quote(value: str) -> str:
-    return "'" + str(value).replace("'", "'\"'\"'") + "'"
-
-
-def _apply_commands(proposal: Mapping[str, Any]) -> list[str]:
-    backlog = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
-    components = [row for row in proposal.get("components", []) if isinstance(row, Mapping)]
-    diagrams = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
-    release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
-    release_selector = str(release_plan.get("selector", "")).strip()
-    release_arg = f" --release {_shell_quote(release_selector)}" if release_selector else ""
-    commands = [
-        "odylith greenfield propose --repo-root . --prompt "
-        + _shell_quote(str(proposal.get("intent", {}).get("prompt", "new project")))
-        + " --format json > odylith-greenfield-proposal.json",
-        "odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm"
-        + release_arg,
-    ]
-    if backlog:
-        commands.append("# apply will create Radar backlog records after validating grounded proposal fields")
-    if components:
-        commands.append("# apply will register planned candidate Registry components with user_intent evidence")
-    if diagrams:
-        commands.append("# apply will scaffold draft Atlas topology with atlas_first_draft link state")
-    return commands
-
-
-def format_proposal_text(proposal: Mapping[str, Any]) -> str:
-    """Render a concise operator-facing proposal."""
-
-    intent = proposal.get("intent", {}) if isinstance(proposal.get("intent"), Mapping) else {}
-    title = str(intent.get("title", "Greenfield Project")).strip()
-    label = str(intent.get("archetype_label", "General Project")).strip()
-    confidence = str(intent.get("confidence", "")).strip()
-    source = proposal.get("observed_source", {}) if isinstance(proposal.get("observed_source"), Mapping) else {}
-    source_posture = str(source.get("source_posture", "unknown")).strip()
-    lines = [
-        f"Odylith greenfield proposal: {title}",
-        f"- archetype: {label} ({confidence} confidence)",
-        f"- source evidence: {source_posture}; writes stay confirmation-gated",
-        f"- provider_calls: {proposal.get('provider_calls', 0)}",
-    ]
-    ux = proposal.get("greenfield_ux", {}) if isinstance(proposal.get("greenfield_ux"), Mapping) else {}
-    if ux:
-        lines.extend(
-            [
-                "",
-                "Greenfield UX",
-                f"- mode: {ux.get('mode', 'consumer_greenfield_proposal')}",
-                f"- guardrail: {ux.get('write_guardrail', 'confirm before governed writes')}",
-                f"- next: {ux.get('next_best_action', 'confirm or revise the proposed first wave')}",
-            ]
-        )
-    lines.extend(
-        [
-            "",
-            "Backlog proposal",
-        ]
-    )
-    for row in proposal.get("backlog", []):
-        if not isinstance(row, Mapping):
-            continue
-        lines.append(f"- {row.get('title')}: {row.get('recommended_first_slice')}")
-    program = proposal.get("program", {}) if isinstance(proposal.get("program"), Mapping) else {}
-    lines.extend(["", "Program waves"])
-    for row in program.get("waves", []) if isinstance(program.get("waves"), list) else []:
-        if not isinstance(row, Mapping):
-            continue
-        lines.append(f"- Wave {row.get('wave')}: {row.get('label')} - {row.get('goal')} Proof: {row.get('validation')}")
-    release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
-    lines.extend(["", "Release plan"])
-    lines.append(
-        f"- target: {release_plan.get('selector', 'next')} "
-        f"({release_plan.get('label', 'First governed release')}; {release_plan.get('provisional_release_id', 'release-greenfield-first')})"
-    )
-    lines.append(f"- strategy: {release_plan.get('strategy', 'confirm before release targeting')}")
-    for row in release_plan.get("release_stages", []) if isinstance(release_plan.get("release_stages"), list) else []:
-        if not isinstance(row, Mapping):
-            continue
-        lines.append(f"- {row.get('stage')}: {row.get('label')} gate - {row.get('release_gate')}")
-    for row in release_plan.get("milestones", []) if isinstance(release_plan.get("milestones"), list) else []:
-        if not isinstance(row, Mapping):
-            continue
-        lines.append(f"- {row.get('name')}: {row.get('exit_criteria')}")
-    lines.extend(["", "Planned Registry components"])
-    for row in proposal.get("components", []):
-        if not isinstance(row, Mapping):
-            continue
-        lines.append(
-            f"- {row.get('component_id')}: {row.get('label')} -> {row.get('intended_path')} "
-            f"({row.get('evidence_tier')})"
-        )
-    lines.extend(["", "Draft Atlas diagrams"])
-    for row in proposal.get("diagrams", []):
-        if not isinstance(row, Mapping):
-            continue
-        lines.append(f"- {row.get('slug')}: {row.get('title')} ({row.get('link_state')})")
-    lines.extend(["", "Validation focus"])
-    for item in proposal.get("validation_strategy", []):
-        lines.append(f"- {item}")
-    lines.extend(["", "Assumptions"])
-    for item in proposal.get("assumptions", []):
-        lines.append(f"- {item}")
-    lines.extend(["", "Open questions"])
-    for item in proposal.get("open_questions", []):
-        lines.append(f"- {item}")
-    lines.extend(["", "Apply"])
-    lines.append("No files changed. To write this proposal, review the assumptions and run:")
-    lines.append("  " + str(proposal.get("apply_commands", [""])[1]))
-    return "\n".join(lines).rstrip() + "\n"
 
 
 def _load_proposal(args: argparse.Namespace) -> dict[str, Any]:

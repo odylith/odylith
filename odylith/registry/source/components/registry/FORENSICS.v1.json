@@ -35,9 +35,9 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 91,
-    "mapped_workstream_evidence_count": 64,
-    "recent_path_match_count": 1,
+    "explicit_event_count": 92,
+    "mapped_workstream_evidence_count": 65,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
     "timeline_event_count": 92
@@ -52,19 +52,39 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/component_registry.v1.json"
+        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
+        "src/odylith/runtime/domain_intelligence/archetypes.py",
+        "src/odylith/runtime/domain_intelligence/proposal_planning.py"
       ],
       "confidence": "high",
-      "event_index": 456,
-      "explicit_components": [],
-      "kind": "workspace_activity",
+      "event_index": 452,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
       "mapped_components": [
-        "registry"
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/component_registry.v1.json",
-      "ts_iso": "2026-05-02T19:50:08-07:00",
-      "workstreams": []
+      "summary": "Deepened B-142 Domain Intelligence with first-class science/math archetypes, greenfield UX/release planning module, refreshed governance surfaces, and full engine/install/browser proof.",
+      "ts_iso": "2026-05-02T20:01:58-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

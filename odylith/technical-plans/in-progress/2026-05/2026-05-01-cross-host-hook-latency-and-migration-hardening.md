@@ -513,4 +513,35 @@ Related Bugs:
       `release-a-formal-math-proof-library-for-topology-theorems-first`, then
       applied it into governance with 4 backlog records, 5 planned components,
       and 2 draft Atlas diagrams after explicit confirmation.
+- [x] Follow-on Domain Intelligence hardening added deterministic
+      primary/alternate fit classification, acronym-safe titles, a dedicated
+      `proposal_rendering.py` owner, explicit program-formation output, and
+      domain-specific first-slice validation wording so vague consumer prompts
+      no longer fall back to generic proof-harness prose.
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_greenfield_proposals.py tests/unit/runtime/test_greenfield_host_routing.py`
+      (`27 passed`; classification explainability, program blueprint,
+      acronym-safe NASA/API title rendering, science/math fit, and provider-free
+      host routing stayed deterministic).
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_greenfield_proposals.py tests/unit/runtime/test_greenfield_host_routing.py tests/unit/runtime/test_component_authoring.py tests/unit/runtime/test_compass_transaction_runtime.py tests/unit/runtime/test_show_capabilities.py tests/unit/test_cli.py`
+      (`219 passed`; greenfield proposal/apply, host routing, component
+      metadata, show output, release migration gate, and Compass timeline-audit
+      hygiene stayed green after the rendering split).
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_source_bundle_mirror.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_validate_backlog_contract.py tests/unit/runtime/test_casebook_source_validation.py tests/unit/runtime/test_casebook_bug_index.py tests/unit/runtime/test_validate_guidance_behavior.py`
+      (`148 passed`; bundle mirrors, hygiene, backlog, Casebook, and guidance
+      behavior stayed aligned).
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_context_engine_proof_packet_runtime.py tests/unit/runtime/test_context_engine_release_resolution.py tests/unit/runtime/test_context_engine_split_hardening.py tests/unit/runtime/test_context_engine_topology_contract.py tests/unit/runtime/test_odylith_context_engine_daemon_hardening.py tests/unit/runtime/test_odylith_context_engine_daemon_wait_runtime.py tests/unit/runtime/test_odylith_context_engine_store.py tests/unit/runtime/test_odylith_context_engine_turn_cli.py tests/unit/runtime/test_execution_engine.py tests/unit/runtime/test_execution_engine_handshake.py tests/unit/runtime/test_tribunal_engine.py tests/unit/runtime/test_discipline.py tests/unit/runtime/test_validate_discipline.py tests/unit/runtime/test_intervention_engine.py tests/unit/runtime/test_intervention_cross_host_parity.py tests/unit/runtime/test_intervention_delivery_status.py tests/unit/runtime/test_host_visible_intervention.py tests/unit/runtime/test_compass_refresh_runtime.py tests/unit/runtime/test_delivery_intelligence_engine.py tests/unit/runtime/test_surface_refresh_fingerprint_dag.py tests/unit/runtime/test_subagent_router_context_support.py tests/unit/runtime/test_subagent_router_execution_engine_runtime.py tests/unit/runtime/test_subagent_reasoning_ladder.py tests/unit/runtime/test_subagent_surface_validation.py tests/unit/runtime/test_greenfield_proposals.py tests/unit/runtime/test_greenfield_host_routing.py tests/unit/test_cli.py`
+      (`586 passed`; Context, Execution, Tribunal, Intervention, Discipline,
+      Delivery, Surface DAG, Subagent routing/orchestration, Domain
+      Intelligence, and CLI contracts stayed integrated).
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/install/test_agents.py tests/unit/install/test_codex_project_assets.py tests/unit/install/test_claude_effective_settings.py tests/unit/install/test_migration_runtime.py tests/unit/install/test_migration_readiness.py tests/unit/install/test_migration_audit.py tests/unit/install/test_casebook_metadata_migration.py tests/unit/install/test_value_engine_migration.py tests/integration/install/test_lifecycle_simulator.py tests/integration/install/test_manager.py`
+      (`208 passed`; Codex/Claude managed assets, migration runtime/readiness,
+      lifecycle simulation, and install manager proof stayed green).
+- [x] `PYTHONPATH=src ODYLITH_BROWSER_FAILURE_SCREENSHOTS=.odylith/browser-failures .venv/bin/python -m pytest -q tests/integration/runtime/test_atlas_sort_browser.py tests/integration/runtime/test_surface_browser_layout_audit.py tests/integration/runtime/test_surface_browser_deep.py tests/integration/runtime/test_context_execution_alignment_browser.py tests/integration/runtime/test_intervention_visibility_browser.py tests/integration/runtime/test_surface_browser_filter_audit.py tests/integration/runtime/test_casebook_sort_browser.py tests/integration/runtime/test_casebook_list_layout_browser.py tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_surface_browser_ux_audit.py tests/integration/runtime/test_compass_browser_regression_matrix.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py`
+      (`185 passed, 1 skipped`; regenerated Radar, Registry, Atlas, Casebook,
+      Compass, intervention, filter, onboarding, and compact browser surfaces
+      stayed clean).
+- [x] `./.odylith/bin/odylith sync --repo-root . --force --impact-mode full`
+      passed, and `release migration-gate --target-version 0.1.13 --json`
+      reported `ok: true`, `blocked: 0`, `ungated: 0` after the new
+      migration-observer markers.
 - [x] `git diff --check`

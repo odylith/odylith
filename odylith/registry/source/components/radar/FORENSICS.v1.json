@@ -37,12 +37,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 148,
-    "mapped_workstream_evidence_count": 107,
+    "explicit_event_count": 149,
+    "mapped_workstream_evidence_count": 108,
     "recent_path_match_count": 1,
     "spec_history_event_count": 10,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 149
+    "timeline_event_count": 150
   },
   "name": "Radar",
   "path_prefixes": [
@@ -59,7 +59,7 @@
         "odylith/registry/source/components/radar/CURRENT_SPEC.md"
       ],
       "confidence": "high",
-      "event_index": 455,
+      "event_index": 454,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
@@ -67,8 +67,44 @@
       ],
       "meaningful": true,
       "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md, odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md +1 more",
-      "ts_iso": "2026-05-02T19:50:16-07:00",
+      "ts_iso": "2026-05-02T20:24:44-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
+        "src/odylith/runtime/domain_intelligence/archetypes.py",
+        "src/odylith/runtime/domain_intelligence/proposal_planning.py"
+      ],
+      "confidence": "high",
+      "event_index": 452,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Deepened B-142 Domain Intelligence with first-class science/math archetypes, greenfield UX/release planning module, refreshed governance surfaces, and full engine/install/browser proof.",
+      "ts_iso": "2026-05-02T20:01:58-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

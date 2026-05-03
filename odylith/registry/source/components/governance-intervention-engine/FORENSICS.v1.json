@@ -13,9 +13,9 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 139,
-    "mapped_workstream_evidence_count": 110,
-    "recent_path_match_count": 1,
+    "explicit_event_count": 140,
+    "mapped_workstream_evidence_count": 111,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 31,
     "status": "forensic_coverage_present",
     "timeline_event_count": 140
@@ -150,19 +150,39 @@
     },
     {
       "artifacts": [
-        "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md"
+        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
+        "src/odylith/runtime/domain_intelligence/archetypes.py",
+        "src/odylith/runtime/domain_intelligence/proposal_planning.py"
       ],
       "confidence": "high",
-      "event_index": 453,
-      "explicit_components": [],
-      "kind": "workspace_activity",
+      "event_index": 452,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
       "mapped_components": [
-        "governance-intervention-engine"
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
-      "ts_iso": "2026-05-02T19:50:16-07:00",
-      "workstreams": []
+      "summary": "Deepened B-142 Domain Intelligence with first-class science/math archetypes, greenfield UX/release planning module, refreshed governance surfaces, and full engine/install/browser proof.",
+      "ts_iso": "2026-05-02T20:01:58-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

@@ -293,6 +293,9 @@ themselves.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-05-02 · Implementation:** Deepened B-142 Domain Intelligence with first-class science/math archetypes, greenfield UX/release planning module, refreshed governance surfaces, and full engine/install/browser proof.
+  - Scope: B-142
+  - Evidence: odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md, src/odylith/runtime/domain_intelligence/archetypes.py +1 more
 - **2026-05-02 · Implementation:** B-141 activation pass keeps source-local memory on Lance/Tantivy, preserves visible Assist recovery, and leaves consumer pinned runtimes on the managed feature pack.
   - Scope: B-141
   - Evidence: odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md, odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md +2 more
@@ -308,9 +311,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-05-01 · Implementation:** B-141 moved into the v0.1.13 active pipeline with cross-host hook latency work preserving prompt context, interventions, Assists, and migration governance capture.
   - Scope: B-141
   - Evidence: odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md, odylith/radar/source/ideas/2026-05/2026-05-01-claude-hook-latency-budget-and-fast-path-startup.md +1 more
-- **2026-04-27 · Implementation:** B-127 Migration Runtime Release Gate closed after migration-runtime proof and governance validation.
-  - Scope: B-127
-  - Evidence: odylith/radar/source/ideas/2026-04/2026-04-27-migration-runtime-release-gate.md, odylith/technical-plans/done/2026-04/2026-04-27-migration-runtime-release-gate.md
 <!-- registry-requirements:end -->
 
 ## Feature History

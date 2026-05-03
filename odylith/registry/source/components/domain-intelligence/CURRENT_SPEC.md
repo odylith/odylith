@@ -25,25 +25,31 @@ validation obligations, and apply commands for empty or thin repos.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- No synchronized requirement or contract signals yet.
+- **2026-05-02 · Implementation:** Deepened B-142 Domain Intelligence with first-class science/math archetypes, greenfield UX/release planning module, refreshed governance surfaces, and full engine/install/browser proof.
+  - Scope: B-142
+  - Evidence: odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md, src/odylith/runtime/domain_intelligence/archetypes.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
 
 - 2026-05-03: Registered `domain-intelligence` through `odylith component register` and linked it to B-142/D-043 as the first-class owner for universal greenfield proposal intelligence. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-05-03: Expanded the catalog with first-class science/math subdomains: formal proof, computational notebooks, numerical simulation, scientific pipelines, geospatial/environmental analysis, ML experiment platforms, and math education. Split program/release/UX planning into `proposal_planning.py` so the proposal compiler stays below the soft source size line while keeping host behavior identical. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
+- 2026-05-03: Added deterministic fit explainability, alternate archetype candidates, acronym-safe project titles, domain-specific first-slice validation language, and `proposal_rendering.py` so operator-facing text and apply commands have a focused owner. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 
 ## Contract
 
 - `archetypes.py` owns the extensible project-domain catalog. New domains are
   added there as structured archetypes, not as host-specific prompt hacks.
 - `proposal_planning.py` owns reusable program-wave, release-plan, and
-  greenfield UX compilation.
+  greenfield UX compilation, including parent/child workstream strategy and
+  wave-to-workstream release policy.
+- `proposal_rendering.py` owns operator-facing text and apply-command rendering
+  so proposal compilation, planning, and presentation stay decoupled.
 - `greenfield_proposals.py` owns proposal compilation and confirmed apply.
-- Proposal output must include observed source posture, user intent, Odylith
-  assumptions, backlog candidates, program waves, release plan, planned
-  Registry components, draft Atlas diagrams, validation strategy, risks, open
-  questions, and exact apply commands.
+- Proposal output must include classification fit, observed source posture, user
+  intent, Odylith assumptions, backlog candidates, program formation, program
+  waves, release plan, planned Registry components, draft Atlas diagrams,
+  validation strategy, risks, open questions, and exact apply commands.
 - Default proposal generation must not call providers or host models.
 - Apply must require `--confirm` and write only through owned Radar, Registry,
   Atlas, and release-targeting paths.

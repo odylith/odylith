@@ -73,7 +73,7 @@ Add a provider-free domain-intelligence compiler that converts vague greenfield 
 Create a first-class `runtime/domain_intelligence` package with a provider-free archetype catalog and a greenfield proposal compiler. The compiler reads shallow repo posture, classifies user-stated project intent, and returns backlog candidates, program waves, a provisional release plan, planned Registry components, draft Atlas diagrams, assumptions, risks, validation obligations, open questions, and exact confirmation-gated apply commands. The apply path writes only through owned Radar, Registry, Atlas, and release-targeting authoring paths after `--confirm`.
 
 ## Research Signals
-External ecosystem checks support the first-class archetype set instead of a narrow ecommerce-only fix. GitHub Octoverse 2025 shows high-volume new repository creation, AI/agent growth, TypeScript-heavy application work, Python/Jupyter AI and data-science work, and private/product repos growing alongside public open source. CNCF organizes cloud-native work around infrastructure, delivery, observability, security, AI/ML, and runtime ecosystems. Apache describes mature open-source projects across data, cloud, search, libraries, geospatial, IoT, and related categories. NASA's software and open-data surfaces show science projects built from code, data, analysis pipelines, simulation/modeling tools, visualization, reproducibility, and sustained scientific libraries. The v0.1.13 catalog therefore covers product apps, SaaS, commerce, cloud/infra, AI agents, data platforms, CLI/libraries, security/compliance, IoT/instrumentation, mobile/game/education, and science/math with validation-specific obligations.
+External ecosystem checks support the first-class archetype set instead of a narrow ecommerce-only fix. GitHub Octoverse 2025 shows high-volume new repository creation, AI/agent growth, TypeScript-heavy application work, Python/Jupyter AI and data-science work, and private/product repos growing alongside public open source. CNCF organizes cloud-native work around infrastructure, delivery, observability, security, AI/ML, and runtime ecosystems. Apache describes mature open-source projects across data, cloud, search, libraries, geospatial, IoT, and related categories. NASA's software and open-data surfaces show science projects built from code, data, analysis pipelines, simulation/modeling tools, visualization, reproducibility, and sustained scientific libraries. The v0.1.13 catalog therefore covers product apps, SaaS, commerce, cloud/infra, AI agents, data platforms, CLI/libraries, security/compliance, IoT/instrumentation, mobile/game/education, and science/math with validation-specific obligations. The follow-on hardening pass added explicit fit explainability and alternate archetype candidates so ambiguous prompts can be corrected without losing the low-latency provider-free path.
 
 ## Scope
 - Add `odylith greenfield propose` and `odylith greenfield apply`.
@@ -82,6 +82,9 @@ External ecosystem checks support the first-class archetype set instead of a nar
 - Treat science/math as a first-class family with separate formal-proof,
   computational-notebook, numerical-simulation, scientific-pipeline,
   geospatial/environmental, ML-experiment, and math-education proposal lenses.
+- Include deterministic primary/alternate fit classification, acronym-safe
+  project titles, domain-specific first-slice validation wording, parent/child
+  program formation, wave-to-workstream policy, and provisional release strategy.
 - Preserve evidence separation: observed source, user intent, and Odylith assumptions must stay distinct.
 - Keep proposal generation provider-free by default and write only after explicit confirmation.
 - Filter Compass timeline audit entries so zero-file prompt-intervention narration does not become fake implementation history.
@@ -134,6 +137,15 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   robotics calibration workflows. Formal-proof proposals now carry proof
   checker/theorem obligations and explicitly avoid numerical tolerance/random
   seed advice.
+- Follow-on hardening added deterministic alternate-fit classification,
+  acronym-safe titles, a dedicated proposal-rendering owner, program-formation
+  output, and domain-specific first-slice validation text so broad prompts do
+  not fall back to generic proof-harness wording.
+- Follow-on proof passed `27` focused greenfield tests, `219` focused
+  greenfield/host/CLI tests, `148` bundle/hygiene/governance tests, the `586`
+  test engine/host-parity matrix, the `208` test install/migration lifecycle
+  matrix, and the `185 passed, 1 skipped` browser matrix. The release migration
+  gate reported `ok: true`, `blocked: 0`, and `ungated: 0`.
 
 ## Rollout
 - Ship in v0.1.13 with B-141 because the user-facing failure is inseparable from consumer-lane host UX hardening: low latency is not enough if empty-repo greenfield prompts dead-end.

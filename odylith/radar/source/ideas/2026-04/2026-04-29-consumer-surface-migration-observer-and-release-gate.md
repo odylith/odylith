@@ -704,6 +704,21 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.13:install-managed-assets:20dacaa00761`,
   `migration-observer:0.1.13:browser-surfaces:7a832cdde5ae`,
   `migration-observer:0.1.13:browser-surfaces:e7074b845e26`.
+- Domain Intelligence fit and program-formation hardening: v0.1.13 adds
+  deterministic alternate-fit classification, acronym-safe titles,
+  domain-specific first-slice validation wording, a dedicated proposal renderer,
+  and explicit parent/child program-formation policy. Existing consumer installs
+  need no data migration; upgrade refreshes managed greenfield skill guidance,
+  regenerated governance browser surfaces, and bundled install-managed skill
+  assets while keeping all proposal writes confirmation-gated. Migration
+  observer markers:
+  `migration-observer:0.1.13:guidance-and-skills:9075101e3a40`,
+  `migration-observer:0.1.13:browser-surfaces:2f376881da04`,
+  `migration-observer:0.1.13:install-managed-assets:75cf4de5d713`,
+  `migration-observer:0.1.13:browser-surfaces:3d9a853aa730`,
+  `migration-observer:0.1.13:install-managed-assets:3b31898b633e`,
+  `migration-observer:0.1.13:browser-surfaces:1ec38a98f26b`,
+  `migration-observer:0.1.13:browser-surfaces:fb44f0624d3e`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.

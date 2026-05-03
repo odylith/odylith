@@ -674,16 +674,29 @@ def _score_archetype(prompt: str, archetype: Archetype) -> int:
     return score
 
 
-def select_archetype(prompt: str) -> tuple[Archetype, float]:
-    """Return the highest-scoring archetype and a bounded confidence score."""
+def _confidence_for_score(score: int) -> float:
+    if score <= 0:
+        return 0.42
+    return min(0.92, 0.48 + (score * 0.06))
+
+
+def rank_archetypes(prompt: str, *, limit: int = 3) -> tuple[tuple[Archetype, int, float], ...]:
+    """Return deterministic archetype candidates for fit explainability."""
 
     ranked = sorted(
         ((_score_archetype(prompt, archetype), archetype) for archetype in ARCHETYPES),
         key=lambda row: (row[0], 0 if row[1].archetype_id == "general_application" else 1, row[1].archetype_id),
         reverse=True,
     )
-    score, archetype = ranked[0]
-    if score <= 0:
-        archetype = next(item for item in ARCHETYPES if item.archetype_id == "general_application")
-        return archetype, 0.42
-    return archetype, min(0.92, 0.48 + (score * 0.06))
+    scored = [(archetype, score, _confidence_for_score(score)) for score, archetype in ranked if score > 0]
+    if not scored:
+        fallback = next(item for item in ARCHETYPES if item.archetype_id == "general_application")
+        return ((fallback, 0, _confidence_for_score(0)),)
+    return tuple(scored[: max(1, limit)])
+
+
+def select_archetype(prompt: str) -> tuple[Archetype, float]:
+    """Return the highest-scoring archetype and a bounded confidence score."""
+
+    archetype, _score, confidence = rank_archetypes(prompt, limit=1)[0]
+    return archetype, confidence

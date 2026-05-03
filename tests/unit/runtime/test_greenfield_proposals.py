@@ -51,12 +51,16 @@ def test_greenfield_ecommerce_prompt_proposes_backlog_components_and_topology(tm
     assert proposal["provider_calls"] == 0
     assert proposal["write_policy"] == "proposal_first_confirm_before_apply"
     assert proposal["intent"]["archetype"] == "commerce"
+    assert proposal["classification"]["method"] == "deterministic_keyword_archetype_scoring"
+    assert proposal["classification"]["provider_calls"] == 0
     assert proposal["observed_source"]["source_posture"] == "empty_or_no_app_source"
     assert proposal["greenfield_ux"]["mode"] == "consumer_greenfield_proposal"
     assert proposal["greenfield_ux"]["operator_sequence"]
     assert proposal["backlog"]
     assert proposal["program"]["wave_count"] == len(proposal["program"]["waves"])
     assert proposal["program"]["recommended_first_wave"]
+    assert proposal["program"]["blueprint"]["program_type"] == "greenfield_program"
+    assert proposal["program"]["blueprint"]["parent_workstream"] == "Govern An Ecommerce Site"
     assert proposal["release_plan"]["selector"] == "next"
     assert proposal["release_plan"]["provisional_release_id"] == "release-an-ecommerce-site-first"
     assert proposal["release_plan"]["release_stages"]
@@ -67,6 +71,9 @@ def test_greenfield_ecommerce_prompt_proposes_backlog_components_and_topology(tm
     assert all(row["link_state"] == "atlas_first_draft" for row in proposal["diagrams"])
     assert all(row["intended_paths"] for row in proposal["diagrams"])
     assert all(row["watch_paths"] == [] for row in proposal["diagrams"])
+    first_slice = proposal["backlog"][0]["recommended_first_slice"]
+    assert "validation path" in first_slice
+    assert "proof harness" not in first_slice
     assert "odylith greenfield apply" in proposal["apply_commands"][1]
     assert "--release 'next'" in proposal["apply_commands"][1]
 
@@ -193,6 +200,20 @@ def test_greenfield_formal_proof_uses_checker_validation_not_numerical_tolerance
     assert "tolerance" not in validation_text
     assert "floating" not in validation_text
     assert "random seed" not in validation_text
+    assert "proof-checker harness" in proposal["backlog"][0]["recommended_first_slice"]
+
+
+def test_greenfield_titles_preserve_domain_acronyms_and_program_formation(tmp_path) -> None:
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="Create a NASA-style satellite simulation and API mission analysis platform",
+    )
+
+    assert proposal["intent"]["title"] == "A NASA-style Satellite Simulation And API Mission Analysis Platform"
+    assert proposal["intent"]["archetype"] == "simulation_modeling"
+    assert proposal["classification"]["primary"]["archetype"] == "simulation_modeling"
+    assert proposal["classification"]["alternatives"]
+    assert proposal["program"]["blueprint"]["wave_to_workstream_policy"]
 
 
 def test_greenfield_notebook_math_education_and_geospatial_validation_fit_domain(tmp_path) -> None:

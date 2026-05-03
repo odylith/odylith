@@ -8,6 +8,30 @@ from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence.archetypes import Archetype
 
 
+def first_slice_validation_instruction(archetype: Archetype) -> str:
+    """Name the first-slice proof in domain language instead of generic filler."""
+
+    if archetype.archetype_id == "formal_proof":
+        return "the proof-checker harness that keeps theorem status honest"
+    if archetype.archetype_id == "computational_notebook":
+        return "the clean notebook execution oracle that keeps findings reproducible"
+    if archetype.archetype_id == "simulation_modeling":
+        return "the reference-case validation path that keeps numerical behavior honest"
+    if archetype.archetype_id == "scientific_pipeline":
+        return "the stage-level quality gate that keeps outputs provenance-backed"
+    if archetype.archetype_id == "geospatial_environmental":
+        return "the CRS and reference-region checks that keep maps truthful"
+    if archetype.archetype_id == "ml_experiment_platform":
+        return "the evaluation gate that keeps model promotion evidence-backed"
+    if archetype.archetype_id == "math_education":
+        return "the reviewed exercise and misconception checks that keep learning content correct"
+    if archetype.archetype_id == "ai_agent":
+        return "the recall, tool-use, latency, and policy fixtures that keep agent behavior measurable"
+    if archetype.archetype_id == "security_compliance":
+        return "the control-evidence check that keeps audit claims reviewable"
+    return "the validation path that proves the first user-visible slice"
+
+
 def build_program_waves(archetype: Archetype, components: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
     component_ids = [str(row.get("component_id", "")).strip() for row in components if str(row.get("component_id", "")).strip()]
     rows: list[dict[str, Any]] = []
@@ -23,6 +47,27 @@ def build_program_waves(archetype: Archetype, components: Sequence[Mapping[str, 
             }
         )
     return rows
+
+
+def build_program_blueprint(
+    *, intent_title: str, archetype: Archetype, workstreams: Sequence[Mapping[str, Any]], waves: Sequence[Mapping[str, Any]]
+) -> dict[str, Any]:
+    """Describe how greenfield proposals become programs without claiming source truth."""
+
+    parent = str(workstreams[0].get("title", f"Govern {intent_title}")).strip() if workstreams else f"Govern {intent_title}"
+    child_titles = [str(row.get("title", "")).strip() for row in workstreams[1:] if str(row.get("title", "")).strip()]
+    wave_labels = [str(row.get("label", "")).strip() for row in waves if str(row.get("label", "")).strip()]
+    return {
+        "program_type": "greenfield_program" if child_titles else "greenfield_single_slice",
+        "parent_workstream": parent,
+        "child_workstream_strategy": "create component-boundary children for complex or medium prompts; keep simple prompts as one governed slice",
+        "child_workstreams": child_titles,
+        "wave_to_workstream_policy": "waves are delivery checkpoints; workstream records remain user_intent until source or design evidence exists",
+        "release_strategy": "target the accepted parent and first child set to the provisional release selector, then promote only after validation refresh",
+        "recommended_wave_order": wave_labels,
+        "evidence_tier": "odylith_assumption",
+        "fit_reason": f"{archetype.label} projects need explicit topology, validation, and release gates before implementation fans out.",
+    }
 
 
 def release_id_for_title(intent_title: str) -> str:

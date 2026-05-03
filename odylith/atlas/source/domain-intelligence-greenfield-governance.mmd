@@ -4,7 +4,8 @@ flowchart TB
     catalog["Domain archetype catalog<br/>product, infra, data, science/math lenses<br/>runtime/domain_intelligence/archetypes.py"]
     compiler["Greenfield proposal compiler<br/>runtime/domain_intelligence/greenfield_proposals.py"]
     planning["Program/release/UX planner<br/>runtime/domain_intelligence/proposal_planning.py"]
-    proposal["Proposal payload<br/>backlog, waves, release plan, UX, components, diagrams, assumptions, risks, validation"]
+    rendering["Proposal rendering<br/>fit summary, operator text, apply commands<br/>runtime/domain_intelligence/proposal_rendering.py"]
+    proposal["Proposal payload<br/>classification, backlog, program formation, waves, release plan, UX, components, diagrams, assumptions, risks, validation"]
     confirm{"Operator confirms?"}
     radar["Radar apply<br/>owned backlog authoring"]
     registry["Registry apply<br/>planned user_intent components"]
@@ -20,6 +21,8 @@ flowchart TB
     catalog --> compiler
     compiler --> planning
     planning --> proposal
+    compiler --> rendering
+    rendering --> proposal
     proposal --> intervention
     proposal --> confirm
     confirm -- "no" --> proposal
