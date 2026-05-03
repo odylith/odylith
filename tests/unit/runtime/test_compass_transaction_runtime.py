@@ -75,3 +75,27 @@ def test_build_prompt_transactions_enriches_nested_event_workstreams_from_checkp
     assert len(nested_events) == 1
     assert set(nested_events[0]["workstreams"]) == {"B-001", "B-003", "B-004", "B-025", "B-027", "B-071"}
     assert nested_events[0]["workstreams"][0] == "B-071"
+
+
+def test_build_prompt_transactions_drops_zero_file_intervention_chatter() -> None:
+    events = [
+        {
+            "id": "evt-noise",
+            "kind": "implementation",
+            "summary": "--- Odylith Observation: The request is asking for a governed capture, not just a branded aside.",
+            "context": "",
+            "ts": dt.datetime.fromisoformat("2026-05-02T17:16:00-07:00"),
+            "ts_iso": "2026-05-02T17:16:00-07:00",
+            "author": "assistant",
+            "files": [],
+            "workstreams": [],
+            "source": "assistant",
+            "session_id": "",
+            "transaction_id": "",
+            "transaction_seq": 0,
+            "transaction_boundary": "",
+            "headline_hint": "",
+        }
+    ]
+
+    assert compass_transaction_runtime._build_prompt_transactions(events=events) == []

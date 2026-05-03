@@ -69,6 +69,7 @@ Last updated (UTC): 2026-05-02
 | - | B-097 | Casebook Bug Capture Fail-Closed Evidence Contract and Cross-Host Guidance Hardening | P0 | 100 | 5 | 5 | 4 | M | High | implementation | [casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening](odylith/radar/source/ideas/2026-04/2026-04-15-casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening.md) |
 | - | B-126 | Conditional Release-Targeted Backlog Authoring | P1 | 100 | 4 | 4 | 3 | M | Medium | implementation | [conditional-release-targeted-backlog-authoring](odylith/radar/source/ideas/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md) |
 | - | B-141 | Cross-host hook latency budget and fast-path startup | P1 | 100 | 5 | 5 | 5 | M | High | implementation | [cross-host-hook-latency-budget-and-fast-path-startup](odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md) |
+| - | B-142 | Universal greenfield domain intelligence | P1 | 100 | 5 | 5 | 4 | L | High | implementation | [universal-greenfield-domain-intelligence](odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md) |
 | - | B-071 | Scope Signal Ladder, Cross-Surface Focus Gating, and Low-Signal Suppression | P0 | 95 | 5 | 5 | 4 | L | VeryHigh | implementation | [scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression](odylith/radar/source/ideas/2026-04/2026-04-09-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md) |
 | - | B-064 | Radar Workstream Title Prefix Normalization | P2 | 90 | 2 | 3 | 2 | M | Medium | implementation | [radar-workstream-title-prefix-normalization](odylith/radar/source/ideas/2026-04/2026-04-08-radar-workstream-title-prefix-normalization.md) |
 | - | B-087 | Codex Project-Asset Parity, Mirror Hygiene, and Install Contract | P1 | 88 | 3 | 4 | 3 | L | Medium | implementation | [codex-project-asset-parity-mirror-hygiene-and-install-contract](odylith/radar/source/ideas/2026-04/2026-04-11-codex-project-asset-parity-mirror-hygiene-and-install-contract.md) |
@@ -1096,7 +1097,7 @@ Last updated (UTC): 2026-05-02
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-091 (rank 29)
+### B-091 (rank 25)
 - why now: governed sync profiling showed the hot path is dominated by repeated read-model reconstruction, path canonicalization, and unnecessary surface rewrites rather than intrinsically expensive validation or rendering.
 - expected outcome: one sync-scoped shared read model, materially lower repeated path/profile/report work across the in-process step chain, and the first no-op-write guarantees on the shell and Registry surfaces.
 - tradeoff: the first landing keeps the current step graph externally stable, so it does not yet deliver the full daemon or per-node reverse-dependency engine that would take warm selective sync all the way to the architectural ceiling.
@@ -1158,21 +1159,21 @@ Last updated (UTC): 2026-05-02
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-102 (rank 26)
+### B-102 (rank 25)
 - why now: created as a new queued workstream for Codex Claude Execution Contract Parity.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-103 (rank 27)
+### B-103 (rank 25)
 - why now: created as a new queued workstream for Execution Snapshot Reuse and Hot Path Cost Reduction.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-104 (rank 28)
+### B-104 (rank 25)
 - why now: created as a new queued workstream for Execution Alignment Release Proof and Governance Closure.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
@@ -1214,7 +1215,7 @@ Last updated (UTC): 2026-05-02
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-110 (rank 30)
+### B-110 (rank 25)
 - why now: created as a new queued workstream for Discipline, Credit-Safe And Benchmark-Proved.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
@@ -1295,4 +1296,17 @@ Last updated (UTC): 2026-05-02
   defers the long-lived hook daemon to a separately bounded design slice.
 - deferred for now: MCP scope cleanup and root guidance kernel splitting stay
   outside this release-critical hook path.
+- ranking basis: active implementation workstream; no queued rank.
+
+### B-142 (implementation)
+- why now: promoted into the v0.1.13 active pipeline because consumer-lane
+  greenfield prompts were dead-ending in empty repos instead of producing
+  proposal-first governance.
+- expected outcome: provider-free domain intelligence drafts backlog,
+  program waves, release plan, planned Registry components, draft Atlas
+  topology, assumptions, risks, and validation obligations before any writes.
+- tradeoff: v0.1.13 ships deterministic archetypes and confirmation-gated
+  apply first; optional provider-backed enrichment stays out of scope.
+- deferred for now: deeper domain expansion waits for later archetype additions
+  after the first-class runtime and governance proof are stable.
 - ranking basis: active implementation workstream; no queued rank.

@@ -1,6 +1,6 @@
 # Bug Index
 
-Last updated (UTC): 2026-05-02
+Last updated (UTC): 2026-05-03
 
 ## Open Bugs
 
@@ -145,6 +145,8 @@ Last updated (UTC): 2026-05-02
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-156 | 2026-05-03 | Greenfield consumer intent dead ended on missing source | P1 | domain-intelligence | FixedPendingRelease | [2026-05-03-greenfield-consumer-intent-dead-ended-on-missing-source.md](2026-05-03-greenfield-consumer-intent-dead-ended-on-missing-source.md) |
+| CB-157 | 2026-05-03 | Compass timeline audit recorded prompt intervention chatter as implementation hi | P2 | compass | FixedPendingRelease | [2026-05-03-compass-timeline-audit-recorded-prompt-intervention-chatter-as-implementation-hi.md](2026-05-03-compass-timeline-audit-recorded-prompt-intervention-chatter-as-implementation-hi.md) |
 | CB-155 | 2026-05-02 | Radar allowed topology sensitive workstream to render without topology | P1 | radar | FixedPendingRelease | [2026-05-02-radar-allowed-topology-sensitive-workstream-to-render-without-topology.md](2026-05-02-radar-allowed-topology-sensitive-workstream-to-render-without-topology.md) |
 | CB-152 | 2026-05-02 | Generated launchers are not parseable by shipped health checks | P1 | odylith | FixedPendingRelease | [2026-05-02-generated-launchers-are-not-parseable-by-shipped-health-checks.md](2026-05-02-generated-launchers-are-not-parseable-by-shipped-health-checks.md) |
 | CB-154 | 2026-05-02 | Compass skipped narration warning replaced last standup brief | P2 | compass | FixedPendingRelease | [2026-05-02-compass-skipped-narration-warning-replaced-last-standup-brief.md](2026-05-02-compass-skipped-narration-warning-replaced-last-standup-brief.md) |

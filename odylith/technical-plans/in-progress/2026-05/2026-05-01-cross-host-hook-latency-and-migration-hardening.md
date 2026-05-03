@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-05-01
 
-Updated: 2026-05-02
+Updated: 2026-05-03
 
 Backlog: B-141
 
@@ -72,6 +72,12 @@ Related Bugs:
 - [CB-155](../../../casebook/bugs/2026-05-02-radar-allowed-topology-sensitive-workstream-to-render-without-topology.md)
   tracks the Radar topology-completeness gap found when B-141 rendered without
   the Atlas diagrams that bound the cross-host/runtime slice.
+- [CB-156](../../../casebook/bugs/2026-05-03-greenfield-consumer-intent-dead-ended-on-missing-source.md)
+  tracks the empty/thin consumer-repo greenfield intent failure that caused
+  Odylith to dead-end instead of drafting proposal-first governance.
+- [CB-157](../../../casebook/bugs/2026-05-03-compass-timeline-audit-recorded-prompt-intervention-chatter-as-implementation-hi.md)
+  tracks the Compass timeline audit hygiene failure where zero-file
+  prompt-intervention chatter rendered as implementation history.
 
 ## Learnings
 - [x] The original Claude-led report was a symptom, not the product boundary:
@@ -254,6 +260,23 @@ Related Bugs:
       `--runtime-mode daemon` now autospawns the local Context Engine daemon
       when idle, while `auto` stays conservative and can fall back to
       standalone.
+- [x] Greenfield UX is a different product mode from existing-repo governance.
+      In empty or thin repos, missing app source blocks source-backed claims
+      but must not block proposal-first intelligence. v0.1.13 adds a
+      provider-free `domain_intelligence` runtime that compiles broad project
+      intent into backlog, program waves, release plan, planned Registry
+      components, draft Atlas topology, assumptions, risks, and validation
+      obligations without spending model credits or inventing observed source.
+- [x] Prompt-intervention narration is not transaction history. Compass now
+      filters zero-file `Odylith Observation`/Proposal/Assist chatter before
+      building prompt transactions, so routing notes do not become fake
+      implementation timeline records.
+- [x] Greenfield domain intelligence must be grounded in real project families,
+      not ecommerce-specific intuition or host-model free association. The
+      v0.1.13 archetype set was checked against public ecosystem signals from
+      GitHub, CNCF, Apache, and NASA, then encoded as deterministic runtime
+      data with program waves, release planning, topology, and validation
+      obligations per domain.
 
 ## Should-Ship
 - [ ] Convert the host hook daemon proposal into a separate design slice with
@@ -438,4 +461,9 @@ Related Bugs:
 - [x] `./.odylith/bin/odylith validate backlog-contract --repo-root .`
 - [x] `./.odylith/bin/odylith validate plan-workstream-binding --repo-root .`
 - [x] `./.odylith/bin/odylith validate plan-risk-mitigation --repo-root .`
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_greenfield_proposals.py tests/unit/runtime/test_greenfield_host_routing.py tests/unit/runtime/test_component_authoring.py tests/unit/runtime/test_compass_transaction_runtime.py tests/unit/runtime/test_show_capabilities.py tests/unit/test_cli.py` (`200 passed`; provider-free greenfield proposal, apply, host routing, component metadata, show, and Compass timeline-audit hygiene proof).
+- [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/install/test_agents.py tests/unit/install/test_codex_project_assets.py tests/unit/install/test_claude_effective_settings.py tests/unit/runtime/test_source_bundle_mirror.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_validate_backlog_contract.py tests/unit/runtime/test_casebook_source_validation.py tests/unit/runtime/test_casebook_bug_index.py tests/unit/runtime/test_validate_guidance_behavior.py tests/unit/runtime/test_validate_discipline.py tests/unit/install/test_migration_runtime.py tests/unit/install/test_casebook_metadata_migration.py tests/integration/install/test_lifecycle_simulator.py tests/integration/runtime/test_governance_sync_performance.py` (`269 passed`; install mirrors, guidance, migrations, governance validators, and sync performance).
+- [x] Full browser matrix for Atlas, Casebook, Compass, Radar, Registry, intervention visibility, filter audit, onboarding, and regression surfaces (`185 passed, 1 skipped`) after allowing global Compass brief notices to live in the header/status area while retaining the last validated brief body.
+- [x] Fresh consumer proof: installed the shipped runtime into an empty repo, used source v0.1.13 `greenfield propose/apply`, confirmed `provider_calls: 0`, commerce classification, 4 backlog records, 5 planned components, 2 draft diagrams, and a bootstrapped `next` release selector after explicit confirmation.
+- [x] Refreshed Casebook, Radar, Registry, Atlas, and Compass after the domain-intelligence governance update; `casebook validate`, `backlog-contract`, `plan-workstream-binding`, `plan-risk-mitigation`, `release migration-gate --target-version 0.1.13`, and `git diff --check` passed.
 - [x] `git diff --check`

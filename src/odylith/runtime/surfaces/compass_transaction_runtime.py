@@ -241,6 +241,34 @@ def _is_generic_transaction_headline(text: str) -> bool:
     return bool(compass_base._GENERIC_TX_HEADLINE_RE.fullmatch(token.lower()))
 
 
+def _is_prompt_intervention_narration(text: str) -> bool:
+    token = compass_base._normalize_sentence(text).strip().lower()
+    if not token:
+        return False
+    token = token.strip("-: ")
+    return token.startswith(
+        (
+            "odylith observation:",
+            "odylith proposal:",
+            "odylith assist:",
+            "**odylith observation:**",
+            "**odylith assist:**",
+        )
+    )
+
+
+def _is_zero_file_prompt_intervention_event(row: Mapping[str, Any]) -> bool:
+    """Return whether a hook/intervention note is being misread as work."""
+
+    files = [str(item).strip() for item in row.get("files", []) if str(item).strip()]
+    if files:
+        return False
+    summary = str(row.get("summary", "")).strip()
+    context = str(row.get("context", "")).strip()
+    headline = str(row.get("headline_hint", "")).strip()
+    return any(_is_prompt_intervention_narration(value) for value in (summary, context, headline))
+
+
 def _select_transaction_headline_hint(tx_events: Sequence[Mapping[str, Any]]) -> str:
     for row in tx_events:
         hint = compass_base._narrative_excerpt(
@@ -615,6 +643,12 @@ def _build_prompt_transactions(
 ) -> list[dict[str, Any]]:
     if not events:
         return []
+    filtered_events = [
+        row for row in events
+        if isinstance(row, Mapping) and not _is_zero_file_prompt_intervention_event(row)
+    ]
+    if not filtered_events:
+        return []
 
     split_delta = dt.timedelta(minutes=max(1, inactivity_minutes))
     grouped: list[dict[str, Any]] = []
@@ -800,7 +834,7 @@ def _build_prompt_transactions(
             split_groups.append(split_group)
         return split_groups or [dict(group)]
 
-    ordered = sorted(events, key=_tx_sort_key)
+    ordered = sorted(filtered_events, key=_tx_sort_key)
     for event in ordered:
         ts = event.get("ts")
         if not isinstance(ts, dt.datetime):

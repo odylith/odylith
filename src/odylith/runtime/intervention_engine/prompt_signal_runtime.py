@@ -39,6 +39,45 @@ TOPOLOGY_HINTS: tuple[str, ...] = (
 INVARIANT_HINTS: tuple[str, ...] = ("invariant", "must", "never", "always", "guardrail", "non-negotiable")
 BUG_HINTS: tuple[str, ...] = ("bug", "failure", "regression", "incident", "broken", "crash")
 EXECUTION_HINTS: tuple[str, ...] = ("implement", "wire", "build", "fix", "ship", "harden", "design")
+GREENFIELD_ACTION_HINTS: tuple[str, ...] = (
+    "build",
+    "create",
+    "design",
+    "draft",
+    "govern",
+    "make",
+    "plan",
+    "propose",
+)
+GREENFIELD_SCOPE_HINTS: tuple[str, ...] = (
+    "app",
+    "application",
+    "architecture",
+    "audit",
+    "compliance",
+    "cli",
+    "data",
+    "device",
+    "diagram",
+    "ecommerce",
+    "education",
+    "game",
+    "library",
+    "math",
+    "mobile",
+    "platform",
+    "project",
+    "registry",
+    "research",
+    "science",
+    "security",
+    "service",
+    "site",
+    "system",
+    "topology",
+    "website",
+    "workflow",
+)
 PLACEHOLDER_FAILURE_EVIDENCE_MARKERS: tuple[str, ...] = (
     "<paste failing command and error>",
     "<paste failing command",
@@ -276,11 +315,29 @@ def is_cli_help_output(value: Any) -> bool:
     )
 
 
+def is_greenfield_governance_prompt(value: Any) -> bool:
+    """Return whether a prompt should route to proposal-first greenfield planning."""
+
+    text = normalize_string(value)
+    if not text or is_passthrough_prompt(text):
+        return False
+    token = normalized_passthrough_prompt(text)
+    if not token:
+        return False
+    has_action = any(f" {hint} " in f" {token} " for hint in GREENFIELD_ACTION_HINTS)
+    has_scope = any(f" {hint} " in f" {token} " for hint in GREENFIELD_SCOPE_HINTS)
+    explicit_governance_set = {"backlog", "registry", "atlas", "component", "components", "diagram", "diagrams"}
+    governance_hits = {word for word in token.split() if word in explicit_governance_set}
+    return bool((has_action and has_scope) or ("odylith" in token and len(governance_hits) >= 2))
+
+
 def has_prompt_intervention_signal(value: Any) -> bool:
     """Return whether a prompt is worth the prompt-submit intervention hot path."""
 
     text = normalize_string(value)
     if not text or is_passthrough_prompt(text):
+        return False
+    if is_greenfield_governance_prompt(text):
         return False
     if explicit_ids(text, WORKSTREAM_RE) or explicit_ids(text, BUG_RE) or explicit_ids(text, DIAGRAM_RE):
         return True

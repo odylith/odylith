@@ -650,6 +650,24 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.13:browser-surfaces:b9d0ec78e453`,
   `migration-observer:0.1.13:browser-surfaces:2bbecacc6d56`,
   `migration-observer:0.1.13:install-managed-assets:82e3cd8ed4c1`.
+- Greenfield domain-intelligence governance: v0.1.13 adds a provider-free
+  `odylith greenfield propose/apply` path for empty and thin consumer repos,
+  installs the managed guidance/skill shims, records Domain Intelligence as a
+  Registry component, adds Atlas topology, and filters zero-file prompt
+  intervention chatter out of Compass timeline transactions. Existing
+  consumer installs need no data migration; upgrade refreshes managed
+  guidance, command/runtime code, generated browser surfaces, and bundle
+  mirrors while local source-backed governance remains repo-owned. Migration
+  observer markers:
+  `migration-observer:0.1.13:guidance-and-skills:d8c8ff0d951d`,
+  `migration-observer:0.1.13:operator-cli-contracts:2d60d08c285d`,
+  `migration-observer:0.1.13:operator-cli-contracts:26bfb61a6298`,
+  `migration-observer:0.1.13:browser-surfaces:695cf1a55b3d`,
+  `migration-observer:0.1.13:browser-surfaces:c279a5da21f4`,
+  `migration-observer:0.1.13:install-managed-assets:4444145d768a`,
+  `migration-observer:0.1.13:guidance-and-skills:b6ccbcebbd7c`,
+  `migration-observer:0.1.13:browser-surfaces:fcbd8d2ec808`,
+  `migration-observer:0.1.13:install-managed-assets:0b654205854a`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.

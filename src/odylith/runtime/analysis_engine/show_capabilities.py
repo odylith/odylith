@@ -30,9 +30,13 @@ _APP_READY_TEACHING = (
     "and Casebook captures bugs; Odylith proposes them only from app-source evidence."
 )
 _CHEATSHEET_HINT = "For more examples, open `odylith/index.html` and use the Cheatsheet."
+_GREENFIELD_PROMPT = (
+    "Draft a greenfield Odylith proposal for <project, architecture, or research goal> "
+    "with backlog, planned Registry components, and Atlas topology. Do not write until I confirm."
+)
 _SCENARIO_TEACHING = {
-    "empty": "Odylith did not find app-source evidence yet, so it will not invent records. Open `odylith/index.html` and start with the Cheatsheet, or name the first path or feature you want governed.",
-    "metadata-only": "Manifests identify the stack, but they are not an ownership boundary; name a path or feature when you are ready.",
+    "empty": "Odylith did not find app-source evidence yet, so source-backed records stay blocked; it can still draft a confirmation-gated greenfield proposal from your intent.",
+    "metadata-only": "Manifests identify the stack, but they are not an ownership boundary; name the project, architecture, or feature and Odylith can draft a proposal first.",
     "docs-only": "Docs are useful context, but Odylith will not turn documentation alone into governance records.",
     "managed-only": "Odylith-managed files belong to Odylith, not your app, so they are ignored as boundary evidence.",
     "tests-only": "Tests prove behavior, but they are not the application boundary; Odylith needs app source before suggesting records.",
@@ -552,7 +556,7 @@ def _covered_governance_phrase(governed: dict[str, bool]) -> str:
 def _custom_slice_prompt(result: ShowResult) -> str:
     if (result.scenario or _select_show_scenario(result)) == "already-governed":
         return "Define an Odylith plan around <path or feature> and connect it to existing Registry, Radar, and Atlas truth."
-    return "Define an Odylith plan around <path or feature> and connect it to Registry, Radar, and Atlas."
+    return _GREENFIELD_PROMPT
 
 
 def _next_prompt(result: ShowResult) -> str:

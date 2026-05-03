@@ -48,6 +48,7 @@ CODEX_COMMAND_SKILLS = {
     "odylith-doctor/SKILL.md",
     "odylith-compass-log/SKILL.md",
     "odylith-compass-refresh/SKILL.md",
+    "odylith-greenfield-governance/SKILL.md",
     "odylith-casebook-bug-capture/SKILL.md",
     "odylith-casebook-bug-preflight/SKILL.md",
     "odylith-code-hygiene-guard/SKILL.md",
@@ -159,6 +160,7 @@ def test_claude_explicit_only_skills_do_not_hide_automatic_context_skills() -> N
         "odylith-casebook-bug-preflight",
         "odylith-code-hygiene-guard",
         "odylith-context",
+        "odylith-greenfield-governance",
         "odylith-show-me",
         "odylith-start",
         "odylith-sync",
@@ -177,7 +179,7 @@ def test_claude_explicit_only_skills_do_not_hide_automatic_context_skills() -> N
             text = (root / skill_name / "SKILL.md").read_text(encoding="utf-8")
             assert "disable-model-invocation: true" not in text
         assert model_invocable == automatic
-        assert len(model_invocable) <= 7
+        assert len(model_invocable) <= 8
 
 
 def test_claude_backlog_skill_shim_carries_exact_cli_enum_guard() -> None:

@@ -231,6 +231,50 @@ def test_backlog_create_help_forwards_backend_flags(capsys) -> None:
     assert "--json" in output
 
 
+def test_greenfield_propose_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["greenfield", "propose", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith greenfield propose" in output
+    assert "--prompt" in output
+    assert "--format" in output
+
+
+def test_greenfield_apply_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["greenfield", "apply", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith greenfield apply" in output
+    assert "--proposal-file" in output
+    assert "--confirm" in output
+    assert "--release" in output
+
+
+def test_greenfield_propose_command_is_provider_free(tmp_path: Path, capsys) -> None:
+    rc = cli.main(
+        [
+            "greenfield",
+            "propose",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Build an ecommerce site",
+            "--format",
+            "json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert rc == 0
+    assert payload["provider_calls"] == 0
+    assert payload["intent"]["archetype"] == "commerce"
+    assert payload["program"]["waves"]
+
+
 def test_component_register_help_forwards_backend_flags(capsys) -> None:
     with pytest.raises(SystemExit) as excinfo:
         cli.main(["component", "register", "--help"])
@@ -1557,12 +1601,12 @@ def test_release_migration_gate_json_reports_registered_runtime(capsys) -> None:
     rc = cli.main([
         "release",
         "migration-gate",
-        "--repo-root",
-        str(repo_root),
-        "--target-version",
-        "0.1.12",
-        "--json",
-    ])
+            "--repo-root",
+            str(repo_root),
+            "--target-version",
+            "0.1.13",
+            "--json",
+        ])
     payload = json.loads(capsys.readouterr().out)
 
     assert rc == 0

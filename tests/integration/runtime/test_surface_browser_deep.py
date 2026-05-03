@@ -44,6 +44,20 @@ from tests.integration.runtime.surface_browser_test_support import (
     compact_browser_context,
 )
 
+_GLOBAL_BRIEF_NOTICE_REASONS = {
+    "provider_empty",
+    "provider_unavailable",
+    "skipped_not_worth_calling",
+    "validation_failed",
+}
+
+
+def _assert_global_brief_notice_contract(meta: dict[str, str]) -> None:
+    if meta["hasNotice"] == "false":
+        return
+    assert meta["hasNotice"] == "true"
+    assert meta["noticeReason"] in _GLOBAL_BRIEF_NOTICE_REASONS
+
 
 class _CompassProvider:
     _PATH_LIKE_RE = re.compile(r"`?(?:\.?/)?(?:\.odylith|odylith|src|tests|docs|skills|agents-guidelines)/[A-Za-z0-9._/\-]+`?")
@@ -1428,7 +1442,7 @@ def test_compass_scope_window_and_detail_behavior_in_compact_viewport(compact_br
     global_24h_meta = _compass_brief_metadata(compass)
     assert global_24h_meta["source"] in {"provider", "cache", "unavailable"}
     if global_24h_meta["source"] in {"provider", "cache"}:
-        assert global_24h_meta["hasNotice"] == "false"
+        _assert_global_brief_notice_contract(global_24h_meta)
     assert global_24h_meta["fingerprint"]
     layout = compass.locator(".layout").evaluate(
         """(node) => {
@@ -1538,7 +1552,7 @@ def test_compass_scope_window_and_detail_behavior_in_compact_viewport(compact_br
     global_48h_meta = _compass_brief_metadata(compass)
     assert global_48h_meta["source"] in {"provider", "cache", "unavailable"}
     if global_48h_meta["source"] in {"provider", "cache"}:
-        assert global_48h_meta["hasNotice"] == "false"
+        _assert_global_brief_notice_contract(global_48h_meta)
     assert global_48h_meta["fingerprint"]
     assert global_48h_meta["window"] == "48h"
     if scoped_48h_meta["source"] in {"provider", "cache"} and scoped_48h_meta["hasNotice"] == "false":

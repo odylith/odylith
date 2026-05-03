@@ -672,6 +672,105 @@ def add_workstreams_to_release(
     }
 
 
+def ensure_release_selector(
+    *,
+    repo_root: Path,
+    selector: str,
+    release_id: str,
+    status: str = "planning",
+    version: str = "",
+    tag: str = "",
+    name: str = "",
+    notes: str = "",
+    aliases: Sequence[str] = (),
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    """Create a release target when a requested selector is not defined yet."""
+
+    root = Path(repo_root).resolve()
+    registry_document, event_documents, idea_specs = _load_governed_documents(repo_root=root)
+    state, payload = _validated_state(
+        repo_root=root,
+        registry_document=registry_document,
+        event_documents=event_documents,
+        idea_specs=idea_specs,
+    )
+    try:
+        release = state.release_for_selector(selector)
+    except release_planning_contract.ReleaseSelectorError as exc:
+        if exc.matches:
+            raise
+    else:
+        release_row = next(row for row in payload["catalog"] if row["release_id"] == release.release_id)
+        return {
+            "command": "ensure",
+            "created": False,
+            "dry_run": bool(dry_run),
+            "release": release_row,
+            "registry_path": str(state.registry_path),
+        }
+
+    document = copy.deepcopy(registry_document)
+    releases = _registry_release_rows(document)
+    normalized_release_id = str(release_id or "").strip()
+    if not normalized_release_id:
+        raise ValueError("release_id is required when creating a release target")
+    if _release_row_by_id(releases, normalized_release_id) is not None:
+        raise ValueError(f"release `{normalized_release_id}` already exists but selector `{selector}` does not point to it")
+    aliases_map = _registry_alias_map(document)
+    alias_tokens = {
+        release_planning_contract.canonical_alias_token(alias)
+        for alias in (*aliases, selector)
+        if release_planning_contract.canonical_alias_token(alias)
+    }
+    for alias in alias_tokens:
+        owner = aliases_map.get(alias, "")
+        if owner and owner != normalized_release_id:
+            raise ValueError(f"alias `{alias}` already points to `{owner}`")
+        aliases_map[alias] = normalized_release_id
+    releases.append(
+        {
+            "release_id": normalized_release_id,
+            "status": str(status or "").strip() or "planning",
+            "version": str(version or "").strip(),
+            "tag": str(tag or "").strip(),
+            "name": str(name or "").strip(),
+            "notes": str(notes or "").strip(),
+            "created_utc": release_planning_contract.utc_now_iso()[:10],
+            "shipped_utc": "",
+            "closed_utc": "",
+        }
+    )
+    document["releases"] = releases
+    document["aliases"] = aliases_map
+    document["updated_utc"] = release_planning_contract.utc_now_iso()[:10]
+    next_state, next_payload = _validated_state(
+        repo_root=root,
+        registry_document=document,
+        event_documents=event_documents,
+        idea_specs=idea_specs,
+    )
+    governance = _release_governance_decision(
+        repo_root=root,
+        action="mutate_release_create",
+        target_scope=[normalized_release_id, *sorted(alias_tokens)],
+        requested_scope=[str(selector).strip(), normalized_release_id],
+        preferred_alternative=f"odylith release show {normalized_release_id}",
+    )
+    authoring_execution_policy.enforce_governed_authoring_action(governance)
+    if not bool(dry_run):
+        _write_registry_document(repo_root=root, document=document)
+    release_row = next(row for row in next_payload["catalog"] if row["release_id"] == normalized_release_id)
+    return {
+        "command": "ensure",
+        "created": True,
+        "dry_run": bool(dry_run),
+        "release": release_row,
+        "registry_path": str(next_state.registry_path),
+        "execution_engine": governance.to_dict(),
+    }
+
+
 def _run_remove(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve()
 

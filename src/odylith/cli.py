@@ -159,6 +159,7 @@ _CODEX_HOST_COMMAND_MODULES = {
     "intervention-status": "odylith.runtime.surfaces.codex_host_intervention_status",
 }
 _SHOW_CAPABILITIES_MODULE = "odylith.runtime.analysis_engine.show_capabilities"
+_GREENFIELD_PROPOSALS_MODULE = "odylith.runtime.domain_intelligence.greenfield_proposals"
 _CAPABILITY_INVENTORY_MODULE = "odylith.runtime.analysis_engine.capability_inventory"
 _COMPONENT_AUTHORING_MODULE = "odylith.runtime.governance.component_authoring"
 _BUG_AUTHORING_MODULE = "odylith.runtime.governance.bug_authoring"
@@ -2089,6 +2090,13 @@ def _cmd_show(args: argparse.Namespace) -> int:
     )
 
 
+def _cmd_greenfield(args: argparse.Namespace) -> int:
+    return _run_module_main(
+        _GREENFIELD_PROPOSALS_MODULE,
+        ensure_nested_subcommand_repo_root_args(repo_root=args.repo_root, argv=[args.greenfield_command, *args.forwarded]),
+    )
+
+
 def _cmd_capabilities(args: argparse.Namespace) -> int:
     forwarded = list(getattr(args, "forwarded", []) or [])
     if bool(getattr(args, "json", False)) and "--json" not in forwarded:
@@ -2987,6 +2995,19 @@ def build_parser() -> argparse.ArgumentParser:
     show.add_argument("--repo-root", default=".", help="Consumer repository root.")
     show.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
 
+    greenfield = subparsers.add_parser(
+        "greenfield",
+        help="Draft or apply confirmation-gated greenfield governance proposals.",
+    )
+    greenfield_subparsers = greenfield.add_subparsers(dest="greenfield_command", required=True)
+    for command, help_text in (
+        ("propose", "Draft a provider-free greenfield governance proposal."),
+        ("apply", "Apply a confirmed greenfield governance proposal."),
+    ):
+        child_parser = greenfield_subparsers.add_parser(command, help=help_text)
+        child_parser.add_argument("--repo-root", default=".", help="Consumer repository root.")
+        child_parser.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+
     capabilities = subparsers.add_parser(
         "capabilities",
         help="List Odylith's host-agnostic product capabilities, engines, surfaces, and adapters.",
@@ -3310,6 +3331,11 @@ def main(argv: list[str] | None = None) -> int:
                 args = parser.parse_args(tokens)
                 return _cmd_show(args)
             return _cmd_show(argparse.Namespace(repo_root=repo_root, forwarded=forwarded))
+        if tokens[0] == "greenfield" and len(tokens) >= 2 and tokens[1] in {"propose", "apply"}:
+            repo_root, forwarded = _extract_repo_root(tokens[2:])
+            return _cmd_greenfield(
+                argparse.Namespace(repo_root=repo_root, greenfield_command=tokens[1], forwarded=forwarded)
+            )
         if tokens[0] == "capabilities":
             repo_root, forwarded = _extract_repo_root(tokens[1:])
             if _help_requested(forwarded):
@@ -3592,6 +3618,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_dashboard_refresh(args)
     if args.command == "show":
         return _cmd_show(args)
+    if args.command == "greenfield":
+        return _cmd_greenfield(args)
     if args.command == "capabilities":
         return _cmd_capabilities(args)
     if args.command == "radar" and args.radar_command == "refresh":

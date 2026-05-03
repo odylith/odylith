@@ -166,6 +166,8 @@ def prompt_needs_live_bundle(*, prompt: Any, bundle_override: Mapping[str, Any] 
     """Return whether prompt-submit should pay for the live intervention bundle."""
     if suppress_prompt_live_narration(prompt=prompt):
         return False
+    if prompt_signal_runtime.is_greenfield_governance_prompt(prompt):
+        return False
     if isinstance(bundle_override, Mapping) or isinstance(intervention_bundle_override, Mapping):
         return True
     if prompt_signal_runtime.visibility_feedback_requested(prompt=prompt, assistant_summary=""):
@@ -182,6 +184,8 @@ def prompt_first_receipt_eligible(prompt: Any) -> bool:
     """
 
     if suppress_prompt_live_narration(prompt=prompt):
+        return False
+    if prompt_signal_runtime.is_greenfield_governance_prompt(prompt):
         return False
     token = prompt_signal_runtime.normalized_passthrough_prompt(prompt)
     return bool(token and "odylith" in token)
