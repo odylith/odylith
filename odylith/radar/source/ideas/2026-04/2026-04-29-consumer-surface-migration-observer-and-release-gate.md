@@ -811,6 +811,15 @@ The observer is now part of the migration-runtime release gate. It records chang
 - The migration observer path normalizer now strips only leading `./`, not leading dot characters. Dot-prefixed consumer assets such as `.odylith` or `.codex` are no longer collapsed into misleading non-hidden paths during release assessment.
 - Browser-surface proof now includes a dirty consumer repo upgraded from 0.1.13 to 0.1.14 with legacy bad Casebook metadata, a stale URL status filter, generated shell refresh, and a browser assertion that rows still render with humanized status/type detail.
 - Casebook detail text now uses the full width of the `Summary` card, and the empty/fallback browser state is explicit when search or filters produce zero visible rows.
+- Engine-integrity hardening in the v0.1.14 branch changed Benchmark, Context
+  Engine, Registry, Casebook, Atlas, and shell generated outputs. The browser
+  surface churn is covered by the registered Casebook and Atlas generated
+  refresh migrations; install-managed asset churn is covered by normal bundle
+  update semantics plus those same registered migration verifiers.
+- Atlas compact-viewer fit was tightened after browser proof found D-030 could
+  first-paint below the readability threshold on compact screens. The change is
+  generated-renderer owned, keeps the viewer stage pure white, and is covered by
+  the Atlas render-surface migration rather than a hand repair.
 
 Migration observer markers for this assessment:
 - `migration-observer:0.1.14:operator-cli-contracts:dce35485ba07`
@@ -837,12 +846,24 @@ Migration observer markers for this assessment:
 - `migration-observer:0.1.14:browser-surfaces:cdddb847ee9c`
 - `migration-observer:0.1.14:install-managed-assets:fd10220c45e7`
 - `migration-observer:0.1.14:install-managed-assets:93adce4724db`
+- `migration-observer:0.1.14:browser-surfaces:ccace5dd3597`
+- `migration-observer:0.1.14:install-managed-assets:a1affeb6cf6a`
+- `migration-observer:0.1.14:browser-surfaces:492f9b7c0771`
+- `migration-observer:0.1.14:browser-surfaces:b31f63954a7a`
+- `migration-observer:0.1.14:install-managed-assets:e6fe806b6b2c`
+- `migration-observer:0.1.14:browser-surfaces:2a84febff00a`
+- `migration-observer:0.1.14:install-managed-assets:1cfbc9a3d55c`
+- `migration-observer:0.1.14:browser-surfaces:153451a01209`
+- `migration-observer:0.1.14:install-managed-assets:0e8582122c9e`
 
 Validation evidence for the Casebook status-FSM slice:
 - `python -m py_compile src/odylith/runtime/common/casebook_metadata.py src/odylith/runtime/governance/casebook_source_validation.py src/odylith/runtime/surfaces/render_casebook_dashboard.py src/odylith/install/casebook_metadata_migration.py src/odylith/install/migration_runtime.py src/odylith/install/migration_definitions.py`
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_casebook_source_validation.py tests/unit/runtime/test_casebook_bug_index.py tests/unit/runtime/test_render_casebook_dashboard.py tests/unit/install/test_casebook_metadata_migration.py tests/unit/install/test_migration_runtime.py tests/integration/install/test_lifecycle_simulator.py::test_lifecycle_simulator_proves_historical_upgrades_to_0_1_14` (`104 passed`)
 - `PYTHONPATH=src python -m pytest -q tests/integration/install/test_lifecycle_simulator.py::test_lifecycle_simulator_proves_historical_upgrades_to_0_1_13 tests/integration/install/test_lifecycle_simulator.py::test_lifecycle_simulator_proves_historical_upgrades_to_0_1_14` (`2 passed`)
 - `PYTHONPATH=src python -m odylith.cli casebook validate --repo-root .` (`161 records`)
+- `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_odylith_context_engine_turn_cli.py tests/unit/runtime/test_odylith_benchmark_runner.py::test_diagnostic_profile_keeps_public_pair_packet_only` (`5 passed`; diagnostic cold default and Context Engine closed-pipe guard)
+- `PYTHONPATH=src python -m odylith.cli context-engine --repo-root . benchmark --profile diagnostic --limit 5 --no-write-report` (`provisional_pass`; diagnostic default uses cold cache)
+- `set -o pipefail; PYTHONPATH=src python -m odylith.cli context-engine --repo-root . benchmark --profile diagnostic --limit 1 --no-write-report --json | head -n 1 >/dev/null` (`exit 0`; downstream pipe closure stays quiet)
 - `PYTHONPATH=src python -m odylith.runtime.surfaces.render_casebook_dashboard --repo-root . --output odylith/casebook/casebook.html --runtime-mode standalone` (`total_cases: 161`, `open_total: 69`)
 - `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_casebook_sort_browser.py tests/integration/runtime/test_casebook_list_layout_browser.py` (`8 passed`)
 - `PYTHONPATH=src python -m py_compile src/odylith/install/atlas_surface_migration.py src/odylith/install/migration_runtime.py src/odylith/install/migration_definitions.py src/odylith/install/casebook_metadata_migration.py`
@@ -859,6 +880,15 @@ Validation evidence for the Casebook status-FSM slice:
 - `PYTHONPATH=src python -m pytest -q tests/unit/install/test_migration_runtime.py` (`51 passed`)
 - `PYTHONPATH=src python -m pytest -q tests/integration/install/test_lifecycle_simulator.py::test_lifecycle_simulator_proves_historical_upgrades_to_0_1_14` (`1 passed`)
 - `PYTHONPATH=src python -m odylith.cli release migration-gate --repo-root . --target-version 0.1.14 --json` (`blocked_manual_migrations: []`)
+- `PYTHONPATH=src ODYLITH_BROWSER_FAILURE_SCREENSHOTS=.odylith/browser-failures python -m pytest -q tests/integration/runtime/test_atlas_sort_browser.py tests/integration/runtime/test_surface_browser_layout_audit.py tests/integration/runtime/test_surface_browser_deep.py tests/integration/runtime/test_context_execution_alignment_browser.py tests/integration/runtime/test_intervention_visibility_browser.py tests/integration/runtime/test_surface_browser_filter_audit.py tests/integration/runtime/test_casebook_sort_browser.py tests/integration/runtime/test_casebook_list_layout_browser.py tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_surface_browser_ux_audit.py tests/integration/runtime/test_compass_browser_regression_matrix.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py` (`188 passed, 1 skipped`)
+- `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_context_engine_proof_packet_runtime.py tests/unit/runtime/test_context_engine_topology_contract.py tests/unit/runtime/test_execution_engine.py tests/unit/runtime/test_execution_engine_handshake.py tests/unit/runtime/test_intervention_engine.py tests/unit/runtime/test_intervention_engine_apply.py tests/unit/runtime/test_intervention_engine_hygiene.py tests/unit/runtime/test_intervention_engine_package_layout.py tests/unit/runtime/test_intervention_engine_performance.py tests/unit/runtime/test_tribunal_engine.py tests/unit/runtime/test_greenfield_host_routing.py tests/unit/runtime/test_greenfield_proposals.py tests/unit/test_cli.py` (`324 passed`)
+- `PYTHONPATH=src python -m pytest -q tests/integration/install/test_lifecycle_simulator.py tests/unit/install/test_atlas_surface_migration.py tests/unit/install/test_casebook_metadata_migration.py tests/unit/install/test_migration_runtime.py` (`75 passed`)
+- `PYTHONPATH=src python -m odylith.cli casebook validate --repo-root .` (`162 records`)
+- `PYTHONPATH=src python -m odylith.cli validate topology-integrity --repo-root .` (`score: 100/100`, `spine: 245 nodes, 1566 structural edges`)
+- `PYTHONPATH=src python -m odylith.cli validate guidance-behavior --repo-root .` (`6 cases`, `11 checks`)
+- `PYTHONPATH=src python -m odylith.cli validate discipline --repo-root . --json` (`status: passed`, `26 cases`, hot-path pass rate `1.0`, host/provider calls `0`)
+- `PYTHONPATH=src python -m odylith.cli release migration-gate --repo-root . --target-version 0.1.14 --json` (`blocked_manual_migrations: []`, `ungated_lifecycle_paths: []`, ranges cover legacy, v0.1.11, v0.1.13, and v0.1.14 migrations)
+- `PYTHONPATH=src python -m odylith.cli greenfield propose --repo-root . --prompt 'Draft a greenfield Odylith proposal for a small research project with backlog, planned Registry components, Atlas topology, program waves, and release targets. Do not write until I confirm.' --format json` (`host_reasoned_proposal_request`, confirmation-gated, contains `0.0.1`, program, and wave release language)
 - `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_atlas_sort_browser.py tests/integration/runtime/test_surface_browser_filter_audit.py::test_atlas_filter_audit_accepts_compact_diagram_ids_and_normalized_titles` (`4 passed`)
 - `PYTHONPATH=src python -m odylith.runtime.surfaces.auto_update_mermaid_diagrams --repo-root . --all-stale --runtime-mode standalone` (`40 render-needed diagrams`, then fresh)
 - `PYTHONPATH=src python -m odylith.runtime.surfaces.auto_update_mermaid_diagrams --repo-root . --all-stale --runtime-mode standalone --dry-run` (`no stale diagrams found`)

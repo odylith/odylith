@@ -45,6 +45,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-03: Registered `domain-intelligence` through `odylith component register` and linked it to B-142/D-043 as the first-class owner for universal greenfield proposal intelligence. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-05-03: Deleted the in-code taxonomy and proposal-planning modules from the active proposal-authoring path. The active host model now owns project-specific reasoning; Odylith owns source posture, evidence tiers, schema validation, apply safety, and durable memory. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-05-03: Added `proposal_rendering.py` so operator-facing text and apply commands have a focused owner without encoding canned narration or project templates. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
+- 2026-05-03: Retargeted the greenfield lane to v0.1.14 and made the proposal/apply path show release and program power by default: omitted release selectors become `0.0.1`, child workstreams form an umbrella execution-wave program, and the umbrella plus first wave target the first release while later waves remain visible future work. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 
 ## Contract
 
@@ -62,6 +63,15 @@ This section captures synchronized requirement and contract signals derived from
   waves, release plan, planned Registry components, host-authored draft Atlas
   Mermaid sources,
   validation strategy, risks, open questions, and exact apply commands.
+- If the operator does not provide a release target for a greenfield proposal,
+  the default first release selector is `0.0.1`, not an Odylith product-version
+  alias such as `next`. Accepted proposals with child workstreams should create
+  an umbrella execution-wave program and target the umbrella plus first wave to
+  the first release so Compass can show program/wave/release structure without
+  pretending every future child is ready for the first release.
+- `Customer` may be a one-token governed value. Problem, Opportunity, Product
+  View, and Success Metrics keep the stronger detail and placeholder-rejection
+  rules.
 - Default CLI proposal request generation must not call providers directly; the
   active host model supplies the reasoning in Claude/Codex sessions.
 - Apply must require `--confirm` and write only through owned Radar, Registry,
@@ -69,7 +79,7 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Research Basis
 
-The v0.1.13 runtime deliberately avoids a hardcoded domain catalog as the
+The v0.1.14 runtime deliberately avoids a hardcoded domain catalog as the
 proposal author. User requests can span any product, science, math, research,
 art, policy, infrastructure, or mixed project shape. Until Odylith has a real
 marketplace or collectively curated domain catalog, the right architecture is

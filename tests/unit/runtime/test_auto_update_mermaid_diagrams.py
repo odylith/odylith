@@ -115,10 +115,10 @@ def test_mermaid_worker_applies_subtle_palette_to_unstyled_clusters() -> None:
     assert "const clusterPalette = [" in worker_source
     assert "const nodePalette = {" in worker_source
     assert "toneForNodeText" in worker_source
-    assert "#f8fcfc" in worker_source
-    assert "#f8faff" in worker_source
-    assert "#eef8f7" in worker_source
-    assert "#f6f0ff" in worker_source
+    assert "#f7fdfb" in worker_source
+    assert "#f8fbff" in worker_source
+    assert "#eafbf7" in worker_source
+    assert "#f5efff" in worker_source
     assert "styleDeclares(authoredStyle, 'fill')" in worker_source
     assert "styleDeclares(authoredStyle, 'stroke')" in worker_source
     assert "clusterToneForNode" in worker_source

@@ -1073,7 +1073,9 @@ def test_casebook_search_filters_and_empty_state(browser_context) -> None:  # no
     casebook.locator("#listMeta", has_text="Visible: 0").wait_for(timeout=15000)
     assert casebook.locator("button.bug-row").count() == 0
     assert casebook.locator("#listMeta").inner_text().strip() == "Visible: 0"
-    assert casebook.locator("#detailPane").inner_text().strip() == ""
+    assert casebook.locator("#detailPane").inner_text().strip() == (
+        "Select a different filter or search term to inspect Casebook detail."
+    )
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 

@@ -32,12 +32,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 74,
-    "mapped_workstream_evidence_count": 70,
-    "recent_path_match_count": 0,
-    "spec_history_event_count": 4,
+    "explicit_event_count": 75,
+    "mapped_workstream_evidence_count": 71,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 5,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 74
+    "timeline_event_count": 76
   },
   "name": "Casebook",
   "path_prefixes": [
@@ -47,6 +47,71 @@
   ],
   "spec_ref": "odylith/registry/source/components/casebook/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/casebook/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 459,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "casebook"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/casebook/CURRENT_SPEC.md",
+      "ts_iso": "2026-05-03T14:55:30-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
+        "src/odylith/cli.py",
+        "src/odylith/install/manager.py",
+        "src/odylith/install/runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 456,
+      "explicit_components": [
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "security",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "security",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "CB-149 consumer start latency update: installed v0.1.13 measured 25.40s in dentoai-orion; source fix now returns expected fallback in 2.55s with fast start preflight and hot-path bootstrap.",
+      "ts_iso": "2026-05-03T10:46:04-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "low",
@@ -87,6 +152,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -131,6 +197,7 @@
       ],
       "kind": "statement",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -171,6 +238,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -213,6 +281,7 @@
       "kind": "implementation",
       "mapped_components": [
         "atlas",
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -243,6 +312,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -273,6 +343,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -309,6 +380,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -345,6 +417,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "dashboard",
@@ -384,6 +457,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -446,6 +520,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -485,6 +560,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "dashboard",
@@ -522,6 +598,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -552,6 +629,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -583,6 +661,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -621,6 +700,7 @@
       ],
       "kind": "statement",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -658,6 +738,7 @@
       ],
       "kind": "statement",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -723,6 +804,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "dashboard",
@@ -765,6 +847,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -800,6 +883,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",

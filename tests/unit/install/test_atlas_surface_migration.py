@@ -27,8 +27,8 @@ def _write_polished_cluster_svg(path: Path) -> None:
         "\n".join(
             [
                 '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80" viewBox="0 0 120 80">',
-                '  <g class="cluster default"><rect x="2" y="2" width="100" height="60" style="fill:#f8fcfc !important;stroke:#c8e4df !important;"></rect></g>',
-                '  <g class="nodes"><g class="node default"><rect class="basic label-container" x="8" y="10" width="80" height="28" style="fill:#eef8f7 !important;stroke:#7bbdb6 !important;"></rect></g></g>',
+                '  <g class="cluster default"><rect x="2" y="2" width="100" height="60" style="fill:#f7fdfb !important;stroke:#b8e1db !important;"></rect></g>',
+                '  <g class="nodes"><g class="node default"><rect class="basic label-container" x="8" y="10" width="80" height="28" style="fill:#eafbf7 !important;stroke:#78c9bd !important;"></rect></g></g>',
                 "</svg>",
                 "",
             ]
@@ -138,8 +138,8 @@ def test_atlas_surface_migration_renders_polished_assets_and_dashboard(tmp_path:
     assert result.applied is True
     assert result.migration_id == atlas_surface_migration.MIGRATION_ID
     assert catalog["diagrams"][0]["render_source_fingerprint"]
-    assert "fill:#f8fcfc" in svg_text
-    assert "fill:#eef8f7" in svg_text
+    assert "fill:#f7fdfb" in svg_text
+    assert "fill:#eafbf7" in svg_text
     assert ".viewer-stage::before" not in html_text
     assert "background: #ffffff;" in html_text
     assert ledger["migration_id"] == atlas_surface_migration.MIGRATION_ID

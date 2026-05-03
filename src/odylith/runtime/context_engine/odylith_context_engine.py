@@ -2715,7 +2715,7 @@ def _run_serve(
     return 0
 
 
-def main(argv: Sequence[str] | None = None) -> int:
+def _main_impl(argv: Sequence[str] | None = None) -> int:
     raw_argv = list(argv) if argv is not None else sys.argv[1:]
     args = _parse_args(raw_argv)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
@@ -3099,6 +3099,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _run_stop(repo_root=repo_root)
     print(f"unsupported odylith context engine command: {command}")
     return 2
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    try:
+        return _main_impl(argv)
+    except (BrokenPipeError, ConnectionResetError):
+        return 0
 
 
 if __name__ == "__main__":  # pragma: no cover

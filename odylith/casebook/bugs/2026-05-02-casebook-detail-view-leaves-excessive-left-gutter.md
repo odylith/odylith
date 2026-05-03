@@ -42,11 +42,11 @@
 
 - Root Cause: The Casebook shell and detail pane used a loose horizontal gutter, and the mobile detail padding rule was outside its intended media block because of a stray brace.
 
-- Solution: Tighten the Casebook shell and detail-pane horizontal padding, repair the media block, regenerate live and bundled Casebook HTML, and add headless browser assertions for the detail gutter.
+- Solution: Tighten the Casebook shell and detail-pane horizontal padding, repair the media block, regenerate live and bundled Casebook HTML, and add headless browser assertions for the detail gutter. The v0.1.14 follow-up moves labels and source actions above the narrative and renders the selected bug narrative inside a full-width `Summary` card so detail text uses the available panel width.
 
 - Rollback/Forward Fix: Forward-fix in v0.1.13; do not restore the wider Casebook gutter or the broken media-block shape.
 
-- Verification: PYTHONPATH=src .venv/bin/python -m pytest -q tests/integration/runtime/test_casebook_list_layout_browser.py tests/integration/runtime/test_casebook_sort_browser.py; git diff --check.
+- Verification: PYTHONPATH=src .venv/bin/python -m pytest -q tests/integration/runtime/test_casebook_list_layout_browser.py tests/integration/runtime/test_casebook_sort_browser.py; git diff --check. v0.1.14 follow-up proof includes the Casebook browser stale-query, long-token, empty/fallback, and summary-card layout tests captured under B-140/B-141 migration proof.
 
 - Prevention: Keep browser layout tests measuring the Casebook detail left gutter on desktop and compact view.
 
@@ -58,7 +58,7 @@
 
 - Monitoring Updates: Watch Casebook screenshots and browser layout audits for oversized gutters or CSS parser recovery around media blocks.
 
-- Version/Build: 0.1.13 target release
+- Version/Build: 0.1.13 initial target release; v0.1.14 summary-card layout follow-up
 
 - Config/Flags: Default Casebook browser dashboard rendering.
 

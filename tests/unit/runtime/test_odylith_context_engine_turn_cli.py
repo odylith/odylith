@@ -106,3 +106,22 @@ def test_benchmark_cli_preserves_zero_shard_index_for_runner_validation(monkeypa
     assert rc == 0
     assert captured["shard_count"] == 3
     assert captured["shard_index"] == 0
+
+
+def test_context_engine_cli_exits_cleanly_when_stdout_pipe_closes(monkeypatch, tmp_path: Path) -> None:
+    def _raise_broken_pipe(**_kwargs: object) -> int:
+        raise BrokenPipeError("downstream closed")
+
+    monkeypatch.setattr(odylith_context_engine, "_run_benchmark", _raise_broken_pipe)
+
+    rc = odylith_context_engine.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "benchmark",
+            "--no-write-report",
+            "--json",
+        ]
+    )
+
+    assert rc == 0

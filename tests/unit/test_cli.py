@@ -1622,7 +1622,7 @@ def test_release_migration_gate_json_reports_registered_runtime(capsys) -> None:
             "--repo-root",
             str(repo_root),
             "--target-version",
-            "0.1.13",
+            "0.1.14",
             "--json",
         ])
     payload = json.loads(capsys.readouterr().out)

@@ -40,15 +40,15 @@
 
 - Invariant Violated: Atlas topology should communicate placement and semantic grouping clearly, and the viewer must not clip or hide diagram text on first paint.
 
-- Root Cause: Atlas scaffold generated a generic node fan-out without a visual grammar, greenfield proposal validation accepted unstyled flowcharts, Mermaid rendering used raw default theme posture, and viewer fit tests covered header fact cards but not diagram image clipping.
+- Root Cause: Atlas scaffold generated a generic node fan-out without a visual grammar, greenfield proposal validation accepted unstyled flowcharts, Mermaid rendering used raw default theme posture, and viewer fit tests covered header fact cards but not diagram image clipping. The first color pass also overreached by manipulating the viewer background instead of limiting polish to diagram-internal containers and nodes.
 
-- Solution: Add a scaffold template with diagram-internal lanes where useful, subtle classDef/style colors, and wrapped labels; require greenfield flowchart Mermaid to include subtle diagram-internal colors and wrapped long labels; add a shared Mermaid render theme for polished diagram-internal typography/colors/edges; keep the Atlas viewer canvas plain white while adding padded fit math plus browser proof.
+- Solution: Add a scaffold template with diagram-internal lanes where useful, subtle classDef/style colors, and wrapped labels; require greenfield flowchart Mermaid to include subtle diagram-internal colors and wrapped long labels; add a shared Mermaid render theme for polished diagram-internal typography/colors/edges; keep the Atlas viewer canvas plain white while adding padded fit math plus browser proof. The final v0.1.14 palette is deterministic: authored Mermaid styling wins, container colors only communicate grouping, inner node colors communicate broad semantic role, and neutral fallback remains available when labels do not match a role.
 
 - Rollback/Forward Fix: Forward fix in Atlas scaffold, greenfield validation, renderer CSS/fit logic, and browser tests for v0.1.14.
 
-- Verification: PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_mermaid_catalog.py tests/unit/runtime/test_owned_surface_refresh_authoring.py tests/unit/runtime/test_greenfield_proposals.py; Atlas source-local render; Atlas browser layout tests for desktop, compact, and viewer plain-white fit.
+- Verification: PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_auto_update_mermaid_diagrams.py tests/unit/runtime/test_owned_surface_refresh_authoring.py tests/unit/runtime/test_greenfield_proposals.py tests/unit/install/test_atlas_surface_migration.py tests/integration/install/test_lifecycle_simulator.py (`56 passed`); PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_mermaid_catalog.py tests/unit/runtime/test_diagram_freshness.py tests/unit/runtime/test_surface_shell_contracts.py tests/integration/runtime/test_surface_browser_layout_audit.py::test_atlas_viewer_uses_plain_white_stage_and_fits_diagram_without_clipping tests/integration/runtime/test_atlas_sort_browser.py (`85 passed`); PYTHONPATH=src python -m pytest -q tests/unit/install/test_migration_runtime.py tests/unit/runtime/test_component_registry_intelligence.py tests/unit/runtime/test_workstream_inference.py (`75 passed`); `PYTHONPATH=src python -m odylith.cli atlas auto-update --repo-root . --all-stale --runtime-mode standalone` rendered 43 diagrams fresh; `PYTHONPATH=src python -m odylith.cli atlas render --repo-root . --fail-on-stale --runtime-mode standalone` reported 43 fresh and 0 stale; `git diff --check` passed.
 
-- Prevention: Keep flowchart visual-contract validation and browser image-fit proof so future Atlas diagrams cannot regress to unstyled single-plane boxes, viewer-background decoration, or clipped first-paint SVGs.
+- Prevention: Keep flowchart visual-contract validation, render-style fingerprints, Atlas migration proof, and browser image-fit proof so future Atlas diagrams cannot regress to unstyled single-plane boxes, viewer-background decoration, stale generated SVG/PNG assets, or clipped first-paint SVGs.
 
 - Regression Tests Added: tests/unit/runtime/test_owned_surface_refresh_authoring.py::test_atlas_scaffold_allows_atlas_first_draft_without_governance_links; tests/unit/runtime/test_greenfield_proposals.py flowchart visual contract tests; tests/unit/runtime/test_render_mermaid_catalog.py::test_render_mermaid_catalog_keeps_viewer_stage_plain_white; tests/integration/runtime/test_surface_browser_layout_audit.py::test_atlas_viewer_uses_plain_white_stage_and_fits_diagram_without_clipping
 
@@ -61,4 +61,7 @@
 - Code References: - src/odylith/runtime/surfaces/scaffold_mermaid_diagram.py
 - src/odylith/runtime/domain_intelligence/proposal_validation.py
 - src/odylith/runtime/surfaces/render_mermaid_catalog.py
+- src/odylith/runtime/surfaces/assets/mermaid_render_config.json
+- src/odylith/runtime/surfaces/assets/mermaid_cli_worker.mjs
+- src/odylith/install/atlas_surface_migration.py
 - tests/integration/runtime/test_surface_browser_layout_audit.py

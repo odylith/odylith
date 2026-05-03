@@ -49,19 +49,19 @@ flowchart LR
     release --> compass
     intervention -. "zero-file narration filtered" .-> compass
 
-    classDef input fill:#eef8f7,stroke:#7bbdb6,color:#123f46,stroke-width:1.2px;
-    classDef intelligence fill:#f4f7ff,stroke:#9bb8e8,color:#17345d,stroke-width:1.2px;
-    classDef decision fill:#fff8ed,stroke:#e8b477,color:#5a3514,stroke-width:1.3px;
-    classDef apply fill:#f6f0ff,stroke:#c4a7e7,color:#3c2865,stroke-width:1.2px;
-    classDef memory fill:#f3fbf6,stroke:#8fc9a3,color:#164b31,stroke-width:1.2px;
+    classDef input fill:#eafbf7,stroke:#78c9bd,color:#103f3a,stroke-width:1.2px;
+    classDef intelligence fill:#eef5ff,stroke:#91b9f4,color:#183a68,stroke-width:1.2px;
+    classDef decision fill:#fff6e3,stroke:#e7b96f,color:#5b3a18,stroke-width:1.3px;
+    classDef apply fill:#f5efff,stroke:#bea5ea,color:#3f2b68,stroke-width:1.2px;
+    classDef memory fill:#f0faed,stroke:#95cf8c,color:#174a2f,stroke-width:1.2px;
     class prompt,host,source,catalog input;
     class compiler,planning,rendering,proposal intelligence;
     class confirm decision;
     class radar,registry,atlas,release apply;
     class intervention,compass memory;
 
-    style intent_lane fill:#fbfefd,stroke:#c8e4df,stroke-width:1px,color:#123f46
-    style reasoning_lane fill:#fbfcff,stroke:#d5e0f5,stroke-width:1px,color:#17345d
-    style confirmation_lane fill:#fffdfa,stroke:#f0d4a4,stroke-width:1px,color:#5a3514
-    style memory_lane fill:#fbfefb,stroke:#cfe8d7,stroke-width:1px,color:#164b31
-    linkStyle default stroke:#8aa0b5,stroke-width:1.45px
+    style intent_lane fill:#f7fdfb,stroke:#b8e1db,stroke-width:1px,color:#103f3a
+    style reasoning_lane fill:#f8fbff,stroke:#c9dafa,stroke-width:1px,color:#183a68
+    style confirmation_lane fill:#fffaf0,stroke:#ebd0a0,stroke-width:1px,color:#5b3a18
+    style memory_lane fill:#f9fdf6,stroke:#cbe4c3,stroke-width:1px,color:#174a2f
+    linkStyle default stroke:#7893ad,stroke-width:1.45px

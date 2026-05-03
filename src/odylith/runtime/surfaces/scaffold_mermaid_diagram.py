@@ -179,10 +179,10 @@ def _starter_source(
     lines.extend(
         [
             "",
-            "    classDef anchor fill:#eef8f7,stroke:#7bbdb6,color:#123f46,stroke-width:1px;",
-            "    classDef component fill:#f4f7ff,stroke:#9bb8e8,color:#17345d,stroke-width:1px;",
-            "    classDef evidence fill:#fff7ed,stroke:#e8b477,color:#5a3514,stroke-width:1px;",
-            "    classDef followup fill:#f8fafc,stroke:#cbd5e1,color:#334155,stroke-width:1px;",
+            "    classDef anchor fill:#eafbf7,stroke:#78c9bd,color:#103f3a,stroke-width:1px;",
+            "    classDef component fill:#eef5ff,stroke:#91b9f4,color:#183a68,stroke-width:1px;",
+            "    classDef evidence fill:#fff6e3,stroke:#e7b96f,color:#5b3a18,stroke-width:1px;",
+            "    classDef followup fill:#f7fafc,stroke:#cbd7e4,color:#334155,stroke-width:1px;",
             "    class diagram,owner anchor;",
         ]
     )
@@ -196,10 +196,10 @@ def _starter_source(
             lines.append("    class followup followup;")
     lines.extend(
         [
-            "    style intent_lane fill:#f8fcfc,stroke:#b9d9d6,stroke-width:1px,color:#19444a",
-            "    style component_lane fill:#f8faff,stroke:#c7d7f3,stroke-width:1px,color:#17345d",
-            "    style evidence_lane fill:#fffaf4,stroke:#f1c892,stroke-width:1px,color:#5a3514",
-            "    linkStyle default stroke:#9ab3c7,stroke-width:1.4px",
+            "    style intent_lane fill:#f7fdfb,stroke:#b8e1db,stroke-width:1px,color:#103f3a",
+            "    style component_lane fill:#f8fbff,stroke:#c9dafa,stroke-width:1px,color:#183a68",
+            "    style evidence_lane fill:#fffaf0,stroke:#ebd0a0,stroke-width:1px,color:#5b3a18",
+            "    linkStyle default stroke:#7893ad,stroke-width:1.4px",
         ]
     )
     return "\n".join(lines) + "\n"

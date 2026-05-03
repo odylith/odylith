@@ -347,8 +347,8 @@ def test_atlas_scaffold_allows_atlas_first_draft_without_governance_links(
     assert 'subgraph intent_lane["Intent lane"]' in source_text
     assert 'subgraph component_lane["Component lane"]' in source_text
     assert 'subgraph evidence_lane["Evidence lane"]' in source_text
-    assert "classDef anchor fill:#eef8f7" in source_text
-    assert "style component_lane fill:#f8faff" in source_text
+    assert "classDef anchor fill:#eafbf7" in source_text
+    assert "style component_lane fill:#f8fbff" in source_text
     assert "Link Radar, plan, and docs<br/>as governance matures" in source_text
     assert calls == [
         {

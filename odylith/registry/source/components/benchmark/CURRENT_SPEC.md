@@ -422,6 +422,11 @@ with the families that look and feel most like normal coding-agent work.
 - `diagnostic` is the internal tuning lane: it isolates packet and prompt
   creation for `odylith_on` versus `odylith_off` without running the live
   end-to-end host pair.
+- The default diagnostic cache profile is `cold` so source-local maintainer
+  checks can prove packet and prompt construction without requiring optional
+  warm local-memory dependencies. Operators may still request
+  `--cache-profile warm` explicitly when the intent is to verify warm-cache
+  memory behavior.
 - The proof lane answers:
   - "Does the full Odylith assistance stack beat the raw host CLI on the same live end-to-end task contract?"
   - "What is the full matched-pair time to valid outcome?"
@@ -784,6 +789,10 @@ Release-safe benchmark status is distinct from these eval-integrity gates:
   precision is also a failure, even if the speed or token headline improves.
 - Warm-only or profile-scoped local runs remain useful for debugging, but they
   are not release-safe publication proof unless the report says otherwise.
+- Diagnostic proof must stay dependency-light by default. If a source-local
+  diagnostic run requires optional warm-cache LanceDB/Tantivy availability for
+  a packet-only claim, the benchmark lane is too tightly coupled to the memory
+  substrate and should be narrowed or made explicit.
 
 ## Validation Playbook
 ### Runtime proof
@@ -795,6 +804,7 @@ Release-safe benchmark status is distinct from these eval-integrity gates:
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_odylith_benchmark_graphs.py tests/unit/test_cli.py`
 - `python -m pytest -q tests/unit/runtime/test_tooling_guidance_catalog.py tests/unit/runtime/test_tooling_context_retrieval_guidance.py tests/unit/runtime/test_odylith_benchmark_prompt_regressions.py tests/unit/runtime/test_odylith_benchmark_preflight.py`
 - `odylith validate guidance-behavior --repo-root .`
+- `odylith context-engine --repo-root . benchmark --profile diagnostic --limit 5 --no-write-report`
 
 ## Requirements Trace
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
@@ -826,3 +836,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-17: Added the `hot_path_efficiency` domain to Guidance Behavior platform proof and re-proved the quick family at `6` scenarios, `0.0` widening rate, no advisory failures, and Odylith ON packet timing of `median=5.712 ms`, `avg=5.999 ms`, `p95=7.463 ms`. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
 - 2026-04-17: Hardened Guidance Behavior platform proof so stale live/source-bundle mirrors for guidance docs, host shims, skills, governed program/spec truth, and benchmark corpora fail validation instead of passing on token-present but lane-divergent consumer assets. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
 - 2026-04-18: Expanded Odylith Discipline benchmark sovereignty from scenario selection into contract-quality metrics: pressure observations, affordances, admissibility, proof obligations, learning replay, memory recurrence, intervention visibility, and platform integration now feed deterministic summary rates while provider and host-model call counts stay zero. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))
+- 2026-05-03: Changed the diagnostic benchmark default cache profile to cold so source-local engine-integrity checks remain dependency-light while explicit warm-cache verification remains available. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Bug: `CB-163`)

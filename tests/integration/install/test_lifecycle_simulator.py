@@ -54,7 +54,7 @@ def _patch_mermaid_render(monkeypatch) -> None:
             svg_path.parent.mkdir(parents=True, exist_ok=True)
             svg_path.write_text(
                 '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80" viewBox="0 0 120 80">'
-                '<g class="cluster"><rect style="fill:#f8fcfc !important;stroke:#c8e4df !important;"></rect></g>'
+                '<g class="cluster"><rect style="fill:#f7fdfb !important;stroke:#b8e1db !important;"></rect></g>'
                 "</svg>\n",
                 encoding="utf-8",
             )

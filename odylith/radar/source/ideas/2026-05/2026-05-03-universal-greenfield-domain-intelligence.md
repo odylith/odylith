@@ -22,7 +22,7 @@ complexity: High
 
 ordering_score: 100
 
-ordering_rationale: Operator-facing greenfield UX failure blocked a core consumer-lane onboarding path and belongs in the v0.1.13 release target alongside cross-host latency and intervention integrity.
+ordering_rationale: Operator-facing greenfield UX failure blocked a core consumer-lane onboarding path and belongs in the v0.1.14 release target alongside cross-host latency, intervention integrity, Casebook migration discipline, and Atlas topology quality.
 
 confidence: high
 
@@ -73,7 +73,7 @@ Add a host-reasoned Domain Intelligence contract that turns vague greenfield int
 Create a first-class `runtime/domain_intelligence` package that makes Odylith the evidence/schema/validation/apply layer, not the project-authoring brain. `odylith greenfield propose` performs a shallow repo evidence scan and emits a host-agnostic reasoning contract. Claude, Codex, or any future host then uses its full reasoning capability to draft the concrete backlog, components, Atlas Mermaid sources, waves, release plan, assumptions, risks, validation strategy, and open questions in normal chat. `odylith greenfield apply` validates the accepted proposal, requires host-authored `mermaid_source` for each Atlas draft, rejects identical diagram bodies, and writes only through owned Radar, Registry, Atlas, release-targeting, and Compass memory paths after `--confirm`.
 
 ## Research Signals
-External ecosystem checks argue against a small in-code taxonomy as the proposal author. GitHub Octoverse 2025 shows high-volume new repository creation, AI/agent growth, TypeScript-heavy application work, Python/Jupyter AI and data-science work, and private/product repos growing alongside public open source. CNCF organizes cloud-native work around infrastructure, delivery, observability, security, AI/ML, and runtime ecosystems. Apache describes mature open-source projects across data, cloud, search, libraries, geospatial, IoT, and related categories. NASA's software and open-data surfaces show science projects built from code, data, analysis pipelines, simulation/modeling tools, visualization, reproducibility, and sustained scientific libraries. Those signals prove greenfield intent is open-world; v0.1.13 therefore uses host reasoning for the project-specific plan and Odylith runtime validation for evidence tiers, confirmation gates, topology hygiene, and durable memory.
+External ecosystem checks argue against a small in-code taxonomy as the proposal author. GitHub Octoverse 2025 shows high-volume new repository creation, AI/agent growth, TypeScript-heavy application work, Python/Jupyter AI and data-science work, and private/product repos growing alongside public open source. CNCF organizes cloud-native work around infrastructure, delivery, observability, security, AI/ML, and runtime ecosystems. Apache describes mature open-source projects across data, cloud, search, libraries, geospatial, IoT, and related categories. NASA's software and open-data surfaces show science projects built from code, data, analysis pipelines, simulation/modeling tools, visualization, reproducibility, and sustained scientific libraries. Those signals prove greenfield intent is open-world; v0.1.14 therefore keeps host reasoning responsible for the project-specific plan while Odylith runtime validation owns evidence tiers, confirmation gates, topology hygiene, release targeting, program/wave formation, and durable memory.
 
 ## Scope
 - Add `odylith greenfield propose` and `odylith greenfield apply`.
@@ -93,7 +93,7 @@ External ecosystem checks argue against a small in-code taxonomy as the proposal
 - Filter Compass timeline audit entries so zero-file prompt-intervention narration does not become fake implementation history.
 
 ## Non-Goals
-- Do not add a separate provider-backed enrichment service in v0.1.13.
+- Do not add a separate provider-backed enrichment service in v0.1.14.
 - Do not let host-specific Claude or Codex hooks own the proposal logic.
 - Do not turn greenfield assumptions into source-backed governance claims.
 
@@ -107,7 +107,7 @@ External ecosystem checks argue against a small in-code taxonomy as the proposal
 - Apply-time writes can pollute consumer repos unless they stay confirmation-gated and route through owned Radar, Registry, Atlas, and release authoring paths.
 
 ## Dependencies
-- Depends on B-141 for the v0.1.13 host/runtime integrity lane: greenfield prompt routing must preserve low-latency host behavior, Intervention Engine separation, and consumer-lane feature integrity.
+- Depends on B-141 for the v0.1.14 host/runtime integrity lane: greenfield prompt routing must preserve low-latency host behavior, Intervention Engine separation, consumer-lane feature integrity, robust upgrade migration, and generated-surface refresh proof.
 
 ## Success Metrics
 Greenfield propose returns a low-latency, provider_calls=0 host-reasoning contract for any vague or precise greenfield prompt.
@@ -172,16 +172,24 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   (`51 passed`), `tests/integration/install/test_lifecycle_simulator.py::test_lifecycle_simulator_proves_historical_upgrades_to_0_1_14`
   (`1 passed`), `release migration-gate --target-version 0.1.14 --json`
   (`blocked_manual_migrations: []`), and `git diff --check`.
+- v0.1.14 Atlas palette follow-up passed the focused Atlas/greenfield/migration
+  tests (`56 passed`), Atlas browser/render tests (`85 passed`), migration and
+  registry intelligence tests (`75 passed`), `atlas auto-update --all-stale`
+  (`43` diagrams rendered fresh), `atlas render --fail-on-stale` (`43 fresh`,
+  `0 stale`), and `git diff --check`. The deterministic palette preserves
+  authored Mermaid styling first, applies harmonious grouping colors to
+  containers, applies semantic role colors to inner nodes, and keeps the Atlas
+  viewer stage pure white.
 
 ## Rollout
-- Ship in v0.1.13 with B-141 because the user-facing failure is inseparable from consumer-lane host UX hardening: low latency is not enough if empty-repo greenfield prompts dead-end.
+- Ship in v0.1.14 with B-141 because the user-facing failure is inseparable from consumer-lane host UX hardening: low latency is not enough if empty-repo greenfield prompts dead-end or if accepted proposals fail to show programs, waves, release targets, Registry topology, and Atlas traceability.
 - Keep the Odylith CLI proposal request enabled by default and provider-free;
   the active host model performs the reasoning in chat, and any future
   standalone provider-backed enrichment must be explicit.
 - Prove empty/thin consumer UX through CLI, host-routing tests, migration-gate coverage, and browser-surface refreshes before release.
 
 ## Why Now
-The greenfield failure was reported during the v0.1.13 consumer-lane hardening pass. Fixing latency while still refusing broad new-project intent would preserve speed but regress the product purpose.
+The greenfield failure was reported during the consumer-lane hardening pass. Fixing latency while still refusing broad new-project intent, or writing shallow child topology without release/program proof, would preserve speed but regress the product purpose.
 
 ## Product View
 Odylith should feel like a precise greenfield architecture partner in empty repos: propose useful governance first, never claim source evidence that does not exist, and apply records only after confirmation through the same CLI-owned surfaces used for existing repos.
@@ -203,7 +211,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
 - Component registration can record planned consumer components with `user_intent` evidence without claiming source-backed ownership.
 
 ## Migration/Compatibility
-- Existing consumer repos need no data migration. Upgrading to v0.1.13 installs the new CLI/runtime path, managed guidance, and host skill shims. Existing source-backed governance remains unchanged; greenfield proposals are additive and confirmation-gated.
+- Existing consumer repos need no source-truth migration for greenfield behavior. Upgrading to v0.1.14 installs the additive CLI/runtime path, managed guidance, host skill shims, greenfield `0.0.1` default release targeting, program/wave authoring, and Atlas render polish. Existing source-backed governance remains unchanged; greenfield proposals are additive and confirmation-gated.
 - v0.1.14 greenfield behavior remains backward compatible: accepted proposals that name a release selector keep using that selector, while omitted selectors default to the first project release `0.0.1`. Apply now creates the umbrella execution-wave program document when child workstreams exist and targets the first wave plus umbrella to the first release so Compass can show program and release power without over-targeting every child workstream.
 - One-word `Customer` values are now valid backlog truth. The relaxation is intentionally scoped to Customer only; Problem, Opportunity, Product View, and Success Metrics keep the stronger detail threshold and placeholder rejection.
 - Migration observer markers for this slice:
@@ -261,5 +269,5 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
 
 ## Open Questions
 - Should a future signed domain-pack marketplace augment host reasoning with
-  curated evidence, examples, and validators after v0.1.13 ships the open-world
+  curated evidence, examples, and validators after v0.1.14 ships the open-world
   host-reasoned baseline?

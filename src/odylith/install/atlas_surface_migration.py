@@ -36,7 +36,9 @@ _OLD_VIEWER_BACKGROUND_TOKENS = (
     "linear-gradient(90deg, rgba(20, 184, 166",
     "linear-gradient(rgba(15, 23, 42, 0.06)",
 )
-_POLISHED_CLUSTER_FILLS = frozenset({"#f8fcfc", "#f7faff", "#fff9ed", "#f8fbf7"})
+_POLISHED_CLUSTER_FILLS = frozenset(
+    {"#f7fdfb", "#f8fbff", "#fffaf0", "#f9fdf6", "#fcf9ff"}
+)
 _LEGACY_CLUSTER_STYLE_TOKENS = (
     "style=\"\"",
     "fill:#fbfdff",

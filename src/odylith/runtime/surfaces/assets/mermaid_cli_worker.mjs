@@ -256,19 +256,19 @@ async function main() {
         `;
         svg.insertBefore(style, svg.firstChild);
         const clusterPalette = [
-          { fill: '#f8fcfc', stroke: '#c8e4df', label: '#123f46' },
-          { fill: '#f8faff', stroke: '#d5e0f5', label: '#17345d' },
-          { fill: '#fffdfa', stroke: '#f0d4a4', label: '#5a3514' },
-          { fill: '#fbfefb', stroke: '#cfe8d7', label: '#164b31' },
-          { fill: '#fcf8ff', stroke: '#ddc8f2', label: '#3c2865' },
+          { fill: '#f7fdfb', stroke: '#b8e1db', label: '#103f3a' },
+          { fill: '#f8fbff', stroke: '#c9dafa', label: '#183a68' },
+          { fill: '#fffaf0', stroke: '#ebd0a0', label: '#5b3a18' },
+          { fill: '#f9fdf6', stroke: '#cbe4c3', label: '#174a2f' },
+          { fill: '#fcf9ff', stroke: '#dccbf4', label: '#3f2b68' },
         ];
         const nodePalette = {
-          input: { fill: '#eef8f7', stroke: '#7bbdb6', label: '#123f46' },
-          intelligence: { fill: '#f4f7ff', stroke: '#9bb8e8', label: '#17345d' },
-          decision: { fill: '#fff8ed', stroke: '#e8b477', label: '#5a3514' },
-          apply: { fill: '#f6f0ff', stroke: '#c4a7e7', label: '#3c2865' },
-          memory: { fill: '#f3fbf6', stroke: '#8fc9a3', label: '#164b31' },
-          neutral: { fill: '#f8fafc', stroke: '#cbd5e1', label: '#334155' },
+          input: { fill: '#eafbf7', stroke: '#78c9bd', label: '#103f3a' },
+          intelligence: { fill: '#eef5ff', stroke: '#91b9f4', label: '#183a68' },
+          decision: { fill: '#fff6e3', stroke: '#e7b96f', label: '#5b3a18' },
+          apply: { fill: '#f5efff', stroke: '#bea5ea', label: '#3f2b68' },
+          memory: { fill: '#f0faed', stroke: '#95cf8c', label: '#174a2f' },
+          neutral: { fill: '#f7fafc', stroke: '#cbd7e4', label: '#334155' },
         };
         const fallbackNodeTones = [
           nodePalette.input,
