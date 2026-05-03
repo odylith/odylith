@@ -500,9 +500,18 @@ initSharedQuickTooltips();
       if (!dims) {
         return null;
       }
-      const sw = stageEl.clientWidth || 1;
-      const sh = stageEl.clientHeight || 1;
+      const padding = stageFitPadding();
+      const sw = Math.max(1, (stageEl.clientWidth || 1) - padding * 2);
+      const sh = Math.max(1, (stageEl.clientHeight || 1) - padding * 2);
       return Math.min(sw / dims.width, sh / dims.height);
+    }
+
+    function stageFitPadding() {
+      const shortSide = Math.min(stageEl.clientWidth || 0, stageEl.clientHeight || 0);
+      if (!shortSide) {
+        return 28;
+      }
+      return clamp(shortSide * 0.045, 28, 54);
     }
 
     function applyInitialView(diagram) {

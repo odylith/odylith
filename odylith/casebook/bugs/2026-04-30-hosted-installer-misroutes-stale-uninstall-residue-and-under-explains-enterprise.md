@@ -1,6 +1,6 @@
 - Bug ID: CB-146
 
-- Type: InstallRelease
+- Type: Install
 
 
 

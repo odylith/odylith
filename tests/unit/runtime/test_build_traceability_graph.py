@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from odylith.runtime.governance import build_traceability_graph as graph_builder
+from odylith.runtime.governance import topology_integrity
 
 
 _SECTIONS = (
@@ -150,6 +151,52 @@ def _write_release_planning_truth(repo_root: Path) -> None:
     )
 
 
+def _write_registry_manifest(repo_root: Path) -> None:
+    spec_path = repo_root / "odylith" / "registry" / "source" / "components" / "runtime-core" / "CURRENT_SPEC.md"
+    spec_path.parent.mkdir(parents=True, exist_ok=True)
+    (repo_root / "odylith" / "radar").mkdir(parents=True, exist_ok=True)
+    (repo_root / "odylith" / "radar" / "radar.html").write_text("<html></html>\n", encoding="utf-8")
+    spec_path.write_text(
+        (
+            "# Runtime Core\n\n"
+            "## Feature History\n"
+            "- 2026-03-01: Connected runtime core topology. "
+            "(Plan: [B-033](odylith/radar/radar.html?view=plan&workstream=B-033))\n"
+        ),
+        encoding="utf-8",
+    )
+    manifest_path = repo_root / "odylith" / "registry" / "source" / "component_registry.v1.json"
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "components": [
+                    {
+                        "component_id": "runtime-core",
+                        "name": "runtime-core",
+                        "kind": "service",
+                        "category": "governance_engine",
+                        "qualification": "curated",
+                        "aliases": ["runtime core"],
+                        "path_prefixes": ["src/runtime_core"],
+                        "workstreams": ["B-033"],
+                        "diagrams": ["D-003"],
+                        "owner": "platform",
+                        "status": "active",
+                        "what_it_is": "Runtime core component.",
+                        "why_tracked": "Owns the runtime topology spine in this fixture.",
+                        "spec_ref": "odylith/registry/source/components/runtime-core/CURRENT_SPEC.md",
+                    }
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def test_build_traceability_graph_outputs_expected_nodes_edges(tmp_path: Path) -> None:
     (tmp_path / "consumer_repo.yaml").write_text("repo: consumer\n", encoding="utf-8")
     ideas_dir = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-03"
@@ -286,6 +333,136 @@ def test_build_traceability_graph_outputs_expected_nodes_edges(tmp_path: Path) -
     assert ws_b033["workstream_reopens"] == "B-021"
     assert ws_b033["workstream_split_from"] == "B-021"
     assert ws_b033["workstream_merged_into"] == "B-021"
+
+
+def test_build_traceability_graph_adds_registry_program_release_spine_and_quality(tmp_path: Path) -> None:
+    (tmp_path / "consumer_repo.yaml").write_text("repo: consumer\n", encoding="utf-8")
+    ideas_dir = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-03"
+    ideas_dir.mkdir(parents=True, exist_ok=True)
+    (tmp_path / "odylith" / "radar").mkdir(parents=True, exist_ok=True)
+    ideas_dir.joinpath("2026-03-01-b-021.md").write_text(
+        _idea_text(
+            idea_id="B-021",
+            title="Umbrella",
+            execution_model="umbrella_waves",
+            children="B-033",
+            diagrams="D-003",
+        ),
+        encoding="utf-8",
+    )
+    ideas_dir.joinpath("2026-03-01-b-033.md").write_text(
+        _idea_text(
+            idea_id="B-033",
+            title="Child",
+            parent="B-021",
+            diagrams="D-003",
+        ),
+        encoding="utf-8",
+    )
+
+    programs_dir = tmp_path / "odylith" / "radar" / "source" / "programs"
+    programs_dir.mkdir(parents=True, exist_ok=True)
+    programs_dir.joinpath("B-021.execution-waves.v1.json").write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "umbrella_id": "B-021",
+                "waves": [
+                    {
+                        "wave_id": "W1",
+                        "label": "First wave",
+                        "status": "active",
+                        "summary": "Fixture wave.",
+                        "depends_on": [],
+                        "primary_workstreams": ["B-033"],
+                        "carried_workstreams": [],
+                        "in_band_workstreams": [],
+                        "gate_refs": [],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    _write_release_planning_truth(tmp_path)
+    _write_registry_manifest(tmp_path)
+
+    catalog_path = tmp_path / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    catalog_path.parent.mkdir(parents=True, exist_ok=True)
+    catalog_path.write_text(
+        json.dumps(
+            {
+                "version": "1.0",
+                "diagrams": [
+                    {
+                        "diagram_id": "D-003",
+                        "slug": "runtime",
+                        "title": "Runtime topology",
+                        "kind": "flowchart",
+                        "status": "active",
+                        "owner": "platform",
+                        "last_reviewed_utc": "2026-03-01",
+                        "source_mmd": "odylith/atlas/source/runtime.mmd",
+                        "components": [{"name": "runtime-core", "description": "Runtime core"}],
+                        "related_workstreams": ["B-021"],
+                        "related_backlog": ["odylith/radar/source/ideas/2026-03/2026-03-01-b-033.md"],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    rc = graph_builder.main(["--repo-root", str(tmp_path), "--output", "odylith/radar/traceability-graph.v1.json"])
+    assert rc == 0
+
+    payload = json.loads((tmp_path / "odylith" / "radar" / "traceability-graph.v1.json").read_text(encoding="utf-8"))
+    nodes = {row["id"]: row for row in payload["nodes"]}
+    edges = {(row["source"], row["target"], row["edge_type"]) for row in payload["edges"]}
+    assert "component:runtime-core" in nodes
+    assert "program:B-021" in nodes
+    assert "wave:B-021:W1" in nodes
+    assert ("B-033", "component:runtime-core", "component_linkage") in edges
+    assert ("component:runtime-core", "diagram:D-003", "component_diagram") in edges
+    assert ("B-021", "program:B-021", "execution_program") in edges
+    assert ("program:B-021", "wave:B-021:W1", "execution_wave") in edges
+    assert ("wave:B-021:W1", "B-033", "wave_membership") in edges
+    assert payload["summary"]["component_count"] == 1
+    assert payload["summary"]["topology_quality"] == "pass"
+    assert payload["topology_integrity"]["algorithm"] == "multipartite-spine-v1"
+    assert payload["topology_integrity"]["connectivity"]["structural_edge_count"] >= 6
+
+
+def test_topology_integrity_reports_dangling_edges_and_unresolved_components() -> None:
+    graph = {
+        "nodes": [
+            {
+                "id": "B-033",
+                "type": "workstream",
+                "status": "implementation",
+                "workstream_type": "child",
+            },
+            {
+                "id": "diagram:D-003",
+                "type": "diagram",
+                "status": "active",
+                "related_workstreams": ["B-033"],
+                "related_component_ids": ["unknown-component"],
+            },
+        ],
+        "edges": [
+            {"source": "B-033", "target": "diagram:D-003", "edge_type": "diagram_linkage"},
+            {"source": "B-033", "target": "component:missing", "edge_type": "component_linkage"},
+        ],
+        "workstreams": [{"idea_id": "B-033", "related_diagram_ids": ["D-003"]}],
+    }
+
+    report = topology_integrity.evaluate_topology_integrity(graph)
+
+    assert report["quality"] == "fail"
+    categories = {row["category"] for row in report["findings"]}
+    assert "dangling_edge_target" in categories
+    assert "unresolved_diagram_component_id" in categories
 
 
 def test_build_traceability_graph_includes_release_catalog_and_active_release_edges(tmp_path: Path) -> None:

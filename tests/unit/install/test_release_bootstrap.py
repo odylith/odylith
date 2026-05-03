@@ -402,6 +402,8 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
         '"$version_root/bin/python" -m odylith.cli upgrade --repo-root "$repo_root" --to "$release_version" --write-pin'
         in text
     )
+    assert "read_install_versions.py" not in text
+    assert 'installed_pin_version' not in text
     assert 'say "resume Completing local install."' in text
     assert 'rm -f "$install_state_path" "$state_root/runtime/current"' in text
     assert '"$version_root/bin/python" -m odylith.cli install --repo-root "$repo_root" --version "$release_version"' in text
@@ -593,7 +595,9 @@ def test_generated_install_script_upgrades_only_complete_existing_install(tmp_pa
     assert install_state.exists()
 
 
-def test_generated_install_script_repairs_complete_already_current_install_without_upgrade_dump(tmp_path: Path) -> None:
+def test_generated_install_script_routes_complete_already_current_install_through_upgrade_lifecycle(
+    tmp_path: Path,
+) -> None:
     module = _load_module()
     output_path = tmp_path / "install.sh"
 
@@ -624,8 +628,9 @@ def test_generated_install_script_repairs_complete_already_current_install_witho
 
     command_log = (tmp_path / "command.log").read_text(encoding="utf-8")
     assert completed.returncode == 0, completed.stderr or completed.stdout
-    assert "-m odylith.cli install --repo-root" in command_log
-    assert "-m odylith.cli upgrade --repo-root" not in command_log
+    assert "-m odylith.cli upgrade --repo-root" in command_log
+    assert "--to 1.2.3 --write-pin" in command_log
+    assert "-m odylith.cli install --repo-root" not in command_log
     assert install_state.exists()
 
 

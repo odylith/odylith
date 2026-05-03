@@ -536,13 +536,25 @@ def test_bug_capture_rejects_sentence_reproducibility(tmp_path: Path) -> None:
 
 
 def test_bug_capture_rejects_prose_type(tmp_path: Path) -> None:
-    with pytest.raises(ValueError, match="`--type` must be one compact single-word token"):
+    with pytest.raises(ValueError, match="`--type` must be one allowed category token"):
         bug_authoring.capture_bug(
             repo_root=tmp_path,
             title="Casebook type must stay compact",
             component="casebook",
             severity="P1",
             bug_type="UX / lifecycle",
+            **_bug_capture_kwargs(),
+        )
+
+
+def test_bug_capture_rejects_status_like_compact_type(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="use `Release` for this value"):
+        bug_authoring.capture_bug(
+            repo_root=tmp_path,
+            title="Casebook type must stay in the controlled enum",
+            component="casebook",
+            severity="P1",
+            bug_type="ForwardFixUpdatedLocallyPendingPlatformReleaseDeploy",
             **_bug_capture_kwargs(),
         )
 
@@ -564,7 +576,7 @@ def test_checked_in_casebook_metadata_fields_are_compact() -> None:
                     offenders.append(f"{path.relative_to(repo_root)}: Status={value}")
             if line.startswith("- Type:"):
                 value = line.split(":", 1)[1].strip()
-                if not casebook_metadata.casebook_token_is_valid(value):
+                if not casebook_metadata.casebook_type_is_valid(value):
                     offenders.append(f"{path.relative_to(repo_root)}: Type={value}")
     assert offenders == []
 
@@ -3136,14 +3148,20 @@ def test_start_bootstrap_lane_emits_payload(monkeypatch, tmp_path: Path, capsys)
 
 
 def test_start_bootstrap_payload_forwards_turn_context(monkeypatch, tmp_path: Path) -> None:
+    from odylith.runtime.common import agent_runtime_contract
     from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as packet_session_runtime
+    from odylith.runtime.context_engine import runtime_read_session
 
     captured: dict[str, object] = {}
 
     monkeypatch.setattr(
         packet_session_runtime,
         "build_session_bootstrap",
-        lambda **kwargs: captured.update(kwargs) or {"packet_kind": "bootstrap_session"},
+        lambda **kwargs: captured.update(
+            kwargs,
+            read_session_active=runtime_read_session.active_runtime_read_session() is not None,
+        )
+        or {"packet_kind": "bootstrap_session"},
     )
 
     parser = cli.build_parser()
@@ -3176,6 +3194,9 @@ def test_start_bootstrap_payload_forwards_turn_context(monkeypatch, tmp_path: Pa
     assert captured["active_tab"] == "releases"
     assert captured["user_turn_id"] == "turn-3"
     assert captured["supersedes_turn_id"] == "turn-2"
+    assert captured["delivery_profile"] == agent_runtime_contract.AGENT_HOT_PATH_PROFILE
+    assert captured["skip_impact_runtime_warmup"] is True
+    assert captured["read_session_active"] is True
 
 
 def test_start_fallback_lane_prints_exact_next_command(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -4368,6 +4389,20 @@ def test_validate_help_uses_parser_without_running_subcommand(monkeypatch, tmp_p
         raise AssertionError("expected argparse help exit")
 
     assert "usage: odylith validate component-registry-contract" in capsys.readouterr().out
+
+
+def test_validate_topology_integrity_dispatch_accepts_forwarded_flags(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_main(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 44
+
+    monkeypatch.setattr(cli.topology_integrity, "main", fake_main)
+    rc = cli.main(["validate", "topology-integrity", "--repo-root", str(tmp_path), "--min-score", "95"])
+
+    assert rc == 44
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "--min-score", "95"]
 
 
 def test_lane_status_help_uses_parser_without_running_status(monkeypatch, tmp_path: Path, capsys) -> None:

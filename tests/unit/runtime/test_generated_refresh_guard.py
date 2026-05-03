@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 
 from odylith.runtime.common import generated_refresh_guard
+from odylith.runtime.governance import surface_refresh_fingerprint_dag
 from odylith.runtime.surfaces import generated_surface_refresh_guards
 
 
@@ -75,3 +76,24 @@ def test_surface_refresh_guard_bypasses_tree_scan_when_sync_already_forced_rebui
     assert skip is False
     assert fingerprint == ""
     assert metadata == {}
+
+
+def test_casebook_surface_fingerprint_tracks_renderer_inputs(tmp_path: Path) -> None:
+    renderer_path = tmp_path / "src" / "odylith" / "runtime" / "surfaces" / "render_casebook_dashboard.py"
+    renderer_path.parent.mkdir(parents=True, exist_ok=True)
+    renderer_path.write_text("first renderer contract\n", encoding="utf-8")
+
+    first = surface_refresh_fingerprint_dag.surface_input_fingerprint(
+        repo_root=tmp_path,
+        surface="casebook",
+        atlas_sync=False,
+    )
+
+    renderer_path.write_text("second renderer contract with changed behavior\n", encoding="utf-8")
+    second = surface_refresh_fingerprint_dag.surface_input_fingerprint(
+        repo_root=tmp_path,
+        surface="casebook",
+        atlas_sync=False,
+    )
+
+    assert first != second

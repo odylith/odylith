@@ -86,6 +86,44 @@ def test_render_diagrams_batch_raises_blocking_ids_when_one_shot_fallback_fails(
     assert "warning: one-shot Mermaid render failed for D-001" in output
 
 
+def test_one_shot_mermaid_render_uses_atlas_render_config(tmp_path: Path, monkeypatch) -> None:
+    commands: list[list[str]] = []
+
+    def _fake_run(cmd, *, cwd, check):  # noqa: ANN001
+        commands.append(list(cmd))
+        return subprocess.CompletedProcess(cmd, 0)
+
+    monkeypatch.setattr(mermaid.subprocess, "run", _fake_run)
+
+    mermaid._render_diagram(  # noqa: SLF001
+        repo_root=tmp_path,
+        source_mmd="demo.mmd",
+        source_svg="demo.svg",
+        source_png="demo.png",
+        cli_version="11.12.0",
+    )
+
+    assert len(commands) == 2
+    for command in commands:
+        assert "--configFile" in command
+        assert command[command.index("--configFile") + 1].endswith("mermaid_render_config.json")
+
+
+def test_mermaid_worker_applies_subtle_palette_to_unstyled_clusters() -> None:
+    worker_source = (Path(mermaid.__file__).with_name("assets") / "mermaid_cli_worker.mjs").read_text(encoding="utf-8")
+
+    assert "const clusterPalette = [" in worker_source
+    assert "const nodePalette = {" in worker_source
+    assert "toneForNodeText" in worker_source
+    assert "#f8fcfc" in worker_source
+    assert "#f8faff" in worker_source
+    assert "#eef8f7" in worker_source
+    assert "#f6f0ff" in worker_source
+    assert "styleDeclares(authoredStyle, 'fill')" in worker_source
+    assert "styleDeclares(authoredStyle, 'stroke')" in worker_source
+    assert "clusterToneForNode" in worker_source
+
+
 def test_mermaid_worker_request_prints_heartbeat(monkeypatch, capsys) -> None:
     class _FakeStdout:
         def readline(self) -> str:
@@ -656,6 +694,33 @@ def test_select_stale_diagram_indexes_selects_missing_render_artifacts(tmp_path:
                 "source_png": "demo.png",
                 "change_watch_paths": ["watched.txt"],
                 "last_reviewed_utc": mermaid.dt.date.today().isoformat(),
+            }
+        ],
+        max_review_age_days=21,
+    )
+
+    assert indexes == [0]
+
+
+def test_select_stale_diagram_indexes_selects_render_style_fingerprint_drift(tmp_path: Path) -> None:
+    source_mmd = tmp_path / "demo.mmd"
+    source_svg = tmp_path / "demo.svg"
+    source_png = tmp_path / "demo.png"
+    source_mmd.write_text("flowchart TD\n  A-->B\n", encoding="utf-8")
+    source_svg.write_text("<svg viewBox='0 0 10 10'></svg>\n", encoding="utf-8")
+    source_png.write_bytes(b"png")
+
+    indexes = mermaid._select_stale_diagram_indexes(  # noqa: SLF001
+        repo_root=tmp_path,
+        diagrams=[
+            {
+                "diagram_id": "D-001",
+                "source_mmd": "demo.mmd",
+                "source_svg": "demo.svg",
+                "source_png": "demo.png",
+                "change_watch_paths": [],
+                "last_reviewed_utc": mermaid.dt.date.today().isoformat(),
+                "render_source_fingerprint": "old-render-style-fingerprint",
             }
         ],
         max_review_age_days=21,

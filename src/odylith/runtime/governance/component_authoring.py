@@ -65,6 +65,16 @@ def _component_exists(registry: dict[str, Any], component_id: str) -> bool:
     )
 
 
+def _sentence_fragment(value: str) -> str:
+    text = " ".join(str(value or "").strip().split()).rstrip(".")
+    return text
+
+
+def _bullet_lines(values: Sequence[str]) -> str:
+    lines = [str(item).strip().rstrip(".") for item in values if str(item).strip()]
+    return "\n".join(f"- {line}." for line in lines)
+
+
 def _build_registry_entry(
     *,
     component_id: str,
@@ -79,6 +89,7 @@ def _build_registry_entry(
     sources: Sequence[str],
     workstreams: Sequence[str],
     diagrams: Sequence[str],
+    responsibility: str = "",
 ) -> dict[str, Any]:
     anchor_phrase = f" with `{path}` as its initial evidence anchor" if path else ""
     normalized_sources = [str(item).strip() for item in sources if str(item).strip()]
@@ -86,6 +97,12 @@ def _build_registry_entry(
         "user-stated intent"
         if "user_intent" in normalized_sources
         else "the initial evidence anchor"
+    )
+    responsibility_text = _sentence_fragment(responsibility)
+    what_it_is = (
+        f"{label} is a `{kind}` component responsible for {responsibility_text}{anchor_phrase}."
+        if responsibility_text
+        else f"Logical component registered through `odylith component register`{anchor_phrase}."
     )
     return {
         "component_id": component_id,
@@ -99,10 +116,7 @@ def _build_registry_entry(
         "diagrams": [str(item).strip() for item in diagrams if str(item).strip()],
         "owner": owner,
         "status": status,
-        "what_it_is": (
-            f"Logical component registered through `odylith component register`"
-            f"{anchor_phrase}."
-        ),
+        "what_it_is": what_it_is,
         "why_tracked": (
             f"Registered so agent sessions can see {label} as a named ownership boundary from {evidence_phrase}; "
             "path prefixes seed the intended boundary and can be tightened as the contract becomes clearer."
@@ -123,6 +137,13 @@ def _build_spec_template(
     status: str,
     sources: Sequence[str],
     workstreams: Sequence[str],
+    diagrams: Sequence[str] = (),
+    responsibility: str = "",
+    boundary: str = "",
+    dependencies: Sequence[str] = (),
+    interfaces: Sequence[str] = (),
+    validation: Sequence[str] = (),
+    risks: Sequence[str] = (),
 ) -> str:
     normalized_sources = [str(item).strip() for item in sources if str(item).strip()]
     if "user_intent" in normalized_sources:
@@ -146,20 +167,32 @@ def _build_spec_template(
         if first_workstream
         else ""
     )
+    diagram_ids = [str(item).strip().upper() for item in diagrams if str(item).strip()]
+    responsibility_text = _sentence_fragment(responsibility)
+    boundary_text = _sentence_fragment(boundary) or responsibility_text
+    interface_lines = _bullet_lines(interfaces) or "- Candidate interfaces are not source-backed yet; the first technical plan must define runtime contracts."
+    dependency_lines = _bullet_lines(dependencies) or "- No upstream or downstream runtime dependency is source-backed yet."
+    validation_lines = _bullet_lines(validation) or "- First implementation must add focused contract or smoke proof before this candidate becomes active."
+    risk_lines = _bullet_lines(risks) or "- Candidate boundary may change once source evidence and implementation plans exist."
+    related_workstreams = ", ".join(workstream_ids) if workstream_ids else "none"
+    related_diagrams = ", ".join(diagram_ids) if diagram_ids else "none"
     return f"""# {label}
 
 ## Overview
 
 {label} is a `{kind}` component registered through `odylith component register`.
 {overview_anchor}
+{f"Planned responsibility: {responsibility_text}." if responsibility_text else ""}
 
 ## Boundary
 
-- **Logical boundary**: TBD - define the runtime contract, public API, or ownership rule.
+- **Logical boundary**: {boundary_text or "TBD - define the runtime contract, public API, or ownership rule."}
 - **Evidence anchor**: `{path}`
 - **Kind**: {kind}
 - **Status**: {status}
 - **Evidence tier**: {", ".join(normalized_sources) if normalized_sources else "manifest"}
+- **Related workstreams**: {related_workstreams}
+- **Related diagrams**: {related_diagrams}
 
 ## Feature History
 
@@ -167,15 +200,23 @@ def _build_spec_template(
 
 ## Contract
 
-TBD - define the runtime contract, public API, or ownership boundary for this component.
+{responsibility_text or "TBD - define the runtime contract, public API, or ownership boundary for this component."}
+
+### Candidate Interfaces
+
+{interface_lines}
 
 ## Dependencies
 
-TBD — list upstream and downstream dependencies.
+{dependency_lines}
 
 ## Test Coverage
 
-TBD — describe how this component is tested.
+{validation_lines}
+
+## Risks And Open Questions
+
+{risk_lines}
 """
 
 
@@ -194,6 +235,12 @@ def register_component(
     sources: Sequence[str] = ("manifest",),
     workstreams: Sequence[str] = (),
     diagrams: Sequence[str] = (),
+    responsibility: str = "",
+    boundary: str = "",
+    dependencies: Sequence[str] = (),
+    interfaces: Sequence[str] = (),
+    validation: Sequence[str] = (),
+    risks: Sequence[str] = (),
     dry_run: bool = False,
 ) -> CreatedComponent:
     """Register a new component in the registry and scaffold its spec."""
@@ -217,6 +264,7 @@ def register_component(
         sources=tuple(str(item).strip() for item in sources if str(item).strip()) or ("manifest",),
         workstreams=tuple(str(item).strip() for item in workstreams if str(item).strip()),
         diagrams=tuple(str(item).strip() for item in diagrams if str(item).strip()),
+        responsibility=str(responsibility).strip(),
     )
 
     components = registry.get("components", [])
@@ -235,6 +283,13 @@ def register_component(
         status=str(status).strip() or "active",
         sources=tuple(str(item).strip() for item in sources if str(item).strip()) or ("manifest",),
         workstreams=tuple(str(item).strip() for item in workstreams if str(item).strip()),
+        diagrams=tuple(str(item).strip() for item in diagrams if str(item).strip()),
+        responsibility=str(responsibility).strip(),
+        boundary=str(boundary).strip(),
+        dependencies=tuple(str(item).strip() for item in dependencies if str(item).strip()),
+        interfaces=tuple(str(item).strip() for item in interfaces if str(item).strip()),
+        validation=tuple(str(item).strip() for item in validation if str(item).strip()),
+        risks=tuple(str(item).strip() for item in risks if str(item).strip()),
     )
 
     if not dry_run:

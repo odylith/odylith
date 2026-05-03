@@ -1,4 +1,4 @@
-"""Migrate legacy Casebook metadata into the v0.1.13 compact label contract."""
+"""Migrate legacy Casebook metadata into compact controlled lifecycle contracts."""
 
 from __future__ import annotations
 
@@ -18,6 +18,9 @@ from odylith.runtime.governance import sync_casebook_bug_index
 MIGRATION_ID = "v0.1.13-casebook-compact-metadata"
 MIGRATION_SCHEMA_VERSION = "odylith-casebook-metadata-migration.v1"
 TARGET_VERSION = "0.1.13"
+STATUS_FSM_MIGRATION_ID = "v0.1.14-casebook-status-fsm"
+STATUS_FSM_MIGRATION_SCHEMA_VERSION = "odylith-casebook-status-fsm-migration.v1"
+STATUS_FSM_TARGET_VERSION = "0.1.14"
 CASEBOOK_BUGS_RELATIVE_PATH = Path("odylith/casebook/bugs")
 CASEBOOK_SURFACE_RELATIVE_PATH = Path("odylith/casebook/casebook.html")
 _CASEBOOK_SURFACE_REQUIRED_PATHS = (
@@ -103,8 +106,13 @@ class CasebookMetadataMigrationResult:
 
     def as_dict(self) -> dict[str, Any]:
         """Return the migration result as a JSON-serializable payload."""
+        schema_version = (
+            STATUS_FSM_MIGRATION_SCHEMA_VERSION
+            if self.migration_id == STATUS_FSM_MIGRATION_ID
+            else MIGRATION_SCHEMA_VERSION
+        )
         return {
-            "schema_version": MIGRATION_SCHEMA_VERSION,
+            "schema_version": schema_version,
             "migration_id": self.migration_id,
             "applied": bool(self.applied),
             "previous_version": self.previous_version,
@@ -117,12 +125,17 @@ class CasebookMetadataMigrationResult:
         }
 
 
-def _ledger_path(*, repo_root: Path) -> Path:
-    return repo_root / ".odylith" / "state" / "migrations" / f"{MIGRATION_ID}.v1.json"
+def _ledger_path(*, repo_root: Path, migration_id: str = MIGRATION_ID) -> Path:
+    return repo_root / ".odylith" / "state" / "migrations" / f"{migration_id}.v1.json"
 
 
-def _read_ledger(*, repo_root: Path) -> tuple[bool, str]:
-    path = _ledger_path(repo_root=repo_root)
+def _read_ledger(
+    *,
+    repo_root: Path,
+    migration_id: str = MIGRATION_ID,
+    schema_version: str = MIGRATION_SCHEMA_VERSION,
+) -> tuple[bool, str]:
+    path = _ledger_path(repo_root=repo_root, migration_id=migration_id)
     if not path.is_file():
         return False, "missing"
     try:
@@ -131,9 +144,9 @@ def _read_ledger(*, repo_root: Path) -> tuple[bool, str]:
         return False, f"unreadable ledger: {exc.__class__.__name__}"
     if not isinstance(payload, Mapping):
         return False, "ledger payload is not an object"
-    if str(payload.get("migration_id") or "").strip() != MIGRATION_ID:
+    if str(payload.get("migration_id") or "").strip() != migration_id:
         return False, "ledger migration_id mismatch"
-    if str(payload.get("schema_version") or "").strip() != MIGRATION_SCHEMA_VERSION:
+    if str(payload.get("schema_version") or "").strip() != schema_version:
         return False, "ledger schema_version mismatch"
     verification = payload.get("verification_result")
     if not isinstance(verification, Mapping) or str(verification.get("status") or "").strip() != "passed":
@@ -149,21 +162,25 @@ def _write_ledger(
     written_paths: Iterable[str],
     removed_paths: Iterable[str],
     verification_result: Mapping[str, Any],
+    migration_id: str = MIGRATION_ID,
+    schema_version: str = MIGRATION_SCHEMA_VERSION,
+    notes: str = (
+        "v0.1.13 normalizes legacy Casebook Status into the controlled FSM, "
+        "normalizes Fixed and Type prose into compact labels, and rerenders "
+        "the Casebook dashboard payload."
+    ),
 ) -> str:
-    path = _ledger_path(repo_root=repo_root)
+    path = _ledger_path(repo_root=repo_root, migration_id=migration_id)
     payload = {
-        "schema_version": MIGRATION_SCHEMA_VERSION,
-        "migration_id": MIGRATION_ID,
+        "schema_version": schema_version,
+        "migration_id": migration_id,
         "recorded_utc": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "previous_version": previous_version,
         "target_version": target_version,
         "written_paths": list(written_paths),
         "removed_paths": list(removed_paths),
         "verification_result": dict(verification_result),
-        "notes": (
-            "v0.1.13 normalizes legacy Casebook Status, Fixed, and Type prose "
-            "into compact labels and rerenders the Casebook dashboard payload."
-        ),
+        "notes": notes,
     }
     path.parent.mkdir(parents=True, exist_ok=True)
     atomic_write_text(path, json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -202,13 +219,13 @@ def _removed_paths(before: Mapping[str, str], after: Mapping[str, str]) -> tuple
     return tuple(sorted(path for path in before if path not in after))
 
 
-def _planned_paths(*, repo_root: Path) -> tuple[str, ...]:
+def _planned_paths(*, repo_root: Path, migration_id: str = MIGRATION_ID) -> tuple[str, ...]:
     paths = [
         *sync_casebook_bug_index.casebook_bug_metadata_migration_targets(repo_root=repo_root),
         repo_root / CASEBOOK_BUGS_RELATIVE_PATH / "INDEX.md",
         *[repo_root / token for token in _CASEBOOK_SURFACE_REQUIRED_PATHS],
         *sorted((repo_root / "odylith" / "casebook").glob("casebook-detail-shard-*.v1.js")),
-        _ledger_path(repo_root=repo_root),
+        _ledger_path(repo_root=repo_root, migration_id=migration_id),
     ]
     return tuple(dict.fromkeys(display_path(repo_root=repo_root, path=path) for path in paths))
 
@@ -236,6 +253,7 @@ def _generated_surface_violations(*, repo_root: Path) -> tuple[str, ...]:
     ]
     violations = [f"missing generated Casebook surface: {path}" for path in missing]
     casebook_root = repo_root / "odylith" / "casebook"
+    violations.extend(_casebook_app_contract_violations(repo_root=repo_root, casebook_root=casebook_root))
     payload_paths = [
         casebook_root / "casebook-payload.v1.js",
         *sorted(casebook_root.glob("casebook-detail-shard-*.v1.js")),
@@ -252,6 +270,33 @@ def _generated_surface_violations(*, repo_root: Path) -> tuple[str, ...]:
         for payload in payloads:
             violations.extend(_metadata_payload_violations(repo_root=repo_root, path=path, payload=payload))
     return tuple(dict.fromkeys(violations))
+
+
+def _casebook_app_contract_violations(*, repo_root: Path, casebook_root: Path) -> tuple[str, ...]:
+    app_path = casebook_root / "casebook-app.v1.js"
+    if not app_path.is_file():
+        return ()
+    rel = display_path(repo_root=repo_root, path=app_path)
+    try:
+        app_text = app_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        return (f"{rel}: unreadable generated Casebook app surface: {exc.__class__.__name__}",)
+    violations: list[str] = []
+    required_tokens = (
+        'class="brief-card casebook-summary-card"',
+        'aria-label="Casebook narrative"',
+        '<p class="brief-card-title">Summary</p>',
+        '<p class="detail-summary">${escapeHtml(summaryText)}</p>',
+    )
+    missing_tokens = [token for token in required_tokens if token not in app_text]
+    if missing_tokens:
+        violations.append(f"{rel}: Casebook narrative is not rendered in the boxed detail card contract")
+    meta_index = app_text.find('<div class="detail-meta">${chips.join("")}</div>')
+    links_index = app_text.find('<div class="detail-links">')
+    summary_index = app_text.find("${summary}")
+    if meta_index < 0 or links_index < 0 or summary_index < 0 or not (meta_index < links_index < summary_index):
+        violations.append(f"{rel}: Casebook detail actions must render above the boxed narrative text")
+    return tuple(violations)
 
 
 def _json_payloads_from_js(path: Path) -> tuple[dict[str, Any], ...]:
@@ -301,7 +346,7 @@ def _metadata_payload_violations(*, repo_root: Path, path: Path, payload: Mappin
 
 
 def _status_is_compact(value: str) -> bool:
-    return casebook_metadata.casebook_token_is_valid(value) and casebook_metadata.canonical_casebook_status(value) == value
+    return casebook_metadata.casebook_status_is_valid(value)
 
 
 def _fixed_is_compact(value: str) -> bool:
@@ -315,10 +360,7 @@ def _fixed_is_compact(value: str) -> bool:
 
 
 def _type_is_compact(value: str) -> bool:
-    return (
-        casebook_metadata.casebook_token_is_valid(value)
-        and casebook_metadata.canonical_casebook_display_type(value) == value
-    )
+    return casebook_metadata.casebook_type_is_valid(value)
 
 
 def inspect_casebook_compact_metadata_migration(
@@ -482,15 +524,195 @@ def casebook_compact_metadata_migration_ledger_path(*, repo_root: str | Path) ->
     return display_path(repo_root=root, path=_ledger_path(repo_root=root))
 
 
+def inspect_casebook_status_fsm_migration(
+    *,
+    repo_root: str | Path,
+    previous_version: str = "",
+    target_version: str = "",
+) -> CasebookMetadataMigrationInspection:
+    """Inspect the v0.1.14 Casebook status-FSM migration state without writing."""
+    root = Path(repo_root).expanduser().resolve()
+    previous = normalize_version(previous_version)
+    target = normalize_version(target_version)
+    ledger_valid, ledger_stale_reason = _read_ledger(
+        repo_root=root,
+        migration_id=STATUS_FSM_MIGRATION_ID,
+        schema_version=STATUS_FSM_MIGRATION_SCHEMA_VERSION,
+    )
+    ledger = _ledger_path(repo_root=root, migration_id=STATUS_FSM_MIGRATION_ID)
+    return CasebookMetadataMigrationInspection(
+        migration_id=STATUS_FSM_MIGRATION_ID,
+        previous_version=previous,
+        target_version=target,
+        target_in_window=is_at_least(target, STATUS_FSM_TARGET_VERSION),
+        previous_requires_migration=not previous or is_before(previous, STATUS_FSM_TARGET_VERSION),
+        casebook_bug_source_exists=_casebook_bug_source_exists(repo_root=root),
+        source_paths_needing_migration=_source_paths_needing_migration(repo_root=root),
+        generated_surface_violations=_generated_surface_violations(repo_root=root),
+        ledger_exists=ledger.is_file(),
+        ledger_valid=ledger_valid,
+        ledger_stale_reason="" if ledger_valid or not ledger.is_file() else ledger_stale_reason,
+        ledger_path=display_path(repo_root=root, path=ledger),
+        planned_paths=_planned_paths(repo_root=root, migration_id=STATUS_FSM_MIGRATION_ID),
+    )
+
+
+def casebook_status_fsm_decision_state(
+    *,
+    repo_scenario: str,
+    inspection: CasebookMetadataMigrationInspection,
+) -> tuple[str, str]:
+    """Return the migration-runtime state and reason for the v0.1.14 status FSM."""
+    scenario = str(repo_scenario or "").strip()
+    if scenario == "legacy_odyssey":
+        if inspection.target_in_window:
+            return "selected", "Casebook status-FSM migration runs after the legacy root migration"
+        return "skipped", "target version is not in target window for the v0.1.14 Casebook status-FSM migration"
+    if scenario == "detached_source_local":
+        return "blocked", "release migrations are blocked while the product repo is in detached source-local posture"
+    if scenario == "product_repo_pinned_dogfood":
+        return (
+            "skipped",
+            "product repo Casebook source truth is validated by maintainer release gates, not consumer migration apply",
+        )
+    if not inspection.target_in_window:
+        return "skipped", "target version is not in target window for the v0.1.14 Casebook status-FSM migration"
+    if inspection.ledger_exists and not inspection.ledger_valid:
+        return "ledger_stale", f"migration ledger is stale: {inspection.ledger_stale_reason}"
+    if inspection.verification_passed:
+        return "skipped", "ledger and verification already satisfy the v0.1.14 Casebook status-FSM migration"
+    if not inspection.casebook_bug_source_exists and not inspection.generated_surface_violations:
+        return "skipped", "repo has no Casebook bug source records to migrate"
+    if inspection.migration_required:
+        return "selected", "Casebook status FSM or stale generated Casebook surfaces require automatic migration"
+    return "skipped", "migration predicates do not require local Casebook status-FSM changes"
+
+
+def migrate_casebook_status_fsm(
+    *,
+    repo_root: str | Path,
+    previous_version: str = "",
+    target_version: str = "",
+) -> CasebookMetadataMigrationResult:
+    """Apply the v0.1.14 Casebook status-FSM migration when in scope."""
+    root = Path(repo_root).expanduser().resolve()
+    previous = normalize_version(previous_version)
+    target = normalize_version(target_version)
+    inspection = inspect_casebook_status_fsm_migration(
+        repo_root=root,
+        previous_version=previous,
+        target_version=target,
+    )
+    if not inspection.target_in_window:
+        return CasebookMetadataMigrationResult(
+            migration_id=STATUS_FSM_MIGRATION_ID,
+            applied=False,
+            previous_version=previous,
+            target_version=target,
+            skipped_reason="target_not_in_v0_1_14_migration_window",
+            ledger_path=inspection.ledger_path,
+        )
+    if inspection.verification_passed:
+        return CasebookMetadataMigrationResult(
+            migration_id=STATUS_FSM_MIGRATION_ID,
+            applied=False,
+            previous_version=previous,
+            target_version=target,
+            skipped_reason="ledger_and_casebook_status_fsm_already_verify",
+            ledger_path=inspection.ledger_path,
+            verification_result={"status": "passed", "mode": "already_verified"},
+        )
+    if not inspection.casebook_bug_source_exists and not inspection.generated_surface_violations:
+        return CasebookMetadataMigrationResult(
+            migration_id=STATUS_FSM_MIGRATION_ID,
+            applied=False,
+            previous_version=previous,
+            target_version=target,
+            skipped_reason="no_casebook_bug_source_records",
+            ledger_path=inspection.ledger_path,
+            verification_result={"status": "skipped", "mode": "no_casebook_bug_source_records"},
+        )
+    before = _casebook_path_fingerprints(repo_root=root)
+    sync_casebook_bug_index.sync_casebook_bug_index(repo_root=root, migrate_bug_ids=True)
+    from odylith.runtime.surfaces import render_casebook_dashboard
+
+    render_rc = render_casebook_dashboard.main(
+        [
+            "--repo-root",
+            str(root),
+            "--output",
+            CASEBOOK_SURFACE_RELATIVE_PATH.as_posix(),
+            "--runtime-mode",
+            "standalone",
+        ]
+    )
+    if render_rc != 0:
+        raise RuntimeError("Casebook dashboard render failed during v0.1.14 Casebook status-FSM migration")
+    after = _casebook_path_fingerprints(repo_root=root)
+    verification = inspect_casebook_status_fsm_migration(
+        repo_root=root,
+        previous_version=previous,
+        target_version=target,
+    )
+    verification_result = {
+        "status": "passed" if not verification.source_paths_needing_migration and not verification.generated_surface_violations else "failed",
+        "source_paths_needing_migration": list(verification.source_paths_needing_migration),
+        "generated_surface_violations": list(verification.generated_surface_violations),
+    }
+    if verification_result["status"] != "passed":
+        raise RuntimeError("Casebook status-FSM migration did not verify after apply")
+    written = _changed_paths(before, after)
+    removed = _removed_paths(before, after)
+    ledger_path = _write_ledger(
+        repo_root=root,
+        previous_version=previous,
+        target_version=target,
+        written_paths=written,
+        removed_paths=removed,
+        verification_result=verification_result,
+        migration_id=STATUS_FSM_MIGRATION_ID,
+        schema_version=STATUS_FSM_MIGRATION_SCHEMA_VERSION,
+        notes=(
+            "v0.1.14 expands Casebook Status into a controlled lifecycle FSM "
+            "(Open, InProgress, Mitigated, Monitoring, Resolved, "
+            "FixedPendingRelease, Closed), keeps project-specific nuance in "
+            "evidence fields, and rerenders the Casebook dashboard payload."
+        ),
+    )
+    return CasebookMetadataMigrationResult(
+        migration_id=STATUS_FSM_MIGRATION_ID,
+        applied=True,
+        previous_version=previous,
+        target_version=target,
+        written_paths=written,
+        removed_paths=removed,
+        ledger_path=ledger_path,
+        verification_result=verification_result,
+    )
+
+
+def casebook_status_fsm_migration_ledger_path(*, repo_root: str | Path) -> str:
+    """Return the repo-relative v0.1.14 Casebook status-FSM ledger path."""
+    root = Path(repo_root).expanduser().resolve()
+    return display_path(repo_root=root, path=_ledger_path(repo_root=root, migration_id=STATUS_FSM_MIGRATION_ID))
+
+
 __all__ = [
     "CASEBOOK_BUGS_RELATIVE_PATH",
     "MIGRATION_ID",
     "MIGRATION_SCHEMA_VERSION",
+    "STATUS_FSM_MIGRATION_ID",
+    "STATUS_FSM_MIGRATION_SCHEMA_VERSION",
+    "STATUS_FSM_TARGET_VERSION",
     "TARGET_VERSION",
     "CasebookMetadataMigrationInspection",
     "CasebookMetadataMigrationResult",
     "casebook_compact_metadata_decision_state",
     "casebook_compact_metadata_migration_ledger_path",
+    "casebook_status_fsm_decision_state",
+    "casebook_status_fsm_migration_ledger_path",
     "inspect_casebook_compact_metadata_migration",
+    "inspect_casebook_status_fsm_migration",
     "migrate_casebook_compact_metadata",
+    "migrate_casebook_status_fsm",
 ]

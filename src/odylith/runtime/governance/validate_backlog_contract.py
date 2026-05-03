@@ -62,6 +62,9 @@ _CORE_DETAIL_SECTION_TITLES: tuple[str, ...] = (
     "Product View",
     "Success Metrics",
 )
+_CORE_DETAIL_SECTION_MIN_WORDS: dict[str, int] = {
+    "Customer": 1,
+}
 IDEA_SPEC_CACHE_VERSION = "v2-section-bodies"
 _PLACEHOLDER_LIKE_TOKENS: frozenset[str] = frozenset(
     {
@@ -379,10 +382,11 @@ def core_detail_section_errors(
         if _is_placeholder_like_section_body(body):
             errors.append(f"{path}: core detail section `## {section}` uses placeholder-like text")
             continue
-        if _meaningful_word_count(body) < _MIN_CORE_DETAIL_WORDS:
+        min_words = _CORE_DETAIL_SECTION_MIN_WORDS.get(section, _MIN_CORE_DETAIL_WORDS)
+        if _meaningful_word_count(body) < min_words:
             errors.append(
                 f"{path}: core detail section `## {section}` must contain at least "
-                f"{_MIN_CORE_DETAIL_WORDS} meaningful words"
+                f"{min_words} meaningful words"
             )
             continue
         if body == _normalize_section_body_text(defaults.get(section, "")):

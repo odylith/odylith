@@ -1,6 +1,6 @@
 - Bug ID: CB-131
 
-- Type: UXRegression
+- Type: UX
 
 
 

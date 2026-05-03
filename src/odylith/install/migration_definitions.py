@@ -5,8 +5,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from odylith.install.atlas_surface_migration import (
+    MIGRATION_ID as ATLAS_SURFACE_MIGRATION_ID,
+    TARGET_VERSION as ATLAS_SURFACE_TARGET_VERSION,
+)
 from odylith.install.casebook_metadata_migration import (
     MIGRATION_ID as CASEBOOK_METADATA_MIGRATION_ID,
+    STATUS_FSM_MIGRATION_ID as CASEBOOK_STATUS_FSM_MIGRATION_ID,
+    STATUS_FSM_TARGET_VERSION as CASEBOOK_STATUS_FSM_TARGET_VERSION,
     TARGET_VERSION as CASEBOOK_METADATA_TARGET_VERSION,
 )
 from odylith.install.legacy_install_migration import LEGACY_ROOT_MIGRATION_ID
@@ -130,6 +136,64 @@ def registered_migration_specs() -> tuple[dict[str, Any], ...]:
                 "PYTHONPATH=src python -m pytest -q tests/unit/install/test_casebook_metadata_migration.py tests/unit/install/test_migration_runtime.py",
                 "PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_casebook_bug_index.py tests/unit/runtime/test_casebook_source_validation.py tests/unit/runtime/test_render_casebook_dashboard.py",
                 "PYTHONPATH=src python -m pytest -q tests/integration/install/test_lifecycle_simulator.py::test_lifecycle_simulator_proves_historical_upgrades_to_0_1_13",
+            ),
+        },
+        {
+            "migration_id": CASEBOOK_STATUS_FSM_MIGRATION_ID,
+            "introduced_version": CASEBOOK_STATUS_FSM_TARGET_VERSION,
+            "from_version_range": "<0.1.14 or Casebook surface not rendered under the controlled status FSM",
+            "to_version_range": ">=0.1.14",
+            "scenario_predicates": (
+                "healthy_pinned_consumer",
+                "already_current_consumer",
+                "release_marked_migration_required",
+                "generated_surface_stale_runtime_healthy",
+            ),
+            "required_manifest_fields": ("migration_required", "repo_schema_version"),
+            "write_set": (
+                "odylith/casebook/bugs/*.md",
+                "odylith/casebook/bugs/INDEX.md",
+                "odylith/casebook/casebook.html",
+                "odylith/casebook/casebook-payload.v1.js",
+                "odylith/casebook/casebook-app.v1.js",
+                "odylith/casebook/casebook-detail-shard-*.v1.js",
+                ".odylith/state/migrations/v0.1.14-casebook-status-fsm.v1.json",
+            ),
+            "rollback_scope": "repo-local Casebook source and generated surface writes; recover through Git if interrupted",
+            "validation_commands": (
+                "PYTHONPATH=src python -m pytest -q tests/unit/install/test_casebook_metadata_migration.py tests/unit/install/test_migration_runtime.py",
+                "PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_casebook_bug_index.py tests/unit/runtime/test_casebook_source_validation.py tests/unit/runtime/test_render_casebook_dashboard.py",
+                "PYTHONPATH=src python -m pytest -q tests/integration/install/test_lifecycle_simulator.py::test_lifecycle_simulator_proves_historical_upgrades_to_0_1_14",
+            ),
+        },
+        {
+            "migration_id": ATLAS_SURFACE_MIGRATION_ID,
+            "introduced_version": ATLAS_SURFACE_TARGET_VERSION,
+            "from_version_range": "<0.1.14 or Atlas generated render surfaces not rendered under the current diagram style fingerprint",
+            "to_version_range": ">=0.1.14",
+            "scenario_predicates": (
+                "healthy_pinned_consumer",
+                "already_current_consumer",
+                "release_marked_migration_required",
+                "generated_surface_stale_runtime_healthy",
+            ),
+            "required_manifest_fields": ("migration_required", "repo_schema_version"),
+            "write_set": (
+                "odylith/atlas/source/catalog/diagrams.v1.json",
+                "odylith/atlas/source/*.svg",
+                "odylith/atlas/source/*.png",
+                "odylith/atlas/atlas.html",
+                "odylith/atlas/mermaid-payload.v1.js",
+                "odylith/atlas/mermaid-app.v1.js",
+                "odylith/radar/traceability-graph.v1.json",
+                ".odylith/state/migrations/v0.1.14-atlas-render-surface-polish.v1.json",
+            ),
+            "rollback_scope": "repo-local Atlas generated surface writes; recover through Git if interrupted",
+            "validation_commands": (
+                "PYTHONPATH=src python -m pytest -q tests/unit/install/test_atlas_surface_migration.py tests/unit/install/test_migration_runtime.py",
+                "PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_diagram_freshness.py tests/unit/runtime/test_auto_update_mermaid_diagrams.py tests/unit/runtime/test_render_mermaid_catalog.py tests/unit/runtime/test_build_traceability_graph.py",
+                "PYTHONPATH=src python src/odylith/cli.py validate topology-integrity --repo-root .",
+                "PYTHONPATH=src python -m pytest -q tests/integration/install/test_lifecycle_simulator.py::test_lifecycle_simulator_proves_historical_upgrades_to_0_1_14",
             ),
         },
     )

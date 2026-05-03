@@ -100,6 +100,16 @@
   Assist-visibility feedback renders the recovery Assist only, so stale
   Observation or Proposal blocks cannot be prepended to the recovery line.
 
+- Consumer Start Regression Update: Operator feedback after installing
+  Odylith v0.1.13 showed `./.odylith/bin/odylith start --repo-root .` taking
+  about 25-30s in a consumer lane. Live repro against `dentoai-orion` measured
+  `real 25.40` on the installed runtime for an expected multi-path fallback,
+  with profiling attributing the cost to repeated managed-runtime tree
+  integrity scans and context-engine projection/test-history fingerprinting.
+  The source fix keeps full tree integrity on `doctor` and repair paths, but
+  lets `start` use hot-file managed-runtime trust checks, a hot-path bootstrap
+  packet, and shallow repo-root XML report fingerprinting.
+
 - Rollback/Forward Fix: Forward-fix in v0.1.13; do not remove grounding or safety hooks without replacing them with measured fast-path equivalents.
 
 - Verification: Local v0.1.13 timing showed low-signal direct hook modules returning empty in about 42-44 ms median for Claude prompt-context, Claude prompt-teaser, and Codex prompt-context; full CLI fallback paths dropped to about 106-116 ms median. Follow-up substrate validation proved quiet Codex and Claude prompt hooks now emit compact Context Engine, memory, Execution Engine, delivery, Tribunal, and proof evidence while still skipping the full conversation bundle; SessionStart uses the same substrate instead of manual-start fallback text; context-engine autospawn reached a live watchdog-backed daemon. Focused tests cover Claude prompt-bundle route locks plus hidden/visible prompt output parity, async Claude PostToolUse settings, Codex dirty-event deferral, Stop-time governed refresh settlement, substrate-backed prompt gating, direct launcher hook dispatch, cross-host prompt parity, host-launcher warm-daemon defaults, install launcher generation, and mixed-version prompt-bundle fallback when current-source launchers run against the shipped v0.1.12 runtime. The guidance diet measured root `AGENTS.md` at 17,381 bytes and consumer `odylith/AGENTS.md` plus its bundle mirror at 16,307 bytes after preserving the engine contract. `PYTHONPATH=src pytest -q tests/unit/install/test_agents.py tests/unit/install/test_manager.py tests/unit/install/test_codex_project_assets.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_show_capabilities.py` passed with 119 tests covering byte budgets, engine-preservation wording, Claude model-invocable skill capping, Codex/Claude skill separation, anti-slop guidance, and show/capabilities behavior. The follow-up root-routing proof ran `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_hygiene.py::test_anti_slop_contract_stays_explicit_across_guidance_surfaces tests/unit/runtime/test_hygiene.py::test_root_agents_keeps_anti_slop_detailed_rules_routed tests/unit/runtime/test_hygiene.py::test_casebook_claude_bridge_defers_release_closeout_rule_to_agents` and `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/install/test_agents.py tests/unit/runtime/test_source_bundle_mirror.py`.
@@ -156,6 +166,16 @@
   `auto` remains conservative and may fall back to standalone instead of
   leaving a daemon behind.
 
+- Verification Update: The v0.1.13 consumer-start repro measured
+  `/usr/bin/time -p ./.odylith/bin/odylith start --repo-root .` in
+  `dentoai-orion` at `real 25.40`, `user 13.27`, `sys 11.62` before this
+  patch. The patched source path against the same consumer repo now returns the
+  expected `Need one code path` fallback in `real 2.55` after an initial
+  `real 2.88` run. Focused coverage passed for fast start preflight,
+  hot-path bootstrap packet construction, hot-file-only runtime integrity,
+  shallow root-level test-report fingerprinting, and existing start/doctor
+  behavior.
+
 - Monitoring Updates: Track prompt-submit, prompt-context, prompt-teaser, stop-summary, and startup grounding latency in local benchmark or smoke outputs for each supported host adapter.
 
 - Version/Build: Observed during v0.1.13 branch work; issue exists after v0.1.12 migration.
@@ -170,7 +190,12 @@
 
 - Code References: - src/odylith/runtime/common/claude_cli_capabilities.py
 - src/odylith/runtime/common/codex_cli_capabilities.py
+- src/odylith/cli.py
+- src/odylith/install/manager.py
 - src/odylith/install/runtime.py
+- src/odylith/install/runtime_integrity.py
+- src/odylith/install/runtime_status.py
+- src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py
 - src/odylith/runtime/intervention_engine/prompt_signal_runtime.py
 - src/odylith/runtime/intervention_engine/host_surface_runtime.py
 - src/odylith/runtime/surfaces/host_visible_intervention.py

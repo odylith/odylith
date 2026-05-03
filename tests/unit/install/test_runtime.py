@@ -563,6 +563,27 @@ def test_managed_runtime_integrity_ignores_generated_python_bytecode(tmp_path: P
     assert reasons == []
 
 
+def test_managed_runtime_integrity_can_skip_tree_manifest_for_start_hot_path(tmp_path: Path) -> None:
+    repo_root = _repo_root(tmp_path)
+    version_root = repo_root / ".odylith" / "runtime" / "versions" / "1.2.3"
+    _seed_managed_runtime(version_root, verification={"wheel_sha256": "wheel-1.2.3"})
+
+    (version_root / "cold-drift.txt").write_text("not part of the trusted tree\n", encoding="utf-8")
+
+    fast_reasons = runtime_integrity.managed_runtime_integrity_reasons(
+        repo_root=repo_root,
+        runtime_root=version_root,
+        include_tree=False,
+    )
+    full_reasons = runtime_integrity.managed_runtime_integrity_reasons(
+        repo_root=repo_root,
+        runtime_root=version_root,
+    )
+
+    assert fast_reasons == []
+    assert any("tree entry unexpected" in reason for reason in full_reasons)
+
+
 def test_managed_runtime_health_scrubs_macos_metadata_files(tmp_path: Path) -> None:
     repo_root = _repo_root(tmp_path)
     version_root = repo_root / ".odylith" / "runtime" / "versions" / "1.2.3"

@@ -847,7 +847,7 @@ def evaluate_start_preflight(
 
     status: VersionStatus | None
     try:
-        status = version_status(repo_root=root)
+        status = version_status(repo_root=root, deep_integrity=bool(status_only))
     except Exception:
         status = None
     if not install_shape_present:
@@ -895,7 +895,11 @@ def evaluate_start_preflight(
             install_shape_present=True,
             status=status,
         )
-    healthy, reasons = doctor_runtime(repo_root=root, repair=False)
+    healthy, reasons = doctor_runtime(
+        repo_root=root,
+        repair=False,
+        deep_integrity=bool(status_only),
+    )
     if not healthy:
         return StartPreflight(
             lane="repair",
@@ -2188,11 +2192,11 @@ def upgrade_install(
                 version=current_version,
                 product_root=_bundled_product_root_for_runtime(current_runtime),
             )
-            _sync_consumer_casebook_bug_index(repo_root=root, repo_role=repo_role)
             migration_plan_payload, migration_results, value_engine_migration = _apply_release_migration_plan(
                 plan=migration_plan,
                 runtime_root=current_runtime,
             )
+            _sync_consumer_casebook_bug_index(repo_root=root, repo_role=repo_role)
             append_install_ledger(
                 repo_root=root,
                 payload={
@@ -2332,11 +2336,11 @@ def upgrade_install(
             version=staged.version,
             product_root=_bundled_product_root_for_runtime(staged.root),
         )
-        _sync_consumer_casebook_bug_index(repo_root=root, repo_role=repo_role)
         migration_plan_payload, migration_results, value_engine_migration = _apply_release_migration_plan(
             plan=migration_plan,
             runtime_root=staged.root,
         )
+        _sync_consumer_casebook_bug_index(repo_root=root, repo_role=repo_role)
         append_install_ledger(
             repo_root=root,
             payload={
@@ -2723,7 +2727,7 @@ def load_install_state(*, repo_root: str | Path) -> dict[str, object]:
     return load_install_state_file(repo_root=repo_root)
 
 
-def version_status(*, repo_root: str | Path) -> VersionStatus:
+def version_status(*, repo_root: str | Path, deep_integrity: bool = True) -> VersionStatus:
     root = _repo_root(repo_root)
     state = load_install_state(repo_root=root)
     active_version = _observed_active_version(repo_root=root, state=state)
@@ -2745,6 +2749,7 @@ def version_status(*, repo_root: str | Path) -> VersionStatus:
         pinned_version=pinned_version,
         runtime_root=runtime_root,
         verification=verification,
+        deep_integrity=deep_integrity,
     )
     runtime_source = runtime_status.source
     context_engine_mode, context_engine_pack_installed = _runtime_context_engine_state(

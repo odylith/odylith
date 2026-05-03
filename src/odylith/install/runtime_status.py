@@ -32,6 +32,7 @@ def inspect_runtime_source(
     pinned_version: str,
     runtime_root: Path | None,
     verification: Mapping[str, object] | None,
+    deep_integrity: bool = True,
 ) -> RuntimeSourceStatus:
     normalized_active = str(active_version or "").strip()
     normalized_pinned = str(pinned_version or "").strip()
@@ -58,7 +59,11 @@ def inspect_runtime_source(
     managed_runtime = (runtime_root / "runtime-metadata.json").is_file()
     if managed_runtime:
         trust_reasons = tuple(
-            runtime_module._managed_runtime_health_reasons(repo_root=repo_root, runtime_root=runtime_root)  # noqa: SLF001
+            runtime_module._managed_runtime_health_reasons(  # noqa: SLF001
+                repo_root=repo_root,
+                runtime_root=runtime_root,
+                deep_integrity=deep_integrity,
+            )
         )
         if not trust_reasons:
             if normalized_active and normalized_pinned and normalized_active == normalized_pinned:
@@ -91,7 +96,11 @@ def inspect_runtime_source(
         )
         if unwrapped_root is not None and (unwrapped_root / "runtime-metadata.json").is_file():
             trust_reasons = tuple(
-                runtime_module._managed_runtime_health_reasons(repo_root=repo_root, runtime_root=unwrapped_root)  # noqa: SLF001
+                runtime_module._managed_runtime_health_reasons(  # noqa: SLF001
+                    repo_root=repo_root,
+                    runtime_root=unwrapped_root,
+                    deep_integrity=deep_integrity,
+                )
             )
             if trust_reasons:
                 return RuntimeSourceStatus(

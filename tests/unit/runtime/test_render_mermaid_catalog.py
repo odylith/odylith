@@ -124,7 +124,26 @@ def test_render_mermaid_catalog_prefers_readable_initial_view() -> None:
     assert "let initialFactor = 0.98;" in html
     assert "const MIN_INITIAL_FIT_FACTOR = 0.94;" in html
     assert "initialFactor = clamp(rawOverrideFactor, MIN_INITIAL_FIT_FACTOR, initialFactor);" in html
+    assert "function stageFitPadding()" in html
+    assert "const padding = stageFitPadding();" in html
     assert "scale = clamp(rawFitScale, MIN_SCALE, MAX_SCALE);" in html
+
+
+def test_render_mermaid_catalog_keeps_viewer_stage_plain_white() -> None:
+    html = renderer._render_html(  # noqa: SLF001
+        diagrams=[],
+        stats={"total": 0, "fresh": 0, "stale": 0},
+        max_review_age_days=21,
+        tooltip_lookup={},
+        generated_utc="2026-03-27T05:42:32Z",
+        brand_head_html="",
+        tooling_base_href="../index.html",
+    )
+
+    assert ".viewer-stage::before" not in html
+    assert "linear-gradient(90deg, rgba(20, 184, 166, 0.055)" not in html
+    assert "background-size: 100% 100%, 42px 42px, 42px 42px, auto;" not in html
+    assert "background: #ffffff;" in html
 
 
 def test_render_mermaid_catalog_uses_specific_surface_header_copy() -> None:

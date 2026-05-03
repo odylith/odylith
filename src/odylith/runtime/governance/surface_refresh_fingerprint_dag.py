@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib.util
 import json
 from pathlib import Path
 from typing import Any
@@ -31,6 +32,30 @@ _RADAR_RENDERER_INPUTS = (
     Path("src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py"),
     Path("src/odylith/runtime/surfaces/render_backlog_ui_payload_runtime.py"),
 )
+_CASEBOOK_RENDERER_INPUTS = (
+    Path("src/odylith/runtime/common/casebook_metadata.py"),
+    Path("src/odylith/runtime/governance/casebook_source_validation.py"),
+    Path("src/odylith/runtime/governance/sync_casebook_bug_index.py"),
+    Path("src/odylith/runtime/surfaces/render_casebook_dashboard.py"),
+)
+_CASEBOOK_RUNTIME_MODULES = (
+    "odylith.runtime.common.casebook_metadata",
+    "odylith.runtime.governance.casebook_source_validation",
+    "odylith.runtime.governance.sync_casebook_bug_index",
+    "odylith.runtime.surfaces.render_casebook_dashboard",
+)
+
+
+def _runtime_module_source_fingerprint(module_names: Iterable[str]) -> str:
+    payload: dict[str, Any] = {}
+    for module_name in module_names:
+        spec = importlib.util.find_spec(module_name)
+        origin = str(getattr(spec, "origin", "") or "").strip() if spec else ""
+        payload[module_name] = {
+            "origin": origin,
+            "signature": odylith_context_cache.path_signature(Path(origin)) if origin else {"exists": False},
+        }
+    return odylith_context_cache.fingerprint_payload(payload)
 
 
 def can_reuse_surface_refresh(
@@ -135,10 +160,20 @@ def surface_input_fingerprint(*, repo_root: Path, surface: str, atlas_sync: bool
         )
     if token == "casebook":
         bugs_root = truth_root_path(repo_root=root, key="casebook_bugs")
+        component_specs_root = truth_root_path(repo_root=root, key="component_specs")
+        component_manifest_path = truth_root_path(repo_root=root, key="component_registry")
+        atlas_catalog_path = root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
         return odylith_context_cache.fingerprint_payload(
             {
                 "surface": token,
                 "bugs": odylith_context_cache.fingerprint_tree(bugs_root),
+                "registry_specs": odylith_context_cache.fingerprint_tree(component_specs_root),
+                "registry_manifest": odylith_context_cache.fingerprint_paths([component_manifest_path]),
+                "atlas_catalog": odylith_context_cache.path_signature(atlas_catalog_path),
+                "renderer": odylith_context_cache.fingerprint_paths(
+                    [root / relative_path for relative_path in _CASEBOOK_RENDERER_INPUTS]
+                ),
+                "runtime_modules": _runtime_module_source_fingerprint(_CASEBOOK_RUNTIME_MODULES),
             }
         )
     if token == "registry":

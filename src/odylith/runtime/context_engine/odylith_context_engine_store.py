@@ -144,12 +144,15 @@ _BUG_LEGACY_HEADERS = LEGACY_BUG_HEADERS
 _BUG_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _BUG_METADATA_LINE_RE = re.compile(r"^-?\s*([A-Za-z0-9/() _.-]+):\s*(.*)$")
 _BUG_CRITICAL_SEVERITIES = frozenset({"p0", "p1"})
-_BUG_TERMINAL_STATUSES = frozenset({"fixed", "closed"})
+_BUG_TERMINAL_STATUSES = frozenset({"closed"})
 _BUG_CANONICAL_STATUS_LABELS = {
     "open": "Open",
+    "inprogress": "InProgress",
     "mitigated": "Mitigated",
     "monitoring": "Monitoring",
-    "fixed": "Closed",
+    "resolved": "Resolved",
+    "fixedpendingrelease": "FixedPendingRelease",
+    "fixed": "Resolved",
     "closed": "Closed",
 }
 _BUG_DETAIL_SECTION_ORDER = (

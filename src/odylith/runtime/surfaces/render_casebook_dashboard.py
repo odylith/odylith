@@ -6,6 +6,7 @@ Markdown under ``odylith/casebook/bugs/`` remains authoritative; this renderer p
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -41,6 +42,22 @@ def _refresh_guard_watched_paths() -> tuple[str, ...]:
         "src/odylith/runtime/governance",
         "src/odylith/runtime/surfaces",
     )
+
+def _refresh_guard_code_fingerprint() -> str:
+    """Tie cached surface reuse to the renderer and metadata code that produced it."""
+    digest = hashlib.sha256()
+    module_paths = (
+        Path(__file__),
+        Path(str(casebook_metadata.__file__ or "")),
+        Path(str(casebook_source_validation.__file__ or "")),
+    )
+    for path in module_paths:
+        digest.update(str(path.name).encode("utf-8", errors="replace"))
+        if path.is_file():
+            digest.update(path.read_bytes())
+        else:
+            digest.update(b"<missing>")
+    return digest.hexdigest()
 
 def _chunk_casebook_items(
     *,
@@ -444,7 +461,11 @@ def _build_payload(
         "counts": counts,
         "filters": {
             "severity_tokens": sorted(severity_tokens),
-            "status_tokens": sorted(status_tokens),
+            "status_tokens": [
+                status.lower()
+                for status in casebook_metadata.CASEBOOK_STATUS_STATES
+                if status.lower() in status_tokens
+            ],
         },
     }
 
@@ -896,7 +917,13 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       max-width: 80ch;
     }}
     .detail-summary {{
-      max-width: 80ch;
+      width: 100%;
+      max-width: none;
+    }}
+    .casebook-summary-card {{
+      align-self: start;
+      width: 100%;
+      max-width: none;
     }}
     .section-stack {{
       display: grid;
@@ -958,7 +985,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     }}
 .summary-facts {{
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 10px;
       min-width: 0;
 }}
@@ -1385,6 +1412,59 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       return String(value || "").trim().toLowerCase();
     }}
 
+    function filterTokenSet(key) {{
+      const filters = DATA.filters && typeof DATA.filters === "object" ? DATA.filters : {{}};
+      const values = Array.isArray(filters[key]) ? filters[key] : [];
+      return new Set(values.map((item) => canonicalizeFilterToken(item)).filter(Boolean));
+    }}
+
+    function canonicalizeKnownFilterToken(value, key) {{
+      const token = canonicalizeFilterToken(value);
+      return token && filterTokenSet(key).has(token) ? token : "";
+    }}
+
+    function displayTokenLabel(value) {{
+      const token = String(value || "").trim();
+      if (!token) return "";
+      const compact = normalizeSearchToken(token);
+      const labels = {{
+        closed: "Closed",
+        fixedpendingrelease: "Fixed pending release",
+        inprogress: "In progress",
+        mitigated: "Mitigated",
+        monitoring: "Monitoring",
+        open: "Open",
+        operatorux: "Operator UX",
+        resolved: "Resolved",
+      }};
+      if (Object.prototype.hasOwnProperty.call(labels, compact)) {{
+        return labels[compact];
+      }}
+      if (/^p\\d+$/i.test(token)) return token.toUpperCase();
+      if (/^\\d{{4}}-\\d{{2}}-\\d{{2}}$/.test(token)) return token;
+      if (/^[A-Z0-9]{{2,}}$/.test(token)) return token;
+      return token
+        .replace(/[_-]+/g, " ")
+        .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
+        .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+        .replace(/\\s+/g, " ")
+        .trim()
+        .replace(/\\bOsw\\b/g, "OSW")
+        .replace(/\\bUx\\b/g, "UX")
+        .replace(/\\bUi\\b/g, "UI")
+        .replace(/\\bIam\\b/g, "IAM")
+        .replace(/\\bIac\\b/g, "IaC")
+        .replace(/\\bApi\\b/g, "API");
+    }}
+
+    function displayFactValue(label, value) {{
+      const field = normalizeSearchToken(label);
+      if (field === "status" || field === "type" || field === "fixed") {{
+        return displayTokenLabel(value);
+      }}
+      return String(value || "");
+    }}
+
     function canonicalizeSortToken(value) {{
       const token = String(value || "").trim().toLowerCase();
       return SORT_TOKENS.has(token) ? token : SORT_DEFAULT;
@@ -1448,8 +1528,8 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       const params = new URLSearchParams(window.location.search || "");
       return {{
         bug: canonicalizeBugToken(params.get("bug") || ""),
-        severity: canonicalizeFilterToken(params.get("severity") || ""),
-        status: canonicalizeFilterToken(params.get("status") || ""),
+        severity: canonicalizeKnownFilterToken(params.get("severity") || "", "severity_tokens"),
+        status: canonicalizeKnownFilterToken(params.get("status") || "", "status_tokens"),
         sort: canonicalizeSortToken(params.get("sort") || SORT_DEFAULT),
       }};
     }}
@@ -1482,7 +1562,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       const rows = [`<option value="">${{escapeHtml(allLabel)}}</option>`];
       for (const token of values) {{
         rows.push(
-          `<option value="${{escapeHtml(token)}}"${{token === current ? " selected" : ""}}>${{escapeHtml(token.toUpperCase())}}</option>`
+          `<option value="${{escapeHtml(token)}}"${{token === current ? " selected" : ""}}>${{escapeHtml(displayTokenLabel(token))}}</option>`
         );
       }}
       selectEl.innerHTML = rows.join("");
@@ -1811,10 +1891,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       const token = normalizeSearchToken(row && (row.status_token || row.status) || "");
       const ranks = {{
         open: 0,
-        blocked: 1,
-        inprogress: 2,
-        resolved: 3,
-        closed: 4,
+        inprogress: 1,
+        mitigated: 2,
+        monitoring: 3,
+        resolved: 4,
+        fixedpendingrelease: 5,
+        closed: 6,
       }};
       return Object.prototype.hasOwnProperty.call(ranks, token) ? ranks[token] : 50;
     }}
@@ -2026,7 +2108,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         chips.push(`<span class="meta-chip ${{/^p[01]$/i.test(String(detail.severity || "")) ? "critical-chip" : ""}}">${{escapeHtml(detail.severity)}}</span>`);
       }}
       if (detail.status) {{
-        chips.push(`<span class="meta-chip ${{String(detail.is_open) === "true" || detail.is_open ? "warn-chip" : ""}}">${{escapeHtml(detail.status)}}</span>`);
+        chips.push(`<span class="meta-chip ${{String(detail.is_open) === "true" || detail.is_open ? "warn-chip" : ""}}">${{escapeHtml(displayTokenLabel(detail.status))}}</span>`);
       }}
       if (detail.archive_bucket) {{
         chips.push(`<span class="meta-chip archive-chip">Archive: ${{escapeHtml(detail.archive_bucket)}}</span>`);
@@ -2038,12 +2120,21 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       const externalIssueActions = externalIssueLinks(detail);
       const sourceLink = detail.source_href ? actionChipHtml("Source markdown", detail.source_href) : `<span class="meta-chip muted">Source markdown missing</span>`;
       const summaryText = String(detail.summary || detailFieldValue("Description") || detailFieldValue("Impact") || "").trim();
-      const summary = summaryText ? `<p class="detail-summary">${{escapeHtml(summaryText)}}</p>` : "";
+      const summary = summaryText
+        ? `
+          <article class="brief-card casebook-summary-card" aria-label="Casebook narrative">
+            <div class="brief-card-head">
+              <p class="brief-card-title">Summary</p>
+            </div>
+            <p class="detail-summary">${{escapeHtml(summaryText)}}</p>
+          </article>
+        `
+        : "";
       const summaryFacts = [...detailCoreRows(detail), ...detailSupportingRows(detail)]
         .map(([label, value]) => `
           <div class="summary-fact" data-summary-field="${{escapeHtml(label)}}" role="listitem">
             <p class="summary-fact-label">${{escapeHtml(label)}}</p>
-            <p class="summary-fact-value">${{escapeHtml(value)}}</p>
+            <p class="summary-fact-value">${{escapeHtml(displayFactValue(label, value))}}</p>
           </div>
         `)
         .join("");
@@ -2290,12 +2381,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
             <h2 class="detail-title">${{escapeHtml(detail.title || detail.bug_key || "Bug detail")}}</h2>
           </div>
           ${{summaryFacts ? `<div class="summary-facts" role="list">${{summaryFacts}}</div>` : ""}}
-          ${{summary}}
           <div class="detail-meta">${{chips.join("")}}</div>
           <div class="detail-links">
             ${{sourceLink}}
             ${{workstreamLinks.length ? renderActionChipGroup(workstreamLinks) : ""}}
           </div>
+          ${{summary}}
         </section>
         <section class="section-stack">
           ${{sectionBlocks}}
@@ -2305,9 +2396,18 @@ def _render_html(*, payload: dict[str, Any]) -> str:
 
     function renderList(state, rows) {{
       if (!rows.length) {{
-        bugList.innerHTML = ``;
+        bugList.innerHTML = `
+          <div class="empty-state" role="status">
+            No Casebook entries match the current filters.
+          </div>
+        `;
         listMeta.textContent = "Visible: 0";
-        renderDetail(null);
+        detailRenderToken += 1;
+        detailPane.innerHTML = `
+          <div class="empty-state" role="status">
+            Select a different filter or search term to inspect Casebook detail.
+          </div>
+        `;
         return;
       }}
       const selectedRoute = resolveBugRoute(rows, state.bug) || String(rows[0].bug_route || "");
@@ -2322,7 +2422,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         const active = row.bug_route === selectedRoute;
         const chips = [
           row.severity ? `<span class="list-chip ${{/^p[01]$/i.test(String(row.severity || "")) ? "critical-chip" : ""}}">${{escapeHtml(row.severity)}}</span>` : "",
-          row.status ? `<span class="list-chip">${{escapeHtml(row.status)}}</span>` : "",
+          row.status ? `<span class="list-chip">${{escapeHtml(displayTokenLabel(row.status))}}</span>` : "",
           row.archive_bucket ? `<span class="list-chip archive-chip">${{escapeHtml(row.archive_bucket)}}</span>` : "",
           totalFields ? `<span class="list-chip ${{requiredMissingFields.length ? "warn-chip" : ""}}" data-tooltip="${{escapeHtml(`${{capturedCount}}/${{totalFields}} recommended fields captured`)}}">Intel</span>` : "",
         ].filter(Boolean).join("");
@@ -2372,6 +2472,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
 
     function render() {{
       const state = readState();
+      writeState(state);
       const searchTerm = String(searchInput.value || "").trim().toLowerCase();
       const rows = visibleRows(state, searchTerm);
       renderList(state, rows);
@@ -2448,7 +2549,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             key=_CASEBOOK_REFRESH_GUARD_KEY,
             watched_paths=_refresh_guard_watched_paths(),
             live_globs=("casebook-detail-shard-*.v1.js",),
-            extra={"runtime_mode": str(args.runtime_mode).strip().lower() or "auto"},
+            extra={
+                "runtime_mode": str(args.runtime_mode).strip().lower() or "auto",
+                "renderer_code_fingerprint": _refresh_guard_code_fingerprint(),
+            },
         )
     )
     if skip_rebuild:

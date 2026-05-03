@@ -5,7 +5,7 @@
   B-111 through B-117. The surface should show the umbrella, execution waves,
   release target `release-0-1-11`, and proof gates without turning Odylith Discipline
   into noisy task theater.
-Last updated: 2026-05-02
+Last updated: 2026-05-03
 
 
 Last updated (UTC): 2026-04-15
@@ -293,6 +293,9 @@ themselves.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-05-02 · Implementation:** Domain Intelligence corrected to host-reasoned proposal authoring with apply-time topology validation and no in-code project taxonomy.
+  - Scope: B-142
+  - Evidence: odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md, src/odylith/runtime/domain_intelligence/greenfield_proposals.py +1 more
 - **2026-05-02 · Implementation:** Deepened B-142 Domain Intelligence with first-class science/math archetypes, greenfield UX/release planning module, refreshed governance surfaces, and full engine/install/browser proof.
   - Scope: B-142
   - Evidence: odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md, src/odylith/runtime/domain_intelligence/archetypes.py +1 more
@@ -308,9 +311,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-05-02 · Implementation:** Proved v0.1.13 historical upgrade matrix for 0.1.10, 0.1.11, and 0.1.12 starts; release migration gate remains green.
   - Scope: B-141
   - Evidence: odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md, odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md +1 more
-- **2026-05-01 · Implementation:** B-141 moved into the v0.1.13 active pipeline with cross-host hook latency work preserving prompt context, interventions, Assists, and migration governance capture.
-  - Scope: B-141
-  - Evidence: odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md, odylith/radar/source/ideas/2026-05/2026-05-01-claude-hook-latency-budget-and-fast-path-startup.md +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History

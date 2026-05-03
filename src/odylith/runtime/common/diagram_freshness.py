@@ -9,6 +9,13 @@ from typing import Callable, Sequence
 _READ_CHUNK_SIZE = 64 * 1024
 _IGNORED_DIRECTORY_FINGERPRINT_PARTS = frozenset({"__pycache__"})
 _IGNORED_DIRECTORY_FINGERPRINT_SUFFIXES = frozenset({".pyc", ".pyo"})
+_MERMAID_RENDER_STYLE_VERSION = "atlas-mermaid-polish-v2"
+_MERMAID_RENDER_CONFIG_PATH = (
+    Path(__file__).resolve().parents[1] / "surfaces" / "assets" / "mermaid_render_config.json"
+)
+_MERMAID_RENDER_WORKER_PATH = (
+    Path(__file__).resolve().parents[1] / "surfaces" / "assets" / "mermaid_cli_worker.mjs"
+)
 
 
 def normalize_mermaid_render_source(definition: str) -> str:
@@ -64,7 +71,13 @@ class ContentFingerprintCache:
             digest = hashlib.sha256(f"missing-mermaid\0{target}".encode("utf-8")).hexdigest()
         else:
             normalized = normalize_mermaid_render_source(definition)
-            digest = hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+            digest = hashlib.sha256(
+                (
+                    f"source\0{normalized}"
+                    f"\0render-style\0{_MERMAID_RENDER_STYLE_VERSION}"
+                    f"\0render-config\0{mermaid_render_style_fingerprint()}"
+                ).encode("utf-8")
+            ).hexdigest()
         self._mermaid_cache[cache_key] = digest
         return digest
 
@@ -130,6 +143,20 @@ def _path_ignored_for_directory_fingerprint(*, node: Path, relative_path: str) -
     return False
 
 
+def mermaid_render_style_fingerprint() -> str:
+    hasher = hashlib.sha256()
+    hasher.update(_MERMAID_RENDER_STYLE_VERSION.encode("utf-8"))
+    for path in (_MERMAID_RENDER_CONFIG_PATH, _MERMAID_RENDER_WORKER_PATH):
+        hasher.update(b"\0")
+        hasher.update(path.name.encode("utf-8"))
+        hasher.update(b"\0")
+        try:
+            hasher.update(path.read_bytes())
+        except OSError:
+            hasher.update(f"missing\0{path}".encode("utf-8"))
+    return hasher.hexdigest()
+
+
 def watched_path_fingerprints(
     *,
     repo_root: Path,
@@ -150,6 +177,7 @@ def watched_path_fingerprints(
 
 __all__ = [
     "ContentFingerprintCache",
+    "mermaid_render_style_fingerprint",
     "normalize_mermaid_render_source",
     "watched_path_fingerprints",
 ]

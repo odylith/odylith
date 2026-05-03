@@ -123,8 +123,9 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     assert "Repo Bug Knowledge View" not in html
     assert ".detail-section-agent {" in html
     assert "background: linear-gradient(180deg, #ffffff, #f5fbf8);" in html
+    assert ".casebook-summary-card {" in html
     assert ".summary-facts {" in html
-    assert "grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));" in html
+    assert "grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));" in html
     assert "padding: 10px 12px;" in html
     assert "-webkit-line-clamp: 2;" in html
     assert "-webkit-line-clamp: 4;" not in html
@@ -161,14 +162,34 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     assert '${externalIssueActions.length ? renderActionChipGroup(externalIssueActions) : ""}' not in app_js
     assert 'data-summary-field="${escapeHtml(label)}"' in app_js
     assert '<div class="summary-facts" role="list">${summaryFacts}</div>' in app_js
+    assert '<article class="brief-card casebook-summary-card" aria-label="Casebook narrative">' in app_js
+    assert '<p class="brief-card-title">Summary</p>' in app_js
+    assert "max-width: 86ch;" not in html
+    assert "max-width: none;" in html
+    assert ".detail-summary {\n      width: 100%;\n      max-width: none;" in html
     assert '["Bug ID", row.bug_id || "-"]' in app_js
     assert '${detail.bug_id ? `<p class="detail-kicker">${escapeHtml(detail.bug_id)}</p>` : ""}' not in app_js
     assert app_js.index("const humanSignalBody = [renderExternalIssueSignal(externalIssueActions)") < app_js.index(
         'renderBriefCard("Signal", "How the bug showed up.", humanSignalBody)'
     )
     assert "...EXTERNAL_ISSUE_FIELDS," in app_js
-    assert app_js.index('<div class="summary-facts" role="list">${summaryFacts}</div>') < app_js.index("${summary}")
+    assert app_js.index('<div class="summary-facts" role="list">${summaryFacts}</div>') < app_js.index('<div class="detail-meta">${chips.join("")}</div>')
+    assert app_js.index('<div class="detail-meta">${chips.join("")}</div>') < app_js.index('<div class="detail-links">')
+    assert app_js.index('<div class="detail-links">') < app_js.index("${summary}")
+    assert app_js.index('<article class="brief-card casebook-summary-card" aria-label="Casebook narrative">') < app_js.index('<p class="detail-summary">${escapeHtml(summaryText)}</p>')
     assert "function normalizeSearchToken(value)" in app_js
+    assert "function canonicalizeKnownFilterToken(value, key)" in app_js
+    assert "function displayTokenLabel(value)" in app_js
+    assert "Fixed pending release" in app_js
+    assert "Operator UX" in app_js
+    assert "function displayFactValue(label, value)" in app_js
+    assert 'severity: canonicalizeKnownFilterToken(params.get("severity") || "", "severity_tokens"),' in app_js
+    assert 'status: canonicalizeKnownFilterToken(params.get("status") || "", "status_tokens"),' in app_js
+    assert '${escapeHtml(displayTokenLabel(token))}</option>' in app_js
+    assert "${escapeHtml(displayTokenLabel(detail.status))}</span>" in app_js
+    assert '<p class="summary-fact-value">${escapeHtml(displayFactValue(label, value))}</p>' in app_js
+    assert '<span class="list-chip">${escapeHtml(displayTokenLabel(row.status))}</span>' in app_js
+    assert "writeState(state);" in app_js
     assert "function canonicalizeBugIdToken(value)" in app_js
     assert 'const SORT_DEFAULT = "newest";' in app_js
     assert 'const sortFilter = document.getElementById("sortFilter");' in app_js

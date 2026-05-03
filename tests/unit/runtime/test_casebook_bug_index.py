@@ -123,7 +123,7 @@ def test_sync_casebook_bug_index_backfills_compact_casebook_metadata(tmp_path: P
     assert "- Status: FixedPendingRelease" in text
 
 
-def test_sync_casebook_bug_index_groups_terminal_statuses_with_closed_bugs(tmp_path: Path) -> None:
+def test_sync_casebook_bug_index_keeps_pending_release_open_until_closeout(tmp_path: Path) -> None:
     bug_root = tmp_path / "odylith" / "casebook" / "bugs"
     bug_root.mkdir(parents=True, exist_ok=True)
     _write_bug(
@@ -149,8 +149,8 @@ def test_sync_casebook_bug_index_groups_terminal_statuses_with_closed_bugs(tmp_p
     closed_section = text.split("## Closed Bugs", 1)[1]
 
     assert "CB-002" in open_section
-    assert "CB-001" not in open_section
-    assert "CB-001" in closed_section
+    assert "CB-001" in open_section
+    assert "CB-001" not in closed_section
 
 
 def test_sync_casebook_bug_index_collapses_duplicate_casebook_type_metadata(tmp_path: Path) -> None:
@@ -291,6 +291,39 @@ def test_sync_casebook_bug_index_compacts_legacy_type_to_display_label(tmp_path:
     assert "- Type: UX" in text
     assert "- Fixed: Pending" in text
     assert "- Status: Mitigated" in text
+
+
+def test_sync_casebook_bug_index_normalizes_status_like_compacted_type(tmp_path: Path) -> None:
+    bug_root = tmp_path / "odylith" / "casebook" / "bugs"
+    bug_root.mkdir(parents=True, exist_ok=True)
+    path = bug_root / "2026-03-26-status-like-type.md"
+    path.write_text(
+        "\n".join(
+            [
+                "- Bug ID: CB-001",
+                "",
+                "- Type: ForwardFixUpdatedLocallyPendingPlatformReleaseDeploy",
+                "",
+                "- Status: Open",
+                "",
+                "- Created: 2026-03-26",
+                "",
+                "- Severity: P1",
+                "",
+                "- Reproducibility: High",
+                "",
+                "- Description: Example bug.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    sync_casebook_bug_index.sync_casebook_bug_index(repo_root=tmp_path)
+
+    text = path.read_text(encoding="utf-8")
+    assert "- Type: Release" in text
+    assert "ForwardFixUpdatedLocallyPendingPlatformReleaseDeploy" not in text
 
 
 def test_sync_casebook_bug_index_cli_reports_duplicate_bug_ids_directly(tmp_path: Path, capsys) -> None:

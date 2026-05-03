@@ -69,6 +69,9 @@ grounding.
   Git pre-commit autosync hook installer.
 - `src/odylith/runtime/surfaces/scaffold_mermaid_diagram.py`
   Catalog and source scaffolding helper.
+- `src/odylith/runtime/surfaces/assets/mermaid_render_config.json`
+  Shared Mermaid render theme for diagram-internal typography, pastel semantic
+  colors, spacing, and edge shape.
 - `src/odylith/runtime/context_engine/odylith_architecture_mode.py`
   Compiled architecture bundle and architecture dossier builder.
 
@@ -96,6 +99,10 @@ enough to recover engineering intent.
 - resolves diagram source/render assets
 - computes freshness and stale status
 - produces the Atlas HTML surface and externalized JS bundle
+- presents diagrams on a plain white viewer stage with padded first-fit sizing
+  so large SVG labels are not clipped or hidden on first paint
+- renders Mermaid assets through a shared Atlas theme config so unclassified
+  diagrams still get polished typography, softer colors, and readable edges
 
 ### Auto-update
 `auto_update_mermaid_diagrams.py`:
@@ -122,6 +129,12 @@ carry `link_state: atlas_first_draft` and must still have components plus
 non-empty `change_watch_paths`; later Registry/Radar/plan work should tighten
 the same catalog entry instead of forcing a new diagram.
 
+Starter flowcharts use Atlas's visual grammar inside the Mermaid source:
+subgraph lanes where they clarify placement, subtle `classDef`/`style` colors
+for semantic grouping, and wrapped node labels (`<br/>`) where copy would
+otherwise become too wide to read. The Atlas viewer canvas stays plain white;
+it must not simulate lanes, ruled grids, or color bands behind diagrams.
+
 Strict callers can pass `--require-links` to preserve the older fail-closed
 behavior when at least one Radar backlog path, technical-plan path, and doc path
 must be present before the catalog write.
@@ -136,6 +149,8 @@ Atlas tracks freshness explicitly:
 - `render_source_fingerprint`
   Stored render-semantic Mermaid source fingerprint used to skip SVG and PNG
   regeneration when review comments changed but the rendered topology did not.
+  The fingerprint includes the Atlas Mermaid render theme, so renderer-level
+  visual polish invalidates stale SVG/PNG outputs intentionally.
 - `max-review-age-days`
   Staleness threshold used by renderer and auto-update tooling.
 - `fail-on-stale`

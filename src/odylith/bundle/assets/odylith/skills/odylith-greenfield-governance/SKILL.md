@@ -14,10 +14,13 @@ architect a new project before source code exists.
    assumptions, risks, validation strategy, and open questions that are
    specific to the operator prompt. Each draft Atlas diagram must include
    host-authored `mermaid_source`; Odylith validates and scaffolds the source
-   after confirmation, but it must not invent the topology.
+   after confirmation, but it must not invent the topology. Default the first
+   greenfield release target to `0.0.1` unless the operator provides a
+   different release target, and identify the first-wave workstreams that should
+   target that release.
 4. Do not write records until the operator confirms the proposal or gives
    explicit edits. On confirmation, run:
-   `./.odylith/bin/odylith greenfield apply --repo-root . --proposal-file <proposal.json> --confirm --release next`.
+   `./.odylith/bin/odylith greenfield apply --repo-root . --proposal-file <proposal.json> --confirm --release 0.0.1`.
 5. Preserve the evidence boundary: observed source, user intent, and Odylith
    assumptions must stay distinct. For science and math, reason from the
    domain named by the user and propose correctness obligations such as proof

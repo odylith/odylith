@@ -124,6 +124,7 @@ _VALIDATE_COMMAND_MODULES = {
     "self-host-posture": "odylith.runtime.governance.validate_self_host_posture",
     "plan-traceability": "odylith.runtime.governance.validate_plan_traceability_contract",
     "plan-workstream-binding": "odylith.runtime.governance.validate_plan_workstream_binding",
+    "topology-integrity": "odylith.runtime.governance.topology_integrity",
 }
 _ATLAS_COMMAND_MODULES = {
     "render": "odylith.runtime.surfaces.render_mermaid_catalog",
@@ -263,6 +264,7 @@ validate_plan_risk_mitigation_contract = _register_lazy_module(
 )
 validate_self_host_posture = _register_lazy_module("odylith.runtime.governance.validate_self_host_posture")
 validate_plan_workstream_binding = _register_lazy_module("odylith.runtime.governance.validate_plan_workstream_binding")
+topology_integrity = _register_lazy_module("odylith.runtime.governance.topology_integrity")
 casebook_source_validation = _register_lazy_module(_CASEBOOK_SOURCE_VALIDATION_MODULE)
 maintainer_lane_status = _register_lazy_module(_MAINTAINER_LANE_STATUS_MODULE)
 odylith_context_engine = _register_lazy_module(_CONTEXT_ENGINE_MODULE)
@@ -919,19 +921,25 @@ def _append_turn_context_forwarded(*, forwarded: list[str], args: argparse.Names
 
 
 def _start_bootstrap_payload(args: argparse.Namespace) -> dict[str, object]:
+    from odylith.runtime.common import agent_runtime_contract
     from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime
+    from odylith.runtime.context_engine import runtime_read_session
 
-    return odylith_context_engine_packet_session_runtime.build_session_bootstrap(
-        repo_root=Path(args.repo_root).expanduser().resolve(),
-        use_working_tree=bool(args.working_tree),
-        working_tree_scope=str(args.working_tree_scope),
-        intent=str(getattr(args, "intent", "") or "").strip(),
-        generated_surfaces=[str(token).strip() for token in getattr(args, "surface", []) if str(token).strip()],
-        visible_text=[str(token).strip() for token in getattr(args, "visible_text", []) if str(token).strip()],
-        active_tab=str(getattr(args, "active_tab", "") or "").strip(),
-        user_turn_id=str(getattr(args, "user_turn_id", "") or "").strip(),
-        supersedes_turn_id=str(getattr(args, "supersedes_turn_id", "") or "").strip(),
-    )
+    repo_root = Path(args.repo_root).expanduser().resolve()
+    with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope="reasoning"):
+        return odylith_context_engine_packet_session_runtime.build_session_bootstrap(
+            repo_root=repo_root,
+            use_working_tree=bool(args.working_tree),
+            working_tree_scope=str(args.working_tree_scope),
+            intent=str(getattr(args, "intent", "") or "").strip(),
+            generated_surfaces=[str(token).strip() for token in getattr(args, "surface", []) if str(token).strip()],
+            visible_text=[str(token).strip() for token in getattr(args, "visible_text", []) if str(token).strip()],
+            active_tab=str(getattr(args, "active_tab", "") or "").strip(),
+            user_turn_id=str(getattr(args, "user_turn_id", "") or "").strip(),
+            supersedes_turn_id=str(getattr(args, "supersedes_turn_id", "") or "").strip(),
+            delivery_profile=agent_runtime_contract.AGENT_HOT_PATH_PROFILE,
+            skip_impact_runtime_warmup=True,
+        )
 
 
 def _single_line_error(exc: Exception) -> str:
@@ -1613,6 +1621,12 @@ def _cmd_upgrade(args: argparse.Namespace) -> int:
     if bool(generated_change_manifest.get("changed")):
         post_upgrade_dirty_paths = upgrade_reporting.git_status_paths(repo_root=requested_repo_root)
         newly_dirty_paths = sorted(set(post_upgrade_dirty_paths) - set(pre_upgrade_dirty_paths))
+    change_review = upgrade_reporting.upgrade_change_review_payload(
+        pre_existing_dirty_paths=pre_upgrade_dirty_paths,
+        post_upgrade_dirty_paths=post_upgrade_dirty_paths,
+        migration_results=getattr(summary, "migration_results", ()) or (),
+        generated_change_manifest=generated_change_manifest,
+    )
     phases.append(
         upgrade_reporting.phase_payload(
             name="dashboard_refresh",
@@ -1641,6 +1655,7 @@ def _cmd_upgrade(args: argparse.Namespace) -> int:
         "final_state": upgrade_reporting.upgrade_summary_payload(summary),
         "dashboard_refresh": upgrade_reporting.json_ready(dashboard_details),
         "generated_change_manifest": upgrade_reporting.json_ready(generated_change_manifest),
+        "change_review": upgrade_reporting.json_ready(change_review),
         "pre_existing_dirty_paths": pre_upgrade_dirty_paths,
         "post_upgrade_dirty_paths": post_upgrade_dirty_paths,
         "changed_paths": newly_dirty_paths,
@@ -1671,6 +1686,23 @@ def _cmd_upgrade(args: argparse.Namespace) -> int:
                 f"({generated_change_manifest.get('generated_changed_count')} generated path(s), "
                 f"fingerprint {str(generated_change_manifest.get('content_fingerprint') or '')[:12]})."
             )
+    if not compact_output:
+        review_categories = dict(change_review.get("categories", {}) or {})
+        migration_count = sum(
+            int(row.get("path_count", 0) or 0)
+            for row in dict(change_review.get("required_migrations", {}) or {}).values()
+            if isinstance(row, dict)
+        )
+        generated_count = int(dict(change_review.get("generated_refreshes", {}) or {}).get("path_count", 0) or 0)
+        managed_count = int(dict(review_categories.get("install_managed_asset", {}) or {}).get("count", 0) or 0)
+        manual_count = int(dict(change_review.get("manual_review_required", {}) or {}).get("count", 0) or 0)
+        print(
+            "Upgrade change review: "
+            f"{migration_count} required migration path(s), "
+            f"{generated_count} generated refresh path(s), "
+            f"{managed_count} install-managed asset path(s), "
+            f"{manual_count} manual-review path(s)."
+        )
     try:
         report_display = report_path.relative_to(requested_repo_root).as_posix()
     except ValueError:
@@ -3075,6 +3107,7 @@ def build_parser() -> argparse.ArgumentParser:
         ("self-host-posture", "Validate Odylith product-repo self-host posture and release gating invariants."),
         ("plan-traceability", "Validate technical-plan traceability bindings."),
         ("plan-workstream-binding", "Validate active-plan workstream bindings."),
+        ("topology-integrity", "Validate shared Radar/Registry/Atlas/Program/Release topology integrity."),
         ("version-truth", "Validate that generated Odylith version files match pyproject."),
     ):
         child_parser = validate_subparsers.add_parser(command, help=help_text)

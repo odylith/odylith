@@ -11,8 +11,11 @@ from typing import Any, Iterable, Mapping, Sequence
 from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.common import stable_generated_utc
 from odylith.runtime.common.consumer_profile import canonical_truth_token
+from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance import execution_wave_contract
 from odylith.runtime.governance import release_planning_view_model
+from odylith.runtime.governance import traceability_graph_spine
+from odylith.runtime.governance import topology_integrity
 from odylith.runtime.surfaces import backlog_traceability_paths
 from odylith.runtime.surfaces import generated_surface_cleanup
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
@@ -126,6 +129,10 @@ def _collect_plan_traceability(*, plan_path: Path, repo_root: Path) -> dict[str,
     )
 
 
+def _mapping_dict(value: Any) -> dict[str, Any]:
+    return dict(value) if isinstance(value, Mapping) else {}
+
+
 def _load_catalog(
     *,
     catalog_path: Path,
@@ -161,8 +168,12 @@ def _load_catalog(
             "diagram_id": diagram_id,
             "title": str(item.get("title", "")).strip(),
             "slug": str(item.get("slug", "")).strip(),
+            "status": str(item.get("status", "")).strip() or "active",
+            "owner": str(item.get("owner", "")).strip(),
             "file": str(item.get("source_mmd", "")).strip(),
             "related_workstreams": [],
+            "component_names": [],
+            "related_component_ids": [],
         }
 
         related_workstreams: set[str] = set()
@@ -180,7 +191,32 @@ def _load_catalog(
             if idea_id:
                 related_workstreams.add(idea_id)
 
+        raw_components = item.get("components", [])
+        component_names: list[str] = []
+        if isinstance(raw_components, list):
+            for raw_component in raw_components:
+                if not isinstance(raw_component, Mapping):
+                    continue
+                name = str(raw_component.get("name", "")).strip()
+                if name and name not in component_names:
+                    component_names.append(name)
+
+        related_component_ids: list[str] = []
+        raw_related_component_ids = item.get("related_component_ids", [])
+        if isinstance(raw_related_component_ids, str):
+            component_tokens = raw_related_component_ids.replace(";", ",").split(",")
+        elif isinstance(raw_related_component_ids, list):
+            component_tokens = [str(token or "") for token in raw_related_component_ids]
+        else:
+            component_tokens = []
+        for raw_component_id in component_tokens:
+            component_id = component_registry.normalize_component_id(str(raw_component_id or ""))
+            if component_id and component_id not in related_component_ids:
+                related_component_ids.append(component_id)
+
         diagrams_by_id[diagram_id]["related_workstreams"] = sorted(related_workstreams)
+        diagrams_by_id[diagram_id]["component_names"] = component_names
+        diagrams_by_id[diagram_id]["related_component_ids"] = related_component_ids
         for idea_id in sorted(related_workstreams):
             workstream_to_diagrams.setdefault(idea_id, set()).add(diagram_id)
 
@@ -317,31 +353,27 @@ def main(argv: Sequence[str] | None = None) -> int:
             source="odylith/radar/source/releases",
         )
     release_catalog = release_payload.get("catalog", []) if isinstance(release_payload.get("catalog"), list) else []
-    release_aliases = (
-        dict(release_payload.get("aliases", {}))
-        if isinstance(release_payload.get("aliases"), Mapping)
-        else {}
+    release_aliases = _mapping_dict(release_payload.get("aliases", {}))
+    release_workstreams = _mapping_dict(release_payload.get("workstreams", {}))
+    current_release = _mapping_dict(release_payload.get("current_release", {}))
+    next_release = _mapping_dict(release_payload.get("next_release", {}))
+    release_summary = _mapping_dict(release_payload.get("summary", {}))
+    components_by_id, components_by_workstream, component_warnings = traceability_graph_spine.build_component_context(
+        repo_root=repo_root,
+        manifest_path=component_registry.default_manifest_path(repo_root=repo_root),
+        catalog_path=catalog_path,
+        ideas_root=ideas_root,
     )
-    release_workstreams = (
-        dict(release_payload.get("workstreams", {}))
-        if isinstance(release_payload.get("workstreams"), Mapping)
-        else {}
-    )
-    current_release = (
-        dict(release_payload.get("current_release", {}))
-        if isinstance(release_payload.get("current_release"), Mapping)
-        else {}
-    )
-    next_release = (
-        dict(release_payload.get("next_release", {}))
-        if isinstance(release_payload.get("next_release"), Mapping)
-        else {}
-    )
-    release_summary = (
-        dict(release_payload.get("summary", {}))
-        if isinstance(release_payload.get("summary"), Mapping)
-        else {}
-    )
+    for entry in component_warnings:
+        _add_warning(
+            str(entry),
+            category="component_registry",
+            severity="warning",
+            audience="maintainer",
+            surface_visibility="diagnostics",
+            action="Repair Registry manifest, Atlas component labels, or Radar impacted component tokens.",
+            source=component_registry.DEFAULT_MANIFEST_PATH,
+        )
 
     if autofix_report_path.is_file():
         try:
@@ -418,6 +450,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     workstreams: list[dict[str, Any]] = []
     coverage: dict[str, dict[str, int]] = {}
 
+    for payload in traceability_graph_spine.diagram_node_payloads(diagrams_by_id):
+        _add_node(nodes, node_id=str(payload["id"]), payload=payload)
+    for payload in traceability_graph_spine.release_catalog_node_payloads(release_catalog):
+        _add_node(nodes, node_id=str(payload["id"]), payload=payload)
+    for payload in traceability_graph_spine.component_node_payloads(components_by_id):
+        _add_node(nodes, node_id=str(payload["id"]), payload=payload)
+
     for idea_id, spec in _iter_idea_specs(idea_specs):
         metadata = spec.metadata
         title = str(metadata.get("title", "")).strip()
@@ -437,17 +476,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         workstream_merged_from = _split_ids(str(metadata.get("workstream_merged_from", "")), pattern=_IDEA_ID_RE)
         inferred_diagrams = sorted(workstream_to_diagrams.get(idea_id, set()))
         merged_diagrams = sorted(set(related_diagrams) | set(inferred_diagrams))
-        release_detail = (
-            dict(release_workstreams.get(idea_id, {}))
-            if isinstance(release_workstreams.get(idea_id), Mapping)
-            else {}
-        )
+        release_detail = _mapping_dict(release_workstreams.get(idea_id, {}))
         active_release_id = str(release_detail.get("active_release_id", "")).strip()
-        active_release = (
-            dict(release_detail.get("active_release", {}))
-            if isinstance(release_detail.get("active_release"), Mapping)
-            else {}
-        )
+        active_release = _mapping_dict(release_detail.get("active_release", {}))
         release_history = [
             dict(item)
             for item in release_detail.get("history", [])
@@ -505,6 +536,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "type": "workstream",
                 "label": title or idea_id,
                 "status": status,
+                "workstream_type": workstream_type,
                 "file": idea_file,
             },
         )
@@ -570,6 +602,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                     source=idea_file,
                 )
 
+        for source, target, edge_type in traceability_graph_spine.workstream_component_edges(
+            idea_id=idea_id,
+            components_by_workstream=components_by_workstream,
+        ):
+            _add_edge(edges, source=source, target=target, edge_type=edge_type)
+
         def _link_artifacts(values: list[str], *, bucket: str) -> None:
             for rel in values:
                 artifact_node = f"artifact:{rel}"
@@ -590,27 +628,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         _link_artifacts(devdocs, bucket="developer_docs")
         _link_artifacts(code_refs, bucket="code_references")
         if active_release_id and active_release:
-            release_node = f"release:{active_release_id}"
-            _add_node(
-                nodes,
-                node_id=release_node,
-                payload={
-                    "id": release_node,
-                    "type": "release",
-                    "label": str(active_release.get("display_label", "")).strip() or active_release_id,
-                    "release_id": active_release_id,
-                    "status": str(active_release.get("status", "")).strip(),
-                    "version": str(active_release.get("version", "")).strip(),
-                    "tag": str(active_release.get("tag", "")).strip(),
-                    "name": str(active_release.get("effective_name", "")).strip(),
-                    "aliases": [
-                        str(item).strip()
-                        for item in active_release.get("aliases", [])
-                        if str(item).strip()
-                    ] if isinstance(active_release.get("aliases"), list) else [],
-                    "file": "odylith/radar/source/releases/releases.v1.json",
-                },
+            release_payload = traceability_graph_spine.release_node_payload(
+                release_id=active_release_id,
+                release=active_release,
             )
+            release_node = str(release_payload["id"])
+            _add_node(nodes, node_id=release_node, payload=release_payload)
             _add_edge(edges, source=idea_id, target=release_node, edge_type="active_release")
 
         coverage[idea_id] = {
@@ -654,6 +677,30 @@ def main(argv: Sequence[str] | None = None) -> int:
             }
         )
 
+    component_diagram_edges, component_diagram_warnings = traceability_graph_spine.component_diagram_edges(
+        diagrams_by_id=diagrams_by_id,
+        components_by_id=components_by_id,
+        catalog_source=_as_repo_path(repo_root, catalog_path),
+    )
+    for source, target, edge_type in component_diagram_edges:
+        _add_edge(edges, source=source, target=target, edge_type=edge_type)
+    for warning in component_diagram_warnings:
+        _add_warning(
+            warning.get("message", ""),
+            category=warning.get("category", "component_diagram"),
+            severity=warning.get("severity", "warning"),
+            audience=warning.get("audience", "operator"),
+            surface_visibility=warning.get("surface_visibility", ""),
+            action=warning.get("action", ""),
+            source=warning.get("source", ""),
+        )
+
+    program_nodes, program_edges = traceability_graph_spine.execution_program_nodes_and_edges(execution_programs)
+    for payload in program_nodes:
+        _add_node(nodes, node_id=str(payload["id"]), payload=payload)
+    for source, target, edge_type in program_edges:
+        _add_edge(edges, source=source, target=target, edge_type=edge_type)
+
     edge_items = [
         {"source": src, "target": tgt, "edge_type": typ}
         for src, tgt, typ in sorted(edges)
@@ -695,9 +742,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         "coverage": coverage,
         "warning_items": warning_items,
         "warnings": sorted(set(warnings)),
+        "topology_integrity": {},
         "summary": {
             "workstream_count": len(workstreams),
             "release_count": len(release_catalog),
+            "component_count": len(components_by_id),
             "active_release_assignment_count": int(release_summary.get("active_assignment_count", 0) or 0),
             "execution_program_count": len(execution_programs),
             "execution_wave_count": sum(len(program.waves) for program in execution_programs),
@@ -707,6 +756,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             "warning_item_count": len(warning_items),
         },
     }
+    payload["topology_integrity"] = topology_integrity.evaluate_topology_integrity(payload)
+    payload["summary"]["topology_quality"] = str(payload["topology_integrity"].get("quality", "")).strip()
+    payload["summary"]["topology_score"] = int(payload["topology_integrity"].get("score", 0) or 0)
     payload["generated_utc"] = stable_generated_utc.resolve_for_json_file(
         output_path=output_path,
         payload=payload,
@@ -719,6 +771,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(f"- workstreams: {payload['summary']['workstream_count']}")
     print(f"- nodes: {payload['summary']['node_count']}")
     print(f"- edges: {payload['summary']['edge_count']}")
+    print(f"- topology_quality: {payload['summary']['topology_quality']} ({payload['summary']['topology_score']}/100)")
     print(f"- warnings: {payload['summary']['warning_count']}")
     return 0
 

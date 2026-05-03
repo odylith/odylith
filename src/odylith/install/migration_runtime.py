@@ -10,6 +10,12 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from odylith.install.fs import atomic_write_text, display_path
+from odylith.install.atlas_surface_migration import (
+    MIGRATION_ID as ATLAS_SURFACE_MIGRATION_ID,
+    atlas_surface_decision_state,
+    inspect_atlas_surface_migration,
+    migrate_atlas_surface_polish,
+)
 from odylith.install.legacy_install_migration import (
     LEGACY_ROOT_MIGRATION_ID,
     MigrationSummary as LegacyMigrationSummary,
@@ -25,9 +31,13 @@ from odylith.install.destructive_write_scenarios import (
 from odylith.install.lock_hygiene import LOCK_NOTE_THRESHOLD, lock_hygiene_summary
 from odylith.install.casebook_metadata_migration import (
     MIGRATION_ID as CASEBOOK_METADATA_MIGRATION_ID,
+    STATUS_FSM_MIGRATION_ID as CASEBOOK_STATUS_FSM_MIGRATION_ID,
     casebook_compact_metadata_decision_state,
+    casebook_status_fsm_decision_state,
     inspect_casebook_compact_metadata_migration,
+    inspect_casebook_status_fsm_migration,
     migrate_casebook_compact_metadata,
+    migrate_casebook_status_fsm,
 )
 from odylith.install.migration_definitions import MigrationDefinition, registered_migration_specs
 from odylith.install.migration_observer import (
@@ -735,6 +745,58 @@ def _casebook_metadata_decision(
     )
 
 
+def _casebook_status_fsm_decision(
+    *,
+    repo_root: Path,
+    previous_version: str,
+    target_version: str,
+    scenario: RepoMigrationScenario,
+) -> MigrationDecision:
+    inspection = inspect_casebook_status_fsm_migration(
+        repo_root=repo_root,
+        previous_version=previous_version,
+        target_version=target_version,
+    )
+    state, reason = casebook_status_fsm_decision_state(
+        repo_scenario=scenario.scenario,
+        inspection=inspection,
+    )
+    return _decision(
+        migration_id=CASEBOOK_STATUS_FSM_MIGRATION_ID,
+        state=state,
+        reason=reason,
+        ledger_path=inspection.ledger_path,
+        planned_paths=inspection.planned_paths,
+        evidence=inspection.as_dict(),
+    )
+
+
+def _atlas_surface_decision(
+    *,
+    repo_root: Path,
+    previous_version: str,
+    target_version: str,
+    scenario: RepoMigrationScenario,
+) -> MigrationDecision:
+    inspection = inspect_atlas_surface_migration(
+        repo_root=repo_root,
+        previous_version=previous_version,
+        target_version=target_version,
+    )
+    state, reason = atlas_surface_decision_state(
+        repo_scenario=scenario.scenario,
+        inspection=inspection,
+    )
+    return _decision(
+        migration_id=ATLAS_SURFACE_MIGRATION_ID,
+        state=state,
+        reason=reason,
+        ledger_path=inspection.ledger_path,
+        planned_paths=inspection.planned_paths,
+        evidence=inspection.as_dict(),
+    )
+
+
 def _repo_schema_from_manifest(manifest: Mapping[str, object]) -> int:
     try:
         return int(manifest.get("repo_schema_version") or DEFAULT_REPO_SCHEMA_VERSION)
@@ -779,6 +841,8 @@ def plan_release_migrations(
         *_scenario_blockers(scenario),
         _value_engine_decision(repo_root=root, previous_version=previous, target_version=target, runtime_root=runtime, scenario=scenario),
         _casebook_metadata_decision(repo_root=root, previous_version=previous, target_version=target, scenario=scenario),
+        _casebook_status_fsm_decision(repo_root=root, previous_version=previous, target_version=target, scenario=scenario),
+        _atlas_surface_decision(repo_root=root, previous_version=previous, target_version=target, scenario=scenario),
     ]
     selected = tuple(decision for decision in decisions if decision.needs_apply())
     blocked = [decision for decision in decisions if decision.blocks_upgrade()]
@@ -870,6 +934,42 @@ def apply_release_migrations(*, plan: MigrationPlan, runtime_root: str | Path | 
                     removed_paths=casebook_result.removed_paths,
                     ledger_path=casebook_result.ledger_path,
                     verification_result=dict(casebook_result.verification_result or {"status": "skipped"}),
+                )
+            )
+            continue
+        if decision.migration_id == CASEBOOK_STATUS_FSM_MIGRATION_ID:
+            casebook_result = migrate_casebook_status_fsm(
+                repo_root=plan.repo_root,
+                previous_version=plan.previous_version,
+                target_version=plan.target_version,
+            )
+            results.append(
+                MigrationResult(
+                    migration_id=casebook_result.migration_id,
+                    state=STATE_APPLIED if casebook_result.applied else STATE_SKIPPED,
+                    reason=casebook_result.skipped_reason,
+                    written_paths=casebook_result.written_paths,
+                    removed_paths=casebook_result.removed_paths,
+                    ledger_path=casebook_result.ledger_path,
+                    verification_result=dict(casebook_result.verification_result or {"status": "skipped"}),
+                )
+            )
+            continue
+        if decision.migration_id == ATLAS_SURFACE_MIGRATION_ID:
+            atlas_result = migrate_atlas_surface_polish(
+                repo_root=plan.repo_root,
+                previous_version=plan.previous_version,
+                target_version=plan.target_version,
+            )
+            results.append(
+                MigrationResult(
+                    migration_id=atlas_result.migration_id,
+                    state=STATE_APPLIED if atlas_result.applied else STATE_SKIPPED,
+                    reason=atlas_result.skipped_reason,
+                    written_paths=atlas_result.written_paths,
+                    removed_paths=atlas_result.removed_paths,
+                    ledger_path=atlas_result.ledger_path,
+                    verification_result=dict(atlas_result.verification_result or {"status": "skipped"}),
                 )
             )
             continue

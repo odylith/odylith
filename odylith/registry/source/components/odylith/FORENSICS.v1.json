@@ -44,12 +44,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 263,
-    "mapped_workstream_evidence_count": 122,
+    "explicit_event_count": 265,
+    "mapped_workstream_evidence_count": 124,
     "recent_path_match_count": 0,
     "spec_history_event_count": 28,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 263
+    "timeline_event_count": 265
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -237,6 +237,40 @@
       "workstreams": []
     },
     {
+      "artifacts": [
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+        "src/odylith/runtime/domain_intelligence/proposal_validation.py"
+      ],
+      "confidence": "high",
+      "event_index": 455,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Replaced Domain Intelligence template catalog path with host-reasoned proposal contract, apply-time schema validation, and host-authored Atlas Mermaid source requirements; reran engine, migration, and browser proof.",
+      "ts_iso": "2026-05-02T23:09:01-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
       "artifacts": [],
       "confidence": "low",
       "event_index": 428,
@@ -294,6 +328,40 @@
       "summary": "Odylith Observation: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Why it matters: Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
       "ts_iso": "2026-05-02T23:03:33Z",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+        "src/odylith/runtime/domain_intelligence/proposal_validation.py"
+      ],
+      "confidence": "high",
+      "event_index": 454,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Domain Intelligence corrected to host-reasoned proposal authoring with apply-time topology validation and no in-code project taxonomy.",
+      "ts_iso": "2026-05-02T22:30:51-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

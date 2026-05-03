@@ -382,6 +382,53 @@ def _path_fingerprint(path: Path, *, repo_root: Path | None = None, glob: str = 
         _PROCESS_PATH_FINGERPRINT_CACHE[cache_key] = (state_token, fingerprint)
     return fingerprint
 
+
+def _shallow_glob_fingerprint(path: Path, *, repo_root: Path, glob: str) -> str:
+    target = context_engine_store.Path(path)
+    root = context_engine_store.Path(repo_root).resolve()
+    state_token = projection_repo_state_runtime.projection_repo_state_token(repo_root=root)
+    cache_key = f"{target.resolve()}::{glob}::shallow"
+    read_session = runtime_read_session.active_runtime_read_session()
+    if read_session is not None and read_session.matches_repo(root):
+        cached = read_session.get_or_compute(
+            namespace="path_fingerprint_lookup",
+            key=f"{state_token}:{cache_key}",
+            builder=lambda: _PROCESS_PATH_FINGERPRINT_CACHE.get(cache_key),
+        )
+        if cached is not None and cached[0] == state_token:
+            return str(cached[1]).strip()
+    cached = _PROCESS_PATH_FINGERPRINT_CACHE.get(cache_key)
+    if cached is not None and cached[0] == state_token:
+        return str(cached[1]).strip()
+    if not target.exists():
+        fingerprint = context_engine_store.odylith_context_cache.fingerprint_payload(
+            {"path": str(target), "signature": context_engine_store.odylith_context_cache.path_signature(target)}
+        )
+    elif target.is_file():
+        fingerprint = context_engine_store.odylith_context_cache.fingerprint_paths([target])
+    else:
+        try:
+            nodes = sorted(node for node in target.glob(glob) if node.is_file())
+        except OSError:
+            nodes = []
+        fingerprint = context_engine_store.odylith_context_cache.fingerprint_payload(
+            {
+                "root": str(target),
+                "glob": glob,
+                "recursive": False,
+                "files": [
+                    {
+                        "path": node.name,
+                        "signature": context_engine_store.odylith_context_cache.path_signature(node),
+                    }
+                    for node in nodes
+                ],
+            }
+        )
+    _PROCESS_PATH_FINGERPRINT_CACHE[cache_key] = (state_token, fingerprint)
+    return fingerprint
+
+
 def _test_history_report_inputs(*, repo_root: Path) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "lastfailed": context_engine_store.odylith_context_cache.path_signature(repo_root / context_engine_store._PYTEST_LASTFAILED_PATH),
@@ -389,6 +436,9 @@ def _test_history_report_inputs(*, repo_root: Path) -> dict[str, Any]:
     for rel_root, glob in context_engine_store._TEST_HISTORY_REPORT_GLOBS:
         root = repo_root / rel_root
         key = f"{rel_root or 'repo'}:{glob}"
+        if not rel_root and root.is_dir():
+            payload[key] = _shallow_glob_fingerprint(root, repo_root=repo_root, glob=glob)
+            continue
         if root.is_dir():
             payload[key] = _path_fingerprint(root, repo_root=repo_root, glob=glob)
             continue

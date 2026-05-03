@@ -41,10 +41,12 @@ def _status_rank(row: dict[str, str]) -> int:
     token = re.sub(r"[^a-z0-9]+", "", str(row.get("status") or "").lower())
     return {
         "open": 0,
-        "blocked": 1,
-        "inprogress": 2,
-        "resolved": 3,
-        "closed": 4,
+        "inprogress": 1,
+        "mitigated": 2,
+        "monitoring": 3,
+        "resolved": 4,
+        "fixedpendingrelease": 5,
+        "closed": 6,
     }.get(token, 50)
 
 
@@ -127,6 +129,76 @@ def test_casebook_sort_control_orders_rows_and_round_trips_url_state(browser_con
     )
     assert casebook.locator("#sortFilter").input_value() == "newest"
     _assert_sorted(_visible_casebook_rows(casebook), "newest")
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_casebook_discards_unknown_status_filter_and_humanizes_compact_status(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(
+        base_url
+        + "/odylith/index.html?tab=casebook&bug=CB-150&status=ForwardFixUpdatedLocallyPendingPlatformReleaseDeploy",
+        wait_until="domcontentloaded",
+    )
+    assert response is not None and response.ok
+
+    casebook = page.frame_locator("#frame-casebook")
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator('button.bug-row.active[data-bug="CB-150"]').wait_for(timeout=15000)
+    page.wait_for_function(
+        """() => {
+          const url = new URL(window.location.href);
+          return url.searchParams.get("tab") === "casebook"
+            && url.searchParams.get("bug") === "CB-150"
+            && !url.searchParams.has("status");
+        }""",
+        timeout=15000,
+    )
+
+    assert casebook.locator("#statusFilter").input_value() == ""
+    status_options = casebook.locator("#statusFilter option").evaluate_all(
+        """nodes => nodes.map((node) => (node.textContent || "").trim())"""
+    )
+    assert status_options == ["All statuses", "Open", "Fixed pending release", "Closed"]
+    assert casebook.locator("#listMeta").inner_text().strip() != "Visible: 0"
+    facts = casebook.locator("#detailPane .summary-fact").evaluate_all(
+        """nodes => Object.fromEntries(nodes.map((node) => [
+          (node.querySelector(".summary-fact-label")?.textContent || "").trim(),
+          (node.querySelector(".summary-fact-value")?.textContent || "").trim(),
+        ]))"""
+    )
+    assert facts["Status"] == "Fixed pending release"
+    assert facts["Type"] == "Product"
+    detail_chips = casebook.locator("#detailPane .detail-meta .meta-chip").evaluate_all(
+        """nodes => nodes.map((node) => (node.textContent || "").trim())"""
+    )
+    assert "Fixed pending release" in detail_chips
+    active_status = casebook.locator('button.bug-row.active[data-bug="CB-150"] .list-chip').nth(1).inner_text().strip()
+    assert active_status == "Fixed pending release"
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_casebook_empty_search_state_is_visible_and_honest(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=casebook", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    casebook = page.frame_locator("#frame-casebook")
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator("button.bug-row").first.wait_for(timeout=15000)
+    casebook.locator("#searchInput").fill("no-such-casebook-record-for-empty-state-proof")
+    casebook.locator("#listMeta", has_text="Visible: 0").wait_for(timeout=15000)
+
+    assert casebook.locator("#bugList .empty-state").inner_text().strip() == (
+        "No Casebook entries match the current filters."
+    )
+    assert casebook.locator("#detailPane .empty-state").inner_text().strip() == (
+        "Select a different filter or search term to inspect Casebook detail."
+    )
+    assert casebook.locator("button.bug-row").count() == 0
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 

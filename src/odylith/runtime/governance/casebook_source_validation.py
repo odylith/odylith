@@ -18,14 +18,27 @@ CASEBOOK_BUGS_RELATIVE = Path("odylith/casebook/bugs")
 REPRODUCIBILITY_HELP = (
     "one compact token such as High, Medium, Low, Always, Intermittent, or Consistent"
 )
-STATUS_HELP = "one compact single-word token such as Open, InProgress, FixedPendingRelease, Resolved, or Closed"
-TYPE_HELP = "one compact single-word token such as Product, Tooling, UX, OperatorUX, or DataLoss"
+STATUS_HELP = (
+    "one controlled FSM token: Open, InProgress, Mitigated, Monitoring, "
+    "Resolved, FixedPendingRelease, or Closed"
+)
+TYPE_HELP = (
+    "one allowed category token such as Product, Tooling, UX, OperatorUX, DataLoss, "
+    "Database, API, CI, Test, Deployment, Security, or Research"
+)
 FIXED_HELP = "a YYYY-MM-DD date or one compact single-word token such as Pending, Fixed, Released, or Closed"
 
 _SKIPPED_MARKDOWN_NAMES = frozenset({"AGENTS.md", "CLAUDE.md", "INDEX.md"})
 _VALIDATED_FIELD_RE = re.compile(r"^\s*-\s*(?P<field>Fixed|Reproducibility|Status|Type):\s*(?P<value>.*)$")
 _REPRODUCIBILITY_TOKEN_RE = re.compile(r"^[A-Za-z]{2,24}$")
 _FIXED_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+_HOST_COMPANION_FORBIDDEN_POLICY_CLAUSES = (
+    "Keep `Status`",
+    "Keep `Fixed`",
+    "Keep `Reproducibility`",
+    "Use `odylith casebook validate --repo-root .` for source-only checks",
+    "controlled Casebook lifecycle FSM:",
+)
 _PLACEHOLDER_RE = re.compile(
     r"^(?:tbd|todo|unknown|n/?a|pending|to be determined|not yet known|not yet determined)(?:\b|[^A-Za-z0-9].*)?$",
     re.IGNORECASE,
@@ -121,6 +134,7 @@ def validate_casebook_sources(*, repo_root: Path) -> CasebookSourceValidationRes
     issues: list[CasebookSourceIssue] = []
     for path in paths:
         issues.extend(_validate_casebook_bug_file(path))
+    issues.extend(_validate_host_companion_policy(root / CASEBOOK_BUGS_RELATIVE / "CLAUDE.md"))
     return CasebookSourceValidationResult(
         repo_root=root,
         records_checked=len(paths),
@@ -261,7 +275,7 @@ def _validate_casebook_bug_file(path: Path) -> list[CasebookSourceIssue]:
     if status_matches:
         line_number, value = status_matches[0]
         canonical = casebook_metadata.canonical_casebook_status(value)
-        if _looks_placeholder(value) or not casebook_metadata.casebook_token_is_valid(value) or canonical != value:
+        if _looks_placeholder(value) or not casebook_metadata.casebook_status_is_valid(value):
             issues.append(
                 _issue(
                     path=path,
@@ -275,7 +289,7 @@ def _validate_casebook_bug_file(path: Path) -> list[CasebookSourceIssue]:
     if type_matches:
         line_number, value = type_matches[0]
         canonical = casebook_metadata.canonical_casebook_display_type(value)
-        if _looks_placeholder(value) or not casebook_metadata.casebook_token_is_valid(value) or canonical != value:
+        if _looks_placeholder(value) or not casebook_metadata.casebook_type_is_valid(value):
             issues.append(
                 _issue(
                     path=path,
@@ -285,6 +299,43 @@ def _validate_casebook_bug_file(path: Path) -> list[CasebookSourceIssue]:
                     message=f"must be {TYPE_HELP}; use `{canonical or 'Product'}` for this value",
                 )
             )
+    return issues
+
+
+def _validate_host_companion_policy(path: Path) -> list[CasebookSourceIssue]:
+    """Ensure host-specific companions do not become Casebook policy surfaces."""
+    if not path.is_file():
+        return []
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        return [
+            _issue(
+                path=path,
+                line=1,
+                field="HostCompanion",
+                value="",
+                message=f"could not read Casebook host companion: {exc}",
+            )
+        ]
+    issues: list[CasebookSourceIssue] = []
+    for clause in _HOST_COMPANION_FORBIDDEN_POLICY_CLAUSES:
+        offset = text.find(clause)
+        if offset < 0:
+            continue
+        line_number = text.count("\n", 0, offset) + 1
+        issues.append(
+            _issue(
+                path=path,
+                line=line_number,
+                field="HostCompanion",
+                value=clause,
+                message=(
+                    "must defer Casebook metadata policy to host-agnostic AGENTS.md; "
+                    "do not restate Status, Fixed, Type, or Reproducibility rules in a host companion"
+                ),
+            )
+        )
     return issues
 
 

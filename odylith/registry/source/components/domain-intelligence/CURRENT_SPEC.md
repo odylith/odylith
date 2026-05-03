@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-05-02
+Last updated: 2026-05-03
 
 
 ## Overview
@@ -24,12 +24,18 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-05-03 · Implementation:** Corrected B-142 Domain Intelligence away from the deleted in-code project taxonomy and into a host-reasoned proposal contract with apply-time validation, required host-authored Mermaid sources, duplicate-topology rejection, migration-observer markers, and fresh proof.
+- **2026-05-02 · Implementation:** Replaced Domain Intelligence template catalog path with host-reasoned proposal contract, apply-time schema validation, and host-authored Atlas Mermaid source requirements; reran engine, migration, and browser proof.
   - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_proposals.py, src/odylith/runtime/domain_intelligence/proposal_validation.py +2 more
-- **2026-05-03 · Implementation:** B-142 Domain Intelligence keeps greenfield UX/release planning, Compass memory, and owned Radar/Registry/Atlas apply paths, but project-specific backlog/component/diagram reasoning belongs to the active host model under Odylith's evidence and confirmation gates.
+  - Evidence: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_proposals.py +1 more
+- **2026-05-02 · Implementation:** Domain Intelligence corrected to host-reasoned proposal authoring with apply-time topology validation and no in-code project taxonomy.
   - Scope: B-142
-  - Evidence: odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md, tests/unit/runtime/test_greenfield_proposals.py
+  - Evidence: odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md, src/odylith/runtime/domain_intelligence/greenfield_proposals.py +1 more
+- **2026-05-02 · Implementation:** Hardened B-142 Domain Intelligence with alternate-fit classification, acronym-safe titles, dedicated proposal rendering, program-formation output, migration-observer markers, full engine/install/browser proof, and fresh empty-consumer apply proof.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/archetypes.py, src/odylith/runtime/domain_intelligence/greenfield_proposals.py +2 more
+- **2026-05-02 · Implementation:** Deepened B-142 Domain Intelligence with first-class science/math archetypes, greenfield UX/release planning module, refreshed governance surfaces, and full engine/install/browser proof.
+  - Scope: B-142
+  - Evidence: odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md, src/odylith/runtime/domain_intelligence/archetypes.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History

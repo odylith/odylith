@@ -5,7 +5,19 @@ import path from 'path';
 import process from 'process';
 import readline from 'readline';
 import { createRequire } from 'module';
-import { pathToFileURL } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
+
+const workerDir = path.dirname(fileURLToPath(import.meta.url));
+const mermaidRenderConfigPath = path.join(workerDir, 'mermaid_render_config.json');
+
+async function loadMermaidRenderConfig() {
+  const raw = await fs.readFile(mermaidRenderConfigPath, 'utf-8');
+  const parsed = JSON.parse(raw);
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error('Mermaid render config must be a JSON object');
+  }
+  return parsed;
+}
 
 function parseArgs(argv) {
   const args = { mermaidCliRoot: '' };
@@ -31,6 +43,7 @@ async function main() {
   const puppeteer = puppeteerModule.default ?? puppeteerModule;
   const mermaidIIFEPath = packageRequire.resolve('mermaid/dist/mermaid.js');
   const zenumlIIFEPath = packageRequire.resolve('@mermaid-js/mermaid-zenuml/dist/mermaid-zenuml.js');
+  const mermaidRenderConfig = await loadMermaidRenderConfig();
   let browser = null;
   let renderPage = null;
   const ensureBrowser = async () => {
@@ -127,7 +140,7 @@ async function main() {
         if (elkLayouts) {
           mermaid.registerLayoutLoaders(elkLayouts);
         }
-        mermaid.initialize({ startOnLoad: false });
+        mermaid.initialize({ ...globalWithMermaid.__odylithMermaidRenderConfig, startOnLoad: false });
         globalWithMermaid.__odylithMermaidInitialized = true;
       }
       globalWithMermaid.__odylithMermaidRenderCounter =
@@ -139,6 +152,7 @@ async function main() {
       if (!svg) {
         throw new Error('svg not found');
       }
+      globalWithMermaid.__odylithPolishRenderedSvg(svg);
       const xmlSerializer = new XMLSerializer();
       const svgXML = xmlSerializer.serializeToString(svg);
       const rect = svg.getBoundingClientRect();
@@ -202,6 +216,188 @@ async function main() {
       await fs.writeFile(sourcePng, rendered.png);
     }
   };
+
+  const renderPageConfig = async () => {
+    const page = await ensureRenderPage();
+    await page.evaluate(config => {
+      globalThis.__odylithMermaidRenderConfig = config;
+      globalThis.__odylithPolishRenderedSvg = svg => {
+        svg.setAttribute(
+          'style',
+          'background: transparent; shape-rendering: geometricPrecision; text-rendering: geometricPrecision;',
+        );
+        const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+        style.textContent = `
+          .node rect,
+          .node circle,
+          .node ellipse,
+          .node polygon,
+          .node path {
+            stroke-width: 1.35px;
+          }
+          .node rect {
+            rx: 8px;
+            ry: 8px;
+          }
+          .cluster rect {
+            rx: 14px;
+            ry: 14px;
+            stroke-width: 1.2px;
+          }
+          .edgePath .path,
+          .flowchart-link {
+            stroke-width: 1.45px;
+          }
+          .edgeLabel,
+          .nodeLabel,
+          .cluster-label {
+            line-height: 1.35;
+          }
+        `;
+        svg.insertBefore(style, svg.firstChild);
+        const clusterPalette = [
+          { fill: '#f8fcfc', stroke: '#c8e4df', label: '#123f46' },
+          { fill: '#f8faff', stroke: '#d5e0f5', label: '#17345d' },
+          { fill: '#fffdfa', stroke: '#f0d4a4', label: '#5a3514' },
+          { fill: '#fbfefb', stroke: '#cfe8d7', label: '#164b31' },
+          { fill: '#fcf8ff', stroke: '#ddc8f2', label: '#3c2865' },
+        ];
+        const nodePalette = {
+          input: { fill: '#eef8f7', stroke: '#7bbdb6', label: '#123f46' },
+          intelligence: { fill: '#f4f7ff', stroke: '#9bb8e8', label: '#17345d' },
+          decision: { fill: '#fff8ed', stroke: '#e8b477', label: '#5a3514' },
+          apply: { fill: '#f6f0ff', stroke: '#c4a7e7', label: '#3c2865' },
+          memory: { fill: '#f3fbf6', stroke: '#8fc9a3', label: '#164b31' },
+          neutral: { fill: '#f8fafc', stroke: '#cbd5e1', label: '#334155' },
+        };
+        const fallbackNodeTones = [
+          nodePalette.input,
+          nodePalette.intelligence,
+          nodePalette.decision,
+          nodePalette.apply,
+          nodePalette.memory,
+          nodePalette.neutral,
+        ];
+        const styleDeclares = (styleText, property) => {
+          const pattern = new RegExp(`(?:^|;)\\s*${property}\\s*:`, 'i');
+          return pattern.test(String(styleText || ''));
+        };
+        const numericAttr = (element, name) => {
+          const value = Number.parseFloat(element?.getAttribute(name) || '');
+          return Number.isFinite(value) ? value : null;
+        };
+        const translatePoint = element => {
+          const match = /translate\(\s*([-\d.]+)(?:[\s,]+)([-\d.]+)\s*\)/.exec(element.getAttribute('transform') || '');
+          if (!match) {
+            return null;
+          }
+          const x = Number.parseFloat(match[1]);
+          const y = Number.parseFloat(match[2]);
+          if (!Number.isFinite(x) || !Number.isFinite(y)) {
+            return null;
+          }
+          return { x, y };
+        };
+        const toneForNodeText = (text, fallbackTone) => {
+          const normalized = String(text || '').toLowerCase();
+          if (/\?|decision|decide|gate|confirm|choose|blocked|valid|stale|ready|pass|fail|whether/.test(normalized)) {
+            return nodePalette.decision;
+          }
+          if (/\b(apply|write|render|refresh|sync|update|publish|release|migrate|deploy|repair|scaffold|register|create|author|materialize|bundle)\b/.test(normalized)) {
+            return nodePalette.apply;
+          }
+          if (/\b(memory|compass|state|ledger|history|cache|session|timeline|proof|observation)\b/.test(normalized)) {
+            return nodePalette.memory;
+          }
+          if (/\b(input|intent|prompt|source|repo|docs|catalog|watch|signal|request|operator|user|external)\b/.test(normalized)) {
+            return nodePalette.input;
+          }
+          if (/\b(engine|compiler|planner|routing|classifier|agent|runtime|registry|radar|atlas|casebook|tribunal|context|component|analysis|proposal)\b/.test(normalized)) {
+            return nodePalette.intelligence;
+          }
+          return fallbackTone || nodePalette.neutral;
+        };
+        for (const rect of svg.querySelectorAll('.node rect')) {
+          rect.setAttribute('rx', rect.getAttribute('rx') || '8');
+          rect.setAttribute('ry', rect.getAttribute('ry') || '8');
+        }
+        const clusterBounds = [];
+        const clusterGroups = Array.from(svg.querySelectorAll('.cluster'));
+        for (const [index, cluster] of clusterGroups.entries()) {
+          const rect = cluster.querySelector('rect');
+          if (!rect) {
+            continue;
+          }
+          rect.setAttribute('rx', rect.getAttribute('rx') || '14');
+          rect.setAttribute('ry', rect.getAttribute('ry') || '14');
+          const authoredStyle = rect.getAttribute('style') || '';
+          const tone = clusterPalette[index % clusterPalette.length];
+          const x = numericAttr(rect, 'x');
+          const y = numericAttr(rect, 'y');
+          const width = numericAttr(rect, 'width');
+          const height = numericAttr(rect, 'height');
+          if (x !== null && y !== null && width !== null && height !== null) {
+            clusterBounds.push({ x, y, width, height, tone });
+          }
+          if (styleDeclares(authoredStyle, 'fill') || styleDeclares(authoredStyle, 'stroke')) {
+            continue;
+          }
+          rect.setAttribute(
+            'style',
+            `${authoredStyle};fill:${tone.fill} !important;stroke:${tone.stroke} !important;stroke-width:1.15px !important`,
+          );
+          for (const label of cluster.querySelectorAll('.cluster-label, .cluster-label span, .cluster-label text, .cluster-label p')) {
+            label.setAttribute('style', `${label.getAttribute('style') || ''};color:${tone.label} !important;fill:${tone.label} !important`);
+          }
+        }
+        const clusterToneForNode = node => {
+          const point = translatePoint(node);
+          if (!point) {
+            return null;
+          }
+          const matches = clusterBounds
+            .filter(bounds => (
+              point.x >= bounds.x
+              && point.x <= bounds.x + bounds.width
+              && point.y >= bounds.y
+              && point.y <= bounds.y + bounds.height
+            ))
+            .sort((a, b) => (a.width * a.height) - (b.width * b.height));
+          return matches[0]?.tone || null;
+        };
+        const nodeShape = node => (
+          node.querySelector(':scope > rect.label-container, :scope > rect.basic, :scope > polygon, :scope > circle, :scope > ellipse, :scope > path')
+          || node.querySelector('rect.label-container, rect.basic, polygon, circle, ellipse, path')
+        );
+        for (const [index, node] of Array.from(svg.querySelectorAll('.node')).entries()) {
+          const shape = nodeShape(node);
+          if (!shape) {
+            continue;
+          }
+          if (shape.tagName.toLowerCase() === 'rect') {
+            shape.setAttribute('rx', shape.getAttribute('rx') || '8');
+            shape.setAttribute('ry', shape.getAttribute('ry') || '8');
+          }
+          const authoredStyle = shape.getAttribute('style') || '';
+          if (styleDeclares(authoredStyle, 'fill') || styleDeclares(authoredStyle, 'stroke')) {
+            continue;
+          }
+          const clusterTone = clusterToneForNode(node);
+          const fallbackTone = clusterTone || fallbackNodeTones[index % fallbackNodeTones.length];
+          const tone = toneForNodeText(node.textContent || '', fallbackTone);
+          shape.setAttribute(
+            'style',
+            `${authoredStyle};fill:${tone.fill} !important;stroke:${tone.stroke} !important;stroke-width:1.35px !important`,
+          );
+          for (const label of node.querySelectorAll('.label, .nodeLabel, .label span, .label text, .label p, .label div')) {
+            label.setAttribute('style', `${label.getAttribute('style') || ''};color:${tone.label} !important;fill:${tone.label} !important`);
+          }
+        }
+      };
+    }, mermaidRenderConfig);
+  };
+
+  await renderPageConfig();
 
   const rl = readline.createInterface({
     input: process.stdin,

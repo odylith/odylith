@@ -1,6 +1,6 @@
 - Bug ID: CB-123
 
-- Type: ProductTrust
+- Type: Product
 
 
 

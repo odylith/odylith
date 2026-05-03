@@ -163,6 +163,15 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   test engine/host-parity matrix, the `208` test install/migration lifecycle
   matrix, and the `185 passed, 1 skipped` browser matrix. The release migration
   gate reported `ok: true`, `blocked: 0`, and `ungated: 0`.
+- v0.1.14 program/release targeting follow-up passed
+  `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_greenfield_proposals.py`
+  (`15 passed`),
+  `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_greenfield_proposals.py tests/unit/runtime/test_validate_backlog_contract.py tests/unit/runtime/test_backlog_authoring.py tests/unit/runtime/test_program_wave_authoring.py tests/unit/runtime/test_execution_wave_contract.py tests/unit/runtime/test_release_planning.py tests/unit/install/test_codex_project_assets.py`
+  (`118 passed`), and the greenfield CLI help/propose unit slice (`3 passed`).
+- v0.1.14 migration proof passed `tests/unit/install/test_migration_runtime.py`
+  (`51 passed`), `tests/integration/install/test_lifecycle_simulator.py::test_lifecycle_simulator_proves_historical_upgrades_to_0_1_14`
+  (`1 passed`), `release migration-gate --target-version 0.1.14 --json`
+  (`blocked_manual_migrations: []`), and `git diff --check`.
 
 ## Rollout
 - Ship in v0.1.13 with B-141 because the user-facing failure is inseparable from consumer-lane host UX hardening: low latency is not enough if empty-repo greenfield prompts dead-end.
@@ -195,6 +204,8 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
 
 ## Migration/Compatibility
 - Existing consumer repos need no data migration. Upgrading to v0.1.13 installs the new CLI/runtime path, managed guidance, and host skill shims. Existing source-backed governance remains unchanged; greenfield proposals are additive and confirmation-gated.
+- v0.1.14 greenfield behavior remains backward compatible: accepted proposals that name a release selector keep using that selector, while omitted selectors default to the first project release `0.0.1`. Apply now creates the umbrella execution-wave program document when child workstreams exist and targets the first wave plus umbrella to the first release so Compass can show program and release power without over-targeting every child workstream.
+- One-word `Customer` values are now valid backlog truth. The relaxation is intentionally scoped to Customer only; Problem, Opportunity, Product View, and Success Metrics keep the stronger detail threshold and placeholder rejection.
 - Migration observer markers for this slice:
   `migration-observer:0.1.13:guidance-and-skills:d8c8ff0d951d`,
   `migration-observer:0.1.13:guidance-and-skills:b6ccbcebbd7c`,
@@ -232,7 +243,10 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `migration-observer:0.1.13:install-managed-assets:84b480bd2eaf`,
   `migration-observer:0.1.13:browser-surfaces:7ca3752b114d`,
   `migration-observer:0.1.13:install-managed-assets:877351c7e794`,
-  `migration-observer:0.1.13:install-managed-assets:378a6ed807cc`.
+  `migration-observer:0.1.13:install-managed-assets:378a6ed807cc`,
+  `migration-observer:0.1.14:guidance-and-skills:5db32f2987ff`,
+  `migration-observer:0.1.14:operator-cli-contracts:e1abf985ede6`,
+  `migration-observer:0.1.14:install-managed-assets:1d4f10095f9b`.
   These markers cover the deepened greenfield skill guidance, refreshed
   Domain Intelligence Atlas/Registry/Radar browser surfaces, updated managed
   security-and-trust guidance, updated public README/operator/release-note/security

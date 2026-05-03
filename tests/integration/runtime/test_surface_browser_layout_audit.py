@@ -18,6 +18,8 @@ def _casebook_header_layout(casebook) -> dict[str, object]:  # noqa: ANN001
         """(node) => {
             const factsNode = node.querySelector(".summary-facts");
             const summaryNode = node.querySelector(".detail-summary");
+            const summaryCardNode = node.querySelector(".casebook-summary-card");
+            const summaryTitleNode = summaryCardNode ? summaryCardNode.querySelector(".brief-card-title") : null;
             const children = Array.from(node.children || []).map((child) => {
               const box = child.getBoundingClientRect();
               return {
@@ -58,6 +60,10 @@ def _casebook_header_layout(casebook) -> dict[str, object]:  # noqa: ANN001
               detailKickerCount: node.querySelectorAll(".detail-kicker").length,
               childOrder: children.map((child) => child.name),
               factsBeforeSummary: Boolean(!factsNode || !summaryNode || factsNode.compareDocumentPosition(summaryNode) & Node.DOCUMENT_POSITION_FOLLOWING),
+              summaryInCard: Boolean(summaryCardNode && summaryNode && summaryCardNode.contains(summaryNode)),
+              summaryCardWidth: summaryCardNode ? Number(summaryCardNode.getBoundingClientRect().width.toFixed(2)) : 0,
+              detailHeadWidth: Number(node.getBoundingClientRect().width.toFixed(2)),
+              summaryTitle: String(summaryTitleNode && summaryTitleNode.textContent || "").trim(),
               sequenceOverlaps,
               unstackedFields: facts.filter((fact) => !fact.stacked).map((fact) => fact.field),
             };
@@ -104,8 +110,12 @@ def test_casebook_detail_header_stays_readable_in_desktop_view(browser_context) 
 
     assert row["titleLength"] >= 80, "expected a long-title Casebook row to stress the header layout"
     assert "summary-facts" in layout["childOrder"]
-    assert layout["childOrder"].index("summary-facts") < layout["childOrder"].index("detail-summary")
+    assert "brief-card casebook-summary-card" in layout["childOrder"]
+    assert layout["childOrder"].index("summary-facts") < layout["childOrder"].index("brief-card casebook-summary-card")
     assert layout["factsBeforeSummary"], "Casebook primary fact cards should render before the supporting summary copy"
+    assert layout["summaryInCard"], "Casebook summary copy should live inside the narrative card"
+    assert layout["summaryTitle"] == "Summary"
+    assert abs(float(layout["summaryCardWidth"]) - float(layout["detailHeadWidth"])) <= 4
     assert layout["detailKickerCount"] == 0, "Casebook detail should not render a standalone bug-id kicker above the title"
     assert "Bug ID" in layout["factFields"], "Casebook detail should keep Bug ID in the summary fact cards"
     assert layout["sequenceOverlaps"] == [], f"detail header rows overlapped on desktop: {layout['sequenceOverlaps']}"
@@ -134,8 +144,12 @@ def test_casebook_detail_header_stays_readable_in_compact_view(compact_browser_c
     )
 
     assert "summary-facts" in layout["childOrder"]
-    assert layout["childOrder"].index("summary-facts") < layout["childOrder"].index("detail-summary")
+    assert "brief-card casebook-summary-card" in layout["childOrder"]
+    assert layout["childOrder"].index("summary-facts") < layout["childOrder"].index("brief-card casebook-summary-card")
     assert layout["factsBeforeSummary"], "Casebook primary fact cards should stay ahead of the supporting summary copy in compact view"
+    assert layout["summaryInCard"], "Casebook summary copy should live inside the narrative card in compact view"
+    assert layout["summaryTitle"] == "Summary"
+    assert abs(float(layout["summaryCardWidth"]) - float(layout["detailHeadWidth"])) <= 4
     assert layout["detailKickerCount"] == 0, "Casebook detail should not render a standalone bug-id kicker above the title in compact view"
     assert "Bug ID" in layout["factFields"], "Casebook detail should keep Bug ID in the summary fact cards in compact view"
     assert layout["sequenceOverlaps"] == [], f"detail header rows overlapped in compact view: {layout['sequenceOverlaps']}"
@@ -252,6 +266,67 @@ def test_atlas_detail_header_uses_readable_fact_cards_in_compact_view(compact_br
     assert layout["unstackedFields"] == [], f"Atlas fact labels and values collapsed inline: {layout['unstackedFields']}"
     assert int(layout["heroScrollWidth"]) - int(layout["heroClientWidth"]) <= 8
     assert int(layout["factsScrollWidth"]) - int(layout["factsClientWidth"]) <= 4
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def _atlas_viewer_layout(atlas) -> dict[str, object]:  # noqa: ANN001
+    atlas.locator("#viewerImage").evaluate(
+        """node => new Promise((resolve) => {
+          if (node.complete && node.naturalWidth > 0) {
+            resolve(true);
+            return;
+          }
+          node.addEventListener("load", () => resolve(true), { once: true });
+        })"""
+    )
+    return atlas.locator("#viewerStage").evaluate(
+        """(stage) => {
+          const image = stage.querySelector("#viewerImage");
+          const stageBox = stage.getBoundingClientRect();
+          const imageBox = image ? image.getBoundingClientRect() : null;
+          const style = window.getComputedStyle(stage);
+          const overflow = imageBox ? {
+            left: Math.max(0, stageBox.left - imageBox.left),
+            top: Math.max(0, stageBox.top - imageBox.top),
+            right: Math.max(0, imageBox.right - stageBox.right),
+            bottom: Math.max(0, imageBox.bottom - stageBox.bottom),
+          } : { left: 9999, top: 9999, right: 9999, bottom: 9999 };
+          const margins = imageBox ? {
+            left: imageBox.left - stageBox.left,
+            top: imageBox.top - stageBox.top,
+            right: stageBox.right - imageBox.right,
+            bottom: stageBox.bottom - imageBox.bottom,
+          } : { left: 0, top: 0, right: 0, bottom: 0 };
+          return {
+            loaded: Boolean(image && image.complete && image.naturalWidth > 0),
+            backgroundImage: style.backgroundImage,
+            backgroundColor: style.backgroundColor,
+            overflow,
+            margins,
+          };
+        }"""
+    )
+
+
+def test_atlas_viewer_uses_plain_white_stage_and_fits_diagram_without_clipping(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=atlas", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    atlas = page.frame_locator("#frame-atlas")
+    atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
+    _select_atlas_layout_stress_diagram(page)
+    layout = _atlas_viewer_layout(atlas)
+    overflow = layout["overflow"]
+    margins = layout["margins"]
+
+    assert layout["loaded"], "Atlas viewer diagram image did not load"
+    assert layout["backgroundImage"] == "none"
+    assert layout["backgroundColor"] == "rgb(255, 255, 255)"
+    assert max(float(value) for value in overflow.values()) <= 4, f"diagram clipped by viewer stage: {overflow}"
+    assert min(float(value) for value in margins.values()) >= 18, f"diagram fit lacks readable padding: {margins}"
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 

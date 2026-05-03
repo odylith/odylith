@@ -407,7 +407,10 @@ def _ignored_path(path: str) -> bool:
 
 
 def _normalize_path(path: str) -> str:
-    return str(path or "").strip().replace("\\", "/").lstrip("./")
+    token = str(path or "").strip().replace("\\", "/")
+    while token.startswith("./"):
+        token = token[2:]
+    return token
 
 
 __all__ = [

@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 21,
-    "mapped_workstream_evidence_count": 21,
+    "explicit_event_count": 23,
+    "mapped_workstream_evidence_count": 23,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 3,
+    "spec_history_event_count": 5,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 22
+    "timeline_event_count": 24
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -22,12 +22,12 @@
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
         "src/odylith/runtime/domain_intelligence/__init__.py",
-        "src/odylith/runtime/domain_intelligence/archetypes.py",
         "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-        "src/odylith/runtime/domain_intelligence/proposal_memory.py"
+        "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_traceability.py"
       ],
       "confidence": "high",
-      "event_index": 454,
+      "event_index": 456,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
@@ -35,8 +35,76 @@
       ],
       "meaningful": true,
       "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/__init__.py +3 more",
-      "ts_iso": "2026-05-02T21:12:04-07:00",
+      "ts_iso": "2026-05-03T09:27:09-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+        "src/odylith/runtime/domain_intelligence/proposal_validation.py"
+      ],
+      "confidence": "high",
+      "event_index": 455,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Replaced Domain Intelligence template catalog path with host-reasoned proposal contract, apply-time schema validation, and host-authored Atlas Mermaid source requirements; reran engine, migration, and browser proof.",
+      "ts_iso": "2026-05-02T23:09:01-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+        "src/odylith/runtime/domain_intelligence/proposal_validation.py"
+      ],
+      "confidence": "high",
+      "event_index": 454,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Domain Intelligence corrected to host-reasoned proposal authoring with apply-time topology validation and no in-code project taxonomy.",
+      "ts_iso": "2026-05-02T22:30:51-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

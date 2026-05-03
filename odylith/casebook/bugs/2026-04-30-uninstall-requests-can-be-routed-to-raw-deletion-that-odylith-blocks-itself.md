@@ -1,6 +1,6 @@
 - Bug ID: CB-145
 
-- Type: UXLifecycle
+- Type: UX
 
 
 
