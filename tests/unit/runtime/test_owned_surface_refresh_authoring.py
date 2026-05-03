@@ -214,7 +214,7 @@ def test_component_register_refreshes_registry_surface(tmp_path: Path, monkeypat
         "Logical component registered through `odylith component register` "
         "with `src/odylith/runtime/governance` as its initial evidence anchor."
     )
-    assert "path prefixes seed evidence" in entry["why_tracked"]
+    assert "path prefixes seed the intended boundary" in entry["why_tracked"]
     spec_path = (
         tmp_path
         / "odylith"

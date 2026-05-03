@@ -206,6 +206,22 @@ _HANDLER_CASES = [
         and list(getattr(args, "forwarded", [])) == ["--json"],
     },
     {
+        "path": ("greenfield", "propose"),
+        "argv": lambda root: ["greenfield", "propose", f"--repo-root={root}", "--prompt", "Build a lab notebook"],
+        "handler": "_cmd_greenfield",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "greenfield_command", "") == "propose"
+        and list(getattr(args, "forwarded", [])) == ["--prompt", "Build a lab notebook"],
+    },
+    {
+        "path": ("greenfield", "apply"),
+        "argv": lambda root: ["greenfield", "apply", f"--repo-root={root}", "--proposal-file", "proposal.json"],
+        "handler": "_cmd_greenfield",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "greenfield_command", "") == "apply"
+        and list(getattr(args, "forwarded", [])) == ["--proposal-file", "proposal.json"],
+    },
+    {
         "path": ("component", "register"),
         "argv": lambda root: ["component", "register", f"--repo-root={root}", "--id", "registry-refresh"],
         "handler": "_cmd_component",
