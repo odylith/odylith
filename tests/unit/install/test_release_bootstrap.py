@@ -1352,10 +1352,10 @@ def test_lane_show_wraps_lane_status() -> None:
     assert "make lane-show" in help_text
 
 
-def test_release_candidate_workflow_is_pull_request_safe() -> None:
+def test_release_candidate_workflow_is_manual_to_avoid_duplicate_pr_full_proof() -> None:
     text = (REPO_ROOT / ".github" / "workflows" / "release-candidate.yml").read_text(encoding="utf-8")
 
-    assert "pull_request:" in text
+    assert "pull_request:" not in text
     assert "workflow_dispatch:" in text
     assert "make lane-show" in text
     assert "make release-candidate" in text
@@ -1364,6 +1364,19 @@ def test_release_candidate_workflow_is_pull_request_safe() -> None:
     assert "make dogfood-activate" not in text
     assert "gh release create" not in text
     assert "publish_release_assets.py" not in text
+
+
+def test_ga_checklist_does_not_duplicate_consumer_rehearsal() -> None:
+    checklist = (REPO_ROOT / "odylith" / "maintainer" / "GTM_AND_RELEASE_CHECKLIST.md").read_text(
+        encoding="utf-8"
+    )
+    help_text = (REPO_ROOT / "bin" / "help").read_text(encoding="utf-8")
+
+    assert "make ga-gate PREVIOUS_VERSION=[previous_version]" in checklist
+    assert "make consumer-rehearsal PREVIOUS_VERSION=[previous_version]" not in checklist
+    assert "post-publish consumer rehearsal" in checklist
+    assert "do not run it separately" in checklist
+    assert "Do not run consumer-rehearsal separately" in help_text
 
 
 def test_dogfood_activate_bootstraps_missing_launcher_before_upgrade() -> None:

@@ -47,7 +47,8 @@ make consumer-rehearsal [VERSION=X.Y.Z] [PREVIOUS_VERSION=Y.Y.Y]
   Exercise a disposable consumer repo against hosted release assets. VERSION defaults to the active release session.
 
 make ga-gate [VERSION=X.Y.Z] [PREVIOUS_VERSION=Y.Y.Y]
-  Run the post-publish dogfood and consumer rehearsal gate for the session version or an explicit version.
+  Run the post-publish dogfood and consumer rehearsal gate for the session version or explicit version.
+  Do not run consumer-rehearsal separately for the same published artifact.
 
 make release-session-clear
   Clear the sticky release session after a completed lane or intentional abort.
