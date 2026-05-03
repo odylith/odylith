@@ -158,7 +158,7 @@ def read_project_identity(repo_root: Path) -> RepoIdentity:
                 text = readme.read_text(encoding="utf-8", errors="replace")[:2000]
                 for line in text.splitlines():
                     stripped = line.strip()
-                    if stripped and not stripped.startswith("#") and not stripped.startswith("!") and len(stripped) > 20:
+                    if _is_project_description_candidate(stripped):
                         identity.description = stripped[:200]
                         break
             except OSError:
@@ -166,6 +166,20 @@ def read_project_identity(repo_root: Path) -> RepoIdentity:
             break
 
     return identity
+
+
+def _is_project_description_candidate(text: str) -> bool:
+    """Return true when a README/manifest string looks like prose identity."""
+    stripped = text.strip()
+    if len(stripped) <= 20:
+        return False
+    if stripped.startswith(("#", "!", "[", "<")):
+        return False
+    if re.search(r"<[^>]+>", stripped):
+        return False
+    if re.search(r"\b(?:src|href|class|style|width|height|viewBox)\s*=", stripped):
+        return False
+    return bool(re.search(r"[A-Za-z]{3,}", stripped))
 
 
 def _parse_pyproject(path: Path, identity: RepoIdentity) -> None:
@@ -197,7 +211,9 @@ def _parse_package_json(path: Path, identity: RepoIdentity) -> None:
     if data.get("name"):
         identity.name = str(data["name"])
     if data.get("description") and not identity.description:
-        identity.description = str(data["description"])[:200]
+        description = str(data["description"]).strip()
+        if _is_project_description_candidate(description):
+            identity.description = description[:200]
     all_deps = {**dict(data.get("dependencies", {})), **dict(data.get("devDependencies", {}))}
     for pkg, fw in [("next", "Next.js"), ("@sveltejs/kit", "SvelteKit"), ("svelte", "Svelte"),
                      ("vue", "Vue"), ("express", "Express"), ("@nestjs/core", "NestJS"), ("hono", "Hono")]:

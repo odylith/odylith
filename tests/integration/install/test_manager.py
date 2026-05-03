@@ -2406,12 +2406,14 @@ def test_doctor_bundle_repairs_consumer_runtime_with_verified_release_not_host_p
 
     status = version_status(repo_root=repo_root)
     launcher_text = (repo_root / ".odylith" / "bin" / "odylith").read_text(encoding="utf-8")
+    bootstrap_text = (repo_root / ".odylith" / "bin" / "odylith-bootstrap").read_text(encoding="utf-8")
     assert healthy is True
     assert "repair completed" in message.lower()
     assert status.active_version == "1.2.3"
     assert status.runtime_source == "pinned_runtime"
     assert "exec \"/usr/bin" not in launcher_text
     assert "source-local" not in launcher_text
+    assert "source-local" not in bootstrap_text
 
 
 def test_doctor_bundle_repair_backfills_legacy_casebook_bug_ids(tmp_path: Path) -> None:

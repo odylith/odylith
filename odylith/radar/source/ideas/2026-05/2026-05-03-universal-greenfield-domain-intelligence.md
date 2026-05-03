@@ -115,6 +115,11 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
 - Full browser proof passed with 185 tests and 1 skipped case across Atlas, Casebook, Compass, Radar, Registry, intervention visibility, filter audit, onboarding, and regression surfaces.
 - Fresh consumer proof installed the shipped runtime, executed source v0.1.13 `greenfield propose/apply`, and confirmed provider-free commerce output plus 4 backlog records, 5 planned components, 2 draft diagrams, and a bootstrapped `next` release selector after explicit confirmation.
 - Governance proof refreshed Casebook, Radar, Registry, Atlas, and Compass; `casebook validate`, `backlog-contract`, `plan-workstream-binding`, `plan-risk-mitigation`, `release migration-gate --target-version 0.1.13`, and `git diff --check` passed.
+- Engine-integrity follow-up proved the Domain Intelligence capability map,
+  markup-safe repo identity extraction, host routing, and science/math
+  greenfield proposal path through the 568-test engine suite, the 208-test
+  host/migration suite, and the 185-test browser matrix without provider calls
+  or consumer-lane source claims.
 
 ## Rollout
 - Ship in v0.1.13 with B-141 because the user-facing failure is inseparable from consumer-lane host UX hardening: low latency is not enough if empty-repo greenfield prompts dead-end.
@@ -151,8 +156,10 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `migration-observer:0.1.13:operator-cli-contracts:2d60d08c285d`,
   `migration-observer:0.1.13:browser-surfaces:695cf1a55b3d`,
   `migration-observer:0.1.13:browser-surfaces:fcbd8d2ec808`,
+  `migration-observer:0.1.13:browser-surfaces:d00ba488e699`,
   `migration-observer:0.1.13:install-managed-assets:4444145d768a`,
-  `migration-observer:0.1.13:install-managed-assets:0b654205854a`.
+  `migration-observer:0.1.13:install-managed-assets:0b654205854a`,
+  `migration-observer:0.1.13:install-managed-assets:13d6f64a015b`.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component authoring, CLI dispatch, show capabilities, and Compass transaction filtering.

@@ -161,6 +161,8 @@ def test_capabilities_command_prints_host_agnostic_engine_inventory(capsys) -> N
     assert "Odylith capabilities and engines" in output
     assert "Host model: agnostic" in output
     assert "Analysis Engine" in output
+    assert "Context Engine" in output
+    assert "Domain Intelligence" in output
     assert "Governance Engine" in output
     assert "Delivery Intelligence" in output
     assert "Tribunal" in output
@@ -186,6 +188,8 @@ def test_capabilities_command_json_exposes_product_inventory(capsys) -> None:
     assert payload["posture"] == "host-model-agnostic"
     assert {
         "Analysis Engine",
+        "Context Engine",
+        "Domain Intelligence",
         "Governance Engine",
         "Delivery Intelligence",
         "Tribunal",

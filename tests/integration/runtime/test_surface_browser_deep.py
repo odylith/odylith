@@ -48,6 +48,7 @@ _GLOBAL_BRIEF_NOTICE_REASONS = {
     "provider_empty",
     "provider_unavailable",
     "skipped_not_worth_calling",
+    "invalid_batch",
     "validation_failed",
 }
 

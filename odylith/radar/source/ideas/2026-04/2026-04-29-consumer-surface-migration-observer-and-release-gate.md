@@ -668,6 +668,24 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.13:guidance-and-skills:b6ccbcebbd7c`,
   `migration-observer:0.1.13:browser-surfaces:fcbd8d2ec808`,
   `migration-observer:0.1.13:install-managed-assets:0b654205854a`.
+- Engine inventory and Compass settlement hardening: v0.1.13 makes Context
+  Engine and Domain Intelligence explicit in the host-agnostic capability
+  inventory, rejects markup snippets as project identity prose during
+  greenfield repo analysis, and treats non-forced Compass brief settlement
+  gaps as visible warnings instead of release-blocking failures after the
+  runtime payload has refreshed. Existing consumer installs need no data
+  migration; upgrade refreshes managed runtime code, browser governance
+  surfaces, and the Compass bundle mirror while preserving repo-owned
+  governance truth. The same assessment covers the consumer launcher hygiene
+  fix that keeps maintainer-only `source-local` routing out of repaired
+  consumer launchers while retaining explicit source-local support for
+  product-repo maintainer posture. Migration observer markers:
+  `migration-observer:0.1.13:browser-surfaces:d00ba488e699`,
+  `migration-observer:0.1.13:install-managed-assets:13d6f64a015b`,
+  `migration-observer:0.1.13:install-managed-assets:6a1d8f00879f`,
+  `migration-observer:0.1.13:browser-surfaces:cafacdb848c3`,
+  `migration-observer:0.1.13:install-managed-assets:9a4f23dde703`,
+  `migration-observer:0.1.13:install-managed-assets:8137f3c657dd`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.

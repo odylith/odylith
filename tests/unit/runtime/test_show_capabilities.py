@@ -232,6 +232,23 @@ def test_show_source_classifier_covers_trust_first_categories(tmp_path: Path) ->
         assert repo_analysis.classify_repo_path(repo_root / rel_path, repo_root=repo_root) == category
 
 
+def test_project_identity_ignores_markup_when_selecting_description(tmp_path: Path) -> None:
+    _write_file(
+        tmp_path,
+        "README.md",
+        (
+            "# Demo\n\n"
+            '<img src="docs/brand/demo.svg" width="400">\n\n'
+            "A governed scientific workflow for reproducible analysis and review.\n"
+        ),
+    )
+    _write_file(tmp_path, "pyproject.toml", "[project]\nname='demo'\n")
+
+    identity = repo_analysis.read_project_identity(tmp_path)
+
+    assert identity.description == "A governed scientific workflow for reproducible analysis and review."
+
+
 def test_show_minimal_source_copy_does_not_emit_this_codebase_grammar_glitch(tmp_path: Path) -> None:
     package_init = tmp_path / "pkg" / "__init__.py"
     package_core = tmp_path / "pkg" / "core.py"

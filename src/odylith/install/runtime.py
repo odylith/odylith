@@ -617,7 +617,40 @@ def _repo_local_source_root(*, repo_root: str | Path) -> Path | None:
 def _launcher_shell_common_lines(*, fallback_source_root: Path | None) -> list[str]:
     resolved_source_root = _validated_source_root(fallback_source_root)
     source_src = str(resolved_source_root / "src") if resolved_source_root is not None else ""
-    return [
+    source_root_lines = []
+    if resolved_source_root is not None:
+        source_root_lines = [
+            "odylith_repo_source_python() {",
+            "  odylith_is_product_repo || return 1",
+            '  local source_root_candidate="" base=""',
+            '  if [[ -n "$fallback_source_root" ]]; then',
+            '    source_root_candidate="${fallback_source_root%/src}"',
+            "  fi",
+            '  for base in "$source_root_candidate" "$repo_root"; do',
+            '    [[ -n "$base" ]] || continue',
+            '    if [[ -x "$base/.venv/bin/python" ]]; then',
+            '      printf "%s\\n" "$base/.venv/bin/python"',
+            "      return 0",
+            "    fi",
+            "  done",
+            "  if command -v python3 >/dev/null 2>&1; then",
+            '    command -v python3',
+            "    return 0",
+            "  fi",
+            "  if command -v python >/dev/null 2>&1; then",
+            '    command -v python',
+            "    return 0",
+            "  fi",
+            "  return 1",
+            "}",
+            "odylith_current_runtime_is_source_local() {",
+            '  local resolved_current=""',
+            '  [[ -e "$current_root" ]] || return 1',
+            '  resolved_current="$(cd "$current_root" && pwd -P)" || return 1',
+            '  [[ "$(basename "$resolved_current")" == "source-local" ]]',
+            "}",
+        ]
+    lines = [
         f'fallback_source_root="{source_src}"',
         "odylith_valid_source_root() {",
         '  local candidate="${1:-}"',
@@ -628,35 +661,7 @@ def _launcher_shell_common_lines(*, fallback_source_root: Path | None) -> list[s
         "  fi",
         '  [[ -f "$candidate/pyproject.toml" ]] && [[ -d "$candidate/src/odylith" ]]',
         "}",
-        "odylith_repo_source_python() {",
-        "  odylith_is_product_repo || return 1",
-        '  local source_root_candidate="" base=""',
-        '  if [[ -n "$fallback_source_root" ]]; then',
-        '    source_root_candidate="${fallback_source_root%/src}"',
-        "  fi",
-        '  for base in "$source_root_candidate" "$repo_root"; do',
-        '    [[ -n "$base" ]] || continue',
-        '    if [[ -x "$base/.venv/bin/python" ]]; then',
-        '      printf "%s\\n" "$base/.venv/bin/python"',
-        "      return 0",
-        "    fi",
-        "  done",
-        "  if command -v python3 >/dev/null 2>&1; then",
-        '    command -v python3',
-        "    return 0",
-        "  fi",
-        "  if command -v python >/dev/null 2>&1; then",
-        '    command -v python',
-        "    return 0",
-        "  fi",
-        "  return 1",
-        "}",
-        "odylith_current_runtime_is_source_local() {",
-        '  local resolved_current=""',
-        '  [[ -e "$current_root" ]] || return 1',
-        '  resolved_current="$(cd "$current_root" && pwd -P)" || return 1',
-        '  [[ "$(basename "$resolved_current")" == "source-local" ]]',
-        "}",
+        *source_root_lines,
         "odylith_runtime_root_for_python() {",
         '  local python_path="${1:-}"',
         '  [[ -n "$python_path" ]] || return 1',
@@ -801,6 +806,7 @@ def _launcher_shell_common_lines(*, fallback_source_root: Path | None) -> list[s
         "  return 1",
         "}",
     ]
+    return lines
 
 
 _HOST_HOOK_MODULES: tuple[tuple[str, str, str], ...] = (
@@ -999,6 +1005,27 @@ def _launcher_script(*, fallback_python: Path, fallback_source_root: Path | None
     fallback_exec = f'odylith_exec_odylith "{fallback}" isolated "$@"'
     if resolved_source_root is not None:
         fallback_exec = f'odylith_exec_odylith "{fallback}" normal "$@"'
+    source_current_dispatch = []
+    source_fallback_dispatch = []
+    if resolved_source_root is not None:
+        source_current_dispatch = [
+            'if odylith_current_runtime_is_source_local && odylith_is_product_repo && odylith_valid_source_root "$repo_root"; then',
+            '  repo_source_python="$(odylith_repo_source_python || true)"',
+            '  if [[ -n "$repo_source_python" ]] && [[ -x "$repo_source_python" ]]; then',
+            '    export PYTHONPATH="$repo_root/src${PYTHONPATH:+:$PYTHONPATH}"',
+            '    odylith_exec_odylith "$repo_source_python" normal "$@"',
+            "  fi",
+            "fi",
+        ]
+        source_fallback_dispatch = [
+            'if odylith_is_product_repo && odylith_valid_source_root "$repo_root"; then',
+            '  repo_source_python="$(odylith_repo_source_python || true)"',
+            '  if [[ -n "$repo_source_python" ]] && [[ -x "$repo_source_python" ]]; then',
+            '    export PYTHONPATH="$repo_root/src${PYTHONPATH:+:$PYTHONPATH}"',
+            '    odylith_exec_odylith "$repo_source_python" normal "$@"',
+            "  fi",
+            "fi",
+        ]
     return "\n".join(
         [
             "#!/usr/bin/env bash",
@@ -1140,13 +1167,7 @@ def _launcher_script(*, fallback_python: Path, fallback_source_root: Path | None
             'if odylith_upgrade_bootstrap_required "$@"; then',
             '  odylith_bootstrap_upgrade_via_installer "$@"',
             "fi",
-            'if odylith_current_runtime_is_source_local && odylith_is_product_repo && odylith_valid_source_root "$repo_root"; then',
-            '  repo_source_python="$(odylith_repo_source_python || true)"',
-            '  if [[ -n "$repo_source_python" ]] && [[ -x "$repo_source_python" ]]; then',
-            '    export PYTHONPATH="$repo_root/src${PYTHONPATH:+:$PYTHONPATH}"',
-            '    odylith_exec_odylith "$repo_source_python" normal "$@"',
-            "  fi",
-            "fi",
+            *source_current_dispatch,
             'if odylith_current_python_trusted; then',
             '  if odylith_managed_runtime_trusted "$current_root"; then',
             '    odylith_exec_odylith "$current_python" isolated "$@"',
@@ -1157,13 +1178,7 @@ def _launcher_script(*, fallback_python: Path, fallback_source_root: Path | None
             *([export_line] if export_line else []),
             f"  {fallback_exec}",
             "fi",
-            'if odylith_is_product_repo && odylith_valid_source_root "$repo_root"; then',
-            '  repo_source_python="$(odylith_repo_source_python || true)"',
-            '  if [[ -n "$repo_source_python" ]] && [[ -x "$repo_source_python" ]]; then',
-            '    export PYTHONPATH="$repo_root/src${PYTHONPATH:+:$PYTHONPATH}"',
-            '    odylith_exec_odylith "$repo_source_python" normal "$@"',
-            "  fi",
-            "fi",
+            *source_fallback_dispatch,
             """printf '%s\\n' 'Odylith launcher detected untrusted or unhealthy runtime state. From the repo root, try `./.odylith/bin/odylith-bootstrap doctor --repo-root . --repair`.' >&2""",
             "exit 1",
             "",
@@ -1184,6 +1199,38 @@ def _bootstrap_launcher_script(*, fallback_python: Path, fallback_source_root: P
     fallback_exec = f'odylith_exec_odylith "{fallback}" isolated "$@"'
     if resolved_source_root is not None:
         fallback_exec = f'odylith_exec_odylith "{fallback}" normal "$@"'
+    source_current_dispatch = []
+    source_fallback_dispatch = []
+    source_wrapper_candidate_dispatch = []
+    if resolved_source_root is not None:
+        source_current_dispatch = [
+            'if odylith_current_runtime_is_source_local && odylith_is_product_repo && odylith_valid_source_root "$repo_root"; then',
+            '  repo_source_python="$(odylith_repo_source_python || true)"',
+            '  if [[ -n "$repo_source_python" ]] && [[ -x "$repo_source_python" ]]; then',
+            '    export PYTHONPATH="$repo_root/src${PYTHONPATH:+:$PYTHONPATH}"',
+            '    odylith_exec_odylith "$repo_source_python" normal "$@"',
+            "  fi",
+            "fi",
+        ]
+        source_fallback_dispatch = [
+            'if odylith_is_product_repo && odylith_valid_source_root "$repo_root"; then',
+            '  repo_source_python="$(odylith_repo_source_python || true)"',
+            '  if [[ -n "$repo_source_python" ]] && [[ -x "$repo_source_python" ]]; then',
+            '    export PYTHONPATH="$repo_root/src${PYTHONPATH:+:$PYTHONPATH}"',
+            '    odylith_exec_odylith "$repo_source_python" normal "$@"',
+            "  fi",
+            "fi",
+        ]
+        source_wrapper_candidate_dispatch = [
+            'if odylith_is_product_repo; then',
+            '  for candidate_python in "${candidates[@]}"; do',
+            '    candidate_root="$(cd "$(dirname "$candidate_python")/.." && pwd)"',
+            '    if [[ "$candidate_root" == "$state_root/runtime/versions/source-local" ]] && odylith_wrapper_python_trusted "$candidate_python"; then',
+            '      odylith_exec_odylith "$candidate_python" normal "$@"',
+            "    fi",
+            "  done",
+            "fi",
+        ]
     return "\n".join(
         [
             "#!/usr/bin/env bash",
@@ -1206,13 +1253,7 @@ def _bootstrap_launcher_script(*, fallback_python: Path, fallback_source_root: P
             "odylith_is_product_repo() {",
             '  [[ -f "$repo_root/pyproject.toml" ]] && [[ -d "$repo_root/src/odylith" ]] && [[ -f "$repo_root/odylith/registry/source/component_registry.v1.json" ]] && [[ -f "$repo_root/odylith/radar/source/INDEX.md" ]]',
             "}",
-            'if odylith_current_runtime_is_source_local && odylith_is_product_repo && odylith_valid_source_root "$repo_root"; then',
-            '  repo_source_python="$(odylith_repo_source_python || true)"',
-            '  if [[ -n "$repo_source_python" ]] && [[ -x "$repo_source_python" ]]; then',
-            '    export PYTHONPATH="$repo_root/src${PYTHONPATH:+:$PYTHONPATH}"',
-            '    odylith_exec_odylith "$repo_source_python" normal "$@"',
-            "  fi",
-            "fi",
+            *source_current_dispatch,
             'if odylith_current_python_trusted; then',
             '  if odylith_managed_runtime_trusted "$current_root"; then',
             '    odylith_exec_odylith "$current_python" isolated "$@"',
@@ -1223,13 +1264,7 @@ def _bootstrap_launcher_script(*, fallback_python: Path, fallback_source_root: P
             *([export_line] if export_line else []),
             f"  {fallback_exec}",
             "fi",
-            'if odylith_is_product_repo && odylith_valid_source_root "$repo_root"; then',
-            '  repo_source_python="$(odylith_repo_source_python || true)"',
-            '  if [[ -n "$repo_source_python" ]] && [[ -x "$repo_source_python" ]]; then',
-            '    export PYTHONPATH="$repo_root/src${PYTHONPATH:+:$PYTHONPATH}"',
-            '    odylith_exec_odylith "$repo_source_python" normal "$@"',
-            "  fi",
-            "fi",
+            *source_fallback_dispatch,
             'shopt -s nullglob',
             'candidates=("$state_root"/runtime/versions/*/bin/python)',
             'for candidate_python in "${candidates[@]}"; do',
@@ -1244,14 +1279,7 @@ def _bootstrap_launcher_script(*, fallback_python: Path, fallback_source_root: P
                 '    odylith_exec_odylith "$candidate_python" isolated "$@"',
             "  fi",
             "done",
-            'if odylith_is_product_repo; then',
-            '  for candidate_python in "${candidates[@]}"; do',
-            '    candidate_root="$(cd "$(dirname "$candidate_python")/.." && pwd)"',
-            '    if [[ "$candidate_root" == "$state_root/runtime/versions/source-local" ]] && odylith_wrapper_python_trusted "$candidate_python"; then',
-            '      odylith_exec_odylith "$candidate_python" normal "$@"',
-            "    fi",
-            "  done",
-            "fi",
+            *source_wrapper_candidate_dispatch,
             """printf '%s\\n' 'Odylith bootstrap could not find a trusted repo-local runtime. From the repo root, try `./.odylith/bin/odylith-bootstrap doctor --repo-root . --repair`; rerun the hosted installer only if no trusted repo-local runtime is left.' >&2""",
             "exit 1",
             "",

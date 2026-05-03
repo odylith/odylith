@@ -443,7 +443,7 @@ def test_wait_mode_repairs_stale_worker_and_returns_terminal_state(
     assert "pid 4321" in result["state"]["terminal_detail"]
 
 
-def test_foreground_wait_contract_fails_when_global_brief_stays_provider_deferred(
+def test_foreground_wait_contract_keeps_unsettled_global_brief_as_warning(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001
 ) -> None:
@@ -487,11 +487,56 @@ def test_foreground_wait_contract_fails_when_global_brief_stays_provider_deferre
         settle_standup_maintenance=True,
     )
 
+    assert result["rc"] == 0
+    assert result["status"] == "passed"
+    assert result["state"]["terminal_reason"] == ""
+    assert result["standup_maintenance"]["status"] == "deferred_warning"
+    assert result["standup_maintenance"]["unsettled_windows"] == ["24h"]
+    assert result["standup_maintenance"]["detail"].endswith("24h.")
+
+
+def test_foreground_wait_contract_fails_unsettled_global_brief_when_forced(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    def _fake_execute_request(*, repo_root: Path, request_id: str) -> int:
+        state = runtime._load_state(repo_root=repo_root)  # noqa: SLF001
+        runtime._write_state(  # noqa: SLF001
+            repo_root=repo_root,
+            payload=runtime._finalize_state(  # noqa: SLF001
+                {**state, "resolved_runtime_mode": "standalone"},
+                status="passed",
+                rc=0,
+                terminal_reason="",
+                terminal_detail="",
+            ),
+        )
+        return 0
+
+    class _FakeSettlement:
+        @staticmethod
+        def settle_standup_maintenance(**_kwargs):  # noqa: ANN003
+            return {"status": "backoff", "request_retained": True}
+
+        @staticmethod
+        def unsettled_global_windows(**_kwargs):  # noqa: ANN003
+            return ("24h",)
+
+    monkeypatch.setattr(runtime, "_execute_request", _fake_execute_request)
+    monkeypatch.setattr(runtime, "_refresh_wait_settlement", lambda: _FakeSettlement)
+
+    result = runtime._run_foreground_request(  # noqa: SLF001
+        repo_root=tmp_path,
+        requested_profile="shell-safe",
+        requested_runtime_mode="auto",
+        settle_standup_maintenance=True,
+        force_brief=True,
+    )
+
     assert result["rc"] == 1
     assert result["status"] == "failed"
     assert result["state"]["terminal_reason"] == "standup_brief_unsettled"
     assert "24h" in result["state"]["terminal_detail"]
-    assert result["standup_maintenance"]["status"] == "backoff"
 
 
 def test_wait_for_terminal_settles_standup_maintenance_before_returning(

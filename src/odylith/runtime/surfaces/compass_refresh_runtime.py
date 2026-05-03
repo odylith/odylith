@@ -633,6 +633,14 @@ def _settle_standup_wait_contract(
             + ", ".join(deferred_windows)
             + "."
         )
+        if not force_brief:
+            settlement = {
+                **settlement,
+                "status": "deferred_warning",
+                "unsettled_windows": list(deferred_windows),
+                "detail": detail,
+            }
+            return {"rc": 0, "detail": detail, "settlement": settlement}
         with _refresh_lock(repo_root=repo_root):
             state = _load_state(repo_root=repo_root)
             if str(state.get("request_id", "")).strip() == request_id:
