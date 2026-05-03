@@ -4,6 +4,8 @@ import argparse
 import json
 from pathlib import Path
 
+import pytest
+
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.governance import backlog_authoring
 
@@ -50,9 +52,14 @@ def test_greenfield_ecommerce_prompt_proposes_backlog_components_and_topology(tm
     assert proposal["write_policy"] == "proposal_first_confirm_before_apply"
     assert proposal["intent"]["archetype"] == "commerce"
     assert proposal["observed_source"]["source_posture"] == "empty_or_no_app_source"
+    assert proposal["greenfield_ux"]["mode"] == "consumer_greenfield_proposal"
+    assert proposal["greenfield_ux"]["operator_sequence"]
     assert proposal["backlog"]
-    assert proposal["program"]["waves"]
+    assert proposal["program"]["wave_count"] == len(proposal["program"]["waves"])
+    assert proposal["program"]["recommended_first_wave"]
     assert proposal["release_plan"]["selector"] == "next"
+    assert proposal["release_plan"]["provisional_release_id"] == "release-an-ecommerce-site-first"
+    assert proposal["release_plan"]["release_stages"]
     assert proposal["components"]
     assert proposal["diagrams"]
     assert all(row["evidence_tier"] == "user_intent" for row in proposal["components"])
@@ -70,14 +77,15 @@ def test_greenfield_science_math_prompt_adds_domain_validation_obligations(tmp_p
         prompt="Create architecture for a differential equation solver research project",
     )
 
-    assert proposal["intent"]["archetype"] == "science_math"
+    assert proposal["intent"]["archetype"] == "simulation_modeling"
     labels = {row["label"] for row in proposal["components"]}
-    assert {"Model Core", "Solver Engine", "Validation Suite"} <= labels
+    assert {"Model Spec", "Solver Engine", "Reference Cases"} <= labels
     validation_text = " ".join(proposal["validation_strategy"]).lower()
     assert "tolerance" in validation_text
-    assert "reference outputs" in validation_text or "benchmark datasets" in validation_text
+    assert "convergence" in validation_text
+    assert "units" in validation_text
     assumptions = " ".join(proposal["assumptions"]).lower()
-    assert "scientific and mathematical claims are not inferred" in assumptions
+    assert "scientific" in assumptions and "claims are not inferred" in assumptions
 
 
 def test_greenfield_cli_json_is_deterministic_and_provider_free(tmp_path, capsys) -> None:
@@ -97,7 +105,7 @@ def test_greenfield_cli_json_is_deterministic_and_provider_free(tmp_path, capsys
     payload = json.loads(capsys.readouterr().out)
     assert payload["provider_calls"] == 0
     assert payload["host_agnostic"] is True
-    assert payload["intent"]["archetype"] == "science_math"
+    assert payload["intent"]["archetype"] == "computational_notebook"
 
 
 def test_greenfield_text_keeps_no_write_boundary_visible(tmp_path, capsys) -> None:
@@ -116,6 +124,7 @@ def test_greenfield_text_keeps_no_write_boundary_visible(tmp_path, capsys) -> No
     assert "No files changed." in output
     assert "Planned Registry components" in output
     assert "Draft Atlas diagrams" in output
+    assert "Greenfield UX" in output
     assert "Program waves" in output
     assert "Release plan" in output
     assert "provider_calls: 0" in output
@@ -135,6 +144,86 @@ def test_greenfield_catalog_covers_infra_security_and_instrument_workflows(tmp_p
         assert proposal["provider_calls"] == 0
         assert proposal["program"]["waves"]
         assert proposal["diagrams"]
+
+
+@pytest.mark.parametrize(
+    ("prompt", "expected_archetype"),
+    [
+        ("Build an ecommerce site", "commerce"),
+        ("Plan a B2B CRM", "saas_application"),
+        ("Create an internal dashboard", "saas_application"),
+        ("Govern an AI research assistant", "ai_agent"),
+        ("Design a data ingestion platform", "data_platform"),
+        ("Build a CLI library", "cli_library"),
+        ("Create a physics simulation", "simulation_modeling"),
+        ("Create a differential-equation solver", "simulation_modeling"),
+        ("Build a computational biology pipeline", "scientific_pipeline"),
+        ("Create a formal math proof library", "formal_proof"),
+        ("Create a statistics econometrics notebook repo", "computational_notebook"),
+        ("Design a math education app", "math_education"),
+        ("Plan a geospatial climate data analysis platform", "geospatial_environmental"),
+        ("Build an ML experiment platform for biology images", "ml_experiment_platform"),
+        ("Design a robotics sensor calibration workflow", "iot_instrumentation"),
+    ],
+)
+def test_greenfield_fixture_domains_are_specific_and_provider_free(tmp_path, prompt: str, expected_archetype: str) -> None:
+    proposal = greenfield_proposals.build_greenfield_proposal(repo_root=tmp_path, prompt=prompt)
+
+    assert proposal["intent"]["archetype"] == expected_archetype
+    assert proposal["provider_calls"] == 0
+    assert proposal["host_agnostic"] is True
+    assert proposal["backlog"]
+    assert proposal["components"]
+    assert proposal["diagrams"]
+    assert proposal["program"]["waves"]
+    assert proposal["release_plan"]["release_stages"]
+
+
+def test_greenfield_formal_proof_uses_checker_validation_not_numerical_tolerance(tmp_path) -> None:
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="Create a formal math proof library for topology theorems",
+    )
+
+    assert proposal["intent"]["archetype"] == "formal_proof"
+    validation_text = " ".join(proposal["validation_strategy"]).lower()
+    assert "theorem" in validation_text
+    assert "lemma" in validation_text
+    assert "proof checker" in validation_text or "checker" in validation_text
+    assert "tolerance" not in validation_text
+    assert "floating" not in validation_text
+    assert "random seed" not in validation_text
+
+
+def test_greenfield_notebook_math_education_and_geospatial_validation_fit_domain(tmp_path) -> None:
+    notebook = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="Create a statistics econometrics notebook repo",
+    )
+    notebook_validation = " ".join(notebook["validation_strategy"]).lower()
+    assert notebook["intent"]["archetype"] == "computational_notebook"
+    assert "notebook" in notebook_validation
+    assert "statistical" in notebook_validation
+    assert "reference outputs" in notebook_validation
+
+    education = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="Build topology exercises for undergraduates",
+    )
+    education_validation = " ".join(education["validation_strategy"]).lower()
+    assert education["intent"]["archetype"] == "math_education"
+    assert "exercise" in education_validation
+    assert "accessibility" in education_validation
+    assert "mathematical truth" in education_validation
+
+    geospatial = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="Plan a geospatial climate data analysis platform",
+    )
+    geospatial_validation = " ".join(geospatial["validation_strategy"]).lower()
+    assert geospatial["intent"]["archetype"] == "geospatial_environmental"
+    assert "coordinate reference systems" in geospatial_validation
+    assert "temporal coverage" in geospatial_validation
 
 
 def test_greenfield_backlog_overrides_preserve_child_specific_sections(tmp_path) -> None:

@@ -3,12 +3,12 @@
   "diagrams": [],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 11,
-    "mapped_workstream_evidence_count": 2,
-    "recent_path_match_count": 0,
+    "explicit_event_count": 12,
+    "mapped_workstream_evidence_count": 3,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 1,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 11
+    "timeline_event_count": 13
   },
   "name": "Security",
   "path_prefixes": [
@@ -24,6 +24,68 @@
   ],
   "spec_ref": "odylith/registry/source/components/security/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/security/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 457,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/security/CURRENT_SPEC.md",
+      "ts_iso": "2026-05-02T19:50:16-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
+        "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
+        "src/odylith/install/runtime.py",
+        "src/odylith/runtime/intervention_engine/prompt_signal_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 434,
+      "explicit_components": [
+        "casebook",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "security",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "security",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "B-141 activation pass keeps source-local memory on Lance/Tantivy, preserves visible Assist recovery, and leaves consumer pinned runtimes on the managed feature pack.",
+      "ts_iso": "2026-05-02T16:21:02-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/install/lock_hygiene.py",

@@ -7,6 +7,7 @@
     "D-013",
     "D-018",
     "D-036",
+    "D-043",
     "D-002",
     "D-003",
     "D-006",
@@ -36,10 +37,10 @@
     "empty_reasons": [],
     "explicit_event_count": 91,
     "mapped_workstream_evidence_count": 64,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 91
+    "timeline_event_count": 92
   },
   "name": "Registry",
   "path_prefixes": [
@@ -49,6 +50,22 @@
   ],
   "spec_ref": "odylith/registry/source/components/registry/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/component_registry.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 456,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/component_registry.v1.json",
+      "ts_iso": "2026-05-02T19:50:08-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "src/odylith/runtime/governance/surface_refresh_fingerprint_dag.py",
@@ -5270,6 +5287,7 @@
     "B-091",
     "B-110",
     "B-109",
-    "B-105"
+    "B-105",
+    "B-142"
   ]
 }

@@ -8,16 +8,17 @@
     "D-020",
     "D-037",
     "D-041",
-    "D-042"
+    "D-042",
+    "D-043"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 130,
-    "mapped_workstream_evidence_count": 108,
-    "recent_path_match_count": 0,
+    "explicit_event_count": 139,
+    "mapped_workstream_evidence_count": 110,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 31,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 130
+    "timeline_event_count": 140
   },
   "name": "Governance Intervention Engine",
   "path_prefixes": [
@@ -44,6 +45,216 @@
   "timeline": [
     {
       "artifacts": [],
+      "confidence": "low",
+      "event_index": 447,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Why it matters: Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
+      "ts_iso": "2026-05-02T23:45:04Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 442,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Why it matters: Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
+      "ts_iso": "2026-05-02T23:44:30Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 438,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Why it matters: Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
+      "ts_iso": "2026-05-02T23:28:10Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 435,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Why it matters: Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
+      "ts_iso": "2026-05-02T23:24:43Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 430,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Why it matters: Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
+      "ts_iso": "2026-05-02T23:14:08Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 426,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Why it matters: Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
+      "ts_iso": "2026-05-02T23:03:56Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 424,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Why it matters: Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
+      "ts_iso": "2026-05-02T23:03:33Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 453,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "governance-intervention-engine"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
+      "ts_iso": "2026-05-02T19:50:16-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
+        "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
+        "src/odylith/install/runtime.py",
+        "src/odylith/runtime/intervention_engine/prompt_signal_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 434,
+      "explicit_components": [
+        "casebook",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "security",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "security",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "B-141 activation pass keeps source-local memory on Lance/Tantivy, preserves visible Assist recovery, and leaves consumer pinned runtimes on the managed feature pack.",
+      "ts_iso": "2026-05-02T16:21:02-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/AGENTS.md",
+        "src/odylith/bundle/assets/odylith/AGENTS.md",
+        "src/odylith/install/bootstrap_assets.py"
+      ],
+      "confidence": "high",
+      "event_index": 422,
+      "explicit_components": [
+        "casebook",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Trimmed duplicated Odylith-tree consumer guidance while preserving startup, context, engine, intervention, governance, anti-slop, and host-separation contracts.",
+      "ts_iso": "2026-05-02T15:58:17-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifacts": [],
       "confidence": "high",
       "event_index": 419,
       "explicit_components": [
@@ -64,6 +275,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -105,6 +317,7 @@
         "atlas",
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -134,6 +347,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -163,6 +377,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -198,6 +413,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -234,6 +450,7 @@
         "casebook",
         "compass",
         "dashboard",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -271,6 +488,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -308,6 +526,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -347,6 +566,7 @@
         "casebook",
         "compass",
         "dashboard",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -382,6 +602,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -411,6 +632,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -441,6 +663,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -478,6 +701,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -514,6 +738,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -564,6 +789,7 @@
         "casebook",
         "compass",
         "dashboard",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -604,6 +830,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -638,6 +865,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -6301,6 +6529,7 @@
     "B-109",
     "B-106",
     "B-105",
-    "B-141"
+    "B-141",
+    "B-142"
   ]
 }

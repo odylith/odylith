@@ -1,5 +1,5 @@
 # Security
-Last updated: 2026-04-29
+Last updated: 2026-05-02
 
 
 Last updated (UTC): 2026-04-01
@@ -112,6 +112,9 @@ and process-lifetime discipline across consumer, pinned-dogfood, and detached
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-05-02 · Implementation:** B-141 activation pass keeps source-local memory on Lance/Tantivy, preserves visible Assist recovery, and leaves consumer pinned runtimes on the managed feature pack.
+  - Scope: B-141
+  - Evidence: odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md, odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md +2 more
 - **2026-04-27 · Implementation:** v0.1.12 hardening: extracted upgrade reporting from CLI into install-owned helpers, added recursive lock hygiene with doctor repair, improved Sigstore warning summaries, and compacted 13715 stale zero-byte lock placeholders in this product repo.
   - Scope: B-030
   - Evidence: src/odylith/install/lock_hygiene.py, src/odylith/install/manager.py +2 more

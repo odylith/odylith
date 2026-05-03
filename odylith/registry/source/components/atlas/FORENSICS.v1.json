@@ -11,6 +11,7 @@
     "D-004",
     "D-040",
     "D-041",
+    "D-043",
     "D-005",
     "D-006",
     "D-007",
@@ -72,6 +73,7 @@
         "atlas",
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -5162,6 +5164,7 @@
     "B-091",
     "B-110",
     "B-109",
-    "B-105"
+    "B-105",
+    "B-142"
   ]
 }

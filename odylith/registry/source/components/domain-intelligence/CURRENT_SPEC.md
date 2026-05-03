@@ -1,4 +1,6 @@
 # Domain Intelligence
+Last updated: 2026-05-02
+
 
 ## Overview
 
@@ -19,16 +21,24 @@ validation obligations, and apply commands for empty or thin repos.
 - **Workstreams**: B-141, B-142
 - **Diagrams**: D-043
 
+## Requirements Trace
+This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
+
+<!-- registry-requirements:start -->
+- No synchronized requirement or contract signals yet.
+<!-- registry-requirements:end -->
+
 ## Feature History
 
-- 2026-05-03: Registered `domain-intelligence` through `odylith component register`
-  and linked it to B-142/D-043 as the first-class owner for universal
-  greenfield proposal intelligence.
+- 2026-05-03: Registered `domain-intelligence` through `odylith component register` and linked it to B-142/D-043 as the first-class owner for universal greenfield proposal intelligence. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
+- 2026-05-03: Expanded the catalog with first-class science/math subdomains: formal proof, computational notebooks, numerical simulation, scientific pipelines, geospatial/environmental analysis, ML experiment platforms, and math education. Split program/release/UX planning into `proposal_planning.py` so the proposal compiler stays below the soft source size line while keeping host behavior identical. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 
 ## Contract
 
 - `archetypes.py` owns the extensible project-domain catalog. New domains are
   added there as structured archetypes, not as host-specific prompt hacks.
+- `proposal_planning.py` owns reusable program-wave, release-plan, and
+  greenfield UX compilation.
 - `greenfield_proposals.py` owns proposal compilation and confirmed apply.
 - Proposal output must include observed source posture, user intent, Odylith
   assumptions, backlog candidates, program waves, release plan, planned
@@ -48,6 +58,14 @@ depends on datasets, analysis pipelines, simulations, reproducible notebooks,
 visualization, and sustained numerical libraries. The catalog should grow by
 adding structured archetypes and validation obligations, not by adding host
 prompt text.
+
+The science/math family must stay specific: formal proof proposals use proof
+checker and theorem-review obligations, numerical simulation uses unit,
+tolerance, and convergence obligations, notebooks use clean execution and
+statistical-assumption obligations, geospatial analysis uses CRS/extent/temporal
+coverage obligations, ML experiment platforms use dataset lineage and promotion
+gates, and math education uses exercise, progression, accessibility, and
+human-reviewed mathematical-truth obligations.
 
 ## Dependencies
 

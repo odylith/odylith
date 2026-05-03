@@ -1092,8 +1092,8 @@
       "component_id": "domain-intelligence",
       "name": "Domain Intelligence",
       "kind": "library",
-      "category": "intelligence",
-      "qualification": "canonical",
+      "category": "governance_engine",
+      "qualification": "curated",
       "aliases": [],
       "path_prefixes": [
         "src/odylith/runtime/domain_intelligence"
@@ -1113,10 +1113,7 @@
       "sources": [
         "manifest"
       ],
-      "subcomponents": [
-        "archetype-catalog",
-        "greenfield-proposal-compiler"
-      ],
+      "subcomponents": [],
       "product_layer": "intelligence"
     }
   ]

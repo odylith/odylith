@@ -1,29 +1,42 @@
 {
-  "component_id": "migration-runtime",
+  "component_id": "domain-intelligence",
   "diagrams": [
-    "D-042",
-    "D-002",
-    "D-018",
-    "D-020",
-    "D-037",
-    "D-038",
-    "D-041"
+    "D-043"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 24,
-    "mapped_workstream_evidence_count": 23,
-    "recent_path_match_count": 0,
-    "spec_history_event_count": 6,
+    "explicit_event_count": 19,
+    "mapped_workstream_evidence_count": 19,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 2,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 24
+    "timeline_event_count": 20
   },
-  "name": "Migration Runtime",
+  "name": "Domain Intelligence",
   "path_prefixes": [
-    "src/odylith/install/migration_runtime.py"
+    "src/odylith/runtime/domain_intelligence"
   ],
-  "spec_ref": "odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md",
+  "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/archetypes.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+        "src/odylith/runtime/domain_intelligence/proposal_planning.py"
+      ],
+      "confidence": "high",
+      "event_index": 452,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "domain-intelligence"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/archetypes.py +2 more",
+      "ts_iso": "2026-05-02T19:50:16-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
@@ -727,137 +740,6 @@
       "workstreams": [
         "B-141"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/radar/source/ideas/2026-04/2026-04-27-migration-runtime-release-gate.md",
-        "odylith/technical-plans/done/2026-04/2026-04-27-migration-runtime-release-gate.md"
-      ],
-      "confidence": "high",
-      "event_index": 384,
-      "explicit_components": [
-        "migration-runtime",
-        "odylith",
-        "radar",
-        "release"
-      ],
-      "kind": "implementation",
-      "mapped_components": [
-        "github-issue-pipeline",
-        "migration-runtime",
-        "odylith",
-        "radar",
-        "release"
-      ],
-      "meaningful": true,
-      "summary": "B-127 Migration Runtime Release Gate closed after migration-runtime proof and governance validation.",
-      "ts_iso": "2026-04-27T18:15:04-07:00",
-      "workstreams": [
-        "B-127"
-      ]
-    },
-    {
-      "artifacts": [
-        "odylith/casebook/bugs/2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md",
-        "src/odylith/install/migration_runtime.py",
-        "tests/unit/install/test_migration_runtime.py"
-      ],
-      "confidence": "high",
-      "event_index": 383,
-      "explicit_components": [
-        "casebook",
-        "migration-runtime",
-        "odylith",
-        "registry",
-        "release"
-      ],
-      "kind": "implementation",
-      "mapped_components": [
-        "casebook",
-        "github-issue-pipeline",
-        "migration-runtime",
-        "odylith",
-        "registry",
-        "release"
-      ],
-      "meaningful": true,
-      "summary": "0.1.12 migration-runtime QA pass closed with full pytest, release migration gate, doctor, Casebook, and component-registry validation green.",
-      "ts_iso": "2026-04-27T17:57:36-07:00",
-      "workstreams": [
-        "B-127"
-      ]
-    },
-    {
-      "artifacts": [
-        "odylith/technical-plans/in-progress/2026-04/2026-04-27-migration-runtime-release-gate.md",
-        "src/odylith/install/migration_runtime.py",
-        "tests/unit/install/test_migration_runtime.py"
-      ],
-      "confidence": "high",
-      "event_index": 382,
-      "explicit_components": [
-        "migration-runtime",
-        "odylith"
-      ],
-      "kind": "implementation",
-      "mapped_components": [
-        "github-issue-pipeline",
-        "migration-runtime",
-        "odylith"
-      ],
-      "meaningful": true,
-      "summary": "0.1.12 migration runtime gate hardened with legacy root routing, explicit fixture markers, active-state classification, and expanded edge-case tests.",
-      "ts_iso": "2026-04-27T17:15:49-07:00",
-      "workstreams": [
-        "B-127"
-      ]
-    },
-    {
-      "artifacts": [],
-      "confidence": "high",
-      "event_index": 381,
-      "explicit_components": [
-        "migration-runtime",
-        "release"
-      ],
-      "kind": "implementation",
-      "mapped_components": [
-        "migration-runtime",
-        "release"
-      ],
-      "meaningful": false,
-      "summary": "0.1.12 migration-runtime release gate implemented; dry-run/apply/doctor now share one MigrationPlan and release migration-gate is passing.",
-      "ts_iso": "2026-04-27T16:32:34-07:00",
-      "workstreams": []
-    },
-    {
-      "artifacts": [
-        "odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md",
-        "src/odylith/install/migration_runtime.py",
-        "tests/unit/install/test_migration_runtime.py"
-      ],
-      "confidence": "high",
-      "event_index": 380,
-      "explicit_components": [
-        "migration-runtime",
-        "odylith",
-        "registry",
-        "release"
-      ],
-      "kind": "implementation",
-      "mapped_components": [
-        "github-issue-pipeline",
-        "migration-runtime",
-        "odylith",
-        "registry",
-        "release"
-      ],
-      "meaningful": true,
-      "summary": "Implemented the 0.1.12 migration-runtime release gate: dry-run/apply share one MigrationPlan, v0.1.11 value-engine migration routes through the registry, doctor reports ledger state, and release migration-gate validates fixture coverage and lifecycle bypasses.",
-      "ts_iso": "2026-04-27T16:23:09-07:00",
-      "workstreams": [
-        "B-127"
-      ]
     }
   ],
   "traceability": {
@@ -866,10 +748,10 @@
     "runbooks": []
   },
   "version": "v1",
-  "what_it_is": "Install-owned migration planning, ledger, doctor-observability, and release-gate runtime for Odylith install and upgrade paths.",
-  "why_tracked": "Keeps release migration behavior authoritative and auditable so dry-run, apply, reinstall, doctor, and release gates cannot derive migration state independently.",
+  "what_it_is": "Provider-free domain-intelligence runtime that turns greenfield consumer intent into confirmation-gated governance proposals with backlog, program waves, release plan, planned Registry components, draft Atlas topology, assumptions, risks, and validation obligations.",
+  "why_tracked": "Owns the consumer-lane boundary between missing source evidence and useful greenfield guidance, so Claude, Codex, and future hosts route broad project intents through one low-latency Odylith runtime path instead of refusing or inventing source-backed truth.",
   "workstreams": [
-    "B-127",
-    "B-141"
+    "B-141",
+    "B-142"
   ]
 }

@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 111,
+    "explicit_event_count": 112,
     "mapped_workstream_evidence_count": 64,
     "recent_path_match_count": 0,
     "spec_history_event_count": 18,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 111
+    "timeline_event_count": 112
   },
   "name": "Dashboard",
   "path_prefixes": [
@@ -53,6 +53,33 @@
   ],
   "spec_ref": "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 433,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
+      "ts_iso": "2026-05-02T16:15:11-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
@@ -72,6 +99,7 @@
         "casebook",
         "compass",
         "dashboard",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -109,6 +137,7 @@
         "casebook",
         "compass",
         "dashboard",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -171,6 +200,7 @@
         "casebook",
         "compass",
         "dashboard",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",

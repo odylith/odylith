@@ -67,6 +67,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",

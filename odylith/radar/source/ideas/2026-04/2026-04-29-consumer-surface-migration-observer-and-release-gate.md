@@ -686,6 +686,24 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.13:browser-surfaces:cafacdb848c3`,
   `migration-observer:0.1.13:install-managed-assets:9a4f23dde703`,
   `migration-observer:0.1.13:install-managed-assets:8137f3c657dd`.
+- Deepened Domain Intelligence science/math catalog: v0.1.13 expands the
+  provider-free greenfield proposal path with first-class formal-proof,
+  computational-notebook, numerical-simulation, scientific-pipeline,
+  geospatial/environmental, ML-experiment, and math-education lenses, and
+  splits program/release/UX planning into a smaller reusable runtime module.
+  Existing consumer installs need no data migration; upgrade refreshes managed
+  greenfield skill guidance, refreshed product browser surfaces, and bundled
+  install-managed dashboard copies while keeping all proposal writes
+  confirmation-gated and user-intent-labeled until source evidence exists.
+  Migration observer markers:
+  `migration-observer:0.1.13:guidance-and-skills:b5799cbf748f`,
+  `migration-observer:0.1.13:browser-surfaces:bb2be774790f`,
+  `migration-observer:0.1.13:install-managed-assets:f400668668ca`,
+  `migration-observer:0.1.13:guidance-and-skills:38e6768904a3`,
+  `migration-observer:0.1.13:browser-surfaces:da46e2ca9dea`,
+  `migration-observer:0.1.13:install-managed-assets:20dacaa00761`,
+  `migration-observer:0.1.13:browser-surfaces:7a832cdde5ae`,
+  `migration-observer:0.1.13:browser-surfaces:e7074b845e26`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.

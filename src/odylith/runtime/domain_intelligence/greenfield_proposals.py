@@ -21,11 +21,25 @@ from odylith.runtime.analysis_engine.types import SourceSummary, slugify
 from odylith.runtime.domain_intelligence.archetypes import Archetype
 from odylith.runtime.domain_intelligence.archetypes import ComponentBlueprint
 from odylith.runtime.domain_intelligence.archetypes import select_archetype
+from odylith.runtime.domain_intelligence.proposal_planning import build_greenfield_ux
+from odylith.runtime.domain_intelligence.proposal_planning import build_program_waves
+from odylith.runtime.domain_intelligence.proposal_planning import build_release_plan
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import component_authoring
 from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import release_planning_authoring
 from odylith.runtime.surfaces import scaffold_mermaid_diagram
+
+
+_RESEARCH_ARCHETYPE_IDS = {
+    "science_math",
+    "formal_proof",
+    "computational_notebook",
+    "simulation_modeling",
+    "scientific_pipeline",
+    "geospatial_environmental",
+    "ml_experiment_platform",
+}
 
 
 def _prompt_text(prompt: str) -> str:
@@ -91,7 +105,8 @@ def _source_evidence(repo_root: Path) -> dict[str, Any]:
 
 def _component_path(project_slug: str, blueprint: ComponentBlueprint) -> str:
     suffix = blueprint.path_suffix.strip("/")
-    if suffix.startswith(("apps/", "src/", "tests/")):
+    repo_roots = ("apps/", "src/", "tests/", "docs/", "data/", "notebooks", "reports", "env", "reproducibility")
+    if suffix.startswith(repo_roots):
         return suffix
     return f"src/{project_slug}/{suffix}".strip("/")
 
@@ -218,8 +233,10 @@ def _assumptions(intent_title: str, archetype: Archetype, evidence: Mapping[str,
     ]
     if not evidence.get("languages"):
         rows.append("No language/runtime was inferred from repo metadata, so paths stay framework-neutral.")
-    if archetype.archetype_id == "science_math":
-        rows.append("Scientific and mathematical claims are not inferred; only structure, evidence tracking, and validation obligations are proposed.")
+    if archetype.archetype_id == "formal_proof":
+        rows.append("Mathematical truth is not inferred; proof obligations stay draft until a proof checker or human review verifies them.")
+    elif archetype.archetype_id in _RESEARCH_ARCHETYPE_IDS:
+        rows.append("Scientific, statistical, environmental, or model claims are not inferred; only structure, evidence tracking, and validation obligations are proposed.")
     return rows
 
 
@@ -230,64 +247,56 @@ def _questions(archetype: Archetype, complexity: str) -> list[str]:
     ]
     if complexity == "complex":
         rows.append("Which subsystem should be implemented first so the rest of the proposal can be validated against real code?")
-    if archetype.archetype_id == "science_math":
+    if archetype.archetype_id == "formal_proof":
+        rows.extend(
+            [
+                "Which proof assistant, source text, or theorem collection should anchor the first formalization wave?",
+                "Which definitions, admitted lemmas, or counterexample checks are non-negotiable before proof status is claimed?",
+            ]
+        )
+    elif archetype.archetype_id == "computational_notebook":
+        rows.extend(
+            [
+                "Which datasets, notebooks, and report outputs should become the first reproducibility oracle?",
+                "Which statistical assumptions, cleaning rules, and random seeds must be locked before publication claims?",
+            ]
+        )
+    elif archetype.archetype_id == "simulation_modeling":
         rows.extend(
             [
                 "What reference datasets, derivations, or benchmark results should become the first correctness oracle?",
                 "Which tolerances, units, and reproducibility constraints are non-negotiable?",
             ]
         )
-    return rows
-
-
-def _program_waves(archetype: Archetype, components: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
-    component_ids = [str(row.get("component_id", "")).strip() for row in components if str(row.get("component_id", "")).strip()]
-    rows: list[dict[str, Any]] = []
-    for index, wave in enumerate(archetype.waves, start=1):
-        rows.append(
-            {
-                "wave": index,
-                "label": wave.label,
-                "goal": wave.goal,
-                "validation": wave.validation,
-                "component_focus": component_ids[: max(1, min(len(component_ids), index + 1))],
-                "evidence_tier": "odylith_assumption",
-            }
+    elif archetype.archetype_id == "scientific_pipeline":
+        rows.extend(
+            [
+                "Which raw datasets, instruments, or external archives should anchor provenance for the first pipeline wave?",
+                "Which stage-level quality-control checks should block promoted outputs?",
+            ]
+        )
+    elif archetype.archetype_id == "geospatial_environmental":
+        rows.extend(
+            [
+                "Which coordinate reference systems, spatial extents, and temporal coverage windows are authoritative?",
+                "Which reference maps or sample regions should prove the first geospatial output?",
+            ]
+        )
+    elif archetype.archetype_id == "ml_experiment_platform":
+        rows.extend(
+            [
+                "Which dataset versions, splits, metrics, and promotion thresholds define the first accepted model candidate?",
+                "Which latency, cost, drift, or safety checks must block release promotion?",
+            ]
+        )
+    elif archetype.archetype_id == "math_education":
+        rows.extend(
+            [
+                "Which learner level, curriculum sequence, and prerequisite model should shape the first lesson wave?",
+                "Who reviews mathematical correctness for exercises, hints, and worked examples?",
+            ]
         )
     return rows
-
-
-def _release_plan(intent_title: str, archetype: Archetype, waves: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
-    milestones = [
-        {
-            "name": f"{intent_title} proposal accepted",
-            "exit_criteria": "Operator confirms assumptions, first slice, component map, and draft topology.",
-        },
-        {
-            "name": "First governed implementation slice",
-            "exit_criteria": "One user-visible or correctness-critical workflow has source, Registry ownership, Atlas topology, and tests.",
-        },
-        {
-            "name": "Release candidate",
-            "exit_criteria": "Backlog, Registry, Atlas, validation, and risk records are refreshed from observed source evidence.",
-        },
-    ]
-    if archetype.archetype_id == "science_math":
-        milestones.insert(
-            1,
-            {
-                "name": "Correctness oracle accepted",
-                "exit_criteria": "Reference data, derivation notes, tolerance bands, or proof obligations are reviewed before implementation claims correctness.",
-            },
-        )
-    return {
-        "selector": "next",
-        "label": "First governed release",
-        "strategy": "Create a local release target after proposal acceptance; keep waves as delivery checkpoints, not source-backed claims.",
-        "wave_labels": [str(row.get("label", "")).strip() for row in waves if str(row.get("label", "")).strip()],
-        "milestones": milestones,
-        "evidence_tier": "odylith_assumption",
-    }
 
 
 def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]:
@@ -302,7 +311,7 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
     components = _component_drafts(project_slug, archetype, complexity)
     workstreams = _workstream_drafts(intent_title, archetype, components, complexity)
     diagrams = _diagram_drafts(project_slug, intent_title, archetype, components, complexity)
-    waves = _program_waves(archetype, components)
+    waves = build_program_waves(archetype, components)
     proposal = {
         "schema_version": "odylith.greenfield.proposal.v1",
         "mode": "greenfield_proposal",
@@ -320,15 +329,22 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
             "evidence_tier": "user_intent",
         },
         "observed_source": evidence,
+        "greenfield_ux": build_greenfield_ux(
+            intent_title=intent_title,
+            source_posture=str(evidence.get("source_posture", "unknown")),
+            complexity=complexity,
+        ),
         "assumptions": _assumptions(intent_title, archetype, evidence),
         "open_questions": _questions(archetype, complexity),
         "risks": list(archetype.risks),
         "validation_strategy": list(archetype.validation_focus),
         "program": {
             "shape": "program_with_waves" if len(workstreams) > 1 else "single_slice_with_wave_plan",
+            "wave_count": len(waves),
+            "recommended_first_wave": str(waves[0].get("label", "Discovery")).strip() if waves else "Discovery",
             "waves": waves,
         },
-        "release_plan": _release_plan(intent_title, archetype, waves),
+        "release_plan": build_release_plan(intent_title, archetype, waves),
         "backlog": workstreams,
         "components": components,
         "diagrams": diagrams,
@@ -378,9 +394,24 @@ def format_proposal_text(proposal: Mapping[str, Any]) -> str:
         f"- archetype: {label} ({confidence} confidence)",
         f"- source evidence: {source_posture}; writes stay confirmation-gated",
         f"- provider_calls: {proposal.get('provider_calls', 0)}",
-        "",
-        "Backlog proposal",
     ]
+    ux = proposal.get("greenfield_ux", {}) if isinstance(proposal.get("greenfield_ux"), Mapping) else {}
+    if ux:
+        lines.extend(
+            [
+                "",
+                "Greenfield UX",
+                f"- mode: {ux.get('mode', 'consumer_greenfield_proposal')}",
+                f"- guardrail: {ux.get('write_guardrail', 'confirm before governed writes')}",
+                f"- next: {ux.get('next_best_action', 'confirm or revise the proposed first wave')}",
+            ]
+        )
+    lines.extend(
+        [
+            "",
+            "Backlog proposal",
+        ]
+    )
     for row in proposal.get("backlog", []):
         if not isinstance(row, Mapping):
             continue
@@ -393,8 +424,15 @@ def format_proposal_text(proposal: Mapping[str, Any]) -> str:
         lines.append(f"- Wave {row.get('wave')}: {row.get('label')} - {row.get('goal')} Proof: {row.get('validation')}")
     release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
     lines.extend(["", "Release plan"])
-    lines.append(f"- target: {release_plan.get('selector', 'next')} ({release_plan.get('label', 'First governed release')})")
+    lines.append(
+        f"- target: {release_plan.get('selector', 'next')} "
+        f"({release_plan.get('label', 'First governed release')}; {release_plan.get('provisional_release_id', 'release-greenfield-first')})"
+    )
     lines.append(f"- strategy: {release_plan.get('strategy', 'confirm before release targeting')}")
+    for row in release_plan.get("release_stages", []) if isinstance(release_plan.get("release_stages"), list) else []:
+        if not isinstance(row, Mapping):
+            continue
+        lines.append(f"- {row.get('stage')}: {row.get('label')} gate - {row.get('release_gate')}")
     for row in release_plan.get("milestones", []) if isinstance(release_plan.get("milestones"), list) else []:
         if not isinstance(row, Mapping):
             continue
@@ -517,6 +555,10 @@ def _release_assignment_note(*, selector: str) -> str:
 
 
 def _release_id_for_proposal(proposal: Mapping[str, Any]) -> str:
+    release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
+    release_id = str(release_plan.get("provisional_release_id", "")).strip()
+    if release_id:
+        return slugify(release_id)
     intent = proposal.get("intent", {}) if isinstance(proposal.get("intent"), Mapping) else {}
     project_slug = slugify(str(intent.get("project_slug", "")).strip() or str(intent.get("title", "")).strip())
     return slugify(f"release-{project_slug}-first") if project_slug else "release-greenfield-first"

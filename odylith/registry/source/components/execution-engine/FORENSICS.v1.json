@@ -14,12 +14,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 122,
-    "mapped_workstream_evidence_count": 114,
+    "explicit_event_count": 124,
+    "mapped_workstream_evidence_count": 116,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 122
+    "timeline_event_count": 124
   },
   "name": "Execution Engine",
   "path_prefixes": [
@@ -27,6 +27,95 @@
   ],
   "spec_ref": "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
+        "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
+        "src/odylith/install/runtime.py",
+        "src/odylith/runtime/intervention_engine/prompt_signal_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 434,
+      "explicit_components": [
+        "casebook",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "security",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "security",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "B-141 activation pass keeps source-local memory on Lance/Tantivy, preserves visible Assist recovery, and leaves consumer pinned runtimes on the managed feature pack.",
+      "ts_iso": "2026-05-02T16:21:02-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/AGENTS.md",
+        "src/odylith/bundle/assets/odylith/AGENTS.md",
+        "src/odylith/install/bootstrap_assets.py"
+      ],
+      "confidence": "high",
+      "event_index": 422,
+      "explicit_components": [
+        "casebook",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Trimmed duplicated Odylith-tree consumer guidance while preserving startup, context, engine, intervention, governance, anti-slop, and host-separation contracts.",
+      "ts_iso": "2026-05-02T15:58:17-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "high",
@@ -49,6 +138,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -90,6 +180,7 @@
         "atlas",
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -119,6 +210,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -148,6 +240,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -183,6 +276,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -219,6 +313,7 @@
         "casebook",
         "compass",
         "dashboard",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -256,6 +351,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -293,6 +389,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -332,6 +429,7 @@
         "casebook",
         "compass",
         "dashboard",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -367,6 +465,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -396,6 +495,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -426,6 +526,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -463,6 +564,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -499,6 +601,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -534,6 +637,7 @@
         "casebook",
         "compass",
         "dashboard",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -574,6 +678,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",
@@ -608,6 +713,7 @@
       "mapped_components": [
         "casebook",
         "compass",
+        "domain-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "migration-runtime",

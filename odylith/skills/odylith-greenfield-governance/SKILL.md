@@ -14,6 +14,9 @@ architect a new project before source code exists.
    explicit edits. On confirmation, run:
    `./.odylith/bin/odylith greenfield apply --repo-root . --proposal-file <proposal.json> --confirm --release next`.
 5. Preserve the evidence boundary: observed source, user intent, and Odylith
-   assumptions must stay distinct. Science and math projects need validation
-   obligations for datasets, units, tolerances, reproducibility, derivations,
-   and reference outputs instead of invented scientific claims.
+   assumptions must stay distinct. Science and math projects must route through
+   the specific lens that fits the prompt: formal proof uses proof-checker
+   obligations, notebooks use clean execution and statistical assumptions,
+   simulations use units/tolerances/convergence, geospatial work uses CRS and
+   temporal coverage, ML platforms use dataset lineage and promotion gates, and
+   education work uses reviewed exercises and learner-state proof.

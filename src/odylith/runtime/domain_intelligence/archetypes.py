@@ -69,6 +69,62 @@ _RESEARCH_WAVES = (
 )
 
 
+_FORMAL_PROOF_WAVES = (
+    WaveBlueprint("Formal Framing", "Choose proof assistant, source text, definitions, and theorem scope.", "Statements and definitions are reviewed before proof work starts."),
+    WaveBlueprint("Theory Core", "Build reusable definitions, notation, and theorem dependency boundaries.", "The theory core compiles with no admitted hidden assumptions."),
+    WaveBlueprint("Proof Coverage", "Formalize lemmas, proof scripts, tactics, and checker harness.", "The proof checker compiles every claimed theorem and flags admitted lemmas."),
+    WaveBlueprint("Review And Reproducibility", "Package review notes, examples, and fresh-environment proof checks.", "Fresh checkout reproduces the proof-checker result envelope."),
+)
+
+
+_NOTEBOOK_WAVES = (
+    WaveBlueprint("Analysis Framing", "Record research question, datasets, statistical assumptions, and expected outputs.", "Exploratory claims stay separate from accepted analysis outputs."),
+    WaveBlueprint("Data And Environment", "Pin datasets, cleaning rules, kernel, dependencies, and execution order.", "A clean environment can load the declared inputs."),
+    WaveBlueprint("Reusable Analysis", "Extract reusable analysis code and notebook execution harness.", "Notebooks run top-to-bottom against reference outputs."),
+    WaveBlueprint("Report Reproducibility", "Package figures, tables, reports, and review notes.", "Fresh checkout reproduces the published result envelope."),
+)
+
+
+_SIMULATION_WAVES = (
+    WaveBlueprint("Model Framing", "Record equations, parameters, units, and scenario assumptions.", "Units and model assumptions are reviewable before solver work starts."),
+    WaveBlueprint("Solver Baseline", "Implement the first solver path and scenario runner.", "Analytic or benchmark cases execute with declared tolerance bands."),
+    WaveBlueprint("Numerical Validation", "Add convergence, stability, conservation, and reference-output checks.", "Validation fixtures catch solver drift before optimization."),
+    WaveBlueprint("Reproducible Reporting", "Package diagnostics, plots, runs, and reproducibility metadata.", "Fresh checkout reproduces the accepted simulation envelope."),
+)
+
+
+_SCIENTIFIC_PIPELINE_WAVES = (
+    WaveBlueprint("Data Provenance", "Record raw sources, instruments, metadata, and licensing boundaries.", "Raw inputs and provenance are reviewable before processing starts."),
+    WaveBlueprint("Pipeline Baseline", "Create staged processing, quality control, and artifact boundaries.", "Each stage has fixtures, schemas, and quality gates."),
+    WaveBlueprint("Analysis Validation", "Connect domain analysis to benchmark datasets and reference outputs.", "Stage outputs match accepted fixtures and anomaly checks."),
+    WaveBlueprint("Reproducibility Pack", "Package workflow locks, reports, exports, and rerun instructions.", "Fresh checkout reproduces the accepted pipeline output envelope."),
+)
+
+
+_GEOSPATIAL_WAVES = (
+    WaveBlueprint("Spatial Evidence", "Record datasets, CRS, units, extents, temporal coverage, and licenses.", "Spatial inputs and assumptions are reviewable before processing starts."),
+    WaveBlueprint("Geoprocessing Baseline", "Create CRS normalization, spatial joins, tiling, and feature derivation.", "Reference regions prove transforms, extents, and joins."),
+    WaveBlueprint("Map And Analysis Validation", "Add map-layer, temporal, anomaly, and export checks.", "Reference maps and sample outputs catch spatial drift."),
+    WaveBlueprint("Publication Reproducibility", "Package maps, reports, exports, and provenance notes.", "Fresh checkout reproduces accepted maps and reports."),
+)
+
+
+_ML_EXPERIMENT_WAVES = (
+    WaveBlueprint("Experiment Framing", "Record task, datasets, splits, labels, metrics, and promotion thresholds.", "Accuracy claims stay blocked until evaluation criteria are accepted."),
+    WaveBlueprint("Training Baseline", "Create training configuration, environment, checkpoints, and lineage capture.", "A baseline model trains reproducibly on pinned data."),
+    WaveBlueprint("Evaluation Gates", "Add metrics, error slices, drift, latency, cost, and safety checks.", "Promotion gates block weak or unreviewed model candidates."),
+    WaveBlueprint("Model Release", "Package registry, inference, monitoring, rollback, and review evidence.", "Approved model artifacts carry lineage and release proof."),
+)
+
+
+_MATH_EDUCATION_WAVES = (
+    WaveBlueprint("Curriculum Framing", "Record learner level, prerequisites, concepts, and review ownership.", "Mathematical truth and progression assumptions are reviewed."),
+    WaveBlueprint("Exercise Baseline", "Create lessons, worked examples, hints, and answer-check contracts.", "Exercise fixtures cover correct, incorrect, and misconception paths."),
+    WaveBlueprint("Learner Experience", "Build the first interactive learning session and feedback loop.", "Rendered UX, accessibility, progress, and recovery proof pass."),
+    WaveBlueprint("Classroom Readiness", "Package teacher review, assessment exports, and content governance.", "Human review and learner-state evidence are complete."),
+)
+
+
 ARCHETYPES: tuple[Archetype, ...] = (
     Archetype(
         archetype_id="commerce",
@@ -100,12 +156,231 @@ ARCHETYPES: tuple[Archetype, ...] = (
         ),
     ),
     Archetype(
+        archetype_id="formal_proof",
+        label="Formal Math Or Proof Project",
+        keywords=(
+            "formal math", "formal proof", "proof library", "theorem", "lemma", "proof assistant",
+            "lean", "coq", "isabelle", "agda", "proof", "formalize",
+        ),
+        components=(
+            ComponentBlueprint("theory-core", "Theory Core", "library", "src/theory", "Definitions, axioms, theorem statements, and reusable mathematical structures."),
+            ComponentBlueprint("proof-engine", "Proof Engine", "library", "src/proofs", "Proof scripts, tactics, lemmas, and formal derivation boundaries."),
+            ComponentBlueprint("exercise-catalog", "Exercise Catalog", "content", "src/exercises", "Problem statements, hints, grading metadata, and topic progression."),
+            ComponentBlueprint("checker-harness", "Checker Harness", "test", "tests/proofs", "Proof compilation, theorem coverage, counterexample, and regression checks."),
+            ComponentBlueprint("review-notes", "Review Notes", "docs", "docs/review", "Human-readable derivation notes, references, and proof-review artifacts."),
+        ),
+        diagrams=(
+            DiagramBlueprint("proof-topology", "Proof Topology", "Show definitions, theorem statements, proof scripts, checker harness, and review artifacts."),
+            DiagramBlueprint("proof-program-waves", "Proof Program Waves", "Show formalization framing, theory core, proof coverage, and review waves."),
+            DiagramBlueprint("proof-validation-flow", "Proof Validation Flow", "Show theorem compile checks, dependency coverage, counterexamples, and review notes."),
+        ),
+        waves=_FORMAL_PROOF_WAVES,
+        validation_focus=(
+            "Compile every theorem and lemma with the proof checker in a fresh environment before claiming correctness.",
+            "Map informal statements to formal definitions, proof obligations, and review notes.",
+            "Track unproven assumptions, admitted lemmas, and counterexample search separately from completed proofs.",
+            "Use dependency coverage and minimal-example exercises to catch accidental theorem drift.",
+        ),
+        risks=(
+            "Do not translate mathematical claims into completed theorem status until the proof checker verifies them.",
+            "Definitions, notation, exercises, and proof scripts need separate ownership so pedagogy does not obscure correctness.",
+        ),
+    ),
+    Archetype(
+        archetype_id="computational_notebook",
+        label="Computational Notebook Or Analysis Project",
+        keywords=(
+            "notebook", "jupyter", "analysis notebook", "statistics", "econometrics", "statistical",
+            "data analysis", "exploratory analysis", "research notebook", "report", "reproducible notebook",
+        ),
+        components=(
+            ComponentBlueprint("notebook-workflows", "Notebook Workflows", "application", "notebooks", "Exploratory notebooks, report notebooks, and execution order contracts."),
+            ComponentBlueprint("analysis-core", "Analysis Core", "library", "src/analysis", "Reusable statistics, econometrics, feature, and transformation code."),
+            ComponentBlueprint("dataset-provenance", "Dataset Provenance", "library", "data", "Dataset manifests, source citations, cleaning rules, and version pins."),
+            ComponentBlueprint("environment-lock", "Environment Lock", "platform", "env", "Runtime, dependency, container, and kernel reproducibility boundary."),
+            ComponentBlueprint("reporting", "Reporting", "docs", "reports", "Rendered tables, figures, narrative outputs, and publication artifacts."),
+            ComponentBlueprint("validation-suite", "Validation Suite", "test", "tests/analysis", "Reference outputs, snapshot checks, and statistical sanity tests."),
+        ),
+        diagrams=(
+            DiagramBlueprint("analysis-pipeline", "Analysis Pipeline", "Show dataset intake, cleaning, reusable analysis, notebooks, and report outputs."),
+            DiagramBlueprint("notebook-reproducibility", "Notebook Reproducibility Flow", "Show environment lock, ordered notebook execution, reference outputs, and reports."),
+            DiagramBlueprint("analysis-program-waves", "Analysis Program Waves", "Show data inventory, reusable core extraction, notebook proof, and publication waves."),
+        ),
+        waves=_NOTEBOOK_WAVES,
+        validation_focus=(
+            "Execute notebooks top-to-bottom from a clean environment with pinned inputs.",
+            "Separate reusable analysis code from exploratory notebook cells before release claims.",
+            "Version datasets, cleaning rules, figures, tables, and random seeds.",
+            "Use reference outputs and statistical sanity checks to detect data or environment drift.",
+        ),
+        risks=(
+            "Notebook order, hidden state, and local files can fabricate reproducibility unless execution is clean-room tested.",
+            "Exploratory findings must stay labeled as analysis outputs, not source-backed scientific claims.",
+        ),
+    ),
+    Archetype(
+        archetype_id="simulation_modeling",
+        label="Numerical Simulation Or Modeling Project",
+        keywords=(
+            "simulation", "simulator", "numerical", "physics", "solver", "ode", "pde",
+            "differential equation", "differential-equation", "finite element", "finite difference",
+            "modeling", "modelling", "climate model", "fluid", "trajectory",
+        ),
+        components=(
+            ComponentBlueprint("model-spec", "Model Spec", "library", "src/model", "Equations, parameters, units, assumptions, and scenario definitions."),
+            ComponentBlueprint("solver-engine", "Solver Engine", "library", "src/solver", "Numerical methods, stepping, convergence, and stability boundaries."),
+            ComponentBlueprint("scenario-runner", "Scenario Runner", "application", "src/scenarios", "Scenario orchestration, run metadata, and batch execution."),
+            ComponentBlueprint("reference-cases", "Reference Cases", "test", "tests/reference", "Analytic cases, benchmark fixtures, tolerance bands, and regression outputs."),
+            ComponentBlueprint("visualization", "Visualization", "application", "src/visualization", "Plots, diagnostics, animations, and result inspection outputs."),
+        ),
+        diagrams=(
+            DiagramBlueprint("simulation-topology", "Simulation Topology", "Show model spec, solver, scenarios, reference cases, and visualization boundaries."),
+            DiagramBlueprint("solver-validation-flow", "Solver Validation Flow", "Show inputs, units, stepping, convergence, reference checks, and diagnostics."),
+            DiagramBlueprint("simulation-program-waves", "Simulation Program Waves", "Show model framing, solver baseline, benchmark validation, and reporting waves."),
+        ),
+        waves=_SIMULATION_WAVES,
+        validation_focus=_SCIENCE_VALIDATION
+        + (
+            "Add convergence, conservation-law, unit-consistency, and analytic-reference checks before performance tuning.",
+        ),
+        risks=(
+            "Numerical outputs require explicit tolerance, stability, and unit contracts before correctness is claimed.",
+            "Solver, model, scenario, and visualization ownership must stay separate to keep regressions diagnosable.",
+        ),
+    ),
+    Archetype(
+        archetype_id="scientific_pipeline",
+        label="Scientific Data Pipeline",
+        keywords=(
+            "computational biology", "bioinformatics", "genomics", "variant analysis", "scientific pipeline",
+            "image processing", "data processing", "data product", "analysis pipeline", "pipeline",
+        ),
+        components=(
+            ComponentBlueprint("data-ingestion", "Data Ingestion", "service", "src/ingestion", "Source datasets, instruments, metadata, and raw artifact capture."),
+            ComponentBlueprint("processing-pipeline", "Processing Pipeline", "pipeline", "src/pipeline", "Cleaning, alignment, transformation, and staged processing steps."),
+            ComponentBlueprint("quality-control", "Quality Control", "test", "tests/quality", "Sample quality, completeness, anomaly, and provenance checks."),
+            ComponentBlueprint("analysis-core", "Analysis Core", "library", "src/analysis", "Domain analysis algorithms, metrics, and result derivation."),
+            ComponentBlueprint("reproducibility-pack", "Reproducibility Pack", "platform", "reproducibility", "Environment, dataset manifest, workflow lock, and rerun instructions."),
+            ComponentBlueprint("results-portal", "Results Portal", "application", "reports", "Reports, maps, figures, exports, and stakeholder review outputs."),
+        ),
+        diagrams=(
+            DiagramBlueprint("scientific-data-flow", "Scientific Data Flow", "Show raw data, processing stages, quality control, analysis, and reports."),
+            DiagramBlueprint("provenance-flow", "Provenance Flow", "Show dataset versions, pipeline steps, QC evidence, result artifacts, and review exports."),
+            DiagramBlueprint("scientific-program-waves", "Scientific Program Waves", "Show data inventory, pipeline baseline, QC validation, and reproducibility waves."),
+        ),
+        waves=_SCIENTIFIC_PIPELINE_WAVES,
+        validation_focus=(
+            "Version raw inputs, metadata, cleaning rules, and derived artifacts.",
+            "Run quality-control fixtures for completeness, anomalies, schema drift, and provenance.",
+            "Keep benchmark datasets and reference outputs for every major pipeline stage.",
+            "Prove reruns from a clean environment before treating outputs as review-ready.",
+        ),
+        risks=(
+            "Pipeline results can look authoritative while hiding weak data provenance or missing quality checks.",
+            "Scientific interpretation must stay separate from generated project structure until reviewed evidence exists.",
+        ),
+    ),
+    Archetype(
+        archetype_id="geospatial_environmental",
+        label="Geospatial Or Environmental Analysis Project",
+        keywords=(
+            "geospatial", "gis", "climate", "earth science", "environmental science",
+            "remote sensing", "satellite data", "spatial", "geography", "weather model",
+            "map analysis", "raster", "vector tiles",
+        ),
+        components=(
+            ComponentBlueprint("spatial-data-catalog", "Spatial Data Catalog", "platform", "data/spatial", "Raster, vector, temporal, projection, and source-license manifests."),
+            ComponentBlueprint("geoprocessing-pipeline", "Geoprocessing Pipeline", "pipeline", "src/geoprocessing", "CRS normalization, spatial joins, resampling, tiling, and feature derivation."),
+            ComponentBlueprint("temporal-analysis", "Temporal Analysis", "library", "src/temporal", "Time-window, seasonality, anomaly, and scenario analysis boundaries."),
+            ComponentBlueprint("map-visualization", "Map Visualization", "application", "apps/maps", "Map layers, legends, exploratory views, and publication/export surfaces."),
+            ComponentBlueprint("spatial-validation", "Spatial Validation", "test", "tests/spatial", "CRS, unit, extent, sample-fixture, and reference-map checks."),
+        ),
+        diagrams=(
+            DiagramBlueprint("geospatial-data-flow", "Geospatial Data Flow", "Show source datasets, CRS normalization, geoprocessing, analysis, maps, and exports."),
+            DiagramBlueprint("spatial-validation-flow", "Spatial Validation Flow", "Show projection checks, extents, temporal coverage, reference maps, and review outputs."),
+            DiagramBlueprint("environmental-program-waves", "Environmental Program Waves", "Show data inventory, geoprocessing baseline, analysis validation, and publication waves."),
+        ),
+        waves=_GEOSPATIAL_WAVES,
+        validation_focus=(
+            "Version spatial datasets, coordinate reference systems, units, extents, and temporal coverage.",
+            "Test CRS transforms, spatial joins, raster/vector conversions, and map-layer rendering against reference fixtures.",
+            "Separate environmental interpretation from data processing until provenance and review evidence exist.",
+            "Prove reproducible exports from a clean environment before maps or reports become release evidence.",
+        ),
+        risks=(
+            "Projection, unit, and temporal-coverage mistakes can make polished maps scientifically wrong.",
+            "Environmental claims must remain review-bound and provenance-backed rather than inferred from prompt wording.",
+        ),
+    ),
+    Archetype(
+        archetype_id="ml_experiment_platform",
+        label="ML Experiment Platform",
+        keywords=(
+            "ml experiment", "machine learning experiment", "training", "model registry", "feature store",
+            "inference", "evaluation harness", "computer vision", "biology images", "experiment platform",
+            "mlops", "model monitoring",
+        ),
+        components=(
+            ComponentBlueprint("dataset-registry", "Dataset Registry", "platform", "src/datasets", "Dataset versions, splits, labels, provenance, and access boundaries."),
+            ComponentBlueprint("training-pipeline", "Training Pipeline", "pipeline", "src/training", "Training jobs, configuration, checkpoints, and reproducible execution."),
+            ComponentBlueprint("evaluation-harness", "Evaluation Harness", "test", "tests/evaluation", "Metrics, baselines, error slices, fairness/drift checks, and regression gates."),
+            ComponentBlueprint("model-registry", "Model Registry", "platform", "src/models", "Model artifacts, lineage, approval, rollback, and release gates."),
+            ComponentBlueprint("inference-runtime", "Inference Runtime", "service", "src/inference", "Serving path, latency, batching, monitoring, and safety controls."),
+        ),
+        diagrams=(
+            DiagramBlueprint("ml-lifecycle", "ML Lifecycle Topology", "Show datasets, training, evaluation, registry, inference, and monitoring."),
+            DiagramBlueprint("experiment-flow", "Experiment Flow", "Show config, data split, training, metrics, approval, and model promotion."),
+            DiagramBlueprint("ml-program-waves", "ML Program Waves", "Show dataset baseline, training harness, evaluation gates, and release-readiness waves."),
+        ),
+        waves=_ML_EXPERIMENT_WAVES,
+        validation_focus=(
+            "Pin dataset versions, splits, labels, random seeds, and environment metadata.",
+            "Track baseline metrics, error slices, drift checks, and promotion thresholds.",
+            "Require reproducible training and evaluation before model registry promotion.",
+            "Measure latency, cost, and safety behavior separately from accuracy metrics.",
+        ),
+        risks=(
+            "Model accuracy claims are invalid without dataset lineage, evaluation gates, and reproducibility proof.",
+            "Training, evaluation, registry, and inference boundaries must stay distinct to prevent unreviewed promotion.",
+        ),
+    ),
+    Archetype(
+        archetype_id="math_education",
+        label="Math Education Experience",
+        keywords=(
+            "math education", "mathematics education", "math app", "topology exercises", "lesson",
+            "student", "teacher", "tutor", "exercise", "quiz", "worked example", "learning",
+            "undergraduate", "curriculum", "classroom",
+        ),
+        components=(
+            ComponentBlueprint("learning-shell", "Learning Shell", "application", "apps/learning", "Student-facing lessons, navigation, and interaction state."),
+            ComponentBlueprint("concept-model", "Concept Model", "library", "src/concepts", "Definitions, learning objectives, prerequisites, and topic progression."),
+            ComponentBlueprint("exercise-engine", "Exercise Engine", "library", "src/exercises", "Problem generation, hints, attempts, feedback, and scoring."),
+            ComponentBlueprint("assessment", "Assessment", "test", "tests/assessment", "Rubrics, answer checks, misconception fixtures, and mastery evidence."),
+            ComponentBlueprint("teacher-review", "Teacher Review", "application", "apps/review", "Instructor views, curriculum review, and progress exports."),
+        ),
+        diagrams=(
+            DiagramBlueprint("learning-topology", "Learning Topology", "Show lessons, concepts, exercises, assessment, and teacher review boundaries."),
+            DiagramBlueprint("learning-session-flow", "Learning Session Flow", "Show lesson start, exercise attempt, feedback, mastery update, and review."),
+            DiagramBlueprint("education-program-waves", "Education Program Waves", "Show curriculum framing, exercise baseline, feedback quality, and classroom-readiness waves."),
+        ),
+        waves=_MATH_EDUCATION_WAVES,
+        validation_focus=(
+            "Check exercise answers, hints, worked examples, and rubrics against reviewed mathematical truth.",
+            "Test misconception cases, accessibility, progress recovery, and student feedback loops.",
+            "Keep curriculum sequencing and prerequisite claims reviewable by a human subject-matter owner.",
+        ),
+        risks=(
+            "Pedagogical polish must not mask wrong mathematics or unreviewed prerequisite claims.",
+            "Student progress and assessment state need explicit recovery and privacy boundaries.",
+        ),
+    ),
+    Archetype(
         archetype_id="science_math",
         label="Science Or Math Project",
         keywords=(
-            "science", "scientific", "math", "mathematics", "physics", "simulation", "solver",
-            "ode", "pde", "differential", "theorem", "proof", "statistics", "econometrics",
-            "notebook", "experiment", "computational", "biology", "chemistry", "model",
+            "science", "scientific", "math", "mathematics", "research codebase",
+            "research project", "chemistry", "scientific model", "mathematical model",
         ),
         components=(
             ComponentBlueprint("model-core", "Model Core", "library", "src/model", "Mathematical model, assumptions, equations, and domain objects."),

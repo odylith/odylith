@@ -293,6 +293,9 @@ themselves.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-05-02 · Implementation:** B-141 activation pass keeps source-local memory on Lance/Tantivy, preserves visible Assist recovery, and leaves consumer pinned runtimes on the managed feature pack.
+  - Scope: B-141
+  - Evidence: odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md, odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md +2 more
 - **2026-05-02 · Implementation:** Added end-to-end governed sync performance tests for B-141 covering full sync dry-run, all-surface dashboard refresh, Compass status, owned surface refresh commands, no-provider credit burn, and dashboard parallelism.
   - Scope: B-141
   - Evidence: odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md, odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md +1 more
@@ -308,9 +311,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-04-27 · Implementation:** B-127 Migration Runtime Release Gate closed after migration-runtime proof and governance validation.
   - Scope: B-127
   - Evidence: odylith/radar/source/ideas/2026-04/2026-04-27-migration-runtime-release-gate.md, odylith/technical-plans/done/2026-04/2026-04-27-migration-runtime-release-gate.md
-- **2026-04-19 · Implementation:** Added D-041 anti-slop governance topology, refreshed B-115/B-117 surfaces, and closed the Compass standup-batch regression with final green source-local proof.
-  - Scope: B-115, B-117
-  - Evidence: odylith/atlas/source/odylith-anti-slop-governance-and-host-parity.mmd, odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-surfaces-and-release-proof.md +5 more
 <!-- registry-requirements:end -->
 
 ## Feature History

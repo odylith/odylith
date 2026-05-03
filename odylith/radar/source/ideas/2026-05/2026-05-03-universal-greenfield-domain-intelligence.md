@@ -78,7 +78,10 @@ External ecosystem checks support the first-class archetype set instead of a nar
 ## Scope
 - Add `odylith greenfield propose` and `odylith greenfield apply`.
 - Keep host adapters thin; Claude, Codex, and future hosts route to the same CLI/runtime path.
-- Cover commerce, SaaS, cloud/infra, data, AI agent, CLI/library, science/math, security/compliance, IoT/instrumentation, mobile/game/education, and general app archetypes.
+- Cover commerce, SaaS, cloud/infra, data, AI agent, CLI/library, security/compliance, IoT/instrumentation, mobile/game/education, and general app archetypes.
+- Treat science/math as a first-class family with separate formal-proof,
+  computational-notebook, numerical-simulation, scientific-pipeline,
+  geospatial/environmental, ML-experiment, and math-education proposal lenses.
 - Preserve evidence separation: observed source, user intent, and Odylith assumptions must stay distinct.
 - Keep proposal generation provider-free by default and write only after explicit confirmation.
 - Filter Compass timeline audit entries so zero-file prompt-intervention narration does not become fake implementation history.
@@ -91,6 +94,9 @@ External ecosystem checks support the first-class archetype set instead of a nar
 ## Risks
 - Broad prompts can sound authoritative even when source evidence is empty; every generated detail must carry user-intent or Odylith-assumption evidence.
 - Domain archetypes can drift into templates if they stop producing domain-specific validation and topology obligations.
+- Generic science/math routing can produce harmful advice if proof projects,
+  notebook/statistical analysis, numerical solvers, ML experiments, and
+  geospatial workflows share one validation script.
 - Apply-time writes can pollute consumer repos unless they stay confirmation-gated and route through owned Radar, Registry, Atlas, and release authoring paths.
 
 ## Dependencies
@@ -120,6 +126,14 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   greenfield proposal path through the 568-test engine suite, the 208-test
   host/migration suite, and the 185-test browser matrix without provider calls
   or consumer-lane source claims.
+- Deepening pass split science/math into targeted subdomains and added fixture
+  proof for commerce, SaaS, dashboards, AI assistants, data ingestion, CLI
+  libraries, physics simulation, differential-equation solvers, computational
+  biology pipelines, formal proof libraries, statistics/econometrics notebooks,
+  math education, geospatial climate analysis, ML experiment platforms, and
+  robotics calibration workflows. Formal-proof proposals now carry proof
+  checker/theorem obligations and explicitly avoid numerical tolerance/random
+  seed advice.
 
 ## Rollout
 - Ship in v0.1.13 with B-141 because the user-facing failure is inseparable from consumer-lane host UX hardening: low latency is not enough if empty-repo greenfield prompts dead-end.
@@ -159,7 +173,20 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `migration-observer:0.1.13:browser-surfaces:d00ba488e699`,
   `migration-observer:0.1.13:install-managed-assets:4444145d768a`,
   `migration-observer:0.1.13:install-managed-assets:0b654205854a`,
-  `migration-observer:0.1.13:install-managed-assets:13d6f64a015b`.
+  `migration-observer:0.1.13:install-managed-assets:13d6f64a015b`,
+  `migration-observer:0.1.13:guidance-and-skills:b5799cbf748f`,
+  `migration-observer:0.1.13:browser-surfaces:bb2be774790f`,
+  `migration-observer:0.1.13:install-managed-assets:f400668668ca`,
+  `migration-observer:0.1.13:guidance-and-skills:38e6768904a3`,
+  `migration-observer:0.1.13:browser-surfaces:da46e2ca9dea`,
+  `migration-observer:0.1.13:install-managed-assets:20dacaa00761`,
+  `migration-observer:0.1.13:browser-surfaces:7a832cdde5ae`,
+  `migration-observer:0.1.13:browser-surfaces:e7074b845e26`.
+  These markers cover the deepened greenfield skill guidance, refreshed
+  Domain Intelligence Atlas/Registry/Radar browser surfaces, and bundled
+  install-managed dashboard copies. Existing consumer governance truth remains
+  unchanged; upgrades refresh managed guidance/assets and keep proposal writes
+  explicit through `odylith greenfield apply --confirm`.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component authoring, CLI dispatch, show capabilities, and Compass transaction filtering.

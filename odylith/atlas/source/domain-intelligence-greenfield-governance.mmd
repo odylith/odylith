@@ -1,9 +1,10 @@
 flowchart TB
     prompt["Greenfield prompt<br/>build, govern, plan, architect"]
     source["Shallow repo evidence<br/>empty, thin, metadata, docs, app-ready"]
-    catalog["Domain archetype catalog<br/>runtime/domain_intelligence/archetypes.py"]
+    catalog["Domain archetype catalog<br/>product, infra, data, science/math lenses<br/>runtime/domain_intelligence/archetypes.py"]
     compiler["Greenfield proposal compiler<br/>runtime/domain_intelligence/greenfield_proposals.py"]
-    proposal["Proposal payload<br/>backlog, waves, release plan, components, diagrams, assumptions, risks, validation"]
+    planning["Program/release/UX planner<br/>runtime/domain_intelligence/proposal_planning.py"]
+    proposal["Proposal payload<br/>backlog, waves, release plan, UX, components, diagrams, assumptions, risks, validation"]
     confirm{"Operator confirms?"}
     radar["Radar apply<br/>owned backlog authoring"]
     registry["Registry apply<br/>planned user_intent components"]
@@ -17,7 +18,8 @@ flowchart TB
     host --> compiler
     source --> compiler
     catalog --> compiler
-    compiler --> proposal
+    compiler --> planning
+    planning --> proposal
     proposal --> intervention
     proposal --> confirm
     confirm -- "no" --> proposal
