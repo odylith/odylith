@@ -1,5 +1,14 @@
 - Bug ID: CB-058
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-06
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: `odylith sync` can fail immediately after migration because a
   legacy Radar `INDEX.md` still lacks the current required rationale bullets

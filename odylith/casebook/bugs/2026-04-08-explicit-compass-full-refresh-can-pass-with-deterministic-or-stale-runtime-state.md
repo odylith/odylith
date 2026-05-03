@@ -1,5 +1,14 @@
 - Bug ID: CB-068
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-08
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Explicit Compass full refresh still has no single fail-closed
   contract from render start through shell and browser consumption. An operator

@@ -1,6 +1,6 @@
 # Backlog Index
 
-Last updated (UTC): 2026-04-30
+Last updated (UTC): 2026-05-03
 ## Ranked Active Backlog
 
 | rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |
@@ -68,6 +68,8 @@ Last updated (UTC): 2026-04-30
 | - | B-093 | Benchmark Full-Product Contract, Live-Lane Fairness, and Real-World Corpus Hardening | P0 | 100 | 5 | 5 | 5 | L | High | implementation | [benchmark-full-product-contract-live-lane-fairness-and-real-world-corpus-hardening](odylith/radar/source/ideas/2026-04/2026-04-12-benchmark-full-product-contract-live-lane-fairness-and-real-world-corpus-hardening.md) |
 | - | B-097 | Casebook Bug Capture Fail-Closed Evidence Contract and Cross-Host Guidance Hardening | P0 | 100 | 5 | 5 | 4 | M | High | implementation | [casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening](odylith/radar/source/ideas/2026-04/2026-04-15-casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening.md) |
 | - | B-126 | Conditional Release-Targeted Backlog Authoring | P1 | 100 | 4 | 4 | 3 | M | Medium | implementation | [conditional-release-targeted-backlog-authoring](odylith/radar/source/ideas/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md) |
+| - | B-141 | Cross-host hook latency budget and fast-path startup | P1 | 100 | 5 | 5 | 5 | M | High | implementation | [cross-host-hook-latency-budget-and-fast-path-startup](odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md) |
+| - | B-142 | Universal greenfield domain intelligence | P1 | 100 | 5 | 5 | 4 | L | High | implementation | [universal-greenfield-domain-intelligence](odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md) |
 | - | B-071 | Scope Signal Ladder, Cross-Surface Focus Gating, and Low-Signal Suppression | P0 | 95 | 5 | 5 | 4 | L | VeryHigh | implementation | [scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression](odylith/radar/source/ideas/2026-04/2026-04-09-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md) |
 | - | B-064 | Radar Workstream Title Prefix Normalization | P2 | 90 | 2 | 3 | 2 | M | Medium | implementation | [radar-workstream-title-prefix-normalization](odylith/radar/source/ideas/2026-04/2026-04-08-radar-workstream-title-prefix-normalization.md) |
 | - | B-087 | Codex Project-Asset Parity, Mirror Hygiene, and Install Contract | P1 | 88 | 3 | 4 | 3 | L | Medium | implementation | [codex-project-asset-parity-mirror-hygiene-and-install-contract](odylith/radar/source/ideas/2026-04/2026-04-11-codex-project-asset-parity-mirror-hygiene-and-install-contract.md) |
@@ -1095,7 +1097,7 @@ Last updated (UTC): 2026-04-30
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-091 (rank 29)
+### B-091 (rank 25)
 - why now: governed sync profiling showed the hot path is dominated by repeated read-model reconstruction, path canonicalization, and unnecessary surface rewrites rather than intrinsically expensive validation or rendering.
 - expected outcome: one sync-scoped shared read model, materially lower repeated path/profile/report work across the in-process step chain, and the first no-op-write guarantees on the shell and Registry surfaces.
 - tradeoff: the first landing keeps the current step graph externally stable, so it does not yet deliver the full daemon or per-node reverse-dependency engine that would take warm selective sync all the way to the architectural ceiling.
@@ -1157,21 +1159,21 @@ Last updated (UTC): 2026-04-30
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-102 (rank 26)
+### B-102 (rank 25)
 - why now: created as a new queued workstream for Codex Claude Execution Contract Parity.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-103 (rank 27)
+### B-103 (rank 25)
 - why now: created as a new queued workstream for Execution Snapshot Reuse and Hot Path Cost Reduction.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-104 (rank 28)
+### B-104 (rank 25)
 - why now: created as a new queued workstream for Execution Alignment Release Proof and Governance Closure.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
@@ -1213,7 +1215,7 @@ Last updated (UTC): 2026-04-30
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-110 (rank 30)
+### B-110 (rank 25)
 - why now: created as a new queued workstream for Discipline, Credit-Safe And Benchmark-Proved.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
@@ -1282,3 +1284,31 @@ Last updated (UTC): 2026-04-30
 - tradeoff: generated dashboard reviewability stays outside this migration gate and remains tracked separately in CB-134.
 - deferred for now: broader maintainer preflight consolidation waits for a later release; 0.1.12 keeps `release migration-gate` focused.
 - ranking basis: completed and closed on 2026-04-27 with B-127 moved to `finished` and the technical plan moved to `done`.
+
+### B-141 (implementation)
+- why now: promoted into the v0.1.13 active pipeline after host latency,
+  prompt-context preservation, and migration repair feedback became release
+  blockers.
+- expected outcome: lower Claude and Codex hook latency without losing prompt
+  context assessment, ambient interventions, visible Assist paths, or
+  governed migration capture.
+- tradeoff: the immediate implementation keeps direct-dispatch fallback and
+  defers the long-lived hook daemon to a separately bounded design slice.
+- deferred for now: MCP scope cleanup and root guidance kernel splitting stay
+  outside this release-critical hook path.
+- ranking basis: active implementation workstream; no queued rank.
+
+### B-142 (implementation)
+- why now: promoted into the v0.1.13 active pipeline because consumer-lane
+  greenfield prompts were dead-ending in empty repos instead of producing
+  proposal-first governance.
+- expected outcome: provider-free Odylith runtime emits the evidence/schema
+  contract while the active host model drafts backlog, program waves, release
+  plan, planned Registry components, host-authored Atlas topology,
+  assumptions, risks, and validation obligations before any writes.
+- tradeoff: v0.1.13 keeps project-specific authorship with the host model and
+  makes Odylith the validation, topology, confirmation, apply, and memory
+  layer; optional provider-backed enrichment stays out of scope.
+- deferred for now: a curated domain marketplace waits until a real catalog
+  exists; this release avoids pretending an in-code taxonomy covers the world.
+- ranking basis: active implementation workstream; no queued rank.

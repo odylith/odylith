@@ -5,8 +5,10 @@ from odylith.runtime.common.product_assets import bundled_project_root_assets_ro
 def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     root = bundle_root()
     assert (root / "AGENTS.md").is_file()
-    assert "Keep the default operating lane shared across Codex and Claude Code" in (root / "AGENTS.md").read_text(encoding="utf-8")
-    assert "rerender only the owned surface" in (root / "AGENTS.md").read_text(encoding="utf-8")
+    agents_text = (root / "AGENTS.md").read_text(encoding="utf-8")
+    assert "host-reasoning evidence/schema contract" in agents_text
+    assert "host-authored Atlas Mermaid source" in agents_text
+    assert "rerender only the owned surface" in agents_text
     assert "Codex-Only Optimizations When Supported" in (root / "agents-guidelines" / "CODEX_HOST_CONTRACT.md").read_text(encoding="utf-8")
     assert "./.odylith/bin/odylith codex compatibility --repo-root ." in (root / "README.md").read_text(encoding="utf-8")
     assert "./.odylith/bin/odylith radar refresh --repo-root ." in (root / "README.md").read_text(encoding="utf-8")

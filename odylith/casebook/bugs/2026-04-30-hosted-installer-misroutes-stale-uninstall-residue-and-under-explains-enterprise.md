@@ -1,6 +1,15 @@
 - Bug ID: CB-146
 
-- Status: Fixed Pending Release
+- Type: InstallRelease
+
+
+
+
+
+
+
+
+- Status: FixedPendingRelease
 
 - Created: 2026-04-30
 
@@ -8,7 +17,6 @@
 
 - Reproducibility: Always
 
-- Type: Install / release
 
 - Description: Hosted installer misroutes stale uninstall residue and under-explains enterprise fetch failures
 

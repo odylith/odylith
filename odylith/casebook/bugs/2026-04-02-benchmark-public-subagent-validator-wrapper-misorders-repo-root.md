@@ -1,5 +1,14 @@
 - Bug ID: CB-041
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-02
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The public `odylith subagent-router` and
   `odylith subagent-orchestrator` wrappers injected `--repo-root` ahead of the

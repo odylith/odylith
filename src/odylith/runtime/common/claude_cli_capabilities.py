@@ -75,6 +75,7 @@ class ClaudeCliCapabilitySnapshot:
     supports_subagent_hooks: bool
     supports_pre_compact_hook: bool
     supports_statusline_command: bool
+    supports_prompt_bundle_hook: bool
     supports_prompt_context_hook: bool
     supports_prompt_teaser_hook: bool
     supports_post_edit_checkpoint_hook: bool
@@ -243,12 +244,17 @@ def _inspect_cached(repo_root: str, claude_bin: str, probe_version: bool) -> Cla
     supports_statusline_command = isinstance(settings_payload.get("statusLine"), dict) and bool(
         str((settings_payload.get("statusLine") or {}).get("command", "")).strip()
     )
-    supports_prompt_context_hook = _hook_command_present(
+    supports_prompt_bundle_hook = _hook_command_present(
+        settings_payload,
+        "UserPromptSubmit",
+        "claude prompt-bundle",
+    )
+    supports_prompt_context_hook = supports_prompt_bundle_hook or _hook_command_present(
         settings_payload,
         "UserPromptSubmit",
         "claude prompt-context",
     )
-    supports_prompt_teaser_hook = _hook_command_present(
+    supports_prompt_teaser_hook = supports_prompt_bundle_hook or _hook_command_present(
         settings_payload,
         "UserPromptSubmit",
         "claude prompt-teaser",
@@ -321,6 +327,7 @@ def _inspect_cached(repo_root: str, claude_bin: str, probe_version: bool) -> Cla
         supports_subagent_hooks=supports_subagent_hooks,
         supports_pre_compact_hook=supports_pre_compact_hook,
         supports_statusline_command=supports_statusline_command,
+        supports_prompt_bundle_hook=supports_prompt_bundle_hook,
         supports_prompt_context_hook=supports_prompt_context_hook,
         supports_prompt_teaser_hook=supports_prompt_teaser_hook,
         supports_post_edit_checkpoint_hook=supports_post_edit_checkpoint_hook,
@@ -355,6 +362,15 @@ _CLAUDE_HOST_LAUNCHER_INVOCATION = (
     f'python3 "{_CLAUDE_PROJECT_DIR_TOKEN}"/.agents/bin/odylith-host-launcher.py'
 )
 _CLAUDE_STATUSLINE_INVOCATION = f'"{_CLAUDE_PROJECT_DIR_TOKEN}"/.claude/statusline.sh'
+_CLAUDE_BASH_GUARD_IF_PATTERNS: tuple[str, ...] = (
+    "Bash(rm *)",
+    "Bash(git reset --hard*)",
+    "Bash(git checkout --*)",
+    "Bash(git push --force*)",
+    "Bash(git clean -fdx*)",
+    "Bash(*shutil.rmtree*)",
+    "Bash(*odylith backlog create*)",
+)
 
 
 def _project_python_hook_command(script_name: str) -> str:
@@ -374,6 +390,19 @@ def _baked_hook_command(claude_command: str, *extra_flags: str) -> str:
     ]
     parts.extend(extra_flags)
     return " ".join(parts)
+
+
+def _bash_guard_hook_entries() -> list[dict[str, Any]]:
+    command = _baked_hook_command("bash-guard")
+    return [
+        {
+            "type": "command",
+            "if": pattern,
+            "command": command,
+            "timeout": 10,
+        }
+        for pattern in _CLAUDE_BASH_GUARD_IF_PATTERNS
+    ]
 
 
 _BAKED_HOOK_DEFAULT_PERMISSIONS_ALLOWLIST: tuple[str, ...] = (
@@ -406,7 +435,7 @@ def _baked_hooks_block() -> dict[str, Any]:
                 "hooks": [
                     {
                         "type": "command",
-                        "command": _baked_hook_command("session-start"),
+                        "command": _baked_hook_command("session-start", "--quiet"),
                         "timeout": 30,
                     }
                 ]
@@ -428,17 +457,7 @@ def _baked_hooks_block() -> dict[str, Any]:
                 "hooks": [
                     {
                         "type": "command",
-                        "command": _project_python_hook_command("show-me-prompt-guard.py"),
-                        "timeout": 5,
-                    },
-                    {
-                        "type": "command",
-                        "command": _baked_hook_command("prompt-context"),
-                        "timeout": 30,
-                    },
-                    {
-                        "type": "command",
-                        "command": _baked_hook_command("prompt-teaser"),
+                        "command": _baked_hook_command("prompt-bundle"),
                         "timeout": 30,
                     }
                 ]
@@ -447,13 +466,7 @@ def _baked_hooks_block() -> dict[str, Any]:
         "PreToolUse": [
             {
                 "matcher": "Bash",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": _baked_hook_command("bash-guard"),
-                        "timeout": 10,
-                    }
-                ],
+                "hooks": _bash_guard_hook_entries(),
             }
         ],
         "PostToolUse": [
@@ -463,6 +476,7 @@ def _baked_hooks_block() -> dict[str, Any]:
                     {
                         "type": "command",
                         "command": _baked_hook_command("post-edit-checkpoint"),
+                        "async": True,
                         "timeout": 180,
                     }
                 ],
@@ -473,6 +487,7 @@ def _baked_hooks_block() -> dict[str, Any]:
                     {
                         "type": "command",
                         "command": _baked_hook_command("post-bash-checkpoint"),
+                        "async": True,
                         "timeout": 180,
                     }
                 ],
@@ -564,8 +579,12 @@ def merge_effective_claude_project_settings(
     if "$schema" not in merged and "$schema" in odylith_payload:
         merged["$schema"] = odylith_payload["$schema"]
 
-    merged_hooks = host_project_settings.merge_hook_map(
+    pruned_hooks, _ = host_project_settings.remove_hook_commands(
         merged.get("hooks"),
+        _ODYLITH_HOOK_COMMAND_TOKENS,
+    )
+    merged_hooks = host_project_settings.merge_hook_map(
+        pruned_hooks,
         odylith_payload.get("hooks") if isinstance(odylith_payload.get("hooks"), dict) else {},
     )
     if isinstance(merged_hooks, dict):

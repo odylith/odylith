@@ -1,5 +1,14 @@
 - Bug ID: CB-088
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-09
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Compass scoped window selection was still too permissive. In the
   live `24h` and `48h` windows, a workstream could appear in the scope

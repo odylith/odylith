@@ -206,6 +206,22 @@ _HANDLER_CASES = [
         and list(getattr(args, "forwarded", [])) == ["--json"],
     },
     {
+        "path": ("greenfield", "propose"),
+        "argv": lambda root: ["greenfield", "propose", f"--repo-root={root}", "--prompt", "Build a lab notebook"],
+        "handler": "_cmd_greenfield",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "greenfield_command", "") == "propose"
+        and list(getattr(args, "forwarded", [])) == ["--prompt", "Build a lab notebook"],
+    },
+    {
+        "path": ("greenfield", "apply"),
+        "argv": lambda root: ["greenfield", "apply", f"--repo-root={root}", "--proposal-file", "proposal.json"],
+        "handler": "_cmd_greenfield",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "greenfield_command", "") == "apply"
+        and list(getattr(args, "forwarded", [])) == ["--proposal-file", "proposal.json"],
+    },
+    {
         "path": ("component", "register"),
         "argv": lambda root: ["component", "register", f"--repo-root={root}", "--id", "registry-refresh"],
         "handler": "_cmd_component",
@@ -290,6 +306,14 @@ _HANDLER_CASES = [
         and getattr(args, "release_command", "") == "migration-gate"
         and getattr(args, "target_version", "") == "0.1.12"
         and bool(getattr(args, "json", False)),
+    },
+    {
+        "path": ("release", "casebook-closeout"),
+        "argv": lambda root: ["release", "casebook-closeout", f"--repo-root={root}", "--release", "current", "--json"],
+        "handler": "_cmd_release",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "release_command", "") == "casebook-closeout"
+        and list(getattr(args, "forwarded", [])) == ["--release", "current", "--json"],
     },
     {
         "path": ("compass", "log"),
@@ -432,6 +456,7 @@ for claude_command in (
     "post-bash-checkpoint",
     "post-edit-checkpoint",
     "pre-compact-snapshot",
+    "prompt-bundle",
     "prompt-context",
     "prompt-teaser",
     "session-start",

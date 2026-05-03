@@ -1,5 +1,14 @@
 - Bug ID: CB-056
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-06
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: After workaround cleanup, `odylith doctor` can report a healthy
   install while `odylith version` still shows `Runtime source: wrapped_runtime`

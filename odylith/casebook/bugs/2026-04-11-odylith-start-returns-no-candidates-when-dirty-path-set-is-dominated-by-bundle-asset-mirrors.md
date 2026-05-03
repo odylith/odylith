@@ -1,5 +1,14 @@
 - Bug ID: CB-102
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Resolved
 
 - Created: 2026-04-11
@@ -10,7 +19,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: `odylith start --repo-root .` returns exit code 1 with
   `selection_state: none`, `selection_reason: "No workstream evidence

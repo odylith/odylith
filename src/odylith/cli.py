@@ -138,6 +138,7 @@ _CLAUDE_HOST_COMMAND_MODULES = {
     "intervention-status": "odylith.runtime.surfaces.claude_host_intervention_status",
     "session-start": "odylith.runtime.surfaces.claude_host_session_brief",
     "subagent-start": "odylith.runtime.surfaces.claude_host_subagent_start",
+    "prompt-bundle": "odylith.runtime.surfaces.claude_host_prompt_bundle",
     "prompt-context": "odylith.runtime.surfaces.claude_host_prompt_context",
     "prompt-teaser": "odylith.runtime.surfaces.claude_host_prompt_teaser",
     "bash-guard": "odylith.runtime.surfaces.claude_host_bash_guard",
@@ -158,10 +159,12 @@ _CODEX_HOST_COMMAND_MODULES = {
     "intervention-status": "odylith.runtime.surfaces.codex_host_intervention_status",
 }
 _SHOW_CAPABILITIES_MODULE = "odylith.runtime.analysis_engine.show_capabilities"
+_GREENFIELD_PROPOSALS_MODULE = "odylith.runtime.domain_intelligence.greenfield_proposals"
 _CAPABILITY_INVENTORY_MODULE = "odylith.runtime.analysis_engine.capability_inventory"
 _COMPONENT_AUTHORING_MODULE = "odylith.runtime.governance.component_authoring"
 _BUG_AUTHORING_MODULE = "odylith.runtime.governance.bug_authoring"
 _GITHUB_ISSUE_PIPELINE_MODULE = "odylith.runtime.governance.github_issue_cli"
+_CASEBOOK_RELEASE_CLOSEOUT_MODULE = "odylith.runtime.governance.casebook_release_closeout"
 
 
 def _load_module(name: str):
@@ -2087,6 +2090,13 @@ def _cmd_show(args: argparse.Namespace) -> int:
     )
 
 
+def _cmd_greenfield(args: argparse.Namespace) -> int:
+    return _run_module_main(
+        _GREENFIELD_PROPOSALS_MODULE,
+        ensure_nested_subcommand_repo_root_args(repo_root=args.repo_root, argv=[args.greenfield_command, *args.forwarded]),
+    )
+
+
 def _cmd_capabilities(args: argparse.Namespace) -> int:
     forwarded = list(getattr(args, "forwarded", []) or [])
     if bool(getattr(args, "json", False)) and "--json" not in forwarded:
@@ -2226,13 +2236,20 @@ def _cmd_release(args: argparse.Namespace) -> int:
             for note in report.notes:
                 print(f"- note: {note}")
         return 0 if report.ok else 1
-    if args.release_command in {"create", "update", "add", "remove", "move"} and not _forwarded_has_flag(
+    release_command_writes = args.release_command in {"create", "update", "add", "remove", "move"} and not _forwarded_has_flag(
         args.forwarded,
         "--dry-run",
-    ):
+    )
+    closeout_writes = args.release_command == "casebook-closeout" and _forwarded_has_flag(args.forwarded, "--apply")
+    if release_command_writes or closeout_writes:
         blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
         if blocked:
             return blocked
+    if args.release_command == "casebook-closeout":
+        return _run_module_main(
+            _CASEBOOK_RELEASE_CLOSEOUT_MODULE,
+            ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded),
+        )
     return _run_module_main(
         "odylith.runtime.governance.release_planning_authoring",
         ensure_repo_root_args(
@@ -2929,6 +2946,7 @@ def build_parser() -> argparse.ArgumentParser:
         ("add", "Assign one workstream to a release."),
         ("remove", "Remove one workstream from its active release."),
         ("move", "Move one workstream between releases."),
+        ("casebook-closeout", "Close FixedPendingRelease Casebook records after a shipped release."),
     ):
         child_parser = release_subparsers.add_parser(command, help=help_text)
         child_parser.add_argument("--repo-root", default=".", help="Consumer repository root.")
@@ -2976,6 +2994,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     show.add_argument("--repo-root", default=".", help="Consumer repository root.")
     show.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+
+    greenfield = subparsers.add_parser(
+        "greenfield",
+        help="Draft or apply confirmation-gated greenfield governance proposals.",
+    )
+    greenfield_subparsers = greenfield.add_subparsers(dest="greenfield_command", required=True)
+    for command, help_text in (
+        ("propose", "Draft a provider-free greenfield governance proposal."),
+        ("apply", "Apply a confirmed greenfield governance proposal."),
+    ):
+        child_parser = greenfield_subparsers.add_parser(command, help=help_text)
+        child_parser.add_argument("--repo-root", default=".", help="Consumer repository root.")
+        child_parser.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
 
     capabilities = subparsers.add_parser(
         "capabilities",
@@ -3209,6 +3240,7 @@ def build_parser() -> argparse.ArgumentParser:
     for command, help_text in (
         ("session-start", "Render the Odylith-grounded Claude SessionStart hook output."),
         ("subagent-start", "Render the Odylith-grounded Claude SubagentStart hook output."),
+        ("prompt-bundle", "Render bundled Odylith Claude UserPromptSubmit context and teaser output."),
         ("prompt-context", "Render discreet Odylith Claude UserPromptSubmit context."),
         ("prompt-teaser", "Render best-effort Odylith Claude UserPromptSubmit teaser output."),
         ("bash-guard", "Evaluate the Odylith destructive-command guard for Claude Bash hooks."),
@@ -3299,6 +3331,11 @@ def main(argv: list[str] | None = None) -> int:
                 args = parser.parse_args(tokens)
                 return _cmd_show(args)
             return _cmd_show(argparse.Namespace(repo_root=repo_root, forwarded=forwarded))
+        if tokens[0] == "greenfield" and len(tokens) >= 2 and tokens[1] in {"propose", "apply"}:
+            repo_root, forwarded = _extract_repo_root(tokens[2:])
+            return _cmd_greenfield(
+                argparse.Namespace(repo_root=repo_root, greenfield_command=tokens[1], forwarded=forwarded)
+            )
         if tokens[0] == "capabilities":
             repo_root, forwarded = _extract_repo_root(tokens[1:])
             if _help_requested(forwarded):
@@ -3581,6 +3618,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_dashboard_refresh(args)
     if args.command == "show":
         return _cmd_show(args)
+    if args.command == "greenfield":
+        return _cmd_greenfield(args)
     if args.command == "capabilities":
         return _cmd_capabilities(args)
     if args.command == "radar" and args.radar_command == "refresh":

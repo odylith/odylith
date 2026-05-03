@@ -158,6 +158,25 @@ def test_claude_host_cli_dispatches_prompt_context(monkeypatch) -> None:
     ]
 
 
+def test_claude_host_cli_dispatches_prompt_bundle(monkeypatch) -> None:
+    seen: list[tuple[str, list[str]]] = []
+    monkeypatch.setattr(
+        cli,
+        "_run_module_main",
+        lambda module_name, argv: seen.append((module_name, list(argv))) or 0,
+    )
+
+    exit_code = cli.main(["claude", "prompt-bundle", "--repo-root", "/tmp/repo"])
+
+    assert exit_code == 0
+    assert seen == [
+        (
+            "odylith.runtime.surfaces.claude_host_prompt_bundle",
+            ["--repo-root", "/tmp/repo"],
+        )
+    ]
+
+
 def test_claude_host_cli_dispatches_prompt_teaser(monkeypatch) -> None:
     seen: list[tuple[str, list[str]]] = []
     monkeypatch.setattr(

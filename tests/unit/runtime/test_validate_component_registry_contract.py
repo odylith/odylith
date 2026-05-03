@@ -425,6 +425,198 @@ def test_validate_component_registry_contract_fails_on_unmapped_meaningful_event
     assert rc == 2
 
 
+def test_validate_component_registry_contract_ignores_host_visibility_events(
+    tmp_path: Path,
+) -> None:
+    _seed_repo(tmp_path)
+
+    stream_path = tmp_path / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl"
+    stream_path.parent.mkdir(parents=True, exist_ok=True)
+    stream_path.write_text(
+        "\n".join(
+            json.dumps(event)
+            for event in (
+                {
+                    "version": "v1",
+                    "kind": "ambient_signal",
+                    "summary": "Odylith Risks: The conversation is setting a hard rule.",
+                    "artifacts": ["AGENTS.md"],
+                },
+                {
+                    "version": "v1",
+                    "kind": "intervention_card",
+                    "summary": "This request is making architecture, ownership, or boundary claims.",
+                    "workstreams": ["B-999"],
+                },
+                {
+                    "version": "v1",
+                    "kind": "subagent_stop",
+                    "summary": "",
+                    "workstreams": ["B-999"],
+                },
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    rc = validator.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--manifest",
+            "odylith/registry/source/component_registry.v1.json",
+            "--catalog",
+            "odylith/atlas/source/catalog/diagrams.v1.json",
+            "--ideas-root",
+            "odylith/radar/source/ideas",
+            "--stream",
+            "odylith/compass/runtime/codex-stream.v1.jsonl",
+        ]
+    )
+
+    assert rc == 0
+
+
+def test_validate_component_registry_contract_ignores_upgrade_visibility_residue_on_default_stream(
+    tmp_path: Path,
+    capsys,  # noqa: ANN001
+) -> None:
+    _seed_repo(tmp_path)
+
+    stream_path = tmp_path / "odylith" / "compass" / "runtime" / "agent-stream.v1.jsonl"
+    stream_path.parent.mkdir(parents=True, exist_ok=True)
+    stream_path.write_text(
+        "\n".join(
+            json.dumps(event)
+            for event in (
+                {
+                    "version": "v1",
+                    "kind": "intervention_card",
+                    "summary": "This request is making architecture, ownership, or boundary claims.",
+                    "workstreams": ["B-001"],
+                },
+                {
+                    "version": "v1",
+                    "kind": "subagent_stop",
+                    "summary": "",
+                    "workstreams": ["B-001"],
+                },
+                {
+                    "version": "v1",
+                    "kind": "ambient_signal",
+                    "summary": (
+                        "Odylith Risks: The conversation is setting a hard rule, not just a preference."
+                    ),
+                },
+                {
+                    "version": "v1",
+                    "kind": "ambient_signal",
+                    "summary": (
+                        "Odylith Insight: B-001 is the live Radar lane for this turn."
+                    ),
+                },
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    rc = validator.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--manifest",
+            "odylith/registry/source/component_registry.v1.json",
+            "--catalog",
+            "odylith/atlas/source/catalog/diagrams.v1.json",
+            "--ideas-root",
+            "odylith/radar/source/ideas",
+        ]
+    )
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert "unmapped meaningful events" not in output
+    assert "meaningful events missing component linkage" not in output
+
+
+def test_validate_component_registry_contract_keeps_meaningful_subagent_events(
+    tmp_path: Path,
+) -> None:
+    _seed_repo(tmp_path)
+
+    stream_path = tmp_path / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl"
+    stream_path.parent.mkdir(parents=True, exist_ok=True)
+    stream_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "kind": "subagent_stop",
+                "summary": "Subagent completed Radar render review.",
+                "artifacts": ["src/odylith/runtime/surfaces/render_backlog_ui.py"],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    rc = validator.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--manifest",
+            "odylith/registry/source/component_registry.v1.json",
+            "--catalog",
+            "odylith/atlas/source/catalog/diagrams.v1.json",
+            "--ideas-root",
+            "odylith/radar/source/ideas",
+            "--stream",
+            "odylith/compass/runtime/codex-stream.v1.jsonl",
+        ]
+    )
+
+    assert rc == 0
+
+
+def test_validate_component_registry_contract_fails_on_meaningful_unmapped_subagent_event(
+    tmp_path: Path,
+) -> None:
+    _seed_repo(tmp_path)
+
+    stream_path = tmp_path / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl"
+    stream_path.parent.mkdir(parents=True, exist_ok=True)
+    stream_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "kind": "subagent_stop",
+                "summary": "Subagent completed service handler review.",
+                "artifacts": ["services/example/handler.py"],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    rc = validator.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--manifest",
+            "odylith/registry/source/component_registry.v1.json",
+            "--catalog",
+            "odylith/atlas/source/catalog/diagrams.v1.json",
+            "--ideas-root",
+            "odylith/radar/source/ideas",
+            "--stream",
+            "odylith/compass/runtime/codex-stream.v1.jsonl",
+        ]
+    )
+
+    assert rc == 2
+
+
 def test_validate_component_registry_contract_fails_when_spec_ref_missing(tmp_path: Path) -> None:
     _seed_repo(tmp_path)
     manifest_path = tmp_path / "odylith" / "registry" / "source" / "component_registry.v1.json"

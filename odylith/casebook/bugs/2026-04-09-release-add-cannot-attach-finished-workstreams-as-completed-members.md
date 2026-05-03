@@ -1,5 +1,14 @@
 - Bug ID: CB-082
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-09
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: `odylith release add` rejected already `finished`
   workstreams, even though active release read models already know how to

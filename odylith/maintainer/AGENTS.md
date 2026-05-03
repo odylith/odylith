@@ -137,6 +137,13 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   debugging raw markdown text.
 - Treat filler demo copy as a regression too. Mockups, screenshots, and sample
   payloads should use concrete governed meaning, not placeholder flourish.
+- In dev-maintainer lane, do not encode templatized conversations, canned
+  narration, or patterned voice rails in maintainer-owned Odylith product
+  surfaces. Prompts, hooks, renderers, tests, fixtures, skills, docs, and
+  governance generators must preserve live narration assembled from current
+  evidence. Tests may pin labels, schemas, evidence use, and anti-mechanical
+  constraints, but must not force one canned sentence shape or reusable
+  conversation script.
 - Treat templated or mechanical intervention copy as a product regression even
   when the facts are technically correct. The default shipped voice must stay
   friendly, delightful, soulful, insightful, simple, clear, accurate,
@@ -213,5 +220,8 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
 - Use `--apply-github` only after the maintainer accepts the exact labels,
   comment body, and close decision.
 - During release closeout, run
+  `odylith release casebook-closeout --release current --json` for local
+  Casebook truth and
   `odylith github issue release-closeout --release current --json`; do not
-  close public issues before the release is publicly available.
+  close local Casebook bugs by hand or close public issues before the release
+  is publicly available.

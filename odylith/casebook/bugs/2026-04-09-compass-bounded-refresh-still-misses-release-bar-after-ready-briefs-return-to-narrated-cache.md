@@ -1,5 +1,14 @@
 - Bug ID: CB-091
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Open
 
 - Created: 2026-04-09
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Compass now has one bounded refresh contract and the visible
   global `24h` and `48h` briefs stay on maintained narrated cache, and the old

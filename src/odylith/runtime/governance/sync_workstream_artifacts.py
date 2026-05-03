@@ -38,6 +38,7 @@ from odylith.runtime.common import generated_refresh_guard
 from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.governance import agent_governance_intelligence as governance
 from odylith.runtime.governance import casebook_source_validation
+from odylith.runtime.governance import compass_dashboard_refresh_inputs
 from odylith.runtime.governance import dashboard_refresh_contract
 from odylith.runtime.governance import release_truth_runtime
 from odylith.runtime.governance import surface_refresh_fingerprint_dag
@@ -49,8 +50,6 @@ from odylith.runtime.governance.legacy_backlog_normalization import summarize_ba
 from odylith.runtime.governance.sync_argument_contract import DEFAULT_SYNC_OVERLAP_GATE_THRESHOLD
 from odylith.runtime.governance.sync_argument_contract import configure_sync_parser
 from odylith.runtime.governance import sync_casebook_bug_index
-from odylith.runtime.surfaces import compass_refresh_contract
-from odylith.runtime.surfaces import compass_refresh_runtime
 from odylith.runtime.surfaces import render_mermaid_catalog_refresh
 from odylith.runtime.surfaces import source_bundle_mirror
 
@@ -1162,18 +1161,23 @@ def _runtime_retry_command(command: Sequence[str]) -> tuple[str, ...]:
 
 
 def _casebook_index_refresh_step(*, repo_root: Path, next_command_on_failure: str, label: str) -> ExecutionStep:
+    def _refresh_index() -> int:
+        try:
+            sync_casebook_bug_index.sync_casebook_bug_index(
+                repo_root=repo_root,
+                migrate_bug_ids=True,
+            )
+        except ValueError as exc:
+            print(str(exc))
+            return 2
+        return 0
+
     return _execution_step(
         label,
         surface="casebook",
         mutation_classes=("repo_owned_truth",),
         paths=("odylith/casebook/bugs/INDEX.md",),
-        action=lambda: (
-            sync_casebook_bug_index.sync_casebook_bug_index(
-                repo_root=repo_root,
-                migrate_bug_ids=True,
-            ),
-            0,
-        )[1],
+        action=_refresh_index,
         next_command_on_failure=next_command_on_failure,
     )
 
@@ -1306,14 +1310,9 @@ def _dashboard_surface_steps(
             _execution_step(
                 "Run Compass through the shared refresh engine and wait for the bounded result.",
                 surface=surface,
-                action=lambda: compass_refresh_runtime.run_refresh(
+                action=lambda: compass_dashboard_refresh_inputs.run_compass_dashboard_refresh(
                     repo_root=repo_root,
-                    requested_profile=compass_refresh_contract.DEFAULT_REFRESH_PROFILE,
-                    requested_runtime_mode=normalized_runtime_mode,
-                    wait=True,
-                    status_only=False,
-                    emit_output=True,
-                    skip_settlement=True,
+                    normalized_runtime_mode=normalized_runtime_mode,
                 ),
                 mutation_classes=("generated_surfaces",),
                 paths=_surface_render_outputs("compass"),
@@ -1389,16 +1388,10 @@ def _dashboard_surface_steps(
         return steps
     if surface == "casebook":
         steps.append(
-            _casebook_source_validation_step(
-                repo_root=repo_root,
-                label="Validate Casebook bug source before index or render writes.",
-            )
-        )
-        steps.append(
             _casebook_index_refresh_step(
                 repo_root=repo_root,
                 next_command_on_failure=refresh_command,
-                label="Refresh the Casebook bug index before rerendering the Casebook dashboard.",
+                label="Normalize and validate Casebook bugs before rerendering the Casebook dashboard.",
             )
         )
         steps.append(
@@ -1904,16 +1897,29 @@ def refresh_dashboard_surfaces(
         print("- runtime_fallback: standalone (runtime prerequisites missing)")
         runtime_fallback_used = True
     with session_context:
-        if len(selected) >= 2:
-            surface_results = _refresh_surfaces_parallel(
-                repo_root=repo_root,
-                selected=selected,
-                runtime_mode=normalized_runtime_mode,
-                atlas_sync=atlas_sync,
-                run_impl=run_impl,
-            )
+        surface_groups: list[list[str]]
+        if "tooling_shell" in selected and len(selected) > 1:
+            surface_groups = [
+                [surface for surface in selected if surface != "tooling_shell"],
+                ["tooling_shell"],
+            ]
         else:
-            for surface in selected:
+            surface_groups = [list(selected)]
+        for surface_group in surface_groups:
+            if not surface_group:
+                continue
+            if len(surface_group) >= 2:
+                surface_results.extend(
+                    _refresh_surfaces_parallel(
+                        repo_root=repo_root,
+                        selected=surface_group,
+                        runtime_mode=normalized_runtime_mode,
+                        atlas_sync=atlas_sync,
+                        run_impl=run_impl,
+                    )
+                )
+                continue
+            for surface in surface_group:
                 output, result = _run_surface_worker(
                     repo_root=repo_root,
                     surface=surface,
@@ -2303,24 +2309,10 @@ def build_sync_execution_plan(
     )
     if bool(getattr(impact, "casebook", False)):
         steps.append(
-            _casebook_source_validation_step(
+            _casebook_index_refresh_step(
                 repo_root=repo_root,
-                label="Validate Casebook bug source before index or render writes.",
-            )
-        )
-        steps.append(
-            _execution_step(
-                "Refresh the Casebook bug index before any shell-facing renders consume it.",
-                mutation_classes=("repo_owned_truth",),
-                paths=("odylith/casebook/bugs/INDEX.md",),
-                action=lambda: (
-                    sync_casebook_bug_index.sync_casebook_bug_index(
-                        repo_root=repo_root,
-                        migrate_bug_ids=True,
-                    ),
-                    0,
-                )[1],
                 next_command_on_failure=sync_failure_command,
+                label="Normalize and validate the Casebook bug index before shell-facing renders consume it.",
             )
         )
     if bool(getattr(impact, "atlas", False)):

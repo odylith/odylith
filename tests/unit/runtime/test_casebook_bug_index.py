@@ -103,6 +103,196 @@ def test_sync_casebook_bug_index_migrates_missing_bug_ids_by_default(tmp_path: P
     assert "| CB-001 | 2026-03-26 | Example open bug | P1 | tooling | Open | [2026-03-26-example-open-bug.md](2026-03-26-example-open-bug.md) |" in index_text
 
 
+def test_sync_casebook_bug_index_backfills_compact_casebook_metadata(tmp_path: Path) -> None:
+    bug_root = tmp_path / "odylith" / "casebook" / "bugs"
+    bug_root.mkdir(parents=True, exist_ok=True)
+    path = bug_root / "2026-03-26-example-open-bug.md"
+    _write_bug(
+        path,
+        bug_id="CB-001",
+        status="Fixed pending release",
+        created="2026-03-26",
+        severity="P1",
+        components="tooling",
+    )
+
+    sync_casebook_bug_index.sync_casebook_bug_index(repo_root=tmp_path)
+
+    text = path.read_text(encoding="utf-8")
+    assert "- Type: Product" in text
+    assert "- Status: FixedPendingRelease" in text
+
+
+def test_sync_casebook_bug_index_groups_terminal_statuses_with_closed_bugs(tmp_path: Path) -> None:
+    bug_root = tmp_path / "odylith" / "casebook" / "bugs"
+    bug_root.mkdir(parents=True, exist_ok=True)
+    _write_bug(
+        bug_root / "2026-03-26-fixed-pending-bug.md",
+        bug_id="CB-001",
+        status="FixedPendingRelease",
+        created="2026-03-26",
+        severity="P1",
+        components="tooling",
+    )
+    _write_bug(
+        bug_root / "2026-03-27-open-bug.md",
+        bug_id="CB-002",
+        status="Open",
+        created="2026-03-27",
+        severity="P1",
+        components="tooling",
+    )
+
+    index_path = sync_casebook_bug_index.sync_casebook_bug_index(repo_root=tmp_path)
+    text = index_path.read_text(encoding="utf-8")
+    open_section = text.split("## Open Bugs", 1)[1].split("## Closed Bugs", 1)[0]
+    closed_section = text.split("## Closed Bugs", 1)[1]
+
+    assert "CB-002" in open_section
+    assert "CB-001" not in open_section
+    assert "CB-001" in closed_section
+
+
+def test_sync_casebook_bug_index_collapses_duplicate_casebook_type_metadata(tmp_path: Path) -> None:
+    bug_root = tmp_path / "odylith" / "casebook" / "bugs"
+    bug_root.mkdir(parents=True, exist_ok=True)
+    path = bug_root / "2026-03-26-example-open-bug.md"
+    path.write_text(
+        "\n".join(
+            [
+                "- Bug ID: CB-001",
+                "",
+                "- Type: Product",
+                "",
+                "- Status: Open",
+                "",
+                "- Created: 2026-03-26",
+                "",
+                "- Severity: P1",
+                "",
+                "- Reproducibility: High",
+                "",
+                "- Type: Tooling",
+                "",
+                "- Description: Example bug.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    sync_casebook_bug_index.sync_casebook_bug_index(repo_root=tmp_path)
+
+    text = path.read_text(encoding="utf-8")
+    assert text.count("- Type:") == 1
+    assert "- Type: Tooling" in text
+
+
+def test_sync_casebook_bug_index_keeps_compact_metadata_idempotent(tmp_path: Path) -> None:
+    bug_root = tmp_path / "odylith" / "casebook" / "bugs"
+    bug_root.mkdir(parents=True, exist_ok=True)
+    path = bug_root / "2026-03-26-example-open-bug.md"
+    path.write_text(
+        "\n".join(
+            [
+                "- Bug ID: CB-001",
+                "",
+                "- Type: Product",
+                "",
+                "- Status: Open",
+                "",
+                "- Created: 2026-03-26",
+                "",
+                "- Severity: P1",
+                "",
+                "- Reproducibility: High",
+                "",
+                "- Description: Example bug.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    sync_casebook_bug_index.sync_casebook_bug_index(repo_root=tmp_path)
+    first = path.read_text(encoding="utf-8")
+    sync_casebook_bug_index.sync_casebook_bug_index(repo_root=tmp_path)
+    second = path.read_text(encoding="utf-8")
+
+    assert second == first
+    assert "\n\n\n\n\n- Status:" not in second
+
+
+def test_sync_casebook_bug_index_compacts_fixed_metadata(tmp_path: Path) -> None:
+    bug_root = tmp_path / "odylith" / "casebook" / "bugs"
+    bug_root.mkdir(parents=True, exist_ok=True)
+    path = bug_root / "2026-03-26-example-open-bug.md"
+    path.write_text(
+        "\n".join(
+            [
+                "- Bug ID: CB-001",
+                "",
+                "- Type: Product",
+                "",
+                "- Fixed: Pending release/deploy",
+                "",
+                "- Status: Open",
+                "",
+                "- Created: 2026-03-26",
+                "",
+                "- Severity: P1",
+                "",
+                "- Reproducibility: High",
+                "",
+                "- Description: Example bug.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    sync_casebook_bug_index.sync_casebook_bug_index(repo_root=tmp_path)
+
+    text = path.read_text(encoding="utf-8")
+    assert "- Fixed: Pending" in text
+
+
+def test_sync_casebook_bug_index_compacts_legacy_type_to_display_label(tmp_path: Path) -> None:
+    bug_root = tmp_path / "odylith" / "casebook" / "bugs"
+    bug_root.mkdir(parents=True, exist_ok=True)
+    path = bug_root / "2026-03-26-example-open-bug.md"
+    path.write_text(
+        "\n".join(
+            [
+                "- Bug ID: CB-001",
+                "",
+                "- Type: OSW template upgrade repair / coroutine scheduler runtime / LocalStack proof UX",
+                "",
+                "- Fixed: Pending release/deploy",
+                "",
+                "- Status: Mitigated locally; pending platform release",
+                "",
+                "- Created: 2026-03-26",
+                "",
+                "- Severity: P1",
+                "",
+                "- Reproducibility: High",
+                "",
+                "- Description: Example bug.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    sync_casebook_bug_index.sync_casebook_bug_index(repo_root=tmp_path)
+
+    text = path.read_text(encoding="utf-8")
+    assert "- Type: UX" in text
+    assert "- Fixed: Pending" in text
+    assert "- Status: Mitigated" in text
+
+
 def test_sync_casebook_bug_index_cli_reports_duplicate_bug_ids_directly(tmp_path: Path, capsys) -> None:
     bug_root = tmp_path / "odylith" / "casebook" / "bugs"
     bug_root.mkdir(parents=True, exist_ok=True)

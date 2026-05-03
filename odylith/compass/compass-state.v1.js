@@ -590,6 +590,7 @@
         token.includes("refresh with `odylith") ||
         token.includes("falling back") ||
         token.includes("runtime unavailable") ||
+        token.includes("brief reused") ||
         token.includes("failed")
       );
     }

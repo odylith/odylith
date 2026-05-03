@@ -1,5 +1,14 @@
 - Bug ID: CB-054
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-06
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: On macOS, Odylith can treat Finder metadata such as
   `.DS_Store` or AppleDouble `._*` files inside

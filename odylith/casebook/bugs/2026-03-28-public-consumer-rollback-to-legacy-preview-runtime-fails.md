@@ -1,5 +1,14 @@
 - Bug ID: CB-014
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Open
 
 - Created: 2026-03-28
@@ -8,7 +17,6 @@
 
 - Reproducibility: Always
 
-- Type: Product
 
 - Description: Hosted consumer rehearsal for the abandoned Odylith `v0.1.1`
   prelaunch drill failed on the rollback step when the previous installed

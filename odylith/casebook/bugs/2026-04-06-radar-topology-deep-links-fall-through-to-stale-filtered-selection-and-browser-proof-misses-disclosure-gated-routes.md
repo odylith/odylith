@@ -1,5 +1,14 @@
 - Bug ID: CB-062
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-06
@@ -10,7 +19,6 @@
 
 - Reproducibility: Consistent
 
-- Type: Product
 
 - Description: Radar detail views could show the right topology but still
   route the operator to the wrong record. The concrete report came from

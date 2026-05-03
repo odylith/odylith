@@ -1,5 +1,14 @@
 - Bug ID: CB-055
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-06
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: After one partial runtime replacement failure, repeated
   `reinstall --latest` or `doctor --repair` attempts can hit secondary errors

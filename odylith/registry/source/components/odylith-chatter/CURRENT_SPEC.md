@@ -6,7 +6,7 @@
   copy or claim completion beyond fresh proof.
 - Odylith Discipline signals may inform closeout only after proof, benchmark, or
   visible-intervention evidence supports the statement.
-Last updated: 2026-04-29
+Last updated: 2026-05-02
 
 
 Last updated (UTC): 2026-04-17
@@ -291,6 +291,9 @@ end-of-work outcomes instead of canned self-promotion.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-05-02 · Implementation:** B-141 now enforces serial Odylith startup before context/search across host guidance, skills, and installed bundle assets, with Casebook index-only migration guard proof.
+  - Scope: B-141
+  - Evidence: AGENTS.md, agents/skills/odylith-start/SKILL.md +2 more
 - **2026-04-27 · Implementation:** v0.1.12 hardening: extracted upgrade reporting from CLI into install-owned helpers, added recursive lock hygiene with doctor repair, improved Sigstore warning summaries, and compacted 13715 stale zero-byte lock placeholders in this product repo.
   - Scope: B-030
   - Evidence: src/odylith/install/lock_hygiene.py, src/odylith/install/manager.py +2 more
@@ -305,9 +308,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-04-07 · Implementation:** Hardened Tribunal-fed ambient chatter so malformed explicit and cached signal payloads degrade quietly, supplemental closeout lines stay suppressed without an Odylith Assist line, and closeout punctuation stays clean.
   - Scope: B-031
   - Evidence: odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md, odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md +2 more
-- **2026-04-05 · Implementation:** Refreshed the benchmark publication story to the April 5 source-local full proof pass 52aa3f76538cf12f: README, benchmark docs, registry spec, plans, and radar now reflect that odylith_on clears the hard gate and secondary guardrails against odylith_off while benchmark_compare still warns until the first shipped release baseline exists.
-  - Scope: B-021, B-022
-  - Evidence: README.md, docs/benchmarks/README.md +3 more
 <!-- registry-requirements:end -->
 
 ## Feature History

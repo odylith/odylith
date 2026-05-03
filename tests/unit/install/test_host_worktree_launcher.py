@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 import subprocess
 from pathlib import Path
 
@@ -15,6 +16,86 @@ def _load_helper():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def test_helper_prefers_local_bootstrap_when_main_launcher_exists(tmp_path: Path) -> None:
+    module = _load_helper()
+    repo_root = tmp_path / "repo"
+    main_launcher = repo_root / ".odylith" / "bin" / "odylith"
+    bootstrap = repo_root / ".odylith" / "bin" / "odylith-bootstrap"
+    main_launcher.parent.mkdir(parents=True, exist_ok=True)
+    main_launcher.write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
+    bootstrap.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    captured: dict[str, object] = {}
+
+    def _fake_exec(launcher: Path, argv, cwd: Path) -> int:
+        captured["launcher"] = launcher
+        captured["argv"] = list(argv)
+        captured["cwd"] = cwd
+        return 0
+
+    exit_code = module.run(
+        ["claude", "prompt-context", "--repo-root", "."],
+        cwd=repo_root,
+        exec_runner=_fake_exec,
+    )
+
+    assert exit_code == 0
+    assert captured["launcher"] == bootstrap
+    assert captured["argv"] == ["claude", "prompt-context", "--repo-root", "."]
+    assert captured["cwd"] == repo_root
+
+
+def test_helper_uses_main_launcher_when_bootstrap_is_missing(tmp_path: Path) -> None:
+    module = _load_helper()
+    repo_root = tmp_path / "repo"
+    main_launcher = repo_root / ".odylith" / "bin" / "odylith"
+    main_launcher.parent.mkdir(parents=True, exist_ok=True)
+    main_launcher.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    captured: dict[str, object] = {}
+
+    def _fake_exec(launcher: Path, argv, cwd: Path) -> int:
+        captured["launcher"] = launcher
+        captured["argv"] = list(argv)
+        captured["cwd"] = cwd
+        return 0
+
+    exit_code = module.run(
+        ["codex", "prompt-context", "--repo-root", "."],
+        cwd=repo_root,
+        exec_runner=_fake_exec,
+    )
+
+    assert exit_code == 0
+    assert captured["launcher"] == main_launcher
+    assert captured["argv"] == ["codex", "prompt-context", "--repo-root", "."]
+    assert captured["cwd"] == repo_root
+
+
+def test_helper_seeds_hot_context_defaults_without_overriding_user_env(monkeypatch, tmp_path: Path) -> None:
+    module = _load_helper()
+    repo_root = tmp_path / "repo"
+    main_launcher = repo_root / ".odylith" / "bin" / "odylith"
+    main_launcher.parent.mkdir(parents=True, exist_ok=True)
+    main_launcher.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    monkeypatch.delenv("ODYLITH_CONTEXT_ENGINE_ALLOW_WORKSPACE_PYTHON", raising=False)
+    monkeypatch.delenv("ODYLITH_CONTEXT_ENGINE_ALLOW_BACKGROUND_AUTOSPAWN", raising=False)
+    monkeypatch.setenv("ODYLITH_CONTEXT_ENGINE_AUTOSPAWN_IDLE_TIMEOUT_SECONDS", "300")
+
+    def _fake_exec(launcher: Path, argv, cwd: Path) -> int:
+        del launcher, argv, cwd
+        assert os.environ["ODYLITH_CONTEXT_ENGINE_ALLOW_WORKSPACE_PYTHON"] == "1"
+        assert os.environ["ODYLITH_CONTEXT_ENGINE_ALLOW_BACKGROUND_AUTOSPAWN"] == "1"
+        assert os.environ["ODYLITH_CONTEXT_ENGINE_AUTOSPAWN_IDLE_TIMEOUT_SECONDS"] == "300"
+        return 0
+
+    exit_code = module.run(
+        ["codex", "prompt-context", "--repo-root", "."],
+        cwd=repo_root,
+        exec_runner=_fake_exec,
+    )
+
+    assert exit_code == 0
 
 
 def test_helper_repairs_nested_worktree_from_parent_launcher(monkeypatch, tmp_path: Path) -> None:

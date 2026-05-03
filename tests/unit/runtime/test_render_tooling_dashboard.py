@@ -1320,6 +1320,30 @@ def test_render_tooling_dashboard_skips_noop_writes_when_bundle_is_unchanged(
     assert second_mtimes == first_mtimes
 
 
+def test_render_tooling_dashboard_warns_but_renders_with_missing_child_surfaces(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+    capsys,  # noqa: ANN001
+) -> None:
+    _seed_inputs(tmp_path)
+    for surface in ("atlas", "compass", "casebook"):
+        (tmp_path / "odylith" / surface / f"{surface}.html").unlink()
+    monkeypatch.setattr(
+        renderer.delivery_surface_payload_runtime,
+        "load_delivery_surface_payload",
+        lambda **kwargs: {},
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert "tooling dashboard render warnings" in output
+    assert "missing atlas html" in output
+    assert "tooling dashboard render passed" in output
+    assert (tmp_path / "odylith" / "index.html").is_file()
+
+
 def test_render_tooling_dashboard_skips_cached_rebuild_before_surface_validation(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001

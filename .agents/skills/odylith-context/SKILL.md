@@ -1,5 +1,5 @@
 ---
 name: odylith-context
-description: Use when a known Odylith anchor needs the smallest useful local context packet.
+description: Use after startup, never in parallel with startup, when a known Odylith anchor needs local context.
 ---
 @../../../odylith/skills/odylith-context/SKILL.md

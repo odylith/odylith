@@ -1,5 +1,14 @@
 - Bug ID: CB-127
 
+- Type: ProductUXRegression
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-25
@@ -8,7 +17,6 @@
 
 - Reproducibility: Consistent
 
-- Type: product-ux-regression
 
 - Description: A plain Odylith help fast-path turn printed raw CLI help, then surfaced an unrelated topology Observation tied to B-096. The intervention scorer treated command catalog stdout and stale replay state as live conversation evidence, producing a confusing branded interruption instead of staying silent.
 

@@ -269,6 +269,19 @@ def test_tooling_shell_routes_into_all_child_surfaces(browser_context) -> None: 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
+def test_radar_defaults_to_date_sort(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=radar", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    radar = page.frame_locator("#frame-radar")
+    radar.locator("#sort").wait_for(timeout=15000)
+    assert radar.locator("#sort").input_value() == "date"
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
 def test_compass_window_switches_keep_brief_visible(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
@@ -361,10 +374,11 @@ def test_compass_and_radar_target_release_cards_show_labeled_release_version(bro
     assert compass_release_label == "TARGET RELEASE"
     assert compass_release == current_release_label
     assert compass.locator(".stat .kpi-label", has_text="NEXT RELEASE").count() == 0
-    assert compass.locator("#release-groups .execution-wave-section").count() >= 2
+    assert compass.locator("#release-groups .execution-wave-section").count() == 1
     release_targets_text = compass.locator("#release-groups").inner_text().strip()
     assert "Target Release" in release_targets_text
     assert current_release_label in release_targets_text
+    assert "0.1.12" not in release_targets_text
     assert "release target across active workstreams." in release_targets_text
 
     page.locator("#tab-radar").click()
@@ -487,6 +501,57 @@ def test_compass_copy_brief_notice_stays_below_brief_title_instead_of_header(
     _run_in_browser_thread(_exercise)
 
 
+def test_compass_skipped_narration_notice_uses_header_status_not_brief_body(
+    tmp_path: Path,
+) -> None:
+    fixture_root = _ready_compass_fixture_root(tmp_path)
+    runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
+    payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+    standup_brief = payload.get("standup_brief") if isinstance(payload.get("standup_brief"), dict) else {}
+    brief = standup_brief.get("24h") if isinstance(standup_brief.get("24h"), dict) else {}
+    brief["source"] = "cache"
+    brief["cache_mode"] = "fallback"
+    brief["provider_decision"] = "skipped_not_worth_calling"
+    brief["notice"] = {
+        "title": "Brief reused last validated narration",
+        "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
+        "reason": "skipped_not_worth_calling",
+    }
+    standup_brief["24h"] = brief
+    payload["standup_brief"] = standup_brief
+    _write_compass_fixture_runtime_payloads(fixture_root, runtime_payload=payload)
+
+    def _exercise() -> None:
+        with _static_server(root=fixture_root) as base_url:
+            for _pw, browser in _browser():
+                context = browser.new_context(viewport={"width": 1440, "height": 1100})
+                try:
+                    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                    response = page.goto(
+                        base_url + "/odylith/index.html?tab=compass&window=24h&date=live",
+                        wait_until="domcontentloaded",
+                    )
+                    assert response is not None and response.ok
+
+                    compass = page.frame_locator("#frame-compass")
+                    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                    _assert_compass_live_state(compass, window_token="24h")
+                    status_banner = compass.locator("#status-banner")
+                    status_banner.wait_for(timeout=15000)
+                    status_text = status_banner.inner_text().strip()
+                    assert status_banner.evaluate("(node) => node.classList.contains('warn')") is True
+                    assert "Brief reused last validated narration" in status_text
+                    assert "winning narrative facts did not materially change" in status_text
+                    assert compass.locator("#digest-list .brief-status-card").count() == 0
+                    assert compass.locator("#digest-list .standup-brief-sections").count() == 1
+
+                    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+                finally:
+                    context.close()
+
+    _run_in_browser_thread(_exercise)
+
+
 def test_compass_current_workstreams_excludes_rows_already_represented_in_programs_or_release_targets(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
@@ -508,7 +573,8 @@ def test_compass_current_workstreams_excludes_rows_already_represented_in_progra
         compass.locator(
             "#execution-waves-host .execution-wave-section-title, "
             "#execution-waves-host a.execution-wave-chip-link, "
-            "#release-groups-host a.execution-wave-chip-link"
+            "#release-groups-host a.execution-wave-chip-link, "
+            "#release-groups-host a.execution-wave-card-link"
         ).evaluate_all(
             """(nodes) => {
                 const seen = new Set();
@@ -686,6 +752,25 @@ def test_compass_deeplinks_into_radar_and_registry_contexts(browser_context) -> 
     response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
     assert response is not None and response.ok
 
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+
+    release_section = compass.locator("#release-groups-host details.execution-wave-section").first
+    release_section.wait_for(state="attached", timeout=15000)
+    release_section.evaluate("node => { node.open = true; }")
+    release_workstream_card = compass.locator("#release-groups-host a.execution-wave-card-link").first
+    release_workstream_card.wait_for(timeout=15000)
+    release_workstream_id = str(release_workstream_card.get_attribute("data-workstream-id") or "").strip()
+    assert re.fullmatch(r"B-\d{3,}", release_workstream_id), release_workstream_id
+    release_workstream_card.click()
+    page.wait_for_url(
+        re.compile(rf".*/odylith/index\.html\?tab=radar(&.*)?workstream={re.escape(release_workstream_id)}(&.*|$)"),
+        timeout=15000,
+    )
+    assert page.locator("#tab-radar").get_attribute("aria-selected") == "true"
+
+    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    assert response is not None and response.ok
     compass = page.frame_locator("#frame-compass")
     compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
 

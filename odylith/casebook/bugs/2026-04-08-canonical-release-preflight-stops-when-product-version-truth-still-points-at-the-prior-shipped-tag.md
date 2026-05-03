@@ -1,5 +1,14 @@
 - Bug ID: CB-073
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-08
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Canonical `make release-preflight VERSION=0.1.10` on clean
   `main` failed even after the `v0.1.10` release-note and benchmark-override

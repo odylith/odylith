@@ -1,5 +1,14 @@
 - Bug ID: CB-117
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Open
 
 - Created: 2026-04-15
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Benchmark proof shards treat shell hangup as terminal interrupt
 

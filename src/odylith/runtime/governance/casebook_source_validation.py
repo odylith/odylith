@@ -12,15 +12,20 @@ from pathlib import Path
 from typing import Any
 
 from odylith.install.fs import display_path
+from odylith.runtime.common import casebook_metadata
 
 CASEBOOK_BUGS_RELATIVE = Path("odylith/casebook/bugs")
 REPRODUCIBILITY_HELP = (
     "one compact token such as High, Medium, Low, Always, Intermittent, or Consistent"
 )
+STATUS_HELP = "one compact single-word token such as Open, InProgress, FixedPendingRelease, Resolved, or Closed"
+TYPE_HELP = "one compact single-word token such as Product, Tooling, UX, OperatorUX, or DataLoss"
+FIXED_HELP = "a YYYY-MM-DD date or one compact single-word token such as Pending, Fixed, Released, or Closed"
 
 _SKIPPED_MARKDOWN_NAMES = frozenset({"AGENTS.md", "CLAUDE.md", "INDEX.md"})
-_REPRODUCIBILITY_FIELD_RE = re.compile(r"^\s*-\s*Reproducibility:\s*(?P<value>.*)$")
+_VALIDATED_FIELD_RE = re.compile(r"^\s*-\s*(?P<field>Fixed|Reproducibility|Status|Type):\s*(?P<value>.*)$")
 _REPRODUCIBILITY_TOKEN_RE = re.compile(r"^[A-Za-z]{2,24}$")
+_FIXED_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _PLACEHOLDER_RE = re.compile(
     r"^(?:tbd|todo|unknown|n/?a|pending|to be determined|not yet known|not yet determined)(?:\b|[^A-Za-z0-9].*)?$",
     re.IGNORECASE,
@@ -174,33 +179,58 @@ def _validate_casebook_bug_file(path: Path) -> list[CasebookSourceIssue]:
                 message=f"could not read Casebook bug source: {exc}",
             )
         ]
-    matches: list[tuple[int, str]] = []
+    matches: dict[str, list[tuple[int, str]]] = {
+        "Fixed": [],
+        "Reproducibility": [],
+        "Status": [],
+        "Type": [],
+    }
     for index, line in enumerate(lines, start=1):
-        match = _REPRODUCIBILITY_FIELD_RE.match(line)
+        match = _VALIDATED_FIELD_RE.match(line)
         if match:
-            matches.append((index, str(match.group("value") or "").strip()))
-    if not matches:
-        return [
-            _issue(
-                path=path,
-                line=1,
-                field="Reproducibility",
-                value="",
-                message="missing required Casebook bug field",
+            field = str(match.group("field") or "").strip()
+            if field in matches:
+                matches[field].append((index, str(match.group("value") or "").strip()))
+    for field_name in ("Status", "Reproducibility", "Type"):
+        field_matches = matches[field_name]
+        if not field_matches:
+            issues.append(
+                _issue(
+                    path=path,
+                    line=1,
+                    field=field_name,
+                    value="",
+                    message="missing required Casebook bug field",
+                )
             )
-        ]
-    if len(matches) > 1:
-        for line_number, value in matches[1:]:
+            continue
+        if len(field_matches) > 1:
+            for line_number, value in field_matches[1:]:
+                issues.append(
+                    _issue(
+                        path=path,
+                        line=line_number,
+                        field=field_name,
+                        value=value,
+                        message="duplicate Casebook bug field",
+                    )
+                )
+    fixed_matches = matches["Fixed"]
+    if len(fixed_matches) > 1:
+        for line_number, value in fixed_matches[1:]:
             issues.append(
                 _issue(
                     path=path,
                     line=line_number,
-                    field="Reproducibility",
+                    field="Fixed",
                     value=value,
                     message="duplicate Casebook bug field",
                 )
             )
-    line_number, value = matches[0]
+    reproducibility_matches = matches["Reproducibility"]
+    if not reproducibility_matches:
+        return issues
+    line_number, value = reproducibility_matches[0]
     if not reproducibility_token_is_valid(value):
         issues.append(
             _issue(
@@ -211,6 +241,50 @@ def _validate_casebook_bug_file(path: Path) -> list[CasebookSourceIssue]:
                 message=f"must be {REPRODUCIBILITY_HELP}; put repro steps in evidence fields",
             )
         )
+    if fixed_matches:
+        line_number, value = fixed_matches[0]
+        canonical = casebook_metadata.canonical_casebook_fixed(value)
+        fixed_is_valid = _FIXED_DATE_RE.fullmatch(value) is not None or (
+            casebook_metadata.casebook_token_is_valid(value) and canonical == value
+        )
+        if not fixed_is_valid:
+            issues.append(
+                _issue(
+                    path=path,
+                    line=line_number,
+                    field="Fixed",
+                    value=value,
+                    message=f"must be {FIXED_HELP}; use `{canonical or 'Pending'}` for this value",
+                )
+            )
+    status_matches = matches["Status"]
+    if status_matches:
+        line_number, value = status_matches[0]
+        canonical = casebook_metadata.canonical_casebook_status(value)
+        if _looks_placeholder(value) or not casebook_metadata.casebook_token_is_valid(value) or canonical != value:
+            issues.append(
+                _issue(
+                    path=path,
+                    line=line_number,
+                    field="Status",
+                    value=value,
+                    message=f"must be {STATUS_HELP}; use `{canonical or 'Open'}` for this value",
+                )
+            )
+    type_matches = matches["Type"]
+    if type_matches:
+        line_number, value = type_matches[0]
+        canonical = casebook_metadata.canonical_casebook_display_type(value)
+        if _looks_placeholder(value) or not casebook_metadata.casebook_token_is_valid(value) or canonical != value:
+            issues.append(
+                _issue(
+                    path=path,
+                    line=line_number,
+                    field="Type",
+                    value=value,
+                    message=f"must be {TYPE_HELP}; use `{canonical or 'Product'}` for this value",
+                )
+            )
     return issues
 
 

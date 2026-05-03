@@ -1,5 +1,14 @@
 - Bug ID: CB-030
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-01
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The benchmark sandbox strip policy removed entire repo
   subtrees such as `odylith/maintainer/` and `odylith/skills/` from disposable

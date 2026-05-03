@@ -18,6 +18,8 @@ from odylith.runtime.common.consumer_profile import consumer_profile_path, truth
 from odylith.runtime.governance import backlog_title_contract
 from odylith.runtime.governance import execution_wave_contract
 from odylith.runtime.governance import release_planning_contract
+from odylith.runtime.governance.backlog_metadata import split_metadata_ids
+from odylith.runtime.governance.backlog_topology_contract import validate_topology_contract
 from odylith.runtime.context_engine import odylith_context_cache
 
 _REQUIRED_METADATA: tuple[str, ...] = (
@@ -960,95 +962,8 @@ def rows_as_mapping(
     return mapped
 
 
-def _split_metadata_ids(raw: str) -> list[str]:
-    values: list[str] = []
-    for token in str(raw or "").replace(";", ",").split(","):
-        normalized = token.strip().upper()
-        if not normalized:
-            continue
-        values.append(normalized)
-    return values
-
-
 def _build_lineage_values(spec: IdeaSpec, field: str) -> list[str]:
-    return _split_metadata_ids(spec.metadata.get(field, ""))
-
-
-def _normalize_workstream_ref(raw: str) -> str:
-    token = str(raw or "").strip().upper()
-    if token in {"", "NONE", "-"}:
-        return ""
-    return token
-
-
-def _build_topology_values(spec: IdeaSpec, field: str) -> list[str]:
-    values: list[str] = []
-    seen: set[str] = set()
-    for token in _split_metadata_ids(spec.metadata.get(field, "")):
-        normalized = _normalize_workstream_ref(token)
-        if not normalized or normalized in seen:
-            continue
-        seen.add(normalized)
-        values.append(normalized)
-    return values
-
-
-def _validate_topology_contract(*, ideas: dict[str, IdeaSpec]) -> list[str]:
-    errors: list[str] = []
-    idea_ids = set(ideas.keys())
-
-    for idea_id, spec in sorted(ideas.items()):
-        parent_values = _build_topology_values(spec, "workstream_parent")
-        if len(parent_values) > 1:
-            errors.append(
-                f"{spec.path}: `workstream_parent` expects a single B-id, got `{','.join(parent_values)}`"
-            )
-            continue
-
-        if parent_values:
-            parent_id = parent_values[0]
-            if not _IDEA_ID_RE.fullmatch(parent_id):
-                errors.append(f"{spec.path}: `workstream_parent` must contain a valid B-id, got `{parent_id}`")
-            elif parent_id == idea_id:
-                errors.append(f"{spec.path}: `workstream_parent` cannot self-reference `{idea_id}`")
-            elif parent_id not in idea_ids:
-                errors.append(f"{spec.path}: `workstream_parent` references missing workstream `{parent_id}`")
-
-        for child_id in _build_topology_values(spec, "workstream_children"):
-            if not _IDEA_ID_RE.fullmatch(child_id):
-                errors.append(f"{spec.path}: `workstream_children` contains invalid B-id `{child_id}`")
-                continue
-            if child_id == idea_id:
-                errors.append(f"{spec.path}: `workstream_children` cannot self-reference `{idea_id}`")
-                continue
-            if child_id not in idea_ids:
-                errors.append(f"{spec.path}: `workstream_children` references missing workstream `{child_id}`")
-
-    for idea_id, spec in sorted(ideas.items()):
-        parent_values = _build_topology_values(spec, "workstream_parent")
-        if parent_values:
-            parent_id = parent_values[0]
-            parent = ideas.get(parent_id)
-            if parent is not None and idea_id not in set(_build_topology_values(parent, "workstream_children")):
-                errors.append(
-                    f"{parent.path}: missing reciprocal `workstream_children` entry `{idea_id}` for `{idea_id}.workstream_parent={parent_id}`"
-                )
-
-        for child_id in _build_topology_values(spec, "workstream_children"):
-            child = ideas.get(child_id)
-            if child is None:
-                continue
-            reciprocal = _build_topology_values(child, "workstream_parent")
-            if not reciprocal:
-                errors.append(
-                    f"{child.path}: missing reciprocal `workstream_parent: {idea_id}` for `{idea_id}.workstream_children`"
-                )
-            elif reciprocal[0] != idea_id:
-                errors.append(
-                    f"{child.path}: `workstream_parent` must be `{idea_id}` to match `{idea_id}.workstream_children`"
-                )
-
-    return errors
+    return split_metadata_ids(spec.metadata.get(field, ""))
 
 
 def _validate_lineage_contract(*, ideas: dict[str, IdeaSpec]) -> list[str]:
@@ -2105,7 +2020,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     ideas, idea_errors = _validate_idea_specs(idea_root, repo_root=repo_root)
     errors.extend(idea_errors)
-    errors.extend(_validate_topology_contract(ideas=ideas))
+    errors.extend(validate_topology_contract(ideas=ideas))
     errors.extend(_validate_lineage_contract(ideas=ideas))
     errors.extend(_validate_promotion_links(ideas=ideas, repo_root=repo_root))
     _execution_programs, execution_program_errors = execution_wave_contract.collect_execution_programs(

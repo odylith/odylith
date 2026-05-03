@@ -1,6 +1,15 @@
 - Bug ID: CB-138
 
-- Status: Fixed Pending Release
+- Type: UX
+
+
+
+
+
+
+
+
+- Status: FixedPendingRelease
 
 - Created: 2026-04-29
 
@@ -8,7 +17,6 @@
 
 - Reproducibility: Consistent
 
-- Type: Dashboard rendering regression
 
 - Description: A large consumer Casebook rendered under Odylith 0.1.11 shows the Bug Cases selector clipping long titles, summaries, and status chips at the list-panel edge while the detail pane remains readable. Casebook source validation passes for 156 records, so the failure is in the generated dashboard layout rather than malformed bug markdown.
 

@@ -1,5 +1,14 @@
 - Bug ID: CB-110
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-14
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Forwarded CLI help hides backend flags, `odylith bug capture`
   can corrupt multiline Casebook index rows by line-patching `INDEX.md`, and

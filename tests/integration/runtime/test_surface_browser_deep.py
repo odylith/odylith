@@ -44,6 +44,21 @@ from tests.integration.runtime.surface_browser_test_support import (
     compact_browser_context,
 )
 
+_GLOBAL_BRIEF_NOTICE_REASONS = {
+    "provider_empty",
+    "provider_unavailable",
+    "skipped_not_worth_calling",
+    "invalid_batch",
+    "validation_failed",
+}
+
+
+def _assert_global_brief_notice_contract(meta: dict[str, str]) -> None:
+    if meta["hasNotice"] == "false":
+        return
+    assert meta["hasNotice"] == "true"
+    assert meta["noticeReason"] in _GLOBAL_BRIEF_NOTICE_REASONS
+
 
 class _CompassProvider:
     _PATH_LIKE_RE = re.compile(r"`?(?:\.?/)?(?:\.odylith|odylith|src|tests|docs|skills|agents-guidelines)/[A-Za-z0-9._/\-]+`?")
@@ -452,6 +467,14 @@ class _CompassProvider:
 def _write_fixture_current_release_assignments(fixture_root, *workstream_ids: str) -> None:  # noqa: ANN001
     releases_root = fixture_root / "odylith" / "radar" / "source" / "releases"
     releases_root.mkdir(parents=True, exist_ok=True)
+    registry_path = releases_root / "releases.v1.json"
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    registry["aliases"] = {"current": "release-0-1-11", "next": "release-0-1-11"}
+    for release in registry.get("releases", []):
+        if str(release.get("release_id", "")).strip() == "release-0-1-11":
+            release["status"] = "active"
+            release["shipped_utc"] = ""
+    registry_path.write_text(json.dumps(registry, indent=2) + "\n", encoding="utf-8")
     events_path = releases_root / "release-assignment-events.v1.jsonl"
     rows = [
         {
@@ -1092,12 +1115,13 @@ def test_casebook_proof_control_panel_stays_pinned_to_the_selected_bug_lane(tmp_
     bug_root = fixture_root / "odylith" / "casebook" / "bugs"
     bug_root.mkdir(parents=True, exist_ok=True)
     (bug_root / "2026-04-08-proof-control-primary.md").write_text(
-        (
-            "# Proof Control Primary\n\n"
-            "- Bug ID: CB-999\n"
-            "- Severity: P1\n"
-            "- Reproducibility: High\n"
-            "- Status: Open\n"
+            (
+                "# Proof Control Primary\n\n"
+                "- Bug ID: CB-999\n"
+                "- Type: Product\n"
+                "- Severity: P1\n"
+                "- Reproducibility: High\n"
+                "- Status: Open\n"
             "- Components Affected: `src/odylith/runtime/governance/proof_state/resolver.py`\n"
             "- Linked Workstream: B-062\n"
             "- Proof Lane ID: casebook-proof-browser-primary\n"
@@ -1111,12 +1135,13 @@ def test_casebook_proof_control_panel_stays_pinned_to_the_selected_bug_lane(tmp_
         encoding="utf-8",
     )
     (bug_root / "2026-04-08-proof-control-secondary.md").write_text(
-        (
-            "# Proof Control Secondary\n\n"
-            "- Bug ID: CB-998\n"
-            "- Severity: P1\n"
-            "- Reproducibility: High\n"
-            "- Status: Open\n"
+            (
+                "# Proof Control Secondary\n\n"
+                "- Bug ID: CB-998\n"
+                "- Type: Product\n"
+                "- Severity: P1\n"
+                "- Reproducibility: High\n"
+                "- Status: Open\n"
             "- Components Affected: `src/odylith/runtime/governance/proof_state/resolver.py`\n"
             "- Linked Workstream: B-062\n"
             "- Proof Lane ID: casebook-proof-browser-secondary\n"
@@ -1418,7 +1443,7 @@ def test_compass_scope_window_and_detail_behavior_in_compact_viewport(compact_br
     global_24h_meta = _compass_brief_metadata(compass)
     assert global_24h_meta["source"] in {"provider", "cache", "unavailable"}
     if global_24h_meta["source"] in {"provider", "cache"}:
-        assert global_24h_meta["hasNotice"] == "false"
+        _assert_global_brief_notice_contract(global_24h_meta)
     assert global_24h_meta["fingerprint"]
     layout = compass.locator(".layout").evaluate(
         """(node) => {
@@ -1528,7 +1553,7 @@ def test_compass_scope_window_and_detail_behavior_in_compact_viewport(compact_br
     global_48h_meta = _compass_brief_metadata(compass)
     assert global_48h_meta["source"] in {"provider", "cache", "unavailable"}
     if global_48h_meta["source"] in {"provider", "cache"}:
-        assert global_48h_meta["hasNotice"] == "false"
+        _assert_global_brief_notice_contract(global_48h_meta)
     assert global_48h_meta["fingerprint"]
     assert global_48h_meta["window"] == "48h"
     if scoped_48h_meta["source"] in {"provider", "cache"} and scoped_48h_meta["hasNotice"] == "false":
@@ -2638,12 +2663,12 @@ def test_compass_provider_deferred_warm_poll_only_rerenders_brief(tmp_path) -> N
                     statuses=("unavailable",),
                 )
 
-                program_section = compass.locator("#execution-waves-host .execution-wave-section").first
-                program_section.wait_for(timeout=15000)
-                if program_section.get_attribute("open") is None:
-                    program_section.locator("> summary").first.click()
-                program_section.evaluate("(node) => { node.dataset.codexWarmBriefProbe = '1'; }")
-                assert program_section.evaluate("(node) => node.dataset.codexWarmBriefProbe") == "1"
+                release_section = compass.locator("#release-groups-host .execution-wave-section").first
+                release_section.wait_for(timeout=15000)
+                if release_section.get_attribute("open") is None:
+                    release_section.locator("> summary").first.click()
+                release_section.evaluate("(node) => { node.dataset.odylithWarmBriefProbe = '1'; }")
+                assert release_section.evaluate("(node) => node.dataset.odylithWarmBriefProbe") == "1"
 
                 compass.locator("body").evaluate(
                     """() => {
@@ -2709,8 +2734,8 @@ def test_compass_provider_deferred_warm_poll_only_rerenders_brief(tmp_path) -> N
                 )
                 page.wait_for_timeout(250)
 
-                assert program_section.evaluate("(node) => node.dataset.codexWarmBriefProbe") == "1"
-                assert program_section.evaluate("(node) => node.hasAttribute('open')") is True
+                assert release_section.evaluate("(node) => node.dataset.odylithWarmBriefProbe") == "1"
+                assert release_section.evaluate("(node) => node.hasAttribute('open')") is True
                 assert "The live brief warmed successfully." in compass.locator("#digest-list").inner_text()
                 assert compass.locator("body").evaluate("() => window.__codexWarmBriefLoadRuntimeCalls__") == 1
 

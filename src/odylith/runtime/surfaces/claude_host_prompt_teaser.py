@@ -6,7 +6,6 @@ import argparse
 import sys
 from pathlib import Path
 
-from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.surfaces import claude_host_prompt_context
 from odylith.runtime.surfaces import claude_host_shared
 from odylith.runtime.surfaces import host_intervention_support
@@ -48,11 +47,15 @@ def main(argv: list[str] | None = None) -> int:
     session_id = claude_host_shared.hook_session_id(payload)
     if host_intervention_support.suppress_prompt_live_narration(prompt=prompt):
         return 0
+    if not host_intervention_support.prompt_needs_live_bundle(prompt=prompt):
+        return 0
     bundle = claude_host_prompt_context._prompt_conversation_bundle(  # noqa: SLF001
         repo_root=repo_root,
         prompt=prompt,
         session_id=session_id,
     )
+    from odylith.runtime.intervention_engine import host_surface_runtime
+
     bundle = host_intervention_support.ensure_prompt_visible_assist_bundle(bundle)
     decision = host_surface_runtime.visible_intervention_decision(
         repo_root=repo_root,

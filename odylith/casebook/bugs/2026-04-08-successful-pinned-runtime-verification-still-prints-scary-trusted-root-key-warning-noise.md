@@ -1,5 +1,14 @@
 - Bug ID: CB-076
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-08
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Successful pinned-runtime verification in shipped release-proof
   lanes still prints scary trust-warning noise such as `Failed to load a

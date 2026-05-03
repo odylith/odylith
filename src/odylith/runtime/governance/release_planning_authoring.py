@@ -11,6 +11,7 @@ from typing import Mapping
 from typing import Sequence
 
 from odylith.runtime.governance import authoring_execution_policy
+from odylith.runtime.governance import casebook_release_closeout
 from odylith.runtime.governance import release_planning_contract
 from odylith.runtime.governance import release_planning_view_model
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
@@ -45,6 +46,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     update.add_argument("--alias", action="append", default=[])
     update.add_argument("--drop-alias", action="append", default=[])
     update.add_argument("--clear-aliases", action="store_true")
+    update.add_argument(
+        "--skip-casebook-closeout",
+        action="store_true",
+        help="Do not auto-close FixedPendingRelease Casebook records when marking a release shipped.",
+    )
     update.add_argument("--dry-run", action="store_true")
     update.add_argument("--json", action="store_true", dest="as_json")
 
@@ -405,16 +411,41 @@ def _run_update(args: argparse.Namespace) -> dict[str, Any]:
         preferred_alternative=f"odylith release show {release.release_id}",
     )
     authoring_execution_policy.enforce_governed_authoring_action(governance)
+    closeout_payload: dict[str, Any] | None = None
+    should_closeout_casebook = (
+        str(field_updates.get("status", "")).strip() in {"shipped", "closed"}
+        and not bool(getattr(args, "skip_casebook_closeout", False))
+    )
+    if should_closeout_casebook:
+        closeout_preflight = casebook_release_closeout.build_casebook_release_closeout_plan(
+            repo_root=repo_root,
+            release=release.release_id,
+            release_state_override=str(field_updates.get("status", "")).strip(),
+        )
+        if closeout_preflight.blocked:
+            blocked_ids = ", ".join(item.bug_id for item in closeout_preflight.blocked)
+            raise ValueError(
+                "release update blocked because Casebook closeout is not safe for "
+                f"{blocked_ids}"
+            )
     if not bool(args.dry_run):
         _write_registry_document(repo_root=repo_root, document=document)
+        if should_closeout_casebook:
+            closeout_payload = casebook_release_closeout.apply_casebook_release_closeout(
+                repo_root=repo_root,
+                release=release.release_id,
+            ).as_dict()
     updated = next(row for row in payload["catalog"] if row["release_id"] == release.release_id)
-    return {
+    result = {
         "command": "update",
         "dry_run": bool(args.dry_run),
         "release": updated,
         "registry_path": str(state.registry_path),
         "execution_engine": governance.to_dict(),
     }
+    if closeout_payload is not None:
+        result["casebook_release_closeout"] = closeout_payload
+    return result
 
 
 def _run_list(args: argparse.Namespace) -> dict[str, Any]:
@@ -637,6 +668,105 @@ def add_workstreams_to_release(
         "workstream_ids": normalized_ids,
         "release": next(row for row in next_payload["catalog"] if row["release_id"] == release.release_id),
         "event_log_path": str(next_state.event_log_path),
+        "execution_engine": governance.to_dict(),
+    }
+
+
+def ensure_release_selector(
+    *,
+    repo_root: Path,
+    selector: str,
+    release_id: str,
+    status: str = "planning",
+    version: str = "",
+    tag: str = "",
+    name: str = "",
+    notes: str = "",
+    aliases: Sequence[str] = (),
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    """Create a release target when a requested selector is not defined yet."""
+
+    root = Path(repo_root).resolve()
+    registry_document, event_documents, idea_specs = _load_governed_documents(repo_root=root)
+    state, payload = _validated_state(
+        repo_root=root,
+        registry_document=registry_document,
+        event_documents=event_documents,
+        idea_specs=idea_specs,
+    )
+    try:
+        release = state.release_for_selector(selector)
+    except release_planning_contract.ReleaseSelectorError as exc:
+        if exc.matches:
+            raise
+    else:
+        release_row = next(row for row in payload["catalog"] if row["release_id"] == release.release_id)
+        return {
+            "command": "ensure",
+            "created": False,
+            "dry_run": bool(dry_run),
+            "release": release_row,
+            "registry_path": str(state.registry_path),
+        }
+
+    document = copy.deepcopy(registry_document)
+    releases = _registry_release_rows(document)
+    normalized_release_id = str(release_id or "").strip()
+    if not normalized_release_id:
+        raise ValueError("release_id is required when creating a release target")
+    if _release_row_by_id(releases, normalized_release_id) is not None:
+        raise ValueError(f"release `{normalized_release_id}` already exists but selector `{selector}` does not point to it")
+    aliases_map = _registry_alias_map(document)
+    alias_tokens = {
+        release_planning_contract.canonical_alias_token(alias)
+        for alias in (*aliases, selector)
+        if release_planning_contract.canonical_alias_token(alias)
+    }
+    for alias in alias_tokens:
+        owner = aliases_map.get(alias, "")
+        if owner and owner != normalized_release_id:
+            raise ValueError(f"alias `{alias}` already points to `{owner}`")
+        aliases_map[alias] = normalized_release_id
+    releases.append(
+        {
+            "release_id": normalized_release_id,
+            "status": str(status or "").strip() or "planning",
+            "version": str(version or "").strip(),
+            "tag": str(tag or "").strip(),
+            "name": str(name or "").strip(),
+            "notes": str(notes or "").strip(),
+            "created_utc": release_planning_contract.utc_now_iso()[:10],
+            "shipped_utc": "",
+            "closed_utc": "",
+        }
+    )
+    document["releases"] = releases
+    document["aliases"] = aliases_map
+    document["updated_utc"] = release_planning_contract.utc_now_iso()[:10]
+    next_state, next_payload = _validated_state(
+        repo_root=root,
+        registry_document=document,
+        event_documents=event_documents,
+        idea_specs=idea_specs,
+    )
+    governance = _release_governance_decision(
+        repo_root=root,
+        action="mutate_release_create",
+        target_scope=[normalized_release_id, *sorted(alias_tokens)],
+        requested_scope=[str(selector).strip(), normalized_release_id],
+        preferred_alternative=f"odylith release show {normalized_release_id}",
+    )
+    authoring_execution_policy.enforce_governed_authoring_action(governance)
+    if not bool(dry_run):
+        _write_registry_document(repo_root=root, document=document)
+    release_row = next(row for row in next_payload["catalog"] if row["release_id"] == normalized_release_id)
+    return {
+        "command": "ensure",
+        "created": True,
+        "dry_run": bool(dry_run),
+        "release": release_row,
+        "registry_path": str(next_state.registry_path),
         "execution_engine": governance.to_dict(),
     }
 

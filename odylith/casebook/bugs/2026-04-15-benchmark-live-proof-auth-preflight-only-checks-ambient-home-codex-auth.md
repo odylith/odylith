@@ -1,5 +1,14 @@
 - Bug ID: CB-118
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Open
 
 - Created: 2026-04-15
@@ -8,7 +17,6 @@
 
 - Reproducibility: Medium
 
-- Type: Product
 
 - Description: Benchmark live proof auth preflight only checks ambient home codex auth
 

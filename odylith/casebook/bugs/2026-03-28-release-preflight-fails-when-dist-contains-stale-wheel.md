@@ -1,5 +1,14 @@
 - Bug ID: CB-016
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Open
 
 - Created: 2026-03-28
@@ -8,7 +17,6 @@
 
 - Reproducibility: Always
 
-- Type: Product
 
 - Description: `make release-preflight` reused the shared repo `dist/`
   directory, so stale Odylith wheels from prior local builds caused the

@@ -1043,6 +1043,10 @@ def test_orchestrator_threads_conversation_bundle_into_odylith_adoption(tmp_path
     assert adoption["ambient_signals"]["selected_signal"] in {"", "insight", "history", "risks"}
     assert bundle["closeout_bundle"]["assist"]["label"] == "Odylith Assist:"
     assert bundle["closeout_bundle"]["render_policy"]["benchmark_safe"] is True
+    assert "intervention_bundle" not in bundle
+    assert "live_ambient_signals" not in bundle
+    assert bundle["intervention_bundle_suppressed"] is True
+    assert bundle["live_ambient_signals_suppressed"] is True
 
 
 def test_orchestrator_adoption_carries_execution_engine_targeting_and_presentation_policy(

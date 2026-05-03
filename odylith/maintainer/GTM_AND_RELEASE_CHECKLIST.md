@@ -41,6 +41,10 @@ release.
 - [ ] Release-facing security docs are current for `[version]`, including the
       repo-root `SECURITY.md` overview and the product plus bundled
       `SECURITY_POSTURE.md` files.
+- [ ] Security docs explicitly cover `[version]` consumer-lane runtime trust,
+      host-settings merge safety, greenfield proposal/apply confirmation gates,
+      evidence-tier boundaries, Atlas topology validation, and migration-gate
+      coverage for public docs, browser surfaces, and install-managed assets.
 - [ ] Repo-local release planning truth is aligned for `[version]`: the target
       release record exists, `current` and `next` alias ownership is explicit,
       and workstream scope matches the intended ship lane.
@@ -75,13 +79,17 @@ release.
 - [ ] `odylith release list --repo-root .`
 - [ ] `odylith release show current --repo-root .`
 - [ ] `make release-preflight [VERSION=[version]]`
+- [ ] `odylith release migration-gate --repo-root . --target-version [version]`
+      after public docs, release notes, security docs, browser surfaces, or
+      bundled managed assets change.
 - [ ] `make release-session-show`
 - [ ] `make release-dispatch`
 - [ ] Wait for the canonical GitHub release workflow to finish cleanly.
 - [ ] `make dogfood-activate`
 - [ ] `./.odylith/bin/odylith validate self-host-posture --repo-root . --mode local-runtime`
-- [ ] `make consumer-rehearsal PREVIOUS_VERSION=[previous_version]`
-- [ ] `make ga-gate PREVIOUS_VERSION=[previous_version]`
+- [ ] `make ga-gate PREVIOUS_VERSION=[previous_version]` (includes the
+      post-publish consumer rehearsal; do not run it separately for the same
+      release artifact)
 - [ ] Advance repo-local release aliases and carry-forward work so `current`
       and `next` no longer point at the shipped terminal record.
 - [ ] `make release-session-clear`
@@ -118,6 +126,10 @@ release.
 - [ ] Version truth is still split.
 - [ ] The repo-root security overview or bundled security-posture docs still
       advertise the wrong release version.
+- [ ] Security docs omit `[version]` greenfield apply safety, host merge
+      safety, migration-gate coverage, or accepted-proof reuse boundaries.
+- [ ] The release migration gate reports unassessed public-doc,
+      browser-surface, install-managed-asset, or security-doc changes.
 - [ ] The proof report is still on `hold` without explicit and honest public
       framing.
 - [ ] Consumer rehearsal or GA gate failed.

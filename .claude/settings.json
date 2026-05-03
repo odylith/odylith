@@ -5,6 +5,7 @@
       {
         "hooks": [
           {
+            "async": true,
             "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude post-edit-checkpoint --repo-root \"$CLAUDE_PROJECT_DIR\"",
             "timeout": 180,
             "type": "command"
@@ -15,6 +16,7 @@
       {
         "hooks": [
           {
+            "async": true,
             "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude post-bash-checkpoint --repo-root \"$CLAUDE_PROJECT_DIR\"",
             "timeout": 180,
             "type": "command"
@@ -39,6 +41,43 @@
         "hooks": [
           {
             "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude bash-guard --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "if": "Bash(rm *)",
+            "timeout": 10,
+            "type": "command"
+          },
+          {
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude bash-guard --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "if": "Bash(git reset --hard*)",
+            "timeout": 10,
+            "type": "command"
+          },
+          {
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude bash-guard --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "if": "Bash(git checkout --*)",
+            "timeout": 10,
+            "type": "command"
+          },
+          {
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude bash-guard --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "if": "Bash(git push --force*)",
+            "timeout": 10,
+            "type": "command"
+          },
+          {
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude bash-guard --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "if": "Bash(git clean -fdx*)",
+            "timeout": 10,
+            "type": "command"
+          },
+          {
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude bash-guard --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "if": "Bash(*shutil.rmtree*)",
+            "timeout": 10,
+            "type": "command"
+          },
+          {
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude bash-guard --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "if": "Bash(*odylith backlog create*)",
             "timeout": 10,
             "type": "command"
           }
@@ -50,7 +89,7 @@
       {
         "hooks": [
           {
-            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude session-start --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude session-start --repo-root \"$CLAUDE_PROJECT_DIR\" --quiet",
             "timeout": 30,
             "type": "command"
           }
@@ -95,17 +134,7 @@
       {
         "hooks": [
           {
-            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/show-me-prompt-guard.py \"$CLAUDE_PROJECT_DIR\"",
-            "timeout": 5,
-            "type": "command"
-          },
-          {
-            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude prompt-context --repo-root \"$CLAUDE_PROJECT_DIR\"",
-            "timeout": 30,
-            "type": "command"
-          },
-          {
-            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude prompt-teaser --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude prompt-bundle --repo-root \"$CLAUDE_PROJECT_DIR\"",
             "timeout": 30,
             "type": "command"
           }

@@ -8,6 +8,7 @@ from types import SimpleNamespace
 import pytest
 
 from odylith import cli
+from odylith.runtime.common import casebook_metadata
 from odylith.runtime.governance import bug_authoring
 
 
@@ -39,6 +40,8 @@ def _write_casebook_bug(
                 f"- Severity: {severity}",
                 "",
                 f"- Reproducibility: {reproducibility}",
+                "",
+                "- Type: Product",
                 "",
                 f"- Components Affected: {components}",
                 "",
@@ -158,6 +161,8 @@ def test_capabilities_command_prints_host_agnostic_engine_inventory(capsys) -> N
     assert "Odylith capabilities and engines" in output
     assert "Host model: agnostic" in output
     assert "Analysis Engine" in output
+    assert "Context Engine" in output
+    assert "Domain Intelligence" in output
     assert "Governance Engine" in output
     assert "Delivery Intelligence" in output
     assert "Tribunal" in output
@@ -183,6 +188,8 @@ def test_capabilities_command_json_exposes_product_inventory(capsys) -> None:
     assert payload["posture"] == "host-model-agnostic"
     assert {
         "Analysis Engine",
+        "Context Engine",
+        "Domain Intelligence",
         "Governance Engine",
         "Delivery Intelligence",
         "Tribunal",
@@ -226,6 +233,52 @@ def test_backlog_create_help_forwards_backend_flags(capsys) -> None:
     assert "--release" in output
     assert "--dry-run" in output
     assert "--json" in output
+
+
+def test_greenfield_propose_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["greenfield", "propose", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith greenfield propose" in output
+    assert "--prompt" in output
+    assert "--format" in output
+
+
+def test_greenfield_apply_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["greenfield", "apply", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith greenfield apply" in output
+    assert "--proposal-file" in output
+    assert "--confirm" in output
+    assert "--release" in output
+
+
+def test_greenfield_propose_command_is_provider_free(tmp_path: Path, capsys) -> None:
+    rc = cli.main(
+        [
+            "greenfield",
+            "propose",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Build an ecommerce site",
+            "--format",
+            "json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert rc == 0
+    assert payload["provider_calls"] == 0
+    assert payload["mode"] == "host_reasoned_proposal_request"
+    assert payload["intent"]["reasoning_mode"] == "host_model_required"
+    assert payload["classification"]["method"] == "open_world_host_reasoning"
+    assert "backlog" in payload["reasoning_contract"]["required_top_level_keys"]
 
 
 def test_component_register_help_forwards_backend_flags(capsys) -> None:
@@ -482,19 +535,37 @@ def test_bug_capture_rejects_sentence_reproducibility(tmp_path: Path) -> None:
         )
 
 
-def test_checked_in_casebook_reproducibility_fields_are_compact() -> None:
+def test_bug_capture_rejects_prose_type(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="`--type` must be one compact single-word token"):
+        bug_authoring.capture_bug(
+            repo_root=tmp_path,
+            title="Casebook type must stay compact",
+            component="casebook",
+            severity="P1",
+            bug_type="UX / lifecycle",
+            **_bug_capture_kwargs(),
+        )
+
+
+def test_checked_in_casebook_metadata_fields_are_compact() -> None:
     repo_root = Path(__file__).resolve().parents[2]
     offenders: list[str] = []
     for path in sorted((repo_root / "odylith" / "casebook" / "bugs").rglob("*.md")):
         if path.name in {"AGENTS.md", "CLAUDE.md", "INDEX.md"}:
             continue
         for line in path.read_text(encoding="utf-8").splitlines():
-            if not line.startswith("- Reproducibility:"):
-                continue
-            value = line.split(":", 1)[1].strip()
-            if not bug_authoring._reproducibility_token_is_valid(value):  # noqa: SLF001
-                offenders.append(f"{path.relative_to(repo_root)}: {value}")
-            break
+            if line.startswith("- Reproducibility:"):
+                value = line.split(":", 1)[1].strip()
+                if not bug_authoring._reproducibility_token_is_valid(value):  # noqa: SLF001
+                    offenders.append(f"{path.relative_to(repo_root)}: Reproducibility={value}")
+            if line.startswith("- Status:"):
+                value = line.split(":", 1)[1].strip()
+                if not casebook_metadata.casebook_token_is_valid(value):
+                    offenders.append(f"{path.relative_to(repo_root)}: Status={value}")
+            if line.startswith("- Type:"):
+                value = line.split(":", 1)[1].strip()
+                if not casebook_metadata.casebook_token_is_valid(value):
+                    offenders.append(f"{path.relative_to(repo_root)}: Type={value}")
     assert offenders == []
 
 
@@ -1536,12 +1607,12 @@ def test_release_migration_gate_json_reports_registered_runtime(capsys) -> None:
     rc = cli.main([
         "release",
         "migration-gate",
-        "--repo-root",
-        str(repo_root),
-        "--target-version",
-        "0.1.12",
-        "--json",
-    ])
+            "--repo-root",
+            str(repo_root),
+            "--target-version",
+            "0.1.13",
+            "--json",
+        ])
     payload = json.loads(capsys.readouterr().out)
 
     assert rc == 0

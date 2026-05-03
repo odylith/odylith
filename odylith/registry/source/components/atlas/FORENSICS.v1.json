@@ -11,6 +11,7 @@
     "D-004",
     "D-040",
     "D-041",
+    "D-043",
     "D-005",
     "D-006",
     "D-007",
@@ -34,12 +35,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 85,
-    "mapped_workstream_evidence_count": 61,
+    "explicit_event_count": 88,
+    "mapped_workstream_evidence_count": 64,
     "recent_path_match_count": 0,
     "spec_history_event_count": 7,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 85
+    "timeline_event_count": 88
   },
   "name": "Atlas",
   "path_prefixes": [
@@ -49,6 +50,118 @@
   ],
   "spec_ref": "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/archetypes.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+        "src/odylith/runtime/domain_intelligence/proposal_planning.py",
+        "src/odylith/runtime/domain_intelligence/proposal_rendering.py"
+      ],
+      "confidence": "high",
+      "event_index": 453,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Hardened B-142 Domain Intelligence with alternate-fit classification, acronym-safe titles, dedicated proposal rendering, program-formation output, migration-observer markers, full engine/install/browser proof, and fresh empty-consumer apply proof.",
+      "ts_iso": "2026-05-02T20:27:37-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
+        "src/odylith/runtime/domain_intelligence/archetypes.py",
+        "src/odylith/runtime/domain_intelligence/proposal_planning.py"
+      ],
+      "confidence": "high",
+      "event_index": 452,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Deepened B-142 Domain Intelligence with first-class science/math archetypes, greenfield UX/release planning module, refreshed governance surfaces, and full engine/install/browser proof.",
+      "ts_iso": "2026-05-02T20:01:58-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 418,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Captured CB-155 for missing Radar topology on B-141, linked B-141/B-140 to governing Atlas diagrams, added topology-sensitive backlog validation, and re-proved Casebook/Radar/migration-gate surfaces for v0.1.13.",
+      "ts_iso": "2026-05-02T15:10:06-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/install/lock_hygiene.py",
@@ -222,7 +335,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine on this path.",
       "ts_iso": "2026-04-26T12:46:32Z",
       "workstreams": [
@@ -1414,7 +1527,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has CB-122 in the decision path.",
       "ts_iso": "2026-04-20T20:17:50Z",
       "workstreams": [
@@ -1632,7 +1745,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:29:15Z",
       "workstreams": [
@@ -1693,7 +1806,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:29:15Z",
       "workstreams": [
@@ -1754,7 +1867,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:29:13Z",
       "workstreams": [
@@ -1815,7 +1928,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:29:13Z",
       "workstreams": [
@@ -1876,7 +1989,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:29:09Z",
       "workstreams": [
@@ -1937,7 +2050,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:29:09Z",
       "workstreams": [
@@ -1998,7 +2111,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:29:00Z",
       "workstreams": [
@@ -2059,7 +2172,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:29:00Z",
       "workstreams": [
@@ -2120,7 +2233,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:26:33Z",
       "workstreams": [
@@ -2181,7 +2294,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:26:33Z",
       "workstreams": [
@@ -2242,7 +2355,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:26:01Z",
       "workstreams": [
@@ -2303,7 +2416,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:26:01Z",
       "workstreams": [
@@ -2711,7 +2824,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has CB-122 in the decision path.",
       "ts_iso": "2026-04-20T03:26:23Z",
       "workstreams": [
@@ -2874,7 +2987,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has CB-122 in the decision path.",
       "ts_iso": "2026-04-20T03:26:09Z",
       "workstreams": [
@@ -3918,7 +4031,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-001.",
       "ts_iso": "2026-04-17T03:48:35Z",
       "workstreams": [
@@ -4105,7 +4218,7 @@
         "odylith",
         "radar"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Odylith Insight: Radar already has a governed slice for B-096, so this should keep moving through the same governed thread. Atlas is touching the same boundary.",
       "ts_iso": "2026-04-16T18:33:05Z",
       "workstreams": []
@@ -4124,7 +4237,7 @@
         "odylith",
         "radar"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Odylith Insight: Radar already has a governed slice for B-096, so this should keep moving through the same governed thread. Atlas is touching the same boundary.",
       "ts_iso": "2026-04-16T18:32:04Z",
       "workstreams": []
@@ -4143,7 +4256,7 @@
         "odylith",
         "radar"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Odylith Insight: Radar already has a governed slice for B-096, so this should keep moving through the same governed thread. Atlas is touching the same boundary.",
       "ts_iso": "2026-04-16T18:32:00Z",
       "workstreams": []
@@ -4162,7 +4275,7 @@
         "odylith",
         "radar"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Odylith Insight: Radar already has a governed slice for B-096, so this should keep moving through the same governed thread. Atlas is touching the same boundary.",
       "ts_iso": "2026-04-16T18:20:30Z",
       "workstreams": []
@@ -4295,7 +4408,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
       "ts_iso": "2026-04-16T03:57:38Z",
       "workstreams": [
@@ -4325,7 +4438,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
       "ts_iso": "2026-04-16T02:54:42Z",
       "workstreams": [
@@ -4355,7 +4468,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
       "ts_iso": "2026-04-16T02:54:32Z",
       "workstreams": [
@@ -4385,7 +4498,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
       "ts_iso": "2026-04-16T02:37:58Z",
       "workstreams": [
@@ -4415,7 +4528,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-16T02:29:52Z",
       "workstreams": [
@@ -4445,7 +4558,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
       "ts_iso": "2026-04-16T02:29:51Z",
       "workstreams": [
@@ -4475,7 +4588,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-15T06:58:39Z",
       "workstreams": [
@@ -4505,7 +4618,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-15T06:57:32Z",
       "workstreams": [
@@ -4535,7 +4648,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-15T06:55:30Z",
       "workstreams": [
@@ -4562,7 +4675,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "",
       "ts_iso": "2026-04-13T23:57:57Z",
       "workstreams": [
@@ -5122,6 +5235,7 @@
     "B-091",
     "B-110",
     "B-109",
-    "B-105"
+    "B-105",
+    "B-142"
   ]
 }

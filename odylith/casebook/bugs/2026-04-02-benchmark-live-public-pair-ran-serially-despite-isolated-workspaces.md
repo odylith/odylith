@@ -1,5 +1,14 @@
 - Bug ID: CB-034
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-02
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The benchmark runner prepared and executed the public live
   `odylith_on` and `odylith_off` lanes fully serially even after the harness

@@ -43,7 +43,11 @@ def _report_notes(report: ClaudeCompatibilityReport) -> list[str]:
         notes.append("Project hook events (`PreToolUse` / `PostToolUse`) are wired in `.claude/settings.json`.")
     else:
         notes.append("Project hook events (`PreToolUse` / `PostToolUse`) are not yet wired in `.claude/settings.json`.")
-    if report.supports_prompt_context_hook and report.supports_prompt_teaser_hook:
+    if report.supports_prompt_bundle_hook:
+        notes.append(
+            "Claude `UserPromptSubmit` is bundled: one prompt hook carries route locks, discreet context, and visible teaser output."
+        )
+    elif report.supports_prompt_context_hook and report.supports_prompt_teaser_hook:
         notes.append(
             "Claude `UserPromptSubmit` is split correctly: `prompt-context` feeds discreet model context and `prompt-teaser` provides the same teaser text as a best-effort stdout source."
         )
@@ -108,6 +112,7 @@ def render_claude_compatibility(report: ClaudeCompatibilityReport) -> str:
         f"Project skills: {'present' if report.project_skills_present else 'missing'}",
         f"Trusted project required for `.claude/` activation: {'yes' if report.trusted_project_required else 'no'}",
         f"PreToolUse / PostToolUse hooks wired: {'yes' if report.supports_project_hooks else 'no'}",
+        f"UserPromptSubmit prompt-bundle hook wired: {'yes' if report.supports_prompt_bundle_hook else 'no'}",
         f"UserPromptSubmit prompt-context hook wired: {'yes' if report.supports_prompt_context_hook else 'no'}",
         f"UserPromptSubmit prompt-teaser hook wired: {'yes' if report.supports_prompt_teaser_hook else 'no'}",
         f"PostToolUse post-edit-checkpoint hook wired for Write/Edit/MultiEdit: {'yes' if report.supports_post_edit_checkpoint_hook else 'no'}",

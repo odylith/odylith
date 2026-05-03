@@ -197,6 +197,7 @@ def host_capabilities(
                     and snapshot.supports_post_bash_checkpoint_hook
                     and snapshot.supports_stop_summary_hook
                 ),
+                "supports_prompt_bundle_hook": snapshot.supports_prompt_bundle_hook,
                 "supports_prompt_context_hook": snapshot.supports_prompt_context_hook,
                 "supports_prompt_teaser_hook": snapshot.supports_prompt_teaser_hook,
                 "supports_post_edit_checkpoint_hook": snapshot.supports_post_edit_checkpoint_hook,

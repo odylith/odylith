@@ -52,6 +52,34 @@ def test_render_codex_session_brief_degrades_without_snapshot(tmp_path: Path) ->
         start_summary_override="",
     )
     assert "Active workstreams: (not present in Compass runtime snapshot)" in rendered
+    assert "Odylith startup substrate:" in rendered
+    assert "cached runtime fast path" not in rendered
+
+
+def test_render_codex_session_brief_uses_substrate_without_start(tmp_path: Path, monkeypatch) -> None:
+    _write_runtime_snapshot(
+        tmp_path,
+        {
+            "generated_utc": "2026-04-11T12:00:00Z",
+            "execution_focus": {"global": {"headline": "h", "workstreams": ["B-088"]}},
+        },
+    )
+
+    def _unexpected_start(**_: object) -> None:
+        raise AssertionError("cached SessionStart fast path must not run odylith start")
+
+    monkeypatch.setattr(codex_host_session_brief.codex_host_shared, "start_summary", _unexpected_start)
+    monkeypatch.setattr(
+        codex_host_session_brief.host_intervention_support,
+        "session_start_substrate_context",
+        lambda **_: "Odylith startup substrate: context=host_intervention_context/observing.",
+    )
+
+    rendered = codex_host_session_brief.render_codex_session_brief(tmp_path)
+
+    assert "B-088" in rendered
+    assert "Odylith startup substrate: context=host_intervention_context/observing." in rendered
+    assert "cached runtime fast path" not in rendered
 
 
 def test_main_writes_session_start_hook_json(tmp_path: Path, capsys) -> None:

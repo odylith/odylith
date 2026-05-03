@@ -1,6 +1,15 @@
 - Bug ID: CB-142
 
-- Status: Fixed Pending Release
+- Type: Product
+
+
+
+
+
+
+
+
+- Status: FixedPendingRelease
 
 - Created: 2026-04-30
 
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Generated Python host assets break consumer Ruff lint
 

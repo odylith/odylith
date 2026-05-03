@@ -1,5 +1,14 @@
 - Bug ID: CB-023
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Open
 
 - Created: 2026-03-31
@@ -8,7 +17,6 @@
 
 - Reproducibility: Always
 
-- Type: Product
 
 - Description: In the Odylith product repo, `odylith doctor --repair` could
   rewrite the tracked root `AGENTS.md` scope block back to stale generated

@@ -1,5 +1,14 @@
 - Bug ID: CB-046
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Open
 
 - Created: 2026-04-02
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The live proof support-doc selector could overvalue generic
   guidance surfaces such as `AGENTS.md` and `agents-guidelines/*` when their

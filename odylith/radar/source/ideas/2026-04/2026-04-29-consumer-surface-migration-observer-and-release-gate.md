@@ -42,7 +42,7 @@ workstream_depends_on:
 
 workstream_blocks: 
 
-related_diagram_ids: 
+related_diagram_ids: D-019,D-020,D-036,D-042
 
 workstream_reopens: 
 
@@ -182,6 +182,9 @@ Add a migration observer to the migration-runtime release gate. It scans changed
 - `migration-observer:0.1.12:operator-cli-contracts:c6e13f7283c5`
 - `migration-observer:0.1.12:operator-cli-contracts:40e56321befd`
 - `migration-observer:0.1.12:operator-cli-contracts:0be705679685`
+- `migration-observer:0.1.12:guidance-and-skills:2d48e421d4a4`
+- `migration-observer:0.1.12:browser-surfaces:d6d3e6d10f84`
+- `migration-observer:0.1.12:install-managed-assets:1d47c001ac50`
 
 ## 0.1.12 Upgrade Assessment
 - First-run install and sync overlap: existing 0.1.11 consumer repos can safely
@@ -369,6 +372,405 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   variable for the next install. Existing consumer repos need no migration; the
   change only improves the default transcript for shells where the opt-out
   leaked from earlier local testing.
+- Host latency and Casebook token contract hardening: v0.1.13 host assets
+  prefer the bootstrap doctor path when repair is needed, so Claude, Codex,
+  and future host adapters do not keep re-entering the stale launcher during
+  bootstrap repair. Casebook `Status` and `Type` are now compact token fields
+  in source validation, bug capture, projections, and bundled dashboards;
+  existing records are normalized in repo-owned Casebook truth. Existing
+  consumer repos need no data migration. Upgrading installs the fixed host
+  launcher, refreshed bundle assets, and compact Casebook renderer behavior.
+  Migration observer markers:
+  `migration-observer:0.1.12:guidance-and-skills:048a2f4ecf97`,
+  `migration-observer:0.1.12:operator-cli-contracts:70c8b2cf9689`,
+  `migration-observer:0.1.12:browser-surfaces:bc447ebffb0c`,
+  `migration-observer:0.1.12:install-managed-assets:0576ffce86df`.
+- Host hook fast-path dispatch: v0.1.13 keeps the public
+  `./.odylith/bin/odylith claude|codex ...` command surface while the generated
+  trusted launcher dispatches baked host hook commands directly to their
+  runtime modules after trust selection. The low-signal prompt gate now uses a
+  shared lightweight classifier before importing the full intervention renderer
+  stack, and the Claude/Codex host contracts document that hot hooks must not
+  pay for full CLI import when they can return empty. Existing consumer repos
+  do not need repo-truth migration; upgrading installs the regenerated launcher,
+  bundled host assets, refreshed guidance, and refreshed Casebook/Radar browser
+  surfaces. Migration observer markers:
+  `migration-observer:0.1.12:guidance-and-skills:2d48e421d4a4`,
+  `migration-observer:0.1.12:browser-surfaces:d6d3e6d10f84`,
+  `migration-observer:0.1.12:install-managed-assets:1d47c001ac50`.
+- Upgrade-residue dashboard recovery: v0.1.13 makes post-upgrade dashboard
+  refresh resilient when a consumer repo is midway through surface generation.
+  The top-level shell now treats missing child dashboard HTML as a warning,
+  Compass refresh creates the Casebook index and Radar traceability graph before
+  render, shell refresh waits until owned child surfaces have settled, and
+  registry validation ignores host-visibility chatter while preserving failures
+  for meaningful unmapped implementation events. Existing consumer repos do not
+  need repo-truth migration; upgrades from 0.1.10+ receive the fixed runtime and
+  can repair stale 0.1.11/0.1.12 dashboard residue in place. Migration observer
+  markers:
+  `migration-observer:0.1.12:guidance-and-skills:20383b041e00`,
+  `migration-observer:0.1.12:operator-cli-contracts:3f7f46e3c07b`,
+  `migration-observer:0.1.12:browser-surfaces:48a6b76069b3`,
+  `migration-observer:0.1.12:install-managed-assets:81225e1e602e`.
+- Cross-host prompt-first and Compass settlement hardening: v0.1.13 preserves
+  the Context Engine, memory substrate, execution handshake, Tribunal-backed
+  proof posture, and Intervention/Assist hidden context while reducing hot
+  hook latency through direct host dispatch and compact startup substrate
+  packets. Maintainer-only narration guidance remains confined to the
+  dev-maintainer subtree and is guarded from consumer-safe guidance, bundled
+  host contracts, install-generated guidance, and shared skills. Compass
+  dashboard refresh now settles provider-backed global standup briefs before
+  reporting success and can repair upgrade-residue inputs in place. Existing
+  consumer repos do not need repo-truth or data migration; upgrading installs
+  the regenerated host launcher, host prompt/session assets, refreshed
+  dashboards, and fixed Compass refresh runtime. Migration observer markers:
+  `migration-observer:0.1.13:guidance-and-skills:20383b041e00`,
+  `migration-observer:0.1.13:operator-cli-contracts:9d82eb895c46`,
+  `migration-observer:0.1.13:browser-surfaces:7cf0ebcb5035`,
+  `migration-observer:0.1.13:install-managed-assets:73dadb319858`.
+- Mixed-version launcher compatibility: v0.1.13 generated launchers preserve
+  direct host-hook dispatch for the warm path while remaining readable by the
+  shipped v0.1.12 launcher health parser. Claude `prompt-bundle` launchers
+  detect whether the active runtime or source `PYTHONPATH` contains the new
+  bundle module; if not, they merge the shipped `prompt-context` and
+  `prompt-teaser` commands so fresh installs keep prompt context and visible
+  teaser behavior before the v0.1.13 runtime ships. Existing consumer repos do
+  not need data migration; upgrading installs regenerated launchers and
+  refreshed browser assets. Migration observer markers:
+  `migration-observer:0.1.12:operator-cli-contracts:4eb40da3c1d9`,
+  `migration-observer:0.1.12:browser-surfaces:ab0df3cd03b7`,
+  `migration-observer:0.1.12:install-managed-assets:7b6ed784455c`,
+  `migration-observer:0.1.13:operator-cli-contracts:4eb40da3c1d9`,
+  `migration-observer:0.1.13:browser-surfaces:ab0df3cd03b7`,
+  `migration-observer:0.1.13:install-managed-assets:7b6ed784455c`.
+- Historical upgrade matrix proof: v0.1.13 adds explicit lifecycle coverage
+  for consumer upgrades from 0.1.10, 0.1.11, and 0.1.12 into the 0.1.13
+  target. The 0.1.10 fixture proves the value-engine migration still applies
+  from legacy signal-ranker state; 0.1.11 and 0.1.12 prove the same migration
+  skips cleanly while activation, pin adoption, and runtime pointer convergence
+  still complete. Existing consumer repos do not need manual data migration;
+  this adds release proof and refreshed Radar/Compass render artifacts only.
+  Migration observer markers:
+  `migration-observer:0.1.13:browser-surfaces:f7b7e4cdba20`,
+  `migration-observer:0.1.13:browser-surfaces:02ebed1744ff`,
+  `migration-observer:0.1.13:install-managed-assets:20e8ce49c04a`.
+- Dev-maintainer source-local visibility proof: v0.1.13 restores the Codex
+  post-bash live Observation/Proposal payload while keeping governed refresh
+  work deferred to the dirty-event settlement lane. The source-local maintainer
+  switch regenerated the tooling shell, Radar, Compass, and bundle mirror
+  surfaces so the dashboard now reflects detached source-local posture instead
+  of pinned dogfood. Existing consumer repos do not need repo-truth migration;
+  upgrading installs the fixed Codex hook runtime and refreshed managed browser
+  assets, while release proof must still return to pinned dogfood before
+  shipping. Migration observer markers:
+  `migration-observer:0.1.13:public-docs-and-release-guidance:c8276a3cb8e8`,
+  `migration-observer:0.1.13:browser-surfaces:cc8a7f297f08`,
+  `migration-observer:0.1.13:install-managed-assets:d2de2ef4649d`.
+- Dev-maintainer Release Targets alias filtering: v0.1.13 keeps release
+  registry history intact while making the default Compass release-target view
+  follow explicit current/next aliases when those aliases exist. Older active
+  release lanes remain in source truth and scoped drill-in paths, but they no
+  longer make the live default view look pinned to 0.1.12 after B-141 moves to
+  0.1.13. Existing consumer repos do not need data migration; upgrading
+  installs refreshed browser and bundle assets. Migration observer markers:
+  `migration-observer:0.1.13:browser-surfaces:a33e8d0e6dab`,
+  `migration-observer:0.1.13:browser-surfaces:adfbbaeec25e`,
+  `migration-observer:0.1.13:install-managed-assets:583b3a29cb60`.
+- Casebook compact metadata detail hardening: v0.1.13 keeps legacy consumer
+  Casebook records readable without allowing prose Status, Fixed, or Type
+  values to leak into detail-card labels. Existing consumer records now flow
+  through the registered v0.1.13 Casebook compact-metadata migration, which
+  normalizes source labels, rebuilds the Casebook index, rerenders Casebook
+  browser payloads, and writes a migration ledger for 0.1.10, 0.1.11, and
+  0.1.12 upgrades. The release-path cleanup keeps the same behavior while
+  using content fingerprints instead of whole-file snapshots for changed-path
+  reporting. Migration observer markers:
+  `migration-observer:0.1.13:operator-cli-contracts:b870d25c57e8`,
+  `migration-observer:0.1.13:browser-surfaces:f2c4d30f468f`,
+  `migration-observer:0.1.13:browser-surfaces:f56cbbad5b96`,
+  `migration-observer:0.1.13:browser-surfaces:5c6e158288a8`,
+  `migration-observer:0.1.13:install-managed-assets:b85c3e788eab`,
+  `migration-observer:0.1.13:install-managed-assets:d5ce300448b1`,
+  `migration-observer:0.1.13:operator-cli-contracts:1c7ce3ac7fe4`,
+  `migration-observer:0.1.13:browser-surfaces:e0801e363df8`,
+  `migration-observer:0.1.13:install-managed-assets:b62c9c457cb1`,
+  `migration-observer:0.1.13:install-managed-assets:2c261b3fa6e6`,
+  `migration-observer:0.1.13:browser-surfaces:ef3937feff8b`,
+  `migration-observer:0.1.13:install-managed-assets:e021b3887dda`,
+  `migration-observer:0.1.13:install-managed-assets:c0dc04317b0c`.
+- Casebook detail gutter hardening: v0.1.13 tightens the selected-bug detail
+  gutter in live and bundled Casebook HTML, repairs the media-block brace shape
+  so padding no longer depends on CSS parser recovery, and keeps existing
+  consumer Casebook data compatible because only rendered layout changes.
+  Migration observer markers:
+  `migration-observer:0.1.13:browser-surfaces:1c8a6979a09c`,
+  `migration-observer:0.1.13:browser-surfaces:83f738bbae83`,
+  `migration-observer:0.1.13:browser-surfaces:262b63ed190c`,
+  `migration-observer:0.1.13:browser-surfaces:c72b1df630d2`,
+  `migration-observer:0.1.13:install-managed-assets:8afd5be2970e`,
+  `migration-observer:0.1.13:install-managed-assets:6aad0d78490e`,
+  `migration-observer:0.1.13:install-managed-assets:352b7f58e4df`.
+- Compass skipped-narration status routing: v0.1.13 keeps the last validated
+  Standup Brief visible when fresh narration is skipped for non-material fact
+  churn, and routes the provider-spend warning to the existing Compass header
+  status banner. Existing consumer repos do not need data migration; upgrading
+  installs refreshed Compass and Casebook browser assets plus the bundled
+  Compass dashboard runtime assets.
+  Migration observer markers:
+  `migration-observer:0.1.12:browser-surfaces:154862df3418`,
+  `migration-observer:0.1.12:install-managed-assets:07f37c277434`,
+  `migration-observer:0.1.13:browser-surfaces:154862df3418`,
+  `migration-observer:0.1.13:install-managed-assets:07f37c277434`.
+- Governed sync performance proof surfaces: v0.1.13 adds end-to-end latency
+  and no-provider credit-burn tests for full sync dry-run, all-surface
+  dashboard refresh, Compass status, owned Radar/Atlas/Registry/Casebook
+  refresh commands, and multi-surface dashboard parallelism. The source change
+  adds tests and B-141 governance notes; refreshed Radar and Compass browser
+  surfaces plus bundle mirrors are install-managed output updates only.
+  Existing consumer repos do not need data migration; upgrading installs the
+  refreshed browser assets. Migration observer markers:
+  `migration-observer:0.1.13:browser-surfaces:fcd4ad300aac`,
+  `migration-observer:0.1.13:browser-surfaces:3822d2354e1c`,
+  `migration-observer:0.1.13:install-managed-assets:b45cab51875d`.
+- Startup grounding order and index-only Casebook migration guard: v0.1.13
+  makes `odylith start` the serial first gate before follow-on `context`,
+  `query`, `git status`, or broad repo inspection across Codex, Claude, and
+  installed guidance/skill mirrors. The same pass fixes Casebook compact-label
+  migration so guidance-only `AGENTS.md` files under `odylith/casebook/bugs/`
+  do not count as bug records and do not trigger empty index/dashboard rewrites
+  over customer truth. Existing consumer repos do not need manual migration;
+  upgrades refresh managed guidance, host command assets, skills, and rendered
+  browser assets while preserving repo-owned Casebook source truth when no bug
+  records exist. Migration observer markers:
+  `migration-observer:0.1.13:guidance-and-skills:633944f92664`,
+  `migration-observer:0.1.13:operator-cli-contracts:b0183d029a95`,
+  `migration-observer:0.1.13:browser-surfaces:de6df3fb3057`,
+  `migration-observer:0.1.13:install-managed-assets:d0e3fe35c626`,
+  `migration-observer:0.1.13:browser-surfaces:8e66cd173155`,
+  `migration-observer:0.1.13:install-managed-assets:2f2e3b612696`,
+  `migration-observer:0.1.13:browser-surfaces:b065a42fa247`,
+  `migration-observer:0.1.13:browser-surfaces:36a9b304f8a5`.
+- Cross-host host-surface diet and prompt receipt fast path: v0.1.13 removes
+  duplicated Claude guidance bytes, removes no-op Claude prompt marker shell
+  hooks, makes Claude SessionStart quiet while preserving auto-memory writes,
+  skips full prompt receipts only for generic low-signal prompts, keeps
+  Odylith-directed prompt receipts and live Observation/Proposal eligibility,
+  and lets exact non-governed Claude Bash commands bypass heavy checkpoint
+  grounding. Codex receives the same generic low-signal prompt fast path while
+  preserving Odylith-directed receipt behavior. Existing consumer repos do not
+  need data migration; upgrading refreshes managed host guidance, hook
+  settings, bundle assets, and runtime surfaces while preserving user-owned
+  host settings through the additive install merge. Migration observer markers:
+  `migration-observer:0.1.13:guidance-and-skills:355461e98fe5`,
+  `migration-observer:0.1.13:operator-cli-contracts:e167a3c7d9d7`,
+  `migration-observer:0.1.13:browser-surfaces:2870c7b4909c`,
+  `migration-observer:0.1.13:install-managed-assets:e825f6f123e1`,
+  `migration-observer:0.1.13:operator-cli-contracts:8480b8f26127`,
+  `migration-observer:0.1.13:browser-surfaces:8b10e3560e2d`,
+  `migration-observer:0.1.13:install-managed-assets:f87bf182fdad`.
+- Consumer guidance and Claude skill invocation surface diet: v0.1.13 trims
+  installed consumer guidance and model-visible Claude workflow skills without
+  removing Odylith startup, Context Engine, Execution Engine, memory,
+  Tribunal, Intervention Engine, observers, governance, Surface DAGs,
+  delivery, analysis, or migration-breakage observation. Existing consumer
+  repos do not need data migration; upgrading refreshes managed guidance,
+  host skill shims, rendered browser assets, and generated bundle assets
+  through the normal additive install/upgrade path. Maintainer-only
+  release-gate and migration-observer rules remain confined to the product
+  repo maintainer lane. Migration observer markers:
+  `migration-observer:0.1.13:guidance-and-skills:87630690d87a`,
+  `migration-observer:0.1.13:guidance-and-skills:59639ab45ae1`,
+  `migration-observer:0.1.13:guidance-and-skills:89d6d904843f`,
+  `migration-observer:0.1.13:operator-cli-contracts:b09578c9b18f`,
+  `migration-observer:0.1.13:browser-surfaces:e3adbd2d8288`,
+  `migration-observer:0.1.13:install-managed-assets:d7d268bdf746`,
+  `migration-observer:0.1.13:install-managed-assets:6b654b4be78e`,
+  `migration-observer:0.1.13:install-managed-assets:e3b4249862a5`.
+- B-141 topology and Casebook sidepanel card display: v0.1.13 refreshes
+  Radar traceability so B-141 advertises the runtime/topology diagrams that
+  actually bound the cross-host latency work, and refreshes Casebook browser
+  assets so sidepanel bug-card body text is clamped to two preview lines.
+  Existing consumer installs need no data migration; upgrade/dashboard
+  refresh replaces the generated browser assets and Radar traceability graph.
+  Migration observer markers:
+  `migration-observer:0.1.13:browser-surfaces:3951dfb049aa`,
+  `migration-observer:0.1.13:operator-cli-contracts:f64f4820aa8e`,
+  `migration-observer:0.1.13:operator-cli-contracts:3e98e8bddd13`,
+  `migration-observer:0.1.13:browser-surfaces:4c75930a07c1`.
+- Casebook release closeout automation: v0.1.13 adds the
+  `odylith release casebook-closeout` command and wires shipped release
+  updates to close eligible `FixedPendingRelease` records automatically after
+  validation evidence is present. Existing consumer installs need no data
+  migration; upgrade installs receive the managed CLI, Casebook guidance, and
+  refreshed browser surfaces, while local bug source stays repo-owned.
+  Migration observer markers:
+  `migration-observer:0.1.13:operator-cli-contracts:dbdb5bb92f21`,
+  `migration-observer:0.1.13:browser-surfaces:af4b4c0ff738`,
+  `migration-observer:0.1.13:install-managed-assets:92cac291c52f`.
+- Root guidance routing and topology validator decomposition: v0.1.13 keeps
+  root guidance as a compact contract, routes detailed anti-slop examples to
+  the playbook and skill, removes duplicate Casebook Claude companion wording,
+  and moves Radar topology validation out of the oversized backlog validator
+  into a focused runtime module. Existing consumer installs need no data
+  migration; upgrade installs receive refreshed guidance, command/runtime
+  code, rendered governance surfaces, and bundle mirrors through the normal
+  additive managed-asset refresh. Migration observer markers:
+  `migration-observer:0.1.13:guidance-and-skills:361e66bc060e`,
+  `migration-observer:0.1.13:operator-cli-contracts:114d91bc9afa`,
+  `migration-observer:0.1.13:public-docs-and-release-guidance:c8276a3cb8e8`,
+  `migration-observer:0.1.13:browser-surfaces:7aa82e9853a8`,
+  `migration-observer:0.1.13:browser-surfaces:8138268c6173`,
+  `migration-observer:0.1.13:browser-surfaces:0ce09f5edbc9`,
+  `migration-observer:0.1.13:install-managed-assets:db520dee14e4`.
+- Odylith-tree guidance de-dup: v0.1.13 trims duplicated consumer-lane
+  `odylith/AGENTS.md` working rules while preserving explicit startup, context,
+  execution, memory, Tribunal, Intervention Engine, observer, governance,
+  subagent, Surface DAG, delivery, analysis, migration-observer, CLI-first,
+  visibility-proof, consumer-boundary, and host-specific capability contracts.
+  Existing consumer installs need no data migration; upgrade refreshes managed
+  guidance and bundle mirrors through the additive managed-asset path, while
+  Compass browser/runtime artifacts refresh through the usual governed surface
+  render lane. Migration observer markers:
+  `migration-observer:0.1.13:guidance-and-skills:15c190e29627`,
+  `migration-observer:0.1.13:browser-surfaces:7bef9ce648f9`,
+  `migration-observer:0.1.13:install-managed-assets:3b63012c3b68`,
+  `migration-observer:0.1.13:browser-surfaces:533f5e4374a6`,
+  `migration-observer:0.1.13:install-managed-assets:06c877ec7676`.
+- Source-local memory activation and Assist visibility recovery: v0.1.13
+  keeps consumer pinned runtimes isolated on the managed feature pack while
+  dev-maintainer `source-local` launchers prefer the source checkout `.venv`
+  so full LanceDB/PyArrow/Tantivy memory stays active. The same pass maps
+  exact Assist-visibility complaints to the shared visible recovery line
+  without changing ordinary low-signal prompt silence, and makes forced
+  Compass daemon refresh autospawn the local Context Engine daemon instead of
+  failing when it idles out. Existing consumer installs need no data migration;
+  upgrade refreshes managed runtime code, browser governance surfaces, and
+  bundle mirrors through the additive install-managed asset path. Migration
+  observer markers:
+  `migration-observer:0.1.13:browser-surfaces:b9d0ec78e453`,
+  `migration-observer:0.1.13:browser-surfaces:2bbecacc6d56`,
+  `migration-observer:0.1.13:install-managed-assets:82e3cd8ed4c1`.
+- Greenfield domain-intelligence governance: v0.1.13 adds a provider-free
+  `odylith greenfield propose/apply` path for empty and thin consumer repos,
+  installs the managed guidance/skill shims, records Domain Intelligence as a
+  Registry component, adds Atlas topology, and filters zero-file prompt
+  intervention chatter out of Compass timeline transactions. Existing
+  consumer installs need no data migration; upgrade refreshes managed
+  guidance, command/runtime code, generated browser surfaces, and bundle
+  mirrors while local source-backed governance remains repo-owned. Migration
+  observer markers:
+  `migration-observer:0.1.13:guidance-and-skills:d8c8ff0d951d`,
+  `migration-observer:0.1.13:operator-cli-contracts:2d60d08c285d`,
+  `migration-observer:0.1.13:operator-cli-contracts:26bfb61a6298`,
+  `migration-observer:0.1.13:browser-surfaces:695cf1a55b3d`,
+  `migration-observer:0.1.13:browser-surfaces:c279a5da21f4`,
+  `migration-observer:0.1.13:install-managed-assets:4444145d768a`,
+  `migration-observer:0.1.13:guidance-and-skills:b6ccbcebbd7c`,
+  `migration-observer:0.1.13:browser-surfaces:fcbd8d2ec808`,
+  `migration-observer:0.1.13:install-managed-assets:0b654205854a`.
+- Engine inventory and Compass settlement hardening: v0.1.13 makes Context
+  Engine and Domain Intelligence explicit in the host-agnostic capability
+  inventory, rejects markup snippets as project identity prose during
+  greenfield repo analysis, and treats non-forced Compass brief settlement
+  gaps as visible warnings instead of release-blocking failures after the
+  runtime payload has refreshed. Existing consumer installs need no data
+  migration; upgrade refreshes managed runtime code, browser governance
+  surfaces, and the Compass bundle mirror while preserving repo-owned
+  governance truth. The same assessment covers the consumer launcher hygiene
+  fix that keeps maintainer-only `source-local` routing out of repaired
+  consumer launchers while retaining explicit source-local support for
+  product-repo maintainer posture. Migration observer markers:
+  `migration-observer:0.1.13:browser-surfaces:d00ba488e699`,
+  `migration-observer:0.1.13:install-managed-assets:13d6f64a015b`,
+  `migration-observer:0.1.13:install-managed-assets:6a1d8f00879f`,
+  `migration-observer:0.1.13:browser-surfaces:cafacdb848c3`,
+  `migration-observer:0.1.13:install-managed-assets:9a4f23dde703`,
+  `migration-observer:0.1.13:install-managed-assets:8137f3c657dd`.
+- Deepened Domain Intelligence science/math catalog: v0.1.13 expands the
+  provider-free greenfield proposal path with first-class formal-proof,
+  computational-notebook, numerical-simulation, scientific-pipeline,
+  geospatial/environmental, ML-experiment, and math-education lenses, and
+  splits program/release/UX planning into a smaller reusable runtime module.
+  Existing consumer installs need no data migration; upgrade refreshes managed
+  greenfield skill guidance, refreshed product browser surfaces, and bundled
+  install-managed dashboard copies while keeping all proposal writes
+  confirmation-gated and user-intent-labeled until source evidence exists.
+  Migration observer markers:
+  `migration-observer:0.1.13:guidance-and-skills:b5799cbf748f`,
+  `migration-observer:0.1.13:browser-surfaces:bb2be774790f`,
+  `migration-observer:0.1.13:install-managed-assets:f400668668ca`,
+  `migration-observer:0.1.13:guidance-and-skills:38e6768904a3`,
+  `migration-observer:0.1.13:browser-surfaces:da46e2ca9dea`,
+  `migration-observer:0.1.13:browser-surfaces:44b8f03ad08b`,
+  `migration-observer:0.1.13:install-managed-assets:20dacaa00761`,
+  `migration-observer:0.1.13:browser-surfaces:7a832cdde5ae`,
+  `migration-observer:0.1.13:browser-surfaces:e7074b845e26`,
+  `migration-observer:0.1.13:browser-surfaces:64c67de45d32`.
+- Domain Intelligence fit and program-formation hardening: v0.1.13 adds
+  host-reasoned fit assessment, acronym-safe titles, domain-aware first-slice
+  validation wording, a dedicated proposal renderer, explicit parent/child
+  program-formation policy, and accepted-proposal Compass memory records. The
+  release-version truth and security posture docs now also
+  target v0.1.13 so local release bundles carry a v0.1.13 wheel instead of a
+  mismatched v0.1.12 package. Existing consumer installs need no data
+  migration; upgrade refreshes managed greenfield skill guidance, regenerated
+  governance browser surfaces, public release guidance, and bundled
+  install-managed assets while keeping all proposal writes confirmation-gated.
+  Migration observer markers:
+  `migration-observer:0.1.13:guidance-and-skills:9075101e3a40`,
+  `migration-observer:0.1.13:browser-surfaces:2f376881da04`,
+  `migration-observer:0.1.13:install-managed-assets:75cf4de5d713`,
+  `migration-observer:0.1.13:browser-surfaces:3d9a853aa730`,
+  `migration-observer:0.1.13:install-managed-assets:3b31898b633e`,
+  `migration-observer:0.1.13:browser-surfaces:1ec38a98f26b`,
+  `migration-observer:0.1.13:browser-surfaces:fb44f0624d3e`,
+  `migration-observer:0.1.13:operator-cli-contracts:993ddc4af587`,
+  `migration-observer:0.1.13:browser-surfaces:6d15ce4c0b44`,
+  `migration-observer:0.1.13:install-managed-assets:e2a8129f2ea6`,
+  `migration-observer:0.1.13:public-docs-and-release-guidance:1cfdbc5a7431`,
+  `migration-observer:0.1.13:browser-surfaces:189eeef17a7f`,
+  `migration-observer:0.1.13:install-managed-assets:df982c278aaa`,
+  `migration-observer:0.1.13:public-docs-and-release-guidance:66717a535044`,
+  `migration-observer:0.1.13:install-managed-assets:545aea26da90`,
+  `migration-observer:0.1.13:browser-surfaces:8a26320aa5c6`.
+- Domain Intelligence host-reasoning correction: v0.1.13 removes the in-code
+  greenfield project taxonomy from the active proposal-authoring path and keeps
+  consumer installs on the host-reasoned contract instead. Existing installs
+  need no repo data migration; upgrade refreshes managed guidance, skills,
+  bundled browser assets, and runtime validation. Confirmed greenfield writes
+  remain explicit through `odylith greenfield apply --confirm`, and Atlas
+  drafts now require host-authored Mermaid source before any governed write.
+  This supersedes the earlier seed-catalog implementation as an inactive
+  design exploration; the release path is host reasoning plus Odylith
+  validation/apply, not a checked-in domain taxonomy.
+  Migration observer markers:
+  `migration-observer:0.1.13:guidance-and-skills:d307d1dee98b`,
+  `migration-observer:0.1.13:browser-surfaces:de07c1596960`,
+  `migration-observer:0.1.13:install-managed-assets:10f2fe027321`,
+  `migration-observer:0.1.13:guidance-and-skills:43e7a7e7b66a`,
+  `migration-observer:0.1.13:install-managed-assets:cc92d0a4ee9d`,
+  `migration-observer:0.1.13:browser-surfaces:af1a8c005565`,
+  `migration-observer:0.1.13:install-managed-assets:0b0c0d1ffef8`,
+  `migration-observer:0.1.13:browser-surfaces:c977b656d5a8`,
+  `migration-observer:0.1.13:browser-surfaces:ec2ce938e93c`,
+  `migration-observer:0.1.13:install-managed-assets:253ccfb23e93`,
+  `migration-observer:0.1.13:guidance-and-skills:e854d7e0d9b5`,
+  `migration-observer:0.1.13:install-managed-assets:8dc77c50aa92`.
+- Public documentation and bundled release-guidance refresh: v0.1.13 updates
+  README, operator instructions, status disclosures, outcome framing,
+  release notes, and the bundled consumer README/release-note copies so the
+  shipped docs describe host-reasoned greenfield proposals, confirmation-gated
+  apply, compact release proof, and source-truth boundaries consistently.
+  Existing consumer installs need no data migration; upgrade installs receive
+  refreshed managed docs and release guidance, and already-owned governance
+  truth stays untouched.
+  Migration observer markers:
+  `migration-observer:0.1.13:public-docs-and-release-guidance:67252caffe8e`,
+  `migration-observer:0.1.13:browser-surfaces:8d03362b49b6`,
+  `migration-observer:0.1.13:install-managed-assets:84b480bd2eaf`,
+  `migration-observer:0.1.13:browser-surfaces:7ca3752b114d`,
+  `migration-observer:0.1.13:install-managed-assets:877351c7e794`,
+  `migration-observer:0.1.13:install-managed-assets:378a6ed807cc`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.

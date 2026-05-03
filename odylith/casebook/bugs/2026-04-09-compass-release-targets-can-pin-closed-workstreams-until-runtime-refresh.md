@@ -1,5 +1,14 @@
 - Bug ID: CB-081
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-09
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: After release source truth removes a finished workstream from
   active targeting, Compass can keep rendering that workstream in `Release

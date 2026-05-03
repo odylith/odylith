@@ -102,7 +102,7 @@ def _write_cb136(repo_root: Path, *, verification: str = "Focused install tests 
                 "",
                 "- Reproducibility: High",
                 "",
-                "- Type: data-loss",
+                "- Type: DataLoss",
                 "",
                 "- Description: Install overwrites Claude settings before verified runtime activation.",
                 "",

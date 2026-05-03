@@ -59,13 +59,11 @@
   --surface-deep-link-button-font-weight: 700;
   --surface-deep-link-button-padding: 4px 12px;
 }
-
     .shell {
   max-width: var(--surface-shell-max-width, 1320px);
   margin: 0 auto;
   padding: 22px 18px 34px;
 }
-
     .hero {
   background: linear-gradient(145deg, #ffffff, #ecfeff 58%, #eff6ff);
   border: 1px solid var(--line);
@@ -639,6 +637,17 @@ h1 {
 
 .execution-wave-card summary::-webkit-details-marker {
   display: none;
+}
+
+.execution-wave-card-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.execution-wave-card-link:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
 }
 
 .execution-wave-card.is-member {
@@ -2418,7 +2427,7 @@ h1 {
       <select id="sort">
         <option value="rank">Sort: Rank</option>
         <option value="score">Sort: Score</option>
-        <option value="date">Sort: Date</option>
+        <option value="date" selected>Sort: Date</option>
       </select>
     </section>
 
@@ -2496,7 +2505,7 @@ h1 {
   }
 })();
 </script>
-  <script id="backlogData" src="backlog-payload.v1.js?v=962ccfeaaed1"></script>
-  <script src="backlog-app.v1.js?v=962ccfeaaed1"></script>
+  <script id="backlogData" src="backlog-payload.v1.js?v=a266083a6ee2"></script>
+  <script src="backlog-app.v1.js?v=a266083a6ee2"></script>
 </body>
 </html>

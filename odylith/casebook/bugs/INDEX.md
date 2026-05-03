@@ -1,22 +1,11 @@
 # Bug Index
 
-Last updated (UTC): 2026-05-01
+Last updated (UTC): 2026-05-03
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
-| CB-145 | 2026-04-30 | Uninstall requests can be routed to raw deletion that odylith blocks itself | P1 | install | Fixed Pending Release | [2026-04-30-uninstall-requests-can-be-routed-to-raw-deletion-that-odylith-blocks-itself.md](2026-04-30-uninstall-requests-can-be-routed-to-raw-deletion-that-odylith-blocks-itself.md) |
-| CB-143 | 2026-04-30 | Uninstall leaves broken odylith tree behind | P1 | migration-runtime | Fixed Pending Release | [2026-04-30-uninstall-leaves-broken-odylith-tree-behind.md](2026-04-30-uninstall-leaves-broken-odylith-tree-behind.md) |
-| CB-140 | 2026-04-30 | Show output suggests standalone atlas prompt that scaffold rejects | P1 | odylith | Fixed Pending Release | [2026-04-30-show-output-suggests-standalone-atlas-prompt-that-scaffold-rejects.md](2026-04-30-show-output-suggests-standalone-atlas-prompt-that-scaffold-rejects.md) |
-| CB-144 | 2026-04-30 | Intervention visibility fallback leaks internal instructions into claude chat | P1 | governance-intervention-engine | Fixed Pending Release | [2026-04-30-intervention-visibility-fallback-leaks-internal-instructions-into-claude-chat.md](2026-04-30-intervention-visibility-fallback-leaks-internal-instructions-into-claude-chat.md) |
-| CB-146 | 2026-04-30 | Hosted installer misroutes stale uninstall residue and under explains enterprise | P1 | release | Fixed Pending Release | [2026-04-30-hosted-installer-misroutes-stale-uninstall-residue-and-under-explains-enterprise.md](2026-04-30-hosted-installer-misroutes-stale-uninstall-residue-and-under-explains-enterprise.md) |
-| CB-142 | 2026-04-30 | Generated python host assets break consumer ruff lint | P1 | migration-runtime | Fixed Pending Release | [2026-04-30-generated-python-host-assets-break-consumer-ruff-lint.md](2026-04-30-generated-python-host-assets-break-consumer-ruff-lint.md) |
-| CB-139 | 2026-04-30 | First install sync overlap gate leaves first run shell incomplete | P1 | odylith | Fixed Pending Release | [2026-04-30-first-install-sync-overlap-gate-leaves-first-run-shell-incomplete.md](2026-04-30-first-install-sync-overlap-gate-leaves-first-run-shell-incomplete.md) |
-| CB-141 | 2026-04-30 | Component register writes registry entries rejected by validator | P1 | registry | Fixed Pending Release | [2026-04-30-component-register-writes-registry-entries-rejected-by-validator.md](2026-04-30-component-register-writes-registry-entries-rejected-by-validator.md) |
-| CB-138 | 2026-04-29 | Casebook list clips long consumer bug cards | P2 | casebook | Fixed Pending Release | [2026-04-29-casebook-list-clips-long-consumer-bug-cards.md](2026-04-29-casebook-list-clips-long-consumer-bug-cards.md) |
-| CB-121 | 2026-04-16 | Intervention hook payloads can be generated but never reach chat visible ux | P1 | governance-intervention-engine | Fixed Pending Release | [2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md](2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md) |
-| CB-120 | 2026-04-16 | Dashboard shell diagnostic cockpit leaked into product render | P1 | dashboard | Resolved | [2026-04-16-dashboard-shell-diagnostic-cockpit-leaked-into-product-render.md](2026-04-16-dashboard-shell-diagnostic-cockpit-leaked-into-product-render.md) |
 | CB-119 | 2026-04-16 | Benchmark live proof conflates support paths write targets and read only sandbox | P1 | benchmark | Open | [2026-04-16-benchmark-live-proof-conflates-support-paths-write-targets-and-read-only-sandbox.md](2026-04-16-benchmark-live-proof-conflates-support-paths-write-targets-and-read-only-sandbox.md) |
 | CB-114 | 2026-04-15 | Bug capture can publish placeholder tbd records before the maintainer has enough | P0 | `src/odylith/runtime/governance/bug_authoring.py`,
   `src/odylith/runtime/intervention_engine/apply.py`,
@@ -32,25 +21,6 @@ Last updated (UTC): 2026-05-01
 | CB-118 | 2026-04-15 | Benchmark live proof auth preflight only checks ambient home codex auth | P1 | benchmark | Open | [2026-04-15-benchmark-live-proof-auth-preflight-only-checks-ambient-home-codex-auth.md](2026-04-15-benchmark-live-proof-auth-preflight-only-checks-ambient-home-codex-auth.md) |
 | CB-116 | 2026-04-15 | Benchmark compare and publication can treat stale proof aliases as current head  2 | P1 | benchmark | Open | [2026-04-15-benchmark-compare-and-publication-can-treat-stale-proof-aliases-as-current-head--2.md](2026-04-15-benchmark-compare-and-publication-can-treat-stale-proof-aliases-as-current-head--2.md) |
 | CB-112 | 2026-04-14 | Routine authoring commands can leave owned surfaces stale and selective sync can | P1 | odylith | Open | [2026-04-14-routine-authoring-commands-can-leave-owned-surfaces-stale-and-selective-sync-can.md](2026-04-14-routine-authoring-commands-can-leave-owned-surfaces-stale-and-selective-sync-can.md) |
-| CB-105 | 2026-04-12 | Sync performance engineering from 30s to sub 6s with session hoisting and incremental derivation | P1 | `src/odylith/runtime/governance/sync_workstream_artifacts.py` (22-step
-  pipeline executor, `_execute_plan`, `_run_callable_with_heartbeat`,
-  `build_sync_execution_plan`),
-  `src/odylith/runtime/governance/sync_session.py` (new: `GovernedSyncSession`,
-  `get_or_compute`, generation-scoped invalidation),
-  `src/odylith/runtime/governance/workstream_inference.py`
-  (`normalize_repo_token`, `_normalize_repo_token_cached`),
-  `src/odylith/runtime/common/consumer_profile.py`
-  (`_consumer_profile_cache_signature`, `load_consumer_profile`,
-  `truth_root_path`),
-  `src/odylith/runtime/governance/validate_backlog_contract.py`
-  (`_validate_idea_specs`, `_parse_idea_spec`),
-  `src/odylith/runtime/governance/component_registry_intelligence.py`
-  (`_path_matches_prefix`, `build_component_registry_report`,
-  `_build_component_registry_report_from_fingerprint`),
-  `src/odylith/runtime/governance/delivery_intelligence_engine.py`
-  (`build_delivery_intelligence_artifact`),
-  `src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py`
-  (`warm_projections`, `projection_input_fingerprint`). | Resolved | [2026-04-12-sync-performance-engineering-from-30s-to-sub-6s-with-session-hoisting-and-incremental-derivation.md](2026-04-12-sync-performance-engineering-from-30s-to-sub-6s-with-session-hoisting-and-incremental-derivation.md) |
 | CB-106 | 2026-04-12 | Benchmark live preflight evidence is only injected for odylith on without a declared comparison contract | P0 | `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`,
   `src/odylith/runtime/evaluation/odylith_benchmark_live_prompt.py`,
   `src/odylith/runtime/evaluation/odylith_benchmark_runner.py`, benchmark
@@ -59,26 +29,19 @@ Last updated (UTC): 2026-05-01
   `src/odylith/runtime/evaluation/odylith_benchmark_live_prompt.py`,
   `src/odylith/runtime/evaluation/odylith_benchmark_runner.py`, benchmark
   required-path scoring contract, proof fairness interpretation. | Open | [2026-04-12-benchmark-live-observed-path-scoring-credits-odylith-prompt-surfaces-but-not-equivalent-raw-prompt-anchors.md](2026-04-12-benchmark-live-observed-path-scoring-credits-odylith-prompt-surfaces-but-not-equivalent-raw-prompt-anchors.md) |
-| CB-102 | 2026-04-11 | Odylith start returns no candidates when dirty path set is dominated by bundle asset mirrors | P1 | `src/odylith/runtime/governance/agent_governance_intelligence.py`
-  (`_changed_path_aliases`, `normalize_changed_paths`,
-  `collect_git_changed_paths`),
-  `src/odylith/runtime/common/consumer_profile.py`
-  (`_legacy_product_token_alias`),
-  `./.odylith/bin/odylith start` command, and every downstream consumer
-  of `normalize_repo_token` and the changed-path fan-out pipeline. | Resolved | [2026-04-11-odylith-start-returns-no-candidates-when-dirty-path-set-is-dominated-by-bundle-asset-mirrors.md](2026-04-11-odylith-start-returns-no-candidates-when-dirty-path-set-is-dominated-by-bundle-asset-mirrors.md) |
 | CB-103 | 2026-04-11 | Claude host profile blanks execution model via supports explicit model selection flag | P0 | `src/odylith/runtime/execution_engine/contract.py`,
   `src/odylith/runtime/common/host_runtime.py`,
   `src/odylith/runtime/common/agent_runtime_contract.py`,
   `src/odylith/runtime/orchestration/subagent_router.py`,
   `src/odylith/runtime/orchestration/subagent_orchestrator.py`,
   `src/odylith/runtime/context_engine/tooling_context_routing.py`,
-  `.claude/agents/*.md`, and the `execution-governance` Registry component. | In progress | [2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md](2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md) |
+  `.claude/agents/*.md`, and the `execution-governance` Registry component. | InProgress | [2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md](2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md) |
 | CB-104 | 2026-04-11 | Agents hand edited governed truth when odylith cli commands existed | P1 | `agent-governance policy` (cross-cutting guidance
   contract), `odylith/agents-guidelines/CLI_FIRST_POLICY.md`,
   `odylith/agents-guidelines/*.md` (9 canonical guidance files),
   `odylith/skills/*/SKILL.md` (16 shared skills),
   `odylith/AGENTS.md`, `odylith/CLAUDE.md`, `AGENTS.md`, `CLAUDE.md`,
-  and the shared Odylith CLI surface anchored at `./.odylith/bin/odylith`. | In progress | [2026-04-11-agents-hand-edited-governed-truth-when-odylith-cli-commands-existed.md](2026-04-11-agents-hand-edited-governed-truth-when-odylith-cli-commands-existed.md) |
+  and the shared Odylith CLI surface anchored at `./.odylith/bin/odylith`. | InProgress | [2026-04-11-agents-hand-edited-governed-truth-when-odylith-cli-commands-existed.md](2026-04-11-agents-hand-edited-governed-truth-when-odylith-cli-commands-existed.md) |
 | CB-090 | 2026-04-09 | Low signal governance churn can outrank real execution across governance surfaces | P1 | `src/odylith/runtime/governance/delivery_intelligence_engine.py`,
   `src/odylith/runtime/governance/delivery/scope_signal_ladder.py`,
   `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
@@ -182,8 +145,30 @@ Last updated (UTC): 2026-05-01
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-156 | 2026-05-03 | Greenfield consumer intent dead ended on missing source | P1 | domain-intelligence | FixedPendingRelease | [2026-05-03-greenfield-consumer-intent-dead-ended-on-missing-source.md](2026-05-03-greenfield-consumer-intent-dead-ended-on-missing-source.md) |
+| CB-159 | 2026-05-03 | Greenfield atlas drafts reuse generic star topology | P2 | domain-intelligence | FixedPendingRelease | [2026-05-03-greenfield-atlas-drafts-reuse-generic-star-topology.md](2026-05-03-greenfield-atlas-drafts-reuse-generic-star-topology.md) |
+| CB-157 | 2026-05-03 | Compass timeline audit recorded prompt intervention chatter as implementation hi | P2 | compass | FixedPendingRelease | [2026-05-03-compass-timeline-audit-recorded-prompt-intervention-chatter-as-implementation-hi.md](2026-05-03-compass-timeline-audit-recorded-prompt-intervention-chatter-as-implementation-hi.md) |
+| CB-158 | 2026-05-03 | Compass release target workstream cards are not fully clickable | P2 | compass | FixedPendingRelease | [2026-05-03-compass-release-target-workstream-cards-are-not-fully-clickable.md](2026-05-03-compass-release-target-workstream-cards-are-not-fully-clickable.md) |
+| CB-155 | 2026-05-02 | Radar allowed topology sensitive workstream to render without topology | P1 | radar | FixedPendingRelease | [2026-05-02-radar-allowed-topology-sensitive-workstream-to-render-without-topology.md](2026-05-02-radar-allowed-topology-sensitive-workstream-to-render-without-topology.md) |
+| CB-152 | 2026-05-02 | Generated launchers are not parseable by shipped health checks | P1 | odylith | FixedPendingRelease | [2026-05-02-generated-launchers-are-not-parseable-by-shipped-health-checks.md](2026-05-02-generated-launchers-are-not-parseable-by-shipped-health-checks.md) |
+| CB-154 | 2026-05-02 | Compass skipped narration warning replaced last standup brief | P2 | compass | FixedPendingRelease | [2026-05-02-compass-skipped-narration-warning-replaced-last-standup-brief.md](2026-05-02-compass-skipped-narration-warning-replaced-last-standup-brief.md) |
+| CB-153 | 2026-05-02 | Casebook detail view leaves excessive left gutter | P2 | casebook | FixedPendingRelease | [2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md](2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md) |
+| CB-149 | 2026-05-01 | Host adapters pay too much odylith hook and startup latency | P1 | governance-intervention-engine | FixedPendingRelease | [2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md](2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md) |
+| CB-151 | 2026-05-01 | Compass default governance view surfaces completed programs and shipped releases | P2 | dashboard | FixedPendingRelease | [2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md](2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md) |
+| CB-147 | 2026-05-01 | Claude hooks spam unhealthy launcher repair errors during bootstrap repair | P1 | governance-intervention-engine | FixedPendingRelease | [2026-05-01-claude-hooks-spam-unhealthy-launcher-repair-errors-during-bootstrap-repair.md](2026-05-01-claude-hooks-spam-unhealthy-launcher-repair-errors-during-bootstrap-repair.md) |
+| CB-150 | 2026-05-01 | Casebook renders prose status and type chips | P1 | casebook | FixedPendingRelease | [2026-05-01-casebook-renders-prose-status-and-type-chips.md](2026-05-01-casebook-renders-prose-status-and-type-chips.md) |
+| CB-148 | 2026-05-01 | Bootstrap doctor repair still surfaces trusted root warning noise | P1 | release | FixedPendingRelease | [2026-05-01-bootstrap-doctor-repair-still-surfaces-trusted-root-warning-noise.md](2026-05-01-bootstrap-doctor-repair-still-surfaces-trusted-root-warning-noise.md) |
+| CB-145 | 2026-04-30 | Uninstall requests can be routed to raw deletion that odylith blocks itself | P1 | install | FixedPendingRelease | [2026-04-30-uninstall-requests-can-be-routed-to-raw-deletion-that-odylith-blocks-itself.md](2026-04-30-uninstall-requests-can-be-routed-to-raw-deletion-that-odylith-blocks-itself.md) |
+| CB-143 | 2026-04-30 | Uninstall leaves broken odylith tree behind | P1 | migration-runtime | FixedPendingRelease | [2026-04-30-uninstall-leaves-broken-odylith-tree-behind.md](2026-04-30-uninstall-leaves-broken-odylith-tree-behind.md) |
+| CB-140 | 2026-04-30 | Show output suggests standalone atlas prompt that scaffold rejects | P1 | odylith | FixedPendingRelease | [2026-04-30-show-output-suggests-standalone-atlas-prompt-that-scaffold-rejects.md](2026-04-30-show-output-suggests-standalone-atlas-prompt-that-scaffold-rejects.md) |
+| CB-144 | 2026-04-30 | Intervention visibility fallback leaks internal instructions into claude chat | P1 | governance-intervention-engine | FixedPendingRelease | [2026-04-30-intervention-visibility-fallback-leaks-internal-instructions-into-claude-chat.md](2026-04-30-intervention-visibility-fallback-leaks-internal-instructions-into-claude-chat.md) |
+| CB-146 | 2026-04-30 | Hosted installer misroutes stale uninstall residue and under explains enterprise | P1 | release | FixedPendingRelease | [2026-04-30-hosted-installer-misroutes-stale-uninstall-residue-and-under-explains-enterprise.md](2026-04-30-hosted-installer-misroutes-stale-uninstall-residue-and-under-explains-enterprise.md) |
+| CB-142 | 2026-04-30 | Generated python host assets break consumer ruff lint | P1 | migration-runtime | FixedPendingRelease | [2026-04-30-generated-python-host-assets-break-consumer-ruff-lint.md](2026-04-30-generated-python-host-assets-break-consumer-ruff-lint.md) |
+| CB-139 | 2026-04-30 | First install sync overlap gate leaves first run shell incomplete | P1 | odylith | FixedPendingRelease | [2026-04-30-first-install-sync-overlap-gate-leaves-first-run-shell-incomplete.md](2026-04-30-first-install-sync-overlap-gate-leaves-first-run-shell-incomplete.md) |
+| CB-141 | 2026-04-30 | Component register writes registry entries rejected by validator | P1 | registry | FixedPendingRelease | [2026-04-30-component-register-writes-registry-entries-rejected-by-validator.md](2026-04-30-component-register-writes-registry-entries-rejected-by-validator.md) |
 | CB-137 | 2026-04-29 | Install still surfaces raw trusted root key warning during verification | P1 | release | Closed | [2026-04-29-install-still-surfaces-raw-trusted-root-key-warning-during-verification.md](2026-04-29-install-still-surfaces-raw-trusted-root-key-warning-during-verification.md) |
 | CB-136 | 2026-04-29 | Install overwrites claude settings before verified runtime activation | P0 | migration-runtime | Closed | [2026-04-29-install-overwrites-claude-settings-before-verified-runtime-activation.md](2026-04-29-install-overwrites-claude-settings-before-verified-runtime-activation.md) |
+| CB-138 | 2026-04-29 | Casebook list clips long consumer bug cards | P2 | casebook | FixedPendingRelease | [2026-04-29-casebook-list-clips-long-consumer-bug-cards.md](2026-04-29-casebook-list-clips-long-consumer-bug-cards.md) |
 | CB-134 | 2026-04-27 | Upgrade reviewability still needs generated change manifest and lock compaction | P2 | odylith | Closed | [2026-04-27-upgrade-reviewability-still-needs-generated-change-manifest-and-lock-compaction.md](2026-04-27-upgrade-reviewability-still-needs-generated-change-manifest-and-lock-compaction.md) |
 | CB-133 | 2026-04-27 | Upgrade lifecycle output is not an auditable transaction | P1 | release | Closed | [2026-04-27-upgrade-lifecycle-output-is-not-an-auditable-transaction.md](2026-04-27-upgrade-lifecycle-output-is-not-an-auditable-transaction.md) |
 | CB-132 | 2026-04-27 | Starter guide first run layout buries the primary action | P1 | dashboard | Closed | [2026-04-27-starter-guide-first-run-layout-buries-the-primary-action.md](2026-04-27-starter-guide-first-run-layout-buries-the-primary-action.md) |
@@ -198,6 +183,8 @@ Last updated (UTC): 2026-05-01
 | CB-124 | 2026-04-24 | Benchmark disposable worktrees resolve validators against a non benchmark ready | P1 | benchmark | Closed | [2026-04-24-benchmark-disposable-worktrees-resolve-validators-against-a-non-benchmark-ready-.md](2026-04-24-benchmark-disposable-worktrees-resolve-validators-against-a-non-benchmark-ready-.md) |
 | CB-122 | 2026-04-17 | Intervention hooks report ready while chat sees zero visible odylith beats | P0 | governance-intervention-engine | Closed | [2026-04-17-intervention-hooks-report-ready-while-chat-sees-zero-visible-odylith-beats.md](2026-04-17-intervention-hooks-report-ready-while-chat-sees-zero-visible-odylith-beats.md) |
 | CB-123 | 2026-04-17 | Bootstrap signal corpus can be mistaken for calibrated ml quality | P1 | governance-intervention-engine, benchmark, odylith-context-engine | Closed | [2026-04-17-bootstrap-signal-corpus-can-be-mistaken-for-calibrated-ml-quality.md](2026-04-17-bootstrap-signal-corpus-can-be-mistaken-for-calibrated-ml-quality.md) |
+| CB-121 | 2026-04-16 | Intervention hook payloads can be generated but never reach chat visible ux | P1 | governance-intervention-engine | FixedPendingRelease | [2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md](2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md) |
+| CB-120 | 2026-04-16 | Dashboard shell diagnostic cockpit leaked into product render | P1 | dashboard | Resolved | [2026-04-16-dashboard-shell-diagnostic-cockpit-leaked-into-product-render.md](2026-04-16-dashboard-shell-diagnostic-cockpit-leaked-into-product-render.md) |
 | CB-110 | 2026-04-14 | Forwarded cli help hides backend flags and selective sync stays too wide for gov | P1 | `src/odylith/cli.py`,
   `src/odylith/runtime/governance/bug_authoring.py`,
   `src/odylith/runtime/governance/sync_casebook_bug_index.py`,
@@ -217,6 +204,25 @@ Last updated (UTC): 2026-05-01
   `tests/integration/runtime/test_surface_browser_deep.py`,
   `tests/integration/runtime/test_surface_browser_filter_audit.py`,
   Compass component spec, and `B-025` governance memory. | Closed | [2026-04-14-compass-rolling-timeline-audit-can-hide-prior-day-window-activity-behind-selecte.md](2026-04-14-compass-rolling-timeline-audit-can-hide-prior-day-window-activity-behind-selecte.md) |
+| CB-105 | 2026-04-12 | Sync performance engineering from 30s to sub 6s with session hoisting and incremental derivation | P1 | `src/odylith/runtime/governance/sync_workstream_artifacts.py` (22-step
+  pipeline executor, `_execute_plan`, `_run_callable_with_heartbeat`,
+  `build_sync_execution_plan`),
+  `src/odylith/runtime/governance/sync_session.py` (new: `GovernedSyncSession`,
+  `get_or_compute`, generation-scoped invalidation),
+  `src/odylith/runtime/governance/workstream_inference.py`
+  (`normalize_repo_token`, `_normalize_repo_token_cached`),
+  `src/odylith/runtime/common/consumer_profile.py`
+  (`_consumer_profile_cache_signature`, `load_consumer_profile`,
+  `truth_root_path`),
+  `src/odylith/runtime/governance/validate_backlog_contract.py`
+  (`_validate_idea_specs`, `_parse_idea_spec`),
+  `src/odylith/runtime/governance/component_registry_intelligence.py`
+  (`_path_matches_prefix`, `build_component_registry_report`,
+  `_build_component_registry_report_from_fingerprint`),
+  `src/odylith/runtime/governance/delivery_intelligence_engine.py`
+  (`build_delivery_intelligence_artifact`),
+  `src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py`
+  (`warm_projections`, `projection_input_fingerprint`). | Resolved | [2026-04-12-sync-performance-engineering-from-30s-to-sub-6s-with-session-hoisting-and-incremental-derivation.md](2026-04-12-sync-performance-engineering-from-30s-to-sub-6s-with-session-hoisting-and-incremental-derivation.md) |
 | CB-108 | 2026-04-12 | Compass programs can regrow a redundant nested inner card | P1 | `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-shared.v1.js`,
   `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-waves.v1.js`,
   `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-style-execution-waves.v1.css`,
@@ -224,6 +230,13 @@ Last updated (UTC): 2026-05-01
   `tests/unit/runtime/test_compass_dashboard_shell.py`,
   live checked-in Compass shell assets, bundled Compass shell mirrors, and the
   `B-025` UX/browser-hardening plan. | Closed | [2026-04-12-compass-programs-can-regrow-a-redundant-nested-inner-card.md](2026-04-12-compass-programs-can-regrow-a-redundant-nested-inner-card.md) |
+| CB-102 | 2026-04-11 | Odylith start returns no candidates when dirty path set is dominated by bundle asset mirrors | P1 | `src/odylith/runtime/governance/agent_governance_intelligence.py`
+  (`_changed_path_aliases`, `normalize_changed_paths`,
+  `collect_git_changed_paths`),
+  `src/odylith/runtime/common/consumer_profile.py`
+  (`_legacy_product_token_alias`),
+  `./.odylith/bin/odylith start` command, and every downstream consumer
+  of `normalize_repo_token` and the changed-path fan-out pipeline. | Resolved | [2026-04-11-odylith-start-returns-no-candidates-when-dirty-path-set-is-dominated-by-bundle-asset-mirrors.md](2026-04-11-odylith-start-returns-no-candidates-when-dirty-path-set-is-dominated-by-bundle-asset-mirrors.md) |
 | CB-101 | 2026-04-10 | Dashboard and upgrade can queue compass behind a command the activated launcher does not expose | P1 | `src/odylith/runtime/governance/sync_workstream_artifacts.py`,
   `src/odylith/runtime/governance/dashboard_refresh_contract.py`,
   `tests/unit/runtime/test_sync_cli_compat.py`, Compass component spec, and

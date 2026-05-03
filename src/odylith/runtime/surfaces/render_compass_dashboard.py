@@ -700,6 +700,11 @@ def refresh_runtime_artifacts(
             repo_root=repo_root,
             runtime_input_fingerprint=final_input_fingerprint,
         )
+        payload = compass_standup_brief_maintenance.apply_terminal_state_to_runtime_payload(
+            repo_root=repo_root,
+            payload=payload,
+            runtime_input_fingerprint=final_input_fingerprint,
+        )
     _apply_refresh_attempt_state(
         payload=payload,
         requested_profile=normalized_profile,

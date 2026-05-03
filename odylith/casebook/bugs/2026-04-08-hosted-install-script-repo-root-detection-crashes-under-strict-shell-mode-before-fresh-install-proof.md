@@ -1,5 +1,14 @@
 - Bug ID: CB-075
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-08
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Canonical `v0.1.10` release candidate proof still failed after
   the hosted installer switched off the hidden `--align-pin` flag because the

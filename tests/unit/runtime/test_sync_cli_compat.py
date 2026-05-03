@@ -8,6 +8,7 @@ from odylith.runtime.governance import sync_session
 from odylith.runtime.governance import sync_workstream_artifacts
 from odylith.runtime.surfaces import compass_dashboard_runtime
 from odylith.runtime.surfaces import render_backlog_ui
+from odylith.runtime.surfaces import render_tooling_dashboard
 
 _SECTIONS = (
     "Problem",
@@ -806,7 +807,7 @@ def test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh(tm
     monkeypatch.setattr(sync_workstream_artifacts, "_use_runtime_fast_path", lambda _mode: False)
     monkeypatch.setattr(sync_workstream_artifacts, "_run_command", _fake_run_command)
     monkeypatch.setattr(
-        sync_workstream_artifacts.compass_refresh_runtime,
+        sync_workstream_artifacts.compass_dashboard_refresh_inputs.compass_refresh_runtime,
         "run_refresh",
         lambda **kwargs: compass_calls.append(dict(kwargs))
         or {
@@ -829,6 +830,10 @@ def test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh(tm
     assert "odylith.runtime.governance.delivery_intelligence_refresh" in modules
     assert "odylith.runtime.surfaces.render_backlog_ui" in modules
     assert "odylith.runtime.surfaces.render_tooling_dashboard" in modules
+    assert modules.index("odylith.runtime.surfaces.render_backlog_ui") < modules.index(
+        "odylith.runtime.surfaces.render_tooling_dashboard"
+    )
+    assert (tmp_path / "odylith" / "radar" / "traceability-graph.v1.json").is_file()
     assert compass_calls == [
         {
             "repo_root": tmp_path,
@@ -842,6 +847,63 @@ def test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh(tm
     ]
     assert "odylith.runtime.governance.sync_component_spec_requirements" not in modules
     assert "odylith.runtime.surfaces.render_registry_dashboard" not in modules
+
+
+def test_dashboard_refresh_bootstraps_upgrade_residue_before_shell_render(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    repo_root = _seed_sync_repo_with_legacy_backlog(tmp_path)
+    executed_modules: list[str] = []
+    compass_calls: list[dict[str, object]] = []
+
+    def _fake_run_command(
+        *,
+        repo_root: Path,
+        args: tuple[str, ...],
+        heartbeat_label: str = "",
+        timeout_seconds: float | None = None,
+    ) -> int:  # noqa: ARG001
+        module = args[2] if len(args) >= 3 and args[0] == "python" and args[1] == "-m" else ""
+        if module:
+            executed_modules.append(module)
+        if module == "odylith.runtime.surfaces.render_tooling_dashboard":
+            return render_tooling_dashboard.main(args[3:])
+        return 0
+
+    def _fake_compass_refresh(**kwargs):  # noqa: ANN003
+        compass_calls.append(dict(kwargs))
+        assert (repo_root / "odylith" / "radar" / "traceability-graph.v1.json").is_file()
+        assert (repo_root / "odylith" / "casebook" / "bugs" / "INDEX.md").is_file()
+        return {
+            "rc": 0,
+            "status": "passed",
+            "request_id": "compass-upgrade-residue",
+            "state": {},
+        }
+
+    monkeypatch.setattr(sync_workstream_artifacts, "_use_runtime_fast_path", lambda _mode: False)
+    monkeypatch.setattr(sync_workstream_artifacts, "_run_command", _fake_run_command)
+    monkeypatch.setattr(sync_workstream_artifacts.compass_dashboard_refresh_inputs.compass_refresh_runtime, "run_refresh", _fake_compass_refresh)
+    monkeypatch.setattr(
+        render_tooling_dashboard.delivery_surface_payload_runtime,
+        "load_delivery_surface_payload",
+        lambda **kwargs: {},
+    )
+
+    rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
+        repo_root=repo_root,
+        surfaces=("tooling_shell", "radar", "compass"),
+        runtime_mode="auto",
+        atlas_sync=False,
+    )
+
+    assert rc == 0
+    assert compass_calls
+    assert executed_modules[-1] == "odylith.runtime.surfaces.render_tooling_dashboard"
+    assert (repo_root / "odylith" / "index.html").is_file()
+    assert (repo_root / "odylith" / "radar" / "traceability-graph.v1.json").is_file()
+    assert not (repo_root / "odylith" / "atlas" / "atlas.html").exists()
 
 
 def test_dashboard_refresh_casebook_migrates_bug_ids_during_refresh(tmp_path: Path, monkeypatch) -> None:
@@ -1328,7 +1390,7 @@ def test_build_sync_execution_plan_uses_owned_surface_selective_lane_for_governa
 
     assert plan.headline == "Sync only the governed truth for the explicit selective slice in `standalone` mode."
     assert "Normalize legacy Radar backlog sections for the touched selective slice before validation." in labels
-    assert "Refresh the Casebook bug index before rerendering the Casebook dashboard." in labels
+    assert "Normalize and validate Casebook bugs before rerendering the Casebook dashboard." in labels
     assert "Render Casebook for the updated bug index." in labels
     assert "Render Radar without widening into the full governance sync pipeline." in labels
     assert "Render Registry without re-running broader governance reconciliation." in labels
@@ -1569,7 +1631,7 @@ def test_dashboard_refresh_continues_after_surface_failure_and_returns_non_zero(
 
     monkeypatch.setattr(sync_workstream_artifacts, "_run_command", _fake_run_command)
     monkeypatch.setattr(
-        sync_workstream_artifacts.compass_refresh_runtime,
+        sync_workstream_artifacts.compass_dashboard_refresh_inputs.compass_refresh_runtime,
         "run_refresh",
         lambda **kwargs: {
             "rc": 1,
@@ -1608,7 +1670,7 @@ def test_dashboard_refresh_compass_waits_for_shared_engine_and_reports_failure(
         lambda **kwargs: (_ for _ in ()).throw(AssertionError("Compass compatibility path should not shell out directly")),
     )
     monkeypatch.setattr(
-        sync_workstream_artifacts.compass_refresh_runtime,
+        sync_workstream_artifacts.compass_dashboard_refresh_inputs.compass_refresh_runtime,
         "run_refresh",
         lambda **kwargs: refresh_calls.append(dict(kwargs))
         or {
@@ -1651,7 +1713,7 @@ def test_dashboard_refresh_compass_waits_for_terminal_success(tmp_path: Path, mo
         lambda **kwargs: (_ for _ in ()).throw(AssertionError("Compass compatibility path should not shell out directly")),
     )
     monkeypatch.setattr(
-        sync_workstream_artifacts.compass_refresh_runtime,
+        sync_workstream_artifacts.compass_dashboard_refresh_inputs.compass_refresh_runtime,
         "run_refresh",
         lambda **kwargs: refresh_calls.append(dict(kwargs))
         or {

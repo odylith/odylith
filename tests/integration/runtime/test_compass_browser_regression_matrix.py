@@ -8,7 +8,6 @@ from tests.integration.runtime.compass_browser_regression_support import (
     current_workstream_ids,
     load_runtime_payload,
     open_compass_page,
-    program_member_ids,
     release_target_ids,
     render_compass_fixture,
     runtime_paths,
@@ -103,6 +102,12 @@ def _rewrite_traceability_release_truth(
         release["active_workstreams"] = list(active_ids)
         release["completed_workstreams"] = list(completed_ids)
     if isinstance(traceability.get("current_release"), dict):
+        traceability["current_release"]["release_id"] = "release-0-1-11"
+        traceability["current_release"]["display_label"] = "0.1.11"
+        traceability["current_release"]["version"] = "0.1.11"
+        traceability["current_release"]["tag"] = "v0.1.11"
+        traceability["current_release"]["status"] = "active"
+        traceability["current_release"]["aliases"] = ["current"]
         traceability["current_release"]["active_workstreams"] = list(active_ids)
         traceability["current_release"]["completed_workstreams"] = list(completed_ids)
         traceability["generated_utc"] = "2026-04-09T12:00:00Z"
@@ -344,7 +349,7 @@ def test_compass_browser_traceability_fallback_prioritizes_active_release_truth_
             context.close()
 
 
-def test_compass_browser_source_truth_snapshot_keeps_release_program_and_current_workstream_sections_aligned(
+def test_compass_browser_source_truth_snapshot_keeps_release_and_current_workstream_sections_aligned(
     tmp_path: Path,
 ) -> None:
     fixture_root = clone_odylith_fixture(tmp_path)
@@ -384,7 +389,6 @@ def test_compass_browser_source_truth_snapshot_keeps_release_program_and_current
             assert "governed source-truth snapshot" in compass.locator("#status-banner").inner_text().strip()
 
             release_ids = release_target_ids(compass)
-            program_ids = program_member_ids(compass)
             compass.locator("#current-workstreams .empty", has_text="No additional current workstreams. Program and release lanes already cover the active work.").wait_for(timeout=15000)
             current_ids = current_workstream_ids(compass)
             scope_ids = [token for token in scope_option_values(compass) if token]
@@ -392,8 +396,7 @@ def test_compass_browser_source_truth_snapshot_keeps_release_program_and_current
 
             expected_ids = {"B-072", "B-073", "B-079"}
             assert expected_ids.issubset(set(release_ids))
-            assert "B-072" in program_text
-            assert {"B-073", "B-079"}.issubset(set(program_ids))
+            assert program_text == ""
             assert set(current_ids).isdisjoint(expected_ids)
             assert "B-067" not in scope_ids
             assert "B-067" not in current_ids

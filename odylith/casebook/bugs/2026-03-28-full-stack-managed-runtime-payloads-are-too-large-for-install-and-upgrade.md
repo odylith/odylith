@@ -1,5 +1,14 @@
 - Bug ID: CB-005
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Open
 
 - Created: 2026-03-28
@@ -8,7 +17,6 @@
 
 - Reproducibility: Always
 
-- Type: Product
 
 - Description: Odylith's managed runtime payloads grew large enough that first
   install, release upload, and incremental upgrade all moved one monolithic

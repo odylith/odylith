@@ -1,5 +1,14 @@
 - Bug ID: CB-071
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-08
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The canonical release, release-candidate, and test workflows
   still pin first-party GitHub Actions revisions that execute on the Node 20

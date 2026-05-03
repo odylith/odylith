@@ -1,5 +1,14 @@
 - Bug ID: CB-083
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-09
@@ -10,7 +19,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Interactive `B-###` workstream buttons across product surfaces
   did not share one destination contract. Compass `Current Workstreams` had

@@ -1,5 +1,14 @@
 - Bug ID: CB-114
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Open
 
 - Created: 2026-04-15
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: `odylith bug capture` could publish a new Casebook bug record
   with placeholder `TBD` intake fields even when the caller had not yet

@@ -100,6 +100,22 @@ use:
 ./.odylith/bin/odylith capabilities --repo-root .
 ```
 
+For an empty or thin repo where the project exists mostly as intent, use the
+greenfield proposal lane before source-backed governance exists:
+
+```bash
+./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<project intent>"
+```
+
+The active host model authors the project-specific proposal in chat. Odylith
+owns the evidence contract, topology requirements, validation, confirmation
+gate, and apply path. Accepted proposals can be applied only with explicit
+confirmation:
+
+```bash
+./.odylith/bin/odylith greenfield apply --repo-root . --proposal-file <proposal.json> --confirm
+```
+
 For the common governance authoring fast paths, use:
 
 ```bash
@@ -158,9 +174,13 @@ Before activation, the installer picks the install boundary like this:
 If no `.git` exists yet, install still succeeds, but Git-aware features stay
 limited until the folder is Git-backed.
 
-Starter prompt for your agent:
+Starter prompt for your agent when source-backed paths already exist:
 
 **Use Odylith to define this repo's first governed slice. Pick one path to own, one seam to guard, one component to define, one diagram to draw, and one backlog to open, all tied to the same slice. First show me 5 bullets. Then create the Odylith files. Plain English. Real file paths only. No IDs. No hedging. Only write under `odylith/`.**
+
+Starter prompt for a greenfield project:
+
+**Odylith, propose the first governed shape for this project. Give me a backlog tree, program waves, release plan, planned components, Atlas diagrams, assumptions, risks, validation obligations, and open questions. Do not claim source evidence. Ask for confirmation before writing anything.**
 
 Here are some starter prompt inspirations:
 

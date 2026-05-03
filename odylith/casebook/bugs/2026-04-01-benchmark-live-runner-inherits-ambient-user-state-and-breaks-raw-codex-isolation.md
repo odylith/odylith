@@ -1,5 +1,14 @@
 - Bug ID: CB-027
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Open
 
 - Created: 2026-04-01
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The live `odylith_on` versus `odylith_off` benchmark runner
   still allows the raw Codex CLI control to inherit ambient workstation or repo

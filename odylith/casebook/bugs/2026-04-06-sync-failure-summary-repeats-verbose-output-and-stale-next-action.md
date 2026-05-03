@@ -1,5 +1,14 @@
 - Bug ID: CB-059
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-06
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: When sync fails, Odylith can dump a long repetitive validation
   trace and then recommend rerunning the same forced command that already

@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common import casebook_metadata
 from odylith.runtime.governance import casebook_source_validation
 from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import sync_casebook_bug_index
@@ -31,6 +32,7 @@ _PLACEHOLDER_RE = re.compile(
 )
 _CAPTURE_CONTRACT = "fail_closed_minimum_evidence_v1"
 _REPRODUCIBILITY_HELP = casebook_source_validation.REPRODUCIBILITY_HELP
+_TYPE_HELP = casebook_source_validation.TYPE_HELP
 _REQUIRED_FIELD_SPECS: tuple[tuple[str, str], ...] = (
     ("reproducibility", "Reproducibility"),
     ("impact", "Impact"),
@@ -245,6 +247,10 @@ def _validate_capture_inputs(
         errors.append("`--description` cannot be a placeholder value")
     if _field_looks_placeholder(normalized_type):
         errors.append("`--type` cannot be a placeholder value")
+    elif not casebook_metadata.casebook_token_is_valid(normalized_type):
+        errors.append(f"`--type` must be {_TYPE_HELP}")
+    else:
+        normalized_type = casebook_metadata.canonical_casebook_type(normalized_type)
 
     missing_flags: list[str] = []
     placeholder_flags: list[str] = []
@@ -610,7 +616,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--description", default="", help="Detailed bug description. Defaults to the title.")
     parser.add_argument("--component", required=True, help="Affected component ID or boundary.")
     parser.add_argument("--severity", default="P2", help="Severity (P0-P5, default P2).")
-    parser.add_argument("--type", dest="bug_type", default="Product", help="Bug type label.")
+    parser.add_argument("--type", dest="bug_type", default="Product", help=f"Bug type label; use {_TYPE_HELP}.")
     parser.add_argument(
         "--reproducibility",
         required=True,

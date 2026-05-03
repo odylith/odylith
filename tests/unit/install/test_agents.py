@@ -5,6 +5,7 @@ from odylith.install.agents import (
     SCOPE_START,
     inject_managed_block,
     managed_block,
+    managed_claude_bridge_block,
     remove_managed_block,
 )
 
@@ -58,84 +59,58 @@ def test_remove_managed_block_also_removes_legacy_marker_block() -> None:
 def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> None:
     block = managed_block()
 
-    assert "Before any substantive repo scan or code change outside trivial fixes, the agent must start from the repo-local Odylith entrypoint" in block
-    assert "keep the active workstream, component, or packet in scope" in block
-    assert "Direct repo scan before that start step is a policy violation unless the task is trivial or Odylith is unavailable." in block
-    assert "Start substantive turns with `./.odylith/bin/odylith start --repo-root .`" in block
-    assert "`./.odylith/bin/odylith context --repo-root . <ref>` before raw repo search." in block
-    assert "CLI-first is non-negotiable for both Codex and Claude Code." in block
-    assert "Remove all hand-authoring for places where Odylith CLI should be doing the heavy-lifting." in block
-    assert "hard policy violation, not a stylistic preference" in block
-    assert "odylith/agents-guidelines/CLI_FIRST_POLICY.md" in block
-    assert "CB-104" in block
-    assert "odylith bug capture" in block
-    assert "odylith backlog create" in block
-    assert "rerender only the owned surface" in block
-    assert "odylith radar refresh" in block
-    assert "odylith registry refresh" in block
-    assert "odylith casebook refresh" in block
-    assert "odylith atlas refresh" in block
-    assert "odylith compass refresh" in block
-    assert "odylith compass deep-refresh" in block
-    assert "missing-shim, or fallback-path details implicit" in block
-    assert "Keep the default operating lane shared across Codex and Claude Code" in block
-    assert "Treat AI slop as a regression." in block
-    assert "odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md" in block
-    assert "odylith/skills/odylith-code-hygiene-guard/SKILL.md" in block
-    assert "keep startup, fallback, routing, and packet-selection internals implicit" in block
-    assert "the exact file/workstream, the bug under test, or the validation in flight" in block
-    assert "If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history." in block
-    assert "Do not surface routine `odylith start`, `odylith context`, or `odylith query` commands in progress updates" in block
-    assert "never prefix commentary with control-plane receipt labels" in block
-    assert "Mention Odylith during the work only when the user explicitly asks for the command, a real blocker requires it, or a consumer-versus-maintainer lane distinction matters." in block
-    assert "literal commands" not in block
-    assert "Keep normal commentary task-first and human." in block
-    assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in block
-    assert "At closeout, or when a visible-intervention recovery renders a prompt-submit or visibility-proof note" in block
-    assert "host prompt-submit runtime is stricter about silence" in block
-    assert "normal non-passthrough prompts do not get an Assist line by default" in block
-    assert "Do not add Assist just because Odylith ran" in block
-    assert "supplies one shared prompt-visible Assist line" not in block
-    assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in block
-    assert "Lead with the user win" in block
-    assert "link updated governance IDs inline when they were actually changed" in block
-    assert "name the affected governance-contract IDs" in block
-    assert "Frame the edge against `odylith_off` or the broader unguided path" in block
-    assert "Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual." in block
-    assert "Ground the line in concrete observed counts, measured deltas, or validation outcomes" in block
-    assert "or a concrete chat-visibility complaint" in block
-    assert "Use only concrete observed counts, measured deltas, or validation outcomes, and ground the line in concrete observed counts, measured deltas, or validation outcomes" not in block
-    assert "Silence is better than filler." in block
-    assert "At most one supplemental closeout line may appear" in block
-    assert "never say `fixed`, `cleared`, or `resolved` without qualification" in block
-    assert "same fingerprint as the last falsification or not" in block
-    assert "follow this workflow check in order: read the nearest `AGENTS.md`; run the repo-local `odylith start`/`odylith context` step" in block
-    assert "grounding Odylith is diagnosis authority, not blanket write authority" in block
-    assert "stop at diagnosis and maintainer-ready feedback" in block
-    assert "Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes" in block
-    assert "search existing workstream, plan, bug, component, diagram, and recent session/Compass context first" in block
-    assert "Queued backlog items, case queues, and shell or Compass queue previews are not implicit implementation instructions." in block
-    assert "If the slice expands beyond one truthful record, use child workstreams or execution waves" in block
-    assert "`./.odylith/bin/odylith` chooses how Odylith runs; it does not decide which repo files the agent may edit" in block
-    assert "run `./.odylith/bin/odylith version --repo-root .` when the launcher exists" in block
-    assert "If the launcher is missing, confirm that from the filesystem first" in block
-    assert "substantive grounded consumer-lane work" in block
-    assert "default candidate" in block
-    assert "keep transport support separate from current-session spawn permission/effectiveness" in block
-    assert "validated Odylith delegation hosts under the same grounding and validation contract" in block
-    assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in block
-    assert "Odylith grounding:" not in block
-    assert "Odylith didn't return immediately" not in block
-    assert "In the Odylith product repo, maintainer-only release and benchmark publishing work follows `odylith/maintainer/AGENTS.md`." not in block
-    assert "direct-edit and Bash PostToolUse hooks stay silent on success" in block
-    assert "`odylith codex intervention-status` or `odylith claude" in block
-    assert "low-latency delivery record for Teaser, Ambient Highlight, Observation," in block
-    assert "Proposal, and Assist readiness; hook payload generation alone is not enough" in block
-    assert "reports `Activation: ready` and a chat-visibility line confirmed in this" in block
-    assert "Treat recorded-only and waiting-for-chat states as partial proof" in block
-    assert "Explicit feedback that Odylith ambient highlights, interventions, Assist," in block
-    assert "ordinary low-signal short" in block
-    assert "Claude Stop is memory/logging only" in block
+    expected = (
+        "run `./.odylith/bin/odylith start --repo-root .` first",
+        "Do not run `odylith context`, `odylith query`, `git status`, broad repo search",
+        "CLI-first is non-negotiable for both Codex and Claude Code",
+        "odylith/agents-guidelines/CLI_FIRST_POLICY.md",
+        "CB-104",
+        "odylith bug capture",
+        "odylith backlog create",
+        "odylith radar refresh",
+        "odylith compass deep-refresh",
+        "Keep startup, Context Engine, Execution Engine, memory substrate, Tribunal, Intervention Engine, observers",
+        "Optimize by routing, caching, batching, and shortening prompt surface, not by disabling engines.",
+        "Treat AI slop as a regression",
+        "odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md",
+        "odylith/skills/odylith-code-hygiene-guard/SKILL.md",
+        "Discipline hot paths must not call host models",
+        "Odylith capabilities",
+        "host model capability surface",
+        "never prefix commentary with control-plane receipt labels",
+        "`**Odylith Observation**`",
+        "`Odylith Assist:`",
+        "Claude direct-edit and Bash PostToolUse hooks stay silent on success",
+        "Claude Stop is memory/logging only",
+        "`odylith codex intervention-status` or `odylith claude",
+        "low-latency delivery record for Teaser, Ambient Highlight, Observation, Proposal, and Assist readiness",
+        "`Activation: ready` plus chat visibility",
+        "normal non-passthrough prompts do not get an Assist line by default",
+        "Do not add Assist just because Odylith ran",
+        "concrete observed counts, measured deltas, or validation outcomes",
+        "never say `fixed`, `cleared`, or `resolved` without qualification",
+        "same fingerprint as the last falsification or not",
+        "grounding Odylith is diagnosis authority, not blanket write authority",
+        "Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes",
+        "Queued backlog items, case queues, and shell or Compass queue previews are not implicit implementation instructions.",
+        "validated Odylith delegation hosts under the same grounding and validation contract",
+    )
+    for snippet in expected:
+        assert snippet in block
+
+    forbidden = (
+        "run the repo-local `odylith start`/`odylith context` step",
+        "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix",
+        "Odylith grounding:",
+        "Odylith didn't return immediately",
+        "literal commands",
+        "supplies one shared prompt-visible Assist line",
+        "In the Odylith product repo, maintainer-only release and benchmark publishing work follows `odylith/maintainer/AGENTS.md`.",
+    )
+    for snippet in forbidden:
+        assert snippet not in block
+
+    assert len(block.encode("utf-8")) < 11000
 
 
 def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
@@ -145,13 +120,35 @@ def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
     assert "the consumer lane and the Odylith product repo's maintainer mode" in block
     assert "pinned dogfood and detached `source-local` maintainer-dev posture" in block
     assert "pinned dogfood is the default proof posture and detached `source-local` is the explicit dev posture" in block
-    assert "Keep the default operating lane shared across Codex and Claude Code" in block
+    assert "Codex and Claude Code are both validated Odylith delegation hosts under the same grounding, routing, and validation contract" in block
     assert "rerender only the owned surface" in block
-    assert "direct-edit and Bash PostToolUse hooks stay silent on success" in block
+    assert "Claude direct-edit and Bash PostToolUse hooks stay silent on success" in block
     assert "Claude Stop is memory/logging only" in block
+    assert len(block.encode("utf-8")) < 11000
 
 
 def test_managed_block_matches_repo_root_product_scope_truth() -> None:
     expected = _extract_scope_block((REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8"))
 
     assert managed_block(repo_role="product_repo") == expected
+
+
+def test_managed_claude_bridge_stays_lean_and_imports_agents() -> None:
+    original = "# CLAUDE.md\n\n@AGENTS.md\n\nBody\n"
+    rendered = inject_managed_block(
+        original,
+        repo_role="product_repo",
+        path=Path("CLAUDE.md"),
+    )
+    scope_block = _extract_scope_block(rendered)
+
+    assert scope_block == managed_claude_bridge_block(repo_role="product_repo")
+    assert "@AGENTS.md" in rendered
+    assert "Treat AI slop as a regression." not in scope_block
+    assert len(scope_block.encode("utf-8")) < 2200
+
+
+def test_managed_claude_bridge_matches_repo_root_scope_truth() -> None:
+    expected = _extract_scope_block((REPO_ROOT / "CLAUDE.md").read_text(encoding="utf-8"))
+
+    assert managed_claude_bridge_block(repo_role="product_repo") == expected

@@ -4,15 +4,21 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any, Mapping
 
 from odylith.runtime.surfaces import codex_host_shared
+from odylith.runtime.surfaces import host_intervention_support
 from odylith.runtime.surfaces import session_brief_refresh_queue
 
 _BRIEF_STALENESS_THRESHOLD_SECONDS = 4 * 60 * 60  # 4 hours
 _CURRENT_RUNTIME_PATH = "odylith/compass/runtime/current.v1.json"
+
+
+def _env_truthy(name: str) -> bool:
+    return str(os.environ.get(name) or "").strip().casefold() in {"1", "true", "yes", "on"}
 
 
 def render_codex_session_brief(
@@ -20,6 +26,7 @@ def render_codex_session_brief(
     *,
     payload_override: Mapping[str, Any] | None = None,
     start_summary_override: str = "",
+    eager_start: bool = False,
 ) -> str:
     payload = payload_override if payload_override is not None else codex_host_shared.load_compass_runtime(repo_root)
     lines: list[str] = ["Odylith grounded brief for this Codex session."]
@@ -43,10 +50,15 @@ def render_codex_session_brief(
     if risks:
         lines.append("Risks:")
         lines.extend(risks)
-    startup = codex_host_shared.collapse_whitespace(
-        start_summary_override or codex_host_shared.start_summary(project_dir=repo_root),
-        limit=240,
-    )
+    startup_source = start_summary_override
+    if not startup_source and (eager_start or _env_truthy("ODYLITH_HOOK_EAGER_START")):
+        startup_source = codex_host_shared.start_summary(project_dir=repo_root)
+    if not startup_source:
+        startup_source = host_intervention_support.session_start_substrate_context(
+            repo_root=repo_root,
+            host_family="codex",
+        )
+    startup = codex_host_shared.collapse_whitespace(startup_source, limit=480)
     if startup:
         lines.append(f"Startup: {startup}")
     return "\n".join(lines).rstrip()
@@ -66,9 +78,14 @@ def main(argv: list[str] | None = None) -> int:
         description="Render the Odylith-grounded SessionStart hook output for Codex.",
     )
     parser.add_argument("--repo-root", default=".", help="Repository root for Compass runtime resolution.")
+    parser.add_argument(
+        "--eager-start",
+        action="store_true",
+        help="Run `odylith start` during SessionStart instead of the cached fast path.",
+    )
     args = parser.parse_args(list(argv or sys.argv[1:]))
     repo_root = Path(args.repo_root).expanduser().resolve()
-    summary = render_codex_session_brief(repo_root)
+    summary = render_codex_session_brief(repo_root, eager_start=bool(args.eager_start))
     _queue_refresh_if_briefs_stale(repo_root=repo_root)
     if not summary:
         return 0

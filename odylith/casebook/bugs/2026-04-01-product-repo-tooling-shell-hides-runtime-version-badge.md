@@ -1,5 +1,14 @@
 - Bug ID: CB-025
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-01
@@ -8,7 +17,6 @@
 
 - Reproducibility: Always
 
-- Type: Product
 
 - Description: In the Odylith product repo, the tooling shell computed
   `shell_version_label` and self-host posture correctly, but the frozen header

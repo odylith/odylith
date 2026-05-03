@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+import subprocess
+import sys
 
 from odylith.runtime.intervention_engine import stream_state
 from odylith.runtime.surfaces import host_intervention_support
@@ -177,6 +179,32 @@ def test_suppress_prompt_live_narration_detects_cli_help_stdout() -> None:
         prompt="What commands does Odylith support?",
         assistant_summary=_CLI_HELP_OUTPUT,
     )
+
+
+def test_low_signal_prompt_gate_does_not_import_renderer_stack() -> None:
+    script = """
+import sys
+from odylith.runtime.surfaces import host_intervention_support
+
+heavy = {
+    'odylith.runtime.intervention_engine.alignment_context',
+    'odylith.runtime.intervention_engine.conversation_surface',
+    'odylith.runtime.intervention_engine.host_surface_runtime',
+    'odylith.runtime.intervention_engine.visibility_replay',
+}
+assert not (heavy & set(sys.modules)), sorted(heavy & set(sys.modules))
+assert host_intervention_support.prompt_needs_live_bundle(prompt='Odylith, you there?') is False
+assert not (heavy & set(sys.modules)), sorted(heavy & set(sys.modules))
+"""
+    completed = subprocess.run(
+        [sys.executable, "-c", script],
+        cwd=str(Path(__file__).resolve().parents[3]),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
 
 
 def test_build_stop_conversation_bundle_suppresses_cli_help_stdout(tmp_path: Path) -> None:

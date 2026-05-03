@@ -1,5 +1,14 @@
 - Bug ID: CB-124
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Closed: 2026-04-26
@@ -12,7 +21,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Disposable proof worktrees were resolving validator and CLI proof commands against repo-root .venv/bin even when that interpreter surface was not benchmark-ready. In this repo the worktree-local .venv pointed at a bare Homebrew Python without pytest or httpx, so clean proof reruns produced harness failures instead of product truth and forced false live holds.
 

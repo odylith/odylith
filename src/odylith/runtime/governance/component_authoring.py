@@ -71,32 +71,46 @@ def _build_registry_entry(
     label: str,
     path: str,
     kind: str,
+    category: str,
+    qualification: str,
+    owner: str,
+    status: str,
+    product_layer: str,
+    sources: Sequence[str],
+    workstreams: Sequence[str],
+    diagrams: Sequence[str],
 ) -> dict[str, Any]:
     anchor_phrase = f" with `{path}` as its initial evidence anchor" if path else ""
+    normalized_sources = [str(item).strip() for item in sources if str(item).strip()]
+    evidence_phrase = (
+        "user-stated intent"
+        if "user_intent" in normalized_sources
+        else "the initial evidence anchor"
+    )
     return {
         "component_id": component_id,
         "name": label,
         "kind": kind,
-        "category": "governance_engine",
-        "qualification": "candidate",
+        "category": category,
+        "qualification": qualification,
         "aliases": [],
         "path_prefixes": [path] if path else [],
-        "workstreams": [],
-        "diagrams": [],
-        "owner": "product",
-        "status": "active",
+        "workstreams": [str(item).strip() for item in workstreams if str(item).strip()],
+        "diagrams": [str(item).strip() for item in diagrams if str(item).strip()],
+        "owner": owner,
+        "status": status,
         "what_it_is": (
             f"Logical component registered through `odylith component register`"
             f"{anchor_phrase}."
         ),
         "why_tracked": (
-            f"Registered so agent sessions can see {label} as a named ownership boundary; "
-            "path prefixes seed evidence and can be tightened as the contract becomes clearer."
+            f"Registered so agent sessions can see {label} as a named ownership boundary from {evidence_phrase}; "
+            "path prefixes seed the intended boundary and can be tightened as the contract becomes clearer."
         ),
         "spec_ref": f"odylith/registry/source/components/{component_id}/CURRENT_SPEC.md",
-        "sources": ["manifest"],
+        "sources": normalized_sources or ["manifest"],
         "subcomponents": [],
-        "product_layer": "cli_bootstrap",
+        "product_layer": product_layer,
     }
 
 
@@ -106,13 +120,32 @@ def _build_spec_template(
     label: str,
     path: str,
     kind: str,
+    status: str,
+    sources: Sequence[str],
+    workstreams: Sequence[str],
 ) -> str:
-    overview_anchor = (
-        f"It is initially anchored by `{path}`."
-        if path
-        else "It is initially anchored by maintainer review."
-    )
+    normalized_sources = [str(item).strip() for item in sources if str(item).strip()]
+    if "user_intent" in normalized_sources:
+        overview_anchor = (
+            f"It is planned from user-stated intent with `{path}` as the intended first source path. "
+            "No source-backed claim is made yet."
+            if path
+            else "It is planned from user-stated intent and does not claim source evidence yet."
+        )
+    else:
+        overview_anchor = (
+            f"It is initially anchored by `{path}`."
+            if path
+            else "It is initially anchored by maintainer review."
+        )
     history_date = dt.date.today().isoformat()
+    workstream_ids = [str(item).strip().upper() for item in workstreams if str(item).strip()]
+    first_workstream = workstream_ids[0] if workstream_ids else ""
+    plan_route = (
+        f" (Plan: [{first_workstream}](odylith/radar/radar.html?view=plan&workstream={first_workstream}))"
+        if first_workstream
+        else ""
+    )
     return f"""# {label}
 
 ## Overview
@@ -125,11 +158,12 @@ def _build_spec_template(
 - **Logical boundary**: TBD - define the runtime contract, public API, or ownership rule.
 - **Evidence anchor**: `{path}`
 - **Kind**: {kind}
-- **Status**: active
+- **Status**: {status}
+- **Evidence tier**: {", ".join(normalized_sources) if normalized_sources else "manifest"}
 
 ## Feature History
 
-- {history_date}: Registered `{component_id}` through `odylith component register`.
+- {history_date}: Registered `{component_id}` through `odylith component register`.{plan_route}
 
 ## Contract
 
@@ -152,6 +186,14 @@ def register_component(
     label: str,
     path: str,
     kind: str,
+    category: str = "governance_engine",
+    qualification: str = "candidate",
+    owner: str = "product",
+    status: str = "active",
+    product_layer: str = "cli_bootstrap",
+    sources: Sequence[str] = ("manifest",),
+    workstreams: Sequence[str] = (),
+    diagrams: Sequence[str] = (),
     dry_run: bool = False,
 ) -> CreatedComponent:
     """Register a new component in the registry and scaffold its spec."""
@@ -167,6 +209,14 @@ def register_component(
         label=label,
         path=path,
         kind=kind,
+        category=str(category).strip() or "governance_engine",
+        qualification=str(qualification).strip() or "candidate",
+        owner=str(owner).strip() or "product",
+        status=str(status).strip() or "active",
+        product_layer=str(product_layer).strip() or "cli_bootstrap",
+        sources=tuple(str(item).strip() for item in sources if str(item).strip()) or ("manifest",),
+        workstreams=tuple(str(item).strip() for item in workstreams if str(item).strip()),
+        diagrams=tuple(str(item).strip() for item in diagrams if str(item).strip()),
     )
 
     components = registry.get("components", [])
@@ -182,6 +232,9 @@ def register_component(
         label=label,
         path=path,
         kind=kind,
+        status=str(status).strip() or "active",
+        sources=tuple(str(item).strip() for item in sources if str(item).strip()) or ("manifest",),
+        workstreams=tuple(str(item).strip() for item in workstreams if str(item).strip()),
     )
 
     if not dry_run:
@@ -217,6 +270,14 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--path", default="", help="Primary code path this component owns.")
     parser.add_argument("--label", default="", help="Human-readable component name.")
     parser.add_argument("--kind", default="service", help="Component kind (service, library, platform, etc.).")
+    parser.add_argument("--category", default="governance_engine", help="Component category.")
+    parser.add_argument("--qualification", default="candidate", help="Component qualification token.")
+    parser.add_argument("--owner", default="product", help="Declared component owner.")
+    parser.add_argument("--status", default="active", help="Component lifecycle status.")
+    parser.add_argument("--product-layer", default="cli_bootstrap", help="Product or application layer token.")
+    parser.add_argument("--source", action="append", default=[], dest="sources", help="Evidence source token; repeatable.")
+    parser.add_argument("--workstream", action="append", default=[], help="Related workstream id; repeatable.")
+    parser.add_argument("--diagram", action="append", default=[], help="Related diagram id; repeatable.")
     parser.add_argument("--dry-run", action="store_true", help="Preview without writing files.")
     parser.add_argument("--json", action="store_true", dest="as_json", help="Output as JSON.")
     return parser.parse_args(argv)
@@ -237,6 +298,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             label=label,
             path=path,
             kind=str(args.kind).strip(),
+            category=str(args.category).strip(),
+            qualification=str(args.qualification).strip(),
+            owner=str(args.owner).strip(),
+            status=str(args.status).strip(),
+            product_layer=str(args.product_layer).strip(),
+            sources=tuple(args.sources) if args.sources else ("manifest",),
+            workstreams=tuple(args.workstream),
+            diagrams=tuple(args.diagram),
             dry_run=bool(args.dry_run),
         )
     except (ValueError, RuntimeError) as exc:

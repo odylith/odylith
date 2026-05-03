@@ -1,5 +1,14 @@
 - Bug ID: CB-098
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-09
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: `odylith atlas auto-update` could print a mutation plan and
   apparent timeline that included Mermaid SVG and PNG regeneration for every

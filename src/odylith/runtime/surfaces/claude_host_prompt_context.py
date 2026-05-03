@@ -16,18 +16,16 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import sys
 from pathlib import Path
 from typing import Any, Mapping
 
-from odylith.runtime.intervention_engine import conversation_surface
-from odylith.runtime.intervention_engine import host_surface_runtime
+from odylith.runtime.intervention_engine import prompt_signal_runtime
 from odylith.runtime.surfaces import claude_host_shared
 from odylith.runtime.surfaces import host_intervention_support
 
 
-_ANCHOR_RE = re.compile(r"\b(?:B|CB|D)-\d{3,}\b")
+_ANCHOR_RE = prompt_signal_runtime.ANCHOR_RE
 
 
 def _context_summary(output: str, ref: str) -> str:
@@ -94,6 +92,13 @@ def render_prompt_context(
     if host_intervention_support.suppress_prompt_live_narration(prompt=prompt):
         return ""
     refs = list(dict.fromkeys(_ANCHOR_RE.findall(str(prompt or ""))))
+    needs_live_bundle = bool(refs) or host_intervention_support.prompt_needs_live_bundle(
+        prompt=prompt,
+        bundle_override=conversation_bundle_override,
+        intervention_bundle_override=intervention_bundle_override,
+    )
+    if not needs_live_bundle:
+        return ""
     bundle = _prompt_conversation_bundle(
         repo_root=repo_root,
         prompt=prompt,
@@ -156,7 +161,7 @@ def main(argv: list[str] | None = None) -> int:
     payload = claude_host_shared.load_payload(raw)
     prompt = str(payload.get("prompt", "")).strip()
     session_id = claude_host_shared.hook_session_id(payload)
-    host_intervention_support.confirm_last_assistant_message(
+    confirmed_events = host_intervention_support.confirm_last_assistant_message(
         repo_root=repo_root,
         host_family="claude",
         session_id=session_id,
@@ -165,11 +170,37 @@ def main(argv: list[str] | None = None) -> int:
     )
     if host_intervention_support.suppress_prompt_live_narration(prompt=prompt):
         return 0
+    refs = list(dict.fromkeys(_ANCHOR_RE.findall(str(prompt or ""))))
+    if not refs and not host_intervention_support.prompt_needs_live_bundle(prompt=prompt):
+        receipt = (
+            ""
+            if confirmed_events
+            else host_intervention_support.prompt_first_receipt_context(
+                prompt=prompt,
+                repo_root=repo_root,
+                host_family="claude",
+                session_id=session_id,
+            )
+        )
+        if receipt:
+            sys.stdout.write(
+                json.dumps(
+                    {
+                        "hookSpecificOutput": {
+                            "hookEventName": "UserPromptSubmit",
+                            "additionalContext": receipt,
+                        }
+                    }
+                )
+            )
+        return 0
     bundle = _prompt_conversation_bundle(
         repo_root=repo_root,
         prompt=prompt,
         session_id=session_id,
     )
+    from odylith.runtime.intervention_engine import host_surface_runtime
+
     bundle = host_intervention_support.ensure_prompt_visible_assist_bundle(bundle)
     decision = host_surface_runtime.visible_intervention_decision(
         repo_root=repo_root,

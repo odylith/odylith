@@ -1,5 +1,14 @@
 - Bug ID: CB-079
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-09
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: When Compass already carries its own in-frame runtime warning,
   the tooling shell can still render a second Compass failure banner above the

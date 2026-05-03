@@ -130,69 +130,82 @@ def _starter_source(
     return "\n".join(lines) + "\n"
 
 
-def main(argv: Sequence[str] | None = None) -> int:
-    args = _parse_args(argv)
-    repo_root = Path(args.repo_root).resolve()
-    catalog_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.catalog)
+def scaffold_diagram(
+    *,
+    repo_root: Path,
+    catalog: str,
+    diagram_id: str,
+    slug: str,
+    title: str,
+    kind: str,
+    owner: str,
+    summary: str,
+    components: list[dict[str, str]],
+    related_backlog: list[str],
+    related_plans: list[str],
+    related_docs: list[str],
+    related_code: list[str],
+    watch_paths: list[str],
+    review_date: str,
+    require_links: bool = False,
+    starter_source: str | None = None,
+) -> tuple[int, list[str]]:
+    """Create one Atlas catalog entry and starter Mermaid source."""
 
+    logs: list[str] = []
+    repo_root = Path(repo_root).resolve()
+    catalog_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=catalog)
     if not catalog_path.is_file():
-        print(f"FAILED: catalog not found: {catalog_path}")
-        return 2
+        return 2, [f"FAILED: catalog not found: {catalog_path}"]
 
     payload = json.loads(catalog_path.read_text(encoding="utf-8"))
     diagrams = payload.get("diagrams")
     if not isinstance(diagrams, list):
-        print(f"FAILED: malformed catalog: {catalog_path}")
-        return 2
+        return 2, [f"FAILED: malformed catalog: {catalog_path}"]
 
-    diagram_id = str(args.diagram_id).strip()
-    slug = str(args.slug).strip()
+    diagram_id = str(diagram_id).strip()
+    slug = str(slug).strip()
 
     for item in diagrams:
         if str(item.get("diagram_id", "")).strip() == diagram_id:
-            print(f"FAILED: diagram_id already exists: {diagram_id}")
-            return 2
+            return 2, [f"FAILED: diagram_id already exists: {diagram_id}"]
         if str(item.get("slug", "")).strip() == slug:
-            print(f"FAILED: slug already exists: {slug}")
-            return 2
+            return 2, [f"FAILED: slug already exists: {slug}"]
 
     source_mmd = f"odylith/atlas/source/{slug}.mmd"
     source_svg = f"odylith/atlas/source/{slug}.svg"
     source_png = f"odylith/atlas/source/{slug}.png"
 
-    components = _parse_components(args.component)
-    related_backlog = _unique(args.backlog)
-    related_plans = _unique(args.plan)
-    related_docs = _unique(args.doc)
-    related_code = _unique(args.code)
+    related_backlog = _unique(related_backlog)
+    related_plans = _unique(related_plans)
+    related_docs = _unique(related_docs)
+    related_code = _unique(related_code)
 
     has_governance_links = bool(related_backlog and related_plans and related_docs)
-    if args.require_links and not has_governance_links:
-        print("FAILED: radar, technical-plan, and doc links are required (at least one each)")
-        return 2
+    if require_links and not has_governance_links:
+        return 2, ["FAILED: radar, technical-plan, and doc links are required (at least one each)"]
 
-    watch_paths = _unique(args.watch)
+    watch_paths = _unique(watch_paths)
     if not watch_paths:
         watch_paths = _unique(related_docs + related_plans + related_code)
     if not watch_paths:
         watch_paths = [source_mmd]
     if not watch_paths:
-        print("FAILED: change_watch_paths resolved empty; provide --watch or related links")
-        return 2
+        return 2, ["FAILED: change_watch_paths resolved empty; provide --watch or related links"]
 
     entry = {
         "diagram_id": diagram_id,
         "slug": slug,
-        "title": str(args.title).strip(),
-        "kind": str(args.kind).strip(),
+        "title": str(title).strip(),
+        "kind": str(kind).strip(),
         "status": "active" if has_governance_links else "draft",
-        "owner": str(args.owner).strip(),
-        "last_reviewed_utc": str(args.review_date).strip(),
+        "owner": str(owner).strip(),
+        "last_reviewed_utc": str(review_date).strip(),
         "source_mmd": source_mmd,
         "source_svg": source_svg,
         "source_png": source_png,
         "change_watch_paths": watch_paths,
-        "summary": str(args.summary).strip(),
+        "summary": str(summary).strip(),
         "components": components,
         "related_backlog": related_backlog,
         "related_plans": related_plans,
@@ -204,25 +217,29 @@ def main(argv: Sequence[str] | None = None) -> int:
     diagrams.append(entry)
 
     catalog_path.write_text(f"{json.dumps(payload, indent=2)}\n", encoding="utf-8")
-    print(f"catalog updated: {catalog_path}")
-    print(f"added: {diagram_id} ({slug})")
+    logs.append(f"catalog updated: {catalog_path}")
+    logs.append(f"added: {diagram_id} ({slug})")
 
     source_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=source_mmd)
     if source_path.exists():
-        print(f"source exists: {source_path}")
+        logs.append(f"source exists: {source_path}")
     else:
         source_path.parent.mkdir(parents=True, exist_ok=True)
-        template = _starter_source(
-            title=str(args.title).strip(),
-            owner=str(args.owner).strip(),
-            components=components,
-            watch_paths=watch_paths,
-            related_backlog=related_backlog,
-            related_plans=related_plans,
-            related_docs=related_docs,
-        )
-        source_path.write_text(template, encoding="utf-8")
-        print(f"source created: {source_path}")
+        source_text = str(starter_source or "").strip()
+        if source_text:
+            source_text = source_text.rstrip() + "\n"
+        else:
+            source_text = _starter_source(
+                title=str(title).strip(),
+                owner=str(owner).strip(),
+                components=components,
+                watch_paths=watch_paths,
+                related_backlog=related_backlog,
+                related_plans=related_plans,
+                related_docs=related_docs,
+            )
+        source_path.write_text(source_text, encoding="utf-8")
+        logs.append(f"source created: {source_path}")
     try:
         owned_surface_refresh.raise_for_failed_refresh(
             repo_root=repo_root,
@@ -230,12 +247,42 @@ def main(argv: Sequence[str] | None = None) -> int:
             operation_label="Atlas scaffold",
         )
     except RuntimeError as exc:
-        print(str(exc))
-        return 1
+        logs.append(str(exc))
+        return 1, logs
+
+    return 0, logs
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    args = _parse_args(argv)
+    repo_root = Path(args.repo_root).resolve()
+    components = _parse_components(args.component)
+    rc, logs = scaffold_diagram(
+        repo_root=repo_root,
+        catalog=str(args.catalog),
+        diagram_id=str(args.diagram_id),
+        slug=str(args.slug),
+        title=str(args.title),
+        kind=str(args.kind),
+        owner=str(args.owner),
+        summary=str(args.summary),
+        components=components,
+        related_backlog=list(args.backlog),
+        related_plans=list(args.plan),
+        related_docs=list(args.doc),
+        related_code=list(args.code),
+        watch_paths=list(args.watch),
+        review_date=str(args.review_date),
+        require_links=bool(args.require_links),
+    )
+    for line in logs:
+        print(line)
+    if rc != 0:
+        return rc
 
     owned_surface_refresh.print_dashboard_handoff(
         surface="atlas",
-        diagram=diagram_id,
+        diagram=str(args.diagram_id).strip(),
     )
     return 0
 

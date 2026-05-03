@@ -423,12 +423,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"- output: {output_path}")
         return 0
 
-    errors = tooling_dashboard_runtime_builder.validate_surface_paths(surface_paths)
-    if errors:
-        print("tooling dashboard render FAILED")
-        for err in errors:
-            print(f"- {err}")
-        return 2
+    warnings = tooling_dashboard_runtime_builder.validate_surface_paths(surface_paths)
+    if warnings:
+        print("tooling dashboard render warnings")
+        for warning in warnings:
+            print(f"- {warning}")
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     release_spotlight = shell_onboarding.build_release_spotlight(repo_root=repo_root)

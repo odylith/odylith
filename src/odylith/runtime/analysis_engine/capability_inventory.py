@@ -35,6 +35,18 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                 anchors=("src/odylith/runtime/analysis_engine/",),
             ),
             InventoryItem(
+                name="Domain Intelligence",
+                layer="analysis",
+                kind="engine",
+                owns=(
+                    "provider-free greenfield project classification, backlog proposals, program "
+                    "waves, provisional release plans, planned Registry components, draft Atlas "
+                    "topology, assumptions, risks, and validation obligations before source exists"
+                ),
+                commands=("odylith greenfield propose", "odylith greenfield apply"),
+                anchors=("src/odylith/runtime/domain_intelligence/",),
+            ),
+            InventoryItem(
                 name="Delivery Intelligence",
                 layer="delivery",
                 kind="engine",
@@ -163,6 +175,17 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
     (
         "Memory, orchestration, and lifecycle",
         (
+            InventoryItem(
+                name="Context Engine",
+                layer="memory",
+                kind="engine",
+                owns=(
+                    "startup grounding, anchor resolution, context dossiers, query packets, "
+                    "daemon-backed recall, and execution-handshake packets for bounded turns"
+                ),
+                commands=("odylith start", "odylith context", "odylith query", "odylith context-engine"),
+                anchors=("src/odylith/runtime/context_engine/",),
+            ),
             InventoryItem(
                 name="Memory Substrate",
                 layer="memory",

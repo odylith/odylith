@@ -1,5 +1,14 @@
 - Bug ID: CB-053
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-05
@@ -10,7 +19,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Odylith's memory substrate could still treat stale derived state as reusable truth. Process-local warm-cache TTL could hide projection fingerprint drift, runtime warm reuse could accept a stale local LanceDB or Tantivy backend, and exact-scope checks across `reasoning` versus `full` could make `query`, `memory-snapshot`, remote sync, and benchmark warmup rebuild over each other even when a safe superset projection was already ready.
 

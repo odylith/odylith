@@ -1,5 +1,14 @@
 - Bug ID: CB-007
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Open
 
 - Created: 2026-03-28
@@ -8,7 +17,6 @@
 
 - Reproducibility: Always
 
-- Type: Product
 
 - Description: The generated installer's inline release-validation script
   over-escaped the Odylith wheel regex. It looked for filenames matching a

@@ -1,5 +1,14 @@
 - Bug ID: CB-099
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-09
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Atlas's persistent Mermaid worker could fail genuine SVG and PNG
   render jobs after the first persistent-page optimization wave. The worker

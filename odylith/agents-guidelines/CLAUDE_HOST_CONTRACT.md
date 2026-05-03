@@ -130,21 +130,32 @@
   locally proven first-class project-surface support instead of treating
   every Claude build as the same frozen capability set.
 - Session-start grounding runs through the CLI-backed
-  `./.odylith/bin/odylith claude session-start --repo-root .` hook command,
-  which mirrors a compact Compass-derived brief into Claude's documented
-  auto-memory directory under `~/.claude/projects/<project>/memory/`.
+  `./.odylith/bin/odylith claude session-start --repo-root . --quiet` hook
+  command, which mirrors a compact Compass-derived brief into Claude's
+  documented auto-memory directory under
+  `~/.claude/projects/<project>/memory/`. The normal hook uses cached runtime
+  state, does not run `odylith start`, and does not print duplicate stdout;
+  maintainers can opt into eager start or stdout explicitly for diagnostics.
 - Subagent-start grounding runs through the CLI-backed
   `./.odylith/bin/odylith claude subagent-start --repo-root .` hook command,
   which injects the active Odylith slice into Claude project subagents via
   the documented `hookSpecificOutput.additionalContext` shape.
-- User-prompt context can narrow explicit `B-###`, `CB-###`, or `D-###`
-  references through the CLI-backed
-  `./.odylith/bin/odylith claude prompt-context --repo-root .` hook command.
-- User-prompt teaser visibility runs through the paired
-  `./.odylith/bin/odylith claude prompt-teaser --repo-root .` hook command,
-  which prints only the earned one-line teaser as a best-effort stdout source.
-  Chat visibility still depends on either host display or the assistant-render
-  fallback carried by prompt context.
+- User-prompt grounding runs through the single CLI-backed
+  `./.odylith/bin/odylith claude prompt-bundle --repo-root .` hook command.
+  It preserves the old show/help/capabilities route lock, anchor context,
+  hidden continuity context, and earned visible teaser behavior in one
+  prompt-submit process. Generic low-signal prompts without anchors,
+  visibility complaints, governance hints, or Odylith-directed wording must
+  return without building the prompt intervention bundle or substrate receipt.
+- The public command surface stays `./.odylith/bin/odylith claude ...`, but
+  the repo-local launcher may dispatch baked Claude hook commands directly to
+  their runtime modules after trust selection. Hot hook commands must not pay
+  for the full `odylith.cli` import before prompt gating can return empty.
+- User-prompt teaser visibility is part of `prompt-bundle`: the hook emits
+  discreet `hookSpecificOutput.additionalContext` plus a `systemMessage` for
+  the earned visible teaser. The legacy `prompt-context` and `prompt-teaser`
+  commands remain manual compatibility surfaces, but the default installed
+  hook shape no longer forks marker commands for them.
 - Destructive Bash blocking runs through a repo-managed Claude `PreToolUse`
   Bash hook command
   (`./.odylith/bin/odylith claude bash-guard --repo-root .`) and denies a
@@ -157,12 +168,18 @@
   `./.odylith/bin/odylith claude post-edit-checkpoint --repo-root .` hook
   command, matched against `Write|Edit|MultiEdit`, so the project-root
   `.claude/` layer stays declarative and the governance refresh runs through
-  `odylith sync --impact-mode selective <path>`.
+  `odylith sync --impact-mode selective <path>`. The generated Claude
+  settings mark this checkpoint async so tool calls do not wait on successful
+  refresh work.
 - Bash checkpointing runs through the CLI-backed
   `./.odylith/bin/odylith claude post-bash-checkpoint --repo-root .` hook
   command, matched against `Bash`, so shell edits, inline write scripts, and
   patch-style Bash payloads get the same governed-refresh coverage as direct
   Claude edits without turning hook receipts into visible intervention copy.
+  The generated Claude settings mark this checkpoint async as well.
+- The Bash checkpoint first uses exact command-path inference. Exact
+  non-governed edits return immediately; governed edits and uncertain
+  edit-like commands keep the conservative startup/checkpoint path.
 - Claude's governed-refresh precision comes from the exact edited path in the
   direct edit `PostToolUse` payload itself; Bash-command target inference is a
   separate parity lane and must stay command-scoped so it never widens refresh
@@ -188,16 +205,17 @@
   failure or skipped-refresh message when the operator needs to recover. They
   must not render Observation, Proposal, Assist, internal visibility-proof
   state, product-repo workstream ids, or Casebook ids into hook output.
-- Claude splits `UserPromptSubmit` into two hook commands on purpose:
-  `prompt-context` returns discreet JSON `hookSpecificOutput.additionalContext`
-  for anchor context and continuity, while `prompt-teaser` prints an earned
-  teaser as plain stdout when the host exposes it. JSON additional context is
-  discreet model context and now carries an assistant-render fallback so the
-  next assistant message can speak the teaser, or the shared prompt-visible
-  Assist line when no teaser is earned, if the host hides hook output.
+- Claude bundles `UserPromptSubmit` into one hook command on purpose:
+  `prompt-bundle` returns discreet JSON `hookSpecificOutput.additionalContext`
+  for route locks, anchor context, and continuity, and emits an earned teaser
+  through `systemMessage` for the host-visible lane. Additional context still
+  carries an assistant-render fallback so the next assistant message can speak
+  the teaser, or the shared prompt-visible Assist line when no teaser is
+  earned, if the host hides hook output.
 - Plain `Odylith, show me what you can do` and `Odylith, help` prompts are
   first-match route locks, not requests for generic Claude Code capabilities.
-  The `show-me-prompt-guard.py` `UserPromptSubmit` hook must forbid generic
+  The route lock is now handled inside `prompt-bundle` so the default Claude
+  prompt-submit path pays one process, not three. It must forbid generic
   Claude identity answers, Claude tool, skill, and memory lists, docs or
   repository-file inspection, branch-cleanliness reports, and follow-up
   questions. Claude must run the first available repo-root command, return
@@ -223,10 +241,9 @@
   Claude renders hook output inline; successful edit and Bash checkpoints must
   produce no transcript text. If refresh fails or is skipped, emit one compact
   status line through `systemMessage` and do not include `additionalContext`.
-- Do not run the primary `PostToolUse` edit checkpoint asynchronously. Async
-  hooks are useful for background diagnostics, but they deliver output on a later
-  turn and can suppress completion notices in normal Claude Code sessions; the
-  governed refresh stays synchronous while success output stays quiet.
+- Claude `PostToolUse` checkpoint hooks are async in the generated settings.
+  They are not live intervention carriers: success stays silent, and skipped
+  or failed refreshes emit only compact recovery status.
 - Prompt-visible Odylith moments must come from prompt-time teaser/stdout or
   ordinary assistant prose, not from Stop or PostToolUse hook recovery blocks.
 - Claude Stop summaries are not a visible Assist recovery path. Validation

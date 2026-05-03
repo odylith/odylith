@@ -34,6 +34,40 @@ def _write_bug(path: Path, *, reproducibility: str = "High") -> None:
     )
 
 
+def _write_bug_with_metadata(
+    path: Path,
+    *,
+    bug_id: str = "CB-001",
+    status: str = "Open",
+    bug_type: str = "Product",
+    fixed: str = "",
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        f"- Bug ID: {bug_id}",
+        "",
+        f"- Status: {status}",
+        "",
+        "- Created: 2026-04-16",
+        "",
+    ]
+    if fixed:
+        lines.extend([f"- Fixed: {fixed}", ""])
+    lines.extend(
+        [
+            "- Severity: P1",
+            "",
+            "- Reproducibility: High",
+            "",
+            f"- Type: {bug_type}",
+            "",
+            "- Description: Example source validation bug.",
+            "",
+        ]
+    )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
 def _write_bug_text(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
@@ -63,6 +97,102 @@ def test_casebook_source_validation_rejects_prose_reproducibility(tmp_path: Path
     assert result.issues[0].field == "Reproducibility"
     assert result.issues[0].line == 9
     assert "one compact token" in result.issues[0].message
+
+
+def test_casebook_source_validation_rejects_prose_status(tmp_path: Path) -> None:
+    _write_bug_with_metadata(
+        tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-16-prose-status.md",
+        status="Fixed Pending Release",
+    )
+
+    result = casebook_source_validation.validate_casebook_sources(repo_root=tmp_path)
+
+    assert not result.passed
+    assert result.records_checked == 1
+    assert len(result.issues) == 1
+    assert result.issues[0].field == "Status"
+    assert "single-word token" in result.issues[0].message
+    assert "`FixedPendingRelease`" in result.issues[0].message
+
+
+def test_casebook_source_validation_rejects_prose_type(tmp_path: Path) -> None:
+    _write_bug_with_metadata(
+        tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-16-prose-type.md",
+        bug_type="UX / lifecycle",
+    )
+
+    result = casebook_source_validation.validate_casebook_sources(repo_root=tmp_path)
+
+    assert not result.passed
+    assert result.records_checked == 1
+    assert len(result.issues) == 1
+    assert result.issues[0].field == "Type"
+    assert "single-word token" in result.issues[0].message
+    assert "`UX`" in result.issues[0].message
+
+
+def test_casebook_source_validation_rejects_long_compacted_type(tmp_path: Path) -> None:
+    _write_bug_with_metadata(
+        tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-16-long-type.md",
+        bug_type="OSWTemplateUpgradeRepairCoroutineSchedulerRuntimeLocalstackProofUX",
+    )
+
+    result = casebook_source_validation.validate_casebook_sources(repo_root=tmp_path)
+
+    assert not result.passed
+    assert result.records_checked == 1
+    assert len(result.issues) == 1
+    assert result.issues[0].field == "Type"
+    assert "`UX`" in result.issues[0].message
+
+
+def test_casebook_source_validation_suggests_short_labels_for_legacy_compacted_types(tmp_path: Path) -> None:
+    bug_root = tmp_path / "odylith" / "casebook" / "bugs"
+    _write_bug_with_metadata(
+        bug_root / "2026-04-16-performance-type.md",
+        bug_id="CB-001",
+        bug_type="PerformanceEngineeringLearning",
+    )
+    _write_bug_with_metadata(
+        bug_root / "2026-04-16-dashboard-type.md",
+        bug_id="CB-002",
+        bug_type="DashboardRenderingRegression",
+    )
+
+    result = casebook_source_validation.validate_casebook_sources(repo_root=tmp_path)
+
+    assert not result.passed
+    suggestions = {issue.value: issue.message for issue in result.issues}
+    assert "`Performance`" in suggestions["PerformanceEngineeringLearning"]
+    assert "`UX`" in suggestions["DashboardRenderingRegression"]
+
+
+def test_casebook_source_validation_rejects_prose_fixed(tmp_path: Path) -> None:
+    _write_bug_with_metadata(
+        tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-16-prose-fixed.md",
+        fixed="Pending release/deploy",
+    )
+
+    result = casebook_source_validation.validate_casebook_sources(repo_root=tmp_path)
+
+    assert not result.passed
+    assert result.records_checked == 1
+    assert len(result.issues) == 1
+    assert result.issues[0].field == "Fixed"
+    assert "YYYY-MM-DD date or one compact single-word token" in result.issues[0].message
+    assert "`Pending`" in result.issues[0].message
+
+
+def test_casebook_source_validation_accepts_fixed_date(tmp_path: Path) -> None:
+    _write_bug_with_metadata(
+        tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-16-fixed-date.md",
+        fixed="2026-04-16",
+    )
+
+    result = casebook_source_validation.validate_casebook_sources(repo_root=tmp_path)
+
+    assert result.passed
+    assert result.records_checked == 1
 
 
 def test_casebook_source_validation_rejects_missing_reproducibility_field(tmp_path: Path) -> None:

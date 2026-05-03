@@ -1,5 +1,14 @@
 - Bug ID: CB-125
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Closed: 2026-04-26
@@ -12,7 +21,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Benchmark publication could reject a valid same-head proof because the proof report identity fingerprint included mutable ignored runtime benchmark aliases written after the proof run.
 

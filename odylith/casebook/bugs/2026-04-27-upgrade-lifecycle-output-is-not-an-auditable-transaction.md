@@ -1,5 +1,14 @@
 - Bug ID: CB-133
 
+- Type: OperatorUX
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-27
@@ -8,7 +17,6 @@
 
 - Reproducibility: Consistent
 
-- Type: operator-ux
 
 - Description: Upgrade lifecycle output is not an auditable transaction
 

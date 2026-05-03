@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import datetime as dt
 from pathlib import Path
 
 from odylith.runtime.governance import sync_session
+from odylith.runtime.governance import backlog_topology_contract
 from odylith.runtime.governance import validate_backlog_contract as gate
 
 
@@ -322,6 +324,31 @@ def test_backlog_contract_rejects_product_repo_workstream_title_prefix(
     assert rc == 2
     out = capsys.readouterr().out
     assert "must not start with `Odylith`" in out
+
+
+def test_backlog_contract_rejects_topology_sensitive_workstream_without_diagram_or_rationale(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001 - pytest fixture
+    capsys,  # noqa: ANN001 - pytest fixture
+) -> None:
+    monkeypatch.setattr(backlog_topology_contract, "_TOPOLOGY_GATE_START", dt.date(2026, 2, 1))
+    _seed_minimal_repo(tmp_path)
+    implementation_path = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-02" / "2026-02-23-promoted.md"
+    text = implementation_path.read_text(encoding="utf-8").replace(
+        "impacted_parts: test surface",
+        "impacted_parts: cross-host runtime hooks and Context Engine startup",
+    )
+    implementation_path.write_text(text, encoding="utf-8")
+
+    rc = gate.main(["--repo-root", str(tmp_path)])
+    out = capsys.readouterr().out
+    assert rc == 2
+    assert "topology-sensitive workstream `B-102` opened on or after 2026-02-01" in out
+
+    implementation_path.write_text(text.replace("related_diagram_ids:", "related_diagram_ids: D-002"), encoding="utf-8")
+
+    rc = gate.main(["--repo-root", str(tmp_path)])
+    assert rc == 0
 
 
 def test_backlog_contract_rejects_placeholder_core_detail_section(

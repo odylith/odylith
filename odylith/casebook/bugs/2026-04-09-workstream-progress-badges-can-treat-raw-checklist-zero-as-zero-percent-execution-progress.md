@@ -1,5 +1,14 @@
 - Bug ID: CB-087
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-09
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Compass `Release Targets`, Compass workstream rows, Radar
   execution-wave summaries, and Compass narrative helpers could all treat a

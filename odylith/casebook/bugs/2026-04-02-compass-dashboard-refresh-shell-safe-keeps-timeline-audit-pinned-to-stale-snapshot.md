@@ -1,5 +1,14 @@
 - Bug ID: CB-047
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-02
@@ -10,7 +19,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: `odylith dashboard refresh --repo-root . --surfaces compass`
   rendered Compass in `shell-safe` mode, but that mode could simply reuse the

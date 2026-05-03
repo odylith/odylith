@@ -849,10 +849,15 @@ def test_build_brief_bundle_skips_provider_for_nonwinner_summary_churn(tmp_path:
     )
 
     skipped = results["global"]["24h"]
-    assert skipped["status"] == "unavailable"
-    assert skipped["diagnostics"]["reason"] == "skipped_not_worth_calling"
-    assert skipped["diagnostics"]["skip_reason"] == "no_winner_change"
+    assert skipped["status"] == "ready"
+    assert skipped["source"] == "cache"
+    assert skipped["cache_mode"] == "fallback"
     assert skipped["provider_decision"] == "skipped_not_worth_calling"
+    assert skipped["notice"] == {
+        "title": "Brief reused last validated narration",
+        "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
+        "reason": "skipped_not_worth_calling",
+    }
     assert provider.calls == 0
 
 

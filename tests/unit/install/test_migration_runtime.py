@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from odylith.install import migration_observer, migration_runtime
+from odylith.install.casebook_metadata_migration import MIGRATION_ID as CASEBOOK_METADATA_MIGRATION_ID
 from odylith.install.value_engine_migration import (
     MIGRATION_ID,
     VALUE_CORPUS_RELATIVE_PATH,
@@ -24,6 +25,11 @@ MIGRATION_FIXTURE_COVERAGE_MARKERS = (
     "v0.1.11-visible-intervention-value-engine:rerun",
     "v0.1.11-visible-intervention-value-engine:stale_ledger",
     "v0.1.11-visible-intervention-value-engine:skipped_version",
+    "v0.1.13-casebook-compact-metadata:dry_run",
+    "v0.1.13-casebook-compact-metadata:apply",
+    "v0.1.13-casebook-compact-metadata:rerun",
+    "v0.1.13-casebook-compact-metadata:stale_ledger",
+    "v0.1.13-casebook-compact-metadata:skipped_version",
 )
 
 
@@ -54,6 +60,27 @@ def _seed_repo(repo_root: Path, *, active_version: str = "0.1.10") -> None:
             sort_keys=True,
         )
         + "\n",
+        encoding="utf-8",
+    )
+
+
+def _seed_casebook_bug(repo_root: Path) -> None:
+    bug_path = repo_root / "odylith" / "casebook" / "bugs" / "2026-04-26-legacy-casebook-labels.md"
+    bug_path.parent.mkdir(parents=True, exist_ok=True)
+    bug_path.write_text(
+        "\n".join(
+            [
+                "- Bug ID: CB-155",
+                "- Status: Mitigated locally; pending platform release",
+                "- Created: 2026-04-26",
+                "- Fixed: Pending release/deploy",
+                "- Severity: P1",
+                "- Type: OSW template upgrade repair / coroutine scheduler runtime / LocalStack proof UX",
+                "",
+                "- Description: Legacy Casebook metadata leaked prose into detail labels.",
+                "",
+            ]
+        ),
         encoding="utf-8",
     )
 
@@ -97,6 +124,17 @@ def test_registered_value_engine_definition_has_release_gate_fixture_coverage() 
 
     assert definition.migration_id == MIGRATION_ID
     assert definition.introduced_version == "0.1.11"
+    assert set(FIXTURE_COVERAGE_TOKENS).issubset(definition.coverage_fixtures)
+    assert definition.automatic is True
+
+
+def test_registered_casebook_metadata_definition_has_release_gate_fixture_coverage() -> None:
+    definition = next(
+        item for item in migration_runtime.registered_migrations() if item.migration_id == CASEBOOK_METADATA_MIGRATION_ID
+    )
+
+    assert definition.migration_id == CASEBOOK_METADATA_MIGRATION_ID
+    assert definition.introduced_version == "0.1.13"
     assert set(FIXTURE_COVERAGE_TOKENS).issubset(definition.coverage_fixtures)
     assert definition.automatic is True
 
@@ -652,6 +690,82 @@ def test_migration_required_with_registered_target_uses_value_engine_plan(tmp_pa
     assert "no registered migration" not in plan.blocked_reason
 
 
+def test_migration_required_future_release_does_not_pass_on_noop_registered_migration(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, active_version="1.2.3")
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="1.2.3",
+        target_version="1.2.4",
+        release_manifest={"migration_required": True, "repo_schema_version": 1},
+    )
+
+    assert plan.satisfies_manifest_requirement() is False
+    assert plan.blocked
+    assert "no registered migration" in plan.blocked_reason
+
+
+def test_casebook_metadata_migration_is_selected_for_prior_versions_to_v013(tmp_path: Path) -> None:
+    for previous_version in ("0.1.10", "0.1.11", "0.1.12"):
+        repo_root = tmp_path / previous_version.replace(".", "_")
+        repo_root.mkdir()
+        _seed_repo(repo_root, active_version=previous_version)
+        _seed_casebook_bug(repo_root)
+
+        plan = migration_runtime.plan_release_migrations(
+            repo_root=repo_root,
+            repo_role="consumer_repo",
+            previous_version=previous_version,
+            target_version="0.1.13",
+            release_manifest={"migration_required": True, "repo_schema_version": 1},
+        )
+
+        decision = _decision_for(plan, CASEBOOK_METADATA_MIGRATION_ID)
+        assert decision.state == migration_runtime.STATE_SELECTED
+        assert plan.satisfies_manifest_requirement() is True
+        assert "no registered migration" not in plan.blocked_reason
+
+
+def test_casebook_metadata_migration_skips_index_only_repos_without_blocking_manifest(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, active_version="0.1.12")
+    index_path = tmp_path / "odylith" / "casebook" / "bugs" / "INDEX.md"
+    index_path.parent.mkdir(parents=True, exist_ok=True)
+    index_path.write_text("# Bugs Index\n", encoding="utf-8")
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.12",
+        target_version="0.1.13",
+        release_manifest={"migration_required": True, "repo_schema_version": 1},
+    )
+
+    decision = _decision_for(plan, CASEBOOK_METADATA_MIGRATION_ID)
+    assert decision.state == migration_runtime.STATE_SKIPPED
+    assert decision.reason == "repo has no Casebook bug source records to migrate"
+    assert plan.satisfies_manifest_requirement() is True
+    assert "no registered migration" not in plan.blocked_reason
+
+
+def test_casebook_metadata_migration_ledger_stale_blocks_upgrade(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, active_version="0.1.12")
+    ledger = tmp_path / ".odylith/state/migrations/v0.1.13-casebook-compact-metadata.v1.json"
+    ledger.parent.mkdir(parents=True, exist_ok=True)
+    ledger.write_text("{not json", encoding="utf-8")
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.12",
+        target_version="0.1.13",
+    )
+
+    decision = _decision_for(plan, CASEBOOK_METADATA_MIGRATION_ID)
+    assert decision.state == migration_runtime.STATE_LEDGER_STALE
+    assert "migration ledger is stale" in plan.blocked_reason
+
+
 def test_surface_migration_observer_classifies_consumer_visible_surface_paths(tmp_path: Path) -> None:
     report = migration_observer.observe_surface_migration_needs(
         repo_root=tmp_path,
@@ -946,6 +1060,7 @@ def test_release_gate_reports_registered_migrations_and_no_lifecycle_bypass() ->
     report = migration_runtime.validate_release_migration_gate(
         repo_root=repo_root,
         target_version="0.1.12",
+        changed_paths=(),
     )
 
     assert report.ok is True

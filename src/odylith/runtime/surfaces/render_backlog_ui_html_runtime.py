@@ -48,9 +48,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
     }
     __ODYLITH_PAGE_BODY__
     __ODYLITH_SURFACE_SHELL_ROOT__
-
     __ODYLITH_SURFACE_SHELL__
-
     __ODYLITH_HERO_PANEL__
 
     __ODYLITH_HEADER_TYPOGRAPHY__
@@ -744,7 +742,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
       <select id="sort">
         <option value="rank">Sort: Rank</option>
         <option value="score">Sort: Score</option>
-        <option value="date">Sort: Date</option>
+        <option value="date" selected>Sort: Date</option>
       </select>
     </section>
 
@@ -995,7 +993,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
       activity: "all",
       priority: "all",
       release: "all",
-      sort: "rank",
+      sort: "date",
       mixBy: "complexity",
       selectedIdeaId: ""
     };
@@ -1222,6 +1220,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
       el.activity.value = state.activity;
       el.priority.value = state.priority;
       el.release.value = state.release;
+      el.sort.value = state.sort;
     }
 
     // Explicit deep-link navigation must reveal the requested workstream instead of
@@ -3299,6 +3298,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
       setAnalyticsExpanded(true);
     }
 
+    syncFilterControls();
     render();
 
     if (viewParam === "graph") {

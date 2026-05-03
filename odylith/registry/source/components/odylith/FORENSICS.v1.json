@@ -37,16 +37,19 @@
     "D-033",
     "D-034",
     "D-035",
-    "D-042"
+    "D-042",
+    "D-037",
+    "D-038",
+    "D-043"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 219,
-    "mapped_workstream_evidence_count": 100,
-    "recent_path_match_count": 1,
+    "explicit_event_count": 263,
+    "mapped_workstream_evidence_count": 122,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 28,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 220
+    "timeline_event_count": 263
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -61,22 +64,1150 @@
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
     {
-      "artifacts": [
-        "AGENTS.md",
-        "odylith/README.md",
-        "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
-      ],
-      "confidence": "high",
-      "event_index": 399,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 451,
       "explicit_components": [],
-      "kind": "workspace_activity",
+      "kind": "assist_closeout",
       "mapped_components": [
         "odylith"
       ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: AGENTS.md, odylith/README.md +1 more",
-      "ts_iso": "2026-04-30T18:20:25-07:00",
+      "meaningful": false,
+      "summary": "**Odylith Assist:** visibility feedback noted; this line is deliberately shown in chat.",
+      "ts_iso": "2026-05-02T23:45:04Z",
       "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 447,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Why it matters: Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
+      "ts_iso": "2026-05-02T23:45:04Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 445,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** visibility feedback noted; this line is deliberately shown in chat.",
+      "ts_iso": "2026-05-02T23:44:30Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 442,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Why it matters: Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
+      "ts_iso": "2026-05-02T23:44:30Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 440,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** visibility feedback noted; this line is deliberately shown in chat.",
+      "ts_iso": "2026-05-02T23:28:16Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 439,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** visibility feedback noted; this line is deliberately shown in chat.",
+      "ts_iso": "2026-05-02T23:28:10Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 438,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Why it matters: Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
+      "ts_iso": "2026-05-02T23:28:10Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 437,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** visibility feedback noted; this line is deliberately shown in chat.",
+      "ts_iso": "2026-05-02T23:24:43Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 435,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Why it matters: Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
+      "ts_iso": "2026-05-02T23:24:43Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 432,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** visibility feedback noted; this line is deliberately shown in chat.",
+      "ts_iso": "2026-05-02T23:14:15Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 431,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** visibility feedback noted; this line is deliberately shown in chat.",
+      "ts_iso": "2026-05-02T23:14:08Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 430,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Why it matters: Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
+      "ts_iso": "2026-05-02T23:14:08Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 428,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** visibility feedback noted; this line is deliberately shown in chat.",
+      "ts_iso": "2026-05-02T23:04:10Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 427,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: A local Casebook record is linked to this path: CB-122. Why it matters: Hidden host messages do not count as delivered to the user.",
+      "ts_iso": "2026-05-02T23:04:10Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 426,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Why it matters: Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
+      "ts_iso": "2026-05-02T23:03:56Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 424,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Why it matters: Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
+      "ts_iso": "2026-05-02T23:03:33Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/archetypes.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+        "src/odylith/runtime/domain_intelligence/proposal_planning.py",
+        "src/odylith/runtime/domain_intelligence/proposal_rendering.py"
+      ],
+      "confidence": "high",
+      "event_index": 453,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Hardened B-142 Domain Intelligence with alternate-fit classification, acronym-safe titles, dedicated proposal rendering, program-formation output, migration-observer markers, full engine/install/browser proof, and fresh empty-consumer apply proof.",
+      "ts_iso": "2026-05-02T20:27:37-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
+        "src/odylith/runtime/domain_intelligence/archetypes.py",
+        "src/odylith/runtime/domain_intelligence/proposal_planning.py"
+      ],
+      "confidence": "high",
+      "event_index": 452,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Deepened B-142 Domain Intelligence with first-class science/math archetypes, greenfield UX/release planning module, refreshed governance surfaces, and full engine/install/browser proof.",
+      "ts_iso": "2026-05-02T20:01:58-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
+        "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
+        "src/odylith/install/runtime.py",
+        "src/odylith/runtime/intervention_engine/prompt_signal_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 434,
+      "explicit_components": [
+        "casebook",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "security",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "security",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "B-141 activation pass keeps source-local memory on Lance/Tantivy, preserves visible Assist recovery, and leaves consumer pinned runtimes on the managed feature pack.",
+      "ts_iso": "2026-05-02T16:21:02-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 433,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
+      "ts_iso": "2026-05-02T16:15:11-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/AGENTS.md",
+        "src/odylith/bundle/assets/odylith/AGENTS.md",
+        "src/odylith/install/bootstrap_assets.py"
+      ],
+      "confidence": "high",
+      "event_index": 422,
+      "explicit_components": [
+        "casebook",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Trimmed duplicated Odylith-tree consumer guidance while preserving startup, context, engine, intervention, governance, anti-slop, and host-separation contracts.",
+      "ts_iso": "2026-05-02T15:58:17-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 421,
+      "explicit_components": [
+        "odylith"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Round 4 \u2014 /odylith/AGENTS.md De-Dup vs Root What just landed in cc8e91bb The Tier 2 trim of /AGENTS.md is essentially complete: | Section | Before | After | Saved | |---|---|---...",
+      "ts_iso": "2026-05-02T15:46:02-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 419,
+      "explicit_components": [
+        "casebook",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Added automated Casebook release closeout for FixedPendingRelease records, gated by shipped release truth and validation evidence, and refreshed the v0.1.13 migration-observer markers.",
+      "ts_iso": "2026-05-02T15:22:02-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 418,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Captured CB-155 for missing Radar topology on B-141, linked B-141/B-140 to governing Atlas diagrams, added topology-sensitive backlog validation, and re-proved Casebook/Radar/migration-gate surfaces for v0.1.13.",
+      "ts_iso": "2026-05-02T15:10:06-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 417,
+      "explicit_components": [
+        "odylith",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Slimmed consumer-lane guidance and Claude model-invocable skill surface while preserving Odylith engine activation and keeping maintainer release gates separate.",
+      "ts_iso": "2026-05-02T14:36:12-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 416,
+      "explicit_components": [
+        "odylith"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Host-surface diet kept startup/context/intervention substrate intact while removing duplicate Claude guidance, no-op prompt marker hooks, generic low-signal receipts, and exact non-governed Claude Bash checkpoint cost; 0.1.13 migration-observer markers pass.",
+      "ts_iso": "2026-05-02T14:04:48-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifacts": [
+        "AGENTS.md",
+        "agents/skills/odylith-start/SKILL.md",
+        "claude/commands/odylith-start.md",
+        "src/odylith/install/casebook_metadata_migration.py"
+      ],
+      "confidence": "high",
+      "event_index": 415,
+      "explicit_components": [
+        "casebook",
+        "odylith",
+        "odylith-chatter"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "B-141 now enforces serial Odylith startup before context/search across host guidance, skills, and installed bundle assets, with Casebook index-only migration guard proof.",
+      "ts_iso": "2026-05-02T13:42:42-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
+        "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md",
+        "tests/integration/runtime/test_governance_sync_performance.py"
+      ],
+      "confidence": "high",
+      "event_index": 414,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "radar"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Added end-to-end governed sync performance tests for B-141 covering full sync dry-run, all-surface dashboard refresh, Compass status, owned surface refresh commands, no-provider credit burn, and dashboard parallelism.",
+      "ts_iso": "2026-05-02T13:16:47-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-01-casebook-renders-prose-status-and-type-chips.md",
+        "src/odylith/install/casebook_metadata_migration.py",
+        "src/odylith/install/migration_runtime.py",
+        "tests/integration/install/test_lifecycle_simulator.py"
+      ],
+      "confidence": "high",
+      "event_index": 413,
+      "explicit_components": [
+        "casebook",
+        "migration-runtime",
+        "odylith",
+        "radar",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Registered the v0.1.13 Casebook compact-metadata migration, proved 0.1.10/0.1.11/0.1.12 upgrade paths, refreshed Casebook and Radar surfaces, and tightened migration_required gating so no-op registered migrations cannot satisfy future release manifests.",
+      "ts_iso": "2026-05-02T11:56:48-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
+        "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
+        "tests/integration/runtime/test_casebook_list_layout_browser.py"
+      ],
+      "confidence": "high",
+      "event_index": 412,
+      "explicit_components": [
+        "casebook",
+        "odylith"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": true,
+      "summary": "Tightened Casebook selected-bug detail gutters, restored media-block ownership, captured CB-153, and proved compact metadata plus browser layout for v0.1.13.",
+      "ts_iso": "2026-05-02T11:10:14-07:00",
+      "workstreams": [
+        "B-140"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+        "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
+        "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js"
+      ],
+      "confidence": "high",
+      "event_index": 411,
+      "explicit_components": [
+        "compass",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "B-140/B-141 v0.1.13 dev-maintainer surfaces now keep source-local proof distinct from pinned 0.1.12 and default Release Targets to current/next aliases.",
+      "ts_iso": "2026-05-02T10:44:13-07:00",
+      "workstreams": [
+        "B-140",
+        "B-141"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
+        "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
+        "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js"
+      ],
+      "confidence": "high",
+      "event_index": 410,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "governance-intervention-engine",
+        "odylith",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "B-141 source-local QA tightened Compass Release Targets to current/next aliases, restored Codex live intervention checkpoint output, and reran browser/migration proof for v0.1.13.",
+      "ts_iso": "2026-05-02T10:38:45-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 409,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
+      "ts_iso": "2026-05-02T10:04:13-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
+        "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md",
+        "tests/integration/install/test_lifecycle_simulator.py"
+      ],
+      "confidence": "high",
+      "event_index": 408,
+      "explicit_components": [
+        "odylith",
+        "radar",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Proved v0.1.13 historical upgrade matrix for 0.1.10, 0.1.11, and 0.1.12 starts; release migration gate remains green.",
+      "ts_iso": "2026-05-02T09:54:04-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 407,
+      "explicit_components": [
+        "odylith"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Fresh-host proof for v0.1.13 B-141 passed in /private/tmp/odylith-fresh-host-final-aezgVP: current-source install against shipped 0.1.12 verified version, doctor, Codex prompt context, Claude prompt-bundle fallback, both intervention-status surfaces, visible-intervention smokes, stale-label scans, and expected start narrowing.",
+      "ts_iso": "2026-05-02T09:37:35-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 406,
+      "explicit_components": [
+        "casebook",
+        "odylith",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Governance refresh for v0.1.13 B-141 cross-host latency and mixed-version fresh-host launcher compatibility: CB-147, CB-148, CB-149, CB-150, CB-151, and CB-152 remain FixedPendingRelease with single-word Casebook metadata.",
+      "ts_iso": "2026-05-02T09:17:39-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-01-bootstrap-doctor-repair-still-surfaces-trusted-root-warning-noise.md",
+        "odylith/casebook/bugs/2026-05-01-casebook-renders-prose-status-and-type-chips.md",
+        "odylith/casebook/bugs/2026-05-01-claude-hooks-spam-unhealthy-launcher-repair-errors-during-bootstrap-repair.md",
+        "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md"
+      ],
+      "confidence": "high",
+      "event_index": 405,
+      "explicit_components": [
+        "casebook",
+        "compass",
+        "odylith",
+        "radar"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Executed governance refresh steps 1-6 for B-141: source truth verified, Casebook/Radar/Compass refreshed, and fresh-host proof queued for validation.",
+      "ts_iso": "2026-05-02T08:24:18-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+        "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
+        "odylith/radar/source/releases/releases.v1.json",
+        "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md"
+      ],
+      "confidence": "high",
+      "event_index": 404,
+      "explicit_components": [
+        "casebook",
+        "odylith",
+        "radar",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Aligned B-141, v0.1.13 release metadata, migration observer markers, and Casebook fixed-pending-release statuses across refreshed governance surfaces.",
+      "ts_iso": "2026-05-02T08:12:09-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 402,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: A local Casebook record is linked to this path: CB-122. Why it matters: Hidden host messages do not count as delivered to the user.",
+      "ts_iso": "2026-05-02T01:29:59Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 400,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: A local Casebook record is linked to this path: CB-122. Why it matters: Hidden host messages do not count as delivered to the user.",
+      "ts_iso": "2026-05-02T01:29:52Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 398,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Why it matters: Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
+      "ts_iso": "2026-05-01T22:30:33Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/governance/compass_dashboard_refresh_inputs.py",
+        "src/odylith/runtime/surfaces/compass_standup_brief_runtime_patch.py"
+      ],
+      "confidence": "high",
+      "event_index": 399,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Deep resume completed v0.1.13 host-performance integrity hardening: extracted Compass runtime patching and dashboard preflight owners to keep hotfile gates green, confined the no-templatized-narration rule to dev-maintainer guidance, restored Compass deep-refresh settlement, and passed the v0.1.13 migration gate.",
+      "ts_iso": "2026-05-01T17:58:50-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifacts": [
+        "agents/bin/odylith-host-launcher.py",
+        "src/odylith/runtime/surfaces/claude_host_prompt_bundle.py",
+        "src/odylith/runtime/surfaces/claude_host_prompt_context.py",
+        "src/odylith/runtime/surfaces/claude_host_session_brief.py",
+        "src/odylith/runtime/surfaces/codex_host_prompt_context.py",
+        "src/odylith/runtime/surfaces/codex_host_session_brief.py",
+        "src/odylith/runtime/surfaces/host_intervention_support.py"
+      ],
+      "confidence": "high",
+      "event_index": 396,
+      "explicit_components": [
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Restored substrate-backed quiet prompt and SessionStart fast paths for B-141 while keeping conversation bundles off the low-signal path.",
+      "ts_iso": "2026-05-01T15:22:30-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
+        "odylith/radar/source/ideas/2026-05/2026-05-01-claude-hook-latency-budget-and-fast-path-startup.md",
+        "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md"
+      ],
+      "confidence": "high",
+      "event_index": 395,
+      "explicit_components": [
+        "odylith",
+        "radar"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "B-141 moved into the v0.1.13 active pipeline with cross-host hook latency work preserving prompt context, interventions, Assists, and migration governance capture.",
+      "ts_iso": "2026-05-01T12:49:51-07:00",
+      "workstreams": [
+        "B-141"
+      ]
     },
     {
       "artifacts": [
@@ -648,7 +1779,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine on this path.",
       "ts_iso": "2026-04-26T12:46:32Z",
       "workstreams": [
@@ -2015,7 +3146,7 @@
         "odylith",
         "radar"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "**Odylith Assist:** kept this change honest instead of letting the code outrun the governed record by staying inside affected governance contracts [B-096](?tab=radar&workstream=B-096), [B-001](?tab=radar&workstream=B-001), [B-002](?tab=radar&workstream=B-002), and [B-005](?tab=radar&workstream=B-005), then keeping the slice to 1 candidate path. **Odylith Insight:** the real pressure here smells more like hidden hook payload counted as product success and surface-local visibility policy forks than raw code spread, which is why [B-096](?tab=radar&workstream=B-096) and [B-001](?tab=radar&workstream=B-001) matter more than one more repo lap.",
       "ts_iso": "2026-04-20T20:17:50Z",
       "workstreams": []
@@ -2032,7 +3163,7 @@
         "odylith",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Odylith Risks: Host-local visibility policy cannot be trusted without a delivery ledger proof. consume one broker decision across Context, Execution, Memory, and Tribunal signals.",
       "ts_iso": "2026-04-20T20:17:50Z",
       "workstreams": []
@@ -2048,7 +3179,7 @@
       "mapped_components": [
         "odylith"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Odylith Risks: Delivery ledger still has Odylith blocks awaiting chat confirmation. Replay the exact visible Markdown before treating the signal as proven visible.",
       "ts_iso": "2026-04-20T20:17:50Z",
       "workstreams": []
@@ -2064,7 +3195,7 @@
       "mapped_components": [
         "odylith"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Odylith Risks: Generated intervention payloads are not proven visible in chat. force assistant-rendered Odylith Markdown until chat confirmation lands.",
       "ts_iso": "2026-04-20T20:17:50Z",
       "workstreams": []
@@ -2110,7 +3241,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has CB-122 in the decision path.",
       "ts_iso": "2026-04-20T20:17:50Z",
       "workstreams": [
@@ -2347,7 +3478,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:29:15Z",
       "workstreams": [
@@ -2408,7 +3539,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:29:15Z",
       "workstreams": [
@@ -2450,7 +3581,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "**Odylith Assist:** kept this on the shortest safe path instead of cracking open an `odylith_off`-style repo sweep by staying inside affected governance contracts [governance-intervention-engine](?tab=registry&component=governance-intervention-engine), then grounding the work to 1 candidate path. **Odylith Risks:** Tribunal already has Governance Intervention Engine in unsafe closeout, so capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
       "ts_iso": "2026-04-20T18:29:15Z",
       "workstreams": []
@@ -2488,7 +3619,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:29:13Z",
       "workstreams": [
@@ -2549,7 +3680,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:29:13Z",
       "workstreams": [
@@ -2591,7 +3722,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "**Odylith Assist:** kept this on the shortest safe path instead of cracking open an `odylith_off`-style repo sweep by staying inside affected governance contracts [governance-intervention-engine](?tab=registry&component=governance-intervention-engine), then grounding the work to 1 candidate path. **Odylith Risks:** Tribunal already has Governance Intervention Engine in unsafe closeout, so capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
       "ts_iso": "2026-04-20T18:29:13Z",
       "workstreams": []
@@ -2660,7 +3791,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "**Odylith Assist:** kept this on the shortest safe path instead of cracking open an `odylith_off`-style repo sweep by staying inside affected governance contracts [governance-intervention-engine](?tab=registry&component=governance-intervention-engine), then grounding the work to 1 candidate path. **Odylith Risks:** Tribunal already has Governance Intervention Engine in unsafe closeout, so capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
       "ts_iso": "2026-04-20T18:29:09Z",
       "workstreams": []
@@ -2698,7 +3829,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:29:09Z",
       "workstreams": [
@@ -2759,7 +3890,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:29:09Z",
       "workstreams": [
@@ -2801,7 +3932,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "**Odylith Assist:** kept this on the shortest safe path instead of cracking open an `odylith_off`-style repo sweep by staying inside affected governance contracts [governance-intervention-engine](?tab=registry&component=governance-intervention-engine), then grounding the work to 1 candidate path. **Odylith Risks:** Tribunal already has Governance Intervention Engine in unsafe closeout, so capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
       "ts_iso": "2026-04-20T18:29:00Z",
       "workstreams": []
@@ -2839,7 +3970,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:29:00Z",
       "workstreams": [
@@ -2900,7 +4031,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:29:00Z",
       "workstreams": [
@@ -2992,7 +4123,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "**Odylith Assist:** kept this on the shortest safe path instead of cracking open an `odylith_off`-style repo sweep by staying inside affected governance contracts [governance-intervention-engine](?tab=registry&component=governance-intervention-engine), then grounding the work to 1 candidate path. **Odylith Risks:** Tribunal already has Governance Intervention Engine in unsafe closeout, so capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
       "ts_iso": "2026-04-20T18:26:33Z",
       "workstreams": []
@@ -3030,7 +4161,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:26:33Z",
       "workstreams": [
@@ -3091,7 +4222,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:26:33Z",
       "workstreams": [
@@ -3133,7 +4264,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "**Odylith Assist:** kept this on the shortest safe path instead of cracking open an `odylith_off`-style repo sweep by staying inside affected governance contracts [governance-intervention-engine](?tab=registry&component=governance-intervention-engine), then grounding the work to 1 candidate path. **Odylith Risks:** Tribunal already has Governance Intervention Engine in unsafe closeout, so capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
       "ts_iso": "2026-04-20T18:26:01Z",
       "workstreams": []
@@ -3171,7 +4302,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:26:01Z",
       "workstreams": [
@@ -3232,7 +4363,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:26:01Z",
       "workstreams": [
@@ -3870,7 +5001,7 @@
         "odylith-chatter",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Odylith Risks: Host-local visibility policy cannot be trusted without a delivery ledger proof. consume one broker decision across Context, Execution, Memory, and Tribunal signals.",
       "ts_iso": "2026-04-20T03:26:23Z",
       "workstreams": []
@@ -3887,7 +5018,7 @@
         "odylith",
         "odylith-chatter"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Odylith Risks: Generated intervention payloads are not proven visible in chat. force assistant-rendered Odylith Markdown until chat confirmation lands.",
       "ts_iso": "2026-04-20T03:26:23Z",
       "workstreams": []
@@ -3904,7 +5035,7 @@
         "odylith",
         "odylith-chatter"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Odylith Risks: Delivery ledger still has Odylith blocks awaiting chat confirmation. Replay the exact visible Markdown before treating the signal as proven visible.",
       "ts_iso": "2026-04-20T03:26:23Z",
       "workstreams": []
@@ -3953,7 +5084,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has CB-122 in the decision path.",
       "ts_iso": "2026-04-20T03:26:23Z",
       "workstreams": [
@@ -4174,7 +5305,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has CB-122 in the decision path.",
       "ts_iso": "2026-04-20T03:26:09Z",
       "workstreams": [
@@ -5250,7 +6381,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-001.",
       "ts_iso": "2026-04-17T03:48:35Z",
       "workstreams": [
@@ -5437,7 +6568,7 @@
         "odylith",
         "radar"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Odylith Insight: Radar already has a governed slice for B-096, so this should keep moving through the same governed thread. Atlas is touching the same boundary.",
       "ts_iso": "2026-04-16T18:33:05Z",
       "workstreams": []
@@ -5456,7 +6587,7 @@
         "odylith",
         "radar"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Odylith Insight: Radar already has a governed slice for B-096, so this should keep moving through the same governed thread. Atlas is touching the same boundary.",
       "ts_iso": "2026-04-16T18:32:04Z",
       "workstreams": []
@@ -5475,7 +6606,7 @@
         "odylith",
         "radar"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Odylith Insight: Radar already has a governed slice for B-096, so this should keep moving through the same governed thread. Atlas is touching the same boundary.",
       "ts_iso": "2026-04-16T18:32:00Z",
       "workstreams": []
@@ -5518,7 +6649,7 @@
         "odylith",
         "radar"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Odylith Insight: Radar already has a governed slice for B-096, so this should keep moving through the same governed thread. Atlas is touching the same boundary.",
       "ts_iso": "2026-04-16T18:20:30Z",
       "workstreams": []
@@ -5976,7 +7107,7 @@
         "subagent-orchestrator",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-005.",
       "ts_iso": "2026-04-16T01:31:39Z",
       "workstreams": [
@@ -6411,7 +7542,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "",
       "ts_iso": "2026-04-13T23:57:57Z",
       "workstreams": [
@@ -6491,7 +7622,7 @@
         "odylith",
         "release"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "",
       "ts_iso": "2026-04-11T23:55:04Z",
       "workstreams": [
@@ -8173,6 +9304,8 @@
     "B-134",
     "B-130",
     "B-135",
-    "B-131"
+    "B-131",
+    "B-141",
+    "B-142"
   ]
 }

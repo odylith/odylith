@@ -1,5 +1,14 @@
 - Bug ID: CB-057
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-06
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Legacy migration moves `odyssey/` and `.odyssey/` into the
   Odylith layout, but it does not audit or report stale `odyssey` references

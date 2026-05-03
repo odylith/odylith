@@ -1,5 +1,14 @@
 - Bug ID: CB-009
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Open
 
 - Created: 2026-03-28
@@ -8,7 +17,6 @@
 
 - Reproducibility: Always
 
-- Type: Product
 
 - Description: Building the managed context-engine feature pack for supported
   Linux targets failed because the release asset publisher required a

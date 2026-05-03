@@ -29,9 +29,12 @@ spawn-policy note, or follow-up question.
 4. Print the full stdout directly in your response as-is. Do not summarize,
    diagnose, reformat, or wrap it in a code block. Do not add bullets before
    or after it. The scenario-aware output is already written as a trust-first action report with a short mental-model line and should be shown verbatim so the operator sees exactly what Odylith said.
-5. If the operator wants to create everything at once, run the same selected
-   command with `--apply`, for example
-   `./.odylith/bin/odylith show --repo-root . --apply`.
+5. If the operator names a new project, architecture, research goal, or
+   feature after an empty/thin show result, do not refuse because source is
+   absent. Run the proposal-first path instead:
+   `./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<their request>"`.
+   Render backlog, program waves, release plan, Registry, Atlas, assumptions,
+   risks, and validation; wait for confirmation before writes.
 6. Do not create governance records unless the operator explicitly asks.
    The default posture is advisory — show what's possible and let the operator
    choose.

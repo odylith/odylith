@@ -1,5 +1,14 @@
 - Bug ID: CB-017
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-03-29
@@ -10,7 +19,6 @@
 
 - Reproducibility: Consistent
 
-- Type: Product
 
 - Description: Atlas could show different diagram totals depending on which tab
   the operator came from. The shell reused stale Atlas `diagram` state across

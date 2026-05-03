@@ -1,5 +1,14 @@
 - Bug ID: CB-064
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-07
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Running the hosted installer in an already-installed consumer
   repo can activate a newer verified runtime while leaving

@@ -7,8 +7,41 @@ from pathlib import Path
 
 from odylith.runtime.intervention_engine import delivery_ledger
 from odylith.runtime.intervention_engine import surface_runtime
+from odylith.runtime.surfaces import claude_host_prompt_bundle
 from odylith.runtime.surfaces import claude_host_prompt_context
 from odylith.runtime.surfaces import claude_host_prompt_teaser
+from odylith.runtime.surfaces import host_intervention_support
+
+
+def _prompt_substrate_alignment(**_: object) -> dict[str, object]:
+    return {
+        "context_packet": {
+            "packet_kind": "host_intervention_context",
+            "packet_state": "observing",
+            "runtime_surface_summary": {
+                "memory_backend_label": "Lance / Tantivy",
+                "memory_standardization_state": "standardized",
+            },
+        },
+        "execution_engine_summary": {
+            "execution_engine_mode": "explore",
+            "execution_engine_next_move": "explore.narrow_scope",
+            "execution_engine_outcome": "admit",
+        },
+        "visibility_summary": {"chat_visible_proof": "unproven_this_session"},
+        "tribunal_summary": {},
+        "alignment_proof": {
+            "status": "quiet",
+            "covered_lanes": [
+                "context_engine",
+                "execution_engine",
+                "intervention_engine",
+                "delivery",
+                "memory_substrate",
+            ],
+            "missing_required_lanes": [],
+        },
+    }
 
 
 def test_render_prompt_context_resolves_first_anchor_via_override() -> None:
@@ -34,6 +67,24 @@ def test_render_prompt_context_returns_empty_when_no_anchor_present() -> None:
         prompt="No anchor in this prompt.",
         context_output_override="anything",
     )
+    assert rendered == ""
+
+
+def test_render_prompt_context_skips_bundle_for_low_signal_prompt(monkeypatch) -> None:
+    def _unexpected_bundle(**_: object) -> dict[str, object]:
+        raise AssertionError("low-signal prompt should not build prompt intervention bundle")
+
+    monkeypatch.setattr(
+        host_intervention_support.conversation_surface,
+        "build_conversation_bundle",
+        _unexpected_bundle,
+    )
+
+    rendered = claude_host_prompt_context.render_prompt_context(
+        prompt="Odylith, you there?",
+        context_output_override="anything",
+    )
+
     assert rendered == ""
 
 
@@ -199,7 +250,7 @@ def test_main_runs_context_command_for_first_anchor(monkeypatch, tmp_path: Path,
         _fake_run_odylith,
     )
     monkeypatch.setattr(
-        claude_host_prompt_context.conversation_surface,
+        host_intervention_support.conversation_surface,
         "build_conversation_bundle",
         lambda **_: {},
     )
@@ -246,6 +297,207 @@ def test_main_prints_nothing_for_help_fast_path_even_with_pending_replay(
     assert capsys.readouterr().out == ""
 
 
+def test_prompt_bundle_routes_help_automatically_without_replay(tmp_path: Path) -> None:
+    surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Pending prompt replay.",
+        session_id="claude-help-bundle",
+        host_family="claude",
+        intervention_key="claude-help-bundle-replay",
+        turn_phase="post_edit_checkpoint",
+        display_markdown="**Odylith Observation:** stale replay",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+    )
+
+    payload = claude_host_prompt_bundle.render_prompt_bundle_payload(
+        repo_root=tmp_path,
+        prompt="Odylith, help.",
+        session_id="claude-help-bundle",
+    )
+
+    context = payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith help first-match route lock" in context
+    assert "stale replay" not in context
+    assert "systemMessage" not in payload
+
+
+def test_prompt_bundle_routes_show_me_what_you_got_without_replay(tmp_path: Path) -> None:
+    surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Pending prompt replay.",
+        session_id="claude-show-bundle",
+        host_family="claude",
+        intervention_key="claude-show-bundle-replay",
+        turn_phase="post_edit_checkpoint",
+        display_markdown="**Odylith Observation:** stale replay",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+    )
+
+    payload = claude_host_prompt_bundle.render_prompt_bundle_payload(
+        repo_root=tmp_path,
+        prompt="Odylith show me what you got",
+        session_id="claude-show-bundle",
+    )
+
+    context = payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith show-me first-match route lock" in context
+    assert "stale replay" not in context
+    assert "systemMessage" not in payload
+
+
+def test_main_emits_prompt_first_receipt_for_low_signal_prompt_without_bundle(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    def _unexpected_bundle(**_: object) -> dict[str, object]:
+        raise AssertionError("low-signal prompt should not build prompt intervention bundle")
+
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(json.dumps({"prompt": "Odylith, you there?", "session_id": "claude-low-signal"})),
+    )
+    monkeypatch.setattr(
+        host_intervention_support.conversation_surface,
+        "build_conversation_bundle",
+        _unexpected_bundle,
+    )
+    monkeypatch.setattr(
+        host_intervention_support.alignment_context,
+        "build_host_alignment_context",
+        _prompt_substrate_alignment,
+    )
+
+    exit_code = claude_host_prompt_context.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
+    additional_context = payload["hookSpecificOutput"]["additionalContext"]
+    assert additional_context.startswith("Odylith prompt-start substrate:")
+    assert "memory=Lance / Tantivy (standardized)" in additional_context
+    assert "execution=explore/explore.narrow_scope (admit)" in additional_context
+    assert "lanes=context_engine,execution_engine,intervention_engine,delivery,memory_substrate" in additional_context
+    assert "systemMessage" not in payload
+
+
+def test_prompt_bundle_emits_prompt_first_receipt_for_low_signal_prompt(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    def _unexpected_bundle(**_: object) -> dict[str, object]:
+        raise AssertionError("low-signal prompt should not build prompt bundle")
+
+    monkeypatch.setattr(
+        host_intervention_support.conversation_surface,
+        "build_conversation_bundle",
+        _unexpected_bundle,
+    )
+    monkeypatch.setattr(
+        host_intervention_support.alignment_context,
+        "build_host_alignment_context",
+        _prompt_substrate_alignment,
+    )
+
+    payload = claude_host_prompt_bundle.render_prompt_bundle_payload(
+        repo_root=tmp_path,
+        prompt="Odylith, you there?",
+        session_id="claude-bundle-low-signal",
+    )
+
+    assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
+    additional_context = payload["hookSpecificOutput"]["additionalContext"]
+    assert additional_context.startswith("Odylith prompt-start substrate:")
+    assert "memory=Lance / Tantivy (standardized)" in additional_context
+    assert "execution=explore/explore.narrow_scope (admit)" in additional_context
+    assert "systemMessage" not in payload
+
+
+def test_prompt_bundle_skips_generic_low_signal_prompt_receipt(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    def _unexpected_bundle(**_: object) -> dict[str, object]:
+        raise AssertionError("generic low-signal prompt should not build prompt bundle")
+
+    def _unexpected_alignment(**_: object) -> dict[str, object]:
+        raise AssertionError("generic low-signal prompt should not build substrate receipt")
+
+    monkeypatch.setattr(
+        host_intervention_support.conversation_surface,
+        "build_conversation_bundle",
+        _unexpected_bundle,
+    )
+    monkeypatch.setattr(
+        host_intervention_support.alignment_context,
+        "build_host_alignment_context",
+        _unexpected_alignment,
+    )
+
+    payload = claude_host_prompt_bundle.render_prompt_bundle_payload(
+        repo_root=tmp_path,
+        prompt="What time is it?",
+        session_id="claude-bundle-generic-low-signal",
+    )
+
+    assert payload == {}
+
+
+def test_prompt_bundle_main_suppresses_receipt_after_chat_confirmation(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Pending Claude prompt replay awaiting transcript proof.",
+        session_id="claude-bundle-confirm-prompt",
+        host_family="claude",
+        intervention_key="claude-bundle-confirm-prompt-key",
+        turn_phase="post_edit_checkpoint",
+        display_markdown="---\n**Odylith Observation:** Claude bundle already rendered this block.\n---",
+        delivery_channel="assistant_visible_fallback",
+        delivery_status="assistant_render_required",
+        render_surface="claude_post_tool_use",
+    )
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(
+            json.dumps(
+                {
+                    "prompt": "Continue with the next slice.",
+                    "session_id": "claude-bundle-confirm-prompt",
+                    "last_assistant_message": (
+                        "Done.\n\n---\n**Odylith Observation:** Claude bundle already rendered this block.\n---"
+                    ),
+                }
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        host_intervention_support.conversation_surface,
+        "build_conversation_bundle",
+        lambda **_: {},
+    )
+
+    exit_code = claude_host_prompt_bundle.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    assert capsys.readouterr().out == ""
+    snapshot = delivery_ledger.delivery_snapshot(
+        repo_root=tmp_path,
+        host_family="claude",
+        session_id="claude-bundle-confirm-prompt",
+    )
+    assert snapshot["chat_confirmed_event_count"] == 1
+    assert snapshot["unconfirmed_event_count"] == 0
+
+
 def test_main_keeps_teaser_in_discreet_prompt_context_when_signal_is_real(
     monkeypatch,
     tmp_path: Path,
@@ -259,7 +511,7 @@ def test_main_keeps_teaser_in_discreet_prompt_context_when_signal_is_real(
         io.StringIO(json.dumps({"prompt": "Continue work on B-088"})),
     )
     monkeypatch.setattr(
-        claude_host_prompt_context.conversation_surface,
+        host_intervention_support.conversation_surface,
         "build_conversation_bundle",
         lambda **_: {
             "intervention_bundle": {
@@ -284,6 +536,70 @@ def test_main_keeps_teaser_in_discreet_prompt_context_when_signal_is_real(
     assert "systemMessage" not in payload
 
 
+def test_prompt_bundle_preserves_hidden_context_and_visible_teaser(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(
+        host_intervention_support.conversation_surface,
+        "build_conversation_bundle",
+        lambda **_: {
+            "intervention_bundle": {
+                "candidate": {
+                    "stage": "teaser",
+                    "teaser_text": (
+                        "Odylith Observation: Casebook needs real failure evidence before it writes. "
+                        "Why it matters: ask for the actual command output."
+                    ),
+                }
+            }
+        },
+    )
+
+    payload = claude_host_prompt_bundle.render_prompt_bundle_payload(
+        repo_root=tmp_path,
+        prompt="Continue work on B-088",
+        session_id="claude-bundle-signal",
+    )
+
+    assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
+    assert "Odylith visible delivery recovery:" in payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith Observation:" in payload["hookSpecificOutput"]["additionalContext"]
+    assert payload["systemMessage"].startswith(f"{surface_runtime.LIVE_BOUNDARY}\n\nOdylith Observation:")
+    assert "**Odylith Assist:**" not in payload["systemMessage"]
+
+
+def test_prompt_bundle_main_emits_single_json_payload_for_signal(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(json.dumps({"prompt": "Continue work on B-088", "session_id": "claude-bundle-main"})),
+    )
+    monkeypatch.setattr(
+        host_intervention_support.conversation_surface,
+        "build_conversation_bundle",
+        lambda **_: {
+            "intervention_bundle": {
+                "candidate": {
+                    "stage": "teaser",
+                    "teaser_text": "Odylith Observation: automatic prompt context still fires.",
+                }
+            }
+        },
+    )
+
+    exit_code = claude_host_prompt_bundle.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
+    assert "automatic prompt context still fires" in payload["hookSpecificOutput"]["additionalContext"]
+    assert "automatic prompt context still fires" in payload["systemMessage"]
+
+
 def test_prompt_teaser_main_prints_plain_best_effort_teaser_text(
     monkeypatch,
     tmp_path: Path,
@@ -297,7 +613,7 @@ def test_prompt_teaser_main_prints_plain_best_effort_teaser_text(
         io.StringIO(json.dumps({"prompt": "Continue work on B-088"})),
     )
     monkeypatch.setattr(
-        claude_host_prompt_context.conversation_surface,
+        host_intervention_support.conversation_surface,
         "build_conversation_bundle",
         lambda **_: {
             "intervention_bundle": {
@@ -319,6 +635,30 @@ def test_prompt_teaser_main_prints_plain_best_effort_teaser_text(
     assert output.startswith(f"{surface_runtime.LIVE_BOUNDARY}\n\nOdylith Observation:")
     assert "**Odylith Assist:**" not in output
     assert not output.lstrip().startswith("{")
+
+
+def test_prompt_teaser_main_skips_low_signal_prompt_without_bundle(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    def _unexpected_bundle(**_: object) -> dict[str, object]:
+        raise AssertionError("low-signal prompt should not build prompt teaser bundle")
+
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(json.dumps({"prompt": "Odylith, you there?", "session_id": "claude-teaser-low-signal"})),
+    )
+    monkeypatch.setattr(
+        host_intervention_support.conversation_surface,
+        "build_conversation_bundle",
+        _unexpected_bundle,
+    )
+
+    exit_code = claude_host_prompt_teaser.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    assert capsys.readouterr().out == ""
 
 
 def test_main_confirms_visible_prompt_replay_from_last_assistant_message(
@@ -354,7 +694,7 @@ def test_main_confirms_visible_prompt_replay_from_last_assistant_message(
         ),
     )
     monkeypatch.setattr(
-        claude_host_prompt_context.conversation_surface,
+        host_intervention_support.conversation_surface,
         "build_conversation_bundle",
         lambda **_: {},
     )

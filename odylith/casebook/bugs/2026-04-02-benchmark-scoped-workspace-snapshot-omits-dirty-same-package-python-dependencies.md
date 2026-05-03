@@ -1,5 +1,14 @@
 - Bug ID: CB-044
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Open
 
 - Created: 2026-04-02
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The shared live-workspace snapshot for `odylith_on` and
   `odylith_off` could copy only the explicitly selected dirty Python file while

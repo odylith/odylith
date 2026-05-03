@@ -1,5 +1,14 @@
 - Bug ID: CB-078
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-09
@@ -10,7 +19,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Compass `Release Targets` regressed back to a side-by-side
   multi-column board. `Targeted Workstreams` and `Completed Workstreams`

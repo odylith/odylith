@@ -1,5 +1,14 @@
 - Bug ID: CB-108
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-12
@@ -10,7 +19,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Compass `Programs` can regress back to a redundant nested inner
   card, rendering the repeated program-summary focus band as another rounded

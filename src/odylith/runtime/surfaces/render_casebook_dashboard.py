@@ -1,8 +1,7 @@
 """Render the Casebook bug knowledge surface.
 
-Casebook is a shell-owned, read-only explorer over the repo bug knowledge base.
-Markdown under ``odylith/casebook/bugs/`` remains authoritative; this renderer only projects a
-searchable/filterable local view.
+Casebook is a shell-owned, read-only explorer over repo bug knowledge.
+Markdown under ``odylith/casebook/bugs/`` remains authoritative; this renderer projects a searchable/filterable local view.
 """
 
 from __future__ import annotations
@@ -12,6 +11,8 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common import casebook_metadata
+from odylith.runtime.common import stable_generated_utc
 from odylith.runtime.governance import casebook_source_validation
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import dashboard_shell_links
@@ -23,13 +24,11 @@ from odylith.runtime.surfaces import generated_surface_refresh_guards
 from odylith.runtime.surfaces import render_casebook_dashboard_cli
 from odylith.runtime.surfaces import surface_path_helpers
 from odylith.runtime.surfaces import source_bundle_mirror
-from odylith.runtime.common import stable_generated_utc
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import odylith_context_engine_store
 
 _CASEBOOK_DETAIL_SHARD_SIZE = 32
 _CASEBOOK_REFRESH_GUARD_KEY = "casebook-dashboard-render"
-
 
 def _refresh_guard_watched_paths() -> tuple[str, ...]:
     return (
@@ -42,7 +41,6 @@ def _refresh_guard_watched_paths() -> tuple[str, ...]:
         "src/odylith/runtime/governance",
         "src/odylith/runtime/surfaces",
     )
-
 
 def _chunk_casebook_items(
     *,
@@ -66,9 +64,9 @@ def _chunk_casebook_items(
         shards.append((filename, payload))
     return manifest, shards
 
-
 def _build_casebook_summary_row(row: Mapping[str, Any]) -> dict[str, Any]:
     coverage = row.get("intelligence_coverage")
+    status = casebook_metadata.canonical_casebook_status(str(row.get("status", "")).strip())
     return {
         "bug_id": str(row.get("bug_id", "")).strip(),
         "bug_key": str(row.get("bug_key", "")).strip(),
@@ -80,8 +78,8 @@ def _build_casebook_summary_row(row: Mapping[str, Any]) -> dict[str, Any]:
         "date": str(row.get("date", "")).strip(),
         "severity": str(row.get("severity", "")).strip(),
         "severity_token": str(row.get("severity_token", "")).strip(),
-        "status": str(row.get("status", "")).strip(),
-        "status_token": str(row.get("status_token", "")).strip(),
+        "status": status,
+        "status_token": status.lower(),
         "components": str(row.get("components", "")).strip(),
         "archive_bucket": str(row.get("archive_bucket", "")).strip(),
         "source_path": str(row.get("source_path", "")).strip(),
@@ -107,14 +105,12 @@ def _build_casebook_summary_row(row: Mapping[str, Any]) -> dict[str, Any]:
         "search_text": str(row.get("search_text", "")).strip(),
     }
 
-
 def _build_casebook_detail_row(row: Mapping[str, Any]) -> dict[str, Any]:
     return {
         str(key): value
         for key, value in dict(row).items()
         if str(key) != "search_text"
     }
-
 
 def _build_payload(
     *,
@@ -150,7 +146,6 @@ def _build_payload(
 
     def _shell_href(tab: str, **params: str) -> str:
         return f"../index.html{dashboard_shell_links.shell_href(tab=tab, **params)}"
-
     def _path_links(paths: Sequence[Any]) -> list[dict[str, str]]:
         links = surface_path_helpers.path_links(
             repo_root=repo_root,
@@ -165,12 +160,10 @@ def _build_payload(
                 "href": lambda token: str(token).strip(),
             },
         )
-
     def _link_signature(row: Mapping[str, Any]) -> str:
         path = str(row.get("path", "")).strip().casefold()
         href = str(row.get("href", "")).strip()
         return f"{path}||{href}"
-
     def _exclude_overlapping_links(
         rows: Sequence[Mapping[str, Any]],
         *,
@@ -182,7 +175,6 @@ def _build_payload(
             for row in rows
             if isinstance(row, Mapping) and _link_signature(row) not in blocked_keys
         ]
-
     def _bug_aliases(*, bug_id: str, bug_key: str, source_path: str) -> list[str]:
         aliases: list[str] = []
         for raw in (bug_id, bug_key, source_path):
@@ -201,7 +193,6 @@ def _build_payload(
                 if relative_token and relative_token not in aliases:
                     aliases.append(relative_token)
         return aliases
-
     rows = odylith_context_engine_store.load_bug_snapshot(
         repo_root=repo_root,
         runtime_mode=runtime_mode,
@@ -242,7 +233,8 @@ def _build_payload(
             for diagram in diagram_rows
         }
         severity_token = str(row.get("severity_token", "")).strip().lower()
-        status_token = str(row.get("status_token", "")).strip().lower()
+        status = casebook_metadata.canonical_casebook_status(str(row.get("status", "")).strip())
+        status_token = status.lower()
         if severity_token:
             severity_tokens.add(severity_token)
         if status_token:
@@ -320,6 +312,15 @@ def _build_payload(
             _path_links(agent_guidance.get("proof_paths", [])),
             blocked=[*code_ref_links, *doc_ref_links, *test_ref_links, *contract_ref_links],
         )
+        fields = dict(row.get("fields", {})) if isinstance(row.get("fields"), dict) else {}
+        if fields.get("Status"):
+            fields["Status"] = casebook_metadata.canonical_casebook_status(fields["Status"])
+        if fields.get("Fixed"):
+            fields["Fixed"] = casebook_metadata.canonical_casebook_fixed(fields["Fixed"])
+        if fields.get("Type"):
+            fields["Type"] = casebook_metadata.canonical_casebook_display_type(fields["Type"])
+        if status:
+            fields["Status"] = status
         payload_rows.append(
             {
                 "bug_id": bug_id,
@@ -330,7 +331,7 @@ def _build_payload(
                 "date": str(row.get("date", "")).strip(),
                 "severity": str(row.get("severity", "")).strip(),
                 "severity_token": severity_token,
-                "status": str(row.get("status", "")).strip(),
+                "status": status,
                 "status_token": status_token,
                 "components": str(row.get("components", "")).strip(),
                 "component_tokens": [str(token).strip() for token in row.get("component_tokens", []) if str(token).strip()],
@@ -357,7 +358,7 @@ def _build_payload(
                         "href": lambda token: str(token).strip(),
                     },
                 ),
-                "fields": dict(row.get("fields", {})) if isinstance(row.get("fields"), dict) else {},
+                "fields": fields,
                 "detail_sections": _dedupe_rows_by_signature(
                     (
                         {
@@ -403,7 +404,7 @@ def _build_payload(
                         "title": str(related.get("title", "")).strip(),
                         "date": str(related.get("date", "")).strip(),
                         "severity": str(related.get("severity", "")).strip(),
-                        "status": str(related.get("status", "")).strip(),
+                        "status": casebook_metadata.canonical_casebook_status(str(related.get("status", "")).strip()),
                         "href": _shell_href(
                             "casebook",
                             bug=str(related.get("bug_id", "") or related.get("source_path", "") or related.get("bug_key", "")).strip(),
@@ -428,7 +429,6 @@ def _build_payload(
                 "search_text": str(row.get("search_text", "")).strip(),
             }
         )
-
     latest_case = payload_rows[0] if payload_rows else {}
     counts = {
         "total_cases": len(payload_rows),
@@ -448,13 +448,13 @@ def _build_payload(
         },
     }
 
-
 def _render_html(*, payload: dict[str, Any]) -> str:
     data_json = json.dumps(payload, sort_keys=True, ensure_ascii=False)
     page_body_css = dashboard_ui_primitives.page_body_typography_css(selector="body")
     surface_shell_root_css = dashboard_ui_primitives.standard_surface_shell_root_css()
     surface_shell_css = dashboard_ui_primitives.standard_surface_shell_css(
         selector=".shell",
+        padding="18px 12px 30px",
         display="grid",
         gap_px=12,
     )
@@ -818,7 +818,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     }}
     .detail {{
       min-width: 0;
-      padding: 18px 20px 22px;
+      padding: 14px 12px 18px;
       display: grid;
       gap: 18px;
       align-content: start;
@@ -1115,7 +1115,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     .bug-row-summary {{
       display: -webkit-box;
       -webkit-box-orient: vertical;
-      -webkit-line-clamp: 4;
+      -webkit-line-clamp: 2;
       overflow: hidden;
     }}
     .detail-copy p {{
@@ -1176,7 +1176,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     }}
     @media (max-width: 760px) {{
       .shell {{
-        padding: 18px 14px 28px;
+        padding: 16px 10px 28px;
       }}
       .filters-bar {{
         grid-template-columns: 1fr;
@@ -1192,9 +1192,8 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       .summary-facts {{
         grid-template-columns: 1fr;
       }}
-    }}
       .detail {{
-        padding: 16px 14px 18px;
+        padding: 14px 10px 16px;
       }}
     }}
   </style>
@@ -2033,7 +2032,8 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         chips.push(`<span class="meta-chip archive-chip">Archive: ${{escapeHtml(detail.archive_bucket)}}</span>`);
       }}
       if (totalFields) {{
-        chips.push(`<span class="meta-chip ${{requiredMissingFields.length ? "warn-chip" : ""}}">Intel ${{capturedCount}}/${{totalFields}}</span>`);
+        const intelTooltip = `${{capturedCount}}/${{totalFields}} recommended fields captured`;
+        chips.push(`<span class="meta-chip ${{requiredMissingFields.length ? "warn-chip" : ""}}" data-tooltip="${{escapeHtml(intelTooltip)}}">Intel</span>`);
       }}
       const externalIssueActions = externalIssueLinks(detail);
       const sourceLink = detail.source_href ? actionChipHtml("Source markdown", detail.source_href) : `<span class="meta-chip muted">Source markdown missing</span>`;
@@ -2324,7 +2324,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           row.severity ? `<span class="list-chip ${{/^p[01]$/i.test(String(row.severity || "")) ? "critical-chip" : ""}}">${{escapeHtml(row.severity)}}</span>` : "",
           row.status ? `<span class="list-chip">${{escapeHtml(row.status)}}</span>` : "",
           row.archive_bucket ? `<span class="list-chip archive-chip">${{escapeHtml(row.archive_bucket)}}</span>` : "",
-          totalFields ? `<span class="list-chip ${{requiredMissingFields.length ? "warn-chip" : ""}}">Intel ${{capturedCount}}/${{totalFields}}</span>` : "",
+          totalFields ? `<span class="list-chip ${{requiredMissingFields.length ? "warn-chip" : ""}}" data-tooltip="${{escapeHtml(`${{capturedCount}}/${{totalFields}} recommended fields captured`)}}">Intel</span>` : "",
         ].filter(Boolean).join("");
         return `
           <button type="button" class="bug-row${{active ? " active" : ""}}" data-bug="${{escapeHtml(row.bug_route || "")}}">

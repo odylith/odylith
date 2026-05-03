@@ -1,5 +1,14 @@
 - Bug ID: CB-048
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Open
 
 - Created: 2026-04-03
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The live `agent_activation` benchmark slice is now grounded
   enough to see the right install code, consumer guidance, and validator

@@ -298,6 +298,35 @@ def _grounded_sections_for_title(*, title: str, args: argparse.Namespace) -> dic
     return sections
 
 
+def _title_specific_args(*, title: str, args: argparse.Namespace) -> argparse.Namespace:
+    overrides = getattr(args, "section_overrides_by_title", None)
+    if not isinstance(overrides, Mapping):
+        return args
+    override = overrides.get(str(title).strip())
+    if not isinstance(override, Mapping):
+        override = overrides.get(_slugify(title))
+    if not isinstance(override, Mapping):
+        return args
+    resolved = argparse.Namespace(**vars(args))
+    for key in (
+        "problem",
+        "customer",
+        "opportunity",
+        "product_view",
+        "success_metrics",
+        "priority",
+        "sizing",
+        "complexity",
+        "ordering_rationale",
+    ):
+        if key in override:
+            value = override[key]
+            if key == "success_metrics" and isinstance(value, (list, tuple)):
+                value = "\n".join(f"- {item}" for item in value if str(item).strip())
+            setattr(resolved, key, str(value).strip())
+    return resolved
+
+
 def _build_metadata(
     *,
     idea_id: str,
@@ -565,6 +594,7 @@ def create_queued_backlog_items(
     allocated_ids = _allocated_workstream_ids(ideas=mutable_ideas, count=len(normalized_titles))
     topology_by_id = _created_workstream_topology(allocated_ids=allocated_ids, args=args)
     for idea_id, title in zip(allocated_ids, normalized_titles, strict=True):
+        row_args = _title_specific_args(title=title, args=args)
         topology = topology_by_id.get(idea_id, {})
         workstream_children = topology.get("workstream_children", [])
         if not isinstance(workstream_children, (list, tuple)):
@@ -573,7 +603,7 @@ def create_queued_backlog_items(
             idea_id=idea_id,
             title=title,
             today=today,
-            args=args,
+            args=row_args,
             workstream_type=str(topology.get("workstream_type", "standalone")),
             workstream_parent=str(topology.get("workstream_parent", "")),
             workstream_children=tuple(str(item) for item in workstream_children if str(item).strip()),
@@ -581,7 +611,7 @@ def create_queued_backlog_items(
         metadata_by_idea_id[idea_id] = metadata
         idea_path = _unique_idea_path(ideas_root=ideas_root, title=title, today=today, reserved=reserved_paths)
         reserved_paths.add(idea_path)
-        sections = _grounded_sections_for_title(title=title, args=args)
+        sections = _grounded_sections_for_title(title=title, args=row_args)
         text = _render_idea_text(metadata=metadata, sections=sections)
         new_text_by_path[idea_path] = text
         item = CreatedBacklogItem(

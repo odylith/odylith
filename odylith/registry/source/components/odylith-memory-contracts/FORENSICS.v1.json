@@ -163,7 +163,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine on this path.",
       "ts_iso": "2026-04-26T12:46:32Z",
       "workstreams": [
@@ -1363,7 +1363,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has CB-122 in the decision path.",
       "ts_iso": "2026-04-20T20:17:50Z",
       "workstreams": [
@@ -1581,7 +1581,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:29:15Z",
       "workstreams": [
@@ -1642,7 +1642,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:29:15Z",
       "workstreams": [
@@ -1703,7 +1703,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:29:13Z",
       "workstreams": [
@@ -1764,7 +1764,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:29:13Z",
       "workstreams": [
@@ -1875,7 +1875,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:29:09Z",
       "workstreams": [
@@ -1936,7 +1936,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:29:09Z",
       "workstreams": [
@@ -1997,7 +1997,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:29:00Z",
       "workstreams": [
@@ -2058,7 +2058,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:29:00Z",
       "workstreams": [
@@ -2169,7 +2169,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:26:33Z",
       "workstreams": [
@@ -2230,7 +2230,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:26:33Z",
       "workstreams": [
@@ -2291,7 +2291,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:26:01Z",
       "workstreams": [
@@ -2352,7 +2352,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:26:01Z",
       "workstreams": [
@@ -2810,7 +2810,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has CB-122 in the decision path.",
       "ts_iso": "2026-04-20T03:26:23Z",
       "workstreams": [
@@ -2973,7 +2973,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Tribunal already has CB-122 in the decision path.",
       "ts_iso": "2026-04-20T03:26:09Z",
       "workstreams": [
@@ -3984,7 +3984,7 @@
         "subagent-router",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-001.",
       "ts_iso": "2026-04-17T03:48:35Z",
       "workstreams": [
@@ -4235,7 +4235,7 @@
         "radar",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T03:58:01Z",
       "workstreams": [
@@ -4263,7 +4263,7 @@
         "radar",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T03:57:49Z",
       "workstreams": [
@@ -4293,7 +4293,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
       "ts_iso": "2026-04-16T03:57:38Z",
       "workstreams": [
@@ -4321,7 +4321,7 @@
         "radar",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T03:57:38Z",
       "workstreams": [
@@ -4351,7 +4351,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
       "ts_iso": "2026-04-16T02:54:42Z",
       "workstreams": [
@@ -4379,7 +4379,7 @@
         "radar",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T02:54:42Z",
       "workstreams": [
@@ -4409,7 +4409,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
       "ts_iso": "2026-04-16T02:54:32Z",
       "workstreams": [
@@ -4437,7 +4437,7 @@
         "radar",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T02:54:32Z",
       "workstreams": [
@@ -4495,7 +4495,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
       "ts_iso": "2026-04-16T02:37:58Z",
       "workstreams": [
@@ -4523,7 +4523,7 @@
         "radar",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T02:37:58Z",
       "workstreams": [
@@ -4581,7 +4581,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-16T02:29:52Z",
       "workstreams": [
@@ -4609,7 +4609,7 @@
         "radar",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T02:29:52Z",
       "workstreams": [
@@ -4639,7 +4639,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
       "ts_iso": "2026-04-16T02:29:51Z",
       "workstreams": [
@@ -4667,7 +4667,7 @@
         "radar",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T02:29:51Z",
       "workstreams": [
@@ -4819,7 +4819,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-15T06:58:39Z",
       "workstreams": [
@@ -4847,7 +4847,7 @@
         "radar",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-15T06:58:39Z",
       "workstreams": [
@@ -4905,7 +4905,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-15T06:57:32Z",
       "workstreams": [
@@ -4933,7 +4933,7 @@
         "radar",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-15T06:57:32Z",
       "workstreams": [
@@ -5047,7 +5047,7 @@
         "registry",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-15T06:55:30Z",
       "workstreams": [
@@ -5075,7 +5075,7 @@
         "radar",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-15T06:55:30Z",
       "workstreams": [
@@ -5130,7 +5130,7 @@
         "odylith-memory-contracts",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Observation rendered.",
       "ts_iso": "2026-04-15T06:39:28Z",
       "workstreams": [
@@ -5157,7 +5157,7 @@
         "odylith-memory-contracts",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Observation rendered.",
       "ts_iso": "2026-04-15T06:38:54Z",
       "workstreams": [
@@ -5184,7 +5184,7 @@
         "odylith-memory-contracts",
         "tribunal"
       ],
-      "meaningful": true,
+      "meaningful": false,
       "summary": "Observation rendered.",
       "ts_iso": "2026-04-15T06:38:18Z",
       "workstreams": [

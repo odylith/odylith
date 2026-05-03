@@ -1,5 +1,14 @@
 - Bug ID: CB-120
 
+- Type: regression
+
+
+
+
+
+
+
+
 - Status: Resolved
 
 - Created: 2026-04-16
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: regression
 
 - Description: The shared tooling dashboard shell rendered internal diagnostic cockpit/status chrome above child surfaces, including the legacy snapshot hero, recorder tape, backend footprint, and chart DOM. The screenshot captured the leak across the Executive Compass surface, and the same shell path affected Radar, Registry, Casebook, Atlas, and Compass when opened through odylith/index.html.
 

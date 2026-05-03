@@ -23,6 +23,13 @@ from odylith.install.destructive_write_scenarios import (
     missing_destructive_write_proofs,
 )
 from odylith.install.lock_hygiene import LOCK_NOTE_THRESHOLD, lock_hygiene_summary
+from odylith.install.casebook_metadata_migration import (
+    MIGRATION_ID as CASEBOOK_METADATA_MIGRATION_ID,
+    casebook_compact_metadata_decision_state,
+    inspect_casebook_compact_metadata_migration,
+    migrate_casebook_compact_metadata,
+)
+from odylith.install.migration_definitions import MigrationDefinition, registered_migration_specs
 from odylith.install.migration_observer import (
     SurfaceMigrationObserverReport,
     observe_surface_migration_needs,
@@ -39,7 +46,6 @@ from odylith.install.state import (
 from odylith.install.upgrade_reporting import latest_upgrade_report
 from odylith.install.value_engine_migration import (
     MIGRATION_ID as VALUE_ENGINE_MIGRATION_ID,
-    TARGET_VERSION as VALUE_ENGINE_TARGET_VERSION,
     inspect_visible_intervention_value_engine_migration,
     migrate_visible_intervention_value_engine,
     record_visible_intervention_value_engine_migration_satisfied,
@@ -77,48 +83,6 @@ STATE_REPAIR_REQUIRED = "repair_required"
 PRODUCT_REPO_ROLE = "product_repo"
 CONSUMER_REPO_ROLE = "consumer_repo"
 _SOURCE_LOCAL = "source-local"
-_REQUIRED_FIXTURES = (
-    "dry_run",
-    "apply",
-    "rerun",
-    "stale_ledger",
-    "skipped_version",
-)
-
-
-@dataclass(frozen=True)
-class MigrationDefinition:
-    """Registered release migration contract."""
-
-    migration_id: str
-    introduced_version: str
-    from_version_range: str
-    to_version_range: str
-    scenario_predicates: tuple[str, ...]
-    required_manifest_fields: tuple[str, ...]
-    write_set: tuple[str, ...]
-    rollback_scope: str
-    validation_commands: tuple[str, ...]
-    automatic: bool = True
-    coverage_fixtures: tuple[str, ...] = _REQUIRED_FIXTURES
-
-    def as_dict(self) -> dict[str, object]:
-        """Return a JSON-ready definition payload."""
-        return {
-            "migration_id": self.migration_id,
-            "introduced_version": self.introduced_version,
-            "from_version_range": self.from_version_range,
-            "to_version_range": self.to_version_range,
-            "scenario_predicates": list(self.scenario_predicates),
-            "required_manifest_fields": list(self.required_manifest_fields),
-            "write_set": list(self.write_set),
-            "rollback_scope": self.rollback_scope,
-            "validation_commands": list(self.validation_commands),
-            "automatic": self.automatic,
-            "coverage_fixtures": list(self.coverage_fixtures),
-        }
-
-
 @dataclass(frozen=True)
 class RepoMigrationScenario:
     """Structured repo state used by migration plans and reports."""
@@ -215,13 +179,12 @@ class MigrationPlan:
         """Return whether a migration_required release has a registered plan path."""
         if not self.release_manifest_migration_required:
             return True
-        return _value_engine_can_satisfy_release_requirement(
-            previous_version=self.previous_version,
-            target_version=self.target_version,
-        ) and any(
-            decision.state in {STATE_SELECTED, STATE_SATISFIED_UNRECORDED, STATE_SKIPPED}
-            and decision.migration_id == VALUE_ENGINE_MIGRATION_ID
-            and "not in target window" not in decision.reason
+        return any(
+            _decision_satisfies_manifest_requirement(
+                decision,
+                previous_version=self.previous_version,
+                target_version=self.target_version,
+            )
             for decision in self.decisions
         )
 
@@ -309,60 +272,34 @@ def _is_source_local(value: object) -> bool:
     return str(value or "").strip().lower() == _SOURCE_LOCAL
 
 
-def _value_engine_can_satisfy_release_requirement(*, previous_version: object, target_version: object) -> bool:
-    return is_at_least(target_version, VALUE_ENGINE_TARGET_VERSION) and (
-        not normalize_version(previous_version) or is_before(previous_version, VALUE_ENGINE_TARGET_VERSION)
+def _decision_satisfies_manifest_requirement(
+    decision: "MigrationDecision",
+    *,
+    previous_version: str,
+    target_version: str,
+) -> bool:
+    if not decision.migration_id or decision.migration_id.startswith("repo-state:"):
+        return False
+    try:
+        definition = _definition_for(decision.migration_id)
+    except KeyError:
+        return False
+    if not is_at_least(target_version, definition.introduced_version):
+        return False
+    if decision.state in {STATE_SELECTED, STATE_SATISFIED_UNRECORDED}:
+        return True
+    if decision.state != STATE_SKIPPED:
+        return False
+    crosses_introduced_version = not normalize_version(previous_version) or is_before(
+        previous_version,
+        definition.introduced_version,
     )
+    return crosses_introduced_version and "target window" not in decision.reason
 
 
 def registered_migrations() -> tuple[MigrationDefinition, ...]:
     """Return every release migration known to the migration runtime."""
-    return (
-        MigrationDefinition(
-            migration_id=LEGACY_ROOT_MIGRATION_ID,
-            introduced_version="0.1.12",
-            from_version_range="legacy odyssey/.odyssey roots present",
-            to_version_range="Odylith layout before runtime activation",
-            scenario_predicates=(SCENARIO_LEGACY_ODYSSEY,),
-            required_manifest_fields=(),
-            write_set=(
-                "odyssey/",
-                ".odyssey/",
-                "odylith/",
-                ".odylith/",
-                ".gitignore",
-            ),
-            rollback_scope="repo root rename/merge migration; recover through Git before runtime activation if interrupted",
-            validation_commands=(
-                "PYTHONPATH=src python -m pytest -q tests/integration/install/test_manager.py -k legacy",
-                "PYTHONPATH=src python -m pytest -q tests/unit/install/test_migration_runtime.py",
-            ),
-        ),
-        MigrationDefinition(
-            migration_id=VALUE_ENGINE_MIGRATION_ID,
-            introduced_version=VALUE_ENGINE_TARGET_VERSION,
-            from_version_range="<0.1.11 or legacy signal-ranker artifacts present",
-            to_version_range=">=0.1.11",
-            scenario_predicates=(
-                SCENARIO_HEALTHY_PINNED_CONSUMER,
-                SCENARIO_ALREADY_CURRENT_CONSUMER,
-                SCENARIO_PRODUCT_REPO_PINNED_DOGFOOD,
-                SCENARIO_RELEASE_MIGRATION_REQUIRED,
-            ),
-            required_manifest_fields=("migration_required", "repo_schema_version"),
-            write_set=(
-                ".odylith/state/migrations/v0.1.11-visible-intervention-value-engine.v1.json",
-                "odylith/runtime/source/intervention-value-adjudication-corpus.v1.json",
-                "odylith/runtime/source/intervention-signal-ranker-*.json",
-                ".odylith/runtime/versions/*/site-packages/odylith/runtime/intervention_engine/signal_ranker.py",
-            ),
-            rollback_scope="repo-local migration writes; runtime rollback remains owned by upgrade activation",
-            validation_commands=(
-                "PYTHONPATH=src python -m pytest -q tests/unit/install/test_migration_runtime.py tests/unit/install/test_value_engine_migration.py",
-                "PYTHONPATH=src python -m pytest -q tests/integration/install/test_manager.py tests/integration/install/test_lifecycle_simulator.py",
-            ),
-        ),
-    )
+    return tuple(MigrationDefinition(**spec) for spec in registered_migration_specs())
 
 
 def classify_repo_migration_scenario(
@@ -772,6 +709,32 @@ def _value_engine_decision(
     )
 
 
+def _casebook_metadata_decision(
+    *,
+    repo_root: Path,
+    previous_version: str,
+    target_version: str,
+    scenario: RepoMigrationScenario,
+) -> MigrationDecision:
+    inspection = inspect_casebook_compact_metadata_migration(
+        repo_root=repo_root,
+        previous_version=previous_version,
+        target_version=target_version,
+    )
+    state, reason = casebook_compact_metadata_decision_state(
+        repo_scenario=scenario.scenario,
+        inspection=inspection,
+    )
+    return _decision(
+        migration_id=CASEBOOK_METADATA_MIGRATION_ID,
+        state=state,
+        reason=reason,
+        ledger_path=inspection.ledger_path,
+        planned_paths=inspection.planned_paths,
+        evidence=inspection.as_dict(),
+    )
+
+
 def _repo_schema_from_manifest(manifest: Mapping[str, object]) -> int:
     try:
         return int(manifest.get("repo_schema_version") or DEFAULT_REPO_SCHEMA_VERSION)
@@ -815,6 +778,7 @@ def plan_release_migrations(
         _legacy_root_decision(repo_root=root, scenario=scenario),
         *_scenario_blockers(scenario),
         _value_engine_decision(repo_root=root, previous_version=previous, target_version=target, runtime_root=runtime, scenario=scenario),
+        _casebook_metadata_decision(repo_root=root, previous_version=previous, target_version=target, scenario=scenario),
     ]
     selected = tuple(decision for decision in decisions if decision.needs_apply())
     blocked = [decision for decision in decisions if decision.blocks_upgrade()]
@@ -825,17 +789,21 @@ def plan_release_migrations(
             reasons=("one or more migration ledgers exist but no longer verify",),
             state=scenario.state,
         )
-    if bool(manifest.get("migration_required")) and not (
-        _value_engine_can_satisfy_release_requirement(previous_version=previous, target_version=target)
-        and any(decision.migration_id for decision in decisions if decision.state != STATE_SKIPPED or decision.reason.startswith("ledger"))
+    if bool(manifest.get("migration_required")) and not any(
+        _decision_satisfies_manifest_requirement(
+            decision,
+            previous_version=previous,
+            target_version=target,
+        )
+        for decision in decisions
     ):
         blocked.append(
-            _decision(
-                migration_id=VALUE_ENGINE_MIGRATION_ID,
+            _repo_state_decision(
+                migration_id="release:migration-required",
                 state=STATE_BLOCKED,
                 reason="release manifest declares migration_required=true, but no registered migration satisfies the target release",
-                ledger_path=decisions[0].ledger_path,
-                planned_paths=decisions[0].planned_paths,
+                planned_paths=("odylith/runtime/source/product-version.v1.json",),
+                rollback_scope="release activation must wait for a registered migration target",
                 evidence={"migration_required": True, "target_version": target},
             )
         )
@@ -884,6 +852,24 @@ def apply_release_migrations(*, plan: MigrationPlan, runtime_root: str | Path | 
                     ledger_path=ledger_path,
                     verification_result={"status": "passed", "legacy_layout_present": legacy_layout_present(repo_root=plan.repo_root)},
                     legacy_summary=summary,
+                )
+            )
+            continue
+        if decision.migration_id == CASEBOOK_METADATA_MIGRATION_ID:
+            casebook_result = migrate_casebook_compact_metadata(
+                repo_root=plan.repo_root,
+                previous_version=plan.previous_version,
+                target_version=plan.target_version,
+            )
+            results.append(
+                MigrationResult(
+                    migration_id=casebook_result.migration_id,
+                    state=STATE_APPLIED if casebook_result.applied else STATE_SKIPPED,
+                    reason=casebook_result.skipped_reason,
+                    written_paths=casebook_result.written_paths,
+                    removed_paths=casebook_result.removed_paths,
+                    ledger_path=casebook_result.ledger_path,
+                    verification_result=dict(casebook_result.verification_result or {"status": "skipped"}),
                 )
             )
             continue
@@ -1185,29 +1171,3 @@ def append_migration_ledger_snapshot(*, repo_root: str | Path, plan: MigrationPl
     path.parent.mkdir(parents=True, exist_ok=True)
     atomic_write_text(path, json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return display_path(repo_root=root, path=path)
-
-
-__all__ = [
-    "MIGRATION_LEDGER_SCHEMA_VERSION",
-    "MigrationDecision",
-    "MigrationDefinition",
-    "MigrationPlan",
-    "MigrationResult",
-    "ReleaseMigrationGateReport",
-    "RepoMigrationScenario",
-    "LEGACY_ROOT_MIGRATION_ID",
-    "apply_repo_state_migrations",
-    "apply_release_migrations",
-    "append_migration_ledger_snapshot",
-    "classify_repo_migration_scenario",
-    "destructive_write_fixture_matrix",
-    "destructive_write_scenarios",
-    "doctor_migration_observability_lines",
-    "legacy_value_engine_payload",
-    "legacy_migration_summary",
-    "migration_plan_payload",
-    "migration_results_payload",
-    "plan_release_migrations",
-    "registered_migrations",
-    "validate_release_migration_gate",
-]

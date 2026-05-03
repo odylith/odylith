@@ -12,7 +12,7 @@ Explore your repo and understand what Odylith sees.
 
 | Say this | What happens |
 |---|---|
-| **"Odylith, show me what you can do"** | Reads source structure, import graph, and manifests. Suggests components, workstreams, diagrams, and issues with the exact command to create each one. `odylith show` |
+| **"Odylith, show me what you can do"** | Reads source structure, import graph, and manifests. Suggests source-backed components, workstreams, diagrams, and issues when evidence exists. In empty or thin repos, points you at greenfield proposal mode instead of inventing source. `odylith show` |
 | **"Odylith, what's the state of the repo?"** | Builds a Compass-derived summary of active workstreams, next actions, risks, and recent activity. `odylith session-brief` |
 | **"Odylith, find everything related to checkout"** | Searches all governed records for matches. Replace `checkout` with whatever you're looking for in your repo. `odylith query "checkout"` |
 | **"Odylith, show me the payments component"** | Resolves one entity into a full context dossier with relations, delivery scopes, and governance snapshot. Replace `payments` with any component, workstream, bug, or diagram ID in your repo. `odylith context payments` |
@@ -26,6 +26,19 @@ Explore your repo and understand what Odylith sees.
 ## Create
 
 Build governance records that give the agent durable context.
+
+### Greenfield proposals
+
+Use these when the repo is new, thin, or the project exists mostly as intent.
+Odylith does not invent source evidence. The active host model authors the
+project-specific proposal in chat, while Odylith owns the evidence contract,
+validation, confirmation gate, topology hygiene, and apply path.
+
+| Say this | What happens |
+|---|---|
+| **"Odylith, build an ecommerce site for me"** | Drafts a confirmation-gated greenfield proposal with backlog candidates, program waves, release plan, planned components, Atlas topology, assumptions, risks, validation obligations, open questions, and exact apply commands. `odylith greenfield propose` |
+| **"Help me govern a physics simulation project"** | Produces a science-aware proposal that distinguishes model, solver, data, experiment runner, visualization, reproducibility, and validation surfaces without inventing scientific claims. |
+| **"Apply this greenfield proposal"** | Validates the accepted proposal, requires confirmation, rejects missing or duplicated Atlas topology, then writes through owned Radar, Registry, Atlas, release-targeting, and Compass memory paths. `odylith greenfield apply --confirm` |
 
 ### Workstreams (Radar)
 
@@ -182,10 +195,10 @@ every matching event.
 
 | Event | What fires | What it does |
 |---|---|---|
-| **Session start** | `session-start` hook | Writes governed brief to auto-memory, checks staleness (>4h triggers background Compass refresh), prints startup summary |
-| **Every prompt** | `prompt-context` hook | Injects Odylith context anchors based on workstream evidence in the user's message |
-| **Every bash command** | `bash-guard` hook | Guards dangerous commands against the active execution contract |
-| **Every file edit** | `post-edit-checkpoint` hook | Async governance sync — validates contracts, renders affected surfaces, mirrors bundle |
+| **Session start** | `session-start` hook | Writes governed brief to auto-memory, checks staleness, and keeps startup quiet unless a real blocker needs operator attention |
+| **Every prompt** | prompt bundle | Routes prompt context, greenfield intent, and earned intervention beats through one low-latency path |
+| **Every bash command** | `bash-guard` hook | Fast-paths read-only commands and guards dangerous commands against the active execution contract |
+| **Every file edit** | `post-edit-checkpoint` hook | Records dirty governance events and refreshes affected surfaces without blocking the edit path |
 | **Subagent spawn** | `subagent-start` hook | Injects the active Odylith slice so the subagent inherits grounding and governance |
 | **Subagent stop** | `subagent-stop` hook | Records the subagent's result in the Compass timeline |
 | **Context compaction** | `pre-compact-snapshot` hook | Writes restart snapshot to auto-memory so the next turn resumes from grounded state |

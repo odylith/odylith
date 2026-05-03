@@ -1228,6 +1228,44 @@ def test_verify_sigstore_asset_suppresses_trusted_root_warning_when_success_stdo
     assert captured.err == ""
 
 
+def test_verify_sigstore_asset_suppresses_timestamped_trusted_root_warning_with_sigstore_ok_stdout(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    asset_path = tmp_path / "release-manifest.json"
+    bundle_path = tmp_path / "release-manifest.json.sigstore.json"
+    asset_path.write_text("{}\n", encoding="utf-8")
+    bundle_path.write_text("{}\n", encoding="utf-8")
+
+    def _fake_run(command, check, capture_output, text, env):  # noqa: ANN001, ARG001
+        return type(
+            "Result",
+            (),
+            {
+                "returncode": 0,
+                "stdout": f"OK: {asset_path}\n",
+                "stderr": (
+                    "[10:18:47] WARNING  Failed to load a trusted root key: unsupported  trust.py:177\n"
+                    "                         key type: 7\n"
+                ),
+            },
+        )()
+
+    monkeypatch.setattr(release_assets.subprocess, "run", _fake_run)
+
+    result = release_assets.verify_sigstore_asset(
+        repo_root=tmp_path,
+        asset_path=asset_path,
+        bundle_path=bundle_path,
+        repo="odylith/odylith",
+    )
+
+    assert result.warnings_suppressed is True
+    assert result.warning_count == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
+
+
 def test_verify_sigstore_asset_suppresses_split_warning_label(
     monkeypatch, tmp_path: Path, capsys
 ) -> None:

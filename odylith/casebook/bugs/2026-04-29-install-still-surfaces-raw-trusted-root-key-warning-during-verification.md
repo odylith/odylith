@@ -1,5 +1,14 @@
 - Bug ID: CB-137
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-29
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Install still surfaces raw trusted-root key warning during verification
 

@@ -102,7 +102,16 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     message = str(payload.get("last_assistant_message", ""))
     session_id = codex_host_shared.hook_session_id(payload)
+    from odylith.runtime.surfaces import codex_host_post_bash_checkpoint
+
+    deferred_governance = codex_host_post_bash_checkpoint.settle_deferred_checkpoint_events(
+        project_dir=args.repo_root,
+        session_id=session_id,
+    )
     if host_intervention_support.suppress_prompt_live_narration(assistant_summary=message):
+        governance_status = str((deferred_governance or {}).get("systemMessage", "")).strip()
+        if governance_status:
+            sys.stdout.write(json.dumps(host_surface_runtime.stop_payload(system_message=governance_status)))
         return 0
     host_surface_runtime.confirm_assistant_chat_delivery(
         repo_root=args.repo_root,
@@ -159,14 +168,18 @@ def main(argv: list[str] | None = None) -> int:
             decision=decision,
             render_surface="codex_stop",
         )
-    if rendered:
+    system_message = host_surface_runtime.compose_checkpoint_system_message(
+        live_intervention=rendered,
+        governance_status=(deferred_governance or {}).get("systemMessage", ""),
+    )
+    if system_message:
         sys.stdout.write(
             json.dumps(
                 host_surface_runtime.stop_payload(
-                    system_message=rendered,
+                    system_message=system_message,
                     block_for_visible_delivery=not visible_delivery_runtime.visible_delivery_already_present(
                         last_assistant_message=message,
-                        visible_text=rendered,
+                        visible_text=system_message,
                     ),
                 )
             )

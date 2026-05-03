@@ -1,5 +1,14 @@
 - Bug ID: CB-049
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Open
 
 - Created: 2026-04-03
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Several live benchmark scenarios now explicitly say "repair if
   needed, otherwise preserve current truth and stop," but the benchmark corpus

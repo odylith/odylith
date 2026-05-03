@@ -1087,6 +1087,34 @@
       ],
       "subcomponents": [],
       "product_layer": "cli_bootstrap"
+    },
+    {
+      "component_id": "domain-intelligence",
+      "name": "Domain Intelligence",
+      "kind": "library",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [],
+      "path_prefixes": [
+        "src/odylith/runtime/domain_intelligence"
+      ],
+      "workstreams": [
+        "B-141",
+        "B-142"
+      ],
+      "diagrams": [
+        "D-043"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Provider-free domain-intelligence runtime that turns greenfield consumer intent into confirmation-gated governance proposals with backlog, program waves, release plan, planned Registry components, draft Atlas topology, assumptions, risks, and validation obligations.",
+      "why_tracked": "Owns the consumer-lane boundary between missing source evidence and useful greenfield guidance, so Claude, Codex, and future hosts route broad project intents through one low-latency Odylith runtime path instead of refusing or inventing source-backed truth.",
+      "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "subcomponents": [],
+      "product_layer": "intelligence"
     }
   ]
 }

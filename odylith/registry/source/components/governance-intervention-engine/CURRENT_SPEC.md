@@ -15,7 +15,7 @@
   platform seamless" may rank voice or integration inspection affordances, but
   it must still stay silent when no hard law is violated and no immediate
   user-visible value is earned.
-Last updated: 2026-04-28
+Last updated: 2026-05-02
 
 
 Last updated (UTC): 2026-04-28
@@ -794,13 +794,22 @@ parallel payload schemas.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-05-02 · Implementation:** B-141 activation pass keeps source-local memory on Lance/Tantivy, preserves visible Assist recovery, and leaves consumer pinned runtimes on the managed feature pack.
+  - Scope: B-141
+  - Evidence: odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md, odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md +2 more
+- **2026-05-02 · Implementation:** B-140/B-141 v0.1.13 dev-maintainer surfaces now keep source-local proof distinct from pinned 0.1.12 and default Release Targets to current/next aliases.
+  - Scope: B-140, B-141
+  - Evidence: odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md, src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py +1 more
+- **2026-05-02 · Implementation:** B-141 source-local QA tightened Compass Release Targets to current/next aliases, restored Codex live intervention checkpoint output, and reran browser/migration proof for v0.1.13.
+  - Scope: B-141
+  - Evidence: odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md, src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py +1 more
+- **2026-05-01 · Implementation:** Restored substrate-backed quiet prompt and SessionStart fast paths for B-141 while keeping conversation bundles off the low-signal path.
+  - Scope: B-141
+  - Evidence: agents/bin/odylith-host-launcher.py, src/odylith/runtime/surfaces/claude_host_prompt_bundle.py +5 more
 - **2026-04-16 · Implementation:** Hardened intervention chat-visible delivery with a shared broker, assistant-render-required proof states, transcript confirmation, D-038 proposal visibility gating, and focused runtime/browser validation.
   - Scope: B-096
   - Evidence: src/odylith/runtime/intervention_engine/visibility_broker.py, tests/integration/runtime/test_intervention_visibility_browser.py +1 more
 - **2026-04-15 · Implementation:** Completed intervention chat-visibility hardening: Codex and Claude now report assistant-visible readiness, visible-intervention renders Observation/Proposal/Assist Markdown, Stop Assist recovers from validation proof without claiming artifacts, and CB-121 plus B-096 governance records were updated.
-  - Scope: B-096
-  - Evidence: odylith/casebook/bugs/2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md, src/odylith/runtime/intervention_engine/host_surface_runtime.py +1 more
-- **2026-04-15 · Implementation:** Fixed intervention chat visibility contract: assistant-render fallback, visible-intervention CLI, Codex Bash-only hook truth, Stop one-shot Assist recovery, and CB-121 casebook capture.
   - Scope: B-096
   - Evidence: odylith/casebook/bugs/2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md, src/odylith/runtime/intervention_engine/host_surface_runtime.py +1 more
 <!-- registry-requirements:end -->

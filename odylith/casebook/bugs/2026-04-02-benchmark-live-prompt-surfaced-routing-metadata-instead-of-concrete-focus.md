@@ -1,5 +1,14 @@
 - Bug ID: CB-039
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-02
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The live benchmark prompt for `odylith_on` exposed compact
   routing metadata such as `selection_state`, `selected_counts`, and raw route

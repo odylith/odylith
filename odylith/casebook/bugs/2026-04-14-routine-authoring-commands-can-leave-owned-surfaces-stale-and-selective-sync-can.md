@@ -1,5 +1,14 @@
 - Bug ID: CB-112
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Open
 
 - Created: 2026-04-14
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Routine authoring commands can leave owned surfaces stale and selective sync can skip direct surface visibility refresh
 

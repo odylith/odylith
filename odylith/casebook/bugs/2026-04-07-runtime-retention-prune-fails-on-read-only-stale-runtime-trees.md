@@ -1,5 +1,14 @@
 - Bug ID: CB-063
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-07
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Successful consumer install and upgrade can still fail at the
   retention-cleanup tail when an older staged runtime under

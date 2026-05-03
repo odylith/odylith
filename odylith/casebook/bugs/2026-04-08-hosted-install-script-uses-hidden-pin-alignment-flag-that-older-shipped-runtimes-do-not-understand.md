@@ -1,5 +1,14 @@
 - Bug ID: CB-074
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-08
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Canonical `v0.1.10` release preflight failed in the hosted
   upgrade smoke because the generated `install.sh` called

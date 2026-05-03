@@ -1,5 +1,14 @@
 - Bug ID: CB-111
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-14
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Consumer-lane routine governance UX could still leak backend
   plumbing because forwarded Atlas help surfaced `cli.py` / `__main__.py`

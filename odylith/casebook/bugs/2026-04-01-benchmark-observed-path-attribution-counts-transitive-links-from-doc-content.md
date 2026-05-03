@@ -1,5 +1,14 @@
 - Bug ID: CB-031
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-01
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The live benchmark runner counted repo paths mentioned inside
   raw file-content output as observed surfaces, so reading one selected doc

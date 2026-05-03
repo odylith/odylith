@@ -1,5 +1,14 @@
 - Bug ID: CB-018
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-03-29
@@ -10,7 +19,6 @@
 
 - Reproducibility: Consistent
 
-- Type: Product
 
 - Description: Compass live 24h and 48h views could hide the current self-host
   release-posture risk even when the runtime snapshot counted it as a critical

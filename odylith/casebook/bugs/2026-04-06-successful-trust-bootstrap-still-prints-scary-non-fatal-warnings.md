@@ -1,5 +1,14 @@
 - Bug ID: CB-061
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-06
@@ -8,7 +17,6 @@
 
 - Reproducibility: Medium
 
-- Type: Product
 
 - Description: Successful Sigstore/TUF verification during install or repair
   can still print scary non-fatal warnings such as offline-mode or unsupported

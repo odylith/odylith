@@ -3,6 +3,7 @@ from __future__ import annotations
 import io
 import json
 import os
+import re
 import subprocess
 import sys
 import tarfile
@@ -23,6 +24,11 @@ from odylith.install.managed_runtime import (
     supported_platform_labels,
     supported_managed_runtime_platforms,
     supported_platform_slugs,
+)
+
+_LEGACY_0_1_12_FALLBACK_PYTHON_RE = re.compile(
+    r'^\s*exec "(?P<python>/[^"]+)"(?: -I)? -m odylith\.cli "\$@"$',
+    re.MULTILINE,
 )
 
 
@@ -146,6 +152,21 @@ def test_ensure_launcher_points_at_repo_local_runtime(tmp_path: Path) -> None:
     assert "runtime/current/bin/python" in bootstrap_text
     assert "Odylith bootstrap could not find a trusted repo-local runtime." in bootstrap_text
     assert runtime._launcher_fallback_python(bootstrap) == (version_root / "bin" / "python").resolve()  # noqa: SLF001
+
+
+def test_generated_launchers_stay_parseable_by_0_1_12_health_checks(tmp_path: Path) -> None:
+    repo_root = _repo_root(tmp_path)
+    version_root = _make_runtime(repo_root)
+    fallback_python = version_root / "bin" / "python"
+
+    launcher_text = runtime._launcher_script(fallback_python=fallback_python)  # noqa: SLF001
+    bootstrap_text = runtime._bootstrap_launcher_script(fallback_python=fallback_python)  # noqa: SLF001
+
+    for text in (launcher_text, bootstrap_text):
+        match = _LEGACY_0_1_12_FALLBACK_PYTHON_RE.search(text)
+        assert match is not None
+        assert Path(match.group("python")) == fallback_python
+        assert f'odylith_exec_odylith "{fallback_python}" isolated "$@"' in text
 
 
 def test_legacy_consumer_launcher_bootstraps_plain_upgrade_via_installer(tmp_path: Path) -> None:
@@ -412,6 +433,81 @@ def test_launcher_runs_current_managed_runtime_via_current_symlink(tmp_path: Pat
     assert completed.returncode == 0
     assert (repo_root / "runtime-invocation.txt").read_text(encoding="utf-8").strip() == (
         "-I -m odylith.cli version --repo-root ."
+    )
+
+
+def test_launcher_dispatches_host_hooks_without_cli_import(tmp_path: Path) -> None:
+    repo_root = _repo_root(tmp_path)
+    version_root = repo_root / ".odylith" / "runtime" / "versions" / "1.2.3"
+    _seed_managed_runtime(version_root, verification={"wheel_sha256": "wheel-1.2.3"})
+    runtime_python = version_root / "bin" / "python"
+    runtime_python.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                'printf "%s\\n" "$*" > "$PWD/host-hook-invocation.txt"',
+                "exit 0",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    runtime_python.chmod(0o755)
+    _trust_managed_runtime(version_root)
+
+    runtime.switch_runtime(repo_root=repo_root, target=version_root)
+    runtime.ensure_launcher(repo_root=repo_root, fallback_python=runtime_python)
+
+    completed = subprocess.run(
+        [str(repo_root / ".odylith" / "bin" / "odylith"), "codex", "prompt-context", "--repo-root", "."],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0
+    assert (repo_root / "host-hook-invocation.txt").read_text(encoding="utf-8").strip() == (
+        "-I -m odylith.runtime.surfaces.codex_host_prompt_context --repo-root ."
+    )
+
+
+def test_bootstrap_launcher_dispatches_host_hooks_without_cli_import(tmp_path: Path) -> None:
+    repo_root = _repo_root(tmp_path)
+    version_root = repo_root / ".odylith" / "runtime" / "versions" / "1.2.3"
+    _seed_managed_runtime(version_root, verification={"wheel_sha256": "wheel-1.2.3"})
+    runtime_python = version_root / "bin" / "python"
+    runtime_python.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                'printf "%s\\n" "$*" > "$PWD/bootstrap-host-hook-invocation.txt"',
+                "exit 0",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    runtime_python.chmod(0o755)
+    _trust_managed_runtime(version_root)
+
+    runtime.switch_runtime(repo_root=repo_root, target=version_root)
+    runtime.ensure_launcher(repo_root=repo_root, fallback_python=runtime_python)
+    (repo_root / ".odylith" / "bin" / "odylith").unlink()
+
+    completed = subprocess.run(
+        [str(repo_root / ".odylith" / "bin" / "odylith-bootstrap"), "claude", "prompt-teaser", "--repo-root", "."],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0
+    assert (repo_root / "bootstrap-host-hook-invocation.txt").read_text(encoding="utf-8").strip() == (
+        "-I -m odylith.runtime.surfaces.claude_host_prompt_teaser --repo-root ."
     )
 
 

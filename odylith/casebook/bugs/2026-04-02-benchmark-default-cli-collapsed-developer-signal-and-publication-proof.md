@@ -1,5 +1,14 @@
 - Bug ID: CB-033
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-02
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The default `odylith benchmark --repo-root .` command expanded
   into the full warm-plus-cold, multi-mode publication matrix. That made the

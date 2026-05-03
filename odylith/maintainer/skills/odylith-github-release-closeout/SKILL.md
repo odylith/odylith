@@ -9,6 +9,8 @@ Do not mirror this skill into consumer-safe shared skills, `.agents/skills`,
 ## Rules
 
 - Run closeout in draft mode before any public GitHub write.
+- Run local Casebook release closeout before public GitHub closeout; do not
+  hand-edit `FixedPendingRelease` records to `Closed`.
 - Do not close issues before the release is marked shipped locally and the
   public GitHub release artifact is available.
 - P0/P1 linked issues must have validation evidence in Casebook before closeout
@@ -24,6 +26,15 @@ Do not mirror this skill into consumer-safe shared skills, `.agents/skills`,
   --repo odylith/odylith --release current --json
 ./.odylith/bin/odylith github issue release-closeout \
   --repo odylith/odylith --release current --apply-github --json
+```
+
+Local Casebook status closeout:
+
+```bash
+./.odylith/bin/odylith release casebook-closeout \
+  --release current --json
+./.odylith/bin/odylith release casebook-closeout \
+  --release current --apply --json
 ```
 
 ## Closeout Checklist

@@ -1,5 +1,14 @@
 - Bug ID: CB-021
 
+- Type: Tooling
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-03-29
@@ -10,7 +19,6 @@
 
 - Reproducibility: Intermittent
 
-- Type: Tooling
 
 - Description: Odylith Context Engine daemon safety was hardened only in the
   CLI-side client path. The store-side daemon client still trusted stale pid

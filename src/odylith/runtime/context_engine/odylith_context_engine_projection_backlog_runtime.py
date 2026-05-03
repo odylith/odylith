@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from odylith.runtime.common import casebook_metadata
 from odylith.runtime.common.casebook_bug_ids import BUG_ID_FIELD, resolve_casebook_bug_id
 
 
@@ -537,6 +538,8 @@ def load_bug_snapshot(
         status = context_engine_store.canonicalize_bug_status(str(row.get("Status", "")).strip() or str(fields.get("Status", "")).strip())
         if status:
             fields["Status"] = status
+        if fields.get("Type"):
+            fields["Type"] = casebook_metadata.canonical_casebook_type(fields["Type"])
         components_raw = str(row.get("Components", "")).strip() or str(fields.get("Components Affected", "")).strip()
         components = context_engine_store._parse_component_tokens(components_raw)
         path_refs = context_engine_store._extract_path_refs(

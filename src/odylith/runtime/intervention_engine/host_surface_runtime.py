@@ -429,6 +429,31 @@ def claude_prompt_payload(
     return payload
 
 
+def claude_prompt_bundle_payload(
+    *,
+    additional_context: str = "",
+    system_message: str = "",
+    include_assist_in_visible_fallback: bool = False,
+) -> dict[str, Any]:
+    """Return Claude UserPromptSubmit JSON for bundled context and visible teaser."""
+
+    payload: dict[str, Any] = {}
+    message = visible_delivery_runtime.canonical_visible_delivery_text(system_message)
+    context = visible_delivery_runtime.developer_context_with_visible_fallback(
+        developer_context=additional_context,
+        visible_text=message,
+        include_assist_in_visible_fallback=include_assist_in_visible_fallback,
+    )
+    if context:
+        payload["hookSpecificOutput"] = {
+            "hookEventName": "UserPromptSubmit",
+            "additionalContext": context,
+        }
+    if message:
+        payload["systemMessage"] = message
+    return payload
+
+
 def chat_visible_text(
     payload: Mapping[str, Any],
     *,

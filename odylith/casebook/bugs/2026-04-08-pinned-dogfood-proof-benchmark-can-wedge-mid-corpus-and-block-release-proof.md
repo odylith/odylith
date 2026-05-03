@@ -1,5 +1,14 @@
 - Bug ID: CB-069
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Open
 
 - Created: 2026-04-08
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The pinned-dogfood `proof` benchmark lane can wedge mid-corpus
   during release proof. `./.odylith/bin/odylith benchmark --repo-root .

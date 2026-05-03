@@ -97,19 +97,34 @@ def _claude_static_readiness(repo_root: Path) -> dict[str, Any]:
         repo_root=repo_root,
         probe_version=False,
     )
+    prompt_bundle_hook = bool(snapshot.supports_prompt_bundle_hook)
+    prompt_context_hook = bool(snapshot.supports_prompt_context_hook)
+    prompt_teaser_hook = bool(snapshot.supports_prompt_teaser_hook)
+    prompt_submit_hook = prompt_bundle_hook or (prompt_context_hook and prompt_teaser_hook)
     checks = {
         "launcher": bool(snapshot.launcher_present),
         "repo_guidance": bool(snapshot.repo_claude_md_present or snapshot.repo_agents_md_present),
         "project_settings": bool(snapshot.project_settings_present),
-        "prompt_context_hook": bool(snapshot.supports_prompt_context_hook),
-        "prompt_teaser_hook": bool(snapshot.supports_prompt_teaser_hook),
+        "prompt_submit_hook": prompt_submit_hook,
+        "prompt_bundle_hook": prompt_bundle_hook,
+        "prompt_context_hook": prompt_context_hook,
+        "prompt_teaser_hook": prompt_teaser_hook,
         "post_edit_checkpoint_hook": bool(snapshot.supports_post_edit_checkpoint_hook),
         "post_bash_checkpoint_hook": bool(snapshot.supports_post_bash_checkpoint_hook),
         "stop_summary_hook": bool(snapshot.supports_stop_summary_hook),
     }
+    required_checks = {
+        "launcher": checks["launcher"],
+        "repo_guidance": checks["repo_guidance"],
+        "project_settings": checks["project_settings"],
+        "prompt_submit_hook": checks["prompt_submit_hook"],
+        "post_edit_checkpoint_hook": checks["post_edit_checkpoint_hook"],
+        "post_bash_checkpoint_hook": checks["post_bash_checkpoint_hook"],
+        "stop_summary_hook": checks["stop_summary_hook"],
+    }
     return {
         "host_family": "claude",
-        "ready": all(checks.values()),
+        "ready": all(required_checks.values()),
         "checks": checks,
         "activation_note": "Claude project hooks are statically ready; restart the session if this repo changed after the current chat opened.",
     }

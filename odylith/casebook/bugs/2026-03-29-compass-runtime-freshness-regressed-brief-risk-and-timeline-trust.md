@@ -1,5 +1,14 @@
 - Bug ID: CB-019
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-03-29
@@ -8,7 +17,6 @@
 
 - Reproducibility: Intermittent
 
-- Type: Product
 
 - Description: Compass could render stale global standup briefs, undercount
   critical risks, and show empty-looking audit timelines even though current

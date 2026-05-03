@@ -1,5 +1,14 @@
 - Bug ID: CB-093
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-09
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Compass could keep reusing a seemingly fresh runtime snapshot
   after live release-assignment source or execution-wave program source had

@@ -1,5 +1,14 @@
 - Bug ID: CB-028
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-01
@@ -8,7 +17,6 @@
 
 - Reproducibility: Always
 
-- Type: Product
 
 - Description: The benchmark acceptance gate could return a provisional pass
   even when both live compared lanes failed, timed out, or never reached a

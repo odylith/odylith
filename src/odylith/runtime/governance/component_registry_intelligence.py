@@ -41,6 +41,7 @@ from odylith.runtime.common.consumer_profile import truth_root_path
 from odylith.runtime.common.guidance_paths import has_project_guidance
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.governance import workstream_inference
+from odylith.runtime.governance import component_registry_activity_policy
 from odylith.runtime.governance import component_registry_candidate_policy
 from odylith.runtime.governance.component_registry_path_aliases import equivalent_component_artifact_tokens
 from odylith.runtime.governance.component_registry_path_aliases import canonical_component_artifact_token
@@ -55,7 +56,6 @@ DEFAULT_STREAM_PATH = agent_runtime_contract.AGENT_STREAM_PATH
 DEFAULT_TRACEABILITY_GRAPH_PATH = "odylith/radar/traceability-graph.v1.json"
 DEFAULT_WORKSPACE_ACTIVITY_WINDOW_HOURS = 48
 _CASEBOOK_BUG_PATH_PREFIX = "odylith/casebook/bugs/"
-_UNIT_RUNTIME_TEST_PREFIX = "tests/unit/runtime/"
 
 
 def default_manifest_path(*, repo_root: Path) -> Path:
@@ -81,19 +81,6 @@ _PRODUCT_LAYER_NORMALIZATION_VERSION = "consumer-distro-suffix-v1"
 _RADAR_IDEA_CONTRACT_VERSION = f"v0.1.11:{backlog_contract.IDEA_SPEC_CACHE_VERSION}"
 _COMPONENT_INDEX_CACHE_VERSION = "v2"
 _COMPONENT_REPORT_CACHE_VERSION = "v5"
-_ACTIVE_SURFACE_MODULE_STEMS: frozenset[str] = frozenset(
-    {
-        "compass_standup_brief_batch",
-        "compass_standup_brief_maintenance",
-        "compass_standup_brief_narrator",
-        "compass_standup_brief_substrate",
-        "compass_standup_brief_voice_validation",
-        "tooling_dashboard_cheatsheet_presenter",
-        "tooling_dashboard_release_presenter",
-        "tooling_dashboard_shell_presenter",
-        "tooling_dashboard_welcome_presenter",
-    }
-)
 _SKILL_TRIGGER_HEADING_RE = re.compile(r"^###\s+(.+?)\s*$", re.I)
 _SKILL_TRIGGER_ITEM_RE = re.compile(r"^\s*-\s*`([^`]+)`\s*$")
 _SKILL_TRIGGER_PHRASE_RE = re.compile(r'^\s*-\s*"([^"]+)"\s*$')
@@ -124,6 +111,7 @@ _PRODUCT_LAYERS: frozenset[str] = frozenset(
         "cli_bootstrap",
         "optional_remote_control_plane",
         "consumer_distro",
+        "application",
     }
 )
 _FIRST_CLASS_QUALIFICATIONS: frozenset[str] = frozenset({"candidate", "curated"})
@@ -1841,7 +1829,12 @@ def is_meaningful_event(
     summary: str = "",
     kind: str = "",
 ) -> bool:
+    kind_token = str(kind or "").strip().lower()
+    if component_registry_activity_policy.is_host_visibility_event(kind_token):
+        return False
     summary_token = str(summary or "").strip().lower()
+    if kind_token == "subagent_stop" and not summary_token:
+        return False
     if any(summary_token.startswith(prefix) for prefix in _GOVERNANCE_NON_MEANINGFUL_SUMMARY_PREFIXES):
         return False
     if any(normalize_workstream_id(token) for token in workstreams):
@@ -2027,37 +2020,12 @@ def map_stream_events(
     return rows, diagnostics
 
 
-_RETIRED_SURFACE_MARKER = "sen" "tinel"
-
-
-def _surface_module_stem_from_activity_path(path: str) -> str:
-    token = str(path or "").strip().replace("\\", "/").lower()
-    if token.startswith("src/odylith/runtime/surfaces/") and token.endswith(".py"):
-        return Path(token).stem
-    if token.startswith(_UNIT_RUNTIME_TEST_PREFIX) and token.endswith(".py"):
-        stem = Path(token).stem
-        if stem.startswith("test_"):
-            return stem.removeprefix("test_")
-    return ""
-
-
-def _is_retired_surface_module_path(path: str) -> bool:
-    stem = _surface_module_stem_from_activity_path(path)
-    if not stem:
-        return False
-    governed_family = stem.startswith("compass_standup_brief_")
-    shell_presenter_family = stem.startswith("tooling_dashboard_") and stem.endswith("_presenter")
-    if not governed_family and not shell_presenter_family:
-        return False
-    return stem not in _ACTIVE_SURFACE_MODULE_STEMS
-
-
 def _normalize_workspace_activity_path(*, repo_root: Path, token: str) -> str:
     normalized = workstream_inference.normalize_repo_token(str(token or "").strip(), repo_root=repo_root)
     normalized = normalized.lstrip("./")
-    if _RETIRED_SURFACE_MARKER in normalized.lower():
+    if component_registry_activity_policy.hides_retired_surface_marker(normalized):
         return ""
-    if _is_retired_surface_module_path(normalized):
+    if component_registry_activity_policy.is_retired_surface_module_path(normalized):
         return ""
     if _is_deindexed_missing_casebook_bug_path(repo_root=repo_root, path=normalized):
         return ""

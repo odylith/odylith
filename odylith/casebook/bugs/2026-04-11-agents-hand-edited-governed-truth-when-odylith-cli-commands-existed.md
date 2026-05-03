@@ -1,6 +1,15 @@
 - Bug ID: CB-104
 
-- Status: In progress
+- Type: AgentGovernancePolicy
+
+
+
+
+
+
+
+
+- Status: InProgress
 
 - Created: 2026-04-11
 
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Agent-Governance-Policy
 
 - Description: During the B-084 and B-085 closeout slice, the agent hit a
   blocked `odylith sync --check-only` run that complained about two missing

@@ -1065,7 +1065,7 @@ def _unavailable_brief_message(
 ) -> str:
     token = str(reason or "").strip().lower()
     if token == "skipped_not_worth_calling":
-        return "Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite."
+        return "Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
     if token == "provider_deferred":
         return "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
     if token == "rate_limited":
@@ -1104,7 +1104,7 @@ def _unavailable_brief_title(
 ) -> str:
     token = str(reason or "").strip().lower()
     if token == "skipped_not_worth_calling":
-        return "Brief stayed on wallet-safe local truth"
+        return "Brief reused last validated narration"
     if token == "provider_deferred":
         return "Fresh brief still warming"
     if token == "rate_limited":

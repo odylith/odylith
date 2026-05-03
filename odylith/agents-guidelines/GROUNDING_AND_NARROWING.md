@@ -4,6 +4,12 @@
 - CLI-first is non-negotiable for both Codex and Claude Code. Remove all hand-authoring for places where Odylith CLI should be doing the heavy-lifting. When an Odylith CLI command exists for an operation, you must call the CLI command and you must not hand-edit governed files the CLI owns. Hand-authoring governed truth where a CLI exists is a hard policy violation, not a stylistic preference. The authoritative policy, CLI surface enumeration, allowed hand-edit surfaces, and failure-mode handling live in `odylith/agents-guidelines/CLI_FIRST_POLICY.md`, anchored by Casebook learning `CB-104`. The rule travels through routed `spawn_agent` leaves on Codex and Task-tool subagents on Claude Code, so delegated work inherits the same contract.
 
 - In Odylith repos, Codex and Claude Code should reach for the repo-local Odylith entrypoint before agent-native repo search.
+- Treat startup grounding as a serial gate, not a batch member. Run
+  `./.odylith/bin/odylith start --repo-root .` first, wait for it to finish,
+  and only then run `odylith context --repo-root . <ref>` when the user, the
+  start output, or prior governed truth gives a precise anchor.
+- Do not fan out `odylith context`, `odylith query`, `git status`, broad repo
+  search, or other repo-inspection commands alongside `odylith start`.
 - Use raw repo search only to seed Odylith when the prompt and worktree provide no usable anchors, or when Odylith explicitly signals widening.
 - Grounding narrows evidence; in consumer Odylith-fix requests it is not permission to patch `odylith/` or run repair, sync, upgrade, or dashboard-refresh flows.
 - In consumer commentary, describe the work in task terms. Keep startup, fallback, and packet-selection internals implicit. If an earlier repo-local start attempt degraded but work can continue, do not narrate that history. Do not surface routine `odylith start`, `odylith context`, or `odylith query` commands in progress updates, and never use control-plane receipt labels. Mention Odylith during the work only when the user explicitly asks for the command, a real block requires it, or a lane distinction matters.

@@ -14,6 +14,7 @@ from odylith.runtime.surfaces import claude_host_stop_summary
 from odylith.runtime.surfaces import codex_host_post_bash_checkpoint
 from odylith.runtime.surfaces import codex_host_prompt_context
 from odylith.runtime.surfaces import codex_host_stop_summary
+from odylith.runtime.surfaces import host_intervention_support
 
 
 def _shared_checkpoint_bundle() -> dict[str, object]:
@@ -128,17 +129,7 @@ def test_cross_host_prompt_cli_payload_stays_consistent_for_same_teaser(
     bundle = {"intervention_bundle": intervention}
 
     monkeypatch.setattr(
-        codex_host_prompt_context.conversation_surface,
-        "build_conversation_bundle",
-        lambda **_: bundle,
-    )
-    monkeypatch.setattr(
-        claude_host_prompt_context.conversation_surface,
-        "build_conversation_bundle",
-        lambda **_: bundle,
-    )
-    monkeypatch.setattr(
-        claude_host_prompt_teaser.claude_host_prompt_context.conversation_surface,
+        host_intervention_support.conversation_surface,
         "build_conversation_bundle",
         lambda **_: bundle,
     )
@@ -181,7 +172,7 @@ def test_cross_host_prompt_cli_payload_stays_consistent_for_same_teaser(
     assert not any(row.get("kind") == "assist_closeout" for row in codex_events)
 
 
-def test_cross_host_checkpoint_cli_dispatch_stays_silent_for_successful_checkpoints(
+def test_cross_host_checkpoint_cli_dispatch_surfaces_codex_live_only_and_keeps_claude_silent(
     monkeypatch,
     tmp_path: Path,
     capsys,
@@ -218,7 +209,14 @@ def test_cross_host_checkpoint_cli_dispatch_stays_silent_for_successful_checkpoi
     )
 
     assert cli.main(["codex", "post-bash-checkpoint", "--repo-root", str(tmp_path)]) == 0
-    assert capsys.readouterr().out == ""
+    codex_payload = json.loads(capsys.readouterr().out)
+    codex_context = codex_payload["hookSpecificOutput"]["additionalContext"]
+    assert codex_payload["hookSpecificOutput"]["hookEventName"] == "PostToolUse"
+    assert "Odylith visible delivery recovery:" in codex_context
+    assert "Odylith Observation:" in codex_context
+    assert "Odylith Proposal:" in codex_context
+    assert "Odylith Assist:" not in codex_context
+    assert "Odylith Assist:" not in codex_payload["systemMessage"]
 
     monkeypatch.setattr(
         "sys.stdin",

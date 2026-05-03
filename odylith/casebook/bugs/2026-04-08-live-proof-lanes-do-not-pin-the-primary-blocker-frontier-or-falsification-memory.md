@@ -1,5 +1,14 @@
 - Bug ID: CB-077
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Fixed: 2026-04-08
@@ -10,7 +19,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Proof Lane ID: proof-state-control-plane
 

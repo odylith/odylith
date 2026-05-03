@@ -1,5 +1,14 @@
 - Bug ID: CB-037
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-02
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The diagnostic benchmark lane was supposed to stay packet and
   prompt only, but a post-run singleton latency probe reran `odylith_on`

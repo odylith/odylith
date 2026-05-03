@@ -1,5 +1,14 @@
 - Bug ID: CB-094
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-09
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: Compass `Current Workstreams` could hide the very lanes that
   were actively targeted in the current release or active execution wave.

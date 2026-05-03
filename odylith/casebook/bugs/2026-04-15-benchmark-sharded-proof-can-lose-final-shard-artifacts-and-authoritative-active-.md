@@ -1,5 +1,14 @@
 - Bug ID: CB-113
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Open
 
 - Created: 2026-04-15
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The sharded `proof` benchmark lane can finish or abandon shard work
   without leaving the authoritative final shard artifact. During the 12-way

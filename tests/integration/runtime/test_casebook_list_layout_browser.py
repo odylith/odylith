@@ -107,6 +107,46 @@ def _assert_casebook_list_layout_stress(base_url: str, context) -> None:  # noqa
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
+def _assert_casebook_detail_left_gutter(base_url: str, context, *, compact: bool = False) -> None:  # noqa: ANN001
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + _CASEBOOK_URL, wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    casebook = page.frame_locator("#frame-casebook")
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator("#detailPane .detail-summary").wait_for(timeout=15000)
+    layout = casebook.locator("body").evaluate(
+        """() => {
+          const shell = document.querySelector(".shell");
+          const panel = document.querySelector(".detail-panel");
+          const detail = document.querySelector("#detailPane");
+          const summary = document.querySelector("#detailPane .detail-summary");
+          if (!shell || !panel || !detail || !summary) {
+            throw new Error("Casebook detail layout nodes are missing");
+          }
+          const box = (node) => node.getBoundingClientRect();
+          const shellBox = box(shell);
+          const panelBox = box(panel);
+          const detailBox = box(detail);
+          const summaryBox = box(summary);
+          return {
+            shellLeft: Number(shellBox.left.toFixed(2)),
+            panelLeft: Number(panelBox.left.toFixed(2)),
+            detailLeft: Number(detailBox.left.toFixed(2)),
+            summaryLeft: Number(summaryBox.left.toFixed(2)),
+            detailPaddingLeft: Number.parseFloat(window.getComputedStyle(detail).paddingLeft) || 0,
+          };
+        }"""
+    )
+
+    expected_padding = 10 if compact else 12
+    assert layout["detailPaddingLeft"] <= expected_padding
+    assert layout["detailLeft"] - layout["panelLeft"] <= expected_padding + 2
+    assert layout["summaryLeft"] - layout["panelLeft"] <= expected_padding + 2
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
 def test_casebook_list_long_content_wraps_on_desktop(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
     _assert_casebook_list_layout_stress(base_url, context)
@@ -115,3 +155,13 @@ def test_casebook_list_long_content_wraps_on_desktop(browser_context) -> None:  
 def test_casebook_list_long_content_wraps_in_compact_view(compact_browser_context) -> None:  # noqa: ANN001
     base_url, context = compact_browser_context
     _assert_casebook_list_layout_stress(base_url, context)
+
+
+def test_casebook_detail_uses_compact_left_gutter_on_desktop(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    _assert_casebook_detail_left_gutter(base_url, context)
+
+
+def test_casebook_detail_uses_compact_left_gutter_in_compact_view(compact_browser_context) -> None:  # noqa: ANN001
+    base_url, context = compact_browser_context
+    _assert_casebook_detail_left_gutter(base_url, context, compact=True)

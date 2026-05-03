@@ -126,6 +126,7 @@ def test_resolve_host_capabilities_for_claude_requires_visible_intervention_hook
             supports_subagent_hooks=True,
             supports_pre_compact_hook=True,
             supports_statusline_command=True,
+            supports_prompt_bundle_hook=True,
             supports_prompt_context_hook=True,
             supports_prompt_teaser_hook=True,
             supports_post_edit_checkpoint_hook=True,
@@ -141,6 +142,7 @@ def test_resolve_host_capabilities_for_claude_requires_visible_intervention_hook
     capabilities = host_runtime.resolve_host_capabilities("claude_cli", repo_root="/tmp/repo")
 
     assert capabilities["supports_project_hooks"] is True
+    assert capabilities["supports_prompt_bundle_hook"] is True
     assert capabilities["supports_prompt_context_hook"] is True
     assert capabilities["supports_prompt_teaser_hook"] is True
     assert capabilities["supports_post_edit_checkpoint_hook"] is True

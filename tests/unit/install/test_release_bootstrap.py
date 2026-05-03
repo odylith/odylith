@@ -891,6 +891,35 @@ def test_generated_install_script_verify_sigstore_identity_suppresses_warning_wi
     assert completed.stderr == ""
 
 
+def test_generated_install_script_verify_sigstore_identity_suppresses_timestamped_warning_with_ok_stdout(
+    tmp_path: Path,
+) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    asset_path = tmp_path / "asset.txt"
+    completed = _run_verify_sigstore_identity(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        stdout_text=f"OK: {asset_path}\n",
+        stderr_text=(
+            "[10:18:47] WARNING  Failed to load a trusted root key: unsupported  trust.py:177\n"
+            "                         key type: 7\n"
+        ),
+    )
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.stdout == f"OK: {asset_path}\n"
+    assert completed.stderr == ""
+
+
 def test_generated_install_script_verify_sigstore_identity_suppresses_split_warning_label(
     tmp_path: Path,
 ) -> None:
@@ -1323,10 +1352,10 @@ def test_lane_show_wraps_lane_status() -> None:
     assert "make lane-show" in help_text
 
 
-def test_release_candidate_workflow_is_pull_request_safe() -> None:
+def test_release_candidate_workflow_is_manual_to_avoid_duplicate_pr_full_proof() -> None:
     text = (REPO_ROOT / ".github" / "workflows" / "release-candidate.yml").read_text(encoding="utf-8")
 
-    assert "pull_request:" in text
+    assert "pull_request:" not in text
     assert "workflow_dispatch:" in text
     assert "make lane-show" in text
     assert "make release-candidate" in text
@@ -1335,6 +1364,19 @@ def test_release_candidate_workflow_is_pull_request_safe() -> None:
     assert "make dogfood-activate" not in text
     assert "gh release create" not in text
     assert "publish_release_assets.py" not in text
+
+
+def test_ga_checklist_does_not_duplicate_consumer_rehearsal() -> None:
+    checklist = (REPO_ROOT / "odylith" / "maintainer" / "GTM_AND_RELEASE_CHECKLIST.md").read_text(
+        encoding="utf-8"
+    )
+    help_text = (REPO_ROOT / "bin" / "help").read_text(encoding="utf-8")
+
+    assert "make ga-gate PREVIOUS_VERSION=[previous_version]" in checklist
+    assert "make consumer-rehearsal PREVIOUS_VERSION=[previous_version]" not in checklist
+    assert "post-publish consumer rehearsal" in checklist
+    assert "do not run it separately" in checklist
+    assert "Do not run consumer-rehearsal separately" in help_text
 
 
 def test_dogfood_activate_bootstraps_missing_launcher_before_upgrade() -> None:

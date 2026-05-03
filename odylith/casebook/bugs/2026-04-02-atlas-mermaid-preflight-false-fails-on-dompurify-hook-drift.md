@@ -1,5 +1,14 @@
 - Bug ID: CB-042
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-02
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: `odylith atlas auto-update` could falsely report a valid Mermaid
   diagram as a syntax failure when the Node-side preflight parser hit the

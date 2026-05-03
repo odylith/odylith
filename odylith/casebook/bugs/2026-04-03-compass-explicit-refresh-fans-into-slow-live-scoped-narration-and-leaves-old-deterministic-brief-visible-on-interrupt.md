@@ -1,5 +1,14 @@
 - Bug ID: CB-050
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-03
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: After the explicit Compass refresh path was moved off
   `shell-safe` and onto `full`, `odylith dashboard refresh --repo-root .

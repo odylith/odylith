@@ -1,5 +1,14 @@
 - Bug ID: CB-106
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Open
 
 - Created: 2026-04-12
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The live benchmark runner can execute scenario-declared focused
   local checks only for `odylith_on` and inject their results into the prompt

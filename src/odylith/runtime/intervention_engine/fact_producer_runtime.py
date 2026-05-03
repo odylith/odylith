@@ -2,99 +2,27 @@
 
 from __future__ import annotations
 
-import re
 from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from odylith.runtime.intervention_engine import prompt_signal_runtime
 from odylith.runtime.intervention_engine.contract import GovernanceFact
 from odylith.runtime.intervention_engine.contract import ObservationEnvelope
 from odylith.runtime.intervention_engine import visibility_contract
 
 
-_WORKSTREAM_RE = re.compile(r"\bB-\d{3,}\b")
-_BUG_RE = re.compile(r"\bCB-\d{3,}\b")
-_DIAGRAM_RE = re.compile(r"\bD-\d{3,}\b")
-_GOVERNANCE_HINTS: tuple[str, ...] = (
-    "governance",
-    "workstream",
-    "radar",
-    "registry",
-    "atlas",
-    "casebook",
-    "proposal",
-    "capture",
-    "record",
-)
-_TOPOLOGY_HINTS: tuple[str, ...] = (
-    "topology",
-    "diagram",
-    "atlas",
-    "architecture",
-    "ownership",
-    "boundary",
-    "authority",
-    "relationship",
-)
-_INVARIANT_HINTS: tuple[str, ...] = ("invariant", "must", "never", "always", "guardrail", "non-negotiable")
-_BUG_HINTS: tuple[str, ...] = ("bug", "failure", "regression", "incident", "broken", "crash")
-_EXECUTION_HINTS: tuple[str, ...] = ("implement", "wire", "build", "fix", "ship", "harden", "design")
-_PLACEHOLDER_FAILURE_EVIDENCE_MARKERS: tuple[str, ...] = (
-    "<paste failing command and error>",
-    "<paste failing command",
-    "paste failing command and error",
-    "paste failing command",
-)
-_STRONG_INVARIANT_RE = re.compile(
-    r"\b("
-    r"hard rule|"
-    r"non-negotiable|"
-    r"must never|"
-    r"must not|"
-    r"never allow|"
-    r"never remove|"
-    r"do not remove|"
-    r"don't remove|"
-    r"do not ever|"
-    r"always require"
-    r")\b",
-    re.IGNORECASE,
-)
-_GOVERNED_CAPTURE_VERB_RE = re.compile(
-    r"\b("
-    r"capture|"
-    r"create|"
-    r"define|"
-    r"map|"
-    r"open|"
-    r"register|"
-    r"scaffold|"
-    r"track|"
-    r"write"
-    r")\b",
-    re.IGNORECASE,
-)
-_HELP_PROMPT_TOKENS: frozenset[str] = frozenset(
-    {
-        "odylith help",
-        "odylith please help",
-        "please odylith help",
-    }
-)
-_SHOW_PROMPT_TOKENS: frozenset[str] = frozenset(
-    {
-        "odylith show me what you can do",
-        "odylith what can you do",
-    }
-)
-_CAPABILITY_INVENTORY_MARKERS: tuple[str, ...] = (
-    "capabilities and engines",
-    "capability and engine",
-    "capability map",
-    "product architecture",
-    "odylith show capabilities",
-    "odylith capabilities",
-)
+_WORKSTREAM_RE = prompt_signal_runtime.WORKSTREAM_RE
+_BUG_RE = prompt_signal_runtime.BUG_RE
+_DIAGRAM_RE = prompt_signal_runtime.DIAGRAM_RE
+_GOVERNANCE_HINTS = prompt_signal_runtime.GOVERNANCE_HINTS
+_TOPOLOGY_HINTS = prompt_signal_runtime.TOPOLOGY_HINTS
+_INVARIANT_HINTS = prompt_signal_runtime.INVARIANT_HINTS
+_BUG_HINTS = prompt_signal_runtime.BUG_HINTS
+_EXECUTION_HINTS = prompt_signal_runtime.EXECUTION_HINTS
+_PLACEHOLDER_FAILURE_EVIDENCE_MARKERS = prompt_signal_runtime.PLACEHOLDER_FAILURE_EVIDENCE_MARKERS
+_STRONG_INVARIANT_RE = prompt_signal_runtime.STRONG_INVARIANT_RE
+_GOVERNED_CAPTURE_VERB_RE = prompt_signal_runtime.GOVERNED_CAPTURE_VERB_RE
 
 
 _normalize_string = visibility_contract.normalize_string
@@ -103,18 +31,7 @@ _normalize_string_list = visibility_contract.normalize_string_list
 _mapping = visibility_contract.mapping_copy
 
 
-def explicit_ids(text: str, pattern: re.Pattern[str]) -> list[str]:
-    """Return deduplicated explicit ids that appear in the raw prompt text."""
-
-    seen: set[str] = set()
-    rows: list[str] = []
-    for token in pattern.findall(_normalize_string(text)):
-        value = _normalize_string(token).upper()
-        if not value or value in seen:
-            continue
-        seen.add(value)
-        rows.append(value)
-    return rows
+explicit_ids = prompt_signal_runtime.explicit_ids
 
 
 def joined_prompt_surface(observation: ObservationEnvelope) -> str:
@@ -129,50 +46,14 @@ def joined_prompt_surface(observation: ObservationEnvelope) -> str:
     ).strip()
 
 
-def contains_any(text: str, hints: Sequence[str]) -> bool:
-    """Return whether any hint token appears in the normalized text."""
-
-    haystack = _normalize_token(text)
-    return any(_normalize_token(hint) in haystack for hint in hints)
+contains_any = prompt_signal_runtime.contains_any
 
 
-def normalized_passthrough_prompt(value: Any) -> str:
-    """Return a compact prompt token for exact first-match passthrough routes."""
-    text = _normalize_string(value).casefold()
-    if not text:
-        return ""
-    text = re.sub(r"[^a-z0-9]+", " ", text)
-    return " ".join(text.split())
-
-
-def is_passthrough_prompt(value: Any) -> bool:
-    """Return whether a prompt should print CLI/demo stdout without narration."""
-    return bool(passthrough_prompt_kind(value))
-
-
-def passthrough_prompt_kind(value: Any) -> str:
-    """Return the first-match passthrough route kind for prompt-only CLI lanes."""
-    token = normalized_passthrough_prompt(value)
-    if token in _HELP_PROMPT_TOKENS:
-        return "help"
-    if "odylith" in token and any(marker in token for marker in _CAPABILITY_INVENTORY_MARKERS):
-        return "capabilities"
-    if token in _SHOW_PROMPT_TOKENS:
-        return "show"
-    return ""
-
-
-def is_cli_help_output(value: Any) -> bool:
-    """Return whether text is raw Odylith CLI help output, not conversation signal."""
-    text = _normalize_string(value).casefold()
-    if not text:
-        return False
-    return (
-        "usage: odylith" in text
-        and "-h, --help" in text
-        and ("options:" in text or "optional arguments:" in text)
-        and "show this help message" in text
-    )
+normalized_passthrough_prompt = prompt_signal_runtime.normalized_passthrough_prompt
+is_passthrough_prompt = prompt_signal_runtime.is_passthrough_prompt
+passthrough_prompt_kind = prompt_signal_runtime.passthrough_prompt_kind
+is_cli_help_output = prompt_signal_runtime.is_cli_help_output
+has_prompt_intervention_signal = prompt_signal_runtime.has_prompt_intervention_signal
 
 
 def _fact(kind: str, headline: str, detail: str, evidence_classes: Sequence[str], refs: Sequence[Mapping[str, str]], priority: int) -> GovernanceFact:

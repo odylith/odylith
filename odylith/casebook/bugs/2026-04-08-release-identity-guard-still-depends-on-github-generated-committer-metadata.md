@@ -1,5 +1,14 @@
 - Bug ID: CB-070
 
+- Type: Product
+
+
+
+
+
+
+
+
 - Status: Closed
 
 - Created: 2026-04-08
@@ -8,7 +17,6 @@
 
 - Reproducibility: High
 
-- Type: Product
 
 - Description: The canonical release identity guard still encodes a narrow
   compatibility exception for `GitHub <noreply@github.com>` in commit history.
