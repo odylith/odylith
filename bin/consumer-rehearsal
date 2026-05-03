@@ -54,8 +54,30 @@ run_install_script() {
     bash "$script_path"
 }
 
+stop_rehearsal_runtime() {
+  if [[ -x "$repo_dir/.odylith/bin/odylith" ]]; then
+    run_repo_cmd ./.odylith/bin/odylith context-engine stop --repo-root . >/dev/null 2>&1 || true
+  fi
+}
+
+remove_rehearsal_path() {
+  local path="$1"
+  local attempt
+  for attempt in 1 2 3 4 5; do
+    [[ ! -e "$path" && ! -L "$path" ]] && return 0
+    rm -rf "$path" 2>/dev/null || true
+    [[ ! -e "$path" && ! -L "$path" ]] && return 0
+    sleep 0.2
+  done
+  rm -rf "$path"
+}
+
 reset_repo_for_previous_install() {
-  rm -rf "$repo_dir/.odylith" "$repo_dir/odylith" "$repo_dir/.agents" "$repo_dir/.claude"
+  stop_rehearsal_runtime
+  remove_rehearsal_path "$repo_dir/.odylith"
+  remove_rehearsal_path "$repo_dir/odylith"
+  remove_rehearsal_path "$repo_dir/.agents"
+  remove_rehearsal_path "$repo_dir/.claude"
   cat >"$repo_dir/AGENTS.md" <<'EOF'
 # Rehearsal Repo
 EOF
