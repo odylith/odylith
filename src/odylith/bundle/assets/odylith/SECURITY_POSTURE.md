@@ -77,6 +77,31 @@ Odylith does not claim full protection against:
 - Launcher repair avoids recursive wrapper loops that previously left blocked
   Python shells behind.
 
+### Greenfield governance safety
+- Greenfield Domain Intelligence proposals separate observed source, user
+  intent, and Odylith assumptions; missing source cannot become a source-backed
+  governance claim.
+- `odylith greenfield apply` writes only after explicit confirmation and only
+  through owned Radar, Registry, Atlas, release-targeting, and Compass memory
+  paths.
+- Apply-time validation rejects missing host-authored Atlas Mermaid source,
+  duplicated topology, invalid evidence tiers, and incomplete proposal sections
+  before any governed file changes.
+- Host-specific Codex and Claude routes stay thin; the Odylith runtime owns
+  validation, confirmation, topology hygiene, and durable memory boundaries.
+
+### Host and migration safety
+- Managed Codex and Claude assets merge additively with user-owned host
+  settings; Odylith must not replace a user's host config with an
+  Odylith-only template.
+- Consumer-visible docs, browser-rendered governance surfaces, and
+  install-managed assets are release-observed. `odylith release
+  migration-gate --target-version 0.1.13` must pass before release prep can
+  treat those surfaces as migration-safe.
+- Release prep should reuse accepted candidate proof instead of rerunning the
+  same full-pytest and consumer rehearsal gates repeatedly for the same
+  artifact.
+
 ## Recovery
 - `./.odylith/bin/odylith version --repo-root .`
   Confirms the active lane and runtime posture.

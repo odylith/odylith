@@ -701,6 +701,7 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.13:install-managed-assets:f400668668ca`,
   `migration-observer:0.1.13:guidance-and-skills:38e6768904a3`,
   `migration-observer:0.1.13:browser-surfaces:da46e2ca9dea`,
+  `migration-observer:0.1.13:browser-surfaces:44b8f03ad08b`,
   `migration-observer:0.1.13:install-managed-assets:20dacaa00761`,
   `migration-observer:0.1.13:browser-surfaces:7a832cdde5ae`,
   `migration-observer:0.1.13:browser-surfaces:e7074b845e26`,
@@ -752,7 +753,24 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.13:install-managed-assets:0b0c0d1ffef8`,
   `migration-observer:0.1.13:browser-surfaces:c977b656d5a8`,
   `migration-observer:0.1.13:browser-surfaces:ec2ce938e93c`,
-  `migration-observer:0.1.13:install-managed-assets:253ccfb23e93`.
+  `migration-observer:0.1.13:install-managed-assets:253ccfb23e93`,
+  `migration-observer:0.1.13:guidance-and-skills:e854d7e0d9b5`,
+  `migration-observer:0.1.13:install-managed-assets:8dc77c50aa92`.
+- Public documentation and bundled release-guidance refresh: v0.1.13 updates
+  README, operator instructions, status disclosures, outcome framing,
+  release notes, and the bundled consumer README/release-note copies so the
+  shipped docs describe host-reasoned greenfield proposals, confirmation-gated
+  apply, compact release proof, and source-truth boundaries consistently.
+  Existing consumer installs need no data migration; upgrade installs receive
+  refreshed managed docs and release guidance, and already-owned governance
+  truth stays untouched.
+  Migration observer markers:
+  `migration-observer:0.1.13:public-docs-and-release-guidance:67252caffe8e`,
+  `migration-observer:0.1.13:browser-surfaces:8d03362b49b6`,
+  `migration-observer:0.1.13:install-managed-assets:84b480bd2eaf`,
+  `migration-observer:0.1.13:browser-surfaces:7ca3752b114d`,
+  `migration-observer:0.1.13:install-managed-assets:877351c7e794`,
+  `migration-observer:0.1.13:install-managed-assets:378a6ed807cc`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.

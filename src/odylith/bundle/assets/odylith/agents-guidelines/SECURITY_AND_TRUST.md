@@ -55,6 +55,22 @@
 - After runtime or daemon changes, explicitly verify that Odylith-owned Python
   processes exit when the command or timeout path is complete.
 
+## Consumer Greenfield Rules
+- Greenfield Domain Intelligence may reason from user intent, but it must keep
+  observed source, user intent, and Odylith assumptions separate.
+- `odylith greenfield apply` must remain confirmation-gated and must reject
+  missing host-authored Atlas Mermaid source, duplicated topology, invalid
+  evidence tiers, and incomplete proposal sections before any governed write.
+- Host routes may help the operator draft a proposal, but Codex, Claude Code,
+  and future hosts must not own the durable validation or write boundary.
+
+## Host Configuration Rules
+- Managed Codex and Claude assets must merge additively with user-owned host
+  settings.
+- Do not replace user host configuration with Odylith-only templates.
+- Release prep must prove host merge safety for any changed managed hook,
+  skill, command, or settings asset before GA.
+
 ## Projection Reuse Trust Rules
 - Shared projection/compiler/backend substrates are trusted only when their
   persisted provenance still matches the current repo root, scope, fingerprint,
@@ -66,11 +82,19 @@
   locking, but it must not weaken the advisory-lock plus atomic-replace
   contract that prevents torn or interleaved local state.
 
+## Release Prep Rules
+- Release-facing security docs, public docs, browser surfaces, and
+  install-managed assets must be covered by `odylith release migration-gate`
+  for the target version before GA.
+- Reuse accepted candidate proof for the same artifact instead of rerunning
+  expensive full-suite or consumer rehearsal gates without new evidence.
+
 ## Canonical Commands
 ```bash
 ./.odylith/bin/odylith version --repo-root .
 ./.odylith/bin/odylith doctor --repo-root . --repair
 ./.odylith/bin/odylith reinstall --repo-root . --latest
 ./.odylith/bin/odylith context-engine status --repo-root .
+./.odylith/bin/odylith release migration-gate --repo-root . --target-version 0.1.13
 make release-candidate
 ```

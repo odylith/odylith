@@ -121,6 +121,12 @@ Run the targets in this order.
    This gate also fails closed when release-facing security docs such as
    `SECURITY.md` and the product plus bundled `SECURITY_POSTURE.md` files do
    not mention the candidate version.
+   For v0.1.13 and later, release prep also requires those security-facing docs
+   to cover consumer-lane runtime trust, host-settings merge safety, greenfield
+   proposal/apply confirmation gates, evidence-tier boundaries, Atlas topology
+   validation, migration-gate coverage for public docs/browser
+   surfaces/install-managed assets, and reuse of accepted candidate proof
+   instead of repeated full-suite rehearsal for the same artifact.
    If your active maintainer workspace is dirty or off-main but already points
    at `origin/main`, this target may run from an isolated clean checkout of the
    same commit instead of forcing you to discard the active workspace. That

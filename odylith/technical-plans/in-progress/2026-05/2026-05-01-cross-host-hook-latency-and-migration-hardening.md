@@ -530,7 +530,7 @@ Related Bugs:
 - [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_greenfield_proposals.py tests/unit/runtime/test_greenfield_host_routing.py`
       (`31 passed`; classification explainability, program blueprint,
       acronym-safe NASA/API title rendering, science/math fit,
-      scientific-instrument routing, catalog API, Compass memory, and
+      scientific-instrument routing, host-reasoning contract, Compass memory, and
       provider-free host routing stayed deterministic).
 - [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_greenfield_proposals.py tests/unit/runtime/test_greenfield_host_routing.py tests/unit/runtime/test_component_authoring.py tests/unit/runtime/test_compass_transaction_runtime.py tests/unit/runtime/test_show_capabilities.py tests/unit/test_cli.py`
       (`219 passed`; greenfield proposal/apply, host routing, component

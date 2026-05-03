@@ -1,6 +1,6 @@
 # Backlog Index
 
-Last updated (UTC): 2026-05-02
+Last updated (UTC): 2026-05-03
 ## Ranked Active Backlog
 
 | rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |
@@ -1302,11 +1302,13 @@ Last updated (UTC): 2026-05-02
 - why now: promoted into the v0.1.13 active pipeline because consumer-lane
   greenfield prompts were dead-ending in empty repos instead of producing
   proposal-first governance.
-- expected outcome: provider-free domain intelligence drafts backlog,
-  program waves, release plan, planned Registry components, draft Atlas
-  topology, assumptions, risks, and validation obligations before any writes.
-- tradeoff: v0.1.13 ships deterministic archetypes and confirmation-gated
-  apply first; optional provider-backed enrichment stays out of scope.
-- deferred for now: deeper domain expansion waits for later archetype additions
-  after the first-class runtime and governance proof are stable.
+- expected outcome: provider-free Odylith runtime emits the evidence/schema
+  contract while the active host model drafts backlog, program waves, release
+  plan, planned Registry components, host-authored Atlas topology,
+  assumptions, risks, and validation obligations before any writes.
+- tradeoff: v0.1.13 keeps project-specific authorship with the host model and
+  makes Odylith the validation, topology, confirmation, apply, and memory
+  layer; optional provider-backed enrichment stays out of scope.
+- deferred for now: a curated domain marketplace waits until a real catalog
+  exists; this release avoids pretending an in-code taxonomy covers the world.
 - ranking basis: active implementation workstream; no queued rank.

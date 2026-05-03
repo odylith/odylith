@@ -27,8 +27,10 @@ last.
 Odylith reasons about your repo through delivery intelligence, grounds every
 turn through local-first retrieval, governs every action through execution
 admissibility, adjudicates ambiguous postures through its Tribunal, and keeps
-its own durable memory across sessions. It runs through both Codex and Claude
-Code as first-class hosts.
+its own durable memory across sessions. In empty or thin repos, it can also
+turn broad greenfield intent into a confirmation-gated governance proposal
+before source exists. It runs through both Codex and Claude Code as first-class
+hosts.
 
 More on the operating frame:
 [Why Bolting Odylith Onto Codex Or Claude Code Changes The Outcome](docs/WHY_ODYLITH_CHANGES_OUTCOMES.md)
@@ -58,6 +60,22 @@ Open the repo in Codex or Claude Code and say:
 Odylith reads your repo — source structure, import graph, manifest files — and
 shows you the component boundaries, workstreams, architecture diagrams, and
 issues it can create. Each suggestion comes with the command to run it.
+
+If the repo is still empty or too thin for source-backed boundaries, Odylith
+switches to greenfield mode instead of dead-ending. The host model drafts the
+project-specific proposal in chat, while Odylith supplies the evidence tiers,
+schema, topology requirements, confirmation gate, and apply path.
+
+For example:
+
+```bash
+odylith greenfield propose --repo-root . --prompt "build an ecommerce site"
+```
+
+The proposal can include backlog candidates, program waves, release planning,
+planned Registry components, host-authored Atlas topology, assumptions, risks,
+open questions, and validation obligations. Nothing is written until an
+accepted proposal is applied with confirmation.
 
 Then open `odylith/index.html` in a browser and follow the Cheatsheet in the
 drawer.
@@ -505,6 +523,8 @@ Odylith is strongest when:
 - the work spans multiple files, contracts, or governance surfaces
 - the repo is large enough that boundaries, ownership, bug history, and
   execution state matter
+- the repo is new and you want a project-specific governance proposal before
+  source-backed boundaries exist
 - you want specs, plans, component inventory, diagrams, and bug history to
   live beside the code instead of across separate SaaS tools
 - you want recent execution and decisions visible in Compass instead of buried
