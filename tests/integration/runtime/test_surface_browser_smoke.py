@@ -573,7 +573,7 @@ def test_compass_current_workstreams_excludes_rows_already_represented_in_progra
         compass.locator(
             "#execution-waves-host .execution-wave-section-title, "
             "#execution-waves-host a.execution-wave-chip-link, "
-            "#release-groups-host a.execution-wave-chip-link"
+            "#release-groups-host a.execution-wave-card-link"
         ).evaluate_all(
             """(nodes) => {
                 const seen = new Set();
@@ -751,6 +751,25 @@ def test_compass_deeplinks_into_radar_and_registry_contexts(browser_context) -> 
     response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
     assert response is not None and response.ok
 
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+
+    release_section = compass.locator("#release-groups-host details.execution-wave-section").first
+    release_section.wait_for(state="attached", timeout=15000)
+    release_section.evaluate("node => { node.open = true; }")
+    release_workstream_card = compass.locator("#release-groups-host a.execution-wave-card-link").first
+    release_workstream_card.wait_for(timeout=15000)
+    release_workstream_id = str(release_workstream_card.get_attribute("data-workstream-id") or "").strip()
+    assert re.fullmatch(r"B-\d{3,}", release_workstream_id), release_workstream_id
+    release_workstream_card.click()
+    page.wait_for_url(
+        re.compile(rf".*/odylith/index\.html\?tab=radar(&.*)?workstream={re.escape(release_workstream_id)}(&.*|$)"),
+        timeout=15000,
+    )
+    assert page.locator("#tab-radar").get_attribute("aria-selected") == "true"
+
+    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+    assert response is not None and response.ok
     compass = page.frame_locator("#frame-compass")
     compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
 

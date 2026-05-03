@@ -216,6 +216,9 @@
         if (!WORKSTREAM_RE.test(token)) return "";
         const tooltip = workstreamTooltipText(token, workstreamTitles, `Open radar for ${token}`);
         const tone = options && options.selected ? " wave-member-selected" : "";
+        if (options && options.link === false) {
+          return `<span class="chip execution-wave-chip-link${tone}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(`${token}: ${tooltip}`)}">${escapeHtml(token)}</span>`;
+        }
         return `<a class="chip chip-link execution-wave-chip-link${tone}" href="${escapeHtml(radarWorkstreamHref(token))}" target="_top" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(`${token}: ${tooltip}`)}">${escapeHtml(token)}</a>`;
       };
       const formatMemberProgress = (member) => {
@@ -232,6 +235,8 @@
         const status = String(member && member.status ? member.status : "").trim().toLowerCase();
         const statusLabel = compassReleaseStatusLabel(status);
         const progressLabel = formatMemberProgress(member);
+        const workstreamHref = radarWorkstreamHref(ideaId);
+        const cardLabel = `Open radar for ${ideaId}: ${title}`;
         const cardClassNames = ["execution-wave-card", compassReleaseMemberStatusClass(status)];
         if (ideaId === scopedWorkstream) cardClassNames.push("is-member");
         const titleChips = [
@@ -242,13 +247,13 @@
           ideaId === scopedWorkstream ? '<span class="label execution-wave-label wave-current-chip">Selected</span>' : "",
         ].filter(Boolean);
         return `
-          <article class="${cardClassNames.join(" ")}">
+          <a class="${cardClassNames.join(" ")} execution-wave-card-link" href="${escapeHtml(workstreamHref)}" target="_top" data-workstream-id="${escapeHtml(ideaId)}" aria-label="${escapeHtml(cardLabel)}">
             <div class="execution-wave-card-summary">
               <div class="execution-wave-card-shell">
                 <div class="execution-wave-card-copy">
                   <div class="execution-wave-member-head">
                     <div class="execution-wave-member-title-chips">
-                      ${renderMemberChip(ideaId, { selected: ideaId === scopedWorkstream })}
+                      ${renderMemberChip(ideaId, { selected: ideaId === scopedWorkstream, link: false })}
                       ${titleChips.join("")}
                     </div>
                     <div class="execution-wave-title">${escapeHtml(title)}</div>
@@ -257,7 +262,7 @@
                 ${metaChips.length ? `<div class="execution-wave-card-meta"><div class="execution-wave-card-stat-rail">${metaChips.join("")}</div></div>` : ""}
               </div>
             </div>
-          </article>
+          </a>
         `;
       };
       const disclosureKeyForRelease = (group) => {

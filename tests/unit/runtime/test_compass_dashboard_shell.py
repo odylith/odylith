@@ -183,7 +183,7 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert "Completed Workstreams" in releases_js
     assert 'status === "planned"' in releases_js
     assert 'status === "draft"' in releases_js
-    assert 'return groups;' in releases_js
+    assert 'return visibleGroups;' in releases_js
     assert 'const currentOnlyGroups = currentReleaseId' not in releases_js
     assert "No targeted workstreams." in releases_js
     assert "Removed from ${compassReleaseDisplayName(release)}" in releases_js
@@ -205,14 +205,17 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert waves_js.count('sectionClassName: "execution-wave-section-program-card"') == 2
     assert 'if (value === null || value === undefined || value === "") return null;' in waves_js
     assert 'Object.prototype.hasOwnProperty.call(plan, "display_progress_ratio")' in waves_js
-    assert '${renderMemberChip(ideaId, { selected: ideaId === scopedWorkstream })}' in releases_js
+    assert '${renderMemberChip(ideaId, { selected: ideaId === scopedWorkstream, link: false })}' in releases_js
+    assert 'class="${cardClassNames.join(" ")} execution-wave-card-link"' in releases_js
+    assert 'data-workstream-id="${escapeHtml(ideaId)}"' in releases_js
+    assert 'aria-label="${escapeHtml(cardLabel)}"' in releases_js
     assert '${titleChips.join("")}' in releases_js
     assert '<div class="execution-wave-member-head">' in releases_js
     assert '<div class="execution-wave-member-title-chips">' in releases_js
     assert '<div class="execution-wave-title-row">' not in releases_js
     assert 'Target Release</span>' in releases_js
-    assert "function compassReleaseGroupVisibleByDefault(group)" in releases_js
-    assert "return compassReleaseGroupVisibleByDefault(group);" in releases_js
+    assert "function compassReleaseGroupVisibleByDefault(group, hasAliasedRelease)" in releases_js
+    assert "return compassReleaseGroupVisibleByDefault(group, hasAliasedRelease);" in releases_js
     assert 'const metaChips = [' in releases_js
     assert "Release-owned targeted workstreams for this release." not in releases_js
     assert "Release-owned targeted workstreams for this selection." not in releases_js
@@ -362,6 +365,8 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert "border-color: #e2ece5;" in execution_wave_css
     assert "font-size: 14px;" in execution_wave_css
     assert ".execution-wave-program-stack-release .execution-wave-title {" in execution_wave_css
+    assert ".execution-wave-card-link {" in execution_wave_css
+    assert ".execution-wave-card-link:focus-visible {" in execution_wave_css
     assert "font-size: 12px;" in execution_wave_css
     assert ".execution-wave-program-stack-release .execution-wave-member-head {" in execution_wave_css
     assert ".execution-wave-program-stack-release .execution-wave-member-title-chips {" in execution_wave_css

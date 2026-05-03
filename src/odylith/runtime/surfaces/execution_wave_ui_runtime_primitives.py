@@ -238,6 +238,17 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   display: none;
 }
 
+.execution-wave-card-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.execution-wave-card-link:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+
 .execution-wave-card.is-member {
   border-color: #93c5fd;
   background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);

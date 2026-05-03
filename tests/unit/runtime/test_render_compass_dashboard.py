@@ -471,6 +471,8 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     assert '<span class="execution-wave-section-title-meta">' in releases_js
     assert '<div class="execution-wave-member-head">' in releases_js
     assert '<div class="execution-wave-member-title-chips">' in releases_js
+    assert 'class="${cardClassNames.join(" ")} execution-wave-card-link"' in releases_js
+    assert '${renderMemberChip(ideaId, { selected: ideaId === scopedWorkstream, link: false })}' in releases_js
     assert '<div class="execution-wave-title-row">' not in releases_js
     assert "Release-owned targeted workstreams for this release." not in releases_js
     assert "Release-owned targeted workstreams for this selection." not in releases_js
