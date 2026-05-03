@@ -247,22 +247,22 @@
           ideaId === scopedWorkstream ? '<span class="label execution-wave-label wave-current-chip">Selected</span>' : "",
         ].filter(Boolean);
         return `
-          <a class="${cardClassNames.join(" ")} execution-wave-card-link" href="${escapeHtml(workstreamHref)}" target="_top" data-workstream-id="${escapeHtml(ideaId)}" aria-label="${escapeHtml(cardLabel)}">
+          <article class="${cardClassNames.join(" ")}" data-workstream-id="${escapeHtml(ideaId)}">
             <div class="execution-wave-card-summary">
               <div class="execution-wave-card-shell">
                 <div class="execution-wave-card-copy">
                   <div class="execution-wave-member-head">
                     <div class="execution-wave-member-title-chips">
-                      ${renderMemberChip(ideaId, { selected: ideaId === scopedWorkstream, link: false })}
+                      ${renderMemberChip(ideaId, { selected: ideaId === scopedWorkstream })}
                       ${titleChips.join("")}
                     </div>
-                    <div class="execution-wave-title">${escapeHtml(title)}</div>
+                    <a class="execution-wave-title execution-wave-card-link" href="${escapeHtml(workstreamHref)}" target="_top" data-workstream-id="${escapeHtml(ideaId)}" aria-label="${escapeHtml(cardLabel)}">${escapeHtml(title)}</a>
                   </div>
                 </div>
                 ${metaChips.length ? `<div class="execution-wave-card-meta"><div class="execution-wave-card-stat-rail">${metaChips.join("")}</div></div>` : ""}
               </div>
             </div>
-          </a>
+          </article>
         `;
       };
       const disclosureKeyForRelease = (group) => {

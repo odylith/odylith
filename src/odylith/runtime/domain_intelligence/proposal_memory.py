@@ -1,9 +1,9 @@
 """Durable memory records for accepted greenfield proposals.
 
-Greenfield proposal generation is intentionally provider-free and confirmation
-gated. Once an operator accepts a proposal, the project shape must stop being a
-one-shot CLI response and become durable Compass evidence that later context and
-memory paths can retrieve without re-asking the same scope questions.
+Greenfield proposal application is confirmation gated. Once an operator accepts
+a host-reasoned proposal, the project shape must stop being one chat response
+and become durable Compass evidence that later context and memory paths can
+retrieve without re-asking the same scope questions.
 """
 
 from __future__ import annotations
@@ -43,16 +43,6 @@ def _observed_source(proposal: Mapping[str, Any]) -> Mapping[str, Any]:
     return value if isinstance(value, Mapping) else {}
 
 
-def _classification(proposal: Mapping[str, Any]) -> Mapping[str, Any]:
-    value = proposal.get("classification")
-    return value if isinstance(value, Mapping) else {}
-
-
-def _primary_fit(proposal: Mapping[str, Any]) -> Mapping[str, Any]:
-    primary = _classification(proposal).get("primary")
-    return primary if isinstance(primary, Mapping) else {}
-
-
 def _release_label(*, release_selector: str, release_id: str) -> str:
     selector = _clean(release_selector)
     release = _clean(release_id)
@@ -80,13 +70,11 @@ def _event_summary(
 
 def _event_context(proposal: Mapping[str, Any]) -> str:
     intent = _intent(proposal)
-    primary = _primary_fit(proposal)
     source = _observed_source(proposal)
     assumptions = _first_nonempty([str(item) for item in proposal.get("assumptions", []) if _clean(item)], limit=2)
     questions = _first_nonempty([str(item) for item in proposal.get("open_questions", []) if _clean(item)], limit=2)
     parts = [
-        f"archetype={_clean(primary.get('archetype')) or _clean(intent.get('archetype'))}",
-        f"confidence={_clean(primary.get('confidence')) or _clean(intent.get('confidence'))}",
+        f"reasoning_mode={_clean(intent.get('reasoning_mode')) or 'host_model_reasoned'}",
         f"source_posture={_clean(source.get('source_posture')) or 'unknown'}",
         "evidence_tier=user_intent",
     ]

@@ -703,13 +703,13 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.13:browser-surfaces:da46e2ca9dea`,
   `migration-observer:0.1.13:install-managed-assets:20dacaa00761`,
   `migration-observer:0.1.13:browser-surfaces:7a832cdde5ae`,
-  `migration-observer:0.1.13:browser-surfaces:e7074b845e26`.
+  `migration-observer:0.1.13:browser-surfaces:e7074b845e26`,
+  `migration-observer:0.1.13:browser-surfaces:64c67de45d32`.
 - Domain Intelligence fit and program-formation hardening: v0.1.13 adds
-  deterministic alternate-fit classification, acronym-safe titles,
-  domain-specific first-slice validation wording, a dedicated proposal renderer,
-  explicit parent/child program-formation policy, a built-in seed catalog
-  boundary for future marketplace domain packs, and accepted-proposal Compass
-  memory records. The release-version truth and security posture docs now also
+  host-reasoned fit assessment, acronym-safe titles, domain-aware first-slice
+  validation wording, a dedicated proposal renderer, explicit parent/child
+  program-formation policy, and accepted-proposal Compass memory records. The
+  release-version truth and security posture docs now also
   target v0.1.13 so local release bundles carry a v0.1.13 wheel instead of a
   mismatched v0.1.12 package. Existing consumer installs need no data
   migration; upgrade refreshes managed greenfield skill guidance, regenerated
@@ -732,6 +732,27 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.13:public-docs-and-release-guidance:66717a535044`,
   `migration-observer:0.1.13:install-managed-assets:545aea26da90`,
   `migration-observer:0.1.13:browser-surfaces:8a26320aa5c6`.
+- Domain Intelligence host-reasoning correction: v0.1.13 removes the in-code
+  greenfield project taxonomy from the active proposal-authoring path and keeps
+  consumer installs on the host-reasoned contract instead. Existing installs
+  need no repo data migration; upgrade refreshes managed guidance, skills,
+  bundled browser assets, and runtime validation. Confirmed greenfield writes
+  remain explicit through `odylith greenfield apply --confirm`, and Atlas
+  drafts now require host-authored Mermaid source before any governed write.
+  This supersedes the earlier seed-catalog implementation as an inactive
+  design exploration; the release path is host reasoning plus Odylith
+  validation/apply, not a checked-in domain taxonomy.
+  Migration observer markers:
+  `migration-observer:0.1.13:guidance-and-skills:d307d1dee98b`,
+  `migration-observer:0.1.13:browser-surfaces:de07c1596960`,
+  `migration-observer:0.1.13:install-managed-assets:10f2fe027321`,
+  `migration-observer:0.1.13:guidance-and-skills:43e7a7e7b66a`,
+  `migration-observer:0.1.13:install-managed-assets:cc92d0a4ee9d`,
+  `migration-observer:0.1.13:browser-surfaces:af1a8c005565`,
+  `migration-observer:0.1.13:install-managed-assets:0b0c0d1ffef8`,
+  `migration-observer:0.1.13:browser-surfaces:c977b656d5a8`,
+  `migration-observer:0.1.13:browser-surfaces:ec2ce938e93c`,
+  `migration-observer:0.1.13:install-managed-assets:253ccfb23e93`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.

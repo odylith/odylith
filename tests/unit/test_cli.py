@@ -275,8 +275,10 @@ def test_greenfield_propose_command_is_provider_free(tmp_path: Path, capsys) -> 
     payload = json.loads(capsys.readouterr().out)
     assert rc == 0
     assert payload["provider_calls"] == 0
-    assert payload["intent"]["archetype"] == "commerce"
-    assert payload["program"]["waves"]
+    assert payload["mode"] == "host_reasoned_proposal_request"
+    assert payload["intent"]["reasoning_mode"] == "host_model_required"
+    assert payload["classification"]["method"] == "open_world_host_reasoning"
+    assert "backlog" in payload["reasoning_contract"]["required_top_level_keys"]
 
 
 def test_component_register_help_forwards_backend_flags(capsys) -> None:

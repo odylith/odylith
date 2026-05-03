@@ -262,21 +262,23 @@ Related Bugs:
       standalone.
 - [x] Greenfield UX is a different product mode from existing-repo governance.
       In empty or thin repos, missing app source blocks source-backed claims
-      but must not block proposal-first intelligence. v0.1.13 adds a
-      provider-free `domain_intelligence` runtime that compiles broad project
-      intent into backlog, program waves, release plan, planned Registry
-      components, draft Atlas topology, assumptions, risks, and validation
-      obligations without spending model credits or inventing observed source.
+      but must not block proposal-first intelligence. v0.1.13 now makes
+      `domain_intelligence` the host-reasoning contract and confirmation-gated
+      apply layer: the active host model drafts the concrete backlog,
+      components, Atlas Mermaid, waves, release plan, assumptions, risks, and
+      validation obligations, while Odylith supplies repo evidence, evidence
+      tiers, validation, topology hygiene, apply safety, and Compass memory.
 - [x] Prompt-intervention narration is not transaction history. Compass now
       filters zero-file `Odylith Observation`/Proposal/Assist chatter before
       building prompt transactions, so routing notes do not become fake
       implementation timeline records.
-- [x] Greenfield domain intelligence must be grounded in real project families,
-      not ecommerce-specific intuition or host-model free association. The
-      v0.1.13 archetype set was checked against public ecosystem signals from
-      GitHub, CNCF, Apache, and NASA, then encoded as deterministic runtime
-      data with program waves, release planning, topology, and validation
-      obligations per domain.
+- [x] Greenfield Domain Intelligence must not be constrained by a small
+      checked-in project taxonomy. Public ecosystem checks from GitHub, CNCF,
+      Apache, and NASA showed the space is open-world, so v0.1.13 uses host
+      reasoning for the project-specific plan and Odylith validation for the
+      non-negotiable contracts: evidence separation, confirmation gates,
+      required host-authored topology, no duplicated diagram bodies, release
+      planning, and durable memory.
 
 ## Should-Ship
 - [ ] Convert the host hook daemon proposal into a separate design slice with
@@ -471,13 +473,10 @@ Related Bugs:
 - [x] Full browser matrix for Atlas, Casebook, Compass, Radar, Registry, intervention visibility, filter audit, onboarding, and regression surfaces (`185 passed, 1 skipped`) after allowing global Compass brief notices to live in the header/status area while retaining the last validated brief body.
 - [x] Fresh consumer proof: installed the shipped runtime into an empty repo, used source v0.1.13 `greenfield propose/apply`, confirmed `provider_calls: 0`, commerce classification, 4 backlog records, 5 planned components, 2 draft diagrams, and a bootstrapped `next` release selector after explicit confirmation.
 - [x] Refreshed Casebook, Radar, Registry, Atlas, and Compass after the domain-intelligence governance update; `casebook validate`, `backlog-contract`, `plan-workstream-binding`, `plan-risk-mitigation`, `release migration-gate --target-version 0.1.13`, and `git diff --check` passed.
-- [x] Deepened Domain Intelligence beyond the initial ecommerce/greenfield fix:
-      added first-class formal-proof, computational-notebook,
-      numerical-simulation, scientific-pipeline, geospatial/environmental,
-      ML-experiment, and math-education archetypes; split program/release/UX
-      planning into `proposal_planning.py`; kept `greenfield_proposals.py`
-      below the soft 800-line source-size threshold; and proved formal-proof
-      prompts no longer inherit numerical tolerance/random-seed advice.
+- [x] Corrected Domain Intelligence away from fixed in-code domain buckets:
+      the CLI now emits a host-reasoning evidence/schema contract, while the
+      active host model authors the proposal details and Atlas Mermaid sources;
+      Odylith validates the host-reasoned payload before any governed write.
 - [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_greenfield_proposals.py tests/unit/runtime/test_greenfield_host_routing.py`
       (`26 passed`; fixture matrix covers commerce, SaaS, dashboard, AI
       assistant, data ingestion, CLI/library, physics simulation,
@@ -518,11 +517,12 @@ Related Bugs:
       `proposal_rendering.py` owner, explicit program-formation output, and
       domain-specific first-slice validation wording so vague consumer prompts
       no longer fall back to generic proof-harness prose.
-- [x] Marketplace-readiness and memory hardening made the checked-in archetypes
-      an explicit v0.1.13 built-in seed catalog, exposed catalog metadata in
-      greenfield proposal payloads, added an explicit catalog API for future
-      domain packs, and recorded accepted proposals into Compass memory with
-      workstream/component/artifact links and `user_intent` evidence.
+- [x] Removed the v0.1.13 seed-catalog implementation path before release:
+      `archetypes.py`, `proposal_planning.py`, and `diagram_sources.py` are no
+      longer active source modules. Future domain catalogs can still become a
+      marketplace feature, but this release keeps proposal authorship with the
+      active host model and uses Odylith for evidence boundaries, validation,
+      confirmation-gated apply, and Compass memory.
 - [x] Tightened domain-fit keywords after a smoke prompt showed generic
       `workflow` language could misroute a quantum lab calibration request into
       SaaS. The catalog now routes that shape to the scientific-instrument lane

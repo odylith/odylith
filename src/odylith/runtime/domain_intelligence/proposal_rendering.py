@@ -37,13 +37,44 @@ def format_proposal_text(proposal: Mapping[str, Any]) -> str:
 
     intent = proposal.get("intent", {}) if isinstance(proposal.get("intent"), Mapping) else {}
     title = str(intent.get("title", "Greenfield Project")).strip()
-    label = str(intent.get("archetype_label", "General Project")).strip()
+    if proposal.get("mode") == "host_reasoned_proposal_request":
+        source = proposal.get("observed_source", {}) if isinstance(proposal.get("observed_source"), Mapping) else {}
+        ux = proposal.get("greenfield_ux", {}) if isinstance(proposal.get("greenfield_ux"), Mapping) else {}
+        contract = proposal.get("reasoning_contract", {}) if isinstance(proposal.get("reasoning_contract"), Mapping) else {}
+        lines = [
+            f"Odylith greenfield reasoning brief: {title}",
+            f"- source evidence: {source.get('source_posture', 'unknown')}; writes stay confirmation-gated",
+            "- proposal authorship: host model reasoning required",
+            f"- provider_calls_by_odylith_cli: {proposal.get('provider_calls', 0)}",
+            "",
+            "Host reasoning task",
+            f"- {proposal.get('host_instruction', 'Draft a concrete proposal from prompt and repo evidence.')}",
+            f"- next: {ux.get('next_best_action', 'draft the proposal, then ask for confirmation before writes')}",
+            "",
+            "Required proposal sections",
+        ]
+        for key in contract.get("required_top_level_keys", []) if isinstance(contract.get("required_top_level_keys"), list) else []:
+            lines.append(f"- {key}")
+        lines.extend(["", "Evidence rules"])
+        for rule in contract.get("evidence_rules", []) if isinstance(contract.get("evidence_rules"), list) else []:
+            lines.append(f"- {rule}")
+        lines.extend(["", "Quality bar"])
+        for rule in contract.get("quality_bar", []) if isinstance(contract.get("quality_bar"), list) else []:
+            lines.append(f"- {rule}")
+        lines.extend(["", "Apply"])
+        lines.append("No files changed. After the operator accepts a host-reasoned proposal, run:")
+        commands = proposal.get("apply_commands", [])
+        if isinstance(commands, list) and len(commands) > 1:
+            lines.append("  " + str(commands[1]))
+        return "\n".join(lines).rstrip() + "\n"
+
+    label = str(intent.get("fit_label", "General Project")).strip()
     confidence = str(intent.get("confidence", "")).strip()
     source = proposal.get("observed_source", {}) if isinstance(proposal.get("observed_source"), Mapping) else {}
     source_posture = str(source.get("source_posture", "unknown")).strip()
     lines = [
         f"Odylith greenfield proposal: {title}",
-        f"- archetype: {label} ({confidence} confidence)",
+        f"- fit: {label} ({confidence} confidence)",
         f"- source evidence: {source_posture}; writes stay confirmation-gated",
         f"- provider_calls: {proposal.get('provider_calls', 0)}",
     ]
@@ -51,9 +82,9 @@ def format_proposal_text(proposal: Mapping[str, Any]) -> str:
     alternatives = classification.get("alternatives", []) if isinstance(classification.get("alternatives"), list) else []
     if alternatives:
         rendered = ", ".join(
-            f"{row.get('archetype_label')} ({row.get('confidence')})"
+            f"{row.get('fit_label')} ({row.get('confidence')})"
             for row in alternatives
-            if isinstance(row, Mapping) and row.get("archetype_label")
+            if isinstance(row, Mapping) and row.get("fit_label")
         )
         if rendered:
             lines.append(f"- alternate fits: {rendered}")

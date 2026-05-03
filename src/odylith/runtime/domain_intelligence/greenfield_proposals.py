@@ -1,16 +1,16 @@
-"""Deterministic greenfield governance proposals for consumer repos.
+"""Host-reasoned greenfield governance contracts for consumer repos.
 
-This module turns user-stated project intent into confirmation-gated Radar,
-Registry, and Atlas drafts. It deliberately separates observed repository
-evidence from user intent and Odylith assumptions so empty consumer repos can
-receive useful guidance without fabricated source evidence.
+Odylith should not pretend a small built-in catalog can understand every
+possible project the operator may ask for. This module gives host models a
+strict evidence, schema, validation, and apply contract; the host model supplies
+the open-world project reasoning, and Odylith validates and writes only after
+explicit confirmation.
 """
 
 from __future__ import annotations
 
 import argparse
-import contextlib
-import io
+import datetime as dt
 import json
 import re
 from pathlib import Path
@@ -18,34 +18,15 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine import repo_analysis
 from odylith.runtime.analysis_engine.types import SourceSummary, slugify
-from odylith.runtime.domain_intelligence.archetypes import Archetype
-from odylith.runtime.domain_intelligence.archetypes import ComponentBlueprint
-from odylith.runtime.domain_intelligence.archetypes import catalog_metadata
-from odylith.runtime.domain_intelligence.archetypes import rank_archetypes
-from odylith.runtime.domain_intelligence.proposal_planning import build_greenfield_ux
-from odylith.runtime.domain_intelligence.proposal_planning import build_program_blueprint
-from odylith.runtime.domain_intelligence.proposal_planning import build_program_waves
-from odylith.runtime.domain_intelligence.proposal_planning import build_release_plan
-from odylith.runtime.domain_intelligence.proposal_planning import first_slice_validation_instruction
 from odylith.runtime.domain_intelligence.proposal_memory import record_greenfield_acceptance
-from odylith.runtime.domain_intelligence.proposal_rendering import build_apply_commands
 from odylith.runtime.domain_intelligence.proposal_rendering import format_proposal_text
+from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
+from odylith.runtime.domain_intelligence.proposal_validation import validated_mermaid_source
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import component_authoring
 from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import release_planning_authoring
 from odylith.runtime.surfaces import scaffold_mermaid_diagram
-
-
-_RESEARCH_ARCHETYPE_IDS = {
-    "science_math",
-    "formal_proof",
-    "computational_notebook",
-    "simulation_modeling",
-    "scientific_pipeline",
-    "geospatial_environmental",
-    "ml_experiment_platform",
-}
 
 
 def _prompt_text(prompt: str) -> str:
@@ -54,7 +35,7 @@ def _prompt_text(prompt: str) -> str:
     return text or "new project"
 
 
-def _intent_title(prompt: str, archetype: Archetype) -> str:
+def _intent_title(prompt: str) -> str:
     text = _prompt_text(prompt)
     lowered = text.casefold()
     for prefix in (
@@ -71,7 +52,7 @@ def _intent_title(prompt: str, archetype: Archetype) -> str:
             break
     text = re.sub(r"\b(for me|please|with backlog.*|and diagrams.*|and atlas.*)$", "", text, flags=re.IGNORECASE).strip(" .")
     if not text or len(text) < 4:
-        return archetype.label
+        return "Greenfield Project"
     words = [_title_token(word) for word in text.split()]
     return " ".join(words[:10])
 
@@ -111,15 +92,6 @@ def _title_token(token: str) -> str:
     return "-".join(rendered)
 
 
-def _complexity(prompt: str) -> str:
-    text = _prompt_text(prompt).casefold()
-    if any(token in text for token in ("simple", "tiny", "small", "single page", "minimal")):
-        return "simple"
-    if any(token in text for token in ("complex", "enterprise", "platform", "multi-service", "marketplace", "research", "simulation")):
-        return "complex"
-    return "medium"
-
-
 def _source_evidence(repo_root: Path) -> dict[str, Any]:
     identity = repo_analysis.read_project_identity(repo_root)
     summary = repo_analysis.summarize_source_inventory(repo_root)
@@ -144,280 +116,96 @@ def _source_evidence(repo_root: Path) -> dict[str, Any]:
     }
 
 
-def _component_path(project_slug: str, blueprint: ComponentBlueprint) -> str:
-    suffix = blueprint.path_suffix.strip("/")
-    repo_roots = ("apps/", "src/", "tests/", "docs/", "data/", "notebooks", "reports", "env", "reproducibility")
-    if suffix.startswith(repo_roots):
-        return suffix
-    return f"src/{project_slug}/{suffix}".strip("/")
-
-
-def _component_drafts(project_slug: str, archetype: Archetype, complexity: str) -> list[dict[str, Any]]:
-    limit = 4 if complexity == "simple" else 5 if complexity == "medium" else len(archetype.components)
-    rows: list[dict[str, Any]] = []
-    for blueprint in archetype.components[:limit]:
-        component_id = slugify(f"{project_slug}-{blueprint.component_id}")
-        rows.append(
-            {
-                "component_id": component_id,
-                "label": blueprint.label,
-                "kind": blueprint.kind,
-                "intended_path": _component_path(project_slug, blueprint),
-                "responsibility": blueprint.responsibility,
-                "evidence_tier": "user_intent",
-                "status": "planned",
-                "qualification": "candidate",
-            }
-        )
-    return rows
-
-
-def _workstream_drafts(intent_title: str, archetype: Archetype, components: Sequence[Mapping[str, Any]], complexity: str) -> list[dict[str, Any]]:
-    parent_title = f"Govern {intent_title}"
-    component_labels = [str(row.get("label", "")).strip() for row in components if str(row.get("label", "")).strip()]
-    first_slice = component_labels[0] if component_labels else archetype.label
-    first_slice_proof = first_slice_validation_instruction(archetype)
-    problem = (
-        f"The repo has a user-stated intent to build {intent_title}, but no confirmed governance plan yet. "
-        "Without a first proposal, backlog, component ownership, and topology would be invented ad hoc by later sessions."
-    )
-    customer = "Product builders, maintainers, and future agent sessions that need a shared project map before implementation."
-    opportunity = (
-        f"Create a confirmation-gated Odylith proposal for {intent_title} so delivery can start with explicit "
-        "workstreams, planned components, draft topology, assumptions, and validation obligations."
-    )
-    product_view = (
-        f"Odylith should hand-hold the operator with a concrete {archetype.label.lower()} proposal while labeling "
-        "every assumption and preserving the difference between user intent and observed source evidence."
-    )
-    metrics = [
-        "A parent workstream records the project intent and the first implementation slice.",
-        "Planned Registry components carry intended paths and user-intent evidence only.",
-        "Atlas contains draft topology before implementation starts.",
-        "Open assumptions are captured so future sessions can refine instead of re-asking from scratch.",
-    ]
-    rows = [
-        {
-            "title": parent_title,
-            "problem": problem,
-            "customer": customer,
-            "opportunity": opportunity,
-            "product_view": product_view,
-            "success_metrics": metrics,
-            "priority": "P1",
-            "sizing": "L" if complexity == "complex" else "M",
-            "complexity": "High" if complexity == "complex" else "Medium",
-            "recommended_first_slice": f"Start with {first_slice} and {first_slice_proof}.",
-            "evidence_tier": "user_intent",
-        }
-    ]
-    if complexity != "simple":
-        child_limit = 5 if complexity == "complex" else 3
-        for label in component_labels[:child_limit]:
-            rows.append(
-                {
-                    "title": f"Define {label} boundary",
-                    "problem": f"{label} needs a named ownership boundary before implementation work fans out.",
-                    "customer": customer,
-                    "opportunity": f"Make {label} independently reviewable, testable, and diagrammable.",
-                    "product_view": f"{label} should have clear responsibility, intended paths, validation, and topology links.",
-                    "success_metrics": [
-                        f"{label} has a Registry component with user-intent evidence.",
-                        f"{label} appears in at least one Atlas topology draft.",
-                        f"{label} has a validation obligation before source-backed status is claimed.",
-                    ],
-                    "priority": "P1",
-                    "sizing": "M",
-                    "complexity": "Medium",
-                    "recommended_first_slice": f"Write the first {label} contract and {first_slice_proof}.",
-                    "evidence_tier": "user_intent",
-                }
-            )
-    return rows
-
-
-def _diagram_drafts(project_slug: str, intent_title: str, archetype: Archetype, components: Sequence[Mapping[str, Any]], complexity: str) -> list[dict[str, Any]]:
-    limit = 1 if complexity == "simple" else 2 if complexity == "medium" else len(archetype.diagrams)
-    component_rows = [
-        {
-            "name": str(row.get("label", "")).strip(),
-            "description": str(row.get("responsibility", "")).strip(),
-        }
-        for row in components
-        if str(row.get("label", "")).strip()
-    ]
-    intended_paths = [str(row.get("intended_path", "")).strip() for row in components if str(row.get("intended_path", "")).strip()]
-    rows: list[dict[str, Any]] = []
-    for blueprint in archetype.diagrams[:limit]:
-        rows.append(
-            {
-                "slug": slugify(f"{project_slug}-{blueprint.slug_suffix}"),
-                "title": f"{intent_title} {blueprint.title_suffix}",
-                "kind": blueprint.kind,
-                "summary": blueprint.summary,
-                "owner": "repo",
-                "status": "draft",
-                "link_state": "atlas_first_draft",
-                "components": component_rows,
-                "intended_paths": intended_paths[:6],
-                "watch_paths": [],
-                "evidence_tier": "user_intent",
-            }
-        )
-    return rows
-
-
-def _assumptions(intent_title: str, archetype: Archetype, evidence: Mapping[str, Any]) -> list[str]:
-    rows = [
-        f"The project name and first boundaries are inferred from the prompt as `{intent_title}`.",
-        "The proposed paths are intended starting points and can be changed before apply.",
-        "Registry components are planned candidates until source files or stronger design docs exist.",
-    ]
-    if not evidence.get("languages"):
-        rows.append("No language/runtime was inferred from repo metadata, so paths stay framework-neutral.")
-    if archetype.archetype_id == "formal_proof":
-        rows.append("Mathematical truth is not inferred; proof obligations stay draft until a proof checker or human review verifies them.")
-    elif archetype.archetype_id in _RESEARCH_ARCHETYPE_IDS:
-        rows.append("Scientific, statistical, environmental, or model claims are not inferred; only structure, evidence tracking, and validation obligations are proposed.")
-    return rows
-
-
-def _questions(archetype: Archetype, complexity: str) -> list[str]:
-    rows = [
-        "Which stack or runtime should own the first implementation slice?",
-        "Which user, operator, or reviewer should be treated as the primary customer?",
-    ]
-    if complexity == "complex":
-        rows.append("Which subsystem should be implemented first so the rest of the proposal can be validated against real code?")
-    if archetype.archetype_id == "formal_proof":
-        rows.extend(
-            [
-                "Which proof assistant, source text, or theorem collection should anchor the first formalization wave?",
-                "Which definitions, admitted lemmas, or counterexample checks are non-negotiable before proof status is claimed?",
-            ]
-        )
-    elif archetype.archetype_id == "computational_notebook":
-        rows.extend(
-            [
-                "Which datasets, notebooks, and report outputs should become the first reproducibility oracle?",
-                "Which statistical assumptions, cleaning rules, and random seeds must be locked before publication claims?",
-            ]
-        )
-    elif archetype.archetype_id == "simulation_modeling":
-        rows.extend(
-            [
-                "What reference datasets, derivations, or benchmark results should become the first correctness oracle?",
-                "Which tolerances, units, and reproducibility constraints are non-negotiable?",
-            ]
-        )
-    elif archetype.archetype_id == "scientific_pipeline":
-        rows.extend(
-            [
-                "Which raw datasets, instruments, or external archives should anchor provenance for the first pipeline wave?",
-                "Which stage-level quality-control checks should block promoted outputs?",
-            ]
-        )
-    elif archetype.archetype_id == "geospatial_environmental":
-        rows.extend(
-            [
-                "Which coordinate reference systems, spatial extents, and temporal coverage windows are authoritative?",
-                "Which reference maps or sample regions should prove the first geospatial output?",
-            ]
-        )
-    elif archetype.archetype_id == "ml_experiment_platform":
-        rows.extend(
-            [
-                "Which dataset versions, splits, metrics, and promotion thresholds define the first accepted model candidate?",
-                "Which latency, cost, drift, or safety checks must block release promotion?",
-            ]
-        )
-    elif archetype.archetype_id == "math_education":
-        rows.extend(
-            [
-                "Which learner level, curriculum sequence, and prerequisite model should shape the first lesson wave?",
-                "Who reviews mathematical correctness for exercises, hints, and worked examples?",
-            ]
-        )
-    return rows
+def _proposal_contract() -> dict[str, Any]:
+    return {
+        "required_top_level_keys": [
+            "schema_version",
+            "mode",
+            "intent",
+            "observed_source",
+            "assumptions",
+            "open_questions",
+            "risks",
+            "validation_strategy",
+            "program",
+            "release_plan",
+            "backlog",
+            "components",
+            "diagrams",
+        ],
+        "evidence_rules": [
+            "Use observed_source only for facts found in the repo.",
+            "Use user_intent for facts stated or directly implied by the operator prompt.",
+            "Use odylith_assumption for useful architecture choices that need confirmation.",
+            "Never mark source-backed ownership or scientific/math correctness from prompt text alone.",
+        ],
+        "minimum_content": {
+            "backlog": "parent workstream plus child workstreams when the project has multiple meaningful boundaries",
+            "components": "candidate Registry components with component_id, label, intended_path, responsibility, evidence_tier, status, and qualification",
+            "diagrams": "purposeful Atlas drafts such as system context, program waves, runtime/data/validation topology, or a better domain-specific set",
+            "program": "wave plan with goals, validation gates, component focus, and evidence tier",
+            "release_plan": "provisional release selector, stages, milestones, and promotion criteria",
+        },
+        "quality_bar": [
+            "Reason from the actual prompt, not from a fixed in-code domain list.",
+            "Prefer fewer high-quality boundaries over many generic buckets.",
+            "Choose diagram types because they clarify the project, not because every project gets the same set.",
+            "Each diagram must include host-authored mermaid_source; Odylith validates it but does not invent topology.",
+            "For science and math, propose validation obligations and review gates; do not invent claims or results.",
+            "For simple projects, keep the plan small; for complex projects, form waves and release gates.",
+        ],
+    }
 
 
 def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]:
-    """Compile a provider-free greenfield proposal from prompt and shallow repo evidence."""
+    """Return the host-reasoning contract for an open-world greenfield prompt."""
 
     root = Path(repo_root).expanduser().resolve()
-    ranked_archetypes = rank_archetypes(prompt, limit=3)
-    archetype, _raw_score, confidence = ranked_archetypes[0]
-    intent_title = _intent_title(prompt, archetype)
+    intent_title = _intent_title(prompt)
     project_slug = slugify(intent_title)
-    complexity = _complexity(prompt)
     evidence = _source_evidence(root)
-    components = _component_drafts(project_slug, archetype, complexity)
-    workstreams = _workstream_drafts(intent_title, archetype, components, complexity)
-    diagrams = _diagram_drafts(project_slug, intent_title, archetype, components, complexity)
-    waves = build_program_waves(archetype, components)
-    proposal = {
-        "schema_version": "odylith.greenfield.proposal.v1",
-        "mode": "greenfield_proposal",
+    proposal: dict[str, Any] = {
+        "schema_version": "odylith.greenfield.reasoning_request.v1",
+        "mode": "host_reasoned_proposal_request",
         "provider_calls": 0,
         "host_agnostic": True,
-        "write_policy": "proposal_first_confirm_before_apply",
-        "catalog": catalog_metadata(),
+        "write_policy": "host_reason_first_confirm_before_apply",
         "intent": {
             "prompt": _prompt_text(prompt),
             "title": intent_title,
             "project_slug": project_slug,
-            "archetype": archetype.archetype_id,
-            "archetype_label": archetype.label,
-            "complexity": complexity,
-            "confidence": round(confidence, 2),
+            "reasoning_mode": "host_model_required",
             "evidence_tier": "user_intent",
         },
         "classification": {
-            "method": "deterministic_keyword_archetype_scoring",
-            "primary": {
-                "archetype": archetype.archetype_id,
-                "archetype_label": archetype.label,
-                "confidence": round(confidence, 2),
-            },
-            "alternatives": [
-                {
-                    "archetype": candidate.archetype_id,
-                    "archetype_label": candidate.label,
-                    "confidence": round(candidate_confidence, 2),
-                }
-                for candidate, _candidate_score, candidate_confidence in ranked_archetypes[1:]
-            ],
-            "fit_policy": "Use the primary fit by default; ask the operator before switching when alternate fits would change topology or validation.",
+            "method": "open_world_host_reasoning",
+            "fit_policy": "The host model must infer the project family, boundaries, topology, validation, and release shape from prompt plus repo evidence.",
             "provider_calls": 0,
         },
         "observed_source": evidence,
-        "greenfield_ux": build_greenfield_ux(
-            intent_title=intent_title,
-            source_posture=str(evidence.get("source_posture", "unknown")),
-            complexity=complexity,
-        ),
-        "assumptions": _assumptions(intent_title, archetype, evidence),
-        "open_questions": _questions(archetype, complexity),
-        "risks": list(archetype.risks),
-        "validation_strategy": list(archetype.validation_focus),
-        "program": {
-            "shape": "program_with_waves" if len(workstreams) > 1 else "single_slice_with_wave_plan",
-            "wave_count": len(waves),
-            "recommended_first_wave": str(waves[0].get("label", "Discovery")).strip() if waves else "Discovery",
-            "blueprint": build_program_blueprint(
-                intent_title=intent_title,
-                archetype=archetype,
-                workstreams=workstreams,
-                waves=waves,
-            ),
-            "waves": waves,
+        "greenfield_ux": {
+            "mode": "consumer_greenfield_host_reasoned_proposal",
+            "source_posture": evidence.get("source_posture", "unknown"),
+            "operator_sequence": [
+                "host model drafts the concrete proposal from prompt and repo evidence",
+                "operator reviews or edits assumptions, boundaries, diagrams, waves, and release plan",
+                "Odylith validates and applies the confirmed proposal only after explicit confirmation",
+            ],
+            "write_guardrail": "This command does not write proposal records; host reasoning produces the draft, apply validates and writes after confirmation.",
+            "next_best_action": f"Use host reasoning to draft backlog, Registry, Atlas, waves, release plan, validation, and open questions for {intent_title}.",
         },
-        "release_plan": build_release_plan(intent_title, archetype, waves),
-        "backlog": workstreams,
-        "components": components,
-        "diagrams": diagrams,
+        "reasoning_contract": _proposal_contract(),
+        "host_instruction": (
+            "Draft a concrete proposal for the operator now. Be specific to the prompt; "
+            "do not use canned domain buckets. Label observed_source, user_intent, "
+            "and odylith_assumption separately. Ask only the questions that materially "
+            "change the first slice or correctness gates."
+        ),
+        "apply_commands": [
+            "Save the host-reasoned proposal JSON to odylith-greenfield-proposal.json after operator review.",
+            "odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm --release next",
+        ],
     }
-    proposal["apply_commands"] = build_apply_commands(proposal)
     return proposal
 
 
@@ -547,6 +335,7 @@ def apply_greenfield_proposal(
 
     if not confirm:
         raise ValueError("--confirm is required before greenfield apply writes governance records")
+    validate_host_reasoned_proposal(proposal)
     root = Path(repo_root).expanduser().resolve()
     backlog_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
     if not backlog_rows:
@@ -623,31 +412,16 @@ def apply_greenfield_proposal(
         if not isinstance(row, Mapping):
             continue
         diagram_id = _next_diagram_id(root)
-        argv = [
-            "--repo-root",
-            str(root),
-            "--diagram-id",
-            diagram_id,
-            "--slug",
-            str(row.get("slug", "")).strip(),
-            "--title",
-            str(row.get("title", "")).strip(),
-            "--kind",
-            str(row.get("kind", "flowchart")).strip() or "flowchart",
-            "--owner",
-            str(row.get("owner", "repo")).strip() or "repo",
-            "--summary",
-            str(row.get("summary", "")).strip(),
-        ]
+        components: list[dict[str, str]] = []
         for component in row.get("components", []):
             if not isinstance(component, Mapping):
                 continue
             name = str(component.get("name", "")).strip()
             description = str(component.get("description", "")).strip()
             if name and description:
-                argv.extend(["--component", f"{name}::{description}"])
-        for created in backlog_result["created"][:1]:
-            argv.extend(["--backlog", str(created["idea_path"])])
+                components.append({"name": name, "description": description})
+        related_backlog = [str(created["idea_path"]) for created in backlog_result["created"][:1]]
+        watch_paths: list[str] = []
         for path in row.get("watch_paths", []):
             token = str(path).strip()
             if not token:
@@ -658,11 +432,26 @@ def apply_greenfield_proposal(
             except ValueError:
                 continue
             if candidate.exists():
-                argv.extend(["--watch", token])
-        scaffold_output = io.StringIO()
-        with contextlib.redirect_stdout(scaffold_output):
-            rc = scaffold_mermaid_diagram.main(argv)
-        log_text = scaffold_output.getvalue().strip()
+                watch_paths.append(token)
+        rc, log_lines = scaffold_mermaid_diagram.scaffold_diagram(
+            repo_root=root,
+            catalog="odylith/atlas/source/catalog/diagrams.v1.json",
+            diagram_id=diagram_id,
+            slug=str(row.get("slug", "")).strip(),
+            title=str(row.get("title", "")).strip(),
+            kind=str(row.get("kind", "flowchart")).strip() or "flowchart",
+            owner=str(row.get("owner", "repo")).strip() or "repo",
+            summary=str(row.get("summary", "")).strip(),
+            components=components,
+            related_backlog=related_backlog,
+            related_plans=[],
+            related_docs=[],
+            related_code=[],
+            watch_paths=watch_paths,
+            review_date=dt.date.today().isoformat(),
+            starter_source=validated_mermaid_source(row),
+        )
+        log_text = "\n".join(log_lines).strip()
         if log_text:
             atlas_scaffold_logs.append(log_text)
         if rc != 0:

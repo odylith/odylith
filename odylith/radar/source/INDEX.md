@@ -1,6 +1,6 @@
 # Backlog Index
 
-Last updated (UTC): 2026-05-03
+Last updated (UTC): 2026-05-02
 ## Ranked Active Backlog
 
 | rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |

@@ -573,6 +573,7 @@ def test_compass_current_workstreams_excludes_rows_already_represented_in_progra
         compass.locator(
             "#execution-waves-host .execution-wave-section-title, "
             "#execution-waves-host a.execution-wave-chip-link, "
+            "#release-groups-host a.execution-wave-chip-link, "
             "#release-groups-host a.execution-wave-card-link"
         ).evaluate_all(
             """(nodes) => {

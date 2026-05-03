@@ -205,8 +205,9 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert waves_js.count('sectionClassName: "execution-wave-section-program-card"') == 2
     assert 'if (value === null || value === undefined || value === "") return null;' in waves_js
     assert 'Object.prototype.hasOwnProperty.call(plan, "display_progress_ratio")' in waves_js
-    assert '${renderMemberChip(ideaId, { selected: ideaId === scopedWorkstream, link: false })}' in releases_js
-    assert 'class="${cardClassNames.join(" ")} execution-wave-card-link"' in releases_js
+    assert '${renderMemberChip(ideaId, { selected: ideaId === scopedWorkstream })}' in releases_js
+    assert '<article class="${cardClassNames.join(" ")}" data-workstream-id="${escapeHtml(ideaId)}">' in releases_js
+    assert '<a class="execution-wave-title execution-wave-card-link"' in releases_js
     assert 'data-workstream-id="${escapeHtml(ideaId)}"' in releases_js
     assert 'aria-label="${escapeHtml(cardLabel)}"' in releases_js
     assert '${titleChips.join("")}' in releases_js
@@ -221,7 +222,7 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert "Release-owned targeted workstreams for this selection." not in releases_js
     assert "execution-wave-focus-grid" not in releases_js
     assert 'progressLabel ? `<span class="label execution-wave-label wave-progress-chip">${escapeHtml(progressLabel)}</span>` : ""' in releases_js
-    assert releases_js.index('${titleChips.join("")}') < releases_js.index('<div class="execution-wave-title">${escapeHtml(title)}</div>')
+    assert releases_js.index('${titleChips.join("")}') < releases_js.index('<a class="execution-wave-title execution-wave-card-link"')
     assert releases_js.index('const metaChips = [') < releases_js.index('progressLabel ? `<span class="label execution-wave-label wave-progress-chip">${escapeHtml(progressLabel)}</span>` : ""')
     assert "execution-wave-focus-title" not in releases_js
     assert "`Open radar for ${token}`" in releases_js

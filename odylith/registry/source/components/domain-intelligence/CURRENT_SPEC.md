@@ -4,16 +4,15 @@ Last updated: 2026-05-02
 
 ## Overview
 
-Domain Intelligence is the provider-free runtime that turns greenfield consumer
-intent into confirmation-gated Odylith governance proposals. It is the owner
-for project archetype selection, program-wave planning, provisional release
-planning, proposed component maps, draft Atlas topology, assumptions, risks,
-validation obligations, and apply commands for empty or thin repos.
+Domain Intelligence is the host-reasoning contract and confirmation-gated apply
+runtime for greenfield consumer governance. It gives Claude, Codex, and future
+hosts a strict evidence/schema/validation contract, then writes accepted
+backlog, Registry, Atlas, release, Compass, assumptions, risks, and validation
+records only after explicit confirmation.
 
 ## Boundary
 
-- **Logical boundary**: deterministic domain-intent compilation for greenfield
-  consumer-lane proposals.
+- **Logical boundary**: host-reasoned greenfield proposal validation and apply.
 - **Evidence anchor**: `src/odylith/runtime/domain_intelligence`
 - **Kind**: library
 - **Status**: active
@@ -25,64 +24,52 @@ validation obligations, and apply commands for empty or thin repos.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-05-02 · Implementation:** Hardened B-142 Domain Intelligence with alternate-fit classification, acronym-safe titles, dedicated proposal rendering, program-formation output, migration-observer markers, full engine/install/browser proof, and fresh empty-consumer apply proof.
+- **2026-05-03 · Implementation:** Corrected B-142 Domain Intelligence away from the deleted in-code project taxonomy and into a host-reasoned proposal contract with apply-time validation, required host-authored Mermaid sources, duplicate-topology rejection, migration-observer markers, and fresh proof.
   - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/archetypes.py, src/odylith/runtime/domain_intelligence/greenfield_proposals.py +2 more
-- **2026-05-02 · Implementation:** Deepened B-142 Domain Intelligence with first-class science/math archetypes, greenfield UX/release planning module, refreshed governance surfaces, and full engine/install/browser proof.
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_proposals.py, src/odylith/runtime/domain_intelligence/proposal_validation.py +2 more
+- **2026-05-03 · Implementation:** B-142 Domain Intelligence keeps greenfield UX/release planning, Compass memory, and owned Radar/Registry/Atlas apply paths, but project-specific backlog/component/diagram reasoning belongs to the active host model under Odylith's evidence and confirmation gates.
   - Scope: B-142
-  - Evidence: odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md, src/odylith/runtime/domain_intelligence/archetypes.py +1 more
+  - Evidence: odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md, tests/unit/runtime/test_greenfield_proposals.py
 <!-- registry-requirements:end -->
 
 ## Feature History
 
+- 2026-05-03: Replaced the v0.1.13 in-code project-taxonomy path with a host-reasoning evidence/schema contract because a small checked-in catalog cannot cover open-world user intent. The CLI now supplies repo evidence and guardrails; the host model authors the concrete proposal; Odylith validates and applies after confirmation. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
+- 2026-05-03: Added `proposal_validation.py` so greenfield apply requires host-authored Mermaid topology per diagram and rejects missing or duplicated diagram source before any Radar, Registry, Atlas, release, or Compass write. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-05-03: Registered `domain-intelligence` through `odylith component register` and linked it to B-142/D-043 as the first-class owner for universal greenfield proposal intelligence. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
-- 2026-05-03: Expanded the catalog with first-class science/math subdomains: formal proof, computational notebooks, numerical simulation, scientific pipelines, geospatial/environmental analysis, ML experiment platforms, and math education. Split program/release/UX planning into `proposal_planning.py` so the proposal compiler stays below the soft source size line while keeping host behavior identical. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
-- 2026-05-03: Added deterministic fit explainability, alternate archetype candidates, acronym-safe project titles, domain-specific first-slice validation language, and `proposal_rendering.py` so operator-facing text and apply commands have a focused owner. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
+- 2026-05-03: Deleted the in-code taxonomy and proposal-planning modules from the active proposal-authoring path. The active host model now owns project-specific reasoning; Odylith owns source posture, evidence tiers, schema validation, apply safety, and durable memory. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
+- 2026-05-03: Added `proposal_rendering.py` so operator-facing text and apply commands have a focused owner without encoding canned narration or project templates. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 
 ## Contract
 
-- `archetypes.py` owns the v0.1.13 built-in seed catalog and the catalog API.
-  New domains are structured archetype records, not host-specific prompt hacks;
-  future signed domain packs or marketplace catalogs must compose through the
-  same catalog boundary instead of bypassing proposal scoring.
-- `proposal_planning.py` owns reusable program-wave, release-plan, and
-  greenfield UX compilation, including parent/child workstream strategy and
-  wave-to-workstream release policy.
+- `greenfield_proposals.py` owns the host-reasoning request contract and the
+  confirmed apply path. It must not infer final project boundaries from a fixed
+  in-code domain list.
 - `proposal_rendering.py` owns operator-facing text and apply-command rendering
   so proposal compilation, planning, and presentation stay decoupled.
-- `greenfield_proposals.py` owns proposal compilation and confirmed apply.
-- Proposal output must include classification fit, observed source posture, user
+- `proposal_validation.py` owns host-reasoned proposal validation, required
+  Mermaid source checks, evidence-tier checks, and duplicate-topology rejection.
+  Generic Atlas scaffold remains the low-level catalog/source writer; Domain
+  Intelligence validates host-authored topology instead of inventing it.
+- Host-reasoned proposal output must include observed source posture, user
   intent, Odylith assumptions, backlog candidates, program formation, program
-  waves, release plan, planned Registry components, draft Atlas diagrams,
+  waves, release plan, planned Registry components, host-authored draft Atlas
+  Mermaid sources,
   validation strategy, risks, open questions, and exact apply commands.
-- Default proposal generation must not call providers or host models.
+- Default CLI proposal request generation must not call providers directly; the
+  active host model supplies the reasoning in Claude/Codex sessions.
 - Apply must require `--confirm` and write only through owned Radar, Registry,
   Atlas, and release-targeting paths.
 
 ## Research Basis
 
-The v0.1.13 catalog is intentionally broader than a web-app starter. It follows
-current public ecosystem shapes: high-volume application and AI/data project
-creation, cloud-native platform categories, mature open-source project families
-across data/cloud/search/libraries/geospatial/IoT, and science software that
-depends on datasets, analysis pipelines, simulations, reproducible notebooks,
-visualization, and sustained numerical libraries. The catalog should grow by
-adding structured archetypes and validation obligations, not by adding host
-prompt text.
-
-The checked-in archetypes are a built-in seed pack for this release, not a
-closed catalog strategy. The runtime exposes catalog metadata so later releases
-can add external or marketplace-distributed domain catalogs while preserving the
-same provider-free scoring, evidence-tier separation, and confirmation-gated
-apply path.
-
-The science/math family must stay specific: formal proof proposals use proof
-checker and theorem-review obligations, numerical simulation uses unit,
-tolerance, and convergence obligations, notebooks use clean execution and
-statistical-assumption obligations, geospatial analysis uses CRS/extent/temporal
-coverage obligations, ML experiment platforms use dataset lineage and promotion
-gates, and math education uses exercise, progression, accessibility, and
-human-reviewed mathematical-truth obligations.
+The v0.1.13 runtime deliberately avoids a hardcoded domain catalog as the
+proposal author. User requests can span any product, science, math, research,
+art, policy, infrastructure, or mixed project shape. Until Odylith has a real
+marketplace or collectively curated domain catalog, the right architecture is
+host-reasoned authorship plus Odylith validation. The host model reasons from
+the actual prompt and repo evidence; Odylith enforces evidence tiers,
+confirmation gates, topology requirements, apply schema, and durable memory.
 
 ## Dependencies
 
