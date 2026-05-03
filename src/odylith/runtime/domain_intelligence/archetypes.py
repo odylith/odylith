@@ -1,13 +1,18 @@
-"""Provider-free domain archetypes for Odylith greenfield proposals.
+"""Provider-free domain archetype contracts for greenfield proposals.
 
-The catalog is intentionally data-first. Adding a future project domain should
-mean adding an archetype here, not branching host-specific proposal logic.
+The archetypes below are the v0.1.13 built-in seed catalog. They are checked in
+so empty consumer repos get useful proposal intelligence without network,
+provider, or marketplace access. The public API in this module is catalog-based
+on purpose: future releases can layer signed domain packs or marketplace
+catalogs beside these built-ins without moving the scoring or proposal logic
+into host prompts.
 """
 
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from typing import Sequence
 
 
 @dataclass(frozen=True)
@@ -44,6 +49,19 @@ class Archetype:
     waves: tuple[WaveBlueprint, ...]
     validation_focus: tuple[str, ...]
     risks: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class DomainCatalog:
+    catalog_id: str
+    version: str
+    source: str
+    archetypes: tuple[Archetype, ...]
+    marketplace_ready: bool = True
+
+
+BUILTIN_CATALOG_ID = "odylith.domain_catalog.builtin"
+BUILTIN_CATALOG_VERSION = "0.1.13"
 
 
 _SCIENCE_VALIDATION = (
@@ -125,7 +143,11 @@ _MATH_EDUCATION_WAVES = (
 )
 
 
-ARCHETYPES: tuple[Archetype, ...] = (
+# Built-in seed pack for v0.1.13. This is intentionally deterministic and
+# provider-free; it is not the long-term extension mechanism. Keep new domains
+# as structured Archetype records so a future marketplace loader can validate
+# and compose external domain packs through the same contract.
+BUILTIN_ARCHETYPES: tuple[Archetype, ...] = (
     Archetype(
         archetype_id="commerce",
         label="Commerce Application",
@@ -381,6 +403,7 @@ ARCHETYPES: tuple[Archetype, ...] = (
         keywords=(
             "science", "scientific", "math", "mathematics", "research codebase",
             "research project", "chemistry", "scientific model", "mathematical model",
+            "quantum", "qubit", "quantum lab",
         ),
         components=(
             ComponentBlueprint("model-core", "Model Core", "library", "src/model", "Mathematical model, assumptions, equations, and domain objects."),
@@ -519,7 +542,11 @@ ARCHETYPES: tuple[Archetype, ...] = (
     Archetype(
         archetype_id="iot_instrumentation",
         label="IoT, Robotics, Or Scientific Instrument Workflow",
-        keywords=("iot", "embedded", "device", "sensor", "robot", "robotics", "instrument", "telemetry", "edge", "calibration"),
+        keywords=(
+            "iot", "embedded", "device", "sensor", "robot", "robotics", "instrument",
+            "scientific instrument", "lab calibration", "quantum lab calibration",
+            "telemetry", "edge", "calibration",
+        ),
         components=(
             ComponentBlueprint("device-runtime", "Device Runtime", "runtime", "src/device", "Firmware, embedded runtime, or device control boundary."),
             ComponentBlueprint("edge-gateway", "Edge Gateway", "service", "src/edge", "Local buffering, command mediation, and offline behavior."),
@@ -548,7 +575,7 @@ ARCHETYPES: tuple[Archetype, ...] = (
     Archetype(
         archetype_id="saas_application",
         label="SaaS Application",
-        keywords=("saas", "crm", "dashboard", "admin", "internal tool", "b2b", "tenant", "workflow", "portal"),
+        keywords=("saas", "crm", "dashboard", "admin", "internal tool", "b2b", "tenant", "business workflow", "portal"),
         components=(
             ComponentBlueprint("web-app", "Web App", "application", "apps/web", "User-facing screens, navigation, and client state."),
             ComponentBlueprint("api", "API", "service", "src/api", "HTTP/API contract, validation, and request orchestration."),
@@ -654,6 +681,16 @@ ARCHETYPES: tuple[Archetype, ...] = (
     ),
 )
 
+# Compatibility alias for older internal imports. New code should call
+# `builtin_catalog()` or pass an explicit catalog into `rank_archetypes`.
+ARCHETYPES = BUILTIN_ARCHETYPES
+BUILTIN_CATALOG = DomainCatalog(
+    catalog_id=BUILTIN_CATALOG_ID,
+    version=BUILTIN_CATALOG_VERSION,
+    source="built_in_seed",
+    archetypes=BUILTIN_ARCHETYPES,
+)
+
 
 def _words(value: str) -> set[str]:
     return {token for token in re.findall(r"[a-z0-9]+", str(value or "").casefold()) if token}
@@ -680,23 +717,95 @@ def _confidence_for_score(score: int) -> float:
     return min(0.92, 0.48 + (score * 0.06))
 
 
-def rank_archetypes(prompt: str, *, limit: int = 3) -> tuple[tuple[Archetype, int, float], ...]:
-    """Return deterministic archetype candidates for fit explainability."""
+def builtin_archetypes() -> tuple[Archetype, ...]:
+    """Return the shipped zero-network domain catalog."""
 
+    return BUILTIN_ARCHETYPES
+
+
+def builtin_catalog() -> DomainCatalog:
+    """Return the shipped v0.1.13 seed catalog.
+
+    The catalog object is the extension point. Future signed or marketplace
+    domain packs should populate this same shape instead of special-casing the
+    proposal compiler or host hooks.
+    """
+
+    return BUILTIN_CATALOG
+
+
+def _coerce_catalog(catalog: DomainCatalog | Sequence[Archetype] | None = None) -> DomainCatalog:
+    if catalog is None:
+        return builtin_catalog()
+    if isinstance(catalog, DomainCatalog):
+        if not catalog.archetypes:
+            raise ValueError("domain catalog must contain at least one archetype")
+        return catalog
+    rows = tuple(catalog)
+    if not rows:
+        raise ValueError("domain catalog must contain at least one archetype")
+    return DomainCatalog(
+        catalog_id="odylith.domain_catalog.explicit",
+        version="unversioned",
+        source="explicit_catalog",
+        archetypes=rows,
+    )
+
+
+def catalog_metadata(catalog: DomainCatalog | Sequence[Archetype] | None = None) -> dict[str, object]:
+    """Describe the catalog used for proposal classification."""
+
+    active = _coerce_catalog(catalog)
+    return {
+        "catalog_id": active.catalog_id,
+        "catalog_version": active.version,
+        "catalog_source": active.source,
+        "marketplace_ready": active.marketplace_ready,
+        "archetype_count": len(active.archetypes),
+        "archetypes": [row.archetype_id for row in active.archetypes],
+    }
+
+
+def _catalog_rows(catalog: DomainCatalog | Sequence[Archetype] | None) -> tuple[Archetype, ...]:
+    return _coerce_catalog(catalog).archetypes
+
+
+def rank_archetypes(
+    prompt: str,
+    *,
+    limit: int = 3,
+    catalog: DomainCatalog | Sequence[Archetype] | None = None,
+    archetypes: Sequence[Archetype] | None = None,
+) -> tuple[tuple[Archetype, int, float], ...]:
+    """Return deterministic archetype candidates from the active catalog."""
+
+    if catalog is not None and archetypes is not None:
+        raise ValueError("pass either catalog or archetypes, not both")
+    rows = _catalog_rows(catalog if catalog is not None else archetypes)
     ranked = sorted(
-        ((_score_archetype(prompt, archetype), archetype) for archetype in ARCHETYPES),
+        ((_score_archetype(prompt, archetype), archetype) for archetype in rows),
         key=lambda row: (row[0], 0 if row[1].archetype_id == "general_application" else 1, row[1].archetype_id),
         reverse=True,
     )
     scored = [(archetype, score, _confidence_for_score(score)) for score, archetype in ranked if score > 0]
     if not scored:
-        fallback = next(item for item in ARCHETYPES if item.archetype_id == "general_application")
+        fallback = next((item for item in rows if item.archetype_id == "general_application"), rows[0])
         return ((fallback, 0, _confidence_for_score(0)),)
     return tuple(scored[: max(1, limit)])
 
 
-def select_archetype(prompt: str) -> tuple[Archetype, float]:
+def select_archetype(
+    prompt: str,
+    *,
+    catalog: DomainCatalog | Sequence[Archetype] | None = None,
+    archetypes: Sequence[Archetype] | None = None,
+) -> tuple[Archetype, float]:
     """Return the highest-scoring archetype and a bounded confidence score."""
 
-    archetype, _score, confidence = rank_archetypes(prompt, limit=1)[0]
+    archetype, _score, confidence = rank_archetypes(
+        prompt,
+        limit=1,
+        catalog=catalog,
+        archetypes=archetypes,
+    )[0]
     return archetype, confidence

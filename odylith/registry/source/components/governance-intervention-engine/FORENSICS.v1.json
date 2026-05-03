@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 140,
-    "mapped_workstream_evidence_count": 111,
+    "explicit_event_count": 141,
+    "mapped_workstream_evidence_count": 112,
     "recent_path_match_count": 0,
     "spec_history_event_count": 31,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 140
+    "timeline_event_count": 141
   },
   "name": "Governance Intervention Engine",
   "path_prefixes": [
@@ -147,6 +147,41 @@
       "summary": "Odylith Observation: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Why it matters: Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
       "ts_iso": "2026-05-02T23:03:33Z",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/archetypes.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+        "src/odylith/runtime/domain_intelligence/proposal_planning.py",
+        "src/odylith/runtime/domain_intelligence/proposal_rendering.py"
+      ],
+      "confidence": "high",
+      "event_index": 453,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Hardened B-142 Domain Intelligence with alternate-fit classification, acronym-safe titles, dedicated proposal rendering, program-formation output, migration-observer markers, full engine/install/browser proof, and fresh empty-consumer apply proof.",
+      "ts_iso": "2026-05-02T20:27:37-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

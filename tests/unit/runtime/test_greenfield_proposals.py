@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from odylith.runtime.domain_intelligence import archetypes
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.governance import backlog_authoring
 
@@ -50,6 +51,9 @@ def test_greenfield_ecommerce_prompt_proposes_backlog_components_and_topology(tm
     assert proposal["mode"] == "greenfield_proposal"
     assert proposal["provider_calls"] == 0
     assert proposal["write_policy"] == "proposal_first_confirm_before_apply"
+    assert proposal["catalog"]["catalog_source"] == "built_in_seed"
+    assert proposal["catalog"]["marketplace_ready"] is True
+    assert "commerce" in proposal["catalog"]["archetypes"]
     assert proposal["intent"]["archetype"] == "commerce"
     assert proposal["classification"]["method"] == "deterministic_keyword_archetype_scoring"
     assert proposal["classification"]["provider_calls"] == 0
@@ -76,6 +80,42 @@ def test_greenfield_ecommerce_prompt_proposes_backlog_components_and_topology(tm
     assert "proof harness" not in first_slice
     assert "odylith greenfield apply" in proposal["apply_commands"][1]
     assert "--release 'next'" in proposal["apply_commands"][1]
+
+
+def test_domain_catalog_api_accepts_future_external_archetype_pack() -> None:
+    quantum_lab = archetypes.Archetype(
+        archetype_id="quantum_lab",
+        label="Quantum Lab Workflow",
+        keywords=("quantum lab", "qubit calibration"),
+        components=(
+            archetypes.ComponentBlueprint("lab-control", "Lab Control", "service", "src/lab", "Experiment control boundary."),
+        ),
+        diagrams=(
+            archetypes.DiagramBlueprint("lab-topology", "Lab Topology", "Show control, instruments, and validation boundaries."),
+        ),
+        waves=(
+            archetypes.WaveBlueprint("Calibration", "Pin calibration scope.", "Reference runs are recorded."),
+        ),
+        validation_focus=("Calibration reference runs stay versioned.",),
+        risks=("Instrument claims require observed lab evidence.",),
+    )
+
+    external_catalog = archetypes.DomainCatalog(
+        catalog_id="example.domain_catalog.quantum_lab",
+        version="2026.1",
+        source="marketplace",
+        archetypes=(quantum_lab,),
+    )
+
+    ranked = archetypes.rank_archetypes("govern a quantum lab", catalog=external_catalog)
+    metadata = archetypes.catalog_metadata(external_catalog)
+
+    assert ranked[0][0].archetype_id == "quantum_lab"
+    assert metadata["catalog_id"] == "example.domain_catalog.quantum_lab"
+    assert metadata["catalog_version"] == "2026.1"
+    assert metadata["catalog_source"] == "marketplace"
+    assert metadata["marketplace_ready"] is True
+    assert metadata["archetypes"] == ["quantum_lab"]
 
 
 def test_greenfield_science_math_prompt_adds_domain_validation_obligations(tmp_path) -> None:
@@ -171,6 +211,7 @@ def test_greenfield_catalog_covers_infra_security_and_instrument_workflows(tmp_p
         ("Plan a geospatial climate data analysis platform", "geospatial_environmental"),
         ("Build an ML experiment platform for biology images", "ml_experiment_platform"),
         ("Design a robotics sensor calibration workflow", "iot_instrumentation"),
+        ("Create a quantum lab calibration workflow", "iot_instrumentation"),
     ],
 )
 def test_greenfield_fixture_domains_are_specific_and_provider_free(tmp_path, prompt: str, expected_archetype: str) -> None:
@@ -298,6 +339,15 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert len(result["backlog"]) == 4
     assert len(result["components"]) == 5
     assert len(result["diagrams"]) == 2
+    assert result["memory"]["recorded"] is True
+    memory_event = result["memory"]["event"]
+    assert memory_event["kind"] == "decision"
+    assert memory_event["source"] == "domain-intelligence"
+    assert memory_event["evidence_tier"] == "user_intent"
+    assert "Accepted greenfield proposal for An Ecommerce Site" in memory_event["summary"]
+    assert len(memory_event["workstreams"]) == 4
+    assert len(memory_event["components"]) == 5
+    assert "source_posture=empty_or_no_app_source" in memory_event["context"]
     assert '"release_id": "release-an-ecommerce-site-first"' in events
 
 
@@ -331,3 +381,5 @@ def test_greenfield_apply_json_output_is_machine_clean(tmp_path, monkeypatch, ca
     assert rc == 0
     assert payload["mode"] == "applied"
     assert payload["atlas_scaffold_logs"]
+    assert payload["memory"]["recorded"] is True
+    assert payload["memory"]["event"]["source"] == "domain-intelligence"

@@ -122,6 +122,7 @@ def _build_spec_template(
     kind: str,
     status: str,
     sources: Sequence[str],
+    workstreams: Sequence[str],
 ) -> str:
     normalized_sources = [str(item).strip() for item in sources if str(item).strip()]
     if "user_intent" in normalized_sources:
@@ -138,6 +139,13 @@ def _build_spec_template(
             else "It is initially anchored by maintainer review."
         )
     history_date = dt.date.today().isoformat()
+    workstream_ids = [str(item).strip().upper() for item in workstreams if str(item).strip()]
+    first_workstream = workstream_ids[0] if workstream_ids else ""
+    plan_route = (
+        f" (Plan: [{first_workstream}](odylith/radar/radar.html?view=plan&workstream={first_workstream}))"
+        if first_workstream
+        else ""
+    )
     return f"""# {label}
 
 ## Overview
@@ -155,7 +163,7 @@ def _build_spec_template(
 
 ## Feature History
 
-- {history_date}: Registered `{component_id}` through `odylith component register`.
+- {history_date}: Registered `{component_id}` through `odylith component register`.{plan_route}
 
 ## Contract
 
@@ -226,6 +234,7 @@ def register_component(
         kind=kind,
         status=str(status).strip() or "active",
         sources=tuple(str(item).strip() for item in sources if str(item).strip()) or ("manifest",),
+        workstreams=tuple(str(item).strip() for item in workstreams if str(item).strip()),
     )
 
     if not dry_run:

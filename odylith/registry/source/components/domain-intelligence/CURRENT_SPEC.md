@@ -25,6 +25,9 @@ validation obligations, and apply commands for empty or thin repos.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-05-02 · Implementation:** Hardened B-142 Domain Intelligence with alternate-fit classification, acronym-safe titles, dedicated proposal rendering, program-formation output, migration-observer markers, full engine/install/browser proof, and fresh empty-consumer apply proof.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/archetypes.py, src/odylith/runtime/domain_intelligence/greenfield_proposals.py +2 more
 - **2026-05-02 · Implementation:** Deepened B-142 Domain Intelligence with first-class science/math archetypes, greenfield UX/release planning module, refreshed governance surfaces, and full engine/install/browser proof.
   - Scope: B-142
   - Evidence: odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md, src/odylith/runtime/domain_intelligence/archetypes.py +1 more
@@ -38,8 +41,10 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Contract
 
-- `archetypes.py` owns the extensible project-domain catalog. New domains are
-  added there as structured archetypes, not as host-specific prompt hacks.
+- `archetypes.py` owns the v0.1.13 built-in seed catalog and the catalog API.
+  New domains are structured archetype records, not host-specific prompt hacks;
+  future signed domain packs or marketplace catalogs must compose through the
+  same catalog boundary instead of bypassing proposal scoring.
 - `proposal_planning.py` owns reusable program-wave, release-plan, and
   greenfield UX compilation, including parent/child workstream strategy and
   wave-to-workstream release policy.
@@ -64,6 +69,12 @@ depends on datasets, analysis pipelines, simulations, reproducible notebooks,
 visualization, and sustained numerical libraries. The catalog should grow by
 adding structured archetypes and validation obligations, not by adding host
 prompt text.
+
+The checked-in archetypes are a built-in seed pack for this release, not a
+closed catalog strategy. The runtime exposes catalog metadata so later releases
+can add external or marketplace-distributed domain catalogs while preserving the
+same provider-free scoring, evidence-tier separation, and confirmation-gated
+apply path.
 
 The science/math family must stay specific: formal proof proposals use proof
 checker and theorem-review obligations, numerical simulation uses unit,

@@ -70,7 +70,7 @@ Consumer-lane operators starting a new product, research project, science or mat
 Add a provider-free domain-intelligence compiler that converts vague greenfield intent into concrete backlog, program waves, provisional release plan, planned Registry components, draft Atlas topology, assumptions, risks, and validation obligations while keeping observed source, user intent, and Odylith assumptions distinct.
 
 ## Proposed Solution
-Create a first-class `runtime/domain_intelligence` package with a provider-free archetype catalog and a greenfield proposal compiler. The compiler reads shallow repo posture, classifies user-stated project intent, and returns backlog candidates, program waves, a provisional release plan, planned Registry components, draft Atlas diagrams, assumptions, risks, validation obligations, open questions, and exact confirmation-gated apply commands. The apply path writes only through owned Radar, Registry, Atlas, and release-targeting authoring paths after `--confirm`.
+Create a first-class `runtime/domain_intelligence` package with a provider-free archetype catalog and a greenfield proposal compiler. The compiler reads shallow repo posture, classifies user-stated project intent, and returns backlog candidates, program waves, a provisional release plan, planned Registry components, draft Atlas diagrams, assumptions, risks, validation obligations, open questions, and exact confirmation-gated apply commands. The v0.1.13 archetypes are a built-in seed catalog, not the permanent domain-extension strategy; the runtime exposes a catalog boundary and metadata so future signed or marketplace-distributed domain packs can compose through the same scoring path. The apply path writes only through owned Radar, Registry, Atlas, release-targeting, and Compass memory authoring paths after `--confirm`.
 
 ## Research Signals
 External ecosystem checks support the first-class archetype set instead of a narrow ecommerce-only fix. GitHub Octoverse 2025 shows high-volume new repository creation, AI/agent growth, TypeScript-heavy application work, Python/Jupyter AI and data-science work, and private/product repos growing alongside public open source. CNCF organizes cloud-native work around infrastructure, delivery, observability, security, AI/ML, and runtime ecosystems. Apache describes mature open-source projects across data, cloud, search, libraries, geospatial, IoT, and related categories. NASA's software and open-data surfaces show science projects built from code, data, analysis pipelines, simulation/modeling tools, visualization, reproducibility, and sustained scientific libraries. The v0.1.13 catalog therefore covers product apps, SaaS, commerce, cloud/infra, AI agents, data platforms, CLI/libraries, security/compliance, IoT/instrumentation, mobile/game/education, and science/math with validation-specific obligations. The follow-on hardening pass added explicit fit explainability and alternate archetype candidates so ambiguous prompts can be corrected without losing the low-latency provider-free path.
@@ -85,6 +85,8 @@ External ecosystem checks support the first-class archetype set instead of a nar
 - Include deterministic primary/alternate fit classification, acronym-safe
   project titles, domain-specific first-slice validation wording, parent/child
   program formation, wave-to-workstream policy, and provisional release strategy.
+- Treat the shipped archetype list as a v0.1.13 built-in seed pack and preserve
+  a catalog boundary for future marketplace/domain-pack loading.
 - Preserve evidence separation: observed source, user intent, and Odylith assumptions must stay distinct.
 - Keep proposal generation provider-free by default and write only after explicit confirmation.
 - Filter Compass timeline audit entries so zero-file prompt-intervention narration does not become fake implementation history.
@@ -108,7 +110,7 @@ External ecosystem checks support the first-class archetype set instead of a nar
 ## Success Metrics
 Greenfield propose returns deterministic provider_calls=0 output for commerce, SaaS, cloud, data, AI agent, CLI/library, science/math, security/compliance, IoT/instrument, mobile/game/education, and general app prompts.
 Proposal output includes backlog candidates, program waves, release plan, planned Registry components, draft Atlas diagrams, assumptions, risks, validation strategy, open questions, and exact apply commands.
-Greenfield apply writes through owned Radar, Registry, Atlas, and release-targeting paths only after --confirm, preserving user_intent evidence and source-backed truth separation.
+Greenfield apply writes through owned Radar, Registry, Atlas, release-targeting, and Compass memory paths only after --confirm, preserving user_intent evidence and source-backed truth separation.
 Host prompt routing avoids noisy raw Observation chatter for normal greenfield intents while preserving earned intervention paths.
 Compass timeline audit filters zero-file prompt-intervention narration so routing notes do not render as fake implementation history.
 
@@ -141,6 +143,10 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   acronym-safe titles, a dedicated proposal-rendering owner, program-formation
   output, and domain-specific first-slice validation text so broad prompts do
   not fall back to generic proof-harness wording.
+- Marketplace-readiness hardening made the domain list an explicit v0.1.13
+  built-in seed catalog with catalog metadata in proposal payloads and durable
+  Compass memory on confirmed apply, instead of treating hardcoded archetypes as
+  the permanent extension strategy.
 - Follow-on proof passed `27` focused greenfield tests, `219` focused
   greenfield/host/CLI tests, `148` bundle/hygiene/governance tests, the `586`
   test engine/host-parity matrix, the `208` test install/migration lifecycle

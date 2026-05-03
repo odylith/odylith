@@ -36,8 +36,10 @@ def test_component_spec_template_does_not_claim_source_for_user_intent() -> None
         kind="library",
         status="planned",
         sources=("user_intent",),
+        workstreams=("B-200",),
     )
 
     assert "**Status**: planned" in text
     assert "planned from user-stated intent" in text
     assert "No source-backed claim is made yet" in text
+    assert "(Plan: [B-200](odylith/radar/radar.html?view=plan&workstream=B-200))" in text

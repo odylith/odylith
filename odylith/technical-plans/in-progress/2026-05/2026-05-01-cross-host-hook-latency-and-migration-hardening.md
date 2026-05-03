@@ -518,10 +518,20 @@ Related Bugs:
       `proposal_rendering.py` owner, explicit program-formation output, and
       domain-specific first-slice validation wording so vague consumer prompts
       no longer fall back to generic proof-harness prose.
+- [x] Marketplace-readiness and memory hardening made the checked-in archetypes
+      an explicit v0.1.13 built-in seed catalog, exposed catalog metadata in
+      greenfield proposal payloads, added an explicit catalog API for future
+      domain packs, and recorded accepted proposals into Compass memory with
+      workstream/component/artifact links and `user_intent` evidence.
+- [x] Tightened domain-fit keywords after a smoke prompt showed generic
+      `workflow` language could misroute a quantum lab calibration request into
+      SaaS. The catalog now routes that shape to the scientific-instrument lane
+      while keeping provider calls at zero.
 - [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_greenfield_proposals.py tests/unit/runtime/test_greenfield_host_routing.py`
-      (`27 passed`; classification explainability, program blueprint,
-      acronym-safe NASA/API title rendering, science/math fit, and provider-free
-      host routing stayed deterministic).
+      (`31 passed`; classification explainability, program blueprint,
+      acronym-safe NASA/API title rendering, science/math fit,
+      scientific-instrument routing, catalog API, Compass memory, and
+      provider-free host routing stayed deterministic).
 - [x] `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_greenfield_proposals.py tests/unit/runtime/test_greenfield_host_routing.py tests/unit/runtime/test_component_authoring.py tests/unit/runtime/test_compass_transaction_runtime.py tests/unit/runtime/test_show_capabilities.py tests/unit/test_cli.py`
       (`219 passed`; greenfield proposal/apply, host routing, component
       metadata, show output, release migration gate, and Compass timeline-audit

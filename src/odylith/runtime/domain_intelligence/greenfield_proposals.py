@@ -20,12 +20,14 @@ from odylith.runtime.analysis_engine import repo_analysis
 from odylith.runtime.analysis_engine.types import SourceSummary, slugify
 from odylith.runtime.domain_intelligence.archetypes import Archetype
 from odylith.runtime.domain_intelligence.archetypes import ComponentBlueprint
+from odylith.runtime.domain_intelligence.archetypes import catalog_metadata
 from odylith.runtime.domain_intelligence.archetypes import rank_archetypes
 from odylith.runtime.domain_intelligence.proposal_planning import build_greenfield_ux
 from odylith.runtime.domain_intelligence.proposal_planning import build_program_blueprint
 from odylith.runtime.domain_intelligence.proposal_planning import build_program_waves
 from odylith.runtime.domain_intelligence.proposal_planning import build_release_plan
 from odylith.runtime.domain_intelligence.proposal_planning import first_slice_validation_instruction
+from odylith.runtime.domain_intelligence.proposal_memory import record_greenfield_acceptance
 from odylith.runtime.domain_intelligence.proposal_rendering import build_apply_commands
 from odylith.runtime.domain_intelligence.proposal_rendering import format_proposal_text
 from odylith.runtime.governance import backlog_authoring
@@ -359,6 +361,7 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
         "provider_calls": 0,
         "host_agnostic": True,
         "write_policy": "proposal_first_confirm_before_apply",
+        "catalog": catalog_metadata(),
         "intent": {
             "prompt": _prompt_text(prompt),
             "title": intent_title,
@@ -667,12 +670,26 @@ def apply_greenfield_proposal(
             raise RuntimeError(f"atlas scaffold failed for {row.get('slug')}{detail}")
         diagrams_created.append(diagram_id)
 
+    release_id = "none"
+    if isinstance(release_targeting, Mapping):
+        release_id = str(release_targeting.get("release_id", "")).strip() or "none"
+    memory_record = record_greenfield_acceptance(
+        repo_root=root,
+        proposal=proposal,
+        backlog_items=backlog_result["created"],
+        component_items=components_created,
+        diagram_ids=diagrams_created,
+        release_selector=release_selector,
+        release_id=release_id,
+    )
+
     return {
         "mode": "applied",
         "backlog": backlog_result["created"],
         "components": components_created,
         "diagrams": diagrams_created,
         "atlas_scaffold_logs": atlas_scaffold_logs,
+        "memory": memory_record,
         "release_bootstrap": release_bootstrap or {"created": False, "release": {}},
         "release_target": release_targeting or {"selector": release_selector, "release_id": "none", "events": []},
     }

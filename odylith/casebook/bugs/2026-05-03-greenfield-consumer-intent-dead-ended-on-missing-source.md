@@ -40,11 +40,11 @@
 
 - Root Cause: No provider-free domain-intelligence proposal path existed between strict source-backed governance and generic host narration.
 
-- Solution: Add odylith greenfield propose/apply under runtime domain_intelligence with deterministic archetypes, primary/alternate fit classification, program formation, program waves, release plan, user_intent evidence, and confirmation-gated owned-surface writes.
+- Solution: Add odylith greenfield propose/apply under runtime domain_intelligence with deterministic catalog-based archetypes, primary/alternate fit classification, program formation, program waves, release plan, user_intent evidence, durable Compass memory on accepted proposals, and confirmation-gated owned-surface writes.
 
-- Verification: Run greenfield proposal fixtures for ecommerce, science/math, cloud/infra, security/compliance, IoT/instrumentation, CLI/library, acronym-safe simulation prompts, program-formation output, and provider-free CLI JSON output; run host routing tests proving greenfield prompts avoid noisy raw Observation chatter.
+- Verification: Run greenfield proposal fixtures for ecommerce, science/math, cloud/infra, security/compliance, IoT/instrumentation, CLI/library, acronym-safe simulation prompts, program-formation output, catalog metadata, accepted-proposal Compass memory, and provider-free CLI JSON output; run host routing tests proving greenfield prompts avoid noisy raw Observation chatter.
 
-- Prevention: Keep domain archetypes in runtime/domain_intelligence and require tests for every newly supported greenfield domain.
+- Prevention: Keep domain archetypes behind runtime/domain_intelligence catalog APIs and require tests for every newly supported greenfield domain or future marketplace pack.
 
 - Regression Tests Added: tests/unit/runtime/test_greenfield_proposals.py and tests/unit/runtime/test_greenfield_host_routing.py
 

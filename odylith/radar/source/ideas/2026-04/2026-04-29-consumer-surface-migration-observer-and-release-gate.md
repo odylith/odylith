@@ -707,18 +707,31 @@ Add a migration observer to the migration-runtime release gate. It scans changed
 - Domain Intelligence fit and program-formation hardening: v0.1.13 adds
   deterministic alternate-fit classification, acronym-safe titles,
   domain-specific first-slice validation wording, a dedicated proposal renderer,
-  and explicit parent/child program-formation policy. Existing consumer installs
-  need no data migration; upgrade refreshes managed greenfield skill guidance,
-  regenerated governance browser surfaces, and bundled install-managed skill
-  assets while keeping all proposal writes confirmation-gated. Migration
-  observer markers:
+  explicit parent/child program-formation policy, a built-in seed catalog
+  boundary for future marketplace domain packs, and accepted-proposal Compass
+  memory records. The release-version truth and security posture docs now also
+  target v0.1.13 so local release bundles carry a v0.1.13 wheel instead of a
+  mismatched v0.1.12 package. Existing consumer installs need no data
+  migration; upgrade refreshes managed greenfield skill guidance, regenerated
+  governance browser surfaces, public release guidance, and bundled
+  install-managed assets while keeping all proposal writes confirmation-gated.
+  Migration observer markers:
   `migration-observer:0.1.13:guidance-and-skills:9075101e3a40`,
   `migration-observer:0.1.13:browser-surfaces:2f376881da04`,
   `migration-observer:0.1.13:install-managed-assets:75cf4de5d713`,
   `migration-observer:0.1.13:browser-surfaces:3d9a853aa730`,
   `migration-observer:0.1.13:install-managed-assets:3b31898b633e`,
   `migration-observer:0.1.13:browser-surfaces:1ec38a98f26b`,
-  `migration-observer:0.1.13:browser-surfaces:fb44f0624d3e`.
+  `migration-observer:0.1.13:browser-surfaces:fb44f0624d3e`,
+  `migration-observer:0.1.13:operator-cli-contracts:993ddc4af587`,
+  `migration-observer:0.1.13:browser-surfaces:6d15ce4c0b44`,
+  `migration-observer:0.1.13:install-managed-assets:e2a8129f2ea6`,
+  `migration-observer:0.1.13:public-docs-and-release-guidance:1cfdbc5a7431`,
+  `migration-observer:0.1.13:browser-surfaces:189eeef17a7f`,
+  `migration-observer:0.1.13:install-managed-assets:df982c278aaa`,
+  `migration-observer:0.1.13:public-docs-and-release-guidance:66717a535044`,
+  `migration-observer:0.1.13:install-managed-assets:545aea26da90`,
+  `migration-observer:0.1.13:browser-surfaces:8a26320aa5c6`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.

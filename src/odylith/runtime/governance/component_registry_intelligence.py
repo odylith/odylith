@@ -111,6 +111,7 @@ _PRODUCT_LAYERS: frozenset[str] = frozenset(
         "cli_bootstrap",
         "optional_remote_control_plane",
         "consumer_distro",
+        "application",
     }
 )
 _FIRST_CLASS_QUALIFICATIONS: frozenset[str] = frozenset({"candidate", "curated"})

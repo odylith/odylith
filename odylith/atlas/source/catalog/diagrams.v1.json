@@ -414,7 +414,7 @@
         "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md": "f884c6bdcda8a780b8e4173aeba9e72652f894cdbeabba41a3748d770d355134",
         "odylith/registry/source/component_registry.v1.json": "0b6cc51de7bdf391ebae8b1311f27da767f5870fecc76b927a185e0199582d1f",
         "src/odylith/runtime/governance/agent_governance_intelligence.py": "8b9e7881c10e8090d5e7497d05db523c33c66ce6986d9539790322de15d91506",
-        "src/odylith/runtime/governance/component_registry_intelligence.py": "fc4d997b86c492b0a7c5536ccb6fb35a4011adf12e0709885ed51b2cfc735dc5",
+        "src/odylith/runtime/governance/component_registry_intelligence.py": "bf6e0056a801213ad6b29e3c9144b2e176dd6e66186b4311d7e0a807cb558879",
         "src/odylith/runtime/governance/delivery_intelligence_engine.py": "ffef91400594d031fb0b850bc883a77658d25d53fcf1812bd7881f6d4845d1cc",
         "src/odylith/runtime/context_engine/odylith_context_engine.py": "8f416494e228e29dc407da75180e87e3f8b134427fab6f53c77debf6d383525d",
         "src/odylith/runtime/context_engine/odylith_context_engine_store.py": "0dfb371203c2929a573651daa1331e1870469ef9380d92921db2bcd612855cfa",
@@ -3438,7 +3438,7 @@
         "src/odylith/runtime/governance/sync_workstream_artifacts.py": "8942c199d9abc21840e268a880fc81f0e73ec4e2cfd051abe79cc8e4d01e9f34",
         "src/odylith/runtime/governance/workstream_inference.py": "10f67c97d32fefb6b3c1d4fd01be7d4f6dfb52cbab21780fff5b7bda079ac4e0",
         "src/odylith/runtime/governance/validate_backlog_contract.py": "5c31342b41a3a932f01519fc24fde3ee44eea2f47d4b646aa09383c4999be145",
-        "src/odylith/runtime/governance/component_registry_intelligence.py": "fc4d997b86c492b0a7c5536ccb6fb35a4011adf12e0709885ed51b2cfc735dc5",
+        "src/odylith/runtime/governance/component_registry_intelligence.py": "bf6e0056a801213ad6b29e3c9144b2e176dd6e66186b4311d7e0a807cb558879",
         "src/odylith/runtime/governance/delivery_intelligence_engine.py": "ffef91400594d031fb0b850bc883a77658d25d53fcf1812bd7881f6d4845d1cc"
       },
       "render_source_fingerprint": "b9ae6f136799fd3363ff9d1ce949b5cb30fe4fb41ab10f73103d6ebf4b73ed83"
@@ -3940,7 +3940,7 @@
         "src/odylith/runtime/surfaces/compass_transaction_runtime.py"
       ],
       "reviewed_watch_fingerprints": {
-        "src/odylith/runtime/domain_intelligence": "c535313a371e3d7490aa68dfb92f950b35784b90d0145820f8baf7a99fc25c76",
+        "src/odylith/runtime/domain_intelligence": "3140e11c6c5e50eff00e5062730d96b02b4529a2501f019cd665451cd21a73cf",
         "odylith/skills/odylith-greenfield-governance/SKILL.md": "87cdd96a09e19135e7f01aeecd4c745d2b8623e34a7792fec6b3180c0c6f4703"
       },
       "render_source_fingerprint": "adf4ab191aea566c96eaf635330c45b7bffccb039ad7dfcdd01e4872b83bfe51"
