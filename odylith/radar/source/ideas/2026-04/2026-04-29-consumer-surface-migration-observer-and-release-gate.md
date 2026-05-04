@@ -948,6 +948,11 @@ Migration observer markers for this assessment:
 - `migration-observer:0.1.14:browser-surfaces:51ba5efbb798`
 - `migration-observer:0.1.14:install-managed-assets:24025292a0dd`
 - `migration-observer:0.1.14:browser-surfaces:597e50554af1`
+- `migration-observer:0.1.14:install-managed-assets:121a792a1657`
+- `migration-observer:0.1.14:public-docs-and-release-guidance:2dea6c816224`
+- `migration-observer:0.1.14:public-docs-and-release-guidance:7ae5ea00d66a`
+- `migration-observer:0.1.14:browser-surfaces:a34583a76e66`
+- `migration-observer:0.1.14:install-managed-assets:38450e754d08`
 
 Validation evidence for the Casebook status-FSM slice:
 - `python -m py_compile src/odylith/runtime/common/casebook_metadata.py src/odylith/runtime/governance/casebook_source_validation.py src/odylith/runtime/surfaces/render_casebook_dashboard.py src/odylith/install/casebook_metadata_migration.py src/odylith/install/migration_runtime.py src/odylith/install/migration_definitions.py`
@@ -993,8 +998,8 @@ Validation evidence for the Casebook status-FSM slice:
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_casebook_dashboard.py tests/unit/install/test_casebook_metadata_migration.py tests/integration/runtime/test_casebook_list_layout_browser.py` (`22 passed`; proves stale URL cleanup, display-label normalization, and full-width Casebook summary card after source-local render)
 - `PYTHONPATH=src python -m pytest -q tests/unit/install/test_migration_runtime.py tests/integration/install/test_lifecycle_simulator.py` (`61 passed`; historical upgrade matrix covers unknown legacy state plus every 0.1.0-0.1.13 release into 0.1.14)
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_mermaid_catalog.py tests/unit/runtime/test_auto_update_mermaid_diagrams.py tests/unit/runtime/test_diagram_freshness.py tests/unit/install/test_atlas_surface_migration.py` (`52 passed`; Atlas render-surface migration and color/freshness contracts)
-- `PYTHONPATH=src python -m odylith.cli sync --repo-root . --check-only --runtime-mode standalone` (`passed`; source-local sync check, no runtime fallback)
-- `PYTHONPATH=src python -m odylith.cli release migration-gate --repo-root . --target-version 0.1.14 --json` (`blocked_manual_migrations: []`, `ungated_lifecycle_paths: []`)
+- `odylith sync --repo-root . --check-only --runtime-mode standalone` (`passed`; source-local sync check, no runtime fallback)
+- `odylith release migration-gate --repo-root . --target-version 0.1.14 --json` (`blocked_manual_migrations: []`, `ungated_lifecycle_paths: []`)
 - `make dev-validate` (`3733 passed, 1 skipped in 963.19s`; source-local maintainer lane validation, with release eligibility still requiring pinned dogfood proof)
 
 Validation evidence for the Product Governed Harness Turn Gate browser-surface slice:
@@ -1002,3 +1007,6 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
 - `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_compass_dashboard_shell.py tests/unit/runtime/test_turn_gate.py tests/unit/test_cli.py::test_turn_gate_decide_cli_emits_product_receipt tests/unit/runtime/test_odylith_benchmark_live_execution.py::test_run_live_scenario_uses_turn_gate_early_exit_proof` (`10 passed`)
 - Headless Chromium shell matrix over default, Radar `B-118`, Registry `governed-harness`, Atlas `D-024`, Casebook, and Compass at desktop and mobile viewports (`16 checked`, `failures: []`)
 - Headless Chromium degraded payload matrix over Registry, Radar, Atlas, Casebook, and Compass (`5 checked`, `failures: []`)
+- The generated Radar install-managed asset change for marker `migration-observer:0.1.14:install-managed-assets:121a792a1657` is a bundle mirror of this refreshed B-140 assessment and requires no custom consumer data migration beyond the normal v0.1.14 bundle/dashboard refresh path.
+- The Benchmark Formal Model public-docs change for marker `migration-observer:0.1.14:public-docs-and-release-guidance:2dea6c816224` is interpretation-only documentation for the v0.1.14 Turn Gate benchmark model. Existing consumer installs do not require data migration; the release requirement is accurate docs publication with the normal bundle/docs refresh.
+- The governed sync repair for markers `migration-observer:0.1.14:public-docs-and-release-guidance:7ae5ea00d66a`, `migration-observer:0.1.14:browser-surfaces:a34583a76e66`, and `migration-observer:0.1.14:install-managed-assets:38450e754d08` refreshed component spec forensics, Atlas/Radar/Registry/Casebook/Compass browser surfaces, and bundle mirrors from source truth. Existing consumer installs do not require a custom data migration beyond the normal v0.1.14 managed surface refresh path.

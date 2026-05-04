@@ -202,6 +202,7 @@ def test_capabilities_command_prints_host_agnostic_engine_inventory(capsys) -> N
     assert "Context Engine" in output
     assert "Domain Intelligence" in output
     assert "Governance Engine" in output
+    assert "Governed Harness / Turn Gate" in output
     assert "Delivery Intelligence" in output
     assert "Tribunal" in output
     assert "Memory Substrate" in output
@@ -229,6 +230,7 @@ def test_capabilities_command_json_exposes_product_inventory(capsys) -> None:
         "Context Engine",
         "Domain Intelligence",
         "Governance Engine",
+        "Governed Harness / Turn Gate",
         "Delivery Intelligence",
         "Tribunal",
         "Memory Substrate",

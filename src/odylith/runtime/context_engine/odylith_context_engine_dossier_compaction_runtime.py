@@ -46,10 +46,19 @@ def _compact_context_dossier(
         }
     related = dossier.get("related_entities", {})
     entity_payload = dict(dossier.get("entity", {})) if isinstance(dossier.get("entity"), Mapping) else {}
+    entity_id = str(entity_payload.get("entity_id") or entity_payload.get("id") or "").strip()
+    entity_kind = str(
+        entity_payload.get("kind")
+        or entity_payload.get("entity_kind")
+        or entity_payload.get("entity_type")
+        or entity_payload.get("type")
+        or ""
+    ).strip()
     compact_entity = {
         key: value
         for key, value in {
-            "entity_id": str(entity_payload.get("entity_id", "")).strip(),
+            "entity_id": entity_id,
+            "kind": entity_kind,
             "title": str(entity_payload.get("title", "")).strip(),
             "status": str(entity_payload.get("status", "")).strip(),
             "priority": str(entity_payload.get("priority", "")).strip(),

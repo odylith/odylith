@@ -1540,3 +1540,37 @@ def test_context_dossier_delivery_includes_execution_engine() -> None:
     assert eg, "execution_engine should be present in context dossier delivery"
     assert "outcome" in eg
     assert "mode" in eg
+    assert result["execution_engine_handshake"]["target_component_ids"] == ["execution-engine"]
+    assert result["execution_engine_handshake"]["target_component_status"] == "execution_engine"
+
+
+def test_context_dossier_delivery_carries_primary_component_into_execution_handshake() -> None:
+    from odylith.runtime.context_engine.odylith_context_engine_dossier_compaction_runtime import (
+        compact_context_dossier_for_delivery,
+    )
+
+    dossier = {
+        "resolved": True,
+        "entity": {
+            "entity_id": "governed-harness",
+            "kind": "component",
+            "title": "Governed Harness",
+            "status": "active",
+        },
+        "lookup": {"query": "governed-harness", "kind": "component"},
+        "matches": [],
+        "relations": [],
+        "related_entities": {},
+        "recent_agent_events": [],
+        "delivery_scopes": [],
+        "full_scan_recommended": False,
+        "full_scan_reason": "",
+    }
+
+    result = compact_context_dossier_for_delivery(dossier)
+    handshake = result["execution_engine_handshake"]
+
+    assert result["entity"]["kind"] == "component"
+    assert handshake["target_component_id"] == "governed-harness"
+    assert handshake["target_component_ids"] == ["governed-harness"]
+    assert handshake["target_component_status"] == "other_component"

@@ -57,6 +57,7 @@ from odylith.runtime.evaluation import odylith_benchmark_live_diagnostics
 from odylith.runtime.evaluation import odylith_benchmark_live_execution
 from odylith.runtime.evaluation import odylith_benchmark_proof_discipline
 from odylith.runtime.evaluation import odylith_benchmark_prompt_payloads
+from odylith.runtime.evaluation import odylith_benchmark_report_fields
 from odylith.runtime.evaluation import odylith_benchmark_runtime_posture_runtime as benchmark_runtime_posture_runtime
 from odylith.runtime.common import odylith_benchmark_contract
 from odylith.runtime.context_engine import odylith_context_cache
@@ -1990,31 +1991,11 @@ def compact_report_summary(report: Mapping[str, Any] | None) -> dict[str, Any]:
         else {}
     )
     selection = dict(report.get("selection", {})) if isinstance(report.get("selection"), Mapping) else {}
-    fairness_findings = [
-        str(token).strip()
-        for token in report.get("fairness_findings", [])
-        if isinstance(report.get("fairness_findings"), list) and str(token).strip()
-    ]
-    observed_path_sources = [
-        str(token).strip()
-        for token in report.get("observed_path_sources", [])
-        if isinstance(report.get("observed_path_sources"), list) and str(token).strip()
-    ]
-    preflight_evidence_modes = [
-        str(token).strip()
-        for token in report.get("preflight_evidence_modes", [])
-        if isinstance(report.get("preflight_evidence_modes"), list) and str(token).strip()
-    ]
-    turn_gate_decision_types = [
-        str(token).strip()
-        for token in report.get("turn_gate_decision_types", [])
-        if isinstance(report.get("turn_gate_decision_types"), list) and str(token).strip()
-    ]
-    turn_gate_receipt_sources = [
-        str(token).strip()
-        for token in report.get("turn_gate_receipt_sources", [])
-        if isinstance(report.get("turn_gate_receipt_sources"), list) and str(token).strip()
-    ]
+    fairness_findings = odylith_benchmark_report_fields.sorted_mapping_string_values(report, "fairness_findings")
+    observed_path_sources = odylith_benchmark_report_fields.sorted_mapping_string_values(report, "observed_path_sources")
+    preflight_evidence_modes = odylith_benchmark_report_fields.sorted_mapping_string_values(report, "preflight_evidence_modes")
+    turn_gate_decision_types = odylith_benchmark_report_fields.sorted_mapping_string_values(report, "turn_gate_decision_types")
+    turn_gate_receipt_sources = odylith_benchmark_report_fields.sorted_mapping_string_values(report, "turn_gate_receipt_sources")
     adoption_proof_sample_size = int(adoption_proof.get("sample_size", 0) or 0)
     adoption_proof_auto_grounded_rate = float(adoption_proof.get("auto_grounded_rate", 0.0) or 0.0)
     adoption_proof_requires_widening_rate = float(adoption_proof.get("requires_widening_rate", 0.0) or 0.0)
@@ -8127,64 +8108,12 @@ def run_benchmarks(
                 execution_contracts=published_execution_contracts,
                 comparison_contract=comparison_contract,
             )
-            observed_path_sources = sorted(
-                {
-                    str(token).strip()
-                    for scenario_report in published_scenarios
-                    for result in scenario_report.get("results", [])
-                    if isinstance(result, Mapping)
-                    for token in result.get("observed_path_sources", [])
-                    if isinstance(result.get("observed_path_sources"), list) and str(token).strip()
-                }
-            )
-            preflight_evidence_modes = sorted(
-                {
-                    str(result.get("preflight_evidence_mode", "")).strip()
-                    for scenario_report in published_scenarios
-                    for result in scenario_report.get("results", [])
-                    if isinstance(result, Mapping) and str(result.get("preflight_evidence_mode", "")).strip()
-                }
-            )
-            preflight_evidence_commands = sorted(
-                {
-                    str(token).strip()
-                    for scenario_report in published_scenarios
-                    for result in scenario_report.get("results", [])
-                    if isinstance(result, Mapping)
-                    for token in result.get("preflight_evidence_commands", [])
-                    if isinstance(result.get("preflight_evidence_commands"), list) and str(token).strip()
-                }
-            )
-            preflight_evidence_result_statuses = sorted(
-                {
-                    str(result.get("preflight_evidence_result_status", "")).strip()
-                    for scenario_report in published_scenarios
-                    for result in scenario_report.get("results", [])
-                    if isinstance(result, Mapping) and str(result.get("preflight_evidence_result_status", "")).strip()
-                }
-            )
-            turn_gate_decision_types = sorted(
-                {
-                    str(turn_gate_decision.get("decision_type", "")).strip()
-                    for scenario_report in published_scenarios
-                    for result in scenario_report.get("results", [])
-                    if isinstance(result, Mapping)
-                    for turn_gate_decision in [result.get("turn_gate_decision", {})]
-                    if isinstance(turn_gate_decision, Mapping)
-                    and str(turn_gate_decision.get("decision_type", "")).strip()
-                }
-            )
-            turn_gate_receipt_sources = sorted(
-                {
-                    str(turn_gate_receipt.get("source", "")).strip()
-                    for scenario_report in published_scenarios
-                    for result in scenario_report.get("results", [])
-                    if isinstance(result, Mapping)
-                    for turn_gate_receipt in [result.get("turn_gate_receipt", {})]
-                    if isinstance(turn_gate_receipt, Mapping)
-                    and str(turn_gate_receipt.get("source", "")).strip()
-                }
-            )
+            observed_path_sources = odylith_benchmark_report_fields.sorted_result_string_values(published_scenarios, "observed_path_sources")
+            preflight_evidence_modes = odylith_benchmark_report_fields.sorted_result_string_values(published_scenarios, "preflight_evidence_mode")
+            preflight_evidence_commands = odylith_benchmark_report_fields.sorted_result_string_values(published_scenarios, "preflight_evidence_commands")
+            preflight_evidence_result_statuses = odylith_benchmark_report_fields.sorted_result_string_values(published_scenarios, "preflight_evidence_result_status")
+            turn_gate_decision_types = odylith_benchmark_report_fields.sorted_nested_result_string_values(published_scenarios, "turn_gate_decision", "decision_type")
+            turn_gate_receipt_sources = odylith_benchmark_report_fields.sorted_nested_result_string_values(published_scenarios, "turn_gate_receipt", "source")
             snapshot_overlay_paths = benchmark_tree_identity_runtime.report_snapshot_overlay_paths(published_scenarios)
             tree_identity = benchmark_tree_identity_runtime.benchmark_tree_identity(
                 repo_root=root,

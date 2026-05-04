@@ -1,4 +1,6 @@
 # Governed Harness
+Last updated: 2026-05-03
+
 
 ## Overview
 
@@ -18,6 +20,13 @@ execution capsule, and receipt.
 - **Kind**: runtime
 - **Status**: active
 - **Evidence tier**: manifest
+
+## Requirements Trace
+This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
+
+<!-- registry-requirements:start -->
+- No synchronized requirement or contract signals yet.
+<!-- registry-requirements:end -->
 
 ## Feature History
 
