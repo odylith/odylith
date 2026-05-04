@@ -6,30 +6,75 @@ from pathlib import Path
 import pytest
 
 from odylith.install import migration_observer, migration_runtime
-from odylith.install.casebook_metadata_migration import MIGRATION_ID as CASEBOOK_METADATA_MIGRATION_ID
+from odylith.install.atlas_surface_migration import (
+    MIGRATION_ID as ATLAS_SURFACE_MIGRATION_ID,
+)
+from odylith.install.casebook_metadata_migration import (
+    MIGRATION_ID as CASEBOOK_METADATA_MIGRATION_ID,
+    STATUS_FSM_MIGRATION_ID as CASEBOOK_STATUS_FSM_MIGRATION_ID,
+)
 from odylith.install.value_engine_migration import (
     MIGRATION_ID,
     VALUE_CORPUS_RELATIVE_PATH,
     record_visible_intervention_value_engine_migration_satisfied,
 )
 
-FIXTURE_COVERAGE_TOKENS = ("dry_run", "apply", "rerun", "stale_ledger", "skipped_version")
+FIXTURE_COVERAGE_TOKENS = (
+    "dry_run",
+    "apply",
+    "rerun",
+    "stale_ledger",
+    "skipped_version",
+    "historical_range",
+)
 MIGRATION_FIXTURE_COVERAGE_MARKERS = (
     "legacy-odyssey-root-migration:dry_run",
     "legacy-odyssey-root-migration:apply",
     "legacy-odyssey-root-migration:rerun",
     "legacy-odyssey-root-migration:stale_ledger",
     "legacy-odyssey-root-migration:skipped_version",
+    "legacy-odyssey-root-migration:historical_range",
     "v0.1.11-visible-intervention-value-engine:dry_run",
     "v0.1.11-visible-intervention-value-engine:apply",
     "v0.1.11-visible-intervention-value-engine:rerun",
     "v0.1.11-visible-intervention-value-engine:stale_ledger",
     "v0.1.11-visible-intervention-value-engine:skipped_version",
+    "v0.1.11-visible-intervention-value-engine:historical_range",
     "v0.1.13-casebook-compact-metadata:dry_run",
     "v0.1.13-casebook-compact-metadata:apply",
     "v0.1.13-casebook-compact-metadata:rerun",
     "v0.1.13-casebook-compact-metadata:stale_ledger",
     "v0.1.13-casebook-compact-metadata:skipped_version",
+    "v0.1.13-casebook-compact-metadata:historical_range",
+    "v0.1.14-casebook-status-fsm:dry_run",
+    "v0.1.14-casebook-status-fsm:apply",
+    "v0.1.14-casebook-status-fsm:rerun",
+    "v0.1.14-casebook-status-fsm:stale_ledger",
+    "v0.1.14-casebook-status-fsm:skipped_version",
+    "v0.1.14-casebook-status-fsm:historical_range",
+    "v0.1.14-atlas-render-surface-polish:dry_run",
+    "v0.1.14-atlas-render-surface-polish:apply",
+    "v0.1.14-atlas-render-surface-polish:rerun",
+    "v0.1.14-atlas-render-surface-polish:stale_ledger",
+    "v0.1.14-atlas-render-surface-polish:skipped_version",
+    "v0.1.14-atlas-render-surface-polish:historical_range",
+)
+HISTORICAL_0_1_RELEASES_BEFORE_0_1_14 = (
+    "",
+    "0.1.0",
+    "0.1.1",
+    "0.1.2",
+    "0.1.3",
+    "0.1.4",
+    "0.1.5",
+    "0.1.6",
+    "0.1.7",
+    "0.1.8",
+    "0.1.9",
+    "0.1.10",
+    "0.1.11",
+    "0.1.12",
+    "0.1.13",
 )
 
 
@@ -85,6 +130,52 @@ def _seed_casebook_bug(repo_root: Path) -> None:
     )
 
 
+def _seed_atlas_catalog(repo_root: Path) -> None:
+    atlas_root = repo_root / "odylith" / "atlas"
+    source_root = atlas_root / "source"
+    catalog_path = source_root / "catalog" / "diagrams.v1.json"
+    catalog_path.parent.mkdir(parents=True, exist_ok=True)
+    (source_root / "migration-fixture.mmd").write_text(
+        "flowchart TB\n  subgraph Lane[Lane]\n    A[Source] --> B[Render]\n  end\n",
+        encoding="utf-8",
+    )
+    (source_root / "migration-fixture.svg").write_text(
+        '<svg xmlns="http://www.w3.org/2000/svg"><g class="cluster"><rect style=""></rect></g></svg>\n',
+        encoding="utf-8",
+    )
+    (source_root / "migration-fixture.png").write_bytes(b"old")
+    catalog_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "diagrams": [
+                    {
+                        "diagram_id": "D-900",
+                        "slug": "migration-fixture",
+                        "title": "Migration Fixture",
+                        "kind": "flowchart",
+                        "status": "active",
+                        "owner": "product",
+                        "last_reviewed_utc": "2026-04-01",
+                        "source_mmd": "odylith/atlas/source/migration-fixture.mmd",
+                        "source_svg": "odylith/atlas/source/migration-fixture.svg",
+                        "source_png": "odylith/atlas/source/migration-fixture.png",
+                        "summary": "Atlas migration fixture.",
+                        "change_watch_paths": ["odylith/atlas/source/migration-fixture.mmd"],
+                        "components": [{"name": "atlas", "description": "Atlas surface."}],
+                    }
+                ],
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (atlas_root / "atlas.html").write_text(".viewer-stage::before { background-size: 42px 42px; }\n", encoding="utf-8")
+    (atlas_root / "mermaid-payload.v1.js").write_text("window.__MERMAID_PAYLOAD__ = {};\n", encoding="utf-8")
+    (atlas_root / "mermaid-app.v1.js").write_text("", encoding="utf-8")
+
+
 def _write_install_state(repo_root: Path, payload: dict[str, object]) -> None:
     (repo_root / ".odylith").mkdir(parents=True, exist_ok=True)
     (repo_root / ".odylith" / "install.json").write_text(
@@ -135,6 +226,28 @@ def test_registered_casebook_metadata_definition_has_release_gate_fixture_covera
 
     assert definition.migration_id == CASEBOOK_METADATA_MIGRATION_ID
     assert definition.introduced_version == "0.1.13"
+    assert set(FIXTURE_COVERAGE_TOKENS).issubset(definition.coverage_fixtures)
+    assert definition.automatic is True
+
+
+def test_registered_casebook_status_fsm_definition_has_release_gate_fixture_coverage() -> None:
+    definition = next(
+        item for item in migration_runtime.registered_migrations() if item.migration_id == CASEBOOK_STATUS_FSM_MIGRATION_ID
+    )
+
+    assert definition.migration_id == CASEBOOK_STATUS_FSM_MIGRATION_ID
+    assert definition.introduced_version == "0.1.14"
+    assert set(FIXTURE_COVERAGE_TOKENS).issubset(definition.coverage_fixtures)
+    assert definition.automatic is True
+
+
+def test_registered_atlas_surface_definition_has_release_gate_fixture_coverage() -> None:
+    definition = next(
+        item for item in migration_runtime.registered_migrations() if item.migration_id == ATLAS_SURFACE_MIGRATION_ID
+    )
+
+    assert definition.migration_id == ATLAS_SURFACE_MIGRATION_ID
+    assert definition.introduced_version == "0.1.14"
     assert set(FIXTURE_COVERAGE_TOKENS).issubset(definition.coverage_fixtures)
     assert definition.automatic is True
 
@@ -727,6 +840,93 @@ def test_casebook_metadata_migration_is_selected_for_prior_versions_to_v013(tmp_
         assert "no registered migration" not in plan.blocked_reason
 
 
+def test_casebook_status_fsm_migration_is_selected_for_supported_versions_to_v014(tmp_path: Path) -> None:
+    for previous_version in ("0.1.10", "0.1.11", "0.1.12", "0.1.13"):
+        repo_root = tmp_path / f"status_{previous_version.replace('.', '_')}"
+        repo_root.mkdir()
+        _seed_repo(repo_root, active_version=previous_version)
+        _seed_casebook_bug(repo_root)
+
+        plan = migration_runtime.plan_release_migrations(
+            repo_root=repo_root,
+            repo_role="consumer_repo",
+            previous_version=previous_version,
+            target_version="0.1.14",
+            release_manifest={"migration_required": True, "repo_schema_version": 1},
+        )
+
+        decision = _decision_for(plan, CASEBOOK_STATUS_FSM_MIGRATION_ID)
+        assert decision.state == migration_runtime.STATE_SELECTED
+        assert plan.satisfies_manifest_requirement() is True
+        assert "no registered migration" not in plan.blocked_reason
+
+
+def test_atlas_surface_migration_is_selected_for_supported_versions_to_v014(tmp_path: Path) -> None:
+    for previous_version in ("0.1.10", "0.1.11", "0.1.12", "0.1.13"):
+        repo_root = tmp_path / f"atlas_{previous_version.replace('.', '_')}"
+        repo_root.mkdir()
+        _seed_repo(repo_root, active_version=previous_version)
+        _seed_atlas_catalog(repo_root)
+
+        plan = migration_runtime.plan_release_migrations(
+            repo_root=repo_root,
+            repo_role="consumer_repo",
+            previous_version=previous_version,
+            target_version="0.1.14",
+            release_manifest={"migration_required": True, "repo_schema_version": 1},
+        )
+
+        decision = _decision_for(plan, ATLAS_SURFACE_MIGRATION_ID)
+        assert decision.state == migration_runtime.STATE_SELECTED
+        assert plan.satisfies_manifest_requirement() is True
+        assert "no registered migration" not in plan.blocked_reason
+
+
+def test_release_migrations_cover_any_historical_0_1_release_to_v014(tmp_path: Path) -> None:
+    value_engine_required_versions = {
+        "",
+        "0.1.0",
+        "0.1.1",
+        "0.1.2",
+        "0.1.3",
+        "0.1.4",
+        "0.1.5",
+        "0.1.6",
+        "0.1.7",
+        "0.1.8",
+        "0.1.9",
+        "0.1.10",
+    }
+
+    for index, previous_version in enumerate(HISTORICAL_0_1_RELEASES_BEFORE_0_1_14):
+        active_version = previous_version or "0.1.0"
+        repo_root = tmp_path / f"historical_{index:02d}_{active_version.replace('.', '_')}"
+        repo_root.mkdir()
+        _seed_repo(repo_root, active_version=active_version)
+        _seed_casebook_bug(repo_root)
+        _seed_atlas_catalog(repo_root)
+
+        plan = migration_runtime.plan_release_migrations(
+            repo_root=repo_root,
+            repo_role="consumer_repo",
+            previous_version=previous_version,
+            target_version="0.1.14",
+            release_manifest={"migration_required": True, "repo_schema_version": 1},
+        )
+
+        assert not plan.blocked, (previous_version, plan.blocked_reason)
+        assert plan.satisfies_manifest_requirement() is True
+        assert plan.ledger_state[CASEBOOK_METADATA_MIGRATION_ID] == migration_runtime.STATE_SELECTED
+        assert plan.ledger_state[CASEBOOK_STATUS_FSM_MIGRATION_ID] == migration_runtime.STATE_SELECTED
+        assert plan.ledger_state[ATLAS_SURFACE_MIGRATION_ID] == migration_runtime.STATE_SELECTED
+        expected_value_state = (
+            migration_runtime.STATE_SELECTED
+            if previous_version in value_engine_required_versions
+            else migration_runtime.STATE_SKIPPED
+        )
+        assert plan.ledger_state[MIGRATION_ID] == expected_value_state
+
+
 def test_casebook_metadata_migration_skips_index_only_repos_without_blocking_manifest(tmp_path: Path) -> None:
     _seed_repo(tmp_path, active_version="0.1.12")
     index_path = tmp_path / "odylith" / "casebook" / "bugs" / "INDEX.md"
@@ -762,6 +962,44 @@ def test_casebook_metadata_migration_ledger_stale_blocks_upgrade(tmp_path: Path)
     )
 
     decision = _decision_for(plan, CASEBOOK_METADATA_MIGRATION_ID)
+    assert decision.state == migration_runtime.STATE_LEDGER_STALE
+    assert "migration ledger is stale" in plan.blocked_reason
+
+
+def test_casebook_status_fsm_migration_ledger_stale_blocks_upgrade(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, active_version="0.1.13")
+    _seed_casebook_bug(tmp_path)
+    ledger = tmp_path / ".odylith/state/migrations/v0.1.14-casebook-status-fsm.v1.json"
+    ledger.parent.mkdir(parents=True, exist_ok=True)
+    ledger.write_text("{not json", encoding="utf-8")
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.13",
+        target_version="0.1.14",
+    )
+
+    decision = _decision_for(plan, CASEBOOK_STATUS_FSM_MIGRATION_ID)
+    assert decision.state == migration_runtime.STATE_LEDGER_STALE
+    assert "migration ledger is stale" in plan.blocked_reason
+
+
+def test_atlas_surface_migration_ledger_stale_blocks_upgrade(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, active_version="0.1.13")
+    _seed_atlas_catalog(tmp_path)
+    ledger = tmp_path / ".odylith/state/migrations/v0.1.14-atlas-render-surface-polish.v1.json"
+    ledger.parent.mkdir(parents=True, exist_ok=True)
+    ledger.write_text("{not json", encoding="utf-8")
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.13",
+        target_version="0.1.14",
+    )
+
+    decision = _decision_for(plan, ATLAS_SURFACE_MIGRATION_ID)
     assert decision.state == migration_runtime.STATE_LEDGER_STALE
     assert "migration ledger is stale" in plan.blocked_reason
 
@@ -941,6 +1179,55 @@ def test_surface_migration_observer_fingerprint_ignores_rendered_observer_marker
     )
     rendered.write_text(
         f"rendered release note {marker}\n"
+        '<script src="backlog-payload.v1.js?v=bbbbbbbbbbbb"></script>\n',
+        encoding="utf-8",
+    )
+
+    covered_report = migration_observer.observe_surface_migration_needs(
+        repo_root=tmp_path,
+        target_version="0.1.12",
+        changed_paths=("odylith/radar/radar.html",),
+    )
+
+    assert covered_report.ok is True
+    assert covered_report.needs[0].governance_marker == marker
+    assert covered_report.blocked_need_ids == ()
+
+
+def test_surface_migration_observer_fingerprint_ignores_added_observer_marker_lines(tmp_path: Path) -> None:
+    rendered = tmp_path / "odylith" / "radar" / "radar.html"
+    rendered.parent.mkdir(parents=True)
+    rendered.write_text(
+        "rendered release note without observer marker\n"
+        '<script src="backlog-payload.v1.js?v=aaaaaaaaaaaa"></script>\n',
+        encoding="utf-8",
+    )
+    first_report = migration_observer.observe_surface_migration_needs(
+        repo_root=tmp_path,
+        target_version="0.1.12",
+        changed_paths=("odylith/radar/radar.html",),
+    )
+    marker = first_report.needs[0].governance_marker
+    record = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "migration.md"
+    record.parent.mkdir(parents=True)
+    record.write_text(
+        "\n".join(
+            [
+                "status: finished",
+                "idea_id: B-994",
+                "title: Added observer marker proof",
+                "",
+                "Assessment: generated browser refresh is covered by the renderer migration.",
+                f"- `{marker}`",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    rendered.write_text(
+        "rendered release note without observer marker\n"
+        "Migration observer markers:\n"
+        f"- `{marker}`\n"
         '<script src="backlog-payload.v1.js?v=bbbbbbbbbbbb"></script>\n',
         encoding="utf-8",
     )

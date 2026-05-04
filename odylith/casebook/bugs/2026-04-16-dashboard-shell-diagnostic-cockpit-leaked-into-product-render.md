@@ -1,6 +1,6 @@
 - Bug ID: CB-120
 
-- Type: regression
+- Type: UX
 
 
 
@@ -9,7 +9,7 @@
 
 
 
-- Status: Resolved
+- Status: FixedPendingRelease
 
 - Created: 2026-04-16
 

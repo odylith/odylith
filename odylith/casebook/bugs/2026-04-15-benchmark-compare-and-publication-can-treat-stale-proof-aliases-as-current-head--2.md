@@ -60,5 +60,13 @@
 
 - Release Note: On 2026-05-01, v0.1.12 candidate proof passed 3373 tests and built the release wheel, then benchmark compare failed closed because there was still no current-tree authoritative proof report. The v0.1.12 maintainer override records benchmark proof and compare as advisory for that exact recovery release instead of weakening this invariant.
 
+- Release Note: On 2026-05-04, the maintainer explicitly waived full benchmark
+  runs for the v0.1.14 GA release. The tracked v0.1.14 maintainer override
+  keeps benchmark proof and compare advisory for that exact version while the
+  release relies on Product Governed Harness Turn Gate formal-model truth,
+  migration-gate coverage, browser-surface proof, install and runtime migration
+  tests, topology/guidance/discipline validation, and release-candidate proof.
+  Do not narrate v0.1.14 as benchmark re-proved.
+
 - Code References: - src/odylith/runtime/evaluation/benchmark_compare.py
 - src/odylith/runtime/evaluation/odylith_benchmark_publication.py

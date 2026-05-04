@@ -500,9 +500,18 @@ initSharedQuickTooltips();
       if (!dims) {
         return null;
       }
-      const sw = stageEl.clientWidth || 1;
-      const sh = stageEl.clientHeight || 1;
+      const padding = stageFitPadding();
+      const sw = Math.max(1, (stageEl.clientWidth || 1) - padding * 2);
+      const sh = Math.max(1, (stageEl.clientHeight || 1) - padding * 2);
       return Math.min(sw / dims.width, sh / dims.height);
+    }
+
+    function stageFitPadding() {
+      const shortSide = Math.min(stageEl.clientWidth || 0, stageEl.clientHeight || 0);
+      if (!shortSide) {
+        return 18;
+      }
+      return clamp(shortSide * 0.045, 18, 54);
     }
 
     function applyInitialView(diagram) {
@@ -519,7 +528,7 @@ initSharedQuickTooltips();
 
       // Start near the full-bounds fit with a small safety margin so diagrams
       // feel snug on first paint without clipping at the edges.
-      let initialFactor = 0.98;
+      let initialFactor = 1.0;
       const MIN_INITIAL_FIT_FACTOR = 0.94;
 
       const rawOverrideFactor = Number(diagram && diagram.initial_view_fit_factor ? diagram.initial_view_fit_factor : 0);

@@ -34,14 +34,15 @@ There are no hard-gate blockers on this report.
 - fairness contract passed: `True`
 - corpus seriousness floor passed: `True`
 - full tracked-corpus coverage rate: `1.000`
-- implementation scenarios in tracked corpus: `77`
+- operating-policy scenarios in tracked corpus: `77`
 - write-plus-validator scenarios in tracked corpus: `41`
 - correctness-critical scenarios in tracked corpus: `31`
-- mechanism-heavy implementation ratio: `0.29`
+- mechanism-heavy operating-policy ratio: `0.29`
 
 ## Reading Notes
 
-- `odylith_off` is the raw prompt-bundle control, not the product-claim lane.
-- Prompt-visible path credit and preflight evidence must remain explicit in the report contract.
+- `odylith_off` is the raw prompt-bundle control for this mechanism-evidence
+  view.
+- Prompt-visible path credit and Turn Gate evidence must remain explicit in the report contract.
 - Current Grounding Benchmark posture is local-first on the Odylith Memory Substrate. Remote retrieval is `disabled` in the selected report. Local memory-backed retrieval ready: `True`.
 - Grounding Benchmark gains only matter if they preserve or improve the live proof lane.

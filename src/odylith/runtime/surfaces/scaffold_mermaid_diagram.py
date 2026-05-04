@@ -90,11 +90,30 @@ def _unique(values: list[str]) -> list[str]:
     return result
 
 
-def _mermaid_label(value: str) -> str:
+def _wrapped_label_lines(value: str, *, width: int = 30) -> list[str]:
+    words = " ".join(str(value or "").strip().split()).split()
+    if not words:
+        return ["Unspecified"]
+    lines: list[str] = []
+    current = ""
+    for word in words:
+        candidate = f"{current} {word}".strip()
+        if current and len(candidate) > width:
+            lines.append(current)
+            current = word
+        else:
+            current = candidate
+    if current:
+        lines.append(current)
+    return lines
+
+
+def _mermaid_label(value: str, *, width: int = 30) -> str:
     text = " ".join(str(value or "").strip().split())
     if not text:
         text = "Unspecified"
-    return text.replace("\\", "\\\\").replace('"', "'")
+    wrapped = _wrapped_label_lines(text, width=width)
+    return "<br/>".join(line.replace("\\", "\\\\").replace('"', "'") for line in wrapped)
 
 
 def _starter_source(
@@ -108,25 +127,81 @@ def _starter_source(
     related_docs: list[str],
 ) -> str:
     lines = [
+        "%% Atlas visual contract: colored lanes group ownership/phase; node classes mark semantic role; labels stay wrapped.",
         "flowchart TB",
-        f'    diagram["{_mermaid_label(title)}"]',
-        f'    owner["Owner: {_mermaid_label(owner)}"]',
-        '    diagram --> owner',
+        '    subgraph intent_lane["Intent lane"]',
+        "      direction TB",
+        f'      diagram["{_mermaid_label(title, width=34)}"]',
+        f'      owner["Owner<br/>{_mermaid_label(owner, width=26)}"]',
+        "    end",
+        "",
+        '    subgraph component_lane["Component lane"]',
+        "      direction LR",
     ]
-    for index, component in enumerate(components[:4], start=1):
-        name = _mermaid_label(str(component.get("name", "")).strip())
-        description = _mermaid_label(str(component.get("description", "")).strip())
-        lines.append(f'    component_{index}["{name}<br/>{description}"]')
-        lines.append(f"    diagram --> component_{index}")
+    component_ids: list[str] = []
+    for index, component in enumerate(components[:5], start=1):
+        name = _mermaid_label(str(component.get("name", "")).strip(), width=26)
+        description = _mermaid_label(str(component.get("description", "")).strip(), width=30)
+        component_id = f"component_{index}"
+        component_ids.append(component_id)
+        lines.append(f'      {component_id}["{name}<br/>{description}"]')
+    lines.extend(
+        [
+            "    end",
+            "",
+            '    subgraph evidence_lane["Evidence lane"]',
+            "      direction TB",
+        ]
+    )
+    evidence_ids: list[str] = []
     for index, path in enumerate(watch_paths[:4], start=1):
-        lines.append(f'    watch_{index}["Watch: {_mermaid_label(path)}"]')
-        if components:
-            lines.append(f"    component_1 --> watch_{index}")
-        else:
-            lines.append(f"    diagram --> watch_{index}")
+        watch_id = f"watch_{index}"
+        evidence_ids.append(watch_id)
+        lines.append(f'      {watch_id}["Watch<br/>{_mermaid_label(path, width=28)}"]')
     if not (related_backlog and related_plans and related_docs):
-        lines.append('    followup["Link Radar, plan, and docs as governance matures"]')
-        lines.append("    diagram --> followup")
+        evidence_ids.append("followup")
+        lines.append('      followup["Link Radar, plan, and docs<br/>as governance matures"]')
+    lines.extend(
+        [
+            "    end",
+            "",
+            "    diagram --> owner",
+        ]
+    )
+    for component_id in component_ids:
+        lines.append(f"    diagram --> {component_id}")
+    if component_ids:
+        for evidence_id in evidence_ids:
+            lines.append(f"    {component_ids[0]} --> {evidence_id}")
+    else:
+        for evidence_id in evidence_ids:
+            lines.append(f"    diagram --> {evidence_id}")
+    lines.extend(
+        [
+            "",
+            "    classDef anchor fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b,stroke-width:1px;",
+            "    classDef component fill:#eaf3ff,stroke:#77a9ef,color:#102f5f,stroke-width:1px;",
+            "    classDef evidence fill:#ffece7,stroke:#df8f7d,color:#5c2418,stroke-width:1px;",
+            "    classDef followup fill:#f5f8fb,stroke:#b7c7d9,color:#1f2937,stroke-width:1px;",
+            "    class diagram,owner anchor;",
+        ]
+    )
+    if component_ids:
+        lines.append(f"    class {','.join(component_ids)} component;")
+    if evidence_ids:
+        watch_ids = [value for value in evidence_ids if value != "followup"]
+        if watch_ids:
+            lines.append(f"    class {','.join(watch_ids)} evidence;")
+        if "followup" in evidence_ids:
+            lines.append("    class followup followup;")
+    lines.extend(
+        [
+            "    style intent_lane fill:#effcf9,stroke:#9bd8cf,stroke-width:1px,color:#062f2b",
+            "    style component_lane fill:#f1f7ff,stroke:#a8c7f7,stroke-width:1px,color:#102f5f",
+            "    style evidence_lane fill:#fff3f0,stroke:#efb3a4,stroke-width:1px,color:#5c2418",
+            "    linkStyle default stroke:#647d96,stroke-width:1.4px",
+        ]
+    )
     return "\n".join(lines) + "\n"
 
 

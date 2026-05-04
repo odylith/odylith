@@ -24,7 +24,7 @@
 
 - Components Affected: migration-runtime
 
-- Environment(s): Odylith 0.1.11 consumer install in /Users/freedom/code/dentoai-isb with Python 3.13 and Ruff configured for E,F,I,B,C4,S,UP,T100,TYP,D.
+- Environment(s): Odylith 0.1.11 consumer install in a Python service repo with Python 3.13 and Ruff configured for E,F,I,B,C4,S,UP,T100,TYP,D.
 
 - Detected By: Direct consumer-repo audit after operator reported first-run install failures
 
@@ -34,7 +34,7 @@
 
 - Ownership: Install-managed project-root host assets
 
-- Timeline: 2026-04-29: dentoai-isb 0.1.11 consumer repo audit ran `.venv/bin/python -m ruff check .`; generated Odylith Python host assets produced the first 86 lint errors. 2026-04-30: v0.1.12 branch added file-level Ruff suppression to generated Python host assets and bundle mirrors.
+- Timeline: 2026-04-29: a 0.1.11 consumer repo audit ran `.venv/bin/python -m ruff check .`; generated Odylith Python host assets produced the first 86 lint errors. 2026-04-30: v0.1.12 branch added file-level Ruff suppression to generated Python host assets and bundle mirrors.
 
 - Blast Radius: Consumer repos with repo-wide Python lint commands that include hidden project-root assets after Odylith install.
 
@@ -46,7 +46,7 @@
 
 - Invariant Violated: Odylith-managed host integration files must not pollute or fail the consumer repo's own application lint surface.
 
-- Workaround: Run Ruff only on application paths, e.g. `ruff check dentoai_isb pyproject.toml`, until upgrading to 0.1.12.
+- Workaround: Run Ruff only on application paths, e.g. `ruff check app_package pyproject.toml`, until upgrading to 0.1.12.
 
 - Root Cause: Generated project-root Python shims were copied into `.agents/` and `.claude/hooks/` without a file-level Ruff suppression, so consumer repo lint configs treated Odylith-managed integration code as application-owned Python.
 
@@ -54,7 +54,7 @@
 
 - Rollback/Forward Fix: Forward-fix in 0.1.12; do not mutate consumer app Ruff config or exclude Odylith paths in user projects.
 
-- Verification: `/Users/freedom/code/dentoai-isb/.venv/bin/python -m ruff check /Users/freedom/code/odylith/src/odylith/bundle/assets/project-root/.agents /Users/freedom/code/odylith/src/odylith/bundle/assets/project-root/.claude/hooks --config /Users/freedom/code/dentoai-isb/pyproject.toml` reports `All checks passed!`.
+- Verification: A strict consumer Ruff config against Odylith's generated project-root `.agents` and host hook bundle mirrors reports `All checks passed!`.
 
 - Prevention: Keep generated project-root Python host assets marked as managed shims, and test that both bundled assets and live product mirrors start with shebang plus `# ruff: noqa`.
 

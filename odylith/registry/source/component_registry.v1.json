@@ -77,6 +77,7 @@
         "delivery-intelligence",
         "proof-state",
         "execution-engine",
+        "governed-harness",
         "subagent-router",
         "subagent-orchestrator",
         "tribunal",
@@ -1115,6 +1116,36 @@
       ],
       "subcomponents": [],
       "product_layer": "intelligence"
+    },
+    {
+      "component_id": "governed-harness",
+      "name": "Governed Harness",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [],
+      "path_prefixes": [
+        "src/odylith/runtime/governed_harness/"
+      ],
+      "workstreams": [
+        "B-118",
+        "B-121",
+        "B-122",
+        "B-123",
+        "B-124",
+        "B-125"
+      ],
+      "diagrams": [],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Product-owned turn control layer that emits Turn Gate decisions, evidence reports, execution capsules, tool/stop gate decisions, and receipts for normal consumer prompts, host adapters, and benchmark measurement.",
+      "why_tracked": "Owns the shared product path that prevents benchmark-only closure behavior: benchmarks, hooks, SDK adapters, and host surfaces must observe the same governed decision and receipt contract.",
+      "spec_ref": "odylith/registry/source/components/governed-harness/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "subcomponents": [],
+      "product_layer": "agent_execution"
     }
   ]
 }

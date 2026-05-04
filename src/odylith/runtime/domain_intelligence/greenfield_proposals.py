@@ -18,6 +18,8 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine import repo_analysis
 from odylith.runtime.analysis_engine.types import SourceSummary, slugify
+from odylith.runtime.domain_intelligence import greenfield_programs
+from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.proposal_memory import record_greenfield_acceptance
 from odylith.runtime.domain_intelligence.proposal_rendering import format_proposal_text
 from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
@@ -140,19 +142,25 @@ def _proposal_contract() -> dict[str, Any]:
             "Never mark source-backed ownership or scientific/math correctness from prompt text alone.",
         ],
         "minimum_content": {
-            "backlog": "parent workstream plus child workstreams when the project has multiple meaningful boundaries",
-            "components": "candidate Registry components with component_id, label, intended_path, responsibility, evidence_tier, status, and qualification",
-            "diagrams": "purposeful Atlas drafts such as system context, program waves, runtime/data/validation topology, or a better domain-specific set",
+            "backlog": "parent workstream plus child workstreams when the project has multiple meaningful boundaries; every child should carry first-slice, validation, component_focus, and related_diagram_slugs or enough specific language for Odylith to infer the topology",
+            "components": "candidate Registry components with component_id, label, intended_path, responsibility, boundary/interfaces/dependencies where known, evidence_tier, status, and qualification",
+            "diagrams": "purposeful Atlas drafts such as system context, program waves, runtime/data/validation topology, or a better domain-specific set; each diagram must name related components and workstream/backlog focus, and flowcharts must use subtle diagram-internal colors plus wrapped labels",
             "program": "wave plan with goals, validation gates, component focus, and evidence tier",
-            "release_plan": "provisional release selector, stages, milestones, and promotion criteria",
+            "release_plan": "provisional release selector, first-target workstreams, stages, milestones, and promotion criteria; default selector is 0.0.1 unless the operator supplies a different release target",
         },
         "quality_bar": [
             "Reason from the actual prompt, not from a fixed in-code domain list.",
             "Prefer fewer high-quality boundaries over many generic buckets.",
             "Choose diagram types because they clarify the project, not because every project gets the same set.",
             "Each diagram must include host-authored mermaid_source; Odylith validates it but does not invent topology.",
+            "For flowchart mermaid_source, use classDef/style colors inside the diagram for semantic grouping and <br/> to wrap long labels so text stays readable. Use subgraph lanes only where they clarify the topology; never rely on viewer background treatment.",
+            "Child workstreams must not be title-only tickets; include concrete first-slice proof, impacted candidate components, topology/dependency hints, and validation gates.",
+            "Registry components must read like planned ownership specs, not labels; include boundary, responsibility, interface, dependency, and proof expectations where the prompt supports them.",
+            "Atlas diagrams and Radar workstreams must be mutually traceable through related workstream/component hints.",
             "For science and math, propose validation obligations and review gates; do not invent claims or results.",
             "For simple projects, keep the plan small; for complex projects, form waves and release gates.",
+            "Default the first greenfield release target to 0.0.1 unless the operator explicitly asks for another release selector.",
+            "Name the first release target workstreams from the first wave so Compass can show a concrete release lane without pretending every child belongs to the first release.",
         ],
     }
 
@@ -199,11 +207,17 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
             "Draft a concrete proposal for the operator now. Be specific to the prompt; "
             "do not use canned domain buckets. Label observed_source, user_intent, "
             "and odylith_assumption separately. Ask only the questions that materially "
-            "change the first slice or correctness gates."
+            "change the first slice or correctness gates. For every child backlog item, "
+            "include topology hints such as component_focus and related_diagram_slugs, "
+            "plus first-slice validation. For every component, include enough boundary, "
+            "responsibility, dependencies, interfaces, and validation expectations to seed "
+            "a useful Registry CURRENT_SPEC.md. Default the provisional release selector "
+            "to 0.0.1 unless the operator explicitly asks for another release target, "
+            "and identify the first-wave workstreams that should target that release."
         ),
         "apply_commands": [
             "Save the host-reasoned proposal JSON to odylith-greenfield-proposal.json after operator review.",
-            "odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm --release next",
+            "odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm --release 0.0.1",
         ],
     }
     return proposal
@@ -232,6 +246,27 @@ def _next_diagram_id(repo_root: Path) -> str:
             if match:
                 max_id = max(max_id, int(match.group(1)))
     return f"D-{max_id + 1:03d}"
+
+
+def _allocated_diagram_ids(repo_root: Path, count: int) -> list[str]:
+    first = int(_next_diagram_id(repo_root).split("-", 1)[1])
+    return [f"D-{value:03d}" for value in range(first, first + max(0, count))]
+
+
+def _row_text_tuple(row: Mapping[str, Any], *keys: str) -> tuple[str, ...]:
+    for key in keys:
+        value = row.get(key)
+        if value is None:
+            continue
+        if isinstance(value, (list, tuple, set)):
+            values = tuple(str(item).strip() for item in value if str(item).strip())
+            if values:
+                return values
+            continue
+        token = str(value).strip()
+        if token:
+            return (token,)
+    return ()
 
 
 def _backlog_section_overrides(proposal: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
@@ -295,14 +330,16 @@ def _backlog_apply_args(proposal: Mapping[str, Any], *, release_selector: str) -
 
 
 def _release_assignment_note(*, selector: str) -> str:
-    return f"Target confirmed greenfield workstream(s) from `odylith greenfield apply --release {selector}`."
+    return f"Target confirmed first-wave greenfield workstream(s) from `odylith greenfield apply --release {selector}`."
 
 
-def _release_id_for_proposal(proposal: Mapping[str, Any]) -> str:
+def _release_id_for_proposal(proposal: Mapping[str, Any], *, selector: str) -> str:
     release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
     release_id = str(release_plan.get("provisional_release_id", "")).strip()
     if release_id:
         return slugify(release_id)
+    if selector:
+        return slugify(f"release-{selector}")
     intent = proposal.get("intent", {}) if isinstance(proposal.get("intent"), Mapping) else {}
     project_slug = slugify(str(intent.get("project_slug", "")).strip() or str(intent.get("title", "")).strip())
     return slugify(f"release-{project_slug}-first") if project_slug else "release-greenfield-first"
@@ -312,12 +349,15 @@ def _ensure_release_target(*, repo_root: Path, proposal: Mapping[str, Any], sele
     intent = proposal.get("intent", {}) if isinstance(proposal.get("intent"), Mapping) else {}
     title = str(intent.get("title", "Greenfield Project")).strip() or "Greenfield Project"
     release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
+    version, tag = greenfield_programs.semver_release_metadata(selector=selector, release_plan=release_plan)
     return release_planning_authoring.ensure_release_selector(
         repo_root=repo_root,
         selector=selector,
-        release_id=_release_id_for_proposal(proposal),
+        release_id=_release_id_for_proposal(proposal, selector=selector),
         status="planning",
-        name=str(release_plan.get("label", "")).strip() or "First governed release",
+        version=version,
+        tag=tag,
+        name=str(release_plan.get("label", "")).strip() or f"{title} {selector}",
         notes=f"Greenfield release plan for {title}; created only after proposal confirmation.",
         aliases=(selector,),
         dry_run=False,
@@ -340,7 +380,7 @@ def apply_greenfield_proposal(
     backlog_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
     if not backlog_rows:
         raise ValueError("proposal has no backlog records")
-    release_selector = str(release_selector or "").strip()
+    release_selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
     backlog_args = _backlog_apply_args(proposal, release_selector=release_selector)
     backlog_result = backlog_authoring.create_queued_backlog_items(
         repo_root=root,
@@ -353,65 +393,40 @@ def apply_greenfield_proposal(
     release_targeting = None
     if release_selector:
         release_bootstrap = _ensure_release_target(repo_root=root, proposal=proposal, selector=release_selector)
-        release_targeting = release_planning_authoring.add_workstreams_to_release(
-            repo_root=root,
-            workstream_ids=[str(item["idea_id"]) for item in backlog_result["created"]],
-            selector=release_selector,
-            note=_release_assignment_note(selector=release_selector),
-            idea_specs=backlog_result["_candidate_idea_specs"],
-            dry_run=True,
-        )
     for raw_path, text in backlog_result["idea_files"].items():
         Path(raw_path).write_text(str(text), encoding="utf-8")
     Path(backlog_result["backlog_index"]).write_text(str(backlog_result["backlog_index_text"]), encoding="utf-8")
+    program_result = greenfield_programs.create_greenfield_program(
+        repo_root=root,
+        proposal=proposal,
+        backlog_result=backlog_result,
+    )
+    first_release_workstreams = greenfield_programs.first_release_workstream_ids(
+        proposal=proposal,
+        created_backlog=backlog_result["created"],
+        program_result=program_result,
+    )
     if release_selector:
         release_targeting = release_planning_authoring.add_workstreams_to_release(
             repo_root=root,
-            workstream_ids=[str(item["idea_id"]) for item in backlog_result["created"]],
+            workstream_ids=first_release_workstreams,
             selector=release_selector,
             note=_release_assignment_note(selector=release_selector),
             idea_specs=backlog_result["_candidate_idea_specs"],
             dry_run=False,
         )
-    owned_surface_refresh.raise_for_failed_refresh(
-        repo_root=root,
-        surface="radar",
-        operation_label="Greenfield apply backlog",
-    )
-    if release_selector:
-        owned_surface_refresh.raise_for_failed_refresh(
-            repo_root=root,
-            surface="compass",
-            operation_label="Greenfield apply release targeting",
-        )
-
-    components_created: list[dict[str, Any]] = []
-    for row in proposal.get("components", []):
-        if not isinstance(row, Mapping):
-            continue
-        created = component_authoring.register_component(
-            repo_root=root,
-            component_id=str(row.get("component_id", "")).strip(),
-            label=str(row.get("label", "")).strip(),
-            path=str(row.get("intended_path", "")).strip(),
-            kind=str(row.get("kind", "service")).strip() or "service",
-            category="application",
-            qualification=str(row.get("qualification", "candidate")).strip() or "candidate",
-            owner="repo",
-            status=str(row.get("status", "planned")).strip() or "planned",
-            product_layer="application",
-            sources=("user_intent",),
-            workstreams=tuple(str(item["idea_id"]) for item in backlog_result["created"][:1]),
-            dry_run=False,
-        )
-        components_created.append(created.as_dict())
-
+        if isinstance(release_targeting, dict) and isinstance(release_targeting.get("release"), Mapping):
+            release_targeting.setdefault("release_id", str(release_targeting["release"].get("release_id", "")).strip())
     diagrams_created: list[str] = []
     atlas_scaffold_logs: list[str] = []
-    for row in proposal.get("diagrams", []):
-        if not isinstance(row, Mapping):
-            continue
-        diagram_id = _next_diagram_id(root)
+    diagram_rows = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
+    diagram_ids = _allocated_diagram_ids(root, len(diagram_rows))
+    traceability_plan = greenfield_traceability.build_traceability_plan(
+        proposal=proposal,
+        created_backlog=backlog_result["created"],
+        diagram_ids=diagram_ids,
+    )
+    for row, diagram_id in zip(diagram_rows, diagram_ids, strict=False):
         components: list[dict[str, str]] = []
         for component in row.get("components", []):
             if not isinstance(component, Mapping):
@@ -420,7 +435,8 @@ def apply_greenfield_proposal(
             description = str(component.get("description", "")).strip()
             if name and description:
                 components.append({"name": name, "description": description})
-        related_backlog = [str(created["idea_path"]) for created in backlog_result["created"][:1]]
+        link = next((item for item in traceability_plan.diagram_links if item.diagram_id == diagram_id), None)
+        related_backlog = list(link.related_backlog_paths) if link is not None else []
         watch_paths: list[str] = []
         for path in row.get("watch_paths", []):
             token = str(path).strip()
@@ -458,6 +474,51 @@ def apply_greenfield_proposal(
             detail = f": {log_text}" if log_text else ""
             raise RuntimeError(f"atlas scaffold failed for {row.get('slug')}{detail}")
         diagrams_created.append(diagram_id)
+    touched_backlog_paths = greenfield_traceability.apply_backlog_traceability(
+        repo_root=root,
+        proposal=proposal,
+        plan=traceability_plan,
+    )
+    owned_surface_refresh.raise_for_failed_refresh(
+        repo_root=root,
+        surface="radar",
+        operation_label="Greenfield apply backlog topology",
+    )
+    if release_selector:
+        owned_surface_refresh.raise_for_failed_refresh(
+            repo_root=root,
+            surface="compass",
+            operation_label="Greenfield apply release targeting",
+        )
+
+    components_created: list[dict[str, Any]] = []
+    for row in proposal.get("components", []):
+        if not isinstance(row, Mapping):
+            continue
+        key = greenfield_traceability.component_key(row)
+        created = component_authoring.register_component(
+            repo_root=root,
+            component_id=str(row.get("component_id", "")).strip(),
+            label=str(row.get("label", "")).strip(),
+            path=str(row.get("intended_path", "")).strip(),
+            kind=str(row.get("kind", "service")).strip() or "service",
+            category="application",
+            qualification=str(row.get("qualification", "candidate")).strip() or "candidate",
+            owner="repo",
+            status=str(row.get("status", "planned")).strip() or "planned",
+            product_layer="application",
+            sources=("user_intent",),
+            workstreams=traceability_plan.component_workstreams.get(key, ()),
+            diagrams=traceability_plan.component_diagrams.get(key, ()),
+            responsibility=str(row.get("responsibility", "")).strip(),
+            boundary=str(row.get("boundary", "")).strip(),
+            dependencies=_row_text_tuple(row, "dependencies", "depends_on"),
+            interfaces=_row_text_tuple(row, "interfaces", "interface_changes"),
+            validation=_row_text_tuple(row, "validation", "test_strategy"),
+            risks=_row_text_tuple(row, "risks"),
+            dry_run=False,
+        )
+        components_created.append(created.as_dict())
 
     release_id = "none"
     if isinstance(release_targeting, Mapping):
@@ -477,6 +538,8 @@ def apply_greenfield_proposal(
         "backlog": backlog_result["created"],
         "components": components_created,
         "diagrams": diagrams_created,
+        "program": program_result,
+        "backlog_topology": touched_backlog_paths,
         "atlas_scaffold_logs": atlas_scaffold_logs,
         "memory": memory_record,
         "release_bootstrap": release_bootstrap or {"created": False, "release": {}},
@@ -530,6 +593,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"- backlog: {len(result['backlog'])}")
             print(f"- components: {len(result['components'])}")
             print(f"- diagrams: {len(result['diagrams'])}")
+            program = result.get("program", {})
+            if isinstance(program, Mapping) and bool(program.get("created")):
+                print(f"- program: {program.get('umbrella_id')} ({len(program.get('waves', []))} waves)")
             release_target = result.get("release_target", {})
             if isinstance(release_target, Mapping) and str(release_target.get("release_id", "none")).strip() != "none":
                 print(f"- release: {release_target.get('release_id')}")

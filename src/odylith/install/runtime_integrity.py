@@ -108,7 +108,12 @@ def managed_runtime_trust_matches_verification(
     return payload.get("VERIFICATION_SHA256", "").strip() == _verification_sha256(verification)
 
 
-def managed_runtime_integrity_reasons(*, repo_root: str | Path, runtime_root: Path) -> list[str]:
+def managed_runtime_integrity_reasons(
+    *,
+    repo_root: str | Path,
+    runtime_root: Path,
+    include_tree: bool = True,
+) -> list[str]:
     trust_payload = _load_trust_env(repo_root=repo_root, version=runtime_root.name)
     if not trust_payload:
         return [f"managed runtime trust file missing or unreadable: {_trust_env_path(repo_root=repo_root, version=runtime_root.name)}"]
@@ -125,6 +130,8 @@ def managed_runtime_integrity_reasons(*, repo_root: str | Path, runtime_root: Pa
     reasons.extend(_hot_manifest_reasons(runtime_root=runtime_root, trust_payload=trust_payload))
     if reasons:
         return reasons
+    if not include_tree:
+        return []
     return _tree_manifest_reasons(repo_root=repo_root, runtime_root=runtime_root, trust_payload=trust_payload)
 
 

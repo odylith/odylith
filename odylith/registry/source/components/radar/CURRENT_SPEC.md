@@ -5,7 +5,7 @@
   B-111 through B-117. The surface should show the umbrella, execution waves,
   release target `release-0-1-11`, and proof gates without turning Odylith Discipline
   into noisy task theater.
-Last updated: 2026-05-02
+Last updated: 2026-05-03
 
 
 Last updated (UTC): 2026-04-15
@@ -135,6 +135,9 @@ Those sections must contain grounded narrative text. Placeholder bodies,
 invalid. `odylith backlog create` requires the same five grounded inputs before
 it can mint a new Radar workstream, and `validate backlog-contract` rejects
 source records that regress to generic core detail.
+`## Customer` may be a concise one-token audience label when that is the
+operator's accurate taxonomy; the stricter narrative-depth threshold remains on
+Problem, Opportunity, Product View, and Success Metrics.
 
 The practical effect is that Radar doubles as both the visual backlog surface
 and the contract gate for workstream authoring quality.
@@ -293,6 +296,9 @@ themselves.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-05-02 · Implementation:** Domain Intelligence corrected to host-reasoned proposal authoring with apply-time topology validation and no in-code project taxonomy.
+  - Scope: B-142
+  - Evidence: odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md, src/odylith/runtime/domain_intelligence/greenfield_proposals.py +1 more
 - **2026-05-02 · Implementation:** Deepened B-142 Domain Intelligence with first-class science/math archetypes, greenfield UX/release planning module, refreshed governance surfaces, and full engine/install/browser proof.
   - Scope: B-142
   - Evidence: odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md, src/odylith/runtime/domain_intelligence/archetypes.py +1 more
@@ -308,12 +314,10 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-05-02 · Implementation:** Proved v0.1.13 historical upgrade matrix for 0.1.10, 0.1.11, and 0.1.12 starts; release migration gate remains green.
   - Scope: B-141
   - Evidence: odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md, odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md +1 more
-- **2026-05-01 · Implementation:** B-141 moved into the v0.1.13 active pipeline with cross-host hook latency work preserving prompt context, interventions, Assists, and migration governance capture.
-  - Scope: B-141
-  - Evidence: odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md, odylith/radar/source/ideas/2026-05/2026-05-01-claude-hook-latency-budget-and-fast-path-startup.md +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-05-03: Created `release-0-1-14`, moved active B-141/B-142 targeting to it, and tagged completed B-140 migration-observer proof against the same release so Radar, Compass, and release-planning read models show the v0.1.14 work in one target. (Plans: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141), [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-04-15: Hardened Radar detail and authoring so runtime backlog detail exposes renderer-ready workstream fields, summary payloads retain fail-closed fallback detail, `odylith backlog create` requires grounded core detail, backlog validation rejects placeholder or boilerplate Problem/Customer/Opportunity/Product View/Success Metrics sections, and stale finished-workstream plan bindings cannot mint accidental successor backlogs. (Plan: [B-098](odylith/radar/radar.html?view=plan&workstream=B-098))
 - 2026-04-09: Switched Radar default operational ordering onto Delivery Intelligence's shared Scope Signal Ladder while keeping the underlying backlog exhaustive. (Plan: [B-071](odylith/radar/radar.html?view=plan&workstream=B-071); Bug: `CB-090`)
 - 2026-03-26: Created the first Odylith-owned Radar source tree so the public repo can maintain its own ranked product backlog instead of borrowing a consumer backlog as authority. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))

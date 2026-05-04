@@ -56,8 +56,8 @@ reviewer framing that explains how Odylith should be compared.
 - Local benchmark history under `.odylith/runtime/odylith-benchmarks/`.
 - The release-safe benchmark publication contract used by README and maintainer
   release proof.
-- Advisory mechanism reports that support release proof without pretending to
-  be full `odylith_on` outcome proof. The v0.1.11 visible intervention value
+- Advisory mechanism reports that support release proof as mechanism evidence
+  alongside full `odylith_on` outcome proof. The v0.1.11 visible intervention value
   report lives in
   `src/odylith/runtime/evaluation/odylith_intervention_value_engine_benchmark.py`
   and evaluates the governed bootstrap corpus only as selector mechanism
@@ -173,10 +173,9 @@ reviewer framing that explains how Odylith should be compared.
   shape for the proof host under test. The intended lane difference is the
   declared Odylith product assistance stack, not a hidden side channel:
   grounding packet, selected docs and repo anchors, Execution Engine posture
-  and truthful next-move guidance, scenario-declared focused-check
-  shaping, preflight focused-check results only when those checks run in the
-  disposable benchmark workspace and are logged in the report, and bounded
-  orchestration or recovery policy.
+  and truthful next-move guidance, report-visible validator evidence,
+  product Turn Gate decisions, execution capsules, receipts, tool/stop gate
+  summaries, and bounded orchestration or recovery policy.
 - The report under `.odylith/runtime/odylith-benchmarks/latest.v1.json` is the
   machine-readable source of truth for publication.
 - That report must expose the comparison contract and fairness state
@@ -184,9 +183,11 @@ reviewer framing that explains how Odylith should be compared.
   `comparison_contract.odylith_on_affordances`,
   `comparison_contract.raw_agent_affordances`,
   `preflight_evidence_mode`, `preflight_evidence_commands`,
-  `preflight_evidence_result_status`, `observed_path_sources`,
-  `validator_status_basis`, `fairness_contract_passed`,
-  `fairness_findings`, and `corpus_composition`.
+  `preflight_evidence_result_status`, `turn_gate_decision`,
+  `turn_gate_receipt`, `execution_capsule`, `tool_gate_summary`,
+  `stop_gate_summary`, `observed_path_sources`, `validator_status_basis`,
+  `fairness_contract_passed`, `fairness_findings`, and
+  `corpus_composition`.
 - The current report contract keeps `comparison_contract` as the stable
   comparison token and carries the structured affordance details in
   `comparison_contract_details`. Publication docs may render those details as
@@ -201,16 +202,15 @@ reviewer framing that explains how Odylith should be compared.
   non-publication scaffolding only: they must stay whitelisted, additive,
   scenario-local, and unable to inject hidden repo truth outside the declared
   packet payload seam.
-- When focused preflight evidence is what turns a no-op lane into a validator
-  pass, the result must say so explicitly through
-  `validator_status_basis=focused_noop_proxy` instead of looking like a normal
-  broad-validator success.
+- When evidence before host execution turns a non-mutating closure lane into a
+  validator pass, the result must expose the product Turn Gate early-exit proof
+  instead of looking like a normal broad-validator success.
 - The README numbers, benchmark explainer, reviewer guide, and canonical SVG
   graphs are derived outputs. They must never outrun the latest validated
   published report or drift away from the benchmark priority order.
 - If maintainers explicitly waive proof for one release, that exception must
   be tracked in `odylith/runtime/source/release-maintainer-overrides.v1.json`
-  and treated as an advisory downgrade, not as hidden benchmark success.
+  and reported as an advisory downgrade.
 - Odylith's public benchmark story is benchmark-first: memory, topology,
   governance surfaces, and orchestration are mechanisms that explain the
   execution delta, not the primary scorecard.
@@ -271,6 +271,13 @@ reviewer framing that explains how Odylith should be compared.
   while benchmark compare correctly refused stale authority under `CB-116`.
   This is an exact-version benchmark-advisory release, not current benchmark
   proof, and the normal release compare gate remains the default.
+- Active release exception:
+  `v0.1.14` carries a tracked `skip_proof_and_compare` override after the
+  maintainer explicitly waived full benchmark runs for GA. This release is
+  benchmark-advisory while the shipped benchmark story is the product Turn Gate
+  formal model plus migration, browser, install, topology, guidance,
+  discipline, and release-candidate proof. Do not describe `v0.1.14` as fresh
+  benchmark proof.
 
 ## Current Benchmark Priorities
 
@@ -303,9 +310,9 @@ reviewer framing that explains how Odylith should be compared.
 
 ## Developer-First Taxonomy
 
-Benchmark publication now leads with the developer-facing core:
+Benchmark publication now leads with the developer-facing operating-policy core:
 
-- Bug Fixes
+- Repair / Write Admission
 - Multi-File Features
 - Runtime / Install / Security
 - Surface / UI Reliability
@@ -318,7 +325,9 @@ Benchmark publication now leads with the developer-facing core:
 
 That ordering is non-cosmetic. The benchmark keeps Odylith's governance and
 architecture truth, but the public heatmaps and family tables should now start
-with the families that look and feel most like normal coding-agent work.
+with the families that look and feel most like normal coding-agent pressure
+while making clear when a row proves safe non-mutation instead of patch
+generation.
 
 ## Public And Maintainer Command Surface
 ### Public operator entrypoint
@@ -422,10 +431,15 @@ with the families that look and feel most like normal coding-agent work.
 - `diagnostic` is the internal tuning lane: it isolates packet and prompt
   creation for `odylith_on` versus `odylith_off` without running the live
   end-to-end host pair.
+- The default diagnostic cache profile is `cold` so source-local maintainer
+  checks can prove packet and prompt construction without requiring optional
+  warm local-memory dependencies. Operators may still request
+  `--cache-profile warm` explicitly when the intent is to verify warm-cache
+  memory behavior.
 - The proof lane answers:
-  - "Does the full Odylith assistance stack beat the raw host CLI on the same live end-to-end task contract?"
+  - "Does the declared Odylith operating policy make the same host reach a more validated, better-grounded, and less needlessly mutating outcome than the raw host CLI?"
   - "What is the full matched-pair time to valid outcome?"
-  - "Does Odylith improve required-path coverage, validation, and expectation success on the live run?"
+  - "Does Odylith improve required-path coverage, validation, write admission, and expectation success under the declared comparison contract?"
 - The diagnostic lane answers:
   - "Does Odylith build a better grounded packet/prompt than `odylith_off`?"
   - "What is the prep-time and prompt-size cost of Odylith’s retrieval/memory layer?"
@@ -498,9 +512,9 @@ with the families that look and feel most like normal coding-agent work.
   auto-consumed instruction entrypoints and tool config surfaces. It must not
   delete truth-bearing repo docs, maintainer markdown, or product skill files
   that remain valid explicit read targets during the task.
-- The fairness contract fails closed if `odylith_on` receives undeclared
-  preflight evidence, if `odylith_off` loses prompt-visible path attribution
-  that the prompt actually showed, or if the report cannot expose those lane
+- The fairness contract fails closed if `odylith_on` receives undeclared Turn
+  Gate evidence, if `odylith_off` loses prompt-visible path attribution that
+  the prompt actually showed, or if the report cannot expose those lane
   affordances explicitly.
 - If stripped guidance or validator-truth files must reappear before
   validation, they must be restored from a stash captured inside the scoped
@@ -546,6 +560,9 @@ with the families that look and feel most like normal coding-agent work.
   attribution and anti-gaming review.
 - Packet and prompt creation diagnostics are useful internal tuning signals,
   but they are not the same thing as the live end-to-end product comparison.
+- Focused non-mutating closure rows are valid write-admission evidence. They
+  prove that Odylith suppressed mutation after focused validators established
+  closure under the measured scenario contract.
 - By default, Odylith applies a conservative `20m` timeout to each live host
   turn so one stalled scenario cannot hang the benchmark indefinitely.
   Validator timeouts remain operator-controlled. Any operator-supplied timeout
@@ -559,14 +576,17 @@ with the families that look and feel most like normal coding-agent work.
 
 ### Public evaluation framing
 - Odylith should be evaluated first on whether `odylith_on` improves the
-  coding outcome versus `raw_agent_baseline` on the same tasks.
-- The benchmark is not trying to prove that Odylith beats the base model's
-  weights. It is trying to prove that Odylith supplies a better operating
-  policy around the same model.
+  same-host operating-policy outcome versus `raw_agent_baseline` on the same
+  benchmark contracts.
+- The benchmark proves that Odylith supplies a better operating policy around
+  the same model: stronger grounding, explicit write admission,
+  validator-backed closure, and recovery behavior under a matched-host
+  contract.
 - In benchmark terms, the relevant multipliers are:
   - model capability
   - context quality
   - search policy
+  - write-admission policy
   - validation policy
   - recovery policy
 - A benchmark win is meaningful only when Odylith improves those control-plane
@@ -585,9 +605,6 @@ with the families that look and feel most like normal coding-agent work.
   Claude-facing benefits from the same grounding and governance layer, but they
   must not overstate those benefits as Claude-host benchmark proof until that
   proof exists.
-- If Odylith only wins when it gets extra hidden truth, that is a weaker story
-  than the true benchmark claim and must not be presented as the primary
-  proof.
 - The benchmark therefore prefers declared product advantages over pretend
   symmetry. If an affordance is intentional Odylith behavior, document it in
   the comparison contract and report it explicitly; do not hide it behind a
@@ -765,13 +782,14 @@ Release-safe benchmark status is distinct from these eval-integrity gates:
 - The tracked corpus stays canonical on `scenarios` and
   `architecture_scenarios`; reader support for legacy `cases` keys is only a
   backward-compatibility bridge, not the maintained source-truth shape.
-- Odylith must not cherry-pick only the easiest cache profile for publication.
-- README and graph publication must not claim a result stronger than the latest
-  conservative published report.
-- Public docs and reviewer guidance must not drift into treating structural
-  overlap or feature-parity tables as the primary proof of product value.
-- Odylith must not gain benchmark wins from weakened workload shape, stale
-  projection truth, or cross-scenario comparison tricks.
+- Odylith publishes the conservative selected cache-profile view rather than
+  the easiest green slice.
+- README and graph publication stay bounded by the latest conservative
+  published report.
+- Public docs and reviewer guidance keep the primary proof on benchmark
+  outcomes rather than structural overlap or feature-parity tables.
+- Benchmark wins come from validated workload outcomes, fresh projection truth,
+  and same-scenario comparisons.
 - Historical integrity failures now tracked in Casebook are part of the
   benchmark safety model:
   - `CB-027` records the open live-run contamination and raw-baseline isolation
@@ -784,6 +802,10 @@ Release-safe benchmark status is distinct from these eval-integrity gates:
   precision is also a failure, even if the speed or token headline improves.
 - Warm-only or profile-scoped local runs remain useful for debugging, but they
   are not release-safe publication proof unless the report says otherwise.
+- Diagnostic proof must stay dependency-light by default. If a source-local
+  diagnostic run requires optional warm-cache LanceDB/Tantivy availability for
+  a packet-only claim, the benchmark lane is too tightly coupled to the memory
+  substrate and should be narrowed or made explicit.
 
 ## Validation Playbook
 ### Runtime proof
@@ -795,6 +817,7 @@ Release-safe benchmark status is distinct from these eval-integrity gates:
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_odylith_benchmark_graphs.py tests/unit/test_cli.py`
 - `python -m pytest -q tests/unit/runtime/test_tooling_guidance_catalog.py tests/unit/runtime/test_tooling_context_retrieval_guidance.py tests/unit/runtime/test_odylith_benchmark_prompt_regressions.py tests/unit/runtime/test_odylith_benchmark_preflight.py`
 - `odylith validate guidance-behavior --repo-root .`
+- `odylith context-engine --repo-root . benchmark --profile diagnostic --limit 5 --no-write-report`
 
 ## Requirements Trace
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
@@ -826,3 +849,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-17: Added the `hot_path_efficiency` domain to Guidance Behavior platform proof and re-proved the quick family at `6` scenarios, `0.0` widening rate, no advisory failures, and Odylith ON packet timing of `median=5.712 ms`, `avg=5.999 ms`, `p95=7.463 ms`. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
 - 2026-04-17: Hardened Guidance Behavior platform proof so stale live/source-bundle mirrors for guidance docs, host shims, skills, governed program/spec truth, and benchmark corpora fail validation instead of passing on token-present but lane-divergent consumer assets. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
 - 2026-04-18: Expanded Odylith Discipline benchmark sovereignty from scenario selection into contract-quality metrics: pressure observations, affordances, admissibility, proof obligations, learning replay, memory recurrence, intervention visibility, and platform integration now feed deterministic summary rates while provider and host-model call counts stay zero. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))
+- 2026-05-03: Changed the diagnostic benchmark default cache profile to cold so source-local engine-integrity checks remain dependency-light while explicit warm-cache verification remains available. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Bug: `CB-163`)

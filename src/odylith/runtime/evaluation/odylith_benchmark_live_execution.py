@@ -45,6 +45,7 @@ from odylith.runtime.evaluation import odylith_benchmark_isolation
 from odylith.runtime.evaluation import odylith_benchmark_live_process
 from odylith.runtime.evaluation import odylith_benchmark_mode
 from odylith.runtime.evaluation import odylith_benchmark_live_prompt
+from odylith.runtime.governed_harness import turn_gate as governed_turn_gate
 from odylith.runtime.reasoning import odylith_reasoning
 
 
@@ -591,6 +592,55 @@ def _focused_checks_cover_validation_commands(*, scenario: Mapping[str, Any]) ->
     return bool(focused_checks) and focused_checks == validation_commands
 
 
+def _turn_gate_prompt_payload(
+    *,
+    scenario: Mapping[str, Any],
+    focused_check_result: Mapping[str, Any],
+    focused_check_commands: Sequence[str],
+    benchmark_row_id: str = "",
+) -> dict[str, Any]:
+    focused_checks_cover_contract = _focused_checks_cover_validation_commands(scenario=scenario) or str(
+        scenario.get("family", "")
+    ).strip() == "governed_surface_sync"
+    return {
+        "prompt": str(scenario.get("prompt", "")).strip(),
+        "prompt_class": str(scenario.get("turn_gate_prompt_class", "")).strip(),
+        "benchmark_row_id": benchmark_row_id,
+        "policy_hints": {
+            "non_mutating_closure_allowed": _scenario_allows_noop_completion(scenario=scenario),
+            "focused_checks_cover_contract": focused_checks_cover_contract,
+        },
+        "validation_commands": [
+            str(token).strip()
+            for token in scenario.get("validation_commands", [])
+            if str(token).strip()
+        ]
+        if isinstance(scenario.get("validation_commands"), list)
+        else [],
+        "focused_local_checks": [str(token).strip() for token in focused_check_commands if str(token).strip()],
+        "focused_check_result": dict(focused_check_result),
+        "expected_write_paths": _scenario_expected_write_paths(scenario),
+        "required_paths": [
+            str(token).strip()
+            for token in scenario.get("required_paths", [])
+            if str(token).strip()
+        ],
+        "selected_evidence_refs": [
+            str(token).strip()
+            for token in scenario.get("required_paths", [])
+            if str(token).strip()
+        ],
+        "cross_engine_evidence_ids": [
+            str(token).strip()
+            for token in (
+                scenario.get("workstream_id", ""),
+                scenario.get("component_id", ""),
+            )
+            if str(token).strip()
+        ],
+    }
+
+
 def _failed_validator_command_signatures(result: Mapping[str, Any]) -> set[tuple[str, int]]:
     rows = result.get("results")
     if not isinstance(rows, list):
@@ -633,95 +683,22 @@ def _focused_noop_validator_proxy_allowed(
     focused_check_result: Mapping[str, Any],
     validator_result: Mapping[str, Any],
 ) -> bool:
-    if not _scenario_allows_noop_completion(scenario=scenario):
-        return False
-    if not (
-        _focused_checks_cover_validation_commands(scenario=scenario)
-        or str(scenario.get("family", "")).strip() == "governed_surface_sync"
-    ):
-        return False
-    if any(str(token).strip() for token in candidate_write_paths):
-        return False
-    if any(str(token).strip() for token in required_path_misses):
-        return False
-    if not (
-        _validator_result_passed(focused_check_result)
-        or _focused_check_failure_matches_validator_failure(
+    return governed_turn_gate.non_mutating_completion_admitted(
+        prompt_payload=_turn_gate_prompt_payload(
+            scenario=scenario,
             focused_check_result=focused_check_result,
-            validator_result=validator_result,
-        )
-    ):
-        return False
-    if _validator_result_passed(validator_result):
-        return False
-    explanation = _structured_output_text(structured_output).lower()
-    validator_rows = validator_result.get("results")
-    validator_text_parts: list[str] = []
-    if isinstance(validator_rows, list):
-        for row in validator_rows:
-            if not isinstance(row, Mapping):
-                continue
-            validator_text_parts.extend(
-                [
-                    str(row.get("stdout_tail", "")).strip().lower(),
-                    str(row.get("stderr_tail", "")).strip().lower(),
-                ]
-            )
-    validator_text = " ".join(token for token in validator_text_parts if token)
-    out_of_slice_markers = (
-        "out-of-slice workspace drift",
-        "outside the permitted writable slice",
-        "outside the allowed edit slice",
-        "outside the allowed working set",
-        "outside this task slice",
-        "outside the task slice",
-        "outside the allowed bounded scope",
-        "outside the bounded scope",
-        "outside the allowed slice",
-        "outside the grounded slice",
-        "outside the slice",
-        "benchmark boundary",
-        "enforced slice boundary",
-        "no minimal in-slice edit",
-        "no minimal in slice edit",
+            focused_check_commands=(
+                scenario.get("focused_local_checks", [])
+                if isinstance(scenario.get("focused_local_checks"), list)
+                else []
+            ),
+        ),
+        structured_output=structured_output,
+        candidate_write_paths=candidate_write_paths,
+        required_path_misses=required_path_misses,
+        focused_check_result=focused_check_result,
+        validator_result=validator_result,
     )
-    drift_markers = (
-        "pre-existing",
-        "stale",
-        "missing",
-        "out-of-scope",
-        "out of scope",
-        "unrelated",
-    )
-    outside_boundary_matches = bool(
-        explanation
-        and "outside" in explanation
-        and any(
-            token in explanation
-            for token in (
-                "allowed",
-                "permitted",
-                "slice",
-                "working set",
-                "boundary",
-                "file",
-                "files",
-            )
-        )
-    )
-    summary_matches = explanation and (
-        any(marker in explanation for marker in out_of_slice_markers) or outside_boundary_matches
-    ) and any(marker in explanation for marker in drift_markers)
-    validator_tail_matches = False
-    if str(scenario.get("family", "")).strip() == "governed_surface_sync":
-        validator_tail_matches = (
-            "without rewriting governed truth" in validator_text
-            and (
-                "odylith/registry/source/components/" in validator_text
-                or "odylith/technical-plans/in-progress/" in validator_text
-            )
-        )
-    return bool(summary_matches or validator_tail_matches)
 
 
 def _focused_noop_preflight_short_circuit_allowed(
@@ -729,14 +706,21 @@ def _focused_noop_preflight_short_circuit_allowed(
     scenario: Mapping[str, Any],
     focused_check_result: Mapping[str, Any],
 ) -> bool:
-    if not _scenario_allows_noop_completion(scenario=scenario):
-        return False
-    if not (
-        _focused_checks_cover_validation_commands(scenario=scenario)
-        or str(scenario.get("family", "")).strip() == "governed_surface_sync"
-    ):
-        return False
-    return _validator_result_passed(focused_check_result)
+    decision = governed_turn_gate.decide_turn(
+        repo_root=Path.cwd(),
+        host="benchmark-compat",
+        mode="observe",
+        prompt_payload=_turn_gate_prompt_payload(
+            scenario=scenario,
+            focused_check_result=focused_check_result,
+            focused_check_commands=(
+                scenario.get("focused_local_checks", [])
+                if isinstance(scenario.get("focused_local_checks"), list)
+                else []
+            ),
+        ),
+    )
+    return decision.decision_type == "early_exit_proof"
 
 
 def _focused_noop_short_circuit_output(
@@ -746,11 +730,11 @@ def _focused_noop_short_circuit_output(
 ) -> dict[str, Any]:
     family = str(scenario.get("family", "")).strip()
     summary = (
-        "No file changes were needed. The declared focused validator evidence already proves the bounded contract on the current tree."
+        "Non-mutating closure was sufficient. The product Turn Gate evidence already proves the bounded contract on the current tree."
     )
     if family == "guidance_behavior":
         summary = (
-            "No file changes were needed. The declared focused validator evidence already proves the grounded guidance contract on the current tree."
+            "Non-mutating closure was sufficient. The product Turn Gate evidence already proves the grounded guidance contract on the current tree."
         )
     return {
         "status": "completed",
@@ -761,9 +745,9 @@ def _focused_noop_short_circuit_output(
             for token in focused_check_commands
             if str(token).strip()
         ],
-        "validation_summary": "focused_local_checks_passed_noop",
+        "validation_summary": "turn_gate_early_exit_proof",
         "notes": [
-            "Odylith treated the passing focused local checks as the valid no-op proof for this allow-noop slice.",
+            "Odylith Turn Gate treated the passing focused local checks as valid non-mutating closure proof for this closure-admitted slice.",
         ],
     }
 
@@ -1375,12 +1359,42 @@ def _run_live_scenario_once(
             )
             if focused_check_result_lines:
                 prompt_payload_rows["focused_local_check_results"] = focused_check_result_lines
+        turn_gate_decision: dict[str, Any] = {
+            "schema_version": governed_turn_gate.SCHEMA_VERSION,
+            "decision_type": "not_applicable",
+            "decision_id": "",
+        }
+        turn_gate_receipt: dict[str, Any] = {}
+        execution_capsule: dict[str, Any] = {}
+        tool_gate_summary: dict[str, Any] = {
+            "schema_version": governed_turn_gate.SCHEMA_VERSION,
+            "outcome": "not_applicable",
+            "reason": "no_tool_check_in_live_benchmark",
+        }
+        stop_gate_summary: dict[str, Any] = {
+            "schema_version": governed_turn_gate.SCHEMA_VERSION,
+            "outcome": "not_applicable",
+            "reason": "not_evaluated_yet",
+        }
+        if normalized_mode == "odylith_on":
+            turn_gate_rows = governed_turn_gate.decide_turn(
+                repo_root=workspace_root,
+                host=execution_host_family,
+                mode="observe",
+                prompt_payload=_turn_gate_prompt_payload(
+                    scenario=scenario,
+                    focused_check_result=focused_check_result,
+                    focused_check_commands=focused_check_commands,
+                    benchmark_row_id=str(scenario.get("id", "") or scenario.get("name", "")).strip(),
+                ),
+                persist_receipt=True,
+            ).as_dict()
+            turn_gate_decision = turn_gate_rows
+            turn_gate_receipt = dict(turn_gate_rows.get("receipt", {}))
+            execution_capsule = dict(turn_gate_rows.get("execution_capsule", {}))
         preflight_noop_short_circuit = bool(
             normalized_mode == "odylith_on"
-            and _focused_noop_preflight_short_circuit_allowed(
-                scenario=scenario,
-                focused_check_result=focused_check_result,
-            )
+            and str(turn_gate_decision.get("decision_type", "")).strip() == "early_exit_proof"
         )
         workspace_status_baseline = _workspace_git_status_snapshot(workspace_root=workspace_root)
         prompt = _agent_prompt(
@@ -1499,7 +1513,7 @@ def _run_live_scenario_once(
         expected_write_paths = _scenario_expected_write_paths(scenario)
         supporting_paths = _scenario_supporting_paths(scenario)
         if preflight_noop_short_circuit and preflight_command_paths:
-            # Validator-backed no-op proof should treat the named local validator
+            # Validator-backed non-mutating closure proof should treat the named local validator
             # anchors as supporting evidence, not as hallucinated surface drift.
             supporting_paths = _dedupe_strings([*supporting_paths, *preflight_command_paths])
         precision_metrics = _precision_metrics(
@@ -1545,8 +1559,8 @@ def _run_live_scenario_once(
             workspace_state_pre_validator = dict(workspace_state_post_codex)
             validator_result = dict(focused_check_result)
             validator_result["status"] = "passed"
-            validator_result["status_basis"] = "focused_noop_short_circuit"
-            validator_result["proxy_from"] = "focused_local_checks"
+            validator_result["status_basis"] = "turn_gate_early_exit_proof"
+            validator_result["proxy_from"] = "turn_gate"
         elif live_timed_out:
             workspace_state_pre_validator = dict(workspace_state_post_codex)
             validator_result = _validator_short_circuit_result(
@@ -1580,8 +1594,8 @@ def _run_live_scenario_once(
         ):
             effective_validator_result = dict(validator_result)
             effective_validator_result["status"] = "passed"
-            effective_validator_result["status_basis"] = "focused_noop_proxy"
-            effective_validator_result["proxy_from"] = "focused_local_checks"
+            effective_validator_result["status_basis"] = "turn_gate_non_mutating_closure_proxy"
+            effective_validator_result["proxy_from"] = "turn_gate"
         status = str(structured_output.get("status", "")).strip().lower()
         if status not in _STATUS_VALUES:
             status = "failed"
@@ -1600,6 +1614,21 @@ def _run_live_scenario_once(
             validators_passed=validators_passed,
             required_path_misses=required_path_misses,
         )
+        if normalized_mode == "odylith_on" and turn_gate_decision.get("decision_id"):
+            stop_gate_summary = governed_turn_gate.check_stop(
+                repo_root=workspace_root,
+                host=execution_host_family,
+                decision_id=str(turn_gate_decision.get("decision_id", "")).strip(),
+                transcript_text=json.dumps(
+                    {
+                        "status": status,
+                        "structured_output": structured_output,
+                        "validation": str(effective_validator_result.get("status", "")).strip(),
+                        "validator_status": str(effective_validator_result.get("status", "")).strip(),
+                    },
+                    sort_keys=True,
+                ),
+            )
         expectation_ok = bool(
             (status == "completed" or validator_backed_completion)
             and not required_path_misses
@@ -1675,12 +1704,20 @@ def _run_live_scenario_once(
             "preflight_evidence_commands": preflight_evidence_commands,
             "preflight_evidence_result_status": str(focused_check_result.get("status", "")).strip()
             or "not_applicable",
+            "turn_gate_decision": turn_gate_decision,
+            "turn_gate_receipt": turn_gate_receipt,
+            "execution_capsule": execution_capsule,
+            "tool_gate_summary": tool_gate_summary,
+            "stop_gate_summary": stop_gate_summary,
             "observed_path_sources": observed_path_sources,
             "validator_execution_mode": (
-                "focused_noop_short_circuit"
+                "turn_gate_early_exit_proof"
                 if preflight_noop_short_circuit
                 else "skipped_due_to_live_timeout"
                 if live_timed_out
+                else "turn_gate_non_mutating_closure_proxy"
+                if str(effective_validator_result.get("status_basis", "")).strip()
+                == "turn_gate_non_mutating_closure_proxy"
                 else "executed"
             ),
         }
@@ -1725,6 +1762,9 @@ def _run_live_scenario_once(
                 or "validator_result",
                 "structured_summary": str(structured_output.get("summary", "")).strip(),
                 "validator_backed_noop_completion": bool(
+                    validator_backed_completion and not any(str(token).strip() for token in candidate_write_paths)
+                ),
+                "validator_backed_non_mutating_completion": bool(
                     validator_backed_completion and not any(str(token).strip() for token in candidate_write_paths)
                 ),
                 "validator_backed_completion": validator_backed_completion,
@@ -1785,6 +1825,11 @@ def _run_live_scenario_once(
             "preflight_evidence_commands": preflight_evidence_commands,
             "preflight_evidence_result_status": str(focused_check_result.get("status", "")).strip()
             or "not_applicable",
+            "turn_gate_decision": turn_gate_decision,
+            "turn_gate_receipt": turn_gate_receipt,
+            "execution_capsule": execution_capsule,
+            "tool_gate_summary": tool_gate_summary,
+            "stop_gate_summary": stop_gate_summary,
             "full_scan": {},
             "orchestration": _live_orchestration_summary(
                 execution_contract=execution_contract,

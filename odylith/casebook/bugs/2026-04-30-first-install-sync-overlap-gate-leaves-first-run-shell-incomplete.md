@@ -34,7 +34,7 @@
 
 - Ownership: Install lifecycle, sync overlap gate, and first-run shell bootstrap contract.
 
-- Timeline: 2026-04-29: user removed prior mock repo, installed Claude Code, entered /Users/freedom/code/dentoai-isb, ran hosted Odylith install, verification succeeded, first-run sync blocked on 61 overlaps, and required shell HTML surfaces remained missing. The user then ran `./.odylith/bin/odylith doctor --repo-root . --repair`, which reported completion, followed by `./.odylith/bin/odylith sync --repo-root . --force --impact-mode full`, which still blocked on 62 overlaps.
+- Timeline: 2026-04-29: user removed prior mock repo, installed Claude Code, entered a consumer repo, ran hosted Odylith install, verification succeeded, first-run sync blocked on 61 overlaps, and required shell HTML surfaces remained missing. The user then ran `./.odylith/bin/odylith doctor --repo-root . --repair`, which reported completion, followed by `./.odylith/bin/odylith sync --repo-root . --force --impact-mode full`, which still blocked on 62 overlaps.
 
 - Blast Radius: All Odylith 0.1.11 hosted installs received the affected installer code. The observed break occurs on fresh consumer installs where the bootstrap tree and managed guidance create enough untracked Odylith-owned paths before first-run surface sync, which is the normal first-install shape for many Git repos.
 

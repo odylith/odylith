@@ -8,13 +8,12 @@ Backlog: B-141
 
 Goal: Reduce Claude and Codex host-turn latency without losing Odylith's
 automatic prompt context assessment, ambient intervention blocks, visible
-Assists, safety guards, or governance capture. The v0.1.13 implementation
-must keep the same product behavior while moving heavy work out of the
-critical path: Claude prompt-submit work becomes one bundled route, Claude
-PostToolUse refreshes become async where the host supports it, Codex
-PostToolUse records cheap dirty events and settles them at Stop, and
-Casebook/Radar migration evidence stays captured when legacy records or
-launcher repair states break.
+Assists, safety guards, or governance capture. The v0.1.14 release target must
+keep the same product behavior while moving heavy work out of the critical
+path: host prompt-submit work stays bounded, Codex PostToolUse records cheap
+dirty events and settles them at Stop, install reruns behave as upgrades, and
+Casebook/Radar/Atlas migration evidence stays captured when legacy records,
+generated surfaces, topology links, or launcher repair states break.
 
 Assumptions:
 - Claude and Codex have different native hook semantics, so performance wins
@@ -29,7 +28,7 @@ Assumptions:
   backend, Execution Engine decision, delivery visibility, Tribunal state, and
   proof status. Generic low-signal prompts may stay fully silent.
 - Legacy consumer Casebook records may be missing newer metadata fields and
-  must migrate before stricter v0.1.13 validation runs.
+  must migrate before stricter v0.1.14 validation runs.
 
 Constraints:
 - Do not remove safety gates. PreToolUse guards stay synchronous when they can
@@ -53,7 +52,7 @@ Boundary Conditions:
   settlement, Casebook metadata migration, host contract docs, explicit-only
   skill invocation flags, bundled project-root mirrors, and focused tests.
 - Scope excludes model switching, removing Odylith grounding, MCP server
-  cleanup outside the repo, and productionizing a hook daemon in v0.1.13.
+  cleanup outside the repo, and productionizing a hook daemon in v0.1.14.
 
 Related Bugs:
 - [CB-147](../../../casebook/bugs/2026-05-01-claude-hooks-spam-unhealthy-launcher-repair-errors-during-bootstrap-repair.md)
@@ -78,6 +77,19 @@ Related Bugs:
 - [CB-157](../../../casebook/bugs/2026-05-03-compass-timeline-audit-recorded-prompt-intervention-chatter-as-implementation-hi.md)
   tracks the Compass timeline audit hygiene failure where zero-file
   prompt-intervention chatter rendered as implementation history.
+- [CB-159](../../../casebook/bugs/2026-05-03-greenfield-atlas-drafts-reuse-generic-star-topology.md)
+  tracks the greenfield Atlas topology quality failure that made diagrams too
+  generic to serve as project topology.
+- [CB-160](../../../casebook/bugs/2026-05-03-greenfield-apply-leaves-child-topology-and-registry-specs-shallow.md)
+  tracks greenfield child backlog, Registry, release, and Atlas traceability
+  depth failures after confirmed apply.
+- [CB-162](../../../casebook/bugs/2026-05-03-atlas-diagrams-lack-visual-lanes-and-readability-guardrails.md)
+  tracks Atlas visual grammar, pure-white viewer, and migration-backed render
+  polish for v0.1.14.
+- [CB-163](../../../casebook/bugs/2026-05-03-context-engine-diagnostic-benchmark-can-require-warm-cache-and-leak-broken-pipe-.md)
+  tracks the engine-integrity proof-lane failure where the Context Engine
+  diagnostic benchmark defaulted to warm cache and shell pipelines could leak
+  BrokenPipe tracebacks.
 
 ## Learnings
 - [x] The original Claude-led report was a symptom, not the product boundary:
@@ -118,6 +130,11 @@ Related Bugs:
       posture, `0.1.12` remains the pinned dogfood baseline, and the default
       Compass release-target view must follow the explicit current/next
       release aliases instead of rendering every older active release lane.
+- [x] v0.1.14 release truth now owns the late-session governance changes:
+      `release-0-1-14` is active, alias `next` points to it, B-141 and B-142
+      are active under that target, and B-140 is tagged as completed migration
+      observer proof for Casebook, Atlas, topology-spine, and generated-surface
+      upgrade coverage.
 - [x] Governed surface refresh performance needs end-to-end protection too,
       not only hook microbenchmarks. v0.1.13 now has a temporary consumer-repo
       test that runs full sync dry-run, all-surface dashboard refresh, Compass
@@ -279,6 +296,14 @@ Related Bugs:
       non-negotiable contracts: evidence separation, confirmation gates,
       required host-authored topology, no duplicated diagram bodies, release
       planning, and durable memory.
+- [x] Engine-integrity checks need a dependency-light diagnostic lane. The
+      diagnostic benchmark now defaults to cold cache so packet/prompt
+      readiness can be proven in source-local posture without optional
+      LanceDB/Tantivy warm-cache dependencies, while explicit warm-cache proof
+      remains available.
+- [x] CLI JSON producers must be pipeline-friendly. The Context Engine command
+      boundary now treats downstream stdout closure as normal shell behavior
+      instead of printing a traceback during release and diagnostic proof.
 
 ## Should-Ship
 - [ ] Convert the host hook daemon proposal into a separate design slice with
@@ -394,6 +419,16 @@ Related Bugs:
   - [x] Mitigation: Forced daemon mode starts the same local Context Engine
         daemon contract and waits for readiness; `auto` still avoids spawning
         a background process unless a daemon is already available.
+- [x] Risk: Engine-readiness proof could fail for the wrong reason if the
+      diagnostic benchmark default requires warm local-memory dependencies in
+      source-local posture.
+  - [x] Mitigation: Diagnostic benchmark runs now default to cold cache and the
+        Benchmark component spec documents warm cache as an explicit operator
+        choice for memory-substrate verification.
+- [x] Risk: Release proof scripts or shell consumers could make a healthy
+      Context Engine command look broken by closing stdout early.
+  - [x] Mitigation: The Context Engine CLI entrypoint catches closed-pipe
+        conditions at the command boundary and returns cleanly.
 
 ## Validation
 - [x] `PYTHONPATH=src pytest -q tests/unit/runtime/test_claude_host_prompt_context.py tests/unit/runtime/test_codex_host_post_bash_checkpoint.py tests/unit/runtime/test_codex_host_stop_summary.py tests/unit/runtime/test_casebook_bug_index.py tests/unit/runtime/test_host_runtime_contract.py tests/unit/runtime/test_claude_cli_capabilities.py tests/unit/install/test_claude_effective_settings.py tests/unit/runtime/test_claude_host_compatibility.py tests/unit/test_claude_host_cli.py tests/unit/test_cli_audit.py tests/unit/install/test_codex_project_assets.py tests/unit/runtime/test_source_bundle_mirror.py tests/unit/runtime/test_hygiene.py tests/integration/install/test_manager.py::test_doctor_bundle_repair_backfills_legacy_casebook_bug_ids tests/integration/install/test_manager.py::test_upgrade_same_version_backfills_legacy_casebook_bug_ids tests/integration/install/test_manager.py::test_consumer_upgrade_backfills_legacy_casebook_bug_ids_during_runtime_activation`
@@ -431,6 +466,13 @@ Related Bugs:
 - [x] `./.odylith/bin/odylith release migration-gate --repo-root . --target-version 0.1.13 --json` (`ok: true`, `blocked: 0`, `ungated: 0`; root guidance routing, topology-validator decomposition, and refreshed browser/install-managed surfaces covered by B-140 migration-observer markers)
 - [x] `./.odylith/bin/odylith casebook validate --repo-root . && ./.odylith/bin/odylith validate guidance-behavior --repo-root . && ./.odylith/bin/odylith validate discipline --repo-root . && ./.odylith/bin/odylith validate backlog-contract --repo-root .`
 - [x] `git diff --check`
+- [x] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_odylith_context_engine_turn_cli.py tests/unit/runtime/test_odylith_benchmark_runner.py::test_diagnostic_profile_keeps_public_pair_packet_only`
+      (`5 passed`; Context Engine closed-pipe handling and diagnostic cold
+      default proof).
+- [x] `PYTHONPATH=src python -m odylith.cli context-engine --repo-root . benchmark --profile diagnostic --limit 5 --no-write-report`
+      (`provisional_pass`; diagnostic profile uses cold cache by default).
+- [x] `set -o pipefail; PYTHONPATH=src python -m odylith.cli context-engine --repo-root . benchmark --profile diagnostic --limit 1 --no-write-report --json | head -n 1 >/dev/null`
+      (`exit 0`; early-closing stdout consumers no longer leak traceback).
 - [x] `hatch run python -m pytest -q tests/unit/runtime/test_host_visible_intervention.py::test_visible_intervention_assist_every_prompt_feedback_adds_assist tests/integration/install/test_manager.py::test_source_repo_upgrade_normalizes_current_runtime_symlink_fallback` (`2 passed`)
 - [x] `hatch run python -m pytest -q tests/unit/runtime/test_host_visible_intervention.py tests/unit/runtime/test_host_intervention_support.py tests/unit/runtime/test_intervention_cross_host_parity.py tests/unit/runtime/test_codex_host_prompt_context.py tests/unit/runtime/test_claude_host_prompt_context.py tests/integration/install/test_manager.py::test_source_repo_upgrade_normalizes_current_runtime_symlink_fallback` (`81 passed`; includes Assist-only recovery for exact visibility-feedback prompts and replay preservation for generic missing-block feedback)
 - [x] `./.odylith/bin/odylith context-engine --repo-root . memory-snapshot` proved `status: active`, `storage: lance_local_columnar`, `sparse_recall: tantivy_sparse_recall`, and no backend-transition gaps after source-local launcher regeneration.

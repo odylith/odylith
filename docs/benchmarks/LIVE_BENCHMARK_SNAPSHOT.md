@@ -10,6 +10,14 @@ Current Live Benchmark report: `44f2a3d83d2c9975` from `2026-04-25T11:19:38Z` wi
 The latest live benchmark ran `82` seeded scenarios across matched cache profile(s) `warm` and `cold` under the declared comparison contract `full_product_assistance_vs_raw_agent`.
 That produced `164` full matched pairs. The published comparison keeps the conservative same-scenario view at `82` pairs.
 
+This report is the operating-policy proof. The `odylith_on` lane includes
+report-visible validator-backed closure and write admission. In this report, `68 / 82`
+`odylith_on` rows used focused non-mutating closure; `37 / 41` write-labeled
+`odylith_on` rows stopped that way; and `4 / 82` `odylith_on` rows recorded
+file changes. That is the intended write-admission signal: Odylith proves
+already-satisfied contracts and suppresses unnecessary mutation under the
+measured scenario contract.
+
 Current proof posture is local-first on the Odylith Memory Substrate. Remote retrieval is `disabled` in the selected report. Local memory-backed retrieval ready: `True`.
 
 ## Headline Movement
@@ -36,10 +44,10 @@ There are no hard-gate blockers on this report.
 - fairness contract passed: `True`
 - corpus seriousness floor passed: `True`
 - full tracked-corpus coverage rate: `1.000`
-- implementation scenarios in tracked corpus: `77`
+- operating-policy scenarios in tracked corpus: `77`
 - write-plus-validator scenarios in tracked corpus: `41`
 - correctness-critical scenarios in tracked corpus: `31`
-- mechanism-heavy implementation ratio: `0.29`
+- mechanism-heavy operating-policy ratio: `0.29`
 
 ## Reading Notes
 
@@ -47,3 +55,6 @@ There are no hard-gate blockers on this report.
 - Current proof posture is local-first on the Odylith Memory Substrate. Remote retrieval is `disabled` in the selected report. Local memory-backed retrieval ready: `True`.
 - Operating-posture readouts: auto-grounded `100.0%`, delegated `0.0%`, widening `1.2%`, and workspace-daemon reuse `0.0%`.
 - Warm/cold robustness consistency cleared: `True`.
+- Focused non-mutating closure rows are write-admission evidence: they measure
+  validated closure and mutation suppression under the measured scenario
+  contract.

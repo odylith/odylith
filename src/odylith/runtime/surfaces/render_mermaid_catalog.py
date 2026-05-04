@@ -1201,11 +1201,9 @@ def _render_html(
       --border: rgba(15, 23, 42, 0.12);
       --shadow: 0 18px 46px rgba(15, 23, 42, 0.10);
     }
-
     * {
       box-sizing: border-box;
     }
-
     body {
       margin: 0;
       background:
@@ -1215,7 +1213,6 @@ def _render_html(
       min-height: 100vh;
     }
     __ODYLITH_ATLAS_PAGE_BODY__
-
     .layout {
       display: grid;
       grid-template-columns: 400px minmax(0, 1fr);
@@ -1229,11 +1226,9 @@ def _render_html(
     body.sidebar-collapsed .layout {
       grid-template-columns: 1fr;
     }
-
     body.sidebar-collapsed .sidebar {
       display: none;
     }
-
     .panel {
       min-width: 0;
       border: 1px solid var(--border);
@@ -1278,21 +1273,17 @@ def _render_html(
       flex: 0 0 auto;
     }
     __ODYLITH_ATLAS_SIDEBAR_CLOSE_TYPOGRAPHY__
-
     .sidebar-close:hover {
       border-color: rgba(14, 165, 163, 0.65);
       color: #0b645f;
     }
-
     .eyebrow {
       margin: 0;
     }
-
     .title {
       margin: 4px 0 0 0;
       color: var(--ink);
     }
-
     .subtitle {
       margin: 8px 0 0 0;
       color: var(--ink-soft);
@@ -2379,9 +2370,18 @@ def _render_html(
       if (!dims) {
         return null;
       }
-      const sw = stageEl.clientWidth || 1;
-      const sh = stageEl.clientHeight || 1;
+      const padding = stageFitPadding();
+      const sw = Math.max(1, (stageEl.clientWidth || 1) - padding * 2);
+      const sh = Math.max(1, (stageEl.clientHeight || 1) - padding * 2);
       return Math.min(sw / dims.width, sh / dims.height);
+    }
+
+    function stageFitPadding() {
+      const shortSide = Math.min(stageEl.clientWidth || 0, stageEl.clientHeight || 0);
+      if (!shortSide) {
+        return 18;
+      }
+      return clamp(shortSide * 0.045, 18, 54);
     }
 
     function applyInitialView(diagram) {
@@ -2398,7 +2398,7 @@ def _render_html(
 
       // Start near the full-bounds fit with a small safety margin so diagrams
       // feel snug on first paint without clipping at the edges.
-      let initialFactor = 0.98;
+      let initialFactor = 1.0;
       const MIN_INITIAL_FIT_FACTOR = 0.94;
 
       const rawOverrideFactor = Number(diagram && diagram.initial_view_fit_factor ? diagram.initial_view_fit_factor : 0);

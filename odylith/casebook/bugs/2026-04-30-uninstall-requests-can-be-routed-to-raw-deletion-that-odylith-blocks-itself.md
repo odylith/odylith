@@ -1,6 +1,6 @@
 - Bug ID: CB-145
 
-- Type: UXLifecycle
+- Type: UX
 
 
 
@@ -26,7 +26,7 @@
 
 - Environment(s): consumer repo, Claude Code CLI, Odylith v0.1.11 managed project assets
 
-- Detected By: Maintainer transcript from dentoai-isb uninstall attempt
+- Detected By: Maintainer transcript from a consumer-repo uninstall attempt
 
 - Failure Signature: Assistant either ran `rm -rf .odylith odylith .agents .codex .claude AGENTS.md CLAUDE.md`, which Odylith PreToolUse denied, or paused an explicit `odylith uninstall` request with a destructive/no-dry-run warning, a commit/snapshot preflight, and an offer to delete `.claude/`, `.codex/`, or `.agents/` host directories.
 

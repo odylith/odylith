@@ -214,7 +214,7 @@ def build_agent_prompt(
     if bool(scenario.get("needs_write")):
         if allow_noop_completion:
             task_lines.append(
-                "Make the minimum file changes needed only if the grounded tree fails the task contract; a validator-backed no-op is valid when the current tree already satisfies it."
+                "Make the minimum file changes needed only if the grounded tree fails the task contract; validator-backed non-mutating closure is valid when the current tree already satisfies it."
             )
         else:
             task_lines.append("Make the minimum file changes needed, then stop once the task is ready for the external validator.")
@@ -258,19 +258,19 @@ def build_agent_prompt(
         task_lines.append("Prefer these targeted checks before any broader local validator on this task.")
         if allow_noop_completion and str(scenario.get("family", "")).strip() in {"install_upgrade_runtime", "agent_activation"}:
             task_lines.append(
-                "On this allow-no-op install slice, treat the listed focused checks as the approved first-pass proof path before opening broader runtime or guidance surfaces."
+                "On this closure-admitted install slice, treat the listed focused checks as the approved first-pass proof path before opening broader runtime or guidance surfaces."
             )
         elif allow_noop_completion and str(scenario.get("family", "")).strip() == "daemon_security":
             task_lines.append(
-                "On this allow-no-op daemon slice, treat the listed focused checks as the approved first-pass proof path before changing transport, auth-token, or shutdown code."
+                "On this closure-admitted daemon slice, treat the listed focused checks as the approved first-pass proof path before changing transport, auth-token, or shutdown code."
             )
     focused_local_check_results = _string_rows(prompt_payload.get("focused_local_check_results"))
     if focused_local_check_results:
         task_lines.append("")
-        task_lines.append("Declared Odylith preflight evidence from the current workspace:")
+        task_lines.append("Declared Odylith Turn Gate evidence from the current workspace:")
         task_lines.extend(f"- {token}" for token in focused_local_check_results[:8])
         task_lines.append(
-            "Treat these focused-check results as current workspace evidence. If they already prove the contract holds, prefer a no-file-change completion unless a grounded contradiction remains."
+            "Treat these focused-check results as current workspace evidence. If they already prove the contract holds, prefer non-mutating closure unless a grounded contradiction remains."
         )
         if family == "governed_surface_sync":
             task_lines.append(
@@ -323,7 +323,7 @@ def build_agent_prompt(
                 "If the grounded tree already satisfies the contract, treat a no-file-change completion as valid once the focused validator confirms it."
             )
             task_lines.append(
-                "Do not run the full listed validator during first-pass diagnosis just to prove current truth on an allow-no-op task; prefer a narrower anchor-local check and leave the full validator to the harness unless a concrete contradiction remains."
+                "Do not run the full listed validator during first-pass diagnosis just to prove current truth on a closure-admitted task; prefer a narrower anchor-local check and leave the full validator to the harness unless a concrete contradiction remains."
             )
     if normalized_mode == "odylith_on":
         focus_payload = dict(prompt_payload or {})
@@ -368,10 +368,10 @@ def build_agent_prompt(
         )
         if allow_noop_completion:
             task_lines.append(
-                "If those grounded anchors already satisfy the task, prefer a validator-backed no-op over speculative rewrites."
+                "If those grounded anchors already satisfy the task, prefer validator-backed non-mutating closure over speculative rewrites."
             )
             task_lines.append(
-                "A validator-backed no-op is fully acceptable for this task; do not invent a code change just because the slice is write-capable."
+                "Validator-backed non-mutating closure is fully acceptable for this task; do not invent a code change just because the slice is write-capable."
             )
         elif bool(scenario.get("needs_write")):
             task_lines.append(
@@ -459,7 +459,7 @@ def build_agent_prompt(
                 "On merge-heavy bounded slices, if the listed router and governed-doc anchors already agree and the focused validator passes, finish successfully with no file changes."
             )
             task_lines.append(
-                "Treat unrelated stale Registry, Atlas, or spec debt elsewhere in the repo as follow-up context, not as a blocker for this bounded no-op closeout."
+                "Treat unrelated stale Registry, Atlas, or spec debt elsewhere in the repo as follow-up context, not as a blocker for this bounded non-mutating closeout."
             )
         elif family == "component_governance":
             task_lines.append(

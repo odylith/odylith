@@ -4758,7 +4758,7 @@ def test_diagnostic_profile_keeps_public_pair_packet_only(
 
     assert report["benchmark_profile"] == "diagnostic"
     assert report["modes"] == ["odylith_on", "raw_agent_baseline"]
-    assert report["cache_profiles"] == ["warm"]
+    assert report["cache_profiles"] == ["cold"]
     assert report["latest_eligible"] is False
     assert report["comparison_contract"] == "internal_packet_prompt_diagnostic"
     assert packet_calls == ["odylith_on", "raw_agent_baseline"]

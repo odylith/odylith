@@ -65,6 +65,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -3049,6 +3050,7 @@
         "delivery-intelligence",
         "execution-engine",
         "governance-intervention-engine",
+        "governed-harness",
         "odylith",
         "odylith-chatter",
         "odylith-context-engine",

@@ -1,6 +1,6 @@
 {
   "contract": "odylith_release_maintainer_overrides.v1",
-  "updated_utc": "2026-05-01T06:39:42Z",
+  "updated_utc": "2026-05-04T06:03:01Z",
   "benchmark_proof_overrides": [
     {
       "version": "0.1.9",
@@ -29,6 +29,13 @@
       "reason": "Maintainer release decision on 2026-05-01: skip full benchmark proof and benchmark compare for the v0.1.12 recovery release after candidate proof passed 3373 tests and built the release wheel, while benchmark compare correctly failed closed because no current-tree authoritative proof candidate exists (CB-116). Release remains benchmark-advisory; full proof restoration stays in the benchmark workstream.",
       "owner": "freedom-research",
       "updated_utc": "2026-05-01T06:39:42Z"
+    },
+    {
+      "version": "0.1.14",
+      "mode": "skip_proof_and_compare",
+      "reason": "Maintainer release decision on 2026-05-04: skip full benchmark proof and benchmark compare for the v0.1.14 GA release at operator request. Release remains benchmark-advisory; Product Governed Harness Turn Gate formal-model truth, migration-gate coverage, browser-surface proof, install and runtime migration tests, topology/guidance/discipline validation, and release-candidate proof carry this GA lane without claiming fresh benchmark proof (CB-116).",
+      "owner": "freedom-research",
+      "updated_utc": "2026-05-04T06:03:01Z"
     }
   ]
 }

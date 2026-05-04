@@ -247,8 +247,9 @@ def _validate_capture_inputs(
         errors.append("`--description` cannot be a placeholder value")
     if _field_looks_placeholder(normalized_type):
         errors.append("`--type` cannot be a placeholder value")
-    elif not casebook_metadata.casebook_token_is_valid(normalized_type):
-        errors.append(f"`--type` must be {_TYPE_HELP}")
+    elif not casebook_metadata.casebook_type_is_valid(normalized_type):
+        canonical_type = casebook_metadata.canonical_casebook_type(normalized_type) or "Product"
+        errors.append(f"`--type` must be {_TYPE_HELP}; use `{canonical_type}` for this value")
     else:
         normalized_type = casebook_metadata.canonical_casebook_type(normalized_type)
 

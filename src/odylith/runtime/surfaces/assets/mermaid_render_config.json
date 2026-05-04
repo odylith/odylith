@@ -1,0 +1,46 @@
+{
+  "theme": "base",
+  "themeVariables": {
+    "background": "transparent",
+    "fontFamily": "\"Inter\", \"SF Pro Text\", \"Segoe UI\", system-ui, sans-serif",
+    "fontSize": "15px",
+    "primaryColor": "#e8fbf7",
+    "primaryTextColor": "#062f2b",
+    "primaryBorderColor": "#5bbfb2",
+    "secondaryColor": "#eaf3ff",
+    "secondaryTextColor": "#102f5f",
+    "secondaryBorderColor": "#77a9ef",
+    "tertiaryColor": "#ffece7",
+    "tertiaryTextColor": "#5c2418",
+    "tertiaryBorderColor": "#df8f7d",
+    "lineColor": "#647d96",
+    "edgeLabelBackground": "#ffffff",
+    "clusterBkg": "#effcf9",
+    "clusterBorder": "#9bd8cf",
+    "noteBkgColor": "#ffece7",
+    "noteTextColor": "#5c2418",
+    "noteBorderColor": "#df8f7d",
+    "actorBkg": "#e8fbf7",
+    "actorBorder": "#5bbfb2",
+    "actorTextColor": "#062f2b",
+    "signalColor": "#647d96",
+    "signalTextColor": "#102f5f",
+    "activationBkgColor": "#eaf3ff",
+    "activationBorderColor": "#77a9ef"
+  },
+  "flowchart": {
+    "htmlLabels": true,
+    "curve": "basis",
+    "nodeSpacing": 34,
+    "rankSpacing": 42,
+    "padding": 14
+  },
+  "sequence": {
+    "showSequenceNumbers": false,
+    "actorMargin": 64,
+    "messageMargin": 44,
+    "boxMargin": 12,
+    "boxTextMargin": 8,
+    "noteMargin": 12
+  }
+}

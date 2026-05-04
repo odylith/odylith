@@ -526,6 +526,28 @@ def merge_shard_reports(
                 if isinstance(result, Mapping) and str(result.get("preflight_evidence_result_status", "")).strip()
             }
         )
+        turn_gate_decision_types = sorted(
+            {
+                str(turn_gate_decision.get("decision_type", "")).strip()
+                for scenario_report in published_scenarios
+                for result in scenario_report.get("results", [])
+                if isinstance(result, Mapping)
+                for turn_gate_decision in [result.get("turn_gate_decision", {})]
+                if isinstance(turn_gate_decision, Mapping)
+                and str(turn_gate_decision.get("decision_type", "")).strip()
+            }
+        )
+        turn_gate_receipt_sources = sorted(
+            {
+                str(turn_gate_receipt.get("source", "")).strip()
+                for scenario_report in published_scenarios
+                for result in scenario_report.get("results", [])
+                if isinstance(result, Mapping)
+                for turn_gate_receipt in [result.get("turn_gate_receipt", {})]
+                if isinstance(turn_gate_receipt, Mapping)
+                and str(turn_gate_receipt.get("source", "")).strip()
+            }
+        )
         robustness_summary = runner._robustness_summary(  # noqa: SLF001
             cache_profile_summaries=cache_profile_summaries,
             candidate_mode=runner._ODYLITH_ON_MODE,  # noqa: SLF001
@@ -611,6 +633,9 @@ def merge_shard_reports(
             if preflight_evidence_result_statuses
             else "not_applicable",
             "preflight_evidence_modes": preflight_evidence_modes,
+            "turn_gate_decision_types": turn_gate_decision_types,
+            "turn_gate_receipt_sources": turn_gate_receipt_sources,
+            "turn_gate_product_path_present": "product_turn_gate" in set(turn_gate_receipt_sources),
             "modes": list(modes),
             "cache_profiles": list(cache_profiles),
             "primary_cache_profile": primary_cache_profile,

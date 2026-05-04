@@ -14,7 +14,7 @@ product_impact: 5
 
 market_value: 5
 
-impacted_parts: Claude hooks, Codex hooks, managed runtime launcher, intervention engine, context engine startup, project guidance bundle, show/help fast paths
+impacted_parts: Claude hooks, Codex hooks, managed runtime launcher, intervention engine, context engine startup, benchmark diagnostics, project guidance bundle, show/help fast paths
 
 sizing: M
 
@@ -85,7 +85,7 @@ dirty-event settlement without Claude-only fields.
 - Keep the first implementation wave narrow and test-backed.
 
 ## Non-Goals
-- Do not widen this active v0.1.13 workstream into unrelated product cleanup.
+- Do not widen this active v0.1.14 workstream into unrelated product cleanup.
 
 ## Risks
 - The title may need refinement once the implementation owner confirms the exact boundary.
@@ -148,9 +148,22 @@ Prompt-submit and stop hooks stay under a documented local latency budget on war
   separate from subagent planning diagnostics: the orchestrator still emits
   route/local-only decisions and closeout summaries, but suppresses live
   proposal bundles that belong to host-visible intervention surfaces.
+- 2026-05-03 v0.1.14 release retargeting created `release-0-1-14`, moved
+  B-141 and B-142 to that release, and tagged B-140 as completed migration
+  observer proof for the same target. The release now carries Casebook status
+  FSM/type normalization, 0.1.10/0.1.11/0.1.12/0.1.13 upgrade migration
+  coverage, generated-surface reviewability, greenfield release/program
+  defaults, and Atlas render-surface polish under one governed target.
+- 2026-05-03 engine-integrity proof found and fixed a low-latency proof-lane
+  coupling: the Context Engine diagnostic benchmark now defaults to cold cache
+  unless warm memory proof is explicitly requested, and Context Engine JSON
+  output exits cleanly when a downstream pipe closes early. Tracked by CB-163.
 
 ## Rollout
-- Execute through the bound v0.1.13 technical plan and keep the first implementation wave focused on hook latency, prompt hot-path gating, launcher dispatch, and governed migration capture.
+- Execute through the bound v0.1.14 technical plan and keep the implementation
+  wave focused on hook latency, prompt hot-path gating, launcher dispatch,
+  governed migration capture, Casebook metadata normalization, greenfield
+  release/program targeting, and generated-surface migration proof.
 
 ## Why Now
 This slice is active enough that it should exist as explicit backlog truth now.
@@ -170,6 +183,7 @@ Claude, Codex, and future host adapters should get the same grounded value witho
 - `radar`
 - `casebook`
 - `compass`
+- `benchmark`
 
 ## Interface Changes
 - None decided yet; record interface changes once implementation is scoped.
@@ -181,10 +195,15 @@ Claude, Codex, and future host adapters should get the same grounded value witho
 - v0.1.13 keeps maintainer-only release and migration-observer guidance inside
   `odylith/maintainer/`; consumer installs receive the low-latency runtime and
   engine-preservation contract without product-repo release-gate obligations.
+- v0.1.14 extends the same upgrade path for 0.1.10, 0.1.11, 0.1.12, and
+  0.1.13 consumer installs: install reruns as an upgrade, registered
+  migrations own Casebook status/type normalization and Atlas render-surface
+  polish, and migration ledgers must prove the generated browser surfaces were
+  refreshed from source truth.
 
 ## Test Strategy
 - Unit tests cover generic low-signal Claude and Codex prompt hooks skipping conversation-bundle and substrate construction, Odylith-directed quiet prompts keeping substrate evidence, Claude prompt-bundle route locks and visible teaser preservation, SessionStart using substrate state by default without duplicate hook stdout, direct show/help/capability route locks, launcher bootstrap fallback preference, legacy launcher-health parser compatibility, Codex dirty-event settlement, Claude exact non-governed Bash checkpoint skips, context-engine warm-daemon env defaults, and direct host-hook launcher dispatch.
-- Integration tests cover 0.1.10 -> 0.1.13, 0.1.11 -> 0.1.13, and 0.1.12 -> 0.1.13 upgrade activation, migration-plan state, migration-result state, pin adoption, and runtime pointer convergence.
+- Integration tests cover 0.1.10 -> 0.1.13, 0.1.11 -> 0.1.13, and 0.1.12 -> 0.1.13 upgrade activation, plus 0.1.10/0.1.11/0.1.12/0.1.13 -> 0.1.14 upgrade activation, migration-plan state, migration-result state, pin adoption, runtime pointer convergence, Casebook browser refresh, Atlas render refresh, and topology-spine migration evidence.
 - Integration tests also cover governed sync/operator latency, no-provider credit burn, dashboard all-surface refresh behavior, and parallel multi-surface dashboard execution.
 - Guidance tests cover serial start/context ordering across root guidance,
   install-generated guidance, Claude project assets, Codex/Claude skill shims,

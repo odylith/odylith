@@ -1,6 +1,6 @@
 - Bug ID: CB-127
 
-- Type: ProductUXRegression
+- Type: UX
 
 
 

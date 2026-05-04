@@ -1,5 +1,5 @@
 # Release
-Last updated: 2026-04-17
+Last updated: 2026-05-03
 
 
 Last updated (UTC): 2026-04-09
@@ -80,6 +80,12 @@ governed subsystem.
   release story must say benchmark proof is advisory for `v0.1.12`, not current
   proof, and the default benchmark gate remains active for releases without an
   exact-version override.
+- The current `v0.1.14` release uses that exact tracked-exception contract
+  because the maintainer explicitly waived full benchmark runs for GA. The
+  release story must say benchmark proof is advisory for `v0.1.14`; product
+  Turn Gate formal-model truth, migrations, browser surfaces, install/runtime
+  tests, topology/guidance/discipline validation, and release-candidate proof
+  carry the GA lane without claiming fresh benchmark proof.
 - Preflight is the session initializer. Dispatch reuses the active session
   rather than recomputing a version.
 - The canonical release lane is authoritative only when it runs from the
@@ -441,6 +447,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-05-03: Added the v0.1.14 release-planning target and made `next` point to `release-0-1-14`; B-141 and B-142 are active there, while B-140 is recorded as completed release history for migration-observer proof. Greenfield project proposals now default omitted consumer project release selectors to `0.0.1` so first-release planning does not borrow Odylith's own `next` alias. (Plans: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141), [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-03-27: Added a first-class maintainer release subsystem with sticky version sessions, stable semver auto-tagging, canonical commit-bound release dispatch, and a dedicated release runbook. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005))
 - 2026-03-28: Reset the local relaunch narrative to restart preview at `v0.1.0`, made split managed assets part of the canonical release lane while keeping install full-stack by default, and blocked dispatch on local hosted-asset installer proof. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005))
 - 2026-03-28: Promoted `v0.1.0` from a proved preview relaunch to the GA baseline for the supported macOS Apple Silicon and Linux platform matrix, and carried the release-reset pin-realignment hardening into the GA branch. (Plan: [B-007](odylith/radar/radar.html?view=plan&workstream=B-007))

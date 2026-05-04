@@ -83,6 +83,8 @@ def _append_component_tokens(tokens: list[str], value: Any) -> None:
         if entity_kind in {"component", "registry-component"}:
             for key in ("value", "entity_id", "id", "name"):
                 _append_component_token(tokens, value.get(key))
+        for key in ("entity", "target_entity", "resolved_entity"):
+            _append_component_tokens(tokens, value.get(key))
         for key in (
             "component",
             "component_id",

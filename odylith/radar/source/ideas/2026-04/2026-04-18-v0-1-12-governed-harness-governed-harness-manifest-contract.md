@@ -2,7 +2,7 @@ status: queued
 
 idea_id: B-120
 
-title: v0.1.12 Governed Harness: Governed Harness Manifest Contract
+title: v0.1.14 Governed Harness: Governed Harness Manifest Contract
 
 date: 2026-04-18
 
@@ -61,19 +61,19 @@ supersedes:
 superseded_by: 
 
 ## Problem
-Agent harnesses now provide execution primitives such as tools, approvals, guardrails, tracing, resumability, and sandboxed runs, but repos still need durable engineering judgment about the correct slice, component boundaries, admissible moves, proof obligations, bug memory, and artifacts that survive across sessions. Odylith needs a queued v0.1.12 strategy that captures this Governed Harness direction without disturbing the active v0.1.11 release lane.
+Agent harnesses now provide execution primitives such as tools, approvals, guardrails, tracing, resumability, and sandboxed runs, but repos still need durable engineering judgment about the correct slice, component boundaries, admissible moves, proof obligations, bug memory, and artifacts that survive across sessions. Odylith needs a active v0.1.14 strategy that captures this Governed Harness direction without disturbing the active v0.1.11 release lane.
 
 ## Customer
 Odylith maintainers and operators using Codex, Claude Code, OpenAI Agents SDK, or another agent harness against serious repositories where agent execution must stay grounded in repo-local governance truth.
 
 ## Opportunity
-Queue v0.1.12 around Odylith as the repo-governance control plane for any agent harness, with OpenAI Agents SDK as the first explicit adapter target and deep benchmark proof as the first release gate.
+Target v0.1.14 around Odylith as the repo-governance control plane for any agent harness, with OpenAI Agents SDK as the first explicit adapter target and deep benchmark proof as the first release gate.
 
 ## Proposed Solution
-Create the workstream for v0.1.12 Governed Harness: Governed Harness Manifest Contract and refine the exact implementation plan during execution.
+Create the workstream for v0.1.14 Governed Harness: Governed Harness Manifest Contract and refine the exact implementation plan during execution.
 
 ## Scope
-- Define and land the bounded work for v0.1.12 Governed Harness: Governed Harness Manifest Contract.
+- Define and land the bounded work for v0.1.14 Governed Harness: Governed Harness Manifest Contract.
 - Keep the first implementation wave narrow and test-backed.
 
 ## Non-Goals
@@ -86,7 +86,7 @@ Create the workstream for v0.1.12 Governed Harness: Governed Harness Manifest Co
 - No explicit dependency recorded yet; confirm related workstreams before implementation starts.
 
 ## Success Metrics
-The v0.1.12 Governed Harness umbrella and its wave-slice backlog records remain queued; W1 establishes deep benchmark coverage before implementation claims; every later slice carries an explicit benchmark gate; no program activation, release assignment, or public harness claim occurs until v0.1.11 closes and release proof is intentionally started.
+The v0.1.14 Governed Harness umbrella and its wave-slice backlog records remain queued; W1 establishes deep benchmark coverage before implementation claims; every later slice carries an explicit benchmark gate; no program activation, release assignment, or public harness claim occurs until v0.1.11 closes and release proof is intentionally started.
 
 ## Validation
 - Run focused validation for the touched paths once implementation begins.
@@ -98,7 +98,7 @@ The v0.1.12 Governed Harness umbrella and its wave-slice backlog records remain 
 This slice is active enough that it should exist as explicit backlog truth now.
 
 ## Product View
-Agents SDK gives the harness. Odylith gives that harness durable repo judgment: the right context packet, workstream state, component boundaries, bug memory, admissible next moves, proof requirements, and governed artifacts. The v0.1.12 lane should remain benchmark-first and queued until v0.1.11 closes.
+Agents SDK gives the harness. Odylith gives that harness durable repo judgment: the right context packet, workstream state, component boundaries, bug memory, admissible next moves, proof requirements, and governed artifacts. The v0.1.14 lane stays product-path-first and release-gated by Turn Gate receipt proof.
 
 ## Impacted Components
 - `odylith`

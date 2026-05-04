@@ -24,17 +24,17 @@
 
 - Components Affected: registry
 
-- Environment(s): Odylith 0.1.11 pinned consumer runtime after first install in dentoai-isb on macOS Apple Silicon.
+- Environment(s): Odylith 0.1.11 pinned consumer runtime after first install in a macOS Apple Silicon repo.
 
-- Detected By: User-provided Claude transcript from /Users/freedom/code/dentoai-isb after component register and sync.
+- Detected By: User-provided Claude transcript from a consumer repo after component register and sync.
 
 - Failure Signature: component register hardcoded category detected and qualification detected, then sync failed at Registry contract validation because valid categories are data/governance_engine/governance_surface/control_gate/infrastructure and valid qualifications are candidate/curated.
 
-- Trigger Path: Run odylith component register for dentoai-isb components, then run odylith sync --repo-root . --proceed-with-overlap --force --impact-mode full.
+- Trigger Path: Run odylith component register for consumer components, then run odylith sync --repo-root . --proceed-with-overlap --force --impact-mode full.
 
 - Ownership: Registry component authoring CLI and Registry contract validation.
 
-- Timeline: 2026-04-29: user registered dentoai-isb components through the CLI; registry refresh still showed zero components; full sync failed at Registry validation due invalid category and qualification values. 2026-04-30: follow-up Claude recovery guidance made the operator experience worse by recommending a hand edit of `odylith/registry/source/component_registry.v1.json`, calling it a CLI-first override, and incorrectly claiming `doctor --repair` could not help.
+- Timeline: 2026-04-29: user registered consumer components through the CLI; registry refresh still showed zero components; full sync failed at Registry validation due invalid category and qualification values. 2026-04-30: follow-up Claude recovery guidance made the operator experience worse by recommending a hand edit of `odylith/registry/source/component_registry.v1.json`, calling it a CLI-first override, and incorrectly claiming `doctor --repair` could not help.
 
 - Blast Radius: All Odylith 0.1.11 hosted installs received the affected component authoring writer. The break manifests when an operator uses `odylith component register`; after that, Registry validation can reject the generated source and browser Registry remains empty or stale.
 

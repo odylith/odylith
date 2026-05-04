@@ -890,8 +890,8 @@ def test_agent_prompt_treats_harness_validator_as_authoritative() -> None:
     assert "If a listed validator is already narrow, prefer running that exact validator" in prompt
     assert "your final step must still be a single schema-valid JSON message" in prompt
     assert "Do not treat every file named inside those validators as a required first-pass read" in prompt
-    assert "a validator-backed no-op is valid when the current tree already satisfies it" in prompt
-    assert "A validator-backed no-op is fully acceptable for this task" in prompt
+    assert "validator-backed non-mutating closure is valid when the current tree already satisfies it" in prompt
+    assert "Validator-backed non-mutating closure is fully acceptable for this task" in prompt
     assert "Before editing, prefer the smallest targeted local check" in prompt
     assert "stop with no file changes" in prompt
     assert "Keep the evidence cone tight and avoid broad repo scans" in prompt
@@ -1001,9 +1001,9 @@ def test_agent_prompt_warns_install_slices_about_stripped_guidance_false_positiv
 
     assert "Suggested first-pass local checks:" in prompt
     assert "Runtime subset:" in prompt
-    assert "On this allow-no-op install slice, treat the listed focused checks as the approved first-pass proof path before opening broader runtime or guidance surfaces." in prompt
+    assert "On this closure-admitted install slice, treat the listed focused checks as the approved first-pass proof path before opening broader runtime or guidance surfaces." in prompt
     assert "If one of the listed focused install checks passes cleanly, do not widen into adjacent CLI, shell, dashboard, or routing surfaces unless the failure output points there directly." in prompt
-    assert "Do not run the full listed validator during first-pass diagnosis just to prove current truth on an allow-no-op task" in prompt
+    assert "Do not run the full listed validator during first-pass diagnosis just to prove current truth on a closure-admitted task" in prompt
     assert "Do not treat missing repo `AGENTS.md` or `CLAUDE.md` files or benchmark-managed pytest temp/cache paths during your own checks as product regressions on install slices" in prompt
 
 
@@ -1030,10 +1030,10 @@ def test_agent_prompt_uses_daemon_focused_checks_as_noop_boundary() -> None:
         ],
     )
 
-    assert "On this allow-no-op daemon slice, treat the listed focused checks as the approved first-pass proof path before changing transport, auth-token, or shutdown code." in prompt
+    assert "On this closure-admitted daemon slice, treat the listed focused checks as the approved first-pass proof path before changing transport, auth-token, or shutdown code." in prompt
     assert "If the focused daemon validator passes cleanly, do not rewrite auth-token persistence, socket transport, or stop-path logic unless a grounded contradiction remains." in prompt
     assert "On daemon-security slices, if the focused daemon validator already passes on the grounded tree, stop with no file changes instead of rewriting auth-token persistence, socket transport, or daemon shutdown flow." in prompt
-    assert "A validator-backed no-op is fully acceptable for this task" in prompt
+    assert "Validator-backed non-mutating closure is fully acceptable for this task" in prompt
 
 
 def test_agent_prompt_uses_activation_focused_checks_as_first_pass_boundary() -> None:
@@ -1059,7 +1059,7 @@ def test_agent_prompt_uses_activation_focused_checks_as_first_pass_boundary() ->
         ],
     )
 
-    assert "On this allow-no-op install slice, treat the listed focused checks as the approved first-pass proof path before opening broader runtime or guidance surfaces." in prompt
+    assert "On this closure-admitted install slice, treat the listed focused checks as the approved first-pass proof path before opening broader runtime or guidance surfaces." in prompt
     assert "If one of the listed focused install checks passes cleanly, do not widen into adjacent CLI, shell, dashboard, or routing surfaces unless the failure output points there directly." in prompt
 
 
@@ -1088,7 +1088,7 @@ def test_agent_prompt_surfaces_focused_check_results_as_current_workspace_eviden
         ],
     )
 
-    assert "Declared Odylith preflight evidence from the current workspace:" in prompt
+    assert "Declared Odylith Turn Gate evidence from the current workspace:" in prompt
     assert "passed: tests/unit/install/test_agents.py::test_managed_block_defaults_consumers_to_odylith_guidance_and_skills" in prompt
     assert "Treat these focused-check results as current workspace evidence." in prompt
     assert "The listed supporting docs/contracts are already represented in the focused-check evidence; do not reopen them unless a grounded contradiction or validator failure points there directly." in prompt
@@ -1122,7 +1122,7 @@ def test_agent_prompt_write_backed_non_noop_slice_blocks_no_file_change_completi
 
     assert "This is a write-backed slice. Do not conclude with a no-file-change completion unless the task explicitly allows it." in prompt
     assert "If that focused check fails, keep the fix on the listed writable anchors and rerun the narrow validator before widening." in prompt
-    assert "prefer a validator-backed no-op over speculative rewrites" not in prompt
+    assert "prefer validator-backed non-mutating closure over speculative rewrites" not in prompt
     assert "stop with no file changes" not in prompt
 
 
@@ -1158,7 +1158,7 @@ def test_agent_prompt_validation_heavy_fix_uses_focused_check_noop_boundary() ->
     assert "If that focused check passes and the grounded anchors already match the task contract, stop with no file changes." in prompt
     assert "If the focused benchmark check passes, treat that as current workspace truth and do not rewrite benchmark expectation literals" in prompt
     assert "On validation-heavy benchmark gate slices, if the focused runner validator already passes on the grounded tree, stop with no file changes" in prompt
-    assert "A validator-backed no-op is fully acceptable for this task" in prompt
+    assert "Validator-backed non-mutating closure is fully acceptable for this task" in prompt
 
 
 def test_agent_prompt_browser_slice_treats_html_as_rendered_read_only_evidence() -> None:
@@ -1218,7 +1218,7 @@ def test_agent_prompt_merge_heavy_slice_allows_successful_bounded_noop_closeout(
     )
 
     assert "finish successfully with no file changes" in prompt
-    assert "not as a blocker for this bounded no-op closeout" in prompt
+    assert "not as a blocker for this bounded non-mutating closeout" in prompt
 
 
 def test_agent_prompt_release_publication_forbids_absolute_workspace_paths() -> None:
@@ -2971,7 +2971,7 @@ def test_run_live_scenario_short_circuits_validators_after_live_timeout(
     assert result["live_execution"]["benchmark_profile"] == "proof"
 
 
-def test_run_live_scenario_uses_focused_noop_preflight_short_circuit(
+def test_run_live_scenario_uses_turn_gate_early_exit_proof(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
@@ -3072,7 +3072,7 @@ def test_run_live_scenario_uses_focused_noop_preflight_short_circuit(
         repo_root=repo_root,
         scenario={
             "family": "api_contract_evolution",
-            "prompt": "Use the passing focused check as the bounded no-op proof.",
+            "prompt": "Use the passing focused check as bounded non-mutating closure proof.",
             "required_paths": ["tests/unit/runtime/test_program_wave_authoring.py"],
             "focused_local_checks": [
                 "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_program_wave_authoring.py",
@@ -3099,9 +3099,15 @@ def test_run_live_scenario_uses_focused_noop_preflight_short_circuit(
     assert result["observed_paths"] == ["tests/unit/runtime/test_program_wave_authoring.py"]
     assert result["observed_path_sources"] == ["command_text"]
     assert result["validation_results"]["status"] == "passed"
-    assert result["validation_results"]["status_basis"] == "focused_noop_short_circuit"
+    assert result["validation_results"]["status_basis"] == "turn_gate_early_exit_proof"
     assert result["live_execution"]["timed_out"] is False
-    assert result["live_execution"]["validator_execution_mode"] == "focused_noop_short_circuit"
+    assert result["live_execution"]["validator_execution_mode"] == "turn_gate_early_exit_proof"
+    assert result["turn_gate_decision"]["decision_type"] == "early_exit_proof"
+    assert result["turn_gate_receipt"]["source"] == "product_turn_gate"
+    assert result["execution_capsule"]["route_constraints"] == [
+        "do_not_call_host_model",
+        "do_not_mutate_workspace",
+    ]
     assert result["live_execution"]["preflight_evidence_result_status"] == "passed"
     assert result["preflight_evidence_mode"] == "scenario_declared_focused_local_checks"
     assert result["preflight_evidence_result_status"] == "passed"
@@ -3240,7 +3246,7 @@ def test_run_live_scenario_treats_noop_validator_paths_as_supporting_evidence(
         repo_root=repo_root,
         scenario={
             "family": "broad_shared_scope",
-            "prompt": "Treat the focused local check as the bounded no-op proof.",
+            "prompt": "Treat the focused local check as bounded non-mutating closure proof.",
             "required_paths": ["AGENTS.md", "odylith/AGENTS.md"],
             "focused_local_checks": [
                 "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_non_route_ready_hot_path_payload_drops_duplicate_routing_handoff",
@@ -3266,7 +3272,8 @@ def test_run_live_scenario_treats_noop_validator_paths_as_supporting_evidence(
     assert result["required_path_precision"] == 1.0
     assert result["hallucinated_surface_rate"] == 0.0
     assert result["hallucinated_surfaces"] == []
-    assert result["validation_results"]["status_basis"] == "focused_noop_short_circuit"
+    assert result["validation_results"]["status_basis"] == "turn_gate_early_exit_proof"
+    assert result["turn_gate_decision"]["decision_type"] == "early_exit_proof"
 
 
 def test_run_live_scenario_noop_preflight_ignores_benchmark_cli_launcher_artifacts(
@@ -3368,7 +3375,7 @@ def test_run_live_scenario_noop_preflight_ignores_benchmark_cli_launcher_artifac
         repo_root=repo_root,
         scenario={
             "family": "guidance_behavior",
-            "prompt": "Treat the passing guidance validator as the bounded no-op proof.",
+            "prompt": "Treat the passing guidance validator as bounded non-mutating closure proof.",
             "required_paths": ["AGENTS.md", "odylith/AGENTS.md"],
             "focused_local_checks": [
                 "odylith validate guidance-behavior --repo-root . --case-id guidance-cli-first-governed-truth",

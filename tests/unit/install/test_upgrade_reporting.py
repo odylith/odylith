@@ -61,6 +61,15 @@ def test_doctor_observability_lines_report_upgrade_and_lock_compaction_prompt(tm
                     "generated_changed_count": 3,
                     "content_fingerprint": "abcdef1234567890",
                 },
+                "change_review": {
+                    "required_migrations": {
+                        "v0.1.14-casebook-status-fsm": {"path_count": 2},
+                    },
+                    "categories": {
+                        "install_managed_asset": {"count": 4, "paths": []},
+                    },
+                    "manual_review_required": {"count": 0, "paths": []},
+                },
             }
         ),
         encoding="utf-8",
@@ -86,6 +95,12 @@ def test_doctor_observability_lines_report_upgrade_and_lock_compaction_prompt(tm
     assert any(
         "Last upgrade generated changes: 3 generated path(s); "
         "manifest: odylith/upgrade-generated-changes.v1.json; fingerprint=abcdef123456"
+        in line
+        for line in lines
+    )
+    assert any(
+        "Last upgrade change review: required_migration_paths=2; "
+        "install_managed_assets=4; manual_review_required=0"
         in line
         for line in lines
     )
@@ -185,3 +200,50 @@ def test_write_generated_change_manifest_is_stable_and_skips_non_generated_paths
     assert second["changed"] is False
     assert manifest_payload["generated_changed_count"] == 1
     assert manifest_payload["entries"][0]["category"] == "compass"
+
+
+def test_upgrade_change_review_separates_migrations_generated_assets_and_manual_paths(tmp_path: Path) -> None:
+    review = upgrade_reporting.upgrade_change_review_payload(
+        pre_existing_dirty_paths=[
+            "odylith/casebook/bugs/legacy.md",
+            "notes/local.md",
+        ],
+        post_upgrade_dirty_paths=[
+            "odylith/casebook/bugs/legacy.md",
+            "notes/local.md",
+            "odylith/casebook/casebook.html",
+            "odylith/skills/odylith-start/SKILL.md",
+            ".odylith/runtime/logs/upgrade-20260503T120000Z.json",
+            "src/app.py",
+        ],
+        migration_results=[
+            {
+                "migration_id": "v0.1.14-casebook-status-fsm",
+                "written_paths": [
+                    "odylith/casebook/bugs/legacy.md",
+                    "odylith/casebook/bugs/INDEX.md",
+                ],
+                "removed_paths": [],
+            }
+        ],
+        generated_change_manifest={
+            "path": "odylith/upgrade-generated-changes.v1.json",
+            "content_fingerprint": "abcdef",
+            "entries": [
+                {"path": "odylith/casebook/casebook.html", "category": "casebook"},
+            ],
+        },
+    )
+
+    assert review["schema"] == "odylith.upgrade-change-review.v1"
+    assert review["pre_existing_dirty_touched_by_migrations"] == ["odylith/casebook/bugs/legacy.md"]
+    assert review["required_migrations"]["v0.1.14-casebook-status-fsm"]["path_count"] == 2
+    assert review["generated_refreshes"]["path_count"] == 1
+    assert review["categories"]["generated_refresh"]["paths"] == ["odylith/casebook/casebook.html"]
+    assert review["categories"]["install_managed_asset"]["paths"] == [
+        "odylith/skills/odylith-start/SKILL.md"
+    ]
+    assert review["categories"]["upgrade_report"]["paths"] == [
+        ".odylith/runtime/logs/upgrade-20260503T120000Z.json"
+    ]
+    assert review["manual_review_required"] == {"count": 2, "paths": ["notes/local.md", "src/app.py"]}

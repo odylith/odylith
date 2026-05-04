@@ -24,7 +24,7 @@
 
 - Components Affected: migration-runtime
 
-- Environment(s): Odylith consumer repos installed on 0.1.11 or upgraded toward 0.1.12; observed during the dentoai-isb first-run recovery lane.
+- Environment(s): Odylith consumer repos installed on 0.1.11 or upgraded toward 0.1.12; observed during a first-run recovery lane.
 
 - Detected By: Operator escalation during 0.1.12 recovery work
 

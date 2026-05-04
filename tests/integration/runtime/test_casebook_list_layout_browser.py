@@ -121,19 +121,37 @@ def _assert_casebook_detail_left_gutter(base_url: str, context, *, compact: bool
           const panel = document.querySelector(".detail-panel");
           const detail = document.querySelector("#detailPane");
           const summary = document.querySelector("#detailPane .detail-summary");
-          if (!shell || !panel || !detail || !summary) {
+          const summaryCard = document.querySelector("#detailPane .casebook-summary-card");
+          if (!shell || !panel || !detail || !summary || !summaryCard) {
             throw new Error("Casebook detail layout nodes are missing");
           }
+          summary.textContent = [
+            "The summary body must use the full Casebook card width even when one consumer record carries",
+            "casebook_summary_width_contract_should_wrap_this_long_unbroken_migration_token_without_clipping"
+          ].join(" ");
           const box = (node) => node.getBoundingClientRect();
           const shellBox = box(shell);
           const panelBox = box(panel);
           const detailBox = box(detail);
+          const summaryCardBox = box(summaryCard);
           const summaryBox = box(summary);
+          const detailStyle = window.getComputedStyle(detail);
+          const detailContentWidth = detailBox.width
+            - (Number.parseFloat(detailStyle.paddingLeft) || 0)
+            - (Number.parseFloat(detailStyle.paddingRight) || 0);
+          const summaryCardTitle = summaryCard.querySelector(".brief-card-title");
           return {
             shellLeft: Number(shellBox.left.toFixed(2)),
             panelLeft: Number(panelBox.left.toFixed(2)),
             detailLeft: Number(detailBox.left.toFixed(2)),
+            summaryCardLeft: Number(summaryCardBox.left.toFixed(2)),
+            summaryCardWidth: Number(summaryCardBox.width.toFixed(2)),
+            detailContentWidth: Number(detailContentWidth.toFixed(2)),
             summaryLeft: Number(summaryBox.left.toFixed(2)),
+            summaryWidth: Number(summaryBox.width.toFixed(2)),
+            summaryMaxWidth: window.getComputedStyle(summary).maxWidth,
+            summaryOverflowX: summary.scrollWidth - summary.clientWidth,
+            summaryCardTitle: String(summaryCardTitle && summaryCardTitle.textContent || "").trim(),
             detailPaddingLeft: Number.parseFloat(window.getComputedStyle(detail).paddingLeft) || 0,
           };
         }"""
@@ -142,7 +160,13 @@ def _assert_casebook_detail_left_gutter(base_url: str, context, *, compact: bool
     expected_padding = 10 if compact else 12
     assert layout["detailPaddingLeft"] <= expected_padding
     assert layout["detailLeft"] - layout["panelLeft"] <= expected_padding + 2
-    assert layout["summaryLeft"] - layout["panelLeft"] <= expected_padding + 2
+    assert layout["summaryCardLeft"] - layout["panelLeft"] <= expected_padding + 2
+    assert abs(float(layout["summaryCardWidth"]) - float(layout["detailContentWidth"])) <= 4
+    assert layout["summaryCardTitle"] == "Summary"
+    assert 12 <= layout["summaryLeft"] - layout["summaryCardLeft"] <= 24
+    assert layout["summaryMaxWidth"] == "none"
+    assert float(layout["summaryWidth"]) >= float(layout["summaryCardWidth"]) - 48
+    assert int(layout["summaryOverflowX"]) <= 4
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 

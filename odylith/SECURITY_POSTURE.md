@@ -1,5 +1,5 @@
 # Security Posture
-Last updated: 2026-05-03
+Last updated: 2026-05-04
 
 ## Purpose
 
@@ -8,7 +8,7 @@ first-class product boundaries. It hardens `.odylith/` against runtime drift,
 fails closed on insecure consumer-lane overrides, and keeps Odylith-owned
 Python helpers on a tight leash.
 
-This posture is authored for the `v0.1.13` release line prepared by this
+This posture is authored for the `v0.1.14` release line prepared by this
 branch.
 
 ## Threat Model
@@ -20,6 +20,8 @@ Odylith actively hardens against:
 - poisoned launcher fallback authority and recursive wrappers
 - insecure localhost or Sigstore-bypass release overrides in consumer repos
 - stuck or orphaned Odylith-owned Python helpers after failure or timeout
+- benchmark-only runtime branches that would make release measurements diverge
+  from the product policy shipped to users
 
 Odylith also carries one narrow compatibility exception:
 
@@ -116,6 +118,24 @@ Odylith does not claim full protection against:
 - Host-specific Codex and Claude routes stay thin; the Odylith runtime owns
   validation, confirmation, topology hygiene, and durable memory boundaries.
 
+### Product Governed Harness safety
+
+- Turn Gate decisions are product policy. The same classifier, evidence gate,
+  execution capsule, tool gate, receipt, and stop-check contracts must be used
+  by consumer prompts, managed harnesses, hooks, and benchmark wrappers.
+- Benchmark wrappers may sandbox, time, log, and score Turn Gate outcomes, but
+  they must not decide closure independently or install benchmark-only fast
+  paths.
+- Early-exit proof requires grounded evidence, matching repo state, validator
+  sufficiency, no workspace writes, and a receipt sourced from the product Turn
+  Gate.
+- Execution capsules constrain owned paths, denied paths, allowed commands,
+  dirty-worktree safety, validation obligations, route/delegation boundaries,
+  and completion-claim limits before side effects.
+- Enforce mode is security-relevant only for host integrations that can block
+  prompt, tool, or stop flow. Other integrations must label advisory behavior
+  honestly.
+
 ### Host and migration safety
 
 - Managed Codex and Claude assets merge additively with user-owned host
@@ -123,11 +143,12 @@ Odylith does not claim full protection against:
   Odylith-only template.
 - Consumer-visible docs, browser-rendered governance surfaces, and
   install-managed assets are release-observed. `odylith release
-  migration-gate --target-version 0.1.13` must pass before release prep can
+  migration-gate --target-version 0.1.14` must pass before release prep can
   treat those surfaces as migration-safe.
-- Release prep should reuse accepted candidate proof instead of rerunning the
-  same full-pytest and consumer rehearsal gates repeatedly for the same
-  artifact.
+- The `v0.1.14` benchmark proof waiver is exact-version tracked release truth.
+  It keeps benchmark proof advisory for this release while preserving the
+  default release rule that benchmark proof is required without an explicit
+  maintainer override.
 
 ## Recovery
 

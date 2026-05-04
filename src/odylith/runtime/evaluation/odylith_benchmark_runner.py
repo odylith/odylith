@@ -57,6 +57,7 @@ from odylith.runtime.evaluation import odylith_benchmark_live_diagnostics
 from odylith.runtime.evaluation import odylith_benchmark_live_execution
 from odylith.runtime.evaluation import odylith_benchmark_proof_discipline
 from odylith.runtime.evaluation import odylith_benchmark_prompt_payloads
+from odylith.runtime.evaluation import odylith_benchmark_report_fields
 from odylith.runtime.evaluation import odylith_benchmark_runtime_posture_runtime as benchmark_runtime_posture_runtime
 from odylith.runtime.common import odylith_benchmark_contract
 from odylith.runtime.context_engine import odylith_context_cache
@@ -394,7 +395,7 @@ _BENCHMARK_PROFILE_DESCRIPTIONS = {
     ),
     BENCHMARK_PROFILE_PROOF: (
         "Strict publication proof: the full benchmark corpus, warm and cold cache profiles, "
-        "and the live end-to-end Odylith ON versus raw host CLI pair unless the operator narrows explicitly."
+        "and the declared Odylith operating-policy versus raw host CLI pair unless the operator narrows explicitly."
     ),
     BENCHMARK_PROFILE_DIAGNOSTIC: (
         "Internal tuning diagnostic: isolate Odylith packet and prompt creation versus the raw host CLI prompt bundle "
@@ -409,7 +410,7 @@ _PROFILE_DEFAULT_MODES = {
 _PROFILE_DEFAULT_CACHE_PROFILES = {
     BENCHMARK_PROFILE_QUICK: ("warm",),
     BENCHMARK_PROFILE_PROOF: DEFAULT_CACHE_PROFILES,
-    BENCHMARK_PROFILE_DIAGNOSTIC: ("warm",),
+    BENCHMARK_PROFILE_DIAGNOSTIC: ("cold",),
 }
 _MODE_ROLES = {
     _ODYLITH_ON_MODE: "primary candidate",
@@ -418,12 +419,18 @@ _MODE_ROLES = {
     _RAW_AGENT_BASELINE_MODE: "odylith_off / raw host CLI honest baseline",
 }
 _PUBLISHED_TABLE_WHY_IT_MATTERS = {
-    "lane_role": "Keeps the public claim honest: full Odylith scaffold versus raw host CLI on the same task.",
+    "lane_role": (
+        "Keeps the public comparison honest: report-visible Odylith grounding, validation, "
+        "and write-admission policy versus raw host CLI on the same measured contract."
+    ),
     "scenario_count": "Both lanes run the exact same corpus, so the comparison stays apples-to-apples.",
     "median_latency_ms": "Shows matched-pair benchmark time to valid outcome for the live run plus the harness validator, not interactive product latency.",
     "avg_latency_ms": "Shows the mean matched-pair benchmark time to valid outcome so long-tail slow cases stay visible.",
     "p95_latency_ms": "Shows the tail completion time for the slowest benchmark cases instead of letting the median hide them.",
-    "median_instrumented_reasoning_duration_ms": "Shows time spent inside the live host CLI session itself.",
+    "median_instrumented_reasoning_duration_ms": (
+        "Shows time spent inside the live host CLI session itself; zero-heavy Odylith rows are valid only "
+        "as report-visible validator-backed closure stops."
+    ),
     "median_uninstrumented_overhead_ms": "Shows harness validator overhead added after the live host session completes.",
     "median_effective_tokens": "Shows full live host session input across the multi-turn run, not just the first prompt.",
     "median_total_payload_tokens": "Shows total live model-token spend across the multi-turn session.",
@@ -1362,6 +1369,7 @@ def _scenario_exception_result(
             "validator_status_basis": "benchmark_exception",
             "structured_summary": error_text,
             "validator_backed_noop_completion": False,
+            "validator_backed_non_mutating_completion": False,
             "validator_backed_completion": False,
             "benchmark_exception": error_text,
         },
@@ -1402,6 +1410,11 @@ def _scenario_exception_result(
         "preflight_evidence_mode": "none",
         "preflight_evidence_commands": [],
         "preflight_evidence_result_status": "not_applicable",
+        "turn_gate_decision": {"schema_version": "odylith.turn-gate.v1", "decision_type": "not_applicable"},
+        "turn_gate_receipt": {},
+        "execution_capsule": {},
+        "tool_gate_summary": {"schema_version": "odylith.turn-gate.v1", "outcome": "not_applicable"},
+        "stop_gate_summary": {"schema_version": "odylith.turn-gate.v1", "outcome": "not_applicable"},
         "full_scan": {},
         "orchestration": {"leaf_count": 0},
         "benchmark_exception": error_text,
@@ -1422,6 +1435,11 @@ def _scenario_exception_result(
             "preflight_evidence_mode": "none",
             "preflight_evidence_commands": [],
             "preflight_evidence_result_status": "not_applicable",
+            "turn_gate_decision": {"schema_version": "odylith.turn-gate.v1", "decision_type": "not_applicable"},
+            "turn_gate_receipt": {},
+            "execution_capsule": {},
+            "tool_gate_summary": {"schema_version": "odylith.turn-gate.v1", "outcome": "not_applicable"},
+            "stop_gate_summary": {"schema_version": "odylith.turn-gate.v1", "outcome": "not_applicable"},
             "observed_path_sources": [],
             "failure_artifacts": {
                 "tracked_paths": [*required_paths, *expected_write_paths],
@@ -1973,21 +1991,11 @@ def compact_report_summary(report: Mapping[str, Any] | None) -> dict[str, Any]:
         else {}
     )
     selection = dict(report.get("selection", {})) if isinstance(report.get("selection"), Mapping) else {}
-    fairness_findings = [
-        str(token).strip()
-        for token in report.get("fairness_findings", [])
-        if isinstance(report.get("fairness_findings"), list) and str(token).strip()
-    ]
-    observed_path_sources = [
-        str(token).strip()
-        for token in report.get("observed_path_sources", [])
-        if isinstance(report.get("observed_path_sources"), list) and str(token).strip()
-    ]
-    preflight_evidence_modes = [
-        str(token).strip()
-        for token in report.get("preflight_evidence_modes", [])
-        if isinstance(report.get("preflight_evidence_modes"), list) and str(token).strip()
-    ]
+    fairness_findings = odylith_benchmark_report_fields.sorted_mapping_string_values(report, "fairness_findings")
+    observed_path_sources = odylith_benchmark_report_fields.sorted_mapping_string_values(report, "observed_path_sources")
+    preflight_evidence_modes = odylith_benchmark_report_fields.sorted_mapping_string_values(report, "preflight_evidence_modes")
+    turn_gate_decision_types = odylith_benchmark_report_fields.sorted_mapping_string_values(report, "turn_gate_decision_types")
+    turn_gate_receipt_sources = odylith_benchmark_report_fields.sorted_mapping_string_values(report, "turn_gate_receipt_sources")
     adoption_proof_sample_size = int(adoption_proof.get("sample_size", 0) or 0)
     adoption_proof_auto_grounded_rate = float(adoption_proof.get("auto_grounded_rate", 0.0) or 0.0)
     adoption_proof_requires_widening_rate = float(adoption_proof.get("requires_widening_rate", 0.0) or 0.0)
@@ -2233,6 +2241,9 @@ def compact_report_summary(report: Mapping[str, Any] | None) -> dict[str, Any]:
         "observed_path_sources": observed_path_sources,
         "preflight_evidence_mode": str(report.get("preflight_evidence_mode", "")).strip(),
         "preflight_evidence_modes": preflight_evidence_modes,
+        "turn_gate_decision_types": turn_gate_decision_types,
+        "turn_gate_receipt_sources": turn_gate_receipt_sources,
+        "turn_gate_product_path_present": bool(report.get("turn_gate_product_path_present")),
         "corpus_seriousness_floor_passed": bool(corpus_composition.get("seriousness_floor_passed")),
         "corpus_full_coverage_rate": float(corpus_composition.get("full_corpus_coverage_rate", 0.0) or 0.0),
         "corpus_full_selected": bool(corpus_composition.get("full_corpus_selected")),
@@ -4968,7 +4979,7 @@ def _expand_sync_validator_snapshot_paths(
         # `odylith sync --check-only` can fail on current dirty-tree forensic
         # evidence, not just the scenario's declared governance roots. Mirror
         # the full dirty slice into the disposable workspace so validator-
-        # backed no-op proof measures the current tree truthfully.
+        # backed non-mutating closure proof measures the current tree truthfully.
         expanded.append(token)
     return _dedupe_path_strings(expanded)
 
@@ -6463,6 +6474,9 @@ def _failed_benchmark_report(
         "preflight_evidence_commands": [],
         "preflight_evidence_result_status": "not_applicable",
         "preflight_evidence_modes": [],
+        "turn_gate_decision_types": [],
+        "turn_gate_receipt_sources": [],
+        "turn_gate_product_path_present": False,
         "status": "failed",
         "acceptance": acceptance,
         "error": error_text,
@@ -6664,7 +6678,7 @@ def _format_mode_table_delta(
     comparison_contract: str = "",
 ) -> str:
     if field == "lane_role":
-        return "full Odylith vs raw agent"
+        return "Odylith policy vs raw host"
     delta = float(candidate_value or 0.0) - float(baseline_value or 0.0)
     if _humanized_proof_table_enabled(comparison_contract) and field.endswith("_ms"):
         human_abs = _human_duration_label(delta)
@@ -7556,6 +7570,8 @@ def _render_report_summary(report: Mapping[str, Any]) -> str:
         f"- fairness_findings: {', '.join(summary.get('fairness_findings', [])) or '-'}\n"
         f"- observed_path_sources: {', '.join(summary.get('observed_path_sources', [])) or '-'}\n"
         f"- preflight_evidence_modes: {', '.join(summary.get('preflight_evidence_modes', [])) or '-'}\n"
+        f"- turn_gate_decision_types: {', '.join(summary.get('turn_gate_decision_types', [])) or '-'}\n"
+        f"- turn_gate_product_path_present: {bool(summary.get('turn_gate_product_path_present'))}\n"
         f"- hard_quality_gate_cleared: {bool(summary.get('hard_quality_gate_cleared'))}\n"
         f"- hard_gate_failures: {', '.join(summary.get('hard_gate_failure_labels', [])) or '-'}\n"
         f"- secondary_guardrails_cleared: {bool(summary.get('secondary_guardrails_cleared'))}\n"
@@ -8092,42 +8108,12 @@ def run_benchmarks(
                 execution_contracts=published_execution_contracts,
                 comparison_contract=comparison_contract,
             )
-            observed_path_sources = sorted(
-                {
-                    str(token).strip()
-                    for scenario_report in published_scenarios
-                    for result in scenario_report.get("results", [])
-                    if isinstance(result, Mapping)
-                    for token in result.get("observed_path_sources", [])
-                    if isinstance(result.get("observed_path_sources"), list) and str(token).strip()
-                }
-            )
-            preflight_evidence_modes = sorted(
-                {
-                    str(result.get("preflight_evidence_mode", "")).strip()
-                    for scenario_report in published_scenarios
-                    for result in scenario_report.get("results", [])
-                    if isinstance(result, Mapping) and str(result.get("preflight_evidence_mode", "")).strip()
-                }
-            )
-            preflight_evidence_commands = sorted(
-                {
-                    str(token).strip()
-                    for scenario_report in published_scenarios
-                    for result in scenario_report.get("results", [])
-                    if isinstance(result, Mapping)
-                    for token in result.get("preflight_evidence_commands", [])
-                    if isinstance(result.get("preflight_evidence_commands"), list) and str(token).strip()
-                }
-            )
-            preflight_evidence_result_statuses = sorted(
-                {
-                    str(result.get("preflight_evidence_result_status", "")).strip()
-                    for scenario_report in published_scenarios
-                    for result in scenario_report.get("results", [])
-                    if isinstance(result, Mapping) and str(result.get("preflight_evidence_result_status", "")).strip()
-                }
-            )
+            observed_path_sources = odylith_benchmark_report_fields.sorted_result_string_values(published_scenarios, "observed_path_sources")
+            preflight_evidence_modes = odylith_benchmark_report_fields.sorted_result_string_values(published_scenarios, "preflight_evidence_mode")
+            preflight_evidence_commands = odylith_benchmark_report_fields.sorted_result_string_values(published_scenarios, "preflight_evidence_commands")
+            preflight_evidence_result_statuses = odylith_benchmark_report_fields.sorted_result_string_values(published_scenarios, "preflight_evidence_result_status")
+            turn_gate_decision_types = odylith_benchmark_report_fields.sorted_nested_result_string_values(published_scenarios, "turn_gate_decision", "decision_type")
+            turn_gate_receipt_sources = odylith_benchmark_report_fields.sorted_nested_result_string_values(published_scenarios, "turn_gate_receipt", "source")
             snapshot_overlay_paths = benchmark_tree_identity_runtime.report_snapshot_overlay_paths(published_scenarios)
             tree_identity = benchmark_tree_identity_runtime.benchmark_tree_identity(
                 repo_root=root,
@@ -8215,6 +8201,9 @@ def run_benchmarks(
                 if preflight_evidence_result_statuses
                 else "not_applicable",
                 "preflight_evidence_modes": preflight_evidence_modes,
+                "turn_gate_decision_types": turn_gate_decision_types,
+                "turn_gate_receipt_sources": turn_gate_receipt_sources,
+                "turn_gate_product_path_present": "product_turn_gate" in set(turn_gate_receipt_sources),
                 "modes": normalized_modes,
                 "cache_profiles": list(normalized_cache_profiles),
                 "primary_cache_profile": primary_cache_profile,

@@ -229,13 +229,22 @@ def _managed_runtime_is_legacy_compatible(runtime_root: Path) -> bool:
     return not _legacy_managed_runtime_compatibility_reasons(runtime_root)
 
 
-def _managed_runtime_health_reasons(*, repo_root: str | Path, runtime_root: Path) -> list[str]:
+def _managed_runtime_health_reasons(
+    *,
+    repo_root: str | Path,
+    runtime_root: Path,
+    deep_integrity: bool = True,
+) -> list[str]:
     scrub_runtime_tree_metadata(runtime_root)
     if not (runtime_root / "runtime-metadata.json").is_file():
         return []
     reasons = [
         *_managed_runtime_verification_reasons(runtime_root),
-        *managed_runtime_integrity_reasons(repo_root=repo_root, runtime_root=runtime_root),
+        *managed_runtime_integrity_reasons(
+            repo_root=repo_root,
+            runtime_root=runtime_root,
+            include_tree=deep_integrity,
+        ),
     ]
     if reasons and _managed_runtime_is_legacy_compatible(runtime_root):
         return []
@@ -1307,7 +1316,13 @@ def _launcher_fallback_source_root_from_path(launcher_path: Path) -> Path | None
     return _validated_source_root(candidate.parent if candidate.name == "src" else candidate)
 
 
-def _launcher_health_reasons(*, repo_root: str | Path, launcher_path: Path, label: str) -> list[str]:
+def _launcher_health_reasons(
+    *,
+    repo_root: str | Path,
+    launcher_path: Path,
+    label: str,
+    deep_integrity: bool = True,
+) -> list[str]:
     reasons: list[str] = []
     if not launcher_path.is_file():
         reasons.append(f"{label} missing")
@@ -1333,7 +1348,11 @@ def _launcher_health_reasons(*, repo_root: str | Path, launcher_path: Path, labe
             if trusted_root is not None:
                 reasons.extend(
                     f"{label} {reason}"
-                    for reason in _managed_runtime_health_reasons(repo_root=repo_root, runtime_root=trusted_root)
+                    for reason in _managed_runtime_health_reasons(
+                        repo_root=repo_root,
+                        runtime_root=trusted_root,
+                        deep_integrity=deep_integrity,
+                    )
                 )
     return reasons
 
@@ -1492,26 +1511,67 @@ def doctor_runtime(
     repo_root: str | Path,
     repair: bool,
     allow_host_python_fallback: bool = True,
+    deep_integrity: bool = True,
 ) -> tuple[bool, list[str]]:
     paths = repo_runtime_paths(repo_root)
     reasons: list[str] = []
     runtime_root = current_runtime_root(repo_root=repo_root)
     bootstrap_path = paths.bin_dir / _BOOTSTRAP_LAUNCHER_NAME
-    reasons.extend(_launcher_health_reasons(repo_root=repo_root, launcher_path=paths.launcher_path, label="repo launcher"))
-    reasons.extend(_launcher_health_reasons(repo_root=repo_root, launcher_path=bootstrap_path, label="bootstrap launcher"))
+    reasons.extend(
+        _launcher_health_reasons(
+            repo_root=repo_root,
+            launcher_path=paths.launcher_path,
+            label="repo launcher",
+            deep_integrity=deep_integrity,
+        )
+    )
+    reasons.extend(
+        _launcher_health_reasons(
+            repo_root=repo_root,
+            launcher_path=bootstrap_path,
+            label="bootstrap launcher",
+            deep_integrity=deep_integrity,
+        )
+    )
     if runtime_root is None:
         reasons.append("active runtime symlink missing or invalid")
     else:
-        reasons.extend(_managed_runtime_health_reasons(repo_root=repo_root, runtime_root=runtime_root))
-        reasons.extend(_runtime_wrapper_health_reasons(repo_root=repo_root, runtime_root=runtime_root))
+        reasons.extend(
+            _managed_runtime_health_reasons(
+                repo_root=repo_root,
+                runtime_root=runtime_root,
+                deep_integrity=deep_integrity,
+            )
+        )
+        reasons.extend(
+            _runtime_wrapper_health_reasons(
+                repo_root=repo_root,
+                runtime_root=runtime_root,
+                deep_integrity=deep_integrity,
+            )
+        )
     healthy = not reasons
     if healthy or not repair:
         return healthy, reasons
     repaired = _repair_runtime(repo_root=repo_root, allow_host_python_fallback=allow_host_python_fallback)
-    return doctor_runtime(repo_root=repo_root, repair=False) if repaired else (False, reasons)
+    return (
+        doctor_runtime(
+            repo_root=repo_root,
+            repair=False,
+            allow_host_python_fallback=allow_host_python_fallback,
+            deep_integrity=deep_integrity,
+        )
+        if repaired
+        else (False, reasons)
+    )
 
 
-def _runtime_wrapper_health_reasons(*, repo_root: str | Path, runtime_root: Path) -> list[str]:
+def _runtime_wrapper_health_reasons(
+    *,
+    repo_root: str | Path,
+    runtime_root: Path,
+    deep_integrity: bool = True,
+) -> list[str]:
     python = _runtime_python(runtime_root)
     if python is None:
         return []
@@ -1523,7 +1583,11 @@ def _runtime_wrapper_health_reasons(*, repo_root: str | Path, runtime_root: Path
         return [f"active runtime wrapper loops back into itself: {python}"]
     unwrapped_runtime_root = _runtime_root_for_python(repo_root=repo_root, python=unwrapped)
     if unwrapped_runtime_root is not None and (unwrapped_runtime_root / "runtime-metadata.json").is_file():
-        runtime_reasons = _managed_runtime_health_reasons(repo_root=repo_root, runtime_root=unwrapped_runtime_root)
+        runtime_reasons = _managed_runtime_health_reasons(
+            repo_root=repo_root,
+            runtime_root=unwrapped_runtime_root,
+            deep_integrity=deep_integrity,
+        )
         if runtime_reasons:
             return [f"active runtime wrapper targets unverified managed runtime: {python}"]
     return []

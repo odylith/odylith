@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-05-02
+Last updated: 2026-05-03
 
 
 ## Overview
@@ -24,12 +24,18 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-05-03 · Implementation:** Corrected B-142 Domain Intelligence away from the deleted in-code project taxonomy and into a host-reasoned proposal contract with apply-time validation, required host-authored Mermaid sources, duplicate-topology rejection, migration-observer markers, and fresh proof.
+- **2026-05-02 · Implementation:** Replaced Domain Intelligence template catalog path with host-reasoned proposal contract, apply-time schema validation, and host-authored Atlas Mermaid source requirements; reran engine, migration, and browser proof.
   - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_proposals.py, src/odylith/runtime/domain_intelligence/proposal_validation.py +2 more
-- **2026-05-03 · Implementation:** B-142 Domain Intelligence keeps greenfield UX/release planning, Compass memory, and owned Radar/Registry/Atlas apply paths, but project-specific backlog/component/diagram reasoning belongs to the active host model under Odylith's evidence and confirmation gates.
+  - Evidence: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_proposals.py +1 more
+- **2026-05-02 · Implementation:** Domain Intelligence corrected to host-reasoned proposal authoring with apply-time topology validation and no in-code project taxonomy.
   - Scope: B-142
-  - Evidence: odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md, tests/unit/runtime/test_greenfield_proposals.py
+  - Evidence: odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md, src/odylith/runtime/domain_intelligence/greenfield_proposals.py +1 more
+- **2026-05-02 · Implementation:** Hardened B-142 Domain Intelligence with alternate-fit classification, acronym-safe titles, dedicated proposal rendering, program-formation output, migration-observer markers, full engine/install/browser proof, and fresh empty-consumer apply proof.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/archetypes.py, src/odylith/runtime/domain_intelligence/greenfield_proposals.py +2 more
+- **2026-05-02 · Implementation:** Deepened B-142 Domain Intelligence with first-class science/math archetypes, greenfield UX/release planning module, refreshed governance surfaces, and full engine/install/browser proof.
+  - Scope: B-142
+  - Evidence: odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md, src/odylith/runtime/domain_intelligence/archetypes.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -39,6 +45,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-03: Registered `domain-intelligence` through `odylith component register` and linked it to B-142/D-043 as the first-class owner for universal greenfield proposal intelligence. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-05-03: Deleted the in-code taxonomy and proposal-planning modules from the active proposal-authoring path. The active host model now owns project-specific reasoning; Odylith owns source posture, evidence tiers, schema validation, apply safety, and durable memory. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-05-03: Added `proposal_rendering.py` so operator-facing text and apply commands have a focused owner without encoding canned narration or project templates. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
+- 2026-05-03: Retargeted the greenfield lane to v0.1.14 and made the proposal/apply path show release and program power by default: omitted release selectors become `0.0.1`, child workstreams form an umbrella execution-wave program, and the umbrella plus first wave target the first release while later waves remain visible future work. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 
 ## Contract
 
@@ -56,6 +63,15 @@ This section captures synchronized requirement and contract signals derived from
   waves, release plan, planned Registry components, host-authored draft Atlas
   Mermaid sources,
   validation strategy, risks, open questions, and exact apply commands.
+- If the operator does not provide a release target for a greenfield proposal,
+  the default first release selector is `0.0.1`, not an Odylith product-version
+  alias such as `next`. Accepted proposals with child workstreams should create
+  an umbrella execution-wave program and target the umbrella plus first wave to
+  the first release so Compass can show program/wave/release structure without
+  pretending every future child is ready for the first release.
+- `Customer` may be a one-token governed value. Problem, Opportunity, Product
+  View, and Success Metrics keep the stronger detail and placeholder-rejection
+  rules.
 - Default CLI proposal request generation must not call providers directly; the
   active host model supplies the reasoning in Claude/Codex sessions.
 - Apply must require `--confirm` and write only through owned Radar, Registry,
@@ -63,7 +79,7 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Research Basis
 
-The v0.1.13 runtime deliberately avoids a hardcoded domain catalog as the
+The v0.1.14 runtime deliberately avoids a hardcoded domain catalog as the
 proposal author. User requests can span any product, science, math, research,
 art, policy, infrastructure, or mixed project shape. Until Odylith has a real
 marketplace or collectively curated domain catalog, the right architecture is

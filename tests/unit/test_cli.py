@@ -95,6 +95,44 @@ def test_bug_capture_help_forwards_backend_flags(capsys) -> None:
     assert "--json" in output
 
 
+def test_turn_gate_decide_cli_emits_product_receipt(tmp_path: Path, capsys) -> None:
+    command = "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_turn_gate.py"
+    payload = {
+        "prompt": "Verify the bounded contract without editing when evidence already passes.",
+        "policy_hints": {
+            "non_mutating_closure_allowed": True,
+            "focused_checks_cover_contract": True,
+        },
+        "focused_local_checks": [command],
+        "validation_commands": [command],
+        "focused_check_result": {
+            "status": "passed",
+            "results": [{"status": "passed", "command": command}],
+        },
+    }
+
+    rc = cli.main(
+        [
+            "turn-gate",
+            "decide",
+            "--repo-root",
+            str(tmp_path),
+            "--host",
+            "codex",
+            "--mode",
+            "observe",
+            "--prompt-json",
+            json.dumps(payload),
+            "--json",
+        ]
+    )
+
+    output = json.loads(capsys.readouterr().out)
+    assert rc == 0
+    assert output["decision_type"] == "early_exit_proof"
+    assert output["receipt"]["source"] == "product_turn_gate"
+
+
 def test_github_issue_triage_help_forwards_backend_flags(capsys) -> None:
     with pytest.raises(SystemExit) as excinfo:
         cli.main(["github", "issue", "triage", "--help"])
@@ -164,6 +202,7 @@ def test_capabilities_command_prints_host_agnostic_engine_inventory(capsys) -> N
     assert "Context Engine" in output
     assert "Domain Intelligence" in output
     assert "Governance Engine" in output
+    assert "Governed Harness / Turn Gate" in output
     assert "Delivery Intelligence" in output
     assert "Tribunal" in output
     assert "Memory Substrate" in output
@@ -191,6 +230,7 @@ def test_capabilities_command_json_exposes_product_inventory(capsys) -> None:
         "Context Engine",
         "Domain Intelligence",
         "Governance Engine",
+        "Governed Harness / Turn Gate",
         "Delivery Intelligence",
         "Tribunal",
         "Memory Substrate",
@@ -536,13 +576,25 @@ def test_bug_capture_rejects_sentence_reproducibility(tmp_path: Path) -> None:
 
 
 def test_bug_capture_rejects_prose_type(tmp_path: Path) -> None:
-    with pytest.raises(ValueError, match="`--type` must be one compact single-word token"):
+    with pytest.raises(ValueError, match="`--type` must be one allowed category token"):
         bug_authoring.capture_bug(
             repo_root=tmp_path,
             title="Casebook type must stay compact",
             component="casebook",
             severity="P1",
             bug_type="UX / lifecycle",
+            **_bug_capture_kwargs(),
+        )
+
+
+def test_bug_capture_rejects_status_like_compact_type(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="use `Release` for this value"):
+        bug_authoring.capture_bug(
+            repo_root=tmp_path,
+            title="Casebook type must stay in the controlled enum",
+            component="casebook",
+            severity="P1",
+            bug_type="ForwardFixUpdatedLocallyPendingPlatformReleaseDeploy",
             **_bug_capture_kwargs(),
         )
 
@@ -564,7 +616,7 @@ def test_checked_in_casebook_metadata_fields_are_compact() -> None:
                     offenders.append(f"{path.relative_to(repo_root)}: Status={value}")
             if line.startswith("- Type:"):
                 value = line.split(":", 1)[1].strip()
-                if not casebook_metadata.casebook_token_is_valid(value):
+                if not casebook_metadata.casebook_type_is_valid(value):
                     offenders.append(f"{path.relative_to(repo_root)}: Type={value}")
     assert offenders == []
 
@@ -649,6 +701,17 @@ def _seed_first_run_surfaces_without_shell(repo_root: Path) -> None:
         output_path = repo_root / relative_path
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text("<!doctype html>\n", encoding="utf-8")
+
+
+def _seed_complete_consumer_install_shape(repo_root: Path, *, version: str = "1.2.3") -> None:
+    install_state_path = repo_root / ".odylith" / "install.json"
+    install_state_path.parent.mkdir(parents=True, exist_ok=True)
+    install_state_path.write_text(json.dumps({"active_version": version}) + "\n", encoding="utf-8")
+    pin_path = repo_root / "odylith" / "runtime" / "source" / "product-version.v1.json"
+    pin_path.parent.mkdir(parents=True, exist_ok=True)
+    pin_path.write_text(json.dumps({"odylith_version": version}) + "\n", encoding="utf-8")
+    (repo_root / "odylith" / "AGENTS.md").write_text("# Odylith\n", encoding="utf-8")
+    _seed_first_run_surfaces(repo_root)
 
 
 def test_install_bootstraps_first_run_surfaces_and_reports_agent_workflow(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -1420,6 +1483,180 @@ def test_install_align_pin_reports_repo_pin_update(monkeypatch, tmp_path: Path, 
     assert "Repo pin updated to 1.2.4." in output
 
 
+def test_install_existing_complete_repo_routes_through_upgrade_lifecycle(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
+    _seed_complete_consumer_install_shape(tmp_path, version="1.2.3")
+    captured: dict[str, object] = {}
+
+    def fake_plan_upgrade_lifecycle(**kwargs) -> SimpleNamespace:  # noqa: ANN003
+        captured["plan_kwargs"] = kwargs
+        return SimpleNamespace(command="upgrade", headline="preview", steps=(), dirty_overlap=(), notes=(), metadata={})
+
+    def fake_upgrade_install(**kwargs) -> SimpleNamespace:  # noqa: ANN003
+        captured["upgrade_kwargs"] = kwargs
+        return SimpleNamespace(
+            active_version="1.2.4",
+            launcher_path=launcher_path,
+            pin_changed=True,
+            pinned_version="1.2.4",
+            previous_version="1.2.3",
+            repo_root=tmp_path,
+            repo_role="consumer_repo",
+            followed_latest=False,
+            release_body="",
+            release_highlights=("release migrations ran",),
+            release_published_at="",
+            release_tag="v1.2.4",
+            release_url="",
+            verification={},
+            repaired=False,
+            retention_warnings=(),
+            migration=None,
+            migration_plan={"migration_ids": ["v0.1.14-casebook-status-fsm"]},
+            migration_results=({"migration_id": "v0.1.14-casebook-status-fsm", "status": "applied"},),
+        )
+
+    monkeypatch.setattr(cli, "plan_upgrade_lifecycle", fake_plan_upgrade_lifecycle)
+    monkeypatch.setattr(
+        cli,
+        "plan_install_lifecycle",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("install plan should not run")),
+    )
+    monkeypatch.setattr(
+        cli,
+        "install_bundle",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("install_bundle should not run")),
+    )
+    monkeypatch.setattr(cli, "upgrade_install", fake_upgrade_install)
+    monkeypatch.setattr(cli, "_prepare_consumer_upgrade_spotlight", lambda **kwargs: None)
+    monkeypatch.setattr(
+        cli,
+        "_refresh_dashboard_after_upgrade",
+        lambda **kwargs: (True, "Dashboard refreshed."),
+    )
+    monkeypatch.setattr(cli.upgrade_reporting, "git_status_paths", lambda **kwargs: ())
+    monkeypatch.setattr(
+        cli.upgrade_reporting,
+        "write_generated_change_manifest",
+        lambda **kwargs: {"changed": False, "written": False},
+    )
+    monkeypatch.setattr(
+        cli.upgrade_reporting,
+        "upgrade_change_review_payload",
+        lambda **kwargs: {"categories": {}},
+    )
+    monkeypatch.setattr(
+        cli.upgrade_reporting,
+        "write_upgrade_report",
+        lambda **kwargs: tmp_path / ".odylith" / "reports" / "upgrade.json",
+    )
+
+    rc = cli.main(["install", "--repo-root", str(tmp_path), "--version", "1.2.4", "--no-open"])
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert captured["plan_kwargs"] == {
+        "repo_root": tmp_path.resolve(),
+        "version": "1.2.4",
+        "release_repo": "odylith/odylith",
+        "source_repo": None,
+        "write_pin": True,
+    }
+    assert captured["upgrade_kwargs"] == {
+        "repo_root": str(tmp_path),
+        "release_repo": "odylith/odylith",
+        "version": "1.2.4",
+        "source_repo": None,
+        "write_pin": True,
+    }
+    assert "Existing Odylith install detected; routing install through the upgrade lifecycle" in output
+    assert "Upgraded Odylith from 1.2.3 to 1.2.4" in output
+    assert "Dashboard ready." in output
+
+
+def test_install_dry_run_existing_complete_repo_previews_upgrade_lifecycle(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    _seed_complete_consumer_install_shape(tmp_path, version="1.2.3")
+    captured: dict[str, object] = {}
+
+    def fake_plan_upgrade_lifecycle(**kwargs) -> SimpleNamespace:  # noqa: ANN003
+        captured.update(kwargs)
+        return SimpleNamespace(command="upgrade", headline="preview", steps=(), dirty_overlap=(), notes=(), metadata={})
+
+    monkeypatch.setattr(cli, "plan_upgrade_lifecycle", fake_plan_upgrade_lifecycle)
+    monkeypatch.setattr(
+        cli,
+        "plan_install_lifecycle",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("install plan should not run")),
+    )
+    monkeypatch.setattr(
+        cli,
+        "install_bundle",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("install_bundle should not run")),
+    )
+    monkeypatch.setattr(
+        cli,
+        "upgrade_install",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("upgrade_install should not run during --dry-run")),
+    )
+
+    rc = cli.main(["install", "--repo-root", str(tmp_path), "--version", "1.2.4", "--dry-run"])
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert captured == {
+        "repo_root": tmp_path.resolve(),
+        "version": "1.2.4",
+        "release_repo": "odylith/odylith",
+        "source_repo": None,
+        "write_pin": True,
+    }
+    assert "upgrade dry-run" in output
+    assert "install dry-run" not in output
+
+
+def test_install_product_repo_shape_does_not_route_through_consumer_upgrade(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    _seed_complete_consumer_install_shape(tmp_path, version="1.2.3")
+    _seed_product_repo_shape(tmp_path)
+    captured: dict[str, object] = {}
+
+    def fake_plan_install_lifecycle(**kwargs) -> SimpleNamespace:  # noqa: ANN003
+        captured.update(kwargs)
+        return SimpleNamespace(command="install", headline="preview", steps=(), dirty_overlap=(), notes=())
+
+    monkeypatch.setattr(cli, "plan_install_lifecycle", fake_plan_install_lifecycle)
+    monkeypatch.setattr(
+        cli,
+        "plan_upgrade_lifecycle",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("consumer upgrade route should not run")),
+    )
+    monkeypatch.setattr(
+        cli,
+        "install_bundle",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("install_bundle should not run during --dry-run")),
+    )
+
+    rc = cli.main(["install", "--repo-root", str(tmp_path), "--version", "1.2.4", "--dry-run"])
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert captured["repo_root"] == tmp_path.resolve()
+    assert captured["target_version"] == "1.2.4"
+    assert "install dry-run" in output
+    assert "upgrade dry-run" not in output
+
+
 def test_install_dry_run_passes_bootstrap_runtime_prestaged_env(monkeypatch, tmp_path: Path) -> None:
     captured: dict[str, object] = {}
 
@@ -1610,7 +1847,7 @@ def test_release_migration_gate_json_reports_registered_runtime(capsys) -> None:
             "--repo-root",
             str(repo_root),
             "--target-version",
-            "0.1.13",
+            "0.1.14",
             "--json",
         ])
     payload = json.loads(capsys.readouterr().out)
@@ -3136,14 +3373,20 @@ def test_start_bootstrap_lane_emits_payload(monkeypatch, tmp_path: Path, capsys)
 
 
 def test_start_bootstrap_payload_forwards_turn_context(monkeypatch, tmp_path: Path) -> None:
+    from odylith.runtime.common import agent_runtime_contract
     from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as packet_session_runtime
+    from odylith.runtime.context_engine import runtime_read_session
 
     captured: dict[str, object] = {}
 
     monkeypatch.setattr(
         packet_session_runtime,
         "build_session_bootstrap",
-        lambda **kwargs: captured.update(kwargs) or {"packet_kind": "bootstrap_session"},
+        lambda **kwargs: captured.update(
+            kwargs,
+            read_session_active=runtime_read_session.active_runtime_read_session() is not None,
+        )
+        or {"packet_kind": "bootstrap_session"},
     )
 
     parser = cli.build_parser()
@@ -3176,6 +3419,9 @@ def test_start_bootstrap_payload_forwards_turn_context(monkeypatch, tmp_path: Pa
     assert captured["active_tab"] == "releases"
     assert captured["user_turn_id"] == "turn-3"
     assert captured["supersedes_turn_id"] == "turn-2"
+    assert captured["delivery_profile"] == agent_runtime_contract.AGENT_HOT_PATH_PROFILE
+    assert captured["skip_impact_runtime_warmup"] is True
+    assert captured["read_session_active"] is True
 
 
 def test_start_fallback_lane_prints_exact_next_command(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -4368,6 +4614,20 @@ def test_validate_help_uses_parser_without_running_subcommand(monkeypatch, tmp_p
         raise AssertionError("expected argparse help exit")
 
     assert "usage: odylith validate component-registry-contract" in capsys.readouterr().out
+
+
+def test_validate_topology_integrity_dispatch_accepts_forwarded_flags(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_main(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 44
+
+    monkeypatch.setattr(cli.topology_integrity, "main", fake_main)
+    rc = cli.main(["validate", "topology-integrity", "--repo-root", str(tmp_path), "--min-score", "95"])
+
+    assert rc == 44
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "--min-score", "95"]
 
 
 def test_lane_status_help_uses_parser_without_running_status(monkeypatch, tmp_path: Path, capsys) -> None:

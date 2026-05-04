@@ -47,7 +47,7 @@ _ARCHITECTURE_GROUNDING_KEYWORDS: tuple[str, ...] = (
     "ownership boundary",
     "tenant boundary",
 )
-_CODEX_HOT_PATH_PROFILE = agent_runtime_contract.AGENT_HOT_PATH_PROFILE
+_AGENT_HOT_PATH_PROFILE = agent_runtime_contract.AGENT_HOT_PATH_PROFILE
 
 
 def _extract_context_signals_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
@@ -290,7 +290,7 @@ def _clamp_confidence(value: int | float) -> int:
 
 __all__ = [
     "_ARCHITECTURE_GROUNDING_KEYWORDS",
-    "_CODEX_HOT_PATH_PROFILE",
+    "_AGENT_HOT_PATH_PROFILE",
     "_GOVERNANCE_GROUNDING_KEYWORDS",
     "_clamp_confidence",
     "_compact_selection_state_parts",

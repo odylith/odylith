@@ -140,6 +140,25 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                 ),
             ),
             InventoryItem(
+                name="Governed Harness / Turn Gate",
+                layer="operating-policy",
+                kind="product control layer",
+                owns=(
+                    "general-purpose turn classification, evidence sufficiency checks, execution "
+                    "capsule construction, tool and stop gates, proof receipts, and benchmark "
+                    "observation through the same product path used by host adapters"
+                ),
+                commands=(
+                    "odylith turn-gate decide",
+                    "odylith turn-gate tool-check",
+                    "odylith turn-gate stop-check",
+                ),
+                anchors=(
+                    "src/odylith/runtime/governed_harness/",
+                    "odylith/registry/source/components/governed-harness/CURRENT_SPEC.md",
+                ),
+            ),
+            InventoryItem(
                 name="Governance Intervention Engine",
                 layer="intervention",
                 kind="engine",

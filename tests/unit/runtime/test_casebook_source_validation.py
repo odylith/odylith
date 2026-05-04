@@ -3,6 +3,7 @@ import re
 from pathlib import Path
 
 from odylith import cli
+from odylith.runtime.common import casebook_metadata
 from odylith.runtime.governance import casebook_source_validation
 from odylith.runtime.governance import sync_workstream_artifacts
 from odylith.runtime.surfaces import render_casebook_dashboard
@@ -111,8 +112,52 @@ def test_casebook_source_validation_rejects_prose_status(tmp_path: Path) -> None
     assert result.records_checked == 1
     assert len(result.issues) == 1
     assert result.issues[0].field == "Status"
-    assert "single-word token" in result.issues[0].message
+    assert "controlled FSM token" in result.issues[0].message
     assert "`FixedPendingRelease`" in result.issues[0].message
+
+
+def test_casebook_status_normalizer_is_closed_fsm() -> None:
+    assert casebook_metadata.CASEBOOK_STATUS_STATES == (
+        "Open",
+        "InProgress",
+        "Mitigated",
+        "Monitoring",
+        "Resolved",
+        "FixedPendingRelease",
+        "Closed",
+    )
+    assert casebook_metadata.canonical_casebook_status("Open") == "Open"
+    assert casebook_metadata.canonical_casebook_status("InProgress") == "InProgress"
+    assert casebook_metadata.canonical_casebook_status("Mitigated") == "Mitigated"
+    assert casebook_metadata.canonical_casebook_status("Monitoring") == "Monitoring"
+    assert casebook_metadata.canonical_casebook_status("Resolved") == "Resolved"
+    assert casebook_metadata.canonical_casebook_status("FixedPendingRelease") == "FixedPendingRelease"
+    assert casebook_metadata.canonical_casebook_status("Closed") == "Closed"
+    assert casebook_metadata.canonical_casebook_status("Mitigated locally; pending platform release") == "Mitigated"
+    assert casebook_metadata.canonical_casebook_status("Monitoring") == "Monitoring"
+    assert (
+        casebook_metadata.canonical_casebook_status("ForwardFixUpdatedLocallyPendingPlatformReleaseDeploy")
+        == "FixedPendingRelease"
+    )
+    assert casebook_metadata.canonical_casebook_status("InProgress") == "InProgress"
+    assert casebook_metadata.canonical_casebook_status("Under investigation") == "InProgress"
+    assert casebook_metadata.canonical_casebook_status("Fix in progress") == "InProgress"
+    assert casebook_metadata.canonical_casebook_status("resolvedInNextRelease") == "FixedPendingRelease"
+    assert casebook_metadata.canonical_casebook_status("Could not reproduce") == "Closed"
+    assert casebook_metadata.canonical_casebook_status("Duplicate") == "Closed"
+    assert casebook_metadata.canonical_casebook_status("Shipped") == "Closed"
+    assert casebook_metadata.canonical_casebook_status("InventedConsumerLaneStatus") == "Open"
+    assert casebook_metadata.casebook_status_is_valid("FixedPendingRelease")
+    assert casebook_metadata.casebook_status_is_valid("Monitoring")
+    assert not casebook_metadata.casebook_status_is_valid("ForwardFixUpdatedLocallyPendingPlatformReleaseDeploy")
+    assert casebook_metadata.casebook_status_transition_is_valid("Open", "InProgress")
+    assert casebook_metadata.casebook_status_transition_is_valid("InProgress", "Mitigated")
+    assert casebook_metadata.casebook_status_transition_is_valid("Mitigated", "Monitoring")
+    assert casebook_metadata.casebook_status_transition_is_valid("Monitoring", "Resolved")
+    assert casebook_metadata.casebook_status_transition_is_valid("Open", "FixedPendingRelease")
+    assert casebook_metadata.casebook_status_transition_is_valid("FixedPendingRelease", "Closed")
+    assert casebook_metadata.casebook_status_transition_is_valid("Closed", "Open")
+    assert not casebook_metadata.casebook_status_transition_is_valid("Closed", "FixedPendingRelease")
 
 
 def test_casebook_source_validation_rejects_prose_type(tmp_path: Path) -> None:
@@ -127,7 +172,7 @@ def test_casebook_source_validation_rejects_prose_type(tmp_path: Path) -> None:
     assert result.records_checked == 1
     assert len(result.issues) == 1
     assert result.issues[0].field == "Type"
-    assert "single-word token" in result.issues[0].message
+    assert "allowed category token" in result.issues[0].message
     assert "`UX`" in result.issues[0].message
 
 
@@ -144,6 +189,86 @@ def test_casebook_source_validation_rejects_long_compacted_type(tmp_path: Path) 
     assert len(result.issues) == 1
     assert result.issues[0].field == "Type"
     assert "`UX`" in result.issues[0].message
+
+
+def test_casebook_source_validation_rejects_status_like_compacted_type(tmp_path: Path) -> None:
+    _write_bug_with_metadata(
+        tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-16-status-like-type.md",
+        bug_type="ForwardFixUpdatedLocallyPendingPlatformReleaseDeploy",
+    )
+
+    result = casebook_source_validation.validate_casebook_sources(repo_root=tmp_path)
+
+    assert not result.passed
+    assert result.records_checked == 1
+    assert len(result.issues) == 1
+    assert result.issues[0].field == "Type"
+    assert "allowed category token" in result.issues[0].message
+    assert "`Release`" in result.issues[0].message
+
+
+def test_casebook_type_normalizer_maps_ui_prose_to_compact_ux() -> None:
+    assert casebook_metadata.canonical_casebook_type("dashboard UI rendering regression") == "UX"
+    assert casebook_metadata.casebook_type_is_valid("UI") is False
+
+
+def test_casebook_type_normalizer_uses_allowed_taxonomy_and_normalizes_orion_legacy_labels() -> None:
+    observed_orion_types = {
+        "AccountLifecycleOnboardi": "Install",
+        "App": "App",
+        "AuthWorkflowContract": "Security",
+        "Config": "Config",
+        "ControlPlaneDeploy": "Deployment",
+        "ControlPlaneDeployIAMSco": "Security",
+        "CredentialBootstrap": "Security",
+        "Data": "Data",
+        "Day2ManifestMetadataPath": "Deployment",
+        "Day2WaveTaskDefinitionCo": "Deployment",
+        "Dependency": "Dependency",
+        "Deployment": "Deployment",
+        "DiagnosticsOwnership": "Observability",
+        "HiddenCLISurfaceDrift": "Tooling",
+        "HostedLongWaitAuthAndRes": "Security",
+        "HostedPreviewFalseNegati": "Workflow",
+        "HostedProofSandboxStateC": "Workflow",
+        "HostedProofSourceAnchorI": "Workflow",
+        "HostedProofZeroCredentia": "Security",
+        "IaC": "IaC",
+        "Infra": "Infra",
+        "InfraLifecycleProtectedR": "Infra",
+        "KafkaTopicContractOSWUpg": "Runtime",
+        "ManagedWorkflowSourceOfT": "Workflow",
+        "OSWUpgradeContractRegres": "Install",
+        "ObservabilityCorrelation": "Observability",
+        "ObservabilityDiagnostics": "Observability",
+        "Operational": "Operational",
+        "PlatformRunnerDependency": "Dependency",
+        "PlatformRunnerKafkaTopic": "Runtime",
+        "PrivateJobsRunnerManifes": "Deployment",
+        "PublicReadPlanePermissio": "Security",
+        "TestHarnessInfraRegressi": "Infra",
+        "UI": "UX",
+        "Workflow": "Workflow",
+        "ZeroCredentialOSWContrac": "Security",
+        "ZeroCredentialOnboarding": "Security",
+    }
+
+    normalized = {
+        value: casebook_metadata.canonical_casebook_type(value)
+        for value in observed_orion_types
+    }
+
+    assert normalized == observed_orion_types
+    assert all(
+        casebook_metadata.casebook_type_is_valid(canonical)
+        for canonical in set(observed_orion_types.values())
+    )
+    assert casebook_metadata.casebook_type_is_valid("Database")
+    assert casebook_metadata.canonical_casebook_type("Database") == "Database"
+    assert not casebook_metadata.casebook_type_is_valid("PrivateJobsRunnerManifes")
+    assert not casebook_metadata.casebook_type_is_valid("TestHarnessInfraRegressi")
+    assert not casebook_metadata.casebook_type_is_valid("RandomProjectWord")
+    assert casebook_metadata.canonical_casebook_type("RandomProjectWord") == "Product"
 
 
 def test_casebook_source_validation_suggests_short_labels_for_legacy_compacted_types(tmp_path: Path) -> None:
@@ -302,6 +427,51 @@ def test_iter_casebook_bug_markdown_paths_skips_guidance_and_index_files(tmp_pat
     paths = casebook_source_validation.iter_casebook_bug_markdown_paths(repo_root=tmp_path)
 
     assert [path.name for path in paths] == ["2026-04-16-valid.md"]
+
+
+def test_casebook_host_companion_defers_metadata_policy_to_agents() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    source_path = repo_root / "odylith" / "casebook" / "bugs" / "CLAUDE.md"
+    bundled_path = repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "casebook" / "bugs" / "CLAUDE.md"
+    source_text = source_path.read_text(encoding="utf-8")
+    bundled_text = bundled_path.read_text(encoding="utf-8")
+
+    assert bundled_text == source_text
+    assert "AGENTS.md` is the host-agnostic contract" in source_text
+    assert "Do not restate or fork Casebook metadata rules" in source_text
+    forbidden_policy_clauses = (
+        "Keep `Status`",
+        "Keep `Fixed`",
+        "Keep `Reproducibility`",
+        "Use `odylith casebook validate --repo-root .` for source-only checks",
+        "controlled Casebook lifecycle FSM:",
+    )
+    for clause in forbidden_policy_clauses:
+        assert clause not in source_text
+
+
+def test_casebook_source_validation_rejects_policy_in_host_companion(tmp_path: Path) -> None:
+    bugs_root = tmp_path / "odylith" / "casebook" / "bugs"
+    _write_bug(bugs_root / "2026-04-16-valid.md")
+    _write_bug_text(
+        bugs_root / "CLAUDE.md",
+        "\n".join(
+            [
+                "# CLAUDE.md",
+                "",
+                "- Keep `Status` to the controlled Casebook lifecycle FSM: `Open` or `Closed`.",
+            ]
+        )
+        + "\n",
+    )
+
+    result = casebook_source_validation.validate_casebook_sources(repo_root=tmp_path)
+
+    assert not result.passed
+    assert result.records_checked == 1
+    assert len(result.issues) == 2
+    assert {issue.field for issue in result.issues} == {"HostCompanion"}
+    assert all("host-agnostic AGENTS.md" in issue.message for issue in result.issues)
 
 
 def test_casebook_validate_cli_reports_invalid_source(tmp_path: Path, capsys) -> None:

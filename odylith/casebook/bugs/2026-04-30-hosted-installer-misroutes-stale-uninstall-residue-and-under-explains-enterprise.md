@@ -1,6 +1,6 @@
 - Bug ID: CB-146
 
-- Type: InstallRelease
+- Type: Install
 
 
 
@@ -26,7 +26,7 @@
 
 - Environment(s): 0.1.12 local-release rehearsal and enterprise hosted installs; consumer repo has .odylith residue but the odylith governed tree is missing or incomplete.
 
-- Detected By: Maintainer manual dentoai-isb local install transcript and focused stale-residue release rehearsal.
+- Detected By: Maintainer manual consumer-repo local install transcript and focused stale-residue release rehearsal.
 
 - Failure Signature: upgrade plan ... scenario: stale_migration_ledger ... blocked_reason: repo pin is missing or invalid ... customer Odylith starter tree missing; run odylith install --repo-root . or odylith doctor --repo-root . --repair. A later sharper repro crashed during compact install with `ValueError: migration ledger exists, but value-engine verification no longer passes`. A same-version rerun then showed the restored ASCII banner but still routed a complete-looking existing install through `upgrade`, dumping the full blocked migration plan before printing the same stale-ledger reason.
 

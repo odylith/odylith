@@ -43,3 +43,30 @@ def test_component_spec_template_does_not_claim_source_for_user_intent() -> None
     assert "planned from user-stated intent" in text
     assert "No source-backed claim is made yet" in text
     assert "(Plan: [B-200](odylith/radar/radar.html?view=plan&workstream=B-200))" in text
+
+
+def test_component_spec_template_uses_greenfield_responsibility_and_links() -> None:
+    text = component_authoring._build_spec_template(
+        component_id="shop-checkout",
+        label="Checkout Boundary",
+        path="src/checkout",
+        kind="service",
+        status="planned",
+        sources=("user_intent",),
+        workstreams=("B-200", "B-201"),
+        diagrams=("D-200",),
+        responsibility="Payment handoff, order draft, idempotency, and recovery behavior.",
+        boundary="Checkout owns payment handoff and order-draft recovery until source evidence narrows it.",
+        dependencies=("Payment sandbox", "Order ledger"),
+        interfaces=("Checkout request contract", "Payment callback contract"),
+        validation=("Happy-path checkout smoke proof", "Payment failure recovery proof"),
+        risks=("Provider-specific behavior may change the boundary",),
+    )
+
+    assert "**Logical boundary**: Checkout owns payment handoff and order-draft recovery" in text
+    assert "**Related workstreams**: B-200, B-201" in text
+    assert "**Related diagrams**: D-200" in text
+    assert "- Payment sandbox." in text
+    assert "- Checkout request contract." in text
+    assert "- Payment failure recovery proof." in text
+    assert "- Provider-specific behavior may change the boundary." in text

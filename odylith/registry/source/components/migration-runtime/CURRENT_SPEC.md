@@ -1,5 +1,5 @@
 # Migration Runtime
-Last updated: 2026-05-02
+Last updated: 2026-05-03
 
 
 ## Overview
@@ -137,3 +137,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-29: Added destructive-write scenario inventory and gate proof after CB-136 showed install could destroy host AI settings under enterprise SSL failure; also blocked legacy root/state conflict overwrites and narrowed `.agents/skills` pruning to known retired Odylith shims. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127); Casebook: CB-136)
 - 2026-04-29: Expanded CB-136 from direct settings overwrite into symlinked host/project managed-asset protection; the release gate now proves 21 destructive-write scenarios, including symlinked `.claude/`, `.codex/`, `.agents/`, `odylith/`, and release-note target paths. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127); Casebook: CB-136)
 - 2026-04-30: Corrected consumer uninstall to preserve repo-local `odylith/` governed source truth, remove `.odylith/` runtime state, and leave host config directories in place, with symlink-safe runtime-state proof in the destructive-write matrix. (Plan: [B-140](odylith/radar/radar.html?view=plan&workstream=B-140); Casebook: CB-143)
+- 2026-05-03: Bound v0.1.14 upgrade safety to registered migrations instead of repair folklore: install reruns detect existing Odylith installs as upgrades, Casebook source metadata is normalized through the release migration runner, Atlas SVG/PNG assets rerender when render-style fingerprints drift, topology-spine edges are regenerated, and the release migration gate proves 0.1.10/0.1.11/0.1.12/0.1.13 -> 0.1.14. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Assessment: [B-140](odylith/radar/radar.html?view=plan&workstream=B-140); Bugs: `CB-150`, `CB-162`)

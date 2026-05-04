@@ -98,6 +98,7 @@ _COMPASS_WATCH_TRANSACTIONS_MODULE = "odylith.runtime.surfaces.watch_prompt_tran
 _COMPASS_RESTORE_HISTORY_MODULE = "odylith.runtime.surfaces.restore_compass_history"
 _SUBAGENT_ROUTER_MODULE = "odylith.runtime.orchestration.subagent_router"
 _SUBAGENT_ORCHESTRATOR_MODULE = "odylith.runtime.orchestration.subagent_orchestrator"
+_TURN_GATE_MODULE = "odylith.runtime.governed_harness.turn_gate"
 _CASEBOOK_SOURCE_VALIDATION_MODULE = "odylith.runtime.governance.casebook_source_validation"
 _GOVERNANCE_COMMAND_MODULES = {
     "normalize-plan-risk-mitigation": "odylith.runtime.governance.normalize_plan_risk_mitigation",
@@ -124,6 +125,7 @@ _VALIDATE_COMMAND_MODULES = {
     "self-host-posture": "odylith.runtime.governance.validate_self_host_posture",
     "plan-traceability": "odylith.runtime.governance.validate_plan_traceability_contract",
     "plan-workstream-binding": "odylith.runtime.governance.validate_plan_workstream_binding",
+    "topology-integrity": "odylith.runtime.governance.topology_integrity",
 }
 _ATLAS_COMMAND_MODULES = {
     "render": "odylith.runtime.surfaces.render_mermaid_catalog",
@@ -263,6 +265,7 @@ validate_plan_risk_mitigation_contract = _register_lazy_module(
 )
 validate_self_host_posture = _register_lazy_module("odylith.runtime.governance.validate_self_host_posture")
 validate_plan_workstream_binding = _register_lazy_module("odylith.runtime.governance.validate_plan_workstream_binding")
+topology_integrity = _register_lazy_module("odylith.runtime.governance.topology_integrity")
 casebook_source_validation = _register_lazy_module(_CASEBOOK_SOURCE_VALIDATION_MODULE)
 maintainer_lane_status = _register_lazy_module(_MAINTAINER_LANE_STATUS_MODULE)
 odylith_context_engine = _register_lazy_module(_CONTEXT_ENGINE_MODULE)
@@ -275,6 +278,7 @@ watch_prompt_transactions = _register_lazy_module(_COMPASS_WATCH_TRANSACTIONS_MO
 restore_compass_history = _register_lazy_module(_COMPASS_RESTORE_HISTORY_MODULE)
 subagent_router = _register_lazy_module(_SUBAGENT_ROUTER_MODULE)
 subagent_orchestrator = _register_lazy_module(_SUBAGENT_ORCHESTRATOR_MODULE)
+turn_gate = _register_lazy_module(_TURN_GATE_MODULE)
 render_mermaid_catalog = _register_lazy_module(
     "odylith.runtime.surfaces.render_mermaid_catalog",
     target_name="odylith.runtime.surfaces.render_mermaid_catalog_refresh",
@@ -587,6 +591,17 @@ def _bootstrap_first_run_surfaces(
 
 def _is_first_install(*, repo_root: Path) -> bool:
     return not _install_state_path(repo_root=repo_root).is_file()
+
+
+def _has_complete_existing_consumer_install(*, repo_root: Path) -> bool:
+    root = Path(repo_root).expanduser().resolve()
+    if repo_role_from_local_shape(repo_root=root) == PRODUCT_REPO_ROLE:
+        return False
+    return (
+        _install_state_path(repo_root=root).is_file()
+        and (root / "odylith" / "runtime" / "source" / "product-version.v1.json").is_file()
+        and (root / "odylith" / "AGENTS.md").is_file()
+    )
 
 
 def _env_flag_enabled(name: str) -> bool:
@@ -919,19 +934,25 @@ def _append_turn_context_forwarded(*, forwarded: list[str], args: argparse.Names
 
 
 def _start_bootstrap_payload(args: argparse.Namespace) -> dict[str, object]:
+    from odylith.runtime.common import agent_runtime_contract
     from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime
+    from odylith.runtime.context_engine import runtime_read_session
 
-    return odylith_context_engine_packet_session_runtime.build_session_bootstrap(
-        repo_root=Path(args.repo_root).expanduser().resolve(),
-        use_working_tree=bool(args.working_tree),
-        working_tree_scope=str(args.working_tree_scope),
-        intent=str(getattr(args, "intent", "") or "").strip(),
-        generated_surfaces=[str(token).strip() for token in getattr(args, "surface", []) if str(token).strip()],
-        visible_text=[str(token).strip() for token in getattr(args, "visible_text", []) if str(token).strip()],
-        active_tab=str(getattr(args, "active_tab", "") or "").strip(),
-        user_turn_id=str(getattr(args, "user_turn_id", "") or "").strip(),
-        supersedes_turn_id=str(getattr(args, "supersedes_turn_id", "") or "").strip(),
-    )
+    repo_root = Path(args.repo_root).expanduser().resolve()
+    with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope="reasoning"):
+        return odylith_context_engine_packet_session_runtime.build_session_bootstrap(
+            repo_root=repo_root,
+            use_working_tree=bool(args.working_tree),
+            working_tree_scope=str(args.working_tree_scope),
+            intent=str(getattr(args, "intent", "") or "").strip(),
+            generated_surfaces=[str(token).strip() for token in getattr(args, "surface", []) if str(token).strip()],
+            visible_text=[str(token).strip() for token in getattr(args, "visible_text", []) if str(token).strip()],
+            active_tab=str(getattr(args, "active_tab", "") or "").strip(),
+            user_turn_id=str(getattr(args, "user_turn_id", "") or "").strip(),
+            supersedes_turn_id=str(getattr(args, "supersedes_turn_id", "") or "").strip(),
+            delivery_profile=agent_runtime_contract.AGENT_HOT_PATH_PROFILE,
+            skip_impact_runtime_warmup=True,
+        )
 
 
 def _single_line_error(exc: Exception) -> str:
@@ -1111,8 +1132,28 @@ def _cmd_install_common(
     first_install = _is_first_install(repo_root=requested_repo_root)
     adopt_latest = bool(adopt_latest_default or getattr(args, "adopt_latest", False))
     align_pin = bool(getattr(args, "align_pin", False))
-    release_repo = str(getattr(args, "release_repo", _authoritative_release_repo()) or _authoritative_release_repo()).strip()
+    release_repo = str(
+        getattr(args, "release_repo", _authoritative_release_repo()) or _authoritative_release_repo()
+    ).strip()
     target_version = str(getattr(args, "version", "") or getattr(args, "target_version", "") or "").strip()
+    if _has_complete_existing_consumer_install(repo_root=requested_repo_root):
+        if not bool(getattr(args, "dry_run", False)) and not _env_flag_enabled(_INSTALL_COMPACT_ENV):
+            print(
+                "Existing Odylith install detected; routing install through the upgrade lifecycle "
+                "so release migrations run."
+            )
+        return _cmd_upgrade(
+            SimpleNamespace(
+                repo_root=args.repo_root,
+                target_version=target_version,
+                release_repo=release_repo,
+                source_repo=None,
+                write_pin=True,
+                dry_run=bool(getattr(args, "dry_run", False)),
+                verbose=bool(getattr(args, "verbose", False)),
+                json=False,
+            )
+        )
     compact_output = (
         _env_flag_enabled(_INSTALL_COMPACT_ENV)
         and not bool(getattr(args, "dry_run", False))
@@ -1613,6 +1654,12 @@ def _cmd_upgrade(args: argparse.Namespace) -> int:
     if bool(generated_change_manifest.get("changed")):
         post_upgrade_dirty_paths = upgrade_reporting.git_status_paths(repo_root=requested_repo_root)
         newly_dirty_paths = sorted(set(post_upgrade_dirty_paths) - set(pre_upgrade_dirty_paths))
+    change_review = upgrade_reporting.upgrade_change_review_payload(
+        pre_existing_dirty_paths=pre_upgrade_dirty_paths,
+        post_upgrade_dirty_paths=post_upgrade_dirty_paths,
+        migration_results=getattr(summary, "migration_results", ()) or (),
+        generated_change_manifest=generated_change_manifest,
+    )
     phases.append(
         upgrade_reporting.phase_payload(
             name="dashboard_refresh",
@@ -1641,6 +1688,7 @@ def _cmd_upgrade(args: argparse.Namespace) -> int:
         "final_state": upgrade_reporting.upgrade_summary_payload(summary),
         "dashboard_refresh": upgrade_reporting.json_ready(dashboard_details),
         "generated_change_manifest": upgrade_reporting.json_ready(generated_change_manifest),
+        "change_review": upgrade_reporting.json_ready(change_review),
         "pre_existing_dirty_paths": pre_upgrade_dirty_paths,
         "post_upgrade_dirty_paths": post_upgrade_dirty_paths,
         "changed_paths": newly_dirty_paths,
@@ -1671,6 +1719,23 @@ def _cmd_upgrade(args: argparse.Namespace) -> int:
                 f"({generated_change_manifest.get('generated_changed_count')} generated path(s), "
                 f"fingerprint {str(generated_change_manifest.get('content_fingerprint') or '')[:12]})."
             )
+    if not compact_output:
+        review_categories = dict(change_review.get("categories", {}) or {})
+        migration_count = sum(
+            int(row.get("path_count", 0) or 0)
+            for row in dict(change_review.get("required_migrations", {}) or {}).values()
+            if isinstance(row, dict)
+        )
+        generated_count = int(dict(change_review.get("generated_refreshes", {}) or {}).get("path_count", 0) or 0)
+        managed_count = int(dict(review_categories.get("install_managed_asset", {}) or {}).get("count", 0) or 0)
+        manual_count = int(dict(change_review.get("manual_review_required", {}) or {}).get("count", 0) or 0)
+        print(
+            "Upgrade change review: "
+            f"{migration_count} required migration path(s), "
+            f"{generated_count} generated refresh path(s), "
+            f"{managed_count} install-managed asset path(s), "
+            f"{manual_count} manual-review path(s)."
+        )
     try:
         report_display = report_path.relative_to(requested_repo_root).as_posix()
     except ValueError:
@@ -2469,6 +2534,14 @@ def _cmd_subagent_orchestrator(args: argparse.Namespace) -> int:
     )
 
 
+def _cmd_turn_gate(args: argparse.Namespace) -> int:
+    forwarded = [str(args.turn_gate_command), *list(getattr(args, "forwarded", []))]
+    return _run_module_main(
+        _TURN_GATE_MODULE,
+        ensure_nested_subcommand_repo_root_args(repo_root=args.repo_root, argv=forwarded),
+    )
+
+
 def _cmd_atlas_render(args: argparse.Namespace) -> int:
     blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
     if blocked:
@@ -3075,6 +3148,7 @@ def build_parser() -> argparse.ArgumentParser:
         ("self-host-posture", "Validate Odylith product-repo self-host posture and release gating invariants."),
         ("plan-traceability", "Validate technical-plan traceability bindings."),
         ("plan-workstream-binding", "Validate active-plan workstream bindings."),
+        ("topology-integrity", "Validate shared Radar/Registry/Atlas/Program/Release topology integrity."),
         ("version-truth", "Validate that generated Odylith version files match pyproject."),
     ):
         child_parser = validate_subparsers.add_parser(command, help=help_text)
@@ -3177,6 +3251,20 @@ def build_parser() -> argparse.ArgumentParser:
     )
     subagent_orchestrator_parser.add_argument("--repo-root", default=".", help="Consumer repository root.")
     subagent_orchestrator_parser.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+
+    turn_gate_parser = subparsers.add_parser(
+        "turn-gate",
+        help="Evaluate governed harness Turn Gate decisions.",
+    )
+    turn_gate_subparsers = turn_gate_parser.add_subparsers(dest="turn_gate_command", required=True)
+    for command, help_text in (
+        ("decide", "Classify a turn and build a governed harness decision."),
+        ("tool-check", "Evaluate a host tool call against a Turn Gate capsule."),
+        ("stop-check", "Evaluate finalization claims against Turn Gate proof."),
+    ):
+        child_parser = turn_gate_subparsers.add_parser(command, help=help_text)
+        child_parser.add_argument("--repo-root", default=".", help="Consumer repository root.")
+        child_parser.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
 
     atlas = subparsers.add_parser("atlas", help="Render or maintain Atlas diagram assets.")
     atlas_subparsers = atlas.add_subparsers(dest="atlas_command", required=True)
@@ -3521,6 +3609,12 @@ def main(argv: list[str] | None = None) -> int:
                 _SUBAGENT_ORCHESTRATOR_MODULE,
                 ensure_nested_subcommand_repo_root_args(repo_root=repo_root, argv=forwarded)
             )
+        if tokens[0] == "turn-gate":
+            repo_root, forwarded = _extract_repo_root(tokens[1:])
+            return _run_module_main(
+                _TURN_GATE_MODULE,
+                ensure_nested_subcommand_repo_root_args(repo_root=repo_root, argv=forwarded),
+            )
         if tokens[0] == "claude" and len(tokens) >= 2 and tokens[1] in _CLAUDE_HOST_COMMAND_MODULES:
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             return _cmd_claude_host_command(
@@ -3672,6 +3766,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_subagent_router(args)
     if args.command == "subagent-orchestrator":
         return _cmd_subagent_orchestrator(args)
+    if args.command == "turn-gate":
+        return _cmd_turn_gate(args)
     if args.command == "atlas" and args.atlas_command == "refresh":
         return _cmd_atlas_refresh(args)
     if args.command == "atlas" and args.atlas_command == "render":

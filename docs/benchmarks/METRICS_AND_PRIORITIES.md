@@ -1,19 +1,30 @@
 # Odylith Benchmark Metrics And Priorities
 
-`proof` is the governing benchmark.
+`proof` is the governing benchmark for the report-visible Odylith operating-policy
+comparison.
 
-The live `proof` lane is the product comparison and the primary optimization
-target. The Grounding Benchmark is the packet-and-prompt tuning surface. A
-Grounding Benchmark win that harms `proof` is a regression.
+The live `proof` lane is the public product comparison. It measures the full
+Odylith operating policy around the same host: grounding, bounded evidence
+selection, validator-backed closure evidence, write admission, validation, and
+recovery posture. This is the strong operating-policy benchmark.
+The Grounding Benchmark is the packet-and-prompt tuning surface. A Grounding
+Benchmark win that harms `proof` is a regression.
 
 The primary public question is:
 
-- Does the full Odylith assistance stack make the same host agent perform
-  better on real coding work than the raw host CLI?
+- Does the report-visible Odylith operating policy make the same host agent reach a
+  more validated, better-grounded, and less needlessly mutating outcome than the
+  raw host CLI on the same measured contracts?
 
-The benchmark is not trying to prove that Odylith beats the base model's
-weights. It is trying to prove that Odylith supplies a better operating policy
-around the same model.
+The benchmark proves that Odylith supplies a better operating policy around the
+same model: stronger grounding, explicit write admission, validator-backed
+closure, and recovery behavior under a matched-host contract.
+
+This means validator-backed non-mutating closure is the intended write-admission
+win: Odylith suppresses repository mutation when the disposable benchmark
+workspace already satisfies the focused task contract. Any row carried by a
+focused closure basis is validated non-mutation evidence under the measured
+scenario contract.
 
 ## Outcome Priority Order
 
@@ -46,6 +57,11 @@ The benchmark uses four layers:
   comparison drifts from the declared contract or the report stops surfacing
   the comparison basis explicitly. These checks are release-blocking because
   they decide whether the paired benchmark is honest at all.
+- `Write-admission honesty`
+  non-mutating closure rows must carry product Turn Gate early-exit proof.
+  They remain visible in the report as write-admission wins only when the
+  receipt source is `product_turn_gate`, the write set is empty, and the
+  validator evidence is exposed.
 - `Advisory mechanism checks`
   packet coverage, widening frequency, route posture, and similar mechanism
   signals stay visible for diagnosis, but they are explanatory unless they
@@ -66,15 +82,17 @@ For the public live pair:
 
 - `odylith_on` means the full Odylith assistance stack:
   grounding packet, selected docs and repo anchors, execution-engine
-  posture, truthful next-move hints, scenario-declared focused-check shaping,
-  preflight focused-check results only when they were executed in the
-  disposable benchmark workspace and logged in the report, and bounded
-  orchestration or recovery policy.
+  posture, truthful next-move hints, report-visible validator evidence,
+  product Turn Gate decisions, execution capsules, receipts, tool/stop gate
+  summaries, and bounded orchestration or recovery policy. When product
+  early-exit proof shows the scenario already closed, `odylith_on` may
+  correctly stop before invoking the live host; that outcome is
+  write-admission proof.
 - `odylith_off` means the same raw host CLI with those Odylith assistance
   affordances disabled.
 
-This is not a hidden-information benchmark. If an Odylith affordance is
-intentional product behavior, it must be:
+This is an explicit-assistance benchmark. Every intentional Odylith
+advantage is:
 
 - declared in the comparison contract
 - surfaced in the machine-readable report
@@ -86,17 +104,18 @@ The benchmark fails closed if the live pair drifts from the declared contract.
 
 Examples of release-blocking fairness findings:
 
-- `odylith_on` receives undeclared preflight evidence
+- `odylith_on` receives undeclared Turn Gate evidence
 - `odylith_off` loses prompt-visible path attribution for anchors the prompt
   actually showed
 - the report cannot surface `comparison_contract`, `preflight_evidence_*`,
+  `turn_gate_decision`, `turn_gate_receipt`, `execution_capsule`,
   `observed_path_sources`, `validator_status_basis`,
   `fairness_contract_passed`, or `fairness_findings` explicitly
 
-Focused preflight evidence is allowed only when the scenario declares it and
-the runner executes it inside the disposable benchmark workspace. If that
-preflight evidence is what carries a no-op lane to completion, the report must
-say so explicitly with `validator_status_basis=focused_noop_proxy`.
+Focused validator evidence remains a compatibility input only when the scenario
+declares it and the runner executes it inside the disposable benchmark
+workspace. If that evidence carries a non-mutating closure lane to completion,
+the report must expose the product Turn Gate early-exit proof explicitly.
 
 ## Execution Engine Metrics
 
@@ -147,25 +166,26 @@ diagnostics:
 
 ## Corpus Seriousness Floor
 
-The benchmark only earns a serious publication claim if the tracked corpus and
-the published proof both clear these bars:
+The benchmark only earns a serious operating-policy publication claim if the
+tracked corpus and the published proof both clear these bars:
 
-- at least `60` tracked implementation scenarios
-- at least `35` write-plus-validator scenarios
+- at least `60` tracked operating-policy scenarios
+- at least `35` write-plus-validator scenarios, interpreted as scenarios that
+  are allowed to require mutation and must be validated, with each passing row
+  classified by its visible closure basis
 - at least `12` correctness-critical scenarios
-- mechanism-heavy implementation families at or below `40%` of implementation
-  scenarios
+- mechanism-heavy operating-policy families at or below `40%` of
+  operating-policy scenarios
 - required real-world families present in the tracked corpus:
   `api_contract_evolution`, `stateful_bug_recovery`,
   `external_dependency_recovery`, and `destructive_scope_control`
-- the latest published proof covers the full current tracked corpus, not a
-  stale subset
+- the latest published proof covers the full current tracked corpus
 
 Packet-only Grounding Benchmark scenarios may use bounded `benchmark.packet_fixture`
 data to restore declared proof-state or external-state fields into the packet
 seam, but that mechanism is scaffolding for packet-truth evaluation only. It
-does not waive the live fairness contract and it does not add hidden credit to
-the published proof pair.
+keeps the live fairness contract intact and keeps published proof credit on the
+declared report basis.
 
 ## What Each Tier Means
 
@@ -174,6 +194,7 @@ the published proof pair.
 | Correctness and non-regression | Did the run land on the right answer path without hidden damage or broken invariants? |
 | Grounding recall and precision | Did Odylith surface the files, components, diagrams, bugs, and runtime truth that mattered, while avoiding the wrong surfaces? |
 | Validation success and execution fit | Did the run produce something that validates, and did it match the scenario's expected execution posture? |
+| Write admission | Did Odylith mutate only when mutation was admitted by evidence, and stop cleanly when validators already proved closure? |
 | Robustness and consistency | Does Odylith still hold up across warm and cold cache posture, reruns, ambiguity, stale state, and recovery paths? |
 | Latency to a valid outcome | How long did the live run take to reach a validated answer? |
 | Prompt and payload efficiency | How much prompt or session budget did Odylith require to get there? |
@@ -225,8 +246,8 @@ That means:
 
 The inverse is also true:
 
-- Odylith does not need to beat raw latency or raw token cost to clear status
-- it does need to keep those lower-tier metrics inside the explicit guardrails
+- Odylith clears status by winning or holding the higher tiers first
+- it keeps lower-tier latency and token metrics inside the explicit guardrails
   while winning or holding the higher tiers
 
 ## Closeout Framing
@@ -260,7 +281,7 @@ The benchmark is only trustworthy if the corpus measures the right work:
 
 ## Why This Order Exists
 
-Coding agents do not create value by being fast in the wrong direction.
+Coding agents create value by moving in the right direction first.
 
 Odylith only wins when it makes the agent:
 

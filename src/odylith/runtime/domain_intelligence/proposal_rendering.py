@@ -4,9 +4,16 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
+DEFAULT_GREENFIELD_RELEASE_SELECTOR = "0.0.1"
+
 
 def shell_quote(value: str) -> str:
     return "'" + str(value).replace("'", "'\"'\"'") + "'"
+
+
+def _release_selector(release_plan: Mapping[str, Any]) -> str:
+    selector = str(release_plan.get("selector", "")).strip()
+    return selector or DEFAULT_GREENFIELD_RELEASE_SELECTOR
 
 
 def build_apply_commands(proposal: Mapping[str, Any]) -> list[str]:
@@ -14,8 +21,8 @@ def build_apply_commands(proposal: Mapping[str, Any]) -> list[str]:
     components = [row for row in proposal.get("components", []) if isinstance(row, Mapping)]
     diagrams = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
     release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
-    release_selector = str(release_plan.get("selector", "")).strip()
-    release_arg = f" --release {shell_quote(release_selector)}" if release_selector else ""
+    release_selector = _release_selector(release_plan)
+    release_arg = f" --release {shell_quote(release_selector)}"
     commands = [
         "odylith greenfield propose --repo-root . --prompt "
         + shell_quote(str(proposal.get("intent", {}).get("prompt", "new project")))
@@ -46,6 +53,7 @@ def format_proposal_text(proposal: Mapping[str, Any]) -> str:
             f"- source evidence: {source.get('source_posture', 'unknown')}; writes stay confirmation-gated",
             "- proposal authorship: host model reasoning required",
             f"- provider_calls_by_odylith_cli: {proposal.get('provider_calls', 0)}",
+            f"- default_release_selector: {DEFAULT_GREENFIELD_RELEASE_SELECTOR} unless the operator supplies another target",
             "",
             "Host reasoning task",
             f"- {proposal.get('host_instruction', 'Draft a concrete proposal from prompt and repo evidence.')}",
@@ -121,11 +129,22 @@ def format_proposal_text(proposal: Mapping[str, Any]) -> str:
         if isinstance(row, Mapping):
             lines.append(f"- Wave {row.get('wave')}: {row.get('label')} - {row.get('goal')} Proof: {row.get('validation')}")
     release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
+    release_selector = _release_selector(release_plan)
     lines.extend(["", "Release plan"])
     lines.append(
-        f"- target: {release_plan.get('selector', 'next')} "
+        f"- target: {release_selector} "
         f"({release_plan.get('label', 'First governed release')}; {release_plan.get('provisional_release_id', 'release-greenfield-first')})"
     )
+    if not str(release_plan.get("selector", "")).strip():
+        lines.append("- default: greenfield proposals start at 0.0.1 when no release target is provided")
+    target_refs = release_plan.get("target_workstreams") or release_plan.get("target_workstream_titles")
+    if target_refs:
+        if isinstance(target_refs, list):
+            rendered_targets = ", ".join(str(item).strip() for item in target_refs if str(item).strip())
+        else:
+            rendered_targets = str(target_refs).strip()
+        if rendered_targets:
+            lines.append(f"- first target workstreams: {rendered_targets}")
     lines.append(f"- strategy: {release_plan.get('strategy', 'confirm before release targeting')}")
     for row in release_plan.get("release_stages", []) if isinstance(release_plan.get("release_stages"), list) else []:
         if isinstance(row, Mapping):

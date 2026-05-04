@@ -6,6 +6,7 @@ Markdown under ``odylith/casebook/bugs/`` remains authoritative; this renderer p
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -15,11 +16,10 @@ from odylith.runtime.common import casebook_metadata
 from odylith.runtime.common import stable_generated_utc
 from odylith.runtime.governance import casebook_source_validation
 from odylith.runtime.surfaces import brand_assets
+from odylith.runtime.surfaces import casebook_dashboard_style_runtime
 from odylith.runtime.surfaces import dashboard_shell_links
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import dashboard_time
-from odylith.runtime.surfaces import dashboard_ui_primitives
-from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import generated_surface_refresh_guards
 from odylith.runtime.surfaces import render_casebook_dashboard_cli
 from odylith.runtime.surfaces import surface_path_helpers
@@ -41,6 +41,22 @@ def _refresh_guard_watched_paths() -> tuple[str, ...]:
         "src/odylith/runtime/governance",
         "src/odylith/runtime/surfaces",
     )
+
+def _refresh_guard_code_fingerprint() -> str:
+    """Tie cached surface reuse to the renderer and metadata code that produced it."""
+    digest = hashlib.sha256()
+    module_paths = (
+        Path(__file__),
+        Path(str(casebook_metadata.__file__ or "")),
+        Path(str(casebook_source_validation.__file__ or "")),
+    )
+    for path in module_paths:
+        digest.update(str(path.name).encode("utf-8", errors="replace"))
+        if path.is_file():
+            digest.update(path.read_bytes())
+        else:
+            digest.update(b"<missing>")
+    return digest.hexdigest()
 
 def _chunk_casebook_items(
     *,
@@ -444,250 +460,17 @@ def _build_payload(
         "counts": counts,
         "filters": {
             "severity_tokens": sorted(severity_tokens),
-            "status_tokens": sorted(status_tokens),
+            "status_tokens": [
+                status.lower()
+                for status in casebook_metadata.CASEBOOK_STATUS_STATES
+                if status.lower() in status_tokens
+            ],
         },
     }
 
 def _render_html(*, payload: dict[str, Any]) -> str:
     data_json = json.dumps(payload, sort_keys=True, ensure_ascii=False)
-    page_body_css = dashboard_ui_primitives.page_body_typography_css(selector="body")
-    surface_shell_root_css = dashboard_ui_primitives.standard_surface_shell_root_css()
-    surface_shell_css = dashboard_ui_primitives.standard_surface_shell_css(
-        selector=".shell",
-        padding="18px 12px 30px",
-        display="grid",
-        gap_px=12,
-    )
-    header_typography_css = dashboard_ui_primitives.header_typography_css(
-        kicker_selector=".kicker",
-        title_selector=".hero-title",
-        subtitle_selector=".subtitle",
-        subtitle_max_width="78ch",
-        desktop_single_line_subtitle=False,
-        mobile_breakpoint_px=760,
-        mobile_title_size_px=22,
-        mobile_subtitle_size_px=13,
-    )
-    hero_panel_css = dashboard_ui_primitives.hero_panel_css(
-        container_selector=".hero",
-        margin_bottom="0",
-    )
-    kpi_card_surface_css = dashboard_ui_primitives.kpi_card_surface_css(card_selector=".kpi-card")
-    kpi_grid_css = dashboard_ui_primitives.kpi_grid_layout_css(container_selector=".kpis")
-    kpi_typography_css = dashboard_ui_primitives.governance_kpi_label_value_css(
-        label_selector=".kpi-label",
-        value_selector=".kpi-value",
-    )
-    sticky_filter_shell_css = dashboard_ui_primitives.sticky_filter_shell_css(
-        shell_selector=".filters-shell",
-        top_px=10,
-    )
-    sticky_filter_bar_css = dashboard_ui_primitives.sticky_filter_bar_css(
-        container_selector=".filters-bar",
-        columns="repeat(4, minmax(0, 1fr))",
-        field_selector=".filter-control",
-        focus_selector=".filter-control:focus",
-        top_px=10,
-    )
-    control_label_css = dashboard_ui_primitives.control_label_css(
-        selector=".control-label",
-        color="var(--ink-muted)",
-        size_px=11,
-        letter_spacing_em=0.04,
-    )
-    workspace_layout_css = dashboard_ui_primitives.split_detail_workspace_css(
-        selector=".workspace",
-        left_min_px=340,
-        left_max_px=430,
-    )
-    panel_surface_css = ""
-    row_surface_css = ""
-    narrative_section_surface_css = dashboard_ui_primitives.panel_surface_css(
-        selector=".empty-state",
-        padding="12px 13px",
-        radius_px=12,
-        gap_px=8,
-        shadow="none",
-        background="linear-gradient(180deg, #ffffff, #fbfdff)",
-    )
-    label_surface_css = dashboard_ui_primitives.label_surface_css(
-        selector=".meta-chip, .list-chip, .filter-chip",
-        padding="4px 10px",
-        background="#f6faf7",
-        border_color="#dbe5df",
-        color="#334155",
-        border_radius_px=4,
-        min_height_px=0,
-    )
-    label_typography_css = dashboard_ui_primitives.label_badge_typography_css(
-        selector=".meta-chip, .list-chip, .filter-chip",
-        color="#334155",
-        size_px=11,
-        line_height=1.0,
-        letter_spacing_em=0.03,
-    )
-    label_tone_css = "\n\n".join(
-        (
-            dashboard_ui_primitives.subtle_label_tone_css(
-                selector=".warn-chip",
-                background="#fff7ed",
-                border_color="#f3c58e",
-                color="#9a3412",
-            ),
-            dashboard_ui_primitives.subtle_label_tone_css(
-                selector=".critical-chip",
-                background="#fef2f2",
-                border_color="#fecaca",
-                color="#b91c1c",
-            ),
-            dashboard_ui_primitives.subtle_label_tone_css(
-                selector=".archive-chip",
-                background="#eef2f7",
-                border_color="#d7e0e9",
-                color="#53687f",
-            ),
-        )
-    )
-    detail_action_chip_css = dashboard_ui_primitives.detail_action_chip_css(selector=".action-chip")
-    identifier_typography_css = "\n\n".join(
-        (
-            dashboard_ui_primitives.surface_identifier_typography_css(
-                selector=".component-subtitle, .ref-meta",
-                color="var(--ink-muted)",
-                line_height=1.45,
-            ),
-            dashboard_ui_primitives.surface_identifier_typography_css(
-                selector=".bug-row-kicker",
-                color="var(--ink-muted)",
-                margin="0 0 4px",
-                line_height=1.2,
-                letter_spacing_em=0.08,
-                text_transform="uppercase",
-            ),
-        )
-    )
-    tooltip_surface_css, tooltip_runtime_js = dashboard_ui_runtime_primitives.quick_tooltip_bundle(
-        binding_guard_dataset_key="odylithCasebookTooltipBound",
-        function_name="initCasebookQuickTooltips",
-    )
-    section_heading_css = "\n\n".join(
-        (
-            dashboard_ui_primitives.operator_readout_host_heading_css(
-                selector=".section-heading",
-                color="#27445e",
-                size_px=12,
-                letter_spacing_em=0.06,
-                margin="0",
-                line_height=1.2,
-                weight=700,
-            ),
-            dashboard_ui_primitives.detail_disclosure_title_css(
-                selector=".disclosure-title",
-                color="#27445e",
-                size_px=13,
-                line_height=1.45,
-                weight=700,
-                letter_spacing_em=0.0,
-                margin="0",
-            ),
-        )
-    )
-    secondary_heading_css = "\n\n".join(
-        (
-            dashboard_ui_primitives.auxiliary_heading_css(
-                selector=".meta-label",
-                color="var(--ink-muted)",
-                size_px=11,
-                line_height=1.2,
-                letter_spacing_em=0.07,
-                margin="0",
-            ),
-            dashboard_ui_primitives.auxiliary_heading_css(
-                selector=".bug-row-date",
-                color="var(--ink-muted)",
-                size_px=11,
-                line_height=1.2,
-                letter_spacing_em=0.07,
-                margin="0",
-            ),
-            dashboard_ui_primitives.auxiliary_heading_css(
-                selector=".pivot-title",
-                color="var(--ink-muted)",
-                size_px=11,
-                line_height=1.2,
-                letter_spacing_em=0.07,
-                margin="0",
-            ),
-            dashboard_ui_primitives.operator_readout_label_typography_css(
-                selector=".signal-label, .inline-note-label",
-            ),
-        )
-    )
-    compact_fact_css = dashboard_ui_primitives.compact_label_value_typography_css(
-        label_selector=".summary-fact-label",
-        value_selector=".summary-fact-value",
-        label_color="var(--ink-muted)",
-        value_color="#16324f",
-    )
-    inline_row_css = dashboard_ui_primitives.inline_label_value_copy_css(
-        row_selectors=(
-            ".narrative-row",
-            ".coverage-note",
-            ".component-note",
-            ".link-row-note",
-        ),
-        label_selectors=(),
-        size_px=14,
-        line_height=1.55,
-        color="var(--ink-soft)",
-    )
-    card_title_css = "\n\n".join(
-        (
-            dashboard_ui_primitives.card_title_typography_css(
-                selector=".bug-row-title",
-                color="var(--ink)",
-                size_px=16,
-                line_height=1.3,
-                margin="0",
-            ),
-            dashboard_ui_primitives.card_title_typography_css(
-                selector=".detail-title",
-                color="var(--ink)",
-                size_px=26,
-                line_height=1.1,
-                margin="0",
-            ),
-            dashboard_ui_primitives.card_title_typography_css(
-                selector=".component-context-name",
-                color="var(--ink)",
-                size_px=14,
-                line_height=1.2,
-                margin="0",
-            ),
-        )
-    )
-    copy_css = "\n\n".join(
-        (
-            dashboard_ui_primitives.content_copy_css(
-                selectors=(".bug-row-summary", ".detail-summary", ".detail-copy", ".empty-state"),
-                size_px=14,
-                line_height=1.5,
-                color="var(--ink-soft)",
-            ),
-            dashboard_ui_primitives.supporting_copy_typography_css(
-                selector=".meta-value, .summary-fallback",
-                color="var(--ink-soft)",
-                size_px=13,
-                line_height=1.45,
-            ),
-        )
-    )
-    code_typography_css = dashboard_ui_primitives.code_typography_css(
-        selector=".bug-row-summary code, .detail-copy code, .meta-value code",
-        color="inherit",
-        size_px=12,
-        line_height=1.2,
-    )
+    styles = casebook_dashboard_style_runtime.casebook_dashboard_style_bundle()
     html = f"""<!doctype html>
 <html lang="en">
 <head>
@@ -751,10 +534,16 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     __CASEBOOK_IDENTIFIER_TYPOGRAPHY__
     .filters-shell {{
       min-width: 0;
+      position: relative;
+      top: auto;
+      z-index: 1;
       width: 100%;
     }}
     .filters-bar {{
       align-items: end;
+      position: relative;
+      top: auto;
+      z-index: 1;
       width: 100%;
       justify-items: stretch;
     }}
@@ -896,7 +685,13 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       max-width: 80ch;
     }}
     .detail-summary {{
-      max-width: 80ch;
+      width: 100%;
+      max-width: none;
+    }}
+    .casebook-summary-card {{
+      align-self: start;
+      width: 100%;
+      max-width: none;
     }}
     .section-stack {{
       display: grid;
@@ -958,7 +753,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     }}
 .summary-facts {{
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 10px;
       min-width: 0;
 }}
@@ -1385,6 +1180,59 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       return String(value || "").trim().toLowerCase();
     }}
 
+    function filterTokenSet(key) {{
+      const filters = DATA.filters && typeof DATA.filters === "object" ? DATA.filters : {{}};
+      const values = Array.isArray(filters[key]) ? filters[key] : [];
+      return new Set(values.map((item) => canonicalizeFilterToken(item)).filter(Boolean));
+    }}
+
+    function canonicalizeKnownFilterToken(value, key) {{
+      const token = canonicalizeFilterToken(value);
+      return token && filterTokenSet(key).has(token) ? token : "";
+    }}
+
+    function displayTokenLabel(value) {{
+      const token = String(value || "").trim();
+      if (!token) return "";
+      const compact = normalizeSearchToken(token);
+      const labels = {{
+        closed: "Closed",
+        fixedpendingrelease: "Fixed pending release",
+        inprogress: "In progress",
+        mitigated: "Mitigated",
+        monitoring: "Monitoring",
+        open: "Open",
+        operatorux: "Operator UX",
+        resolved: "Resolved",
+      }};
+      if (Object.prototype.hasOwnProperty.call(labels, compact)) {{
+        return labels[compact];
+      }}
+      if (/^p\\d+$/i.test(token)) return token.toUpperCase();
+      if (/^\\d{{4}}-\\d{{2}}-\\d{{2}}$/.test(token)) return token;
+      if (/^[A-Z0-9]{{2,}}$/.test(token)) return token;
+      return token
+        .replace(/[_-]+/g, " ")
+        .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
+        .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+        .replace(/\\s+/g, " ")
+        .trim()
+        .replace(/\\bOsw\\b/g, "OSW")
+        .replace(/\\bUx\\b/g, "UX")
+        .replace(/\\bUi\\b/g, "UI")
+        .replace(/\\bIam\\b/g, "IAM")
+        .replace(/\\bIac\\b/g, "IaC")
+        .replace(/\\bApi\\b/g, "API");
+    }}
+
+    function displayFactValue(label, value) {{
+      const field = normalizeSearchToken(label);
+      if (field === "status" || field === "type" || field === "fixed") {{
+        return displayTokenLabel(value);
+      }}
+      return String(value || "");
+    }}
+
     function canonicalizeSortToken(value) {{
       const token = String(value || "").trim().toLowerCase();
       return SORT_TOKENS.has(token) ? token : SORT_DEFAULT;
@@ -1448,8 +1296,8 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       const params = new URLSearchParams(window.location.search || "");
       return {{
         bug: canonicalizeBugToken(params.get("bug") || ""),
-        severity: canonicalizeFilterToken(params.get("severity") || ""),
-        status: canonicalizeFilterToken(params.get("status") || ""),
+        severity: canonicalizeKnownFilterToken(params.get("severity") || "", "severity_tokens"),
+        status: canonicalizeKnownFilterToken(params.get("status") || "", "status_tokens"),
         sort: canonicalizeSortToken(params.get("sort") || SORT_DEFAULT),
       }};
     }}
@@ -1482,7 +1330,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       const rows = [`<option value="">${{escapeHtml(allLabel)}}</option>`];
       for (const token of values) {{
         rows.push(
-          `<option value="${{escapeHtml(token)}}"${{token === current ? " selected" : ""}}>${{escapeHtml(token.toUpperCase())}}</option>`
+          `<option value="${{escapeHtml(token)}}"${{token === current ? " selected" : ""}}>${{escapeHtml(displayTokenLabel(token))}}</option>`
         );
       }}
       selectEl.innerHTML = rows.join("");
@@ -1811,10 +1659,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       const token = normalizeSearchToken(row && (row.status_token || row.status) || "");
       const ranks = {{
         open: 0,
-        blocked: 1,
-        inprogress: 2,
-        resolved: 3,
-        closed: 4,
+        inprogress: 1,
+        mitigated: 2,
+        monitoring: 3,
+        resolved: 4,
+        fixedpendingrelease: 5,
+        closed: 6,
       }};
       return Object.prototype.hasOwnProperty.call(ranks, token) ? ranks[token] : 50;
     }}
@@ -2026,7 +1876,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         chips.push(`<span class="meta-chip ${{/^p[01]$/i.test(String(detail.severity || "")) ? "critical-chip" : ""}}">${{escapeHtml(detail.severity)}}</span>`);
       }}
       if (detail.status) {{
-        chips.push(`<span class="meta-chip ${{String(detail.is_open) === "true" || detail.is_open ? "warn-chip" : ""}}">${{escapeHtml(detail.status)}}</span>`);
+        chips.push(`<span class="meta-chip ${{String(detail.is_open) === "true" || detail.is_open ? "warn-chip" : ""}}">${{escapeHtml(displayTokenLabel(detail.status))}}</span>`);
       }}
       if (detail.archive_bucket) {{
         chips.push(`<span class="meta-chip archive-chip">Archive: ${{escapeHtml(detail.archive_bucket)}}</span>`);
@@ -2038,12 +1888,21 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       const externalIssueActions = externalIssueLinks(detail);
       const sourceLink = detail.source_href ? actionChipHtml("Source markdown", detail.source_href) : `<span class="meta-chip muted">Source markdown missing</span>`;
       const summaryText = String(detail.summary || detailFieldValue("Description") || detailFieldValue("Impact") || "").trim();
-      const summary = summaryText ? `<p class="detail-summary">${{escapeHtml(summaryText)}}</p>` : "";
+      const summary = summaryText
+        ? `
+          <article class="brief-card casebook-summary-card" aria-label="Casebook narrative">
+            <div class="brief-card-head">
+              <p class="brief-card-title">Summary</p>
+            </div>
+            <p class="detail-summary">${{escapeHtml(summaryText)}}</p>
+          </article>
+        `
+        : "";
       const summaryFacts = [...detailCoreRows(detail), ...detailSupportingRows(detail)]
         .map(([label, value]) => `
           <div class="summary-fact" data-summary-field="${{escapeHtml(label)}}" role="listitem">
             <p class="summary-fact-label">${{escapeHtml(label)}}</p>
-            <p class="summary-fact-value">${{escapeHtml(value)}}</p>
+            <p class="summary-fact-value">${{escapeHtml(displayFactValue(label, value))}}</p>
           </div>
         `)
         .join("");
@@ -2290,12 +2149,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
             <h2 class="detail-title">${{escapeHtml(detail.title || detail.bug_key || "Bug detail")}}</h2>
           </div>
           ${{summaryFacts ? `<div class="summary-facts" role="list">${{summaryFacts}}</div>` : ""}}
-          ${{summary}}
           <div class="detail-meta">${{chips.join("")}}</div>
           <div class="detail-links">
             ${{sourceLink}}
             ${{workstreamLinks.length ? renderActionChipGroup(workstreamLinks) : ""}}
           </div>
+          ${{summary}}
         </section>
         <section class="section-stack">
           ${{sectionBlocks}}
@@ -2305,9 +2164,18 @@ def _render_html(*, payload: dict[str, Any]) -> str:
 
     function renderList(state, rows) {{
       if (!rows.length) {{
-        bugList.innerHTML = ``;
+        bugList.innerHTML = `
+          <div class="empty-state" role="status">
+            No Casebook entries match the current filters.
+          </div>
+        `;
         listMeta.textContent = "Visible: 0";
-        renderDetail(null);
+        detailRenderToken += 1;
+        detailPane.innerHTML = `
+          <div class="empty-state" role="status">
+            Select a different filter or search term to inspect Casebook detail.
+          </div>
+        `;
         return;
       }}
       const selectedRoute = resolveBugRoute(rows, state.bug) || String(rows[0].bug_route || "");
@@ -2322,7 +2190,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         const active = row.bug_route === selectedRoute;
         const chips = [
           row.severity ? `<span class="list-chip ${{/^p[01]$/i.test(String(row.severity || "")) ? "critical-chip" : ""}}">${{escapeHtml(row.severity)}}</span>` : "",
-          row.status ? `<span class="list-chip">${{escapeHtml(row.status)}}</span>` : "",
+          row.status ? `<span class="list-chip">${{escapeHtml(displayTokenLabel(row.status))}}</span>` : "",
           row.archive_bucket ? `<span class="list-chip archive-chip">${{escapeHtml(row.archive_bucket)}}</span>` : "",
           totalFields ? `<span class="list-chip ${{requiredMissingFields.length ? "warn-chip" : ""}}" data-tooltip="${{escapeHtml(`${{capturedCount}}/${{totalFields}} recommended fields captured`)}}">Intel</span>` : "",
         ].filter(Boolean).join("");
@@ -2372,6 +2240,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
 
     function render() {{
       const state = readState();
+      writeState(state);
       const searchTerm = String(searchInput.value || "").trim().toLowerCase();
       const rows = visibleRows(state, searchTerm);
       renderList(state, rows);
@@ -2428,7 +2297,9 @@ def _render_html(*, payload: dict[str, Any]) -> str:
   </script>
 </body>
 </html>
-""".replace("__ODYLITH_BRAND_HEAD__", str(payload.get("brand_head_html", "")).strip()).replace("__CASEBOOK_PAGE_BODY__", page_body_css).replace("__CASEBOOK_SURFACE_SHELL_ROOT__", surface_shell_root_css).replace("__CASEBOOK_SURFACE_SHELL__", surface_shell_css).replace("__CASEBOOK_HERO_PANEL__", hero_panel_css).replace("__CASEBOOK_HEADER_TYPOGRAPHY__", header_typography_css).replace("__CASEBOOK_KPI_GRID__", kpi_grid_css).replace("__CASEBOOK_KPI_CARD__", kpi_card_surface_css).replace("__CASEBOOK_KPI_TYPOGRAPHY__", kpi_typography_css).replace("__CASEBOOK_FILTER_SHELL__", sticky_filter_shell_css).replace("__CASEBOOK_FILTER_BAR__", sticky_filter_bar_css).replace("__CASEBOOK_CONTROL_LABEL__", control_label_css).replace("__CASEBOOK_WORKSPACE__", workspace_layout_css).replace("__CASEBOOK_PANEL_SURFACE__", panel_surface_css).replace("__CASEBOOK_ROW_SURFACE__", row_surface_css).replace("__CASEBOOK_EMPTY_STATE_SURFACE__", narrative_section_surface_css).replace("__CASEBOOK_LABEL_SURFACE__", label_surface_css).replace("__CASEBOOK_LABEL_TYPOGRAPHY__", label_typography_css).replace("__CASEBOOK_LABEL_TONES__", label_tone_css).replace("__CASEBOOK_ACTION_CHIP__", detail_action_chip_css).replace("__CASEBOOK_SECTION_HEADING__", section_heading_css).replace("__CASEBOOK_SECONDARY_HEADINGS__", secondary_heading_css).replace("__CASEBOOK_COMPACT_FACT_TYPOGRAPHY__", compact_fact_css).replace("__CASEBOOK_INLINE_ROW_TYPOGRAPHY__", inline_row_css).replace("__CASEBOOK_CARD_TITLE__", card_title_css).replace("__CASEBOOK_COPY__", copy_css).replace("__CASEBOOK_TOOLTIP_SURFACE__", tooltip_surface_css).replace("__CASEBOOK_QUICK_TOOLTIP_RUNTIME__", tooltip_runtime_js).replace("__CASEBOOK_CODE_TYPOGRAPHY__", code_typography_css).replace("__CASEBOOK_IDENTIFIER_TYPOGRAPHY__", identifier_typography_css)
+"""
+    html = html.replace("__ODYLITH_BRAND_HEAD__", str(payload.get("brand_head_html", "")).strip())
+    html = casebook_dashboard_style_runtime.apply_casebook_dashboard_style_placeholders(html, styles)
     return html
 
 
@@ -2448,7 +2319,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             key=_CASEBOOK_REFRESH_GUARD_KEY,
             watched_paths=_refresh_guard_watched_paths(),
             live_globs=("casebook-detail-shard-*.v1.js",),
-            extra={"runtime_mode": str(args.runtime_mode).strip().lower() or "auto"},
+            extra={
+                "runtime_mode": str(args.runtime_mode).strip().lower() or "auto",
+                "renderer_code_fingerprint": _refresh_guard_code_fingerprint(),
+            },
         )
     )
     if skip_rebuild:

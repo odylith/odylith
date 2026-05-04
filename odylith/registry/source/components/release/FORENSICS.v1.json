@@ -16,7 +16,7 @@
     "explicit_event_count": 78,
     "mapped_workstream_evidence_count": 54,
     "recent_path_match_count": 0,
-    "spec_history_event_count": 8,
+    "spec_history_event_count": 9,
     "status": "forensic_coverage_present",
     "timeline_event_count": 78
   },
@@ -127,6 +127,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -158,6 +159,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -197,6 +199,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -235,6 +238,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -274,6 +278,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "dashboard",
@@ -338,6 +343,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -370,6 +376,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -408,6 +415,7 @@
       ],
       "kind": "statement",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -2610,6 +2618,7 @@
         "delivery-intelligence",
         "execution-engine",
         "governance-intervention-engine",
+        "governed-harness",
         "odylith",
         "odylith-chatter",
         "odylith-context-engine",

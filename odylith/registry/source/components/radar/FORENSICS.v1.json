@@ -37,12 +37,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 150,
-    "mapped_workstream_evidence_count": 109,
+    "explicit_event_count": 153,
+    "mapped_workstream_evidence_count": 112,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 10,
+    "spec_history_event_count": 11,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 151
+    "timeline_event_count": 154
   },
   "name": "Radar",
   "path_prefixes": [
@@ -54,20 +54,136 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md"
+        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md"
       ],
       "confidence": "high",
-      "event_index": 456,
+      "event_index": 457,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "radar"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md, odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
-      "ts_iso": "2026-05-02T21:14:38-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+      "ts_iso": "2026-05-03T23:44:13-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
+        "src/odylith/cli.py",
+        "src/odylith/install/manager.py",
+        "src/odylith/install/runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 456,
+      "explicit_components": [
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "security",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "security",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "CB-149 consumer start latency update: installed v0.1.13 measured 25.40s in dentoai-orion; source fix now returns expected fallback in 2.55s with fast start preflight and hot-path bootstrap.",
+      "ts_iso": "2026-05-03T10:46:04-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+        "src/odylith/runtime/domain_intelligence/proposal_validation.py"
+      ],
+      "confidence": "high",
+      "event_index": 455,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Replaced Domain Intelligence template catalog path with host-reasoned proposal contract, apply-time schema validation, and host-authored Atlas Mermaid source requirements; reran engine, migration, and browser proof.",
+      "ts_iso": "2026-05-02T23:09:01-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+        "src/odylith/runtime/domain_intelligence/proposal_validation.py"
+      ],
+      "confidence": "high",
+      "event_index": 454,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Domain Intelligence corrected to host-reasoned proposal authoring with apply-time topology validation and no in-code project taxonomy.",
+      "ts_iso": "2026-05-02T22:30:51-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [
@@ -165,6 +281,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -209,6 +326,7 @@
       ],
       "kind": "statement",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -249,6 +367,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -291,6 +410,7 @@
       "kind": "implementation",
       "mapped_components": [
         "atlas",
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -321,6 +441,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -351,6 +472,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -387,6 +509,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -423,6 +546,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "dashboard",
@@ -462,6 +586,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -500,6 +625,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -539,6 +665,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "dashboard",
@@ -576,6 +703,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -606,6 +734,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -637,6 +766,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -675,6 +805,7 @@
       ],
       "kind": "statement",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -712,6 +843,7 @@
       ],
       "kind": "statement",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -747,6 +879,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "dashboard",
@@ -789,6 +922,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -824,6 +958,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -3815,6 +3950,7 @@
         "delivery-intelligence",
         "execution-engine",
         "governance-intervention-engine",
+        "governed-harness",
         "odylith",
         "odylith-chatter",
         "odylith-context-engine",

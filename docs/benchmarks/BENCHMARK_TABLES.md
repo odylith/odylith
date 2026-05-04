@@ -17,7 +17,7 @@ Family-by-family corpus map:
 
 | Signal | odylith_on | odylith_off | Delta | Why It Matters |
 | --- | --- | --- | --- | --- |
-| Lane role | primary candidate | odylith_off / raw host CLI honest baseline | full Odylith vs raw agent | Keeps the Grounding Benchmark honest: full Odylith packet and prompt construction versus the raw host CLI prompt bundle on the same task. |
+| Lane role | primary candidate | odylith_off / raw host CLI honest baseline | Odylith packet policy vs raw prompt | Keeps the Grounding Benchmark honest: Odylith packet and prompt construction versus the raw host CLI prompt bundle on the same measured contract. |
 | Scenario count | 82 | 82 | +0 | Both lanes run the exact same corpus, so the comparison stays apples-to-apples. |
 | Median packet time | 22.540 ms | 0.010 ms | <span style="color:#c5221f;">+22.530 ms</span> | Shows the packet construction time on the Grounding Benchmark before any live host session begins. |
 | Mean packet time | 22.637 ms | 0.012 ms | <span style="color:#c5221f;">+22.625 ms</span> | Shows the mean packet time so slow prompt-build cases stay visible. |
@@ -43,12 +43,12 @@ Family-by-family corpus map:
 
 | Signal | odylith_on | odylith_off | Delta | Why It Matters |
 | --- | --- | --- | --- | --- |
-| Lane role | primary candidate | odylith_off / raw host CLI honest baseline | full Odylith vs raw agent | Keeps the public claim honest: full Odylith scaffold versus raw host CLI on the same task. |
+| Lane role | primary candidate | odylith_off / raw host CLI honest baseline | Odylith policy vs raw host | Keeps the public comparison honest: report-visible Odylith grounding, validation, and write-admission policy versus the raw host CLI on the same measured contract. |
 | Scenario count | 82 | 82 | +0 | Both lanes run the exact same corpus, so the comparison stays apples-to-apples. |
 | Median time to valid outcome | 3.75s | 1m 31s | <strong style="color:#137333;">-1m 28s</strong> | Shows matched-pair benchmark time to valid outcome for the live run plus the harness validator, not interactive product latency. |
 | Mean time to valid outcome | 17s | 1m 47s | <strong style="color:#137333;">-1m 30s</strong> | Shows the mean matched-pair benchmark time to valid outcome so long-tail slow cases stay visible. |
 | P95 time to valid outcome | 1m 18s | 3m 56s | <strong style="color:#137333;">-2m 38s</strong> | Shows the tail completion time for the slowest benchmark cases instead of letting the median hide them. |
-| Median live agent runtime | 0.000 ms | 1m 31s | <strong style="color:#137333;">-1m 31s</strong> | Shows time spent inside the live host CLI session itself. |
+| Median live agent runtime | 0.000 ms | 1m 31s | <strong style="color:#137333;">-1m 31s</strong> | Shows time spent inside the live host CLI session itself; zero-heavy Odylith rows are valid only as report-visible validator-backed closure stops. |
 | Median validator overhead | 2.86s | 2.44s | <span style="color:#c5221f;">+422 ms</span> | Shows harness validator overhead added after the live host session completes. |
 | Median live session input tokens | 0 | 206,626 | <strong style="color:#137333;">-206,626</strong> | Shows full live host session input across the multi-turn run, not just the first prompt. |
 | Median total model tokens | 0 | 209,404.5 | <strong style="color:#137333;">-209,404.5</strong> | Shows total live model-token spend across the multi-turn session. |

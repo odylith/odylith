@@ -16,12 +16,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 126,
-    "mapped_workstream_evidence_count": 114,
+    "explicit_event_count": 127,
+    "mapped_workstream_evidence_count": 115,
     "recent_path_match_count": 0,
     "spec_history_event_count": 15,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 126
+    "timeline_event_count": 127
   },
   "name": "Odylith Chatter",
   "path_prefixes": [
@@ -57,6 +57,55 @@
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
+        "src/odylith/cli.py",
+        "src/odylith/install/manager.py",
+        "src/odylith/install/runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 456,
+      "explicit_components": [
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "security",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "security",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "CB-149 consumer start latency update: installed v0.1.13 measured 25.40s in dentoai-orion; source fix now returns expected fallback in 2.55s with fast start preflight and hot-path bootstrap.",
+      "ts_iso": "2026-05-03T10:46:04-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
         "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
         "src/odylith/install/runtime.py",
         "src/odylith/runtime/intervention_engine/prompt_signal_runtime.py"
@@ -79,6 +128,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -123,6 +173,7 @@
       ],
       "kind": "statement",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -163,6 +214,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -205,6 +257,7 @@
       "kind": "implementation",
       "mapped_components": [
         "atlas",
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -235,6 +288,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -265,6 +319,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -301,6 +356,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -337,6 +393,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "dashboard",
@@ -376,6 +433,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -414,6 +472,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -453,6 +512,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "dashboard",
@@ -490,6 +550,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -520,6 +581,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -551,6 +613,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -589,6 +652,7 @@
       ],
       "kind": "statement",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -626,6 +690,7 @@
       ],
       "kind": "statement",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -661,6 +726,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "dashboard",
@@ -703,6 +769,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -738,6 +805,7 @@
       ],
       "kind": "implementation",
       "mapped_components": [
+        "benchmark",
         "casebook",
         "compass",
         "domain-intelligence",
@@ -3639,6 +3707,7 @@
         "delivery-intelligence",
         "execution-engine",
         "governance-intervention-engine",
+        "governed-harness",
         "odylith",
         "odylith-chatter",
         "odylith-context-engine",

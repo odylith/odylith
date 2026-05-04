@@ -542,7 +542,7 @@ def test_public_family_catalog_stays_aligned_with_tracked_corpus() -> None:
 
     catalog = (ROOT / "docs" / "benchmarks" / "FAMILIES_AND_EVALS.md").read_text(encoding="utf-8")
     tracked = re.search(
-        r"`(\d+)` implementation scenarios plus `(\d+)` architecture scenarios, `(\d+)` total",
+        r"`(\d+)` operating-policy scenarios plus `(\d+)` architecture scenarios, `(\d+)` total",
         catalog,
     )
     assert tracked is not None
@@ -553,7 +553,7 @@ def test_public_family_catalog_stays_aligned_with_tracked_corpus() -> None:
     )
 
     seriousness = re.search(
-        r"`(\d+)` write-plus-validator scenarios, `(\d+)` correctness-critical scenarios,\n\s+and a mechanism-heavy implementation share of `([0-9.]+)`",
+        r"`(\d+)` write-plus-validator scenarios, `(\d+)` correctness-critical scenarios,\n\s+and a mechanism-heavy operating-policy share of `([0-9.]+)`",
         catalog,
     )
     assert seriousness is not None

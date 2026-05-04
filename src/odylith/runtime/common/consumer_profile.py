@@ -88,6 +88,7 @@ LEGACY_PRODUCT_MODULE_TARGETS: dict[str, str] = {
     "odylith_context_engine_store": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
     "odylith_control_state": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
     "odylith_evaluation_ledger": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+    "turn_gate": "odylith/registry/source/components/governed-harness/CURRENT_SPEC.md",
     "odylith_memory_backend": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
     "odylith_projection_bundle": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
     "odylith_projection_snapshot": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",

@@ -32,10 +32,33 @@ _DASHBOARD_MANIFEST_KEYS = (
     "timeout_detected",
     "message",
 )
+_INSTALL_MANAGED_PREFIXES = (
+    ".claude/",
+    ".codex/",
+    ".agents/",
+    "odylith/agents-guidelines/",
+    "odylith/runtime/source/",
+    "odylith/skills/",
+    "odylith/surfaces/",
+)
+_INSTALL_MANAGED_PATHS = {
+    "AGENTS.md",
+    "CLAUDE.md",
+    "odylith/AGENTS.md",
+    "odylith/CLAUDE.md",
+    "odylith/README.md",
+}
 
 
 def _sha256_bytes(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
+
+
+def _normalize_repo_path_token(path: object) -> str:
+    token = str(path).strip().replace("\\", "/")
+    while token.startswith("./"):
+        token = token[2:]
+    return token
 
 
 def _file_fingerprint(path: Path) -> tuple[int, str, int]:
@@ -47,7 +70,7 @@ def _file_fingerprint(path: Path) -> tuple[int, str, int]:
 
 
 def _generated_surface_category(path: str) -> str:
-    rel = path.strip().replace("\\", "/").lstrip("./")
+    rel = _normalize_repo_path_token(path)
     if not rel or rel == GENERATED_CHANGE_MANIFEST_REL:
         return ""
     if rel.startswith(_SURFACE_SOURCE_PREFIXES):
@@ -60,6 +83,143 @@ def _generated_surface_category(path: str) -> str:
         if rel.startswith(f"odylith/{surface}/"):
             return surface
     return ""
+
+
+def _normalized_changed_paths(paths: list[str] | tuple[str, ...]) -> list[str]:
+    return sorted(
+        {
+            _normalize_repo_path_token(path)
+            for path in paths
+            if str(path).strip()
+        }
+    )
+
+
+def _migration_result_paths(migration_results: object) -> dict[str, dict[str, object]]:
+    rows: dict[str, dict[str, object]] = {}
+    if not isinstance(migration_results, (list, tuple)):
+        return rows
+    for raw_result in migration_results:
+        if not isinstance(raw_result, Mapping):
+            continue
+        migration_id = str(raw_result.get("migration_id") or "").strip()
+        if not migration_id:
+            continue
+        written = _normalized_changed_paths(
+            tuple(str(path) for path in raw_result.get("written_paths", ()) or ())
+        )
+        removed = _normalized_changed_paths(
+            tuple(str(path) for path in raw_result.get("removed_paths", ()) or ())
+        )
+        if not written and not removed:
+            continue
+        rows[migration_id] = {
+            "written_paths": written,
+            "removed_paths": removed,
+            "path_count": len(set(written) | set(removed)),
+        }
+    return rows
+
+
+def _is_source_truth_path(path: str) -> bool:
+    return any(path.startswith(prefix) for prefix in _SURFACE_SOURCE_PREFIXES)
+
+
+def _is_install_managed_path(path: str) -> bool:
+    return path in _INSTALL_MANAGED_PATHS or any(path.startswith(prefix) for prefix in _INSTALL_MANAGED_PREFIXES)
+
+
+def _path_review_category(path: str, *, migration_paths: set[str], generated_paths: set[str]) -> str:
+    if path in migration_paths:
+        return "required_migration"
+    if path in generated_paths or _generated_surface_category(path):
+        return "generated_refresh"
+    if path == GENERATED_CHANGE_MANIFEST_REL or path.startswith(".odylith/runtime/logs/upgrade-"):
+        return "upgrade_report"
+    if path.startswith(".odylith/"):
+        return "runtime_state"
+    if _is_source_truth_path(path):
+        return "source_truth"
+    if _is_install_managed_path(path):
+        return "install_managed_asset"
+    return "manual_review_required"
+
+
+def upgrade_change_review_payload(
+    *,
+    pre_existing_dirty_paths: list[str] | tuple[str, ...],
+    post_upgrade_dirty_paths: list[str] | tuple[str, ...],
+    migration_results: object,
+    generated_change_manifest: Mapping[str, object] | None = None,
+) -> dict[str, object]:
+    """Classify upgrade dirt so generated refresh churn is reviewable."""
+    pre_existing = _normalized_changed_paths(pre_existing_dirty_paths)
+    post_upgrade = _normalized_changed_paths(post_upgrade_dirty_paths)
+    newly_dirty = sorted(set(post_upgrade) - set(pre_existing))
+    migrations = _migration_result_paths(migration_results)
+    migration_paths = {
+        path
+        for migration in migrations.values()
+        for path in (
+            *(str(item) for item in migration.get("written_paths", ()) or ()),
+            *(str(item) for item in migration.get("removed_paths", ()) or ()),
+        )
+    }
+    generated_entries = (
+        tuple(generated_change_manifest.get("entries", ()) or ())
+        if isinstance(generated_change_manifest, Mapping)
+        else ()
+    )
+    generated_paths = {
+        _normalize_repo_path_token(entry.get("path") or "")
+        for entry in generated_entries
+        if isinstance(entry, Mapping) and str(entry.get("path") or "").strip()
+    }
+    generated_by_category: dict[str, list[str]] = {}
+    for entry in generated_entries:
+        if not isinstance(entry, Mapping):
+            continue
+        category = str(entry.get("category") or "generated_refresh").strip() or "generated_refresh"
+        path = _normalize_repo_path_token(entry.get("path") or "")
+        if path:
+            generated_by_category.setdefault(category, []).append(path)
+    categories: dict[str, list[str]] = {}
+    for path in post_upgrade:
+        category = _path_review_category(path, migration_paths=migration_paths, generated_paths=generated_paths)
+        categories.setdefault(category, []).append(path)
+    for paths in categories.values():
+        paths.sort()
+    pre_existing_touched_by_migrations = sorted(set(pre_existing) & migration_paths)
+    manual_review_paths = sorted(categories.get("manual_review_required", []))
+    return {
+        "schema": "odylith.upgrade-change-review.v1",
+        "review_note": (
+            "Separates required migration writes, generated refresh churn, install-managed assets, "
+            "runtime/report state, and paths requiring manual review."
+        ),
+        "pre_existing_dirty_paths": pre_existing,
+        "post_upgrade_dirty_paths": post_upgrade,
+        "newly_dirty_paths": newly_dirty,
+        "pre_existing_dirty_touched_by_migrations": pre_existing_touched_by_migrations,
+        "required_migrations": migrations,
+        "generated_refreshes": {
+            "path_count": len(generated_paths),
+            "by_category": {category: sorted(paths) for category, paths in sorted(generated_by_category.items())},
+            "manifest_path": str(
+                generated_change_manifest.get("path") or GENERATED_CHANGE_MANIFEST_REL
+            )
+            if isinstance(generated_change_manifest, Mapping)
+            else GENERATED_CHANGE_MANIFEST_REL,
+            "content_fingerprint": str(generated_change_manifest.get("content_fingerprint") or "")
+            if isinstance(generated_change_manifest, Mapping)
+            else "",
+        },
+        "categories": {category: {"count": len(paths), "paths": paths} for category, paths in sorted(categories.items())},
+        "manual_review_required": {
+            "count": len(manual_review_paths),
+            "paths": manual_review_paths,
+        },
+    }
 
 
 def _compact_dashboard_details(details: Mapping[str, object] | None) -> dict[str, object]:
@@ -79,11 +239,7 @@ def generated_change_manifest_payload(
 ) -> dict[str, object]:
     entries: list[dict[str, object]] = []
     other_changed_paths: list[str] = []
-    normalized_paths = {
-        str(path).strip().replace("\\", "/").lstrip("./")
-        for path in changed_paths
-        if str(path).strip()
-    }
+    normalized_paths = {_normalize_repo_path_token(path) for path in changed_paths if str(path).strip()}
     for raw_path in sorted(normalized_paths):
         if raw_path == GENERATED_CHANGE_MANIFEST_REL:
             continue
@@ -334,6 +490,35 @@ def doctor_operational_observability_lines(*, repo_root: Path, status: object | 
                     f"{generated_count} generated path(s); manifest: {manifest_path}; "
                     f"fingerprint={fingerprint[:12]}"
                 )
+        change_review = report.get("change_review")
+        if isinstance(change_review, Mapping):
+            categories = change_review.get("categories")
+            required = change_review.get("required_migrations")
+            manual = change_review.get("manual_review_required")
+            migration_path_count = 0
+            if isinstance(required, Mapping):
+                for row in required.values():
+                    if isinstance(row, Mapping):
+                        try:
+                            migration_path_count += int(row.get("path_count") or 0)
+                        except (TypeError, ValueError):
+                            continue
+            install_managed_count = 0
+            if isinstance(categories, Mapping) and isinstance(categories.get("install_managed_asset"), Mapping):
+                try:
+                    install_managed_count = int(categories["install_managed_asset"].get("count") or 0)
+                except (TypeError, ValueError):
+                    install_managed_count = 0
+            try:
+                manual_count = int(manual.get("count") or 0) if isinstance(manual, Mapping) else 0
+            except (TypeError, ValueError):
+                manual_count = 0
+            lines.append(
+                "Last upgrade change review: "
+                f"required_migration_paths={migration_path_count}; "
+                f"install_managed_assets={install_managed_count}; "
+                f"manual_review_required={manual_count}"
+            )
     if status is not None:
         rollback_target = str(getattr(status, "last_known_good_version", "") or "").strip()
         if rollback_target:

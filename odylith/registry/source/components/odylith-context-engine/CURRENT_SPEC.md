@@ -15,7 +15,7 @@
   the B-110 workstream anchor when measuring the v0.1.11 Odylith Discipline program,
   so Context/Execution adoption metrics can distinguish real ambiguity from a
   missing program tag.
-Last updated: 2026-04-18
+Last updated: 2026-05-03
 
 
 Last updated (UTC): 2026-04-18
@@ -535,6 +535,9 @@ evidence is missing or drifting.
 - Missing remote retrieval config should disable augmentation cleanly.
 - Missing grounded paths or ambiguous selection should return fallback scan
   guidance instead of a false-positive route recommendation.
+- CLI output paths that write JSON or text to stdout must treat a downstream
+  pipe closure as normal shell behavior and exit quietly instead of surfacing a
+  Python traceback.
 - Watcher failures should degrade to a weaker watcher or polling.
 - If a consumer still needs fresh local truth after watchers degrade all the
   way to polling, the expensive work must remain outside the detection loop:
@@ -567,12 +570,16 @@ evidence is missing or drifting.
 - `python -m pytest -q tests/unit/runtime/test_tooling_guidance_catalog.py tests/unit/runtime/test_tooling_context_retrieval_guidance.py`
 - `odylith validate guidance-behavior --repo-root .`
 - `odylith context-engine --repo-root . benchmark --limit 5`
+- `set -o pipefail; odylith context-engine --repo-root . benchmark --profile diagnostic --limit 1 --no-write-report --json | head -n 1 >/dev/null`
 - `odylith sync --repo-root . --check-only`
 
 ## Requirements Trace
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-05-03 · Implementation:** CB-149 consumer start latency update: installed v0.1.13 measured 25.40s in a real consumer repo; source fix now returns expected fallback in 2.55s with fast start preflight and hot-path bootstrap.
+  - Scope: B-141
+  - Evidence: odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md, src/odylith/cli.py +3 more
 - **2026-04-17 · Implementation:** B-110 hardening pass made Character signal extraction negation-aware and proof-execution aware, prevented false blocks for technical-plan authoring, release-proof execution, credit-safety work, and negated delegation, added modern Codex/Claude model alias coverage, expanded deterministic corpus to 24 cases, and added benchmark summary rates for false allow/block, unknown-pressure handling, stance vectors, noise suppression, intervention precision, and unseen-pressure generalization. Proof: 48 focused Character tests passed, 225 benchmark/corpus/guidance tests passed, 2120 runtime tests passed, validate discipline and validate guidance-behavior passed, quick discipline report 1be88ce4ead87770 passed, quick guidance_behavior report 61d3b6a2b1cbe33e passed; hot-path host/provider call counts remained zero.
   - Scope: B-110
   - Evidence: odylith/runtime/source/discipline-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md +3 more
@@ -588,9 +595,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-04-16 · Implementation:** Hardened Context Engine to Execution Engine alignment with canonical identity propagation, identity-first guard blocking, benchmark identity gates, and refreshed release-proof surfaces.
   - Scope: B-099
   - Evidence: src/odylith/runtime/context_engine/execution_engine_handshake.py, src/odylith/runtime/execution_engine/runtime_lane_policy.py
-- **2026-04-16 · Implementation:** Hard-cut Context Engine and Execution Engine alignment Wave 1 to canonical execution-engine identity; focused execution tests, broader runtime benchmark tests, registry/backlog validators, sync check, Atlas freshness, and diff check pass.
-  - Scope: B-099, B-100
-  - Evidence: odylith/radar/source/programs/B-099.execution-waves.v1.json, odylith/registry/source/components/execution-engine/CURRENT_SPEC.md +2 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -606,3 +610,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-17: Added compact Guidance Behavior summary propagation for relevant packets and packet summaries, including validator-command handoff to the Execution Engine and preservation for the intervention value engine without running full guidance validation in live packet construction. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
 - 2026-04-17: Extended the compact Guidance Behavior packet summary with the platform end-to-end contract so Context Engine packets can carry benchmark/eval and host-lane mirror proof availability without repo-wide scans, provider calls, or full validation on the hot path. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
 - 2026-04-17: Added the Guidance Behavior `hot_path_efficiency` contract: deterministic validator summaries now prevent adaptive session/full-scan widening, skip runtime projection warmup, avoid projection-store opens for no-projection guidance packets, and keep unanchored proof-state resolution out of delivery-intelligence reads. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
+- 2026-05-03: Hardened the Context Engine CLI boundary so early-closing stdout consumers no longer leak BrokenPipe tracebacks during diagnostic benchmark JSON output. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Bug: `CB-163`)

@@ -1041,6 +1041,28 @@ def test_projection_input_fingerprint_reuses_cached_inputs_for_same_repo_state(
     assert calls["count"] == 1
 
 
+def test_test_history_root_report_fingerprints_are_shallow(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    (repo_root / "junit-root.xml").write_text("<testsuite />\n", encoding="utf-8")
+
+    store.clear_runtime_process_caches(repo_root=repo_root)
+    baseline = projection_search_runtime._test_history_report_inputs(repo_root=repo_root)  # noqa: SLF001
+
+    nested = repo_root / "nested" / "junit-nested.xml"
+    nested.parent.mkdir()
+    nested.write_text("<testsuite failures='1' />\n", encoding="utf-8")
+    store.clear_runtime_process_caches(repo_root=repo_root)
+    nested_update = projection_search_runtime._test_history_report_inputs(repo_root=repo_root)  # noqa: SLF001
+
+    (repo_root / "junit-second.xml").write_text("<testsuite tests='2' />\n", encoding="utf-8")
+    store.clear_runtime_process_caches(repo_root=repo_root)
+    root_update = projection_search_runtime._test_history_report_inputs(repo_root=repo_root)  # noqa: SLF001
+
+    assert nested_update["repo:junit*.xml"] == baseline["repo:junit*.xml"]
+    assert root_update["repo:junit*.xml"] != baseline["repo:junit*.xml"]
+
+
 def test_projection_input_fingerprint_recomputes_when_repo_state_changes(
     monkeypatch,
     tmp_path: Path,

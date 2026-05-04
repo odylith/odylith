@@ -1,28 +1,41 @@
-flowchart TB
-    prompt["Greenfield prompt<br/>build, govern, plan, architect"]
-    source["Shallow repo evidence<br/>empty, thin, metadata, docs, app-ready"]
-    catalog["Domain archetype catalog<br/>product, infra, data, science/math lenses<br/>runtime/domain_intelligence/archetypes.py"]
-    compiler["Greenfield proposal compiler<br/>runtime/domain_intelligence/greenfield_proposals.py"]
-    planning["Program/release/UX planner<br/>runtime/domain_intelligence/proposal_planning.py"]
-    rendering["Proposal rendering<br/>fit summary, operator text, apply commands<br/>runtime/domain_intelligence/proposal_rendering.py"]
-    proposal["Proposal payload<br/>classification, backlog, program formation, waves, release plan, UX, components, diagrams, assumptions, risks, validation"]
-    confirm{"Operator confirms?"}
-    radar["Radar apply<br/>owned backlog authoring"]
-    registry["Registry apply<br/>planned user_intent components"]
-    atlas["Atlas apply<br/>draft topology diagrams"]
-    release["Release targeting<br/>next/current release selector"]
-    compass["Compass and memory<br/>accepted proposal context and clean timeline"]
-    intervention["Intervention Engine<br/>greenfield routing without raw Observation chatter"]
-    host["Claude, Codex, future hosts<br/>thin CLI routing only"]
+flowchart LR
+    subgraph intent_lane["Intent + shallow evidence"]
+      direction TB
+      prompt["Greenfield prompt<br/>build, govern, plan, architect"]
+      host["Host model surfaces<br/>thin CLI routing only"]
+      source["Shallow repo evidence<br/>empty, thin, metadata,<br/>docs, app-ready"]
+      catalog["Domain archetype catalog<br/>product, infra, data,<br/>science/math lenses"]
+    end
+
+    subgraph reasoning_lane["Domain intelligence compiler"]
+      direction TB
+      compiler["Greenfield proposal compiler<br/>greenfield_proposals.py"]
+      planning["Program/release/UX planner<br/>proposal_planning.py"]
+      rendering["Proposal rendering<br/>operator text + apply commands"]
+      proposal["Proposal payload<br/>classification, backlog, waves,<br/>release plan, components,<br/>diagrams, risks, validation"]
+    end
+
+    subgraph confirmation_lane["Confirmation-gated apply"]
+      direction TB
+      confirm{"Operator confirms?"}
+      radar["Radar apply<br/>owned backlog authoring"]
+      registry["Registry apply<br/>planned user_intent components"]
+      atlas["Atlas apply<br/>draft topology diagrams"]
+      release["Release targeting<br/>next/current selector"]
+    end
+
+    subgraph memory_lane["Clean runtime memory"]
+      direction TB
+      intervention["Intervention Engine<br/>routes without raw<br/>Observation chatter"]
+      compass["Compass + memory<br/>accepted proposal context<br/>and clean timeline"]
+    end
 
     prompt --> host
     host --> compiler
     source --> compiler
     catalog --> compiler
-    compiler --> planning
-    planning --> proposal
-    compiler --> rendering
-    rendering --> proposal
+    compiler --> planning --> proposal
+    compiler --> rendering --> proposal
     proposal --> intervention
     proposal --> confirm
     confirm -- "no" --> proposal
@@ -34,4 +47,21 @@ flowchart TB
     registry --> compass
     atlas --> compass
     release --> compass
-    intervention -. "zero-file prompt narration filtered" .-> compass
+    intervention -. "zero-file narration filtered" .-> compass
+
+    classDef input fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b,stroke-width:1.2px;
+    classDef intelligence fill:#eaf3ff,stroke:#77a9ef,color:#102f5f,stroke-width:1.2px;
+    classDef decision fill:#ffece7,stroke:#df8f7d,color:#5c2418,stroke-width:1.3px;
+    classDef apply fill:#f4ebff,stroke:#ad8ae6,color:#31135f,stroke-width:1.2px;
+    classDef memory fill:#ebf9e8,stroke:#7ec373,color:#0f3a24,stroke-width:1.2px;
+    class prompt,host,source,catalog input;
+    class compiler,planning,rendering,proposal intelligence;
+    class confirm decision;
+    class radar,registry,atlas,release apply;
+    class intervention,compass memory;
+
+    style intent_lane fill:#effcf9,stroke:#9bd8cf,stroke-width:1px,color:#062f2b
+    style reasoning_lane fill:#f1f7ff,stroke:#a8c7f7,stroke-width:1px,color:#102f5f
+    style confirmation_lane fill:#fff3f0,stroke:#efb3a4,stroke-width:1px,color:#5c2418
+    style memory_lane fill:#f2fbef,stroke:#a9d69e,stroke-width:1px,color:#0f3a24
+    linkStyle default stroke:#647d96,stroke-width:1.45px

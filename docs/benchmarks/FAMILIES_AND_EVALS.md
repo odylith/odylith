@@ -8,10 +8,10 @@ The source of truth is
 ## Coverage At A Glance
 
 - Tracked corpus:
-  `77` implementation scenarios plus `5` architecture scenarios, `82` total
+  `77` operating-policy scenarios plus `5` architecture scenarios, `82` total
 - Current seriousness floor in tracked source truth:
   `41` write-plus-validator scenarios, `31` correctness-critical scenarios,
-  and a mechanism-heavy implementation share of `0.286`
+  and a mechanism-heavy operating-policy share of `0.286`
 - Required coding-work and control families now present in tracked source truth:
   `api_contract_evolution`, `stateful_bug_recovery`,
   `external_dependency_recovery`, `destructive_scope_control`,
@@ -32,14 +32,14 @@ author sorts by token delta.
 
 | Archetype | Tracked Evals | Families | Current Read |
 | --- | ---: | --- | --- |
-| Bug Fixes | 8 | `validation_heavy_fix`, `stateful_bug_recovery`, `browser_surface_reliability`, `cli_contract_regression` | Stronger now because it includes real stateful recovery and not just isolated bug-fix slices. |
+| Repair / Write Admission | 8 | `validation_heavy_fix`, `stateful_bug_recovery`, `browser_surface_reliability`, `cli_contract_regression` | Measures repair-shaped pressure, localization, validator-backed closure, and write suppression as the operating-policy win. |
 | Multi-File Features | 9 | `cross_file_feature`, `merge_heavy_change`, `api_contract_evolution` | Better representation of real feature and contract-evolution work spanning code, tests, and docs. |
 | Runtime / Install / Security | 9 | `install_upgrade_runtime`, `agent_activation`, `daemon_security`, `consumer_profile_compatibility`, `external_dependency_recovery`, `runtime_state_integrity` | Now includes external wait/resume and dependency recovery instead of only local runtime repair. |
 | Surface / UI Reliability | 2 | `dashboard_surface`, `compass_brief_freshness` | Browser-backed operator behavior stays visible as product work, not decorative HTML churn. |
 | Docs + Code Closeout | 5 | `docs_code_closeout`, `governed_surface_sync`, `cross_surface_governance_sync` | Keeps code, docs, specs, and generated mirrors aligned. |
 | Governance / Release Integrity | 9 | `component_governance`, `destructive_scope_control`, `live_proof_discipline`, `release_publication` | Now includes destructive-scope and fail-closed benchmark safety, not only publication truth. |
 | Architecture Review | 5 | `architecture` | Keeps grounded design-review quality visible after direct implementation work. |
-| Grounding / Orchestration Control | 35 | `broad_shared_scope`, `context_engine_grounding`, `execution_engine`, `guidance_behavior`, `discipline`, `exact_path_ambiguity`, `exact_anchor_recall`, `explicit_workstream`, `retrieval_miss_recovery`, `orchestration_feedback`, `orchestration_intelligence` | Explains how Odylith stays bounded on real coding work without pretending that control-plane metrics are the headline product claim. |
+| Grounding / Orchestration Control | 35 | `broad_shared_scope`, `context_engine_grounding`, `execution_engine`, `guidance_behavior`, `discipline`, `exact_path_ambiguity`, `exact_anchor_recall`, `explicit_workstream`, `retrieval_miss_recovery`, `orchestration_feedback`, `orchestration_intelligence` | Explains how Odylith stays bounded under coding-task pressure: evidence selection, execution posture, fail-closed behavior, and mutation control. |
 
 ## Current Published Attention Areas
 
@@ -61,7 +61,7 @@ Current Grounding Benchmark weak families:
 
 ## Current Corpus-Hardening Additions
 
-The current hardening wave made the benchmark more serious by adding:
+The current hardening wave made the operating-policy benchmark more serious by adding:
 
 - multi-file surface synchronization and guardrail carry-through cases
 - explicit API and report-contract evolution cases
@@ -70,11 +70,10 @@ The current hardening wave made the benchmark more serious by adding:
 - destructive-scope cases where fail-closed execution matters
 
 For packet-only Grounding Benchmark families, some scenarios now also declare a bounded
-`benchmark.packet_fixture`. That fixture is not a free extra truth channel. It
-exists only to seed the exact proof-state, routing, or external-state fields
-that the scenario is explicitly testing in packet carry-through, and it stays
-whitelisted to the packet/runtime-summary seam instead of reaching into hidden
-repo context.
+`benchmark.packet_fixture`. That fixture is declared packet-truth scaffolding:
+it seeds the exact proof-state, routing, or external-state fields that the
+scenario is explicitly testing in packet carry-through, and it stays
+whitelisted to the packet/runtime-summary seam.
 
 ## Family Summary
 
@@ -111,8 +110,8 @@ repo context.
 | `release_publication` | 2 | release-safe benchmark publication, graphs, README, and comparison honesty |
 | `retrieval_miss_recovery` | 1 | bounded sparse widening after retrieval misses |
 | `runtime_state_integrity` | 1 | runtime state JSON/JS companion correctness across repo postures |
-| `stateful_bug_recovery` | 3 | recovery after stale, interrupted, or contradictory runtime state |
-| `validation_heavy_fix` | 2 | correctness-sensitive bug-fix work with strong validator pressure |
+| `stateful_bug_recovery` | 3 | recovery or safe non-mutation after stale, interrupted, or contradictory runtime state |
+| `validation_heavy_fix` | 2 | correctness-sensitive repair-shaped work with strong validator and write-admission pressure |
 | `architecture` | 5 | grounded architecture dossier and design-review quality |
 
 ## Representative Evals
@@ -168,13 +167,13 @@ list:
 
 - This catalog exists to make benchmark scope inspectable before anyone trusts
   the scorecard.
-- When a no-op benchmark result is justified by focused preflight evidence
-  instead of the broad validator lane, the report now marks that explicitly as
-  `validator_status_basis=focused_noop_proxy` so reviewers can see the real
-  basis instead of mistaking it for an ordinary validator pass.
-- The corpus is still repo-grounded and Odylith-shaped, but it now has enough
-  validator-backed feature, recovery, and destructive-scope work to support a
-  more serious coding-agent claim.
+- When a non-mutating closure result is justified by evidence before host
+  execution, the report must mark the product Turn Gate early-exit proof
+  explicitly, so reviewers can see that the row proves validated non-mutation
+  and write admission.
+- The corpus is still repo-grounded and Odylith-shaped. It supports a serious
+  operating-policy claim around grounding, validation, recovery posture, and
+  write admission.
 - Governance and architecture cases stay in the corpus because they are real
   product truth, but they no longer dominate the benchmark story or the
   seriousness floor.

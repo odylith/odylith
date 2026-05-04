@@ -33,6 +33,7 @@ from odylith.runtime.surfaces.mermaid_worker_session import _MermaidWorkerSessio
 select = _mermaid_worker_session.select
 _ATLAS_AUTO_UPDATE_GUARD_NAMESPACE = "generated-refresh-guards"
 _ATLAS_AUTO_UPDATE_GUARD_KEY = "atlas-auto-update"
+_MERMAID_RENDER_CONFIG = Path(__file__).with_name("assets") / "mermaid_render_config.json"
 
 
 @dataclass(frozen=True)
@@ -417,6 +418,23 @@ def _diagram_needs_render(
     return True
 
 
+def _diagram_render_fingerprint_stale(
+    *,
+    repo_root: Path,
+    item: Mapping[str, Any],
+    fingerprint_cache: diagram_freshness.ContentFingerprintCache,
+) -> bool:
+    source_mmd = str(item.get("source_mmd", "")).strip()
+    stored_render_fingerprint = str(item.get("render_source_fingerprint", "")).strip()
+    if not source_mmd or not stored_render_fingerprint:
+        return False
+    source_mmd_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=source_mmd)
+    if not source_mmd_path.is_file():
+        return True
+    current_render_fingerprint = fingerprint_cache.mermaid_render_fingerprint(source_mmd_path)
+    return stored_render_fingerprint != current_render_fingerprint
+
+
 def _classify_diagram_items(
     *,
     repo_root: Path,
@@ -501,6 +519,11 @@ def _select_stale_diagram_indexes(
         if review_date is None:
             selected.append(idx)
             continue
+        stale_for_render_fingerprint = _diagram_render_fingerprint_stale(
+            repo_root=repo_root,
+            item=raw_item,
+            fingerprint_cache=content_fingerprint_cache,
+        )
         review_age_days = (today - review_date).days
         stale_for_review_age = review_age_days > max(0, int(max_review_age_days))
         stale_for_watch_change = False
@@ -524,7 +547,7 @@ def _select_stale_diagram_indexes(
                 cache=mtime_cache,
             )
             stale_for_watch_change = newest_watch_mtime > (mmd_mtime + 0.0001)
-        if stale_for_review_age or stale_for_watch_change:
+        if stale_for_render_fingerprint or stale_for_review_age or stale_for_watch_change:
             selected.append(idx)
     return selected
 
@@ -539,6 +562,8 @@ def _render_diagram(*, repo_root: Path, source_mmd: str, source_svg: str, source
             source_mmd,
             "-o",
             output,
+            "--configFile",
+            str(_MERMAID_RENDER_CONFIG),
         ]
         subprocess.run(cmd, cwd=str(repo_root), check=True)
 

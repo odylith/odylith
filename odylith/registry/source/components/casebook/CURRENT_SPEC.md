@@ -5,7 +5,7 @@
   Recurring false allows, false blocks, proofless claims, visible-UX misses,
   or governance-bypass patterns should become Casebook bugs only when evidence
   is concrete enough to prevent rediscovery.
-Last updated: 2026-05-02
+Last updated: 2026-05-03
 
 
 Last updated (UTC): 2026-04-16
@@ -86,6 +86,23 @@ one token such as `High`, `Medium`, `Low`, `Always`, `Intermittent`, or
 environments, and narrative details belong in `Trigger Path`,
 `Failure Signature`, `Environment(s)`, or `Description` instead.
 
+`Status` is a controlled lifecycle FSM, not an open taxonomy. Source truth may
+use only `Open`, `InProgress`, `Mitigated`, `Monitoring`, `Resolved`,
+`FixedPendingRelease`, or `Closed`. `FixedPendingRelease` is an active
+pre-release state, not a terminal substitute; release closeout owns the move to
+`Closed`. Legacy status strings from consumer installs must normalize into this
+FSM during migration or fail validation before generated Casebook artifacts are
+rewritten.
+
+`Type` is a controlled but broad host-agnostic taxonomy. It must remain a
+compact category token, not an arbitrary incident title fragment, status
+phrase, remediation sentence, project-specific component name, or truncated
+CamelCase artifact. Migration may map legacy labels into allowed categories
+such as `Product`, `Tooling`, `UX`, `OperatorUX`, `DataLoss`, `Deployment`,
+`Infra`, `Security`, `Database`, `API`, `CI`, `Test`, `Evaluation`, or
+`Research`; unknown arbitrary legacy values should fall back to a conservative
+category instead of passing validation as new durable taxonomy.
+
 Casebook source validation is shared by bug capture, index refresh, dashboard
 refresh, direct renderer execution, and CI-style validation. The shared
 validator must fail closed on missing, duplicate, placeholder-like, or
@@ -127,6 +144,10 @@ builds:
 - shared deep-link buttons for component, spec, proof, and diagram actions;
   those chips must reuse Dashboard's centralized deep-link button contract
   instead of Casebook-local button styling
+- humanized UI labels for compact source tokens, for example rendering
+  `FixedPendingRelease` as `Fixed pending release`
+- stale query-param cleanup so obsolete status/type filters cannot hide all
+  rows while the controls claim the list is unfiltered
 
 The renderer is intentionally read-only with respect to bug truth.
 It must validate Casebook source truth before fingerprint reuse or render
@@ -149,6 +170,10 @@ copy is materially transformed for a different audience.
   title.
 - Compact fields such as `Reproducibility` may render in summary facts because
   source truth and capture validation keep them to one token.
+- The main narrative body renders as a full-width `Summary` card below labels
+  and source actions. The card label is `Summary`, not `Casebook`, and the text
+  should use the card's available width instead of reverting to a capped prose
+  column.
 
 ## Intent Behind Casebook
 Casebook exists so a developer can answer:
@@ -200,3 +225,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-07: Tightened the Casebook detail contract so the human brief and Odylith agent-learning band stay distinct, and overlapping proof/evidence links are deduped instead of repeated. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-16: Locked `Reproducibility` to compact classifier tokens in bug source truth and capture guidance so Casebook summary facts never inherit prose repro steps. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-16: Added shared Casebook source validation and wired it into capture, index refresh, dashboard refresh, direct renderer execution, and `odylith casebook validate` so malformed bug markdown stops before generated Casebook artifacts are rewritten. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-05-03: Added the v0.1.14 Casebook lifecycle FSM, controlled broad Type taxonomy, legacy metadata migration, humanized browser labels, stale-query cleanup, and full-width selected-detail `Summary` card. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Bugs: `CB-150`, `CB-153`)
