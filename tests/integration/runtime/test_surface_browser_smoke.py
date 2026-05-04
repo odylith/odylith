@@ -552,6 +552,69 @@ def test_compass_skipped_narration_notice_uses_header_status_not_brief_body(
     _run_in_browser_thread(_exercise)
 
 
+def test_compass_failed_global_brief_uses_header_status_and_previous_brief(
+    tmp_path: Path,
+) -> None:
+    fixture_root = _ready_compass_fixture_root(tmp_path)
+    runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
+    payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+    standup_brief = payload.get("standup_brief") if isinstance(payload.get("standup_brief"), dict) else {}
+    ready_48h = standup_brief.get("48h") if isinstance(standup_brief.get("48h"), dict) else {}
+    ready_sections = ready_48h.get("sections") if isinstance(ready_48h.get("sections"), list) else []
+    assert ready_sections
+    ready_sections[1]["bullets"][0]["text"] = "A previous standup brief stays visible while narration retries."
+    ready_48h["sections"] = ready_sections
+    standup_brief["48h"] = ready_48h
+    standup_brief["24h"] = {
+        "status": "unavailable",
+        "source": "provider",
+        "diagnostics": {
+            "title": "Brief needs another provider pass",
+            "message": (
+                "Compass received a narration reply for this brief, but the result was not usable yet. "
+                "It will retry on backoff."
+            ),
+            "reason": "invalid_batch",
+            "next_retry_utc": "2026-05-04T14:31:00Z",
+        },
+    }
+    payload["standup_brief"] = standup_brief
+    _write_compass_fixture_runtime_payloads(fixture_root, runtime_payload=payload)
+
+    def _exercise() -> None:
+        with _static_server(root=fixture_root) as base_url:
+            for _pw, browser in _browser():
+                context = browser.new_context(viewport={"width": 1440, "height": 1100})
+                try:
+                    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                    response = page.goto(
+                        base_url + "/odylith/index.html?tab=compass&window=24h&date=live",
+                        wait_until="domcontentloaded",
+                    )
+                    assert response is not None and response.ok
+
+                    compass = page.frame_locator("#frame-compass")
+                    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                    _assert_compass_live_state(compass, window_token="24h")
+                    status_banner = compass.locator("#status-banner")
+                    status_banner.wait_for(timeout=15000)
+                    status_text = status_banner.inner_text().strip()
+                    assert status_banner.evaluate("(node) => node.classList.contains('warn')") is True
+                    assert "Brief needs another provider pass" in status_text
+                    assert "result was not usable yet" in status_text
+                    assert "Will retry after" in status_text
+                    digest_text = compass.locator("#digest-list").inner_text().strip()
+                    assert "A previous standup brief stays visible while narration retries." in digest_text
+                    assert "Brief needs another provider pass" not in digest_text
+                    assert compass.locator("#digest-list .brief-status-card").count() == 0
+                    assert compass.locator("#digest-list .standup-brief-sections").count() == 1
+                    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+                finally:
+                    context.close()
+
+    _run_in_browser_thread(_exercise)
+
+
 def test_compass_current_workstreams_excludes_rows_already_represented_in_programs_or_release_targets(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)

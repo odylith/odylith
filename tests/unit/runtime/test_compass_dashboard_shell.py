@@ -69,6 +69,7 @@ def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic(
     assert "const hasScopedSelection = Boolean(scopedWorkstream);" in shared_js
     assert 'if (hasScopedSelection && scopedReady) return scopedReady;' in shared_js
     assert "function scopedFallbackToGlobalBrief(globalBrief, workstreamId, message, reason, globalWindow)" in shared_js
+    assert "function globalFallbackToReadyBrief(globalReady, failedBrief, requestedWindow, fallbackWindow)" in shared_js
     assert "function scopedLiveBriefFallbackMessage(workstreamId, diagnostics, requestedWindow, fallbackWindow)" in shared_js
     assert 'if (reason === "scoped_window_inactive") {' in shared_js
     assert "return scopedBrief;" in shared_js
@@ -80,7 +81,8 @@ def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic(
     assert 'is waiting on narration provider budget' in shared_js
     assert 'got a scoped provider reply, but the brief was not usable yet' in shared_js
     assert 'still needs its own ${requested} brief' in shared_js
-    assert 'if (globalBrief && String(globalBrief.status || "").trim() !== "ready") return globalBrief;' in shared_js
+    assert 'if (!hasScopedSelection && globalBrief && String(globalBrief.status || "").trim() !== "ready" && globalReady) {' in shared_js
+    assert 'return globalFallbackToReadyBrief(globalReady, globalBrief, key, globalReadyWindow || key);' in shared_js
     assert 'if (globalReady && (globalReadySource === "provider" || globalReadySource === "cache")) return globalReady;' in shared_js
     assert 'if (globalReady) return globalReady;' in shared_js
     assert 'if (hasScopedSelection && scopedBrief) {' in shared_js
@@ -115,6 +117,8 @@ def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic(
     assert "No validated narrative bullets available for this section." not in summary_js
     assert "No standup brief available for this view." not in summary_js
     assert "function briefHasRenderableNarrative(brief)" in summary_js
+    assert 'reason.startsWith("global_") && reason.includes("_showing_previous")' in summary_js
+    assert 'const retryUtc = String(notice.next_retry_utc || "").trim();' in summary_js
     assert "function briefIsScopedGlobalFallback(brief)" not in summary_js
     assert "function briefAllowsCopy(brief)" not in summary_js
     assert 'card.classList.toggle("standup-brief-card--compact", !hasNarrative);' in summary_js

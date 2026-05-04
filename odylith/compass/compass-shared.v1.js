@@ -318,6 +318,35 @@ initQuickTooltips();
       return cloned;
     }
 
+    function globalFallbackNoticeFromFailedBrief(failedBrief, requestedWindow, fallbackWindow) {
+      const diagnostics = failedBrief && failedBrief.diagnostics && typeof failedBrief.diagnostics === "object" ? failedBrief.diagnostics : {};
+      const reason = String(diagnostics.reason || "brief_unavailable").trim().toLowerCase() || "brief_unavailable";
+      const title = String(diagnostics.title || "Standup brief unavailable").trim();
+      const message = String(diagnostics.message || "Compass could not build the requested standup brief.").trim();
+      const requestedLabel = requestedWindow === "48h" ? "48-hour" : "24-hour";
+      const fallbackLabel = fallbackWindow === "48h" ? "48-hour" : "24-hour";
+      const fallbackCopy = fallbackWindow && fallbackWindow !== requestedWindow
+        ? `Compass is showing the last ready ${fallbackLabel} standup brief while it retries the ${requestedLabel} brief.`
+        : "Compass is showing the last ready standup brief while it retries.";
+      return {
+        title,
+        message: `${message} ${fallbackCopy}`.trim(),
+        reason: `global_${reason}_showing_previous`,
+        next_retry_utc: String(diagnostics.next_retry_utc || "").trim(),
+      };
+    }
+
+    function globalFallbackToReadyBrief(globalReady, failedBrief, requestedWindow, fallbackWindow) {
+      const cloned = cloneStructuredBrief(globalReady);
+      cloned.notice = globalFallbackNoticeFromFailedBrief(failedBrief, requestedWindow, fallbackWindow);
+      cloned.global_fallback = {
+        mode: "previous_global_brief",
+        requested_window: String(requestedWindow || "").trim(),
+        window: String(fallbackWindow || "").trim(),
+      };
+      return cloned;
+    }
+
     function scopedLiveBriefFallbackMessage(workstreamId, diagnostics, requestedWindow, fallbackWindow) {
       const scopedWorkstream = String(workstreamId || "This scope").trim() || "This scope";
       const safeDiagnostics = diagnostics && typeof diagnostics === "object" ? diagnostics : {};
@@ -492,6 +521,9 @@ initQuickTooltips();
             `No scoped standup brief is available for ${scopedWorkstream}.`,
             { reason: "scoped_brief_missing" },
           );
+        }
+        if (!hasScopedSelection && globalBrief && String(globalBrief.status || "").trim() !== "ready" && globalReady) {
+          return globalFallbackToReadyBrief(globalReady, globalBrief, key, globalReadyWindow || key);
         }
         if (globalBrief && String(globalBrief.status || "").trim() !== "ready") return globalBrief;
         if (globalReady && (globalReadySource === "provider" || globalReadySource === "cache")) return globalReady;

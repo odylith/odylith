@@ -251,7 +251,7 @@
     function briefNoticeBelongsInHeaderStatus(brief) {
       const notice = visibleBriefNotice(brief);
       const reason = String(notice.reason || "").trim().toLowerCase();
-      return reason === "skipped_not_worth_calling";
+      return reason === "skipped_not_worth_calling" || (reason.startsWith("global_") && reason.includes("_showing_previous"));
     }
 
     function briefHeaderStatusNotice(brief) {
@@ -259,8 +259,10 @@
       const notice = visibleBriefNotice(brief);
       const title = String(notice.title || "").trim();
       const message = String(notice.message || "").trim();
-      if (title && message) return `${title}: ${message}`;
-      return title || message;
+      const retryUtc = String(notice.next_retry_utc || "").trim();
+      const retryCopy = retryUtc ? ` Will retry after ${compactTimestamp(retryUtc)}.` : "";
+      if (title && message) return `${title}: ${message}${retryCopy}`;
+      return `${title || message}${retryCopy}`.trim();
     }
 
     function renderBriefNotice(brief) {

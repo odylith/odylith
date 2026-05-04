@@ -591,6 +591,8 @@
         token.includes("falling back") ||
         token.includes("runtime unavailable") ||
         token.includes("brief reused") ||
+        token.includes("brief needs another provider pass") ||
+        token.includes("not usable yet") ||
         token.includes("failed")
       );
     }
