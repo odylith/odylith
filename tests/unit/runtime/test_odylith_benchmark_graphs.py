@@ -1019,7 +1019,7 @@ def test_benchmark_graph_style_contract_stays_stable() -> None:
     assert graphs.POSTURE_TITLE == "Odylith benchmark operating posture"
     assert graphs.QUALITY_FRONTIER_HEADING == "Live Benchmark Quality Frontier: grounding recall vs time to valid outcome"
     assert graphs.FRONTIER_HEADING == "Live Benchmark: time to valid outcome vs live session input"
-    assert graphs.HEATMAP_HEADING == "Live Benchmark Family Heatmap: where Odylith wins"
+    assert graphs.HEATMAP_HEADING == "Live Benchmark Family Heatmap: measured family deltas"
     assert graphs.POSTURE_HEADING == "Live Benchmark operating posture on the current proof-host corpus"
     assert graphs._BG == "#f6f1e7"
     assert graphs._PANEL == "#fffdfa"

@@ -846,15 +846,17 @@
         : null;
       let fetchedRuntime = null;
 
-      try {
-        const response = await fetch(compassShell().runtime_json_href, { cache: "no-store" });
-        if (response.ok) {
-          const payload = await response.json();
-          if (payload && typeof payload === "object") {
-            fetchedRuntime = payload;
+      if (String(window.location.protocol || "").toLowerCase() !== "file:") {
+        try {
+          const response = await fetch(compassShell().runtime_json_href, { cache: "no-store" });
+          if (response.ok) {
+            const payload = await response.json();
+            if (payload && typeof payload === "object") {
+              fetchedRuntime = payload;
+            }
           }
-        }
-      } catch (_error) {}
+        } catch (_error) {}
+      }
 
       // Prefer the direct JSON snapshot when it is available so a stale
       // preloaded runtime JS global cannot pin Compass to an older render.

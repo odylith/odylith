@@ -48,7 +48,7 @@ HEATMAP_TITLE = "Odylith benchmark family heatmap"
 POSTURE_TITLE = "Odylith benchmark operating posture"
 QUALITY_FRONTIER_TITLE = marketing_graphs.QUALITY_FRONTIER_TITLE
 FRONTIER_HEADING = "Live Benchmark: time to valid outcome vs live session input"
-HEATMAP_HEADING = "Live Benchmark Family Heatmap: where Odylith wins"
+HEATMAP_HEADING = "Live Benchmark Family Heatmap: measured family deltas"
 POSTURE_HEADING = "Live Benchmark operating posture on the current proof-host corpus"
 QUALITY_FRONTIER_HEADING = marketing_graphs.QUALITY_FRONTIER_HEADING
 _VISUAL_CANDIDATE_MODE = "odylith_on"
@@ -106,7 +106,7 @@ def _frontier_heading(report: Mapping[str, Any]) -> str:
 def _heatmap_heading(report: Mapping[str, Any]) -> str:
     if _is_live_end_to_end(report):
         return HEATMAP_HEADING
-    return "Internal Diagnostic Family Heatmap: where Odylith wins"
+    return "Internal Diagnostic Family Heatmap: measured family deltas"
 
 
 def _posture_heading(report: Mapping[str, Any]) -> str:
@@ -1049,9 +1049,9 @@ def _render_family_heatmap_svg(report: Mapping[str, Any]) -> str:
     subtitle_y = 114
     subtitle_lines = _wrap_words(
         (
-            f"These are published median family deltas from the {_public_benchmark_name(report)} for {candidate_label} versus {baseline_label}. Families are ordered by Odylith's developer-first benchmark archetypes rather than token cost. Green means Odylith wins that family. {token_axis_noun.capitalize()} deltas are shown as compact token deltas and {time_axis_noun} deltas are shown as humanized durations; lower values are better for both. Recall and validation favor higher values."
+            f"These are published median family deltas from the {_public_benchmark_name(report)} for {candidate_label} versus {baseline_label}. Families are ordered by Odylith's developer-first benchmark archetypes rather than token cost. Green marks improvement on the declared metric for this operating-policy view. {token_axis_noun.capitalize()} deltas are shown as compact token deltas and {time_axis_noun} deltas are shown as humanized durations; lower values are better for both. Recall and validation favor higher values."
             if live_proof
-            else f"These are published median family deltas from the {_public_benchmark_name(report)} for {candidate_label} versus {baseline_label}. Families are ordered by Odylith's developer-first benchmark archetypes rather than token cost. Green means Odylith wins that family. {token_axis_noun.capitalize()} deltas are tokens and {time_axis_noun} deltas are milliseconds; lower values are better for both. Recall and validation favor higher values."
+            else f"These are published median family deltas from the {_public_benchmark_name(report)} for {candidate_label} versus {baseline_label}. Families are ordered by Odylith's developer-first benchmark archetypes rather than token cost. Green marks improvement on the declared metric for this operating-policy view. {token_axis_noun.capitalize()} deltas are tokens and {time_axis_noun} deltas are milliseconds; lower values are better for both. Recall and validation favor higher values."
         ),
         limit=126,
     )

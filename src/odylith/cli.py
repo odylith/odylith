@@ -98,6 +98,7 @@ _COMPASS_WATCH_TRANSACTIONS_MODULE = "odylith.runtime.surfaces.watch_prompt_tran
 _COMPASS_RESTORE_HISTORY_MODULE = "odylith.runtime.surfaces.restore_compass_history"
 _SUBAGENT_ROUTER_MODULE = "odylith.runtime.orchestration.subagent_router"
 _SUBAGENT_ORCHESTRATOR_MODULE = "odylith.runtime.orchestration.subagent_orchestrator"
+_TURN_GATE_MODULE = "odylith.runtime.governed_harness.turn_gate"
 _CASEBOOK_SOURCE_VALIDATION_MODULE = "odylith.runtime.governance.casebook_source_validation"
 _GOVERNANCE_COMMAND_MODULES = {
     "normalize-plan-risk-mitigation": "odylith.runtime.governance.normalize_plan_risk_mitigation",
@@ -277,6 +278,7 @@ watch_prompt_transactions = _register_lazy_module(_COMPASS_WATCH_TRANSACTIONS_MO
 restore_compass_history = _register_lazy_module(_COMPASS_RESTORE_HISTORY_MODULE)
 subagent_router = _register_lazy_module(_SUBAGENT_ROUTER_MODULE)
 subagent_orchestrator = _register_lazy_module(_SUBAGENT_ORCHESTRATOR_MODULE)
+turn_gate = _register_lazy_module(_TURN_GATE_MODULE)
 render_mermaid_catalog = _register_lazy_module(
     "odylith.runtime.surfaces.render_mermaid_catalog",
     target_name="odylith.runtime.surfaces.render_mermaid_catalog_refresh",
@@ -2532,6 +2534,14 @@ def _cmd_subagent_orchestrator(args: argparse.Namespace) -> int:
     )
 
 
+def _cmd_turn_gate(args: argparse.Namespace) -> int:
+    forwarded = [str(args.turn_gate_command), *list(getattr(args, "forwarded", []))]
+    return _run_module_main(
+        _TURN_GATE_MODULE,
+        ensure_nested_subcommand_repo_root_args(repo_root=args.repo_root, argv=forwarded),
+    )
+
+
 def _cmd_atlas_render(args: argparse.Namespace) -> int:
     blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
     if blocked:
@@ -3242,6 +3252,20 @@ def build_parser() -> argparse.ArgumentParser:
     subagent_orchestrator_parser.add_argument("--repo-root", default=".", help="Consumer repository root.")
     subagent_orchestrator_parser.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
 
+    turn_gate_parser = subparsers.add_parser(
+        "turn-gate",
+        help="Evaluate governed harness Turn Gate decisions.",
+    )
+    turn_gate_subparsers = turn_gate_parser.add_subparsers(dest="turn_gate_command", required=True)
+    for command, help_text in (
+        ("decide", "Classify a turn and build a governed harness decision."),
+        ("tool-check", "Evaluate a host tool call against a Turn Gate capsule."),
+        ("stop-check", "Evaluate finalization claims against Turn Gate proof."),
+    ):
+        child_parser = turn_gate_subparsers.add_parser(command, help=help_text)
+        child_parser.add_argument("--repo-root", default=".", help="Consumer repository root.")
+        child_parser.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+
     atlas = subparsers.add_parser("atlas", help="Render or maintain Atlas diagram assets.")
     atlas_subparsers = atlas.add_subparsers(dest="atlas_command", required=True)
     atlas_refresh = atlas_subparsers.add_parser(
@@ -3585,6 +3609,12 @@ def main(argv: list[str] | None = None) -> int:
                 _SUBAGENT_ORCHESTRATOR_MODULE,
                 ensure_nested_subcommand_repo_root_args(repo_root=repo_root, argv=forwarded)
             )
+        if tokens[0] == "turn-gate":
+            repo_root, forwarded = _extract_repo_root(tokens[1:])
+            return _run_module_main(
+                _TURN_GATE_MODULE,
+                ensure_nested_subcommand_repo_root_args(repo_root=repo_root, argv=forwarded),
+            )
         if tokens[0] == "claude" and len(tokens) >= 2 and tokens[1] in _CLAUDE_HOST_COMMAND_MODULES:
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             return _cmd_claude_host_command(
@@ -3736,6 +3766,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_subagent_router(args)
     if args.command == "subagent-orchestrator":
         return _cmd_subagent_orchestrator(args)
+    if args.command == "turn-gate":
+        return _cmd_turn_gate(args)
     if args.command == "atlas" and args.atlas_command == "refresh":
         return _cmd_atlas_refresh(args)
     if args.command == "atlas" and args.atlas_command == "render":

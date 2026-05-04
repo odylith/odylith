@@ -309,25 +309,26 @@ Odylith publishes two benchmark views and keeps their claims separate:
 
 - `Grounding Benchmark`: measures how well Odylith builds the right grounded
   context before the live agent run
-- `Live Benchmark`: measures how well Odylith completes the real task end to
-  end against Codex or Claude Code running without Odylith
+- `Live Benchmark`: measures whether Odylith's report-visible operating policy makes
+  the same host reach a more validated, better-grounded, and less needlessly
+  mutating outcome than the raw host lane
 
 In README framing, `odylith_off` means Codex or Claude Code running without
 Odylith.
 
 Current v0.1.11 public proof posture is local-first on the Odylith Memory
-Substrate. These are first public eval runs and should be read as a baseline,
-not a ceiling. The current full live proof was executed on Codex, while bounded
+Substrate. These first public eval runs are the baseline for the benchmark
+program. The current full live proof was executed on Codex, while bounded
 Codex and Claude smokes provide host-agnostic coverage and the benchmark
 contract remains host-neutral. Odylith wins by grounding and operationalizing
-shared repo truth better, not by hiding truth from the baseline lane or quietly
-using undeclared benchmark affordances.
+shared repo truth better through report-visible evidence and an explicit
+comparison contract.
 
 ### Grounding Benchmark
 
 > [!NOTE]
-> The Grounding Benchmark is not the product claim. It isolates packet and
-> prompt construction quality before any live host session begins.
+> The Grounding Benchmark is the mechanism-evidence view. It isolates packet
+> and prompt construction quality before any live host session begins.
 
 The Grounding Benchmark answers:
 
@@ -384,14 +385,15 @@ generated `2026-04-25T11:20:25Z`, status `provisional_pass`.
 ### Live Benchmark
 
 > [!TIP]
-> The Live Benchmark is the product-claim lane. It measures full end-to-end task
-> completion after grounding, execution posture, focused checks, and validation
-> policy are allowed to operate under the declared comparison contract.
+> The Live Benchmark is the operating-policy product-claim lane. It measures the
+> same host under the report-visible Odylith policy: grounding, execution posture,
+> validator evidence, write admission, validation, and recovery behavior. This is a
+> strong operating-policy benchmark around the same host.
 
 The Live Benchmark answers:
 
-- "Does Odylith beat Codex or Claude Code without Odylith on the same live
-  end-to-end task contract?"
+- "Does Odylith's report-visible operating policy make the same host reach a more
+  validated, better-grounded, and less needlessly mutating outcome?"
 - "What is the full matched-pair time to valid outcome?"
 - "Does Odylith improve required-path coverage, validation, and expectation success on the live run?"
 
@@ -414,6 +416,16 @@ generated `2026-04-25T11:19:38Z`, status `provisional_pass`.
 | Median total model tokens | `-209,404` |
 | Median time to valid outcome | `-1m 28s` |
 
+Interpretation constraint:
+
+- `68 / 82` current `odylith_on` rows use focused non-mutating closure.
+- `37 / 41` current write-labeled `odylith_on` rows stop that way.
+- `4 / 82` current `odylith_on` rows record file changes.
+
+That focused-closure result is valid write-admission evidence: Odylith can
+prove closure and suppress unnecessary mutation when focused validators already
+pass.
+
 Publication status:
 
 - hard-gate blockers: none
@@ -425,15 +437,17 @@ Publication status:
 - warm/cold robustness consistency: `True`
 
 Read the timing and token wins as benchmark wall-clock and full-session spend,
-not solo-user interactive latency. Scenario-declared focused checks and no-op
-proxy evidence are part of the declared benchmark contract and remain visible
-in the machine-readable reports.
+not solo-user interactive latency. Validator-backed non-mutating closure
+evidence is part of the measured benchmark contract and remains visible in the
+machine-readable reports.
 
 Full current artifacts:
 [Live Snapshot](docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md),
 [Grounding Benchmark Snapshot](docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md),
 [Benchmark Tables](docs/benchmarks/BENCHMARK_TABLES.md), and
 [How To Read Odylith's Benchmark Proof](docs/benchmarks/README.md).
+For the formal risk model behind the benchmark claim, read
+[Benchmark Formal Model](docs/benchmarks/BENCHMARK_FORMAL_MODEL.md).
 The versioned GitHub artifact bundle, including the compressed raw source
 truth, is stored under
 [docs/benchmarks/v0.1.11](docs/benchmarks/v0.1.11/README.md).

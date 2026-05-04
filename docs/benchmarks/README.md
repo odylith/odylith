@@ -4,11 +4,10 @@ This folder explains the benchmark graphs published in the root
 [README](../../README.md).
 
 > [!IMPORTANT]
-> **FIRST PUBLIC EVAL RUNS. THIS IS NOT ODYLITH'S FINAL BENCHMARK POSTURE.**
+> **FIRST PUBLIC EVAL RUNS.**
 >
-> These reports are Odylith's first public eval runs. Read them as a live
-> measurement baseline, not as a claim that the product is done or that the
-> current benchmark posture is its final form.
+> These reports are Odylith's first public eval runs and the live measurement
+> baseline for the benchmark program.
 >
 > Odylith will keep using these runs to measure itself, expand the corpus,
 > rerun the proof, and improve grounding, orchestration, diagnosis, recovery,
@@ -24,11 +23,13 @@ Related docs:
 - [Current Live Benchmark Snapshot](LIVE_BENCHMARK_SNAPSHOT.md)
 - [Benchmark Families And Eval Catalog](FAMILIES_AND_EVALS.md)
 - [Metrics And Priorities](METRICS_AND_PRIORITIES.md)
+- [Benchmark Formal Model](BENCHMARK_FORMAL_MODEL.md)
 - [Reviewer Guide And Prompt](REVIEWER_GUIDE.md)
 
 ## What Is Being Compared
 
-The canonical public proof compares two host-matched lanes on the same task:
+The canonical public proof compares two host-matched lanes on the same benchmark
+contract:
 
 - `odylith_on`
   the proof host runs with the full Odylith assistance stack: grounding,
@@ -52,27 +53,38 @@ Secondary lanes still exist for diagnosis:
 - `odylith_repo_scan_baseline`
   shows what a repo-scan scaffold adds compared with truly turning Odylith off
 
-Those secondary lanes are not the public headline claim.
+The public headline claim stays on the matched `odylith_on` versus
+`odylith_off` pair.
 
 The published benchmark views answer different questions:
 
 - `Live Benchmark`
-  Does the full Odylith assistance stack beat the raw host CLI on the same
-  live end-to-end task contract?
+  Does the report-visible Odylith operating policy make the same host reach a more
+  validated, better-grounded, and less needlessly mutating outcome than the raw
+  host CLI?
 - `Grounding Benchmark`
   Does Odylith build a better grounded packet or prompt than `odylith_off`
-  before the live run starts? This is mechanism evidence, not the product
-  claim.
+  before the live run starts? This is the mechanism-evidence view that supports
+  the product comparison.
 
-The Live Benchmark governs the product claim. The Grounding Benchmark only
-matters when it preserves or improves the Live Benchmark.
+The Live Benchmark governs the operating-policy product comparison. It includes
+report-visible validator-backed closure and write admission, so focused
+non-mutating closure rows are valid non-mutation and write-admission evidence.
+The Grounding Benchmark matters when it preserves or improves the Live
+Benchmark.
+
+The generic interpretation rule is: every benchmark row is evidence about a
+policy decision under a declared contract. The row may prove grounding quality,
+validation quality, fail-closed behavior, write admission, recovery posture, or
+time and token efficiency. The visible scenario state, validator, and report
+basis define the estimand for that row.
 
 The current full live proof was executed on Codex. Codex and Claude quick
 smokes provide bounded host-agnostic coverage, and a full Claude-host proof
 would be a separate published benchmark run.
 
 Tracked source truth now carries a more serious benchmark corpus than the last
-published reports: `82` tracked scenarios (`77` implementation plus `5`
+published reports: `82` tracked scenarios (`77` operating-policy plus `5`
 architecture), including explicit API evolution, stateful recovery,
 external-dependency recovery, destructive-scope control, Context Engine,
 Execution Engine, Guidance Behavior, and Discipline families. Publication
@@ -81,7 +93,8 @@ corpus.
 
 ## Closeout Framing
 
-Benchmark summaries should lead with measured proof, not product narration.
+Benchmark summaries should lead with measured proof and evidence-backed product
+interpretation.
 If Odylith is named directly beyond lane labels, keep it to one evidence-backed
 `Odylith Assist:` line at closeout or for explicit visibility-feedback
 fallback, backed by measured proof or a measured report, and follow
@@ -167,14 +180,15 @@ holds these constant explicitly:
 
 The declared lane difference is explicit, not hidden:
 
-- `odylith_on` may use declared Odylith affordances such as selected docs,
-  execution-engine posture, and scenario-declared focused checks
-- any preflight evidence injected into the Odylith lane must come from checks
+- `odylith_on` may use report-visible Odylith affordances such as selected docs,
+  execution-engine posture, product Turn Gate receipts, and validator-backed
+  closure evidence
+- any Turn Gate early-exit proof in the Odylith lane must come from evidence
   executed inside the disposable benchmark workspace and be surfaced in the
   report
 - the report must expose those affordances explicitly through the comparison
-  contract, observed-path sources, preflight-evidence fields, and fairness
-  findings
+  contract, observed-path sources, Turn Gate fields, compatibility
+  preflight-evidence fields, and fairness findings
 
 Important reading rule:
 
@@ -205,6 +219,9 @@ Current live-proof secondary guardrail:
 - `within_budget_rate >= 0.80` on packet-backed sampled slices
 
 See [Metrics And Priorities](METRICS_AND_PRIORITIES.md) for the full ordering.
+See [Benchmark Formal Model](BENCHMARK_FORMAL_MODEL.md) for the mathematical
+interpretation of policy value, write-admission risk, and non-mutating closure
+dominance.
 
 ## How To Read The Graphs
 
@@ -212,7 +229,7 @@ See [Metrics And Priorities](METRICS_AND_PRIORITIES.md) for the full ordering.
 
 The family heatmap groups scenarios by task family and shows median deltas.
 
-- rows are ordered by developer-first archetype, not by alphabetical family
+- rows are ordered by developer-first archetype
   name or raw token delta
 - `Recall` means how much better Odylith is at surfacing the repo paths the
   task truly depends on

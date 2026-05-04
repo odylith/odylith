@@ -95,6 +95,44 @@ def test_bug_capture_help_forwards_backend_flags(capsys) -> None:
     assert "--json" in output
 
 
+def test_turn_gate_decide_cli_emits_product_receipt(tmp_path: Path, capsys) -> None:
+    command = "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_turn_gate.py"
+    payload = {
+        "prompt": "Verify the bounded contract without editing when evidence already passes.",
+        "policy_hints": {
+            "non_mutating_closure_allowed": True,
+            "focused_checks_cover_contract": True,
+        },
+        "focused_local_checks": [command],
+        "validation_commands": [command],
+        "focused_check_result": {
+            "status": "passed",
+            "results": [{"status": "passed", "command": command}],
+        },
+    }
+
+    rc = cli.main(
+        [
+            "turn-gate",
+            "decide",
+            "--repo-root",
+            str(tmp_path),
+            "--host",
+            "codex",
+            "--mode",
+            "observe",
+            "--prompt-json",
+            json.dumps(payload),
+            "--json",
+        ]
+    )
+
+    output = json.loads(capsys.readouterr().out)
+    assert rc == 0
+    assert output["decision_type"] == "early_exit_proof"
+    assert output["receipt"]["source"] == "product_turn_gate"
+
+
 def test_github_issue_triage_help_forwards_backend_flags(capsys) -> None:
     with pytest.raises(SystemExit) as excinfo:
         cli.main(["github", "issue", "triage", "--help"])

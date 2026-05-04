@@ -17,8 +17,12 @@ class BenchmarkFamilyGroup:
 FAMILY_GROUPS: tuple[BenchmarkFamilyGroup, ...] = (
     BenchmarkFamilyGroup(
         key="bug_fixes",
-        label="Bug Fixes",
-        description="Validator-backed repair work where the agent has to localize and fix a concrete defect.",
+        label="Repair / Write Admission",
+        description=(
+            "Repair-shaped validator work where the system must localize the slice, "
+            "admit writes only when evidence requires them, and treat validated "
+            "non-mutating closure as write-admission evidence when report-visible validator evidence establishes the measured contract."
+        ),
         families=(
             "validation_heavy_fix",
             "stateful_bug_recovery",

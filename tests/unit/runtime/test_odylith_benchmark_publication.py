@@ -71,7 +71,7 @@ def _report(
                     "odylith_on": "primary candidate",
                     "odylith_off": "odylith_off / raw host CLI honest baseline",
                 },
-                "delta": "full Odylith vs raw agent",
+                "delta": "Odylith policy vs raw host",
                 "why_it_matters": "Keeps the benchmark honest.",
             },
             {
@@ -137,7 +137,7 @@ def test_render_diagnostic_snapshot_markdown_uses_packet_prompt_contract() -> No
     assert "packet and prompt construction only" in rendered
     assert "Across the `65` diagnostic pairs" in rendered
     assert "Compared with the `odylith_off` prompt bundle, Odylith moved:" in rendered
-    assert "`odylith_off` is the raw prompt-bundle control, not the product-claim lane." in rendered
+    assert "`odylith_off` is the raw prompt-bundle control for this mechanism-evidence view." in rendered
 
 
 def test_render_benchmark_tables_markdown_uses_current_tables() -> None:
@@ -161,7 +161,7 @@ def test_render_benchmark_tables_markdown_uses_current_tables() -> None:
 
     assert "## Internal Diagnostic Signal Table" in rendered
     assert "## Live Signal Table" in rendered
-    assert "| Lane role | primary candidate | odylith_off / raw host CLI honest baseline | full Odylith vs raw agent | Keeps the benchmark honest. |" in rendered
+    assert "| Lane role | primary candidate | odylith_off / raw host CLI honest baseline | Odylith policy vs raw host | Keeps the benchmark honest. |" in rendered
     assert "Current live-proof status: `provisional_pass`." in rendered
     assert "Current diagnostic status: `hold`." in rendered
 

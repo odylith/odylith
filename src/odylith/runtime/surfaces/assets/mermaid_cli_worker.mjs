@@ -270,6 +270,13 @@ async function main() {
           memory: { fill: '#ebf9e8', stroke: '#7ec373', label: '#0f3a24' },
           neutral: { fill: '#f5f8fb', stroke: '#b7c7d9', label: '#1f2937' },
         };
+        const clusterPaletteByBucket = {
+          input: clusterPalette[0],
+          intelligence: clusterPalette[1],
+          decision: clusterPalette[2],
+          apply: clusterPalette[4],
+          memory: clusterPalette[3],
+        };
         const fallbackNodeTones = [
           nodePalette.input,
           nodePalette.intelligence,
@@ -297,24 +304,54 @@ async function main() {
           }
           return { x, y };
         };
-        const toneForNodeText = (text, fallbackTone) => {
+        const bucketForText = text => {
           const normalized = String(text || '').toLowerCase();
           if (/\?|decision|decide|gate|confirm|choose|blocked|valid|stale|ready|pass|fail|whether/.test(normalized)) {
-            return nodePalette.decision;
+            return 'decision';
           }
           if (/\b(apply|write|render|refresh|sync|update|publish|release|migrate|deploy|repair|scaffold|register|create|author|materialize|bundle)\b/.test(normalized)) {
-            return nodePalette.apply;
+            return 'apply';
           }
           if (/\b(memory|compass|state|ledger|history|cache|session|timeline|proof|observation)\b/.test(normalized)) {
-            return nodePalette.memory;
+            return 'memory';
           }
           if (/\b(input|intent|prompt|source|repo|docs|catalog|watch|signal|request|operator|user|external)\b/.test(normalized)) {
-            return nodePalette.input;
+            return 'input';
           }
           if (/\b(engine|compiler|planner|routing|classifier|agent|runtime|registry|radar|atlas|casebook|tribunal|context|component|analysis|proposal)\b/.test(normalized)) {
-            return nodePalette.intelligence;
+            return 'intelligence';
+          }
+          return '';
+        };
+        const bucketForClassNames = element => {
+          const classNames = Array.from(element?.classList || []).map(value => String(value || '').toLowerCase());
+          for (const bucket of ['input', 'intelligence', 'decision', 'apply', 'memory']) {
+            if (classNames.includes(bucket)) {
+              return bucket;
+            }
+          }
+          return '';
+        };
+        const toneForNode = (node, fallbackTone) => {
+          const bucket = bucketForClassNames(node) || bucketForText(node.textContent || '');
+          if (bucket && nodePalette[bucket]) {
+            return nodePalette[bucket];
           }
           return fallbackTone || nodePalette.neutral;
+        };
+        const clusterLabelText = cluster => (
+          Array.from(cluster.querySelectorAll('.cluster-label'))
+            .map(label => label.textContent || '')
+            .join(' ')
+          || cluster.id
+          || ''
+        );
+        const toneForCluster = (cluster, fallbackTone) => {
+          const bucket = bucketForText(`${clusterLabelText(cluster)} ${cluster.id || ''}`);
+          if (bucket && clusterPaletteByBucket[bucket]) {
+            return clusterPaletteByBucket[bucket];
+          }
+          return fallbackTone;
         };
         for (const rect of svg.querySelectorAll('.node rect')) {
           rect.setAttribute('rx', rect.getAttribute('rx') || '8');
@@ -330,7 +367,7 @@ async function main() {
           rect.setAttribute('rx', rect.getAttribute('rx') || '14');
           rect.setAttribute('ry', rect.getAttribute('ry') || '14');
           const authoredStyle = rect.getAttribute('style') || '';
-          const tone = clusterPalette[index % clusterPalette.length];
+          const tone = toneForCluster(cluster, clusterPalette[index % clusterPalette.length]);
           const x = numericAttr(rect, 'x');
           const y = numericAttr(rect, 'y');
           const width = numericAttr(rect, 'width');
@@ -377,7 +414,7 @@ async function main() {
           const authoredStyle = shape.getAttribute('style') || '';
           const clusterTone = clusterToneForNode(node);
           const fallbackTone = clusterTone || fallbackNodeTones[index % fallbackNodeTones.length];
-          const tone = toneForNodeText(node.textContent || '', fallbackTone);
+          const tone = toneForNode(node, fallbackTone);
           shape.setAttribute(
             'style',
             `${authoredStyle};fill:${tone.fill} !important;stroke:${tone.stroke} !important;stroke-width:1.35px !important`,

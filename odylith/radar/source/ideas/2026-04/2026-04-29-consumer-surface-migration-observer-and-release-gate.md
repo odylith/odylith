@@ -848,6 +848,34 @@ The observer is now part of the migration-runtime release gate. It records chang
   it also requires explicit evidence that unknown legacy state and every
   historical 0.1.x release before the current release plan cleanly into the
   target migration path.
+- The semantic Atlas palette follow-up keeps color deterministic and generated:
+  source Mermaid topology remains the truth, while the renderer owns visual
+  color. Cluster color now keys off the same visible label plus Mermaid
+  subgraph identifier used by the renderer; migration detection rejects old
+  order-based lane colors, accepts current cluster-inherited node fills, and
+  reports zero stale render paths after the full catalog refresh.
+- The latest browser and install-managed asset fingerprints are covered by the
+  same v0.1.14 Atlas render-surface migration and normal bundle synchronization
+  contract. Consumer-owned diagram source, backlog, Registry, Casebook, and
+  Compass truth are not rewritten during install; existing 0.1.10 through
+  0.1.13 installs rerender stale generated Atlas assets from local source truth
+  during upgrade.
+- Operator CLI and public-doc/reporting churn in this branch is additive release
+  proof and benchmark documentation state, not a new destructive consumer data
+  migration. The release migration gate remains fail-closed until these
+  fingerprints are bound to this completed migration assessment.
+- The Product Governed Harness / Turn Gate benchmark formalization changes add
+  product runtime decisions, benchmark report fields, Registry component truth,
+  release-target wording, and generated browser surface refreshes. The consumer
+  migration posture is additive: existing source truth is not rewritten, rendered
+  Registry/Radar/Atlas/Compass assets are regenerated from governed local truth,
+  and old benchmark reports remain readable through derived compatibility fields.
+  Fresh headless Chromium coverage exercised the shell default route; Radar
+  `B-118` deep link; Registry `governed-harness`; Atlas `D-024`; Casebook;
+  Compass; desktop and mobile viewports; impossible-search empty states; and
+  degraded payload fixtures. The only surfaced UI regression was Compass attempting
+  a `file://` JSON fetch despite already loading the embedded runtime JS; the
+  template and bundle mirror now skip that fetch on file-backed surfaces.
 
 Migration observer markers for this assessment:
 - `migration-observer:0.1.14:operator-cli-contracts:dce35485ba07`
@@ -909,6 +937,17 @@ Migration observer markers for this assessment:
 - `migration-observer:0.1.14:install-managed-assets:fe7abb4cf478`
 - `migration-observer:0.1.14:browser-surfaces:8d99ed8ed8e2`
 - `migration-observer:0.1.14:install-managed-assets:608e1152e253`
+- `migration-observer:0.1.14:operator-cli-contracts:0942471fe516`
+- `migration-observer:0.1.14:public-docs-and-release-guidance:987530a55111`
+- `migration-observer:0.1.14:browser-surfaces:c4397cface1d`
+- `migration-observer:0.1.14:install-managed-assets:b75b7d53959d`
+- `migration-observer:0.1.14:browser-surfaces:d883f0423a24`
+- `migration-observer:0.1.14:install-managed-assets:115989511d7d`
+- `migration-observer:0.1.14:browser-surfaces:1c29f285545e`
+- `migration-observer:0.1.14:install-managed-assets:bd0bed9814dd`
+- `migration-observer:0.1.14:browser-surfaces:51ba5efbb798`
+- `migration-observer:0.1.14:install-managed-assets:24025292a0dd`
+- `migration-observer:0.1.14:browser-surfaces:597e50554af1`
 
 Validation evidence for the Casebook status-FSM slice:
 - `python -m py_compile src/odylith/runtime/common/casebook_metadata.py src/odylith/runtime/governance/casebook_source_validation.py src/odylith/runtime/surfaces/render_casebook_dashboard.py src/odylith/install/casebook_metadata_migration.py src/odylith/install/migration_runtime.py src/odylith/install/migration_definitions.py`
@@ -957,3 +996,9 @@ Validation evidence for the Casebook status-FSM slice:
 - `PYTHONPATH=src python -m odylith.cli sync --repo-root . --check-only --runtime-mode standalone` (`passed`; source-local sync check, no runtime fallback)
 - `PYTHONPATH=src python -m odylith.cli release migration-gate --repo-root . --target-version 0.1.14 --json` (`blocked_manual_migrations: []`, `ungated_lifecycle_paths: []`)
 - `make dev-validate` (`3733 passed, 1 skipped in 963.19s`; source-local maintainer lane validation, with release eligibility still requiring pinned dogfood proof)
+
+Validation evidence for the Product Governed Harness Turn Gate browser-surface slice:
+- `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_turn_gate.py tests/unit/test_cli.py::test_turn_gate_decide_cli_emits_product_receipt tests/unit/runtime/test_odylith_benchmark_live_execution.py tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_odylith_benchmark_publication.py tests/unit/runtime/test_odylith_benchmark_shard_merge.py tests/unit/runtime/test_odylith_benchmark_graphs.py tests/unit/runtime/test_odylith_benchmark_corpus.py` (`399 passed`)
+- `PYTHONPATH=src .venv/bin/python -m pytest -q tests/unit/runtime/test_compass_dashboard_shell.py tests/unit/runtime/test_turn_gate.py tests/unit/test_cli.py::test_turn_gate_decide_cli_emits_product_receipt tests/unit/runtime/test_odylith_benchmark_live_execution.py::test_run_live_scenario_uses_turn_gate_early_exit_proof` (`10 passed`)
+- Headless Chromium shell matrix over default, Radar `B-118`, Registry `governed-harness`, Atlas `D-024`, Casebook, and Compass at desktop and mobile viewports (`16 checked`, `failures: []`)
+- Headless Chromium degraded payload matrix over Registry, Radar, Atlas, Casebook, and Compass (`5 checked`, `failures: []`)

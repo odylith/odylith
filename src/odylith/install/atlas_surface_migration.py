@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import html
 import json
 import re
 import xml.etree.ElementTree as ET
@@ -41,8 +42,27 @@ _POLISHED_CLUSTER_FILLS = frozenset(
     {"#effcf9", "#f1f7ff", "#fff3f0", "#f2fbef", "#fbf7ff"}
 )
 _POLISHED_NODE_FILLS = frozenset(
-    {"#e8fbf7", "#eaf3ff", "#ffece7", "#f4ebff", "#ebf9e8", "#f5f8fb"}
+    {
+        "#e8fbf7",
+        "#eaf3ff",
+        "#ffece7",
+        "#f4ebff",
+        "#ebf9e8",
+        "#f5f8fb",
+        "#effcf9",
+        "#f1f7ff",
+        "#fff3f0",
+        "#f2fbef",
+        "#fbf7ff",
+    }
 )
+_SEMANTIC_CLUSTER_FILL_BY_BUCKET = {
+    "input": "#effcf9",
+    "intelligence": "#f1f7ff",
+    "decision": "#fff3f0",
+    "apply": "#fbf7ff",
+    "memory": "#f2fbef",
+}
 _LEGACY_CLUSTER_STYLE_TOKENS = (
     "style=\"\"",
     "fill:#fbfdff",
@@ -216,8 +236,10 @@ def _write_ledger(
         "notes": (
             "v0.1.14 migrates Atlas generated diagram assets and the Atlas "
             "dashboard to the pure-white viewer background plus the darker "
-            "managed cluster and semantic node color contract. Source Mermaid "
-            "remains topology truth; the migration regenerates derived render "
+            "managed cluster and semantic node color contract, including the "
+            "Soft Coral decision/gate node accent and lighter Soft Coral Wash "
+            "container tone with semantic-label-first lane coloring. Source "
+            "Mermaid remains topology truth; the migration regenerates derived render "
             "surfaces, rebuilds the shared topology traceability graph, and "
             "records verified fingerprints plus topology integrity evidence."
         ),
@@ -305,15 +327,9 @@ def _svg_style_inspection(path: Path) -> _SvgStyleInspection | None:
         return None
     lowered_text = text.lower()
     class_blocks = _svg_class_blocks(text)
-    cluster_blocks = class_blocks.get("cluster", ())
-    if not cluster_blocks:
-        cluster_blocks = tuple(
-            block.lower()
-            for block in re.findall(r"<g\b[^>]*class=[\"'][^\"']*cluster[^\"']*[\"'][\s\S]*?</g>", text)
-        )
     return _SvgStyleInspection(
         lowered_text=lowered_text,
-        cluster_blocks=cluster_blocks,
+        cluster_blocks=class_blocks.get("cluster", ()),
         node_blocks=class_blocks.get("node", ()),
     )
 
@@ -332,10 +348,154 @@ def _svg_cluster_needs_polish_from_inspection(inspection: _SvgStyleInspection) -
     for block in cluster_blocks:
         if any(token in block for token in _LEGACY_CLUSTER_STYLE_TOKENS):
             return True
+        if _semantic_cluster_style_mismatch(block):
+            return True
         if any(fill in block for fill in _POLISHED_CLUSTER_FILLS):
             continue
         return True
     return False
+
+
+def _semantic_bucket_for_text(text: str) -> str:
+    normalized = str(text or "").lower()
+    if re.search(r"\?|decision|decide|gate|confirm|choose|blocked|valid|stale|ready|pass|fail|whether", normalized):
+        return "decision"
+    if re.search(
+        r"\b(apply|write|render|refresh|sync|update|publish|release|migrate|deploy|repair|scaffold|register|create|author|materialize|bundle)\b",
+        normalized,
+    ):
+        return "apply"
+    if re.search(r"\b(memory|compass|state|ledger|history|cache|session|timeline|proof|observation)\b", normalized):
+        return "memory"
+    if re.search(r"\b(input|intent|prompt|source|repo|docs|catalog|watch|signal|request|operator|user|external)\b", normalized):
+        return "input"
+    if re.search(
+        r"\b(engine|compiler|planner|routing|classifier|agent|runtime|registry|radar|atlas|casebook|tribunal|context|component|analysis|proposal)\b",
+        normalized,
+    ):
+        return "intelligence"
+    return ""
+
+
+def _mermaid_subgraph_labels(source_mmd_path: Path) -> tuple[str, ...]:
+    try:
+        text = source_mmd_path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return ()
+    labels: list[str] = []
+    for line in text.splitlines():
+        raw = line.strip()
+        if not raw.lower().startswith("subgraph "):
+            continue
+        token = raw.split(None, 1)[1].strip()
+        bracket = re.search(r"\[\s*['\"]?(.+?)['\"]?\s*\]", token)
+        if bracket:
+            labels.append(bracket.group(1).strip())
+            continue
+        quoted = re.match(r"['\"](.+?)['\"]", token)
+        labels.append((quoted.group(1) if quoted else token).strip())
+    return tuple(label for label in labels if label)
+
+
+def _mermaid_subgraph_semantic_texts(source_mmd_path: Path) -> tuple[str, ...]:
+    try:
+        text = source_mmd_path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return ()
+    semantic_texts: list[str] = []
+    for line in text.splitlines():
+        raw = line.strip()
+        if not raw.lower().startswith("subgraph "):
+            continue
+        token = raw.split(None, 1)[1].strip()
+        identifier = re.split(r"\[|['\"]", token, maxsplit=1)[0].strip()
+        bracket = re.search(r"\[\s*['\"]?(.+?)['\"]?\s*\]", token)
+        if bracket:
+            label = bracket.group(1).strip()
+        else:
+            quoted = re.match(r"['\"](.+?)['\"]", token)
+            label = (quoted.group(1) if quoted else token).strip()
+        semantic_text = " ".join(part for part in (label, identifier) if part).strip()
+        if semantic_text:
+            semantic_texts.append(semantic_text)
+    return tuple(semantic_texts)
+
+
+def _semantic_cluster_expected_fills(source_mmd_path: Path) -> tuple[str, ...]:
+    fills: list[str] = []
+    for semantic_text in _mermaid_subgraph_semantic_texts(source_mmd_path):
+        bucket = _semantic_bucket_for_text(semantic_text)
+        fill = _SEMANTIC_CLUSTER_FILL_BY_BUCKET.get(bucket, "")
+        if fill:
+            fills.append(fill)
+    return tuple(fills)
+
+
+def _svg_block_text(block: str) -> str:
+    return " ".join(html.unescape(re.sub(r"<[^>]+>", " ", str(block or ""))).split())
+
+
+def _svg_cluster_label_text(block: str) -> str:
+    try:
+        root = ET.fromstring(str(block or ""))
+    except ET.ParseError:
+        return _svg_block_text(block)
+    labels: list[str] = []
+    for element in root.iter():
+        class_names = set(str(element.attrib.get("class", "")).split())
+        if "cluster-label" in class_names:
+            labels.append(" ".join(text.strip() for text in element.itertext() if text.strip()))
+    return " ".join(labels).strip() or _svg_block_text(block)
+
+
+def _svg_cluster_semantic_text(block: str) -> str:
+    try:
+        root = ET.fromstring(str(block or ""))
+    except ET.ParseError:
+        return _svg_block_text(block)
+    return " ".join(part for part in (_svg_cluster_label_text(block), root.attrib.get("id", "")) if part).strip()
+
+
+def _cluster_rect_fill(block: str) -> str:
+    match = re.search(r"<(?:\w+:)?rect\b[^>]*>", str(block or ""), flags=re.IGNORECASE)
+    if not match:
+        return ""
+    rect = match.group(0)
+    style = re.search(r"\bstyle\s*=\s*['\"]([^'\"]*)['\"]", rect, flags=re.IGNORECASE)
+    if style:
+        fills = re.findall(r"fill\s*:\s*(#[0-9a-fA-F]{6})", style.group(1))
+        if fills:
+            return fills[-1].lower()
+    attr = re.search(r"\bfill\s*=\s*['\"](#[0-9a-fA-F]{6})['\"]", rect, flags=re.IGNORECASE)
+    return attr.group(1).lower() if attr else ""
+
+
+def _semantic_cluster_style_mismatch(block: str) -> bool:
+    bucket = _semantic_bucket_for_text(_svg_cluster_semantic_text(block))
+    expected_fill = _SEMANTIC_CLUSTER_FILL_BY_BUCKET.get(bucket, "")
+    actual_fill = _cluster_rect_fill(block)
+    return bool(expected_fill and actual_fill and actual_fill != expected_fill)
+
+
+def _semantic_cluster_source_mismatch(source_mmd_path: Path, inspection: _SvgStyleInspection) -> bool:
+    if any(_semantic_bucket_for_text(_svg_cluster_semantic_text(block)) for block in inspection.cluster_blocks):
+        return False
+    expected_fills = _semantic_cluster_expected_fills(source_mmd_path)
+    if not expected_fills:
+        return False
+    actual_fills = tuple(
+        fill for fill in (_cluster_rect_fill(block) for block in inspection.cluster_blocks) if fill
+    )
+    if not actual_fills:
+        return True
+    # Mermaid commonly serializes clusters in reverse source order, and older
+    # SVGs may not expose cluster labels. This source-order fallback is only for
+    # that label-less shape; label-bearing clusters are checked per cluster.
+    if actual_fills[: len(expected_fills)] == expected_fills:
+        return False
+    if actual_fills[: len(expected_fills)] == tuple(reversed(expected_fills)):
+        return False
+    return True
 
 
 def _svg_class_blocks(text: str) -> dict[str, tuple[str, ...]]:
@@ -376,13 +536,17 @@ def _svg_node_needs_polish_from_inspection(inspection: _SvgStyleInspection) -> b
     return True
 
 
-def _svg_needs_polish(path: Path) -> bool:
+def _svg_needs_polish(path: Path, *, source_mmd_path: Path | None = None) -> bool:
     inspection = _svg_style_inspection(path)
     if inspection is None:
         return False
     return (
         _svg_cluster_needs_polish_from_inspection(inspection)
         or _svg_node_needs_polish_from_inspection(inspection)
+        or (
+            source_mmd_path is not None
+            and _semantic_cluster_source_mismatch(source_mmd_path, inspection)
+        )
     )
 
 
@@ -413,7 +577,7 @@ def _render_paths_needing_migration(
         if not source_svg_path.is_file() or not source_png_path.is_file():
             needing.append(display_path(repo_root=repo_root, path=source_mmd_path))
             continue
-        if _svg_needs_polish(source_svg_path):
+        if _svg_needs_polish(source_svg_path, source_mmd_path=source_mmd_path):
             needing.append(display_path(repo_root=repo_root, path=source_mmd_path))
     return tuple(dict.fromkeys(needing))
 
@@ -572,8 +736,7 @@ def _render_jobs(
             str(item.get("render_source_fingerprint", "")).strip() == current_fingerprint
             and source_svg_path.is_file()
             and source_png_path.is_file()
-            and not _svg_cluster_needs_polish(source_svg_path)
-            and not _svg_node_needs_polish(source_svg_path)
+            and not _svg_needs_polish(source_svg_path, source_mmd_path=source_mmd_path)
         ):
             continue
         jobs.append(

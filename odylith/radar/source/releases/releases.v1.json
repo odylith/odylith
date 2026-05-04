@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "updated_utc": "2026-05-03",
+  "updated_utc": "2026-05-04",
   "aliases": {
     "current": "release-0-1-14"
   },
@@ -44,7 +44,7 @@
       "version": "0.1.14",
       "tag": "v0.1.14",
       "name": "",
-      "notes": "Casebook lifecycle normalization, robust upgrade migrations, greenfield program/release topology, and polished Atlas diagram rendering.",
+      "notes": "Casebook lifecycle normalization, robust upgrade migrations, greenfield program/release topology, polished Atlas diagram rendering, and Product Governed Harness Turn Gate benchmark formalization.",
       "created_utc": "2026-05-03",
       "shipped_utc": "",
       "closed_utc": ""

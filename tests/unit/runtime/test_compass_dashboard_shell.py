@@ -93,6 +93,7 @@ def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic(
     assert 'const view = String(options && options.view ? options.view : "").trim().toLowerCase();' in shared_js
     assert 'if (WORKSTREAM_RE.test(token)) params.set("workstream", token);' in shared_js
     assert 'if (view) params.set("view", view);' in shared_js
+
     assert 'return `../index.html?${params.toString()}`;' in shared_js
     assert 'const href = radarWorkstreamHref(ideaId, { view: "plan" });' in shared_js
     assert "async function reconcileRuntimePayloadWithSourceTruth(payload)" in runtime_truth_js
@@ -123,6 +124,13 @@ def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic(
     assert "function renderScopedFallbackBrief(brief, linkContext)" not in summary_js
     assert 'Show the global live brief while ${escapeHtml(workstream)} warms' not in summary_js
     assert 'return String(value ?? "")' in shared_js
+
+
+def test_compass_state_uses_embedded_runtime_without_file_scheme_fetch_noise() -> None:
+    state_js = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-state.v1.js")
+
+    assert 'String(window.location.protocol || "").toLowerCase() !== "file:"' in state_js
+    assert "fetch(compassShell().runtime_json_href" in state_js
 
 
 def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_actions() -> None:

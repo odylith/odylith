@@ -28,14 +28,14 @@ Last updated (UTC): 2026-05-03
 | 21 | B-037 | Live Benchmarks Drawer and Dynamic Metric Readout | P1 | 98 | 4 | 5 | 3 | L | High | queued | [odylith-live-benchmarks-drawer-and-dynamic-metric-readout](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-live-benchmarks-drawer-and-dynamic-metric-readout.md) |
 | 22 | B-043 | Bootstrapped Consumer Governance Lane for SWE-bench Verified | P1 | 92 | 4 | 5 | 5 | L | VeryHigh | queued | [odylith-bootstrapped-consumer-governance-lane-for-swe-bench-verified](odylith/radar/source/ideas/2026-04/2026-04-02-odylith-bootstrapped-consumer-governance-lane-for-swe-bench-verified.md) |
 | 23 | B-035 | Decisions Tab and Architecture Decision Ledger | P1 | 89 | 4 | 4 | 3 | L | High | queued | [odylith-decisions-tab-and-architecture-decision-ledger](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-decisions-tab-and-architecture-decision-ledger.md) |
-| 24 | B-118 | v0.1.12 Governed Harness: Agent SDK Control Plane And Deep Benchmark Proof | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-agent-sdk-control-plane-and-deep-benchmark-proof](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-agent-sdk-control-plane-and-deep-benchmark-proof.md) |
-| 25 | B-119 | v0.1.12 Governed Harness: Deep Benchmark Coverage Matrix And Baseline Proof | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-deep-benchmark-coverage-matrix-and-baseline-proof](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-deep-benchmark-coverage-matrix-and-baseline-proof.md) |
-| 26 | B-120 | v0.1.12 Governed Harness: Governed Harness Manifest Contract | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-governed-harness-manifest-contract](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-governed-harness-manifest-contract.md) |
-| 27 | B-121 | v0.1.12 Governed Harness: Admissibility Guardrails And Approval Policy | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-admissibility-guardrails-and-approval-policy](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-admissibility-guardrails-and-approval-policy.md) |
-| 28 | B-122 | v0.1.12 Governed Harness: Harness Receipts, Tracing, And Resumable Proof | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-harness-receipts-tracing-and-resumable-proof](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-harness-receipts-tracing-and-resumable-proof.md) |
-| 29 | B-123 | v0.1.12 Governed Harness: OpenAI Agents SDK Adapter And Generic Harness Contract | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-openai-agents-sdk-adapter-and-generic-harness-contract](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-openai-agents-sdk-adapter-and-generic-harness-contract.md) |
-| 30 | B-124 | v0.1.12 Governed Harness: Cross-Host Harness Ablations And Deep Benchmark Execution | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-cross-host-harness-ablations-and-deep-benchmark-execution](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-cross-host-harness-ablations-and-deep-benchmark-execution.md) |
-| 31 | B-125 | v0.1.12 Governed Harness: Release Publication, Docs, And Benchmark Closure | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-release-publication-docs-and-benchmark-closure](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-release-publication-docs-and-benchmark-closure.md) |
+| 24 | B-118 | v0.1.14 Governed Harness: Agent SDK Control Plane And Deep Benchmark Proof | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-agent-sdk-control-plane-and-deep-benchmark-proof](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-agent-sdk-control-plane-and-deep-benchmark-proof.md) |
+| 25 | B-119 | v0.1.14 Governed Harness: Deep Benchmark Coverage Matrix And Baseline Proof | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-deep-benchmark-coverage-matrix-and-baseline-proof](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-deep-benchmark-coverage-matrix-and-baseline-proof.md) |
+| 26 | B-120 | v0.1.14 Governed Harness: Governed Harness Manifest Contract | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-governed-harness-manifest-contract](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-governed-harness-manifest-contract.md) |
+| 27 | B-121 | v0.1.14 Governed Harness: Admissibility Guardrails And Approval Policy | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-admissibility-guardrails-and-approval-policy](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-admissibility-guardrails-and-approval-policy.md) |
+| 28 | B-122 | v0.1.14 Governed Harness: Harness Receipts, Tracing, And Resumable Proof | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-harness-receipts-tracing-and-resumable-proof](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-harness-receipts-tracing-and-resumable-proof.md) |
+| 29 | B-123 | v0.1.14 Governed Harness: OpenAI Agents SDK Adapter And Generic Harness Contract | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-openai-agents-sdk-adapter-and-generic-harness-contract](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-openai-agents-sdk-adapter-and-generic-harness-contract.md) |
+| 30 | B-124 | v0.1.14 Governed Harness: Cross-Host Harness Ablations And Deep Benchmark Execution | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-cross-host-harness-ablations-and-deep-benchmark-execution](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-cross-host-harness-ablations-and-deep-benchmark-execution.md) |
+| 31 | B-125 | v0.1.14 Governed Harness: Release Publication, Docs, And Benchmark Closure | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-release-publication-docs-and-benchmark-closure](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-release-publication-docs-and-benchmark-closure.md) |
 | 32 | B-128 | v0.1.15+ Agentic Context Governance Program | P0 | 74 | 5 | 5 | 5 | XL | VeryHigh | queued | [v0-1-15-agentic-context-governance-program](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-agentic-context-governance-program.md) |
 | 33 | B-131 | v0.1.15+ Repo Context Graph v1 | P0 | 74 | 5 | 5 | 5 | XL | VeryHigh | queued | [v0-1-15-repo-context-graph-v1](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-repo-context-graph-v1.md) |
 | 34 | B-134 | v0.1.15+ Execution Policy Adapters and Universal Action Gate | P0 | 74 | 5 | 5 | 5 | XL | VeryHigh | queued | [v0-1-15-execution-policy-adapters-and-universal-action-gate](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-execution-policy-adapters-and-universal-action-gate.md) |
@@ -656,56 +656,56 @@ Last updated (UTC): 2026-05-03
 - ranking basis: no manual priority override; this should stay in the upper queue because Odylith benefits from remembering its architectural reasoning on purpose instead of rediscovering it from history.
 
 ### B-118 (rank 24)
-- why now: created as a new queued workstream for v0.1.12 Governed Harness: Agent SDK Control Plane And Deep Benchmark Proof.
+- why now: created as a new queued workstream for v0.1.14 Governed Harness: Agent SDK Control Plane And Deep Benchmark Proof.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
 ### B-119 (rank 25)
-- why now: created as a new queued workstream for v0.1.12 Governed Harness: Deep Benchmark Coverage Matrix And Baseline Proof.
+- why now: created as a new queued workstream for v0.1.14 Governed Harness: Deep Benchmark Coverage Matrix And Baseline Proof.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
 ### B-120 (rank 26)
-- why now: created as a new queued workstream for v0.1.12 Governed Harness: Governed Harness Manifest Contract.
+- why now: created as a new queued workstream for v0.1.14 Governed Harness: Governed Harness Manifest Contract.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
 ### B-121 (rank 27)
-- why now: created as a new queued workstream for v0.1.12 Governed Harness: Admissibility Guardrails And Approval Policy.
+- why now: created as a new queued workstream for v0.1.14 Governed Harness: Admissibility Guardrails And Approval Policy.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
 ### B-122 (rank 28)
-- why now: created as a new queued workstream for v0.1.12 Governed Harness: Harness Receipts, Tracing, And Resumable Proof.
+- why now: created as a new queued workstream for v0.1.14 Governed Harness: Harness Receipts, Tracing, And Resumable Proof.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
 ### B-123 (rank 29)
-- why now: created as a new queued workstream for v0.1.12 Governed Harness: OpenAI Agents SDK Adapter And Generic Harness Contract.
+- why now: created as a new queued workstream for v0.1.14 Governed Harness: OpenAI Agents SDK Adapter And Generic Harness Contract.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
 ### B-124 (rank 30)
-- why now: created as a new queued workstream for v0.1.12 Governed Harness: Cross-Host Harness Ablations And Deep Benchmark Execution.
+- why now: created as a new queued workstream for v0.1.14 Governed Harness: Cross-Host Harness Ablations And Deep Benchmark Execution.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
 ### B-125 (rank 31)
-- why now: created as a new queued workstream for v0.1.12 Governed Harness: Release Publication, Docs, And Benchmark Closure.
+- why now: created as a new queued workstream for v0.1.14 Governed Harness: Release Publication, Docs, And Benchmark Closure.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.

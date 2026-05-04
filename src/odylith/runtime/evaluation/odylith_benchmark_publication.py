@@ -240,10 +240,10 @@ def _status_block(summary: Mapping[str, Any], *, diagnostic: bool) -> list[str]:
             f"- fairness contract passed: `{bool(summary.get('fairness_contract_passed'))}`",
             f"- corpus seriousness floor passed: `{bool(summary.get('corpus_seriousness_floor_passed'))}`",
             f"- full tracked-corpus coverage rate: `{float(summary.get('corpus_full_coverage_rate', 0.0) or 0.0):.3f}`",
-            f"- implementation scenarios in tracked corpus: `{_format_count(summary.get('corpus_implementation_scenario_count', 0))}`",
+            f"- operating-policy scenarios in tracked corpus: `{_format_count(summary.get('corpus_implementation_scenario_count', 0))}`",
             f"- write-plus-validator scenarios in tracked corpus: `{_format_count(summary.get('corpus_write_plus_validator_scenario_count', 0))}`",
             f"- correctness-critical scenarios in tracked corpus: `{_format_count(summary.get('corpus_correctness_critical_scenario_count', 0))}`",
-            f"- mechanism-heavy implementation ratio: `{_format_ratio(summary.get('corpus_mechanism_heavy_implementation_ratio'))}`",
+            f"- mechanism-heavy operating-policy ratio: `{_format_ratio(summary.get('corpus_mechanism_heavy_implementation_ratio'))}`",
         ]
     )
     if weak_families:
@@ -260,8 +260,8 @@ def _status_block(summary: Mapping[str, Any], *, diagnostic: bool) -> list[str]:
 def _reading_notes(summary: Mapping[str, Any], *, diagnostic: bool) -> list[str]:
     if diagnostic:
         return [
-            "- `odylith_off` is the raw prompt-bundle control, not the product-claim lane.",
-            "- Prompt-visible path credit and preflight evidence must remain explicit in the report contract.",
+            "- `odylith_off` is the raw prompt-bundle control for this mechanism-evidence view.",
+            "- Prompt-visible path credit and Turn Gate evidence must remain explicit in the report contract.",
             f"- {_memory_posture_sentence(summary, diagnostic=True)}",
             "- Diagnostic gains only matter if they preserve or improve the live proof lane.",
         ]

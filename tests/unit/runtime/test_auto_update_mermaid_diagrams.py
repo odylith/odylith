@@ -113,13 +113,21 @@ def test_mermaid_worker_applies_managed_palette_to_legacy_and_new_diagrams() -> 
     worker_source = (Path(mermaid.__file__).with_name("assets") / "mermaid_cli_worker.mjs").read_text(encoding="utf-8")
 
     assert "const clusterPalette = [" in worker_source
+    assert "const clusterPaletteByBucket = {" in worker_source
     assert "const nodePalette = {" in worker_source
-    assert "toneForNodeText" in worker_source
+    assert "bucketForText" in worker_source
+    assert "bucketForClassNames" in worker_source
+    assert "toneForCluster" in worker_source
+    assert "toneForNode" in worker_source
+    assert "clusterPalette[index % clusterPalette.length]" in worker_source
+    assert "const tone = clusterPalette[index % clusterPalette.length];" not in worker_source
+    assert "const tone = toneForCluster(cluster, clusterPalette[index % clusterPalette.length]);" in worker_source
     assert "#effcf9" in worker_source
     assert "#f1f7ff" in worker_source
     assert "#fff3f0" in worker_source
-    assert "#e8fbf7" in worker_source
     assert "#ffece7" in worker_source
+    assert "#e8fbf7" in worker_source
+    assert "#df8f7d" in worker_source
     assert "#f4ebff" in worker_source
     assert "Atlas owns rendered color for consistency across legacy and new diagrams." in worker_source
     assert "styleDeclares(authoredStyle, 'fill')" not in worker_source
