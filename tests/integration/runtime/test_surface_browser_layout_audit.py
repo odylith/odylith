@@ -1167,6 +1167,73 @@ def test_compass_programs_render_release_like_inner_card_chrome_in_compact_brows
     _assert_compass_programs_render_release_like_inner_card_chrome(*compact_browser_context)
 
 
+def _assert_compass_wave_dependency_labels_stay_inside_group_panels(  # noqa: ANN001
+    base_url: str,
+    context,
+) -> None:
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=compass&scope=B-105", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    section = compass.locator("#execution-waves-host .execution-wave-section").first
+    section.wait_for(timeout=15000)
+
+    layout = section.evaluate(
+        """(node) => {
+            node.setAttribute("open", "");
+            Array.from(node.querySelectorAll(".execution-wave-card")).forEach((card) => card.setAttribute("open", ""));
+            const rows = [];
+            Array.from(node.querySelectorAll(".execution-wave-panel")).forEach((panel) => {
+              const groupLabel = String((panel.querySelector(".execution-wave-group-label") || {}).textContent || "").trim().toLowerCase();
+              if (groupLabel !== "depends on") return;
+              const body = panel.querySelector(".execution-wave-group-body");
+              if (!body) return;
+              const bodyBox = body.getBoundingClientRect();
+              const panelBox = panel.getBoundingClientRect();
+              Array.from(body.querySelectorAll(".label.execution-wave-label")).forEach((chip) => {
+                const chipBox = chip.getBoundingClientRect();
+                const style = window.getComputedStyle(chip);
+                const text = String(chip.textContent || "").trim();
+                rows.push({
+                  text,
+                  textLength: text.length,
+                  whiteSpace: style.whiteSpace,
+                  lineHeight: style.lineHeight,
+                  panelLeft: panelBox.left,
+                  panelRight: panelBox.right,
+                  chipLeft: chipBox.left,
+                  chipRight: chipBox.right,
+                  chipHeight: chipBox.height,
+                  bodyClientWidth: body.clientWidth,
+                  bodyScrollWidth: body.scrollWidth,
+                });
+              });
+            });
+            return rows;
+        }"""
+    )
+
+    long_labels = [row for row in layout if int(row["textLength"]) >= 24]
+    assert long_labels, "expected at least one long dependency wave label in the Compass fixture"
+    for row in long_labels:
+        assert row["whiteSpace"] != "nowrap"
+        assert float(row["chipLeft"]) >= float(row["panelLeft"]) - 1
+        assert float(row["chipRight"]) <= float(row["panelRight"]) + 1
+        assert int(row["bodyScrollWidth"]) - int(row["bodyClientWidth"]) <= 2
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_compass_wave_dependency_labels_stay_inside_group_panels_in_browser(browser_context) -> None:  # noqa: ANN001
+    _assert_compass_wave_dependency_labels_stay_inside_group_panels(*browser_context)
+
+
+def test_compass_wave_dependency_labels_stay_inside_group_panels_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
+    _assert_compass_wave_dependency_labels_stay_inside_group_panels(*compact_browser_context)
+
+
 def _assert_compass_program_box_does_not_highlight_active_inner_wave(  # noqa: ANN001
     base_url: str,
     context,

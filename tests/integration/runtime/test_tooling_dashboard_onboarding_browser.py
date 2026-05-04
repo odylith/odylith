@@ -462,7 +462,7 @@ def test_first_install_launchpad_reopens_after_same_path_reinstall(tmp_path: Pat
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
-def test_first_install_launchpad_keeps_git_notice_and_mental_model_visible(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_first_install_launchpad_hides_git_notice_and_keeps_mental_model_visible(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     repo_root = tmp_path / "git-missing-welcome"
     repo_root.mkdir()
     _seed_consumer_repo(
@@ -483,7 +483,8 @@ def test_first_install_launchpad_keeps_git_notice_and_mental_model_visible(tmp_p
 
         welcome = page.locator("#shellWelcomeState")
         welcome.wait_for(timeout=15000)
-        assert page.locator(".welcome-card-notice .welcome-card-kicker", has_text="Git missing").is_visible()
+        assert page.locator(".welcome-card-notice .welcome-card-kicker", has_text="Git missing").count() == 0
+        assert "Git missing" not in welcome.inner_text()
         assert page.locator(".welcome-explainer-title").inner_text().strip() == "How Odylith thinks about a repo"
 
         metrics = page.evaluate(
@@ -495,7 +496,6 @@ def test_first_install_launchpad_keeps_git_notice_and_mental_model_visible(tmp_p
             "  return {"
             "    welcome: box('#shellWelcomeState'),"
             "    title: box('.welcome-title'),"
-            "    notice: box('.welcome-card-notice'),"
             "    prompt: box('.welcome-prompt-card'),"
             "    explainer: box('.welcome-explainer-strip'),"
             "    scrollWidth: document.documentElement.scrollWidth,"
@@ -505,8 +505,7 @@ def test_first_install_launchpad_keeps_git_notice_and_mental_model_visible(tmp_p
         )
         assert metrics["scrollWidth"] <= metrics["clientWidth"] + 1
         assert metrics["title"]["height"] < 64
-        assert metrics["notice"]["top"] > metrics["title"]["bottom"]
-        assert metrics["prompt"]["top"] > metrics["notice"]["bottom"]
+        assert metrics["prompt"]["top"] > metrics["title"]["bottom"]
         assert metrics["explainer"]["bottom"] <= 1000
         assert metrics["welcome"]["right"] <= 2048
 

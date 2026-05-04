@@ -224,6 +224,7 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert '<div class="execution-wave-title-row">' not in releases_js
     assert 'Target Release</span>' in releases_js
     assert "function compassReleaseGroupVisibleByDefault(group, hasAliasedRelease)" in releases_js
+    assert "if (Number(group.members && group.members.length || 0) > 0) return true;" in releases_js
     assert "return compassReleaseGroupVisibleByDefault(group, hasAliasedRelease);" in releases_js
     assert 'const metaChips = [' in releases_js
     assert "Release-owned targeted workstreams for this release." not in releases_js

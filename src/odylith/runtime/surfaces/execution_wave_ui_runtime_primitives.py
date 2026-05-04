@@ -487,6 +487,18 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   min-width: 0;
 }
 
+.execution-wave-group-body .label.execution-wave-label {
+  flex: 0 1 auto;
+  max-width: 100%;
+  min-width: 0;
+  justify-content: flex-start;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-align: left;
+  line-height: 1.18;
+}
+
 .execution-wave-gates {
   display: grid;
   gap: 10px;

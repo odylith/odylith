@@ -28,6 +28,7 @@ from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import component_authoring
 from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import release_planning_authoring
+from odylith.runtime.governance import release_planning_contract
 from odylith.runtime.surfaces import scaffold_mermaid_diagram
 
 
@@ -350,6 +351,12 @@ def _ensure_release_target(*, repo_root: Path, proposal: Mapping[str, Any], sele
     title = str(intent.get("title", "Greenfield Project")).strip() or "Greenfield Project"
     release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
     version, tag = greenfield_programs.semver_release_metadata(selector=selector, release_plan=release_plan)
+    registry_path = release_planning_contract.releases_registry_path(repo_root=repo_root)
+    registry_document, _errors = release_planning_contract.load_registry_document(path=registry_path)
+    aliases = dict(registry_document.get("aliases", {})) if isinstance(registry_document.get("aliases"), Mapping) else {}
+    release_aliases = [selector]
+    if release_planning_contract.canonical_alias_token("current") not in aliases:
+        release_aliases.append("current")
     return release_planning_authoring.ensure_release_selector(
         repo_root=repo_root,
         selector=selector,
@@ -359,7 +366,7 @@ def _ensure_release_target(*, repo_root: Path, proposal: Mapping[str, Any], sele
         tag=tag,
         name=str(release_plan.get("label", "")).strip() or f"{title} {selector}",
         notes=f"Greenfield release plan for {title}; created only after proposal confirmation.",
-        aliases=(selector,),
+        aliases=tuple(release_aliases),
         dry_run=False,
     )
 

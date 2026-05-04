@@ -457,6 +457,7 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     assert "Targeted Workstreams" in releases_js
     assert "Completed Workstreams" in releases_js
     assert "hasAliasedRelease" in releases_js
+    assert "if (Number(group.members && group.members.length || 0) > 0) return true;" in releases_js
     assert "return Boolean(group.is_current) || Boolean(group.is_next);" in releases_js
     assert 'status === "planned"' in releases_js
     assert 'status === "draft"' in releases_js

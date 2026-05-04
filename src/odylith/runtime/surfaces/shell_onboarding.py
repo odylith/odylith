@@ -830,16 +830,6 @@ def _is_grounded_focus(*, root: Path, focus: _RepoFocus) -> bool:
 
 def _welcome_notices(*, root: Path) -> list[dict[str, str]]:
     notices: list[dict[str, str]] = []
-    if not (root / ".git").exists():
-        notices.append(
-            {
-                "tone": "warning",
-                "title": "Git missing",
-                "body": (
-                    "Odylith installed here, but repo intelligence stays reduced until this folder is backed by Git."
-                ),
-            }
-        )
     legacy_notice = _legacy_consumer_upgrade_notice(root=root)
     if legacy_notice:
         notices.append(legacy_notice)

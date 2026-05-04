@@ -92,19 +92,13 @@ def test_build_welcome_state_hides_once_backlog_components_and_atlas_exist(tmp_p
     assert welcome["chosen_slice"]["path"] == "src/payments"
 
 
-def test_build_welcome_state_warns_when_repo_is_not_git_backed(tmp_path: Path) -> None:
+def test_build_welcome_state_does_not_warn_when_repo_is_not_git_backed(tmp_path: Path) -> None:
     (tmp_path / "src" / "payments").mkdir(parents=True, exist_ok=True)
 
     welcome = shell_onboarding.build_welcome_state(repo_root=tmp_path)
 
     assert welcome["show"] is True
-    assert welcome["notices"] == [
-        {
-            "tone": "warning",
-            "title": "Git missing",
-            "body": "Odylith installed here, but repo intelligence stays reduced until this folder is backed by Git.",
-        }
-    ]
+    assert welcome["notices"] == []
 
 
 def test_build_welcome_state_skips_fake_slice_when_only_repo_name_is_available(tmp_path: Path) -> None:

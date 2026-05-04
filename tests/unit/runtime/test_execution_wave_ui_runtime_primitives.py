@@ -86,6 +86,11 @@ def test_execution_wave_component_css_matches_shared_contract() -> None:
         css,
         flags=re.S,
     )
+    assert re.search(
+        r"\.execution-wave-group-body \.label\.execution-wave-label\s*\{[^}]*max-width:\s*100%;[^}]*white-space:\s*normal;[^}]*overflow-wrap:\s*anywhere;[^}]*word-break:\s*break-word;",
+        css,
+        flags=re.S,
+    )
     assert "@media (max-width: 900px)" in css
     assert re.search(
         r"@media\s*\(max-width:\s*900px\)\s*\{.*?\.execution-wave-body-grid-members\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\);",

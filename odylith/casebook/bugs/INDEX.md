@@ -6,6 +6,9 @@ Last updated (UTC): 2026-05-04
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-164 | 2026-05-04 | Non git project folders show noisy git missing notice on every refresh | P2 | dashboard | FixedPendingRelease | [2026-05-04-non-git-project-folders-show-noisy-git-missing-notice-on-every-refresh.md](2026-05-04-non-git-project-folders-show-noisy-git-missing-notice-on-every-refresh.md) |
+| CB-166 | 2026-05-04 | Greenfield apply target release can stay invisible in radar and compass | P1 | domain-intelligence | FixedPendingRelease | [2026-05-04-greenfield-apply-target-release-can-stay-invisible-in-radar-and-compass.md](2026-05-04-greenfield-apply-target-release-can-stay-invisible-in-radar-and-compass.md) |
+| CB-165 | 2026-05-04 | Compass execution wave dependency labels overflow group panels | P2 | dashboard | FixedPendingRelease | [2026-05-04-compass-execution-wave-dependency-labels-overflow-group-panels.md](2026-05-04-compass-execution-wave-dependency-labels-overflow-group-panels.md) |
 | CB-161 | 2026-05-03 | Hosted install skips upgrade lifecycle on already current repos | P1 | release | FixedPendingRelease | [2026-05-03-hosted-install-skips-upgrade-lifecycle-on-already-current-repos.md](2026-05-03-hosted-install-skips-upgrade-lifecycle-on-already-current-repos.md) |
 | CB-156 | 2026-05-03 | Greenfield consumer intent dead ended on missing source | P1 | domain-intelligence | FixedPendingRelease | [2026-05-03-greenfield-consumer-intent-dead-ended-on-missing-source.md](2026-05-03-greenfield-consumer-intent-dead-ended-on-missing-source.md) |
 | CB-159 | 2026-05-03 | Greenfield atlas drafts reuse generic star topology | P2 | domain-intelligence | FixedPendingRelease | [2026-05-03-greenfield-atlas-drafts-reuse-generic-star-topology.md](2026-05-03-greenfield-atlas-drafts-reuse-generic-star-topology.md) |

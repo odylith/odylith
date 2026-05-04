@@ -75,6 +75,7 @@
 
     function compassReleaseGroupVisibleByDefault(group, hasAliasedRelease) {
       if (!group || typeof group !== "object") return false;
+      if (Number(group.members && group.members.length || 0) > 0) return true;
       if (hasAliasedRelease) {
         return Boolean(group.is_current) || Boolean(group.is_next);
       }
@@ -85,7 +86,6 @@
         || status === "active"
         || status === "planned"
         || status === "draft"
-        || Number(group.members && group.members.length || 0) > 0
       );
     }
 

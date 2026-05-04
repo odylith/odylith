@@ -8,6 +8,8 @@ import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.governance import backlog_authoring
+from odylith.runtime.governance import build_traceability_graph
+from odylith.runtime.governance import release_planning_view_model
 
 
 def _write(path: Path, text: str) -> None:
@@ -518,6 +520,7 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     )
     assert result["release_bootstrap"]["created"] is True
     assert registry["aliases"]["0.0.1"] == "release-commerce-launch-first"
+    assert registry["aliases"]["current"] == "release-commerce-launch-first"
     assert len(result["backlog"]) == 2
     assert len(result["components"]) == 2
     assert len(result["diagrams"]) == 2
@@ -530,6 +533,17 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert result["release_bootstrap"]["release"]["version"] == "0.0.1"
     assert result["release_bootstrap"]["release"]["tag"] == "v0.0.1"
     assert result["release_target"]["workstream_ids"] == ["B-001", "B-002"]
+    release_payload, release_errors, _release_state = release_planning_view_model.build_release_view_from_repo(
+        repo_root=tmp_path,
+        idea_specs=None,
+    )
+    assert release_errors == []
+    assert release_payload["current_release"]["release_id"] == "release-commerce-launch-first"
+    assert release_payload["current_release"]["active_workstreams"] == ["B-001", "B-002"]
+    assert build_traceability_graph.main(["--repo-root", str(tmp_path)]) == 0
+    traceability_graph = json.loads((tmp_path / "odylith/radar/traceability-graph.v1.json").read_text(encoding="utf-8"))
+    assert traceability_graph["current_release"]["release_id"] == "release-commerce-launch-first"
+    assert traceability_graph["current_release"]["active_workstreams"] == ["B-001", "B-002"]
     assert result["backlog_topology"] == [
         Path(result["backlog"][0]["idea_path"]).relative_to(tmp_path).as_posix(),
         Path(result["backlog"][1]["idea_path"]).relative_to(tmp_path).as_posix(),
