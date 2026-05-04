@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import argparse
-from contextlib import contextmanager, redirect_stderr, redirect_stdout
+from contextlib import contextmanager, redirect_stderr, redirect_stdout, suppress
 from datetime import UTC, datetime
 import importlib
 import io
@@ -25,6 +25,7 @@ from odylith.runtime.common.command_surface import (
     ensure_repo_root_args,
 )
 from odylith.runtime.common.repo_shape import PRODUCT_REPO_ROLE, repo_role_from_local_shape
+from odylith.runtime.surfaces import tooling_dashboard_version_state
 
 _CONTEXT_ENGINE_FEATURE_PACK_COMMANDS = {"warmup", "serve", "benchmark", "odylith-remote-sync"}
 _CONTEXT_ENGINE_SHORTCUTS = (
@@ -1000,6 +1001,8 @@ def _refresh_dashboard_after_upgrade(
     compact_output: bool = False,
     details: dict[str, object] | None = None,
 ) -> tuple[bool, str]:
+    with suppress(Exception):
+        tooling_dashboard_version_state.persist_version_state(repo_root=repo_root)
     if emit_output:
         if compact_output:
             _print_install_progress("draw", "Refreshing dashboard.")
@@ -1027,13 +1030,14 @@ def _refresh_dashboard_after_upgrade(
             surfaces=_DEFAULT_DASHBOARD_REFRESH_SURFACES,
             runtime_mode="auto",
             atlas_sync=False,
+            force=True,
         )
         if details is not None:
             details.update({"returncode": render_rc, "success": render_rc == 0})
         if render_rc != 0:
             return (
                 False,
-                "Odylith upgrade succeeded, but dashboard refresh failed. Retry with `./.odylith/bin/odylith dashboard refresh --repo-root .`.",
+                "Odylith upgrade succeeded, but dashboard refresh failed. Retry with `./.odylith/bin/odylith dashboard refresh --repo-root . --force`.",
             )
         return True, "Dashboard refreshed. Open `odylith/index.html` to see what landed in this release."
     command = [
@@ -1044,6 +1048,7 @@ def _refresh_dashboard_after_upgrade(
         str(repo_root),
         "--surfaces",
         _DEFAULT_DASHBOARD_REFRESH_SURFACES_CSV,
+        "--force",
     ]
     if details is not None:
         details.update(
@@ -1065,7 +1070,7 @@ def _refresh_dashboard_after_upgrade(
             details.update({"error": str(exc), "success": False})
         return (
             False,
-            "Odylith upgrade succeeded, but dashboard refresh failed. Retry with `./.odylith/bin/odylith dashboard refresh --repo-root .`.",
+            "Odylith upgrade succeeded, but dashboard refresh failed. Retry with `./.odylith/bin/odylith dashboard refresh --repo-root . --force`.",
         )
     combined_output = f"{completed.stdout}\n{completed.stderr}".lower()
     if details is not None:
@@ -1089,7 +1094,7 @@ def _refresh_dashboard_after_upgrade(
     if completed.returncode != 0:
         return (
             False,
-            "Odylith upgrade succeeded, but dashboard refresh failed. Retry with `./.odylith/bin/odylith dashboard refresh --repo-root .`.",
+            "Odylith upgrade succeeded, but dashboard refresh failed. Retry with `./.odylith/bin/odylith dashboard refresh --repo-root . --force`.",
         )
     return True, "Dashboard refreshed. Open `odylith/index.html` to see what landed in this release."
 
@@ -1978,7 +1983,20 @@ def _cmd_start(args: argparse.Namespace) -> int:
             print(f"- next: {next_command}")
         if next_followup:
             print(f"- followup: {next_followup}")
-    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    if bool(getattr(args, "json", False)):
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+    elif fallback_required:
+        print("- json: rerun with --json for packet diagnostics")
+    else:
+        packet_kind = str(payload.get("packet_kind", "")).strip()
+        context_packet = payload.get("context_packet")
+        packet_state = ""
+        if isinstance(context_packet, Mapping):
+            packet_state = str(context_packet.get("state") or context_packet.get("status") or "").strip()
+        print(f"- packet: {packet_kind or 'bootstrap_session'}")
+        if packet_state:
+            print(f"- state: {packet_state}")
+        print("- json: rerun with --json for the full bootstrap packet")
     return 1 if fallback_required else 0
 
 
@@ -2716,6 +2734,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--status-only",
         action="store_true",
         help="Report the chosen start posture without building a bootstrap packet.",
+    )
+    start.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the full bootstrap packet as JSON after the compact start summary.",
     )
     start.add_argument(
         "--no-working-tree",

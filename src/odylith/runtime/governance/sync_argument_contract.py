@@ -32,7 +32,10 @@ def configure_sync_parser(
     parser.add_argument(
         "--force",
         action="store_true",
-        help="Run sync workflow even when changed paths are not matched.",
+        help=(
+            "Run sync workflow even when changed paths are not matched and bypass generated refresh-guard reuse "
+            "where the selected plan supports it; does not acknowledge dirty-overlap writes."
+        ),
     )
     parser.add_argument(
         "--impact-mode",

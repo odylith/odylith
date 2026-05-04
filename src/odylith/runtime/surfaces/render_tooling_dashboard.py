@@ -35,6 +35,7 @@ from odylith.runtime.surfaces import surface_path_helpers
 from odylith.runtime.surfaces import tooling_dashboard_surface_status
 from odylith.runtime.surfaces import tooling_dashboard_runtime_builder
 from odylith.runtime.surfaces import tooling_dashboard_shell_presenter
+from odylith.runtime.surfaces import tooling_dashboard_version_state
 
 _shell_href = dashboard_shell_links.shell_href
 _scope_lookup = dashboard_shell_links.scope_lookup
@@ -408,6 +409,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         registry_path=registry_path,
         casebook_path=casebook_path,
     )
+    tooling_dashboard_version_state.persist_version_state(repo_root=repo_root)
     skip_rebuild, input_fingerprint, _cached_metadata, bundle_paths, output_paths = (
         generated_surface_refresh_guards.should_skip_surface_rebuild(
             repo_root=repo_root,
@@ -449,6 +451,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             self_host_payload=self_host_payload,
             release_spotlight=release_spotlight,
         ),
+        version_state_href=surface_path_helpers.relative_href(
+            output_path=output_path,
+            target=tooling_dashboard_version_state.version_state_js_path(repo_root=repo_root),
+        ),
+        version_state_global_name=tooling_dashboard_version_state.VERSION_STATE_GLOBAL_NAME,
     )
     runtime_payload = dict(build_result.runtime_payload)
     runtime_payload["live_refresh"] = _build_live_refresh_payload(

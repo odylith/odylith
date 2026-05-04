@@ -55,7 +55,8 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md"
+        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+        "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
       ],
       "confidence": "high",
       "event_index": 457,
@@ -65,8 +66,8 @@
         "dashboard"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
-      "ts_iso": "2026-05-04T08:05:24-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/dashboard/CURRENT_SPEC.md, src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+      "ts_iso": "2026-05-04T08:44:38-07:00",
       "workstreams": []
     },
     {

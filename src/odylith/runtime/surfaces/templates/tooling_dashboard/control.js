@@ -153,6 +153,13 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     const initialSurfaceRuntimeStatus = payload && payload.surface_runtime_status && typeof payload.surface_runtime_status === "object"
       ? payload.surface_runtime_status
       : {};
+    const versionStateHref = String(payload.version_state_href || "").trim();
+    const versionStateGlobalName = String(payload.version_state_global_name || "__ODYLITH_VERSION_STATE__").trim() || "__ODYLITH_VERSION_STATE__";
+    let latestVersionState = window[versionStateGlobalName] && typeof window[versionStateGlobalName] === "object"
+      ? window[versionStateGlobalName]
+      : null;
+    let versionStateProbeTimer = 0;
+    let versionStateProbeInFlight = false;
     const runtimeProbeStateGlobalName = liveRefreshPayload
       ? String(liveRefreshPayload.state_global_name || "__ODYLITH_CONTEXT_ENGINE_STATE__").trim()
       : "__ODYLITH_CONTEXT_ENGINE_STATE__";
@@ -570,6 +577,79 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       return liveRefreshPayload.reloadable_tabs.includes(String(tab || "").trim().toLowerCase());
     }
 
+    function normalizeVersionToken(value) {
+      return String(value || "").trim().replace(/^v/i, "");
+    }
+
+    function formatVersionLabel(value) {
+      const token = normalizeVersionToken(value);
+      if (!token) return "";
+      return /^[0-9]/.test(token) ? `v${token}` : token;
+    }
+
+    function renderedShellVersionToken() {
+      const selfHost = payload && payload.self_host && typeof payload.self_host === "object"
+        ? payload.self_host
+        : {};
+      return normalizeVersionToken(
+        selfHost.active_version
+        || selfHost.pinned_version
+        || payload.shell_version_label
+        || ""
+      );
+    }
+
+    function buildShellVersionDriftPosture(versionState) {
+      if (!versionState || typeof versionState !== "object") return null;
+      const authoritativeToken = normalizeVersionToken(
+        versionState.authoritative_version
+        || versionState.active_version
+        || versionState.pinned_version
+        || ""
+      );
+      const renderedToken = renderedShellVersionToken();
+      if (!authoritativeToken || !renderedToken || authoritativeToken === renderedToken) {
+        return null;
+      }
+      const renderedLabel = formatVersionLabel(renderedToken);
+      const authoritativeLabel = String(versionState.authoritative_label || "").trim() || formatVersionLabel(authoritativeToken);
+      const generatedUtc = String(payload.generated_utc || "").trim() || "unknown";
+      const stateGeneratedUtc = String(versionState.generated_utc || "").trim();
+      const source = String(versionState.source || "odylith version").trim();
+      const metaParts = [
+        `Source: ${source}`,
+        `Shell generated: ${generatedUtc}`,
+        stateGeneratedUtc ? `Checked: ${stateGeneratedUtc}` : "",
+        "Next: odylith dashboard refresh --repo-root . --force",
+      ].filter(Boolean);
+      return {
+        visible: true,
+        tone: "warning",
+        kicker: "Dashboard stale",
+        title: `Shell shows ${renderedLabel}, runtime is ${authoritativeLabel}`,
+        body: "The generated dashboard shell is older than the authoritative Odylith runtime. Refresh only the dashboard shell before using this view as version evidence.",
+        meta: metaParts.join(" · "),
+        showReload: false,
+        reloadLabel: "",
+      };
+    }
+
+    function normalizeRuntimePosture(rawPosture, fallbackPosture) {
+      if (!rawPosture || typeof rawPosture !== "object") {
+        return fallbackPosture;
+      }
+      return {
+        visible: Boolean(rawPosture.visible),
+        tone: String(rawPosture.tone || "").trim(),
+        kicker: String(rawPosture.kicker || "").trim(),
+        title: String(rawPosture.title || "").trim(),
+        body: String(rawPosture.body || "").trim(),
+        meta: String(rawPosture.meta || "").trim(),
+        showReload: Boolean(rawPosture.showReload),
+        reloadLabel: String(rawPosture.reloadLabel || "").trim(),
+      };
+    }
+
     function runtimeStateAffectsTab(tab, runtimeState) {
       const policy = liveRefreshSurfacePolicy(tab);
       if (!policy) return false;
@@ -615,20 +695,12 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       const surfaceRuntimeStatus = runtimeState && runtimeState.surface_runtime_status && typeof runtimeState.surface_runtime_status === "object"
         ? runtimeState.surface_runtime_status
         : initialSurfaceRuntimeStatus;
-      const rawPosture = surfaceRuntimeStatus[currentTab];
-      if (!rawPosture || typeof rawPosture !== "object") {
-        return fallbackPosture;
+      const shellPosture = normalizeRuntimePosture(surfaceRuntimeStatus.shell, fallbackPosture);
+      if (shellPosture.visible) {
+        return shellPosture;
       }
-      return {
-        visible: Boolean(rawPosture.visible),
-        tone: String(rawPosture.tone || "").trim(),
-        kicker: String(rawPosture.kicker || "").trim(),
-        title: String(rawPosture.title || "").trim(),
-        body: String(rawPosture.body || "").trim(),
-        meta: String(rawPosture.meta || "").trim(),
-        showReload: Boolean(rawPosture.showReload),
-        reloadLabel: String(rawPosture.reloadLabel || "").trim(),
-      };
+      const rawPosture = surfaceRuntimeStatus[currentTab];
+      return normalizeRuntimePosture(rawPosture, fallbackPosture);
     }
 
     function mergeRuntimeStatusState(runtimeState) {
@@ -638,6 +710,11 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       if (!baseState.surface_runtime_status || typeof baseState.surface_runtime_status !== "object") {
         baseState.surface_runtime_status = initialSurfaceRuntimeStatus;
       }
+      baseState.surface_runtime_status = { ...baseState.surface_runtime_status };
+      const shellVersionDriftPosture = buildShellVersionDriftPosture(latestVersionState);
+      if (shellVersionDriftPosture) {
+        baseState.surface_runtime_status.shell = shellVersionDriftPosture;
+      }
       return baseState;
     }
 
@@ -646,7 +723,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         return;
       }
       latestRuntimeStatusState = mergeRuntimeStatusState(runtimeState);
-      const posture = buildRuntimeStatusPosture(runtimeState);
+      const posture = buildRuntimeStatusPosture(latestRuntimeStatusState);
       runtimeStatusFingerprint = posture.visible ? buildRuntimeStatusFingerprint(posture) : "";
       const dismissed = runtimeStatusDismissed();
       const visible = Boolean(posture.visible && !dismissed);
@@ -670,6 +747,47 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       runtimeStatusDismiss.setAttribute("aria-hidden", String(runtimeStatusDismiss.hidden));
       syncRecoveryDock();
       scheduleRuntimeStatusLayoutSync();
+    }
+
+    function versionStateProbeEnabled() {
+      return Boolean(versionStateHref);
+    }
+
+    function scheduleVersionStateProbe(delayMs = 5000) {
+      if (!versionStateProbeEnabled()) return;
+      if (versionStateProbeTimer) {
+        window.clearTimeout(versionStateProbeTimer);
+      }
+      versionStateProbeTimer = window.setTimeout(checkForVersionState, delayMs);
+    }
+
+    function checkForVersionState() {
+      if (!versionStateProbeEnabled()) return;
+      if (versionStateProbeInFlight) return;
+      versionStateProbeInFlight = true;
+      const previousPayload = window[versionStateGlobalName];
+      const refreshProbe = document.createElement("script");
+      const separator = versionStateHref.includes("?") ? "&" : "?";
+      refreshProbe.async = true;
+      refreshProbe.src = `${versionStateHref}${separator}refresh=${Date.now()}`;
+      refreshProbe.onload = () => {
+        versionStateProbeInFlight = false;
+        const nextPayload = window[versionStateGlobalName];
+        refreshProbe.remove();
+        window[versionStateGlobalName] = previousPayload || {};
+        if (nextPayload && typeof nextPayload === "object") {
+          latestVersionState = nextPayload;
+          applyRuntimeStatus(latestRuntimeStatusState || {});
+        }
+        scheduleVersionStateProbe(15000);
+      };
+      refreshProbe.onerror = () => {
+        versionStateProbeInFlight = false;
+        refreshProbe.remove();
+        window[versionStateGlobalName] = previousPayload || {};
+        scheduleVersionStateProbe(30000);
+      };
+      document.head.appendChild(refreshProbe);
     }
 
     function scheduleRuntimeProbe(delayMs = liveRefreshPollIntervalMs()) {
@@ -1314,10 +1432,12 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     scheduleUpgradeSpotlightExpiry();
     initializeWelcomeTaskState();
     applyRuntimeStatus(mergeRuntimeStatusState(payload));
+    scheduleVersionStateProbe(300);
     scheduleShellRefreshPoll(4000);
     scheduleRuntimeProbe(1200);
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) {
+        scheduleVersionStateProbe(300);
         scheduleShellRefreshPoll(1200);
         scheduleRuntimeProbe(1200);
       }
@@ -1331,6 +1451,9 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       }
       if (runtimeProbeTimer) {
         window.clearTimeout(runtimeProbeTimer);
+      }
+      if (versionStateProbeTimer) {
+        window.clearTimeout(versionStateProbeTimer);
       }
     });
     if (hasBriefDrawer) {

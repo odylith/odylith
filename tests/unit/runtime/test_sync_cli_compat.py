@@ -2074,13 +2074,21 @@ def test_sync_blocks_large_dirty_overlap_without_explicit_ack(monkeypatch, tmp_p
         "_execute_plan",
         lambda **_: (_ for _ in ()).throw(AssertionError("blocked sync should not execute plan")),
     )
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "normalize_legacy_backlog_index",
+        lambda **_: (_ for _ in ()).throw(AssertionError("dirty-overlap block must run before Radar normalization")),
+    )
 
     rc = sync_workstream_artifacts.main(["--repo-root", str(tmp_path), "--force"])
     output = capsys.readouterr().out
 
     assert rc == 2
     assert "workstream sync blocked" in output
-    assert "--proceed-with-overlap" in output
+    assert "- writes: none (dirty-overlap gate ran before tracked mutations)" in output
+    assert "- next: odylith dashboard refresh --repo-root . --force" in output
+    assert "- full_sync_override: odylith sync --repo-root . --proceed-with-overlap" in output
+    assert "--force bypasses change detection" in output
 
 
 def test_sync_allows_large_dirty_overlap_with_explicit_ack(monkeypatch, tmp_path: Path) -> None:
@@ -2217,19 +2225,17 @@ def test_sync_auto_normalizes_legacy_backlog_before_continuing(monkeypatch, tmp_
     ).read_text(encoding="utf-8")
 
     assert rc == 0
-    assert "workstream sync legacy normalization" in output
-    assert "- added_sections: " in output
-    assert "- idea_schema_updates: 2" in output
-    assert "- table_schema_updates: 3" in output
-    assert "- source: odylith/radar/source/INDEX.md" in output
+    assert "Normalize legacy Radar backlog sections before validation and render." in output
+    assert "workstream sync legacy normalization" not in output
     assert "odylith sync did not complete." not in output
     assert "workstream sync dry-run" in output
-    assert "impacted_lanes" not in backlog_index
-    assert "impacted_lanes" not in queued_idea
-    assert "- expected outcome: clearer product truth and faster follow-on implementation planning." in backlog_index
-    assert "- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins." in backlog_index
-    assert "- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream." in backlog_index
-    assert "- ranking basis: score-based rank; no manual priority override." in backlog_index
+    assert "dry-run mode: no files written" in output
+    assert "impacted_lanes" in backlog_index
+    assert "impacted_lanes" in queued_idea
+    assert "- expected outcome: clearer product truth and faster follow-on implementation planning." not in backlog_index
+    assert "- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins." not in backlog_index
+    assert "- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream." not in backlog_index
+    assert "- ranking basis: score-based rank; no manual priority override." not in backlog_index
 
 
 def test_sync_truth_only_selective_slice_skips_broad_preflight_and_runtime_packet(

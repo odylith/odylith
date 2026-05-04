@@ -221,6 +221,11 @@ Related Bugs:
       `odylith dashboard refresh`, `odylith compass refresh --status`, and the
       owned Radar, Atlas, Registry, and Casebook refresh commands, including a
       no-provider credit-burn tripwire and multi-surface parallelism guard.
+- [x] Harden post-upgrade dashboard version truth: write a runtime sidecar from
+      `odylith version`, force the shell-facing dashboard refresh after
+      upgrade, warn when the rendered shell version lags the authoritative
+      runtime, and make `odylith sync --force` block dirty-overlap before
+      tracked Radar normalization with a narrow dashboard refresh recovery.
 - [x] Mark explicit-only Claude workflow skills as slash-invocable without
       removing automatic context, bug-capture, start, show, sync, or hygiene
       skills from model invocation.

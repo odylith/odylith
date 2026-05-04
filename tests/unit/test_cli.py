@@ -1368,6 +1368,7 @@ def test_refresh_dashboard_after_upgrade_reenters_through_fresh_launcher(monkeyp
         str(repo_root),
         "--surfaces",
         "tooling_shell,radar,compass",
+        "--force",
     ]
     assert captured["kwargs"] == {
         "cwd": str(repo_root),
@@ -1434,7 +1435,7 @@ def test_refresh_dashboard_after_upgrade_returns_failure_when_launcher_refresh_f
     assert refreshed is False
     assert (
         message
-        == "Odylith upgrade succeeded, but dashboard refresh failed. Retry with `./.odylith/bin/odylith dashboard refresh --repo-root .`."
+        == "Odylith upgrade succeeded, but dashboard refresh failed. Retry with `./.odylith/bin/odylith dashboard refresh --repo-root . --force`."
     )
     assert "dashboard refresh completed" in output.out
     assert "compass failed" in output.err
@@ -1468,6 +1469,7 @@ def test_refresh_dashboard_after_upgrade_falls_back_to_in_process_refresh_when_l
         "surfaces": ("tooling_shell", "radar", "compass"),
         "runtime_mode": "auto",
         "atlas_sync": False,
+        "force": True,
     }
     assert "Refreshing Odylith dashboard surfaces so the local shell reflects the new release." in output.out
 
@@ -2089,6 +2091,7 @@ def test_radar_refresh_dispatches_owned_surface_lane(monkeypatch, tmp_path: Path
         "atlas_sync": False,
         "dry_run": True,
         "verbose": False,
+        "force": False,
     }
 
 
@@ -2115,6 +2118,7 @@ def test_registry_refresh_dispatches_owned_surface_lane(monkeypatch, tmp_path: P
         "atlas_sync": False,
         "dry_run": False,
         "verbose": False,
+        "force": False,
     }
 
 
@@ -2141,6 +2145,7 @@ def test_casebook_refresh_dispatches_owned_surface_lane(monkeypatch, tmp_path: P
         "atlas_sync": False,
         "dry_run": False,
         "verbose": False,
+        "force": False,
     }
 
 
@@ -2167,6 +2172,7 @@ def test_atlas_refresh_dispatches_owned_surface_lane(monkeypatch, tmp_path: Path
         "atlas_sync": True,
         "dry_run": False,
         "verbose": False,
+        "force": False,
     }
 
 
@@ -3405,6 +3411,40 @@ def test_start_bootstrap_lane_emits_payload(monkeypatch, tmp_path: Path, capsys)
 
     assert rc == 0
     assert "- lane: bootstrap" in captured
+    assert "- packet: bootstrap_session" in captured
+    assert "- json: rerun with --json for the full bootstrap packet" in captured
+    assert '"packet_kind": "bootstrap_session"' not in captured
+
+
+def test_start_bootstrap_lane_emits_full_payload_with_json(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setattr(
+        cli,
+        "evaluate_start_preflight",
+        lambda **kwargs: SimpleNamespace(
+            lane="bootstrap",
+            reason="healthy",
+            next_command="./.odylith/bin/odylith start --repo-root .",
+            healthy=True,
+            launcher_exists=True,
+            bootstrap_launcher_exists=True,
+            install_shape_present=True,
+            status=None,
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "_start_bootstrap_payload",
+        lambda args: {
+            "packet_kind": "bootstrap_session",
+            "narrowing_guidance": {"required": False, "reason": "grounded"},
+        },
+    )
+
+    rc = cli.main(["start", "--repo-root", str(tmp_path), "--json"])
+    captured = capsys.readouterr().out
+
+    assert rc == 0
+    assert "- lane: bootstrap" in captured
     assert '"packet_kind": "bootstrap_session"' in captured
 
 
@@ -3497,6 +3537,7 @@ def test_start_fallback_lane_prints_exact_next_command(monkeypatch, tmp_path: Pa
     assert "- next: rg --files | rg 'src/odylith/cli.py'" in captured
     assert "- followup: sed -n '1,200p' src/odylith/cli.py" in captured
     assert "- lane: bootstrap" not in captured
+    assert '"packet_kind": "bootstrap_session"' not in captured
 
 
 def test_start_status_only_routes_to_version(monkeypatch, tmp_path: Path, capsys) -> None:

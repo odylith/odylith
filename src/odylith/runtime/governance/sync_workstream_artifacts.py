@@ -1258,6 +1258,41 @@ def _normalize_radar_source_before_surface_refresh(*, repo_root: Path) -> None:
     print(f"  source: {normalization.backlog_index.relative_to(repo_root)}")
 
 
+def _normalize_radar_source_for_sync(*, repo_root: Path) -> int:
+    normalization = normalize_legacy_backlog_index(repo_root=repo_root)
+    if not normalization.changed:
+        print("- radar preflight: legacy Radar source already normalized")
+        return 0
+    normalized_idea_specs = tuple(getattr(normalization, "normalized_idea_specs", ()) or ())
+    normalized_table_sections = tuple(getattr(normalization, "normalized_table_sections", ()) or ())
+    print("workstream sync legacy normalization")
+    print(
+        f"- radar_index: normalized {len(normalization.normalized_sections)} rationale section"
+        f"{'' if len(normalization.normalized_sections) == 1 else 's'} before validation"
+    )
+    print(f"- added_sections: {len(normalization.added_sections)}")
+    print(f"- idea_schema_updates: {len(normalized_idea_specs)}")
+    print(f"- table_schema_updates: {len(normalized_table_sections)}")
+    print(f"- source: {normalization.backlog_index.relative_to(repo_root)}")
+    return 0
+
+
+def _run_backlog_contract_preflight_for_sync(*, repo_root: Path) -> int:
+    normalization_rc = _normalize_radar_source_for_sync(repo_root=repo_root)
+    if normalization_rc != 0:
+        return normalization_rc
+    backlog_errors = collect_backlog_contract_errors(repo_root=repo_root)
+    if not backlog_errors:
+        return 0
+    print("odylith sync did not complete.")
+    print("Radar backlog contract validation is blocking sync.")
+    print("Top blockers:")
+    for line in summarize_backlog_contract_errors(backlog_errors):
+        print(f"- {line}")
+    print(f"Next: {backlog_next_action(errors=backlog_errors)}")
+    return 2
+
+
 def _dashboard_surface_steps(
     *,
     repo_root: Path,
@@ -2227,6 +2262,16 @@ def build_sync_execution_plan(
             runtime_mode=runtime_mode,
         )
 
+    if _backlog_contract_preflight_ready(repo_root):
+        steps.append(
+            _execution_step(
+                "Normalize legacy Radar backlog sections before validation and render.",
+                action=lambda: _run_backlog_contract_preflight_for_sync(repo_root=repo_root),
+                mutation_classes=("repo_owned_truth",),
+                paths=("odylith/radar/source/INDEX.md",),
+                next_command_on_failure=sync_failure_command,
+            )
+        )
     steps.append(
         _execution_step(
             "Normalize active-plan risk/mitigation sections before validation and render.",
@@ -2779,35 +2824,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         print("workstream sync skipped (no relevant artifact changes detected)")
         return 0
 
-    normalization = None
-    if _backlog_contract_preflight_ready(repo_root) and not truth_only_selective:
-        if not args.check_only:
-            normalization = normalize_legacy_backlog_index(repo_root=repo_root)
-            if normalization.changed:
-                normalized_idea_specs = tuple(getattr(normalization, "normalized_idea_specs", ()) or ())
-                normalized_table_sections = tuple(getattr(normalization, "normalized_table_sections", ()) or ())
-                print("workstream sync legacy normalization")
-                print(
-                    f"- radar_index: normalized {len(normalization.normalized_sections)} rationale section"
-                    f"{'' if len(normalization.normalized_sections) == 1 else 's'} before validation"
-                )
-                print(f"- added_sections: {len(normalization.added_sections)}")
-                print(f"- idea_schema_updates: {len(normalized_idea_specs)}")
-                print(f"- table_schema_updates: {len(normalized_table_sections)}")
-                print(f"- source: {normalization.backlog_index.relative_to(repo_root)}")
-        backlog_errors = collect_backlog_contract_errors(repo_root=repo_root)
-        if backlog_errors:
-            print("odylith sync did not complete.")
-            if normalization is not None and normalization.changed:
-                print("Legacy Radar rationale was normalized, but backlog contract blockers still remain.")
-            else:
-                print("Radar backlog contract validation is blocking sync.")
-            print("Top blockers:")
-            for line in summarize_backlog_contract_errors(backlog_errors):
-                print(f"- {line}")
-            print(f"Next: {backlog_next_action(errors=backlog_errors)}")
-            return 2
-
     impact = None
     governance_fallback_reason = ""
     if truth_only_selective:
@@ -2904,8 +2920,18 @@ def main(argv: Sequence[str] | None = None) -> int:
             f"{len(plan.dirty_overlap)} local worktree entries overlap this write-mode sync plan "
             f"(threshold {DEFAULT_SYNC_OVERLAP_GATE_THRESHOLD})."
         )
+        print("- writes: none (dirty-overlap gate ran before tracked mutations)")
+        if bool(getattr(args, "force", False)):
+            print(
+                "- note: --force bypasses change detection and generated refresh-guard reuse; "
+                "it does not acknowledge dirty-overlap writes."
+            )
         print(
             "- next: "
+            f"{display_command('dashboard', 'refresh', '--repo-root', '.', '--force')}"
+        )
+        print(
+            "- full_sync_override: "
             f"{display_command('sync', '--repo-root', '.', '--proceed-with-overlap')}"
         )
         print(

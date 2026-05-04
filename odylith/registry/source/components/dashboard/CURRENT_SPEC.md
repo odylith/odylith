@@ -23,6 +23,7 @@ surface into the shell renderer.
 - Shared developer-note and cheatsheet drawers.
 - Shared branding, favicon, manifest, and tab lockup behavior.
 - Externalized shell asset bundling for the checked-in root surface.
+- Runtime version-state sidecar detection for stale generated shell payloads.
 - A hard product boundary that keeps internal diagnostics, provider-spend
   evidence, recorder tapes, cockpit panels, charts, and status slabs out of the
   dashboard DOM.
@@ -104,6 +105,10 @@ surface into the shell renderer.
   Shared layout, typography, chip, panel, and dashboard UI CSS primitives.
 - `src/odylith/runtime/surfaces/brand_assets.py`
   Brand head injection, favicon, manifest, and lockup/icon asset plumbing.
+- `src/odylith/runtime/surfaces/tooling_dashboard_version_state.py`
+  Mutable runtime sidecar sourced from `odylith version` so an open or stale
+  shell can detect when the generated dashboard payload lags the authoritative
+  runtime version.
 - `src/odylith/runtime/surfaces/templates/tooling_dashboard/`
   Shell HTML/CSS/JS template assets.
 
@@ -119,6 +124,8 @@ surface into the shell renderer.
 - `odylith/index.html`
 - `odylith/tooling-payload.v1.js`
 - `odylith/tooling-app.v1.js`
+- `.odylith/runtime/odylith-version-state.v1.json`
+- `.odylith/runtime/odylith-version-state.v1.js`
 
 ## Shell Architecture
 ### Composition model
@@ -171,6 +178,14 @@ stale generated-surface cache suspicion. It bypasses generated refresh-guard
 reuse for the selected child renderers without changing source truth by itself.
 Default refresh may stay optimized, but a green check must never be based on a
 stale cache whose input fingerprint missed changed source bytes.
+
+After install or upgrade, Dashboard must write the runtime version sidecar and
+force the default shell-facing refresh. A shell payload that still shows an
+older version than `odylith version` must surface a warning with the
+authoritative source, the shell generated timestamp, the version-state check
+timestamp, and the narrow recovery command:
+`odylith dashboard refresh --repo-root . --force`. It must not recommend broad
+`odylith sync --proceed-with-overlap` recovery for shell-only drift.
 
 ### Live-refresh policy contract
 Dashboard owns the shell-side policy that decides when a currently open tab may

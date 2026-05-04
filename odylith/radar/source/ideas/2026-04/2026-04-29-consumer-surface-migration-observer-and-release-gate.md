@@ -970,6 +970,15 @@ Migration observer markers for this assessment:
 - `migration-observer:0.1.14:browser-surfaces:082d686c209c`
 - `migration-observer:0.1.14:install-managed-assets:13f26f2bb451`
 - `migration-observer:0.1.14:operator-cli-contracts:6ab68b8ca8b4`
+- `migration-observer:0.1.14:operator-cli-contracts:dcac88f4e4a7`
+- `migration-observer:0.1.14:browser-surfaces:6584e43cc8d1`
+- `migration-observer:0.1.14:install-managed-assets:8afd5be2970e`
+- `migration-observer:0.1.14:operator-cli-contracts:430cbf2c16a3`
+- `migration-observer:0.1.14:browser-surfaces:c27f8838b3c7`
+- `migration-observer:0.1.14:install-managed-assets:017a0c8f19fa`
+- `migration-observer:0.1.14:browser-surfaces:2d323cc9b2f3`
+- `migration-observer:0.1.14:browser-surfaces:0dbe8cc13855`
+- `migration-observer:0.1.14:install-managed-assets:50b82d75fe4f`
 
 Validation evidence for the Casebook status-FSM slice:
 - `python -m py_compile src/odylith/runtime/common/casebook_metadata.py src/odylith/runtime/governance/casebook_source_validation.py src/odylith/runtime/surfaces/render_casebook_dashboard.py src/odylith/install/casebook_metadata_migration.py src/odylith/install/migration_runtime.py src/odylith/install/migration_definitions.py`
@@ -1032,3 +1041,34 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
 - The final governed-sync browser refresh for marker `migration-observer:0.1.14:browser-surfaces:3dc864525c0a` updates Radar, Registry, Casebook, Compass, Atlas, and shell render outputs after the v0.1.14 release/security/governance truth changed. Existing consumer installs do not require a custom data migration beyond the normal v0.1.14 dashboard refresh and registered migration set.
 - The release-candidate shell auto-refresh hardening for markers `migration-observer:0.1.14:browser-surfaces:2bc16e52e857` and `migration-observer:0.1.14:install-managed-assets:b6f3e45c2bb6` replaces same-URL shell reload with a cache-busted state-preserving reload after the checked-in payload fingerprint changes, then refreshes the generated shell and bundle mirror. Existing consumer installs do not require a custom data migration beyond normal v0.1.14 managed asset adoption and dashboard refresh; focused proof passed the Turn Gate CLI audit matrix and the upgrade spotlight auto-refresh browser cases.
 - The post-sync release-candidate marker settlement for `migration-observer:0.1.14:browser-surfaces:3a0922f20803` and `migration-observer:0.1.14:install-managed-assets:d7ee76b62591` records the final content-addressed browser and bundle fingerprints after the shell auto-refresh hardening was rendered. Existing consumer installs still require no bespoke data migration beyond normal v0.1.14 managed asset adoption, dashboard refresh, and the registered 0.1.14 migration set.
+- The post-release dashboard-version drift repair for CB-168, covered by
+  markers `migration-observer:0.1.14:operator-cli-contracts:dcac88f4e4a7`,
+  `migration-observer:0.1.14:browser-surfaces:6584e43cc8d1`, and
+  `migration-observer:0.1.14:install-managed-assets:8afd5be2970e`, adds a mutable
+  `.odylith/runtime/odylith-version-state.v1.{json,js}` sidecar, forces the
+  default shell-facing dashboard refresh after upgrade, and moves sync
+  dirty-overlap blocking before tracked Radar normalization. Marker
+  `migration-observer:0.1.14:operator-cli-contracts:430cbf2c16a3` covers the
+  final execution-step wiring that preserves the dirty-overlap pre-mutation
+  gate while keeping the Radar normalization blocker summary. Existing
+  consumers need no source-truth migration; normal v0.1.14 upgrade/dashboard
+  refresh writes the sidecar and rerenders shell assets, while dirty worktrees
+  get a narrow `odylith dashboard refresh --repo-root . --force` recovery path.
+- The final source-local full dashboard refresh for markers
+  `migration-observer:0.1.14:browser-surfaces:c27f8838b3c7` and
+  `migration-observer:0.1.14:install-managed-assets:017a0c8f19fa` rerenders
+  Radar, Compass, Atlas, Registry, Casebook, and the shell after the dashboard
+  version-state sidecar and sync guard changes. Existing consumers need no
+  bespoke data migration beyond normal v0.1.14 managed asset adoption and
+  dashboard refresh.
+- The source-local Registry refresh after component forensics reconciliation for
+  marker `migration-observer:0.1.14:browser-surfaces:2d323cc9b2f3` updates the
+  rendered Registry payload from governed Registry truth. Existing consumers need
+  no custom data migration beyond normal v0.1.14 dashboard refresh.
+- The post-restore generated surface settlement for markers
+  `migration-observer:0.1.14:browser-surfaces:0dbe8cc13855` and
+  `migration-observer:0.1.14:install-managed-assets:50b82d75fe4f` keeps the
+  post-release dashboard/version repair scoped to the relevant shell, Radar,
+  Atlas, Registry, and Casebook generated assets after broad Compass runtime
+  history churn was removed. Existing consumers need no custom data migration
+  beyond normal v0.1.14 dashboard refresh and managed asset adoption.

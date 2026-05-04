@@ -107,6 +107,8 @@ def build_runtime_payload(
     self_host_payload: Mapping[str, Any],
     brand_payload: Mapping[str, Any],
     shell_version_label: str,
+    version_state_href: str = "",
+    version_state_global_name: str = "",
 ) -> ToolingDashboardBuildResult:
     """Build the runtime payload consumed by the tooling dashboard shell."""
     spotlight_payload = dict(release_spotlight)
@@ -130,6 +132,8 @@ def build_runtime_payload(
         **dict(brand_payload),
         "shell_repo_name": _shell_repo_name(repo_root=repo_root),
         "shell_version_label": str(shell_version_label).strip(),
+        "version_state_href": str(version_state_href).strip(),
+        "version_state_global_name": str(version_state_global_name).strip(),
     }
     return ToolingDashboardBuildResult(
         runtime_payload=runtime_payload,

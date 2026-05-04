@@ -488,7 +488,17 @@ def test_render_tooling_dashboard_includes_self_host_payload(tmp_path: Path, mon
     assert '"runtime_source": "pinned_runtime"' in payload_js
     assert '"shell_repo_name": "odylith"' in payload_js
     assert '"shell_version_label": "v0.1.0"' in payload_js
+    assert '"version_state_href": "../.odylith/runtime/odylith-version-state.v1.js"' in payload_js
+    assert '"version_state_global_name": "__ODYLITH_VERSION_STATE__"' in payload_js
     assert '"compass_href": "compass/compass.html?v=' in payload_js
+    version_state = json.loads(
+        (tmp_path / ".odylith" / "runtime" / "odylith-version-state.v1.json").read_text(encoding="utf-8")
+    )
+    assert version_state["source"] == "odylith version"
+    assert version_state["authoritative_version"] == "0.1.0"
+    assert version_state["authoritative_label"] == "v0.1.0"
+    version_state_js = (tmp_path / ".odylith" / "runtime" / "odylith-version-state.v1.js").read_text(encoding="utf-8")
+    assert "window[\"__ODYLITH_VERSION_STATE__\"]" in version_state_js
 
 
 def test_render_tooling_dashboard_enables_passive_live_refresh_for_consumer_repo(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -808,7 +818,13 @@ def test_render_tooling_dashboard_uses_tab_local_state_for_shell_surface_switche
     assert "function runtimeAutoReloadReadyForTab(tab)" in control_js
     assert "function buildRuntimeStatusFingerprint(posture) {" in control_js
     assert "const initialSurfaceRuntimeStatus = payload && payload.surface_runtime_status" in control_js
+    assert "const versionStateHref = String(payload.version_state_href || \"\").trim();" in control_js
+    assert "function buildShellVersionDriftPosture(versionState) {" in control_js
+    assert "Dashboard stale" in control_js
+    assert "odylith dashboard refresh --repo-root . --force" in control_js
+    assert "scheduleVersionStateProbe(300);" in control_js
     assert "const surfaceRuntimeStatus = runtimeState && runtimeState.surface_runtime_status" in control_js
+    assert "const shellPosture = normalizeRuntimePosture(surfaceRuntimeStatus.shell, fallbackPosture);" in control_js
     assert "const rawPosture = surfaceRuntimeStatus[currentTab];" in control_js
     assert "function mergeRuntimeStatusState(runtimeState) {" in control_js
     assert "function runtimeStatusDismissed() {" in control_js
