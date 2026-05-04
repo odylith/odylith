@@ -663,6 +663,17 @@ def _seed_first_run_surfaces_without_shell(repo_root: Path) -> None:
         output_path.write_text("<!doctype html>\n", encoding="utf-8")
 
 
+def _seed_complete_consumer_install_shape(repo_root: Path, *, version: str = "1.2.3") -> None:
+    install_state_path = repo_root / ".odylith" / "install.json"
+    install_state_path.parent.mkdir(parents=True, exist_ok=True)
+    install_state_path.write_text(json.dumps({"active_version": version}) + "\n", encoding="utf-8")
+    pin_path = repo_root / "odylith" / "runtime" / "source" / "product-version.v1.json"
+    pin_path.parent.mkdir(parents=True, exist_ok=True)
+    pin_path.write_text(json.dumps({"odylith_version": version}) + "\n", encoding="utf-8")
+    (repo_root / "odylith" / "AGENTS.md").write_text("# Odylith\n", encoding="utf-8")
+    _seed_first_run_surfaces(repo_root)
+
+
 def test_install_bootstraps_first_run_surfaces_and_reports_agent_workflow(monkeypatch, tmp_path: Path, capsys) -> None:
     launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
     sync_capture: dict[str, object] = {}
@@ -1430,6 +1441,180 @@ def test_install_align_pin_reports_repo_pin_update(monkeypatch, tmp_path: Path, 
         "align_pin": True,
     }
     assert "Repo pin updated to 1.2.4." in output
+
+
+def test_install_existing_complete_repo_routes_through_upgrade_lifecycle(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
+    _seed_complete_consumer_install_shape(tmp_path, version="1.2.3")
+    captured: dict[str, object] = {}
+
+    def fake_plan_upgrade_lifecycle(**kwargs) -> SimpleNamespace:  # noqa: ANN003
+        captured["plan_kwargs"] = kwargs
+        return SimpleNamespace(command="upgrade", headline="preview", steps=(), dirty_overlap=(), notes=(), metadata={})
+
+    def fake_upgrade_install(**kwargs) -> SimpleNamespace:  # noqa: ANN003
+        captured["upgrade_kwargs"] = kwargs
+        return SimpleNamespace(
+            active_version="1.2.4",
+            launcher_path=launcher_path,
+            pin_changed=True,
+            pinned_version="1.2.4",
+            previous_version="1.2.3",
+            repo_root=tmp_path,
+            repo_role="consumer_repo",
+            followed_latest=False,
+            release_body="",
+            release_highlights=("release migrations ran",),
+            release_published_at="",
+            release_tag="v1.2.4",
+            release_url="",
+            verification={},
+            repaired=False,
+            retention_warnings=(),
+            migration=None,
+            migration_plan={"migration_ids": ["v0.1.14-casebook-status-fsm"]},
+            migration_results=({"migration_id": "v0.1.14-casebook-status-fsm", "status": "applied"},),
+        )
+
+    monkeypatch.setattr(cli, "plan_upgrade_lifecycle", fake_plan_upgrade_lifecycle)
+    monkeypatch.setattr(
+        cli,
+        "plan_install_lifecycle",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("install plan should not run")),
+    )
+    monkeypatch.setattr(
+        cli,
+        "install_bundle",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("install_bundle should not run")),
+    )
+    monkeypatch.setattr(cli, "upgrade_install", fake_upgrade_install)
+    monkeypatch.setattr(cli, "_prepare_consumer_upgrade_spotlight", lambda **kwargs: None)
+    monkeypatch.setattr(
+        cli,
+        "_refresh_dashboard_after_upgrade",
+        lambda **kwargs: (True, "Dashboard refreshed."),
+    )
+    monkeypatch.setattr(cli.upgrade_reporting, "git_status_paths", lambda **kwargs: ())
+    monkeypatch.setattr(
+        cli.upgrade_reporting,
+        "write_generated_change_manifest",
+        lambda **kwargs: {"changed": False, "written": False},
+    )
+    monkeypatch.setattr(
+        cli.upgrade_reporting,
+        "upgrade_change_review_payload",
+        lambda **kwargs: {"categories": {}},
+    )
+    monkeypatch.setattr(
+        cli.upgrade_reporting,
+        "write_upgrade_report",
+        lambda **kwargs: tmp_path / ".odylith" / "reports" / "upgrade.json",
+    )
+
+    rc = cli.main(["install", "--repo-root", str(tmp_path), "--version", "1.2.4", "--no-open"])
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert captured["plan_kwargs"] == {
+        "repo_root": tmp_path.resolve(),
+        "version": "1.2.4",
+        "release_repo": "odylith/odylith",
+        "source_repo": None,
+        "write_pin": True,
+    }
+    assert captured["upgrade_kwargs"] == {
+        "repo_root": str(tmp_path),
+        "release_repo": "odylith/odylith",
+        "version": "1.2.4",
+        "source_repo": None,
+        "write_pin": True,
+    }
+    assert "Existing Odylith install detected; routing install through the upgrade lifecycle" in output
+    assert "Upgraded Odylith from 1.2.3 to 1.2.4" in output
+    assert "Dashboard ready." in output
+
+
+def test_install_dry_run_existing_complete_repo_previews_upgrade_lifecycle(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    _seed_complete_consumer_install_shape(tmp_path, version="1.2.3")
+    captured: dict[str, object] = {}
+
+    def fake_plan_upgrade_lifecycle(**kwargs) -> SimpleNamespace:  # noqa: ANN003
+        captured.update(kwargs)
+        return SimpleNamespace(command="upgrade", headline="preview", steps=(), dirty_overlap=(), notes=(), metadata={})
+
+    monkeypatch.setattr(cli, "plan_upgrade_lifecycle", fake_plan_upgrade_lifecycle)
+    monkeypatch.setattr(
+        cli,
+        "plan_install_lifecycle",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("install plan should not run")),
+    )
+    monkeypatch.setattr(
+        cli,
+        "install_bundle",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("install_bundle should not run")),
+    )
+    monkeypatch.setattr(
+        cli,
+        "upgrade_install",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("upgrade_install should not run during --dry-run")),
+    )
+
+    rc = cli.main(["install", "--repo-root", str(tmp_path), "--version", "1.2.4", "--dry-run"])
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert captured == {
+        "repo_root": tmp_path.resolve(),
+        "version": "1.2.4",
+        "release_repo": "odylith/odylith",
+        "source_repo": None,
+        "write_pin": True,
+    }
+    assert "upgrade dry-run" in output
+    assert "install dry-run" not in output
+
+
+def test_install_product_repo_shape_does_not_route_through_consumer_upgrade(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    _seed_complete_consumer_install_shape(tmp_path, version="1.2.3")
+    _seed_product_repo_shape(tmp_path)
+    captured: dict[str, object] = {}
+
+    def fake_plan_install_lifecycle(**kwargs) -> SimpleNamespace:  # noqa: ANN003
+        captured.update(kwargs)
+        return SimpleNamespace(command="install", headline="preview", steps=(), dirty_overlap=(), notes=())
+
+    monkeypatch.setattr(cli, "plan_install_lifecycle", fake_plan_install_lifecycle)
+    monkeypatch.setattr(
+        cli,
+        "plan_upgrade_lifecycle",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("consumer upgrade route should not run")),
+    )
+    monkeypatch.setattr(
+        cli,
+        "install_bundle",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("install_bundle should not run during --dry-run")),
+    )
+
+    rc = cli.main(["install", "--repo-root", str(tmp_path), "--version", "1.2.4", "--dry-run"])
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert captured["repo_root"] == tmp_path.resolve()
+    assert captured["target_version"] == "1.2.4"
+    assert "install dry-run" in output
+    assert "upgrade dry-run" not in output
 
 
 def test_install_dry_run_passes_bootstrap_runtime_prestaged_env(monkeypatch, tmp_path: Path) -> None:

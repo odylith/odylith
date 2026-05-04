@@ -591,6 +591,17 @@ def _is_first_install(*, repo_root: Path) -> bool:
     return not _install_state_path(repo_root=repo_root).is_file()
 
 
+def _has_complete_existing_consumer_install(*, repo_root: Path) -> bool:
+    root = Path(repo_root).expanduser().resolve()
+    if repo_role_from_local_shape(repo_root=root) == PRODUCT_REPO_ROLE:
+        return False
+    return (
+        _install_state_path(repo_root=root).is_file()
+        and (root / "odylith" / "runtime" / "source" / "product-version.v1.json").is_file()
+        and (root / "odylith" / "AGENTS.md").is_file()
+    )
+
+
 def _env_flag_enabled(name: str) -> bool:
     token = str(os.environ.get(name) or "").strip().lower()
     return token not in {"", "0", "false", "no", "off"}
@@ -1119,8 +1130,28 @@ def _cmd_install_common(
     first_install = _is_first_install(repo_root=requested_repo_root)
     adopt_latest = bool(adopt_latest_default or getattr(args, "adopt_latest", False))
     align_pin = bool(getattr(args, "align_pin", False))
-    release_repo = str(getattr(args, "release_repo", _authoritative_release_repo()) or _authoritative_release_repo()).strip()
+    release_repo = str(
+        getattr(args, "release_repo", _authoritative_release_repo()) or _authoritative_release_repo()
+    ).strip()
     target_version = str(getattr(args, "version", "") or getattr(args, "target_version", "") or "").strip()
+    if _has_complete_existing_consumer_install(repo_root=requested_repo_root):
+        if not bool(getattr(args, "dry_run", False)) and not _env_flag_enabled(_INSTALL_COMPACT_ENV):
+            print(
+                "Existing Odylith install detected; routing install through the upgrade lifecycle "
+                "so release migrations run."
+            )
+        return _cmd_upgrade(
+            SimpleNamespace(
+                repo_root=args.repo_root,
+                target_version=target_version,
+                release_repo=release_repo,
+                source_repo=None,
+                write_pin=True,
+                dry_run=bool(getattr(args, "dry_run", False)),
+                verbose=bool(getattr(args, "verbose", False)),
+                json=False,
+            )
+        )
     compact_output = (
         _env_flag_enabled(_INSTALL_COMPACT_ENV)
         and not bool(getattr(args, "dry_run", False))

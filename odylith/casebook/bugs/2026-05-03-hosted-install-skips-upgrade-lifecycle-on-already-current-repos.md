@@ -12,9 +12,9 @@
 
 - Type: Product
 
-- Description: The hosted curl installer treated a complete existing Odylith repo whose pin and active runtime already matched the target release as an install rematerialization instead of an upgrade. That bypassed the authoritative upgrade lifecycle and any same-version migration checks registered in the target runtime.
+- Description: The hosted curl installer and direct `odylith install` path treated a complete existing Odylith repo as install rematerialization instead of upgrade. When pin and active runtime already matched the target release, that bypassed the authoritative upgrade lifecycle and any same-version migration checks registered in the target runtime.
 
-- Impact: Consumer operators reinstalling or refreshing Odylith with the public curl command can miss required migration checks even though Odylith is already present and the command should converge the repo through the upgrade lifecycle.
+- Impact: Consumer operators reinstalling or refreshing Odylith with the public curl command or the CLI install command can miss required migration checks even though Odylith is already present and the command should converge the repo through the upgrade lifecycle.
 
 - Components Affected: release
 
@@ -22,9 +22,9 @@
 
 - Detected By: Operator feedback on 2026-05-03 that rerunning curl -fsSL https://odylith.ai/install.sh | bash on an existing Odylith repo should trigger upgrade and the full migration cycle instead of fresh-install behavior.
 
-- Failure Signature: Generated install.sh branched to odylith.cli install --repo-root <repo> --version <release> when installed_pin_version and installed_active_version both matched release_version; command-log coverage proved upgrade was not invoked.
+- Failure Signature: Generated install.sh or direct CLI install branched to install_bundle/rematerialization for a complete existing consumer repo instead of invoking upgrade_install with release migrations and write-pin semantics.
 
-- Trigger Path: curl -fsSL https://odylith.ai/install.sh | bash in an already-installed repo whose pin, active runtime, and hosted target all resolve to the same release.
+- Trigger Path: curl -fsSL https://odylith.ai/install.sh | bash, or `odylith install --repo-root . --version <release>`, in an already-installed repo whose pin, active runtime, and target all resolve to a complete Odylith install shape.
 
 - Ownership: Hosted installer generation and release upgrade lifecycle dispatch.
 
@@ -42,15 +42,15 @@
 
 - Root Cause: The generated installer carried a same-version shortcut that read pin and install state, then called install instead of upgrade when both matched the release target. That shortcut predated registered same-version migration handling in upgrade_install.
 
-- Solution: Remove the same-version shortcut from the generated install script. Complete existing installs now always dispatch to odylith upgrade --to <release> --write-pin; incomplete or stale-uninstall residue keeps the fresh install repair path.
+- Solution: Remove the same-version shortcut from the generated install script and make the CLI install command detect complete existing consumer installs before install planning. Complete existing installs now dispatch to upgrade with `--write-pin`; incomplete or stale-uninstall residue keeps the fresh install repair path, and product-repo maintainer shape stays out of the consumer upgrade route.
 
 - Rollback/Forward Fix: Forward fix in the hosted installer template for v0.1.14.
 
-- Verification: PYTHONPATH=src python -m pytest -q tests/unit/install/test_release_bootstrap.py -k generated_install_script; python -m py_compile scripts/release/publish_release_assets.py.
+- Verification: PYTHONPATH=src python -m pytest -q tests/unit/test_cli.py::test_install_existing_complete_repo_routes_through_upgrade_lifecycle tests/unit/test_cli.py::test_install_dry_run_existing_complete_repo_previews_upgrade_lifecycle tests/unit/test_cli.py::test_install_product_repo_shape_does_not_route_through_consumer_upgrade tests/unit/install/test_release_bootstrap.py::test_generated_install_script_routes_complete_already_current_install_through_upgrade_lifecycle; python -m py_compile scripts/release/publish_release_assets.py.
 
 - Prevention: Keep generated installer tests proving complete already-current installs route through upgrade, while incomplete install residue still routes through install repair.
 
-- Regression Tests Added: tests/unit/install/test_release_bootstrap.py::test_generated_install_script_routes_complete_already_current_install_through_upgrade_lifecycle
+- Regression Tests Added: tests/unit/install/test_release_bootstrap.py::test_generated_install_script_routes_complete_already_current_install_through_upgrade_lifecycle; tests/unit/test_cli.py::test_install_existing_complete_repo_routes_through_upgrade_lifecycle; tests/unit/test_cli.py::test_install_dry_run_existing_complete_repo_previews_upgrade_lifecycle; tests/unit/test_cli.py::test_install_product_repo_shape_does_not_route_through_consumer_upgrade
 
 - Monitoring Updates: Watch hosted installer transcripts for complete existing repos and verify the terminal lifecycle line comes from upgrade rather than compact install.
 
@@ -59,4 +59,6 @@
 - Fixed In: 0.1.14
 
 - Code References: - scripts/release/publish_release_assets.py
+- src/odylith/cli.py
 - tests/unit/install/test_release_bootstrap.py
+- tests/unit/test_cli.py

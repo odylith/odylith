@@ -899,6 +899,9 @@ Migration observer markers for this assessment:
 - `migration-observer:0.1.14:install-managed-assets:1b037b621ef9`
 - `migration-observer:0.1.14:browser-surfaces:ae770b4d8cc7`
 - `migration-observer:0.1.14:install-managed-assets:0ac7ccb1c77d`
+- `migration-observer:0.1.14:operator-cli-contracts:bf744bbab40d`
+- `migration-observer:0.1.14:browser-surfaces:a371bff537ac`
+- `migration-observer:0.1.14:install-managed-assets:fe7abb4cf478`
 
 Validation evidence for the Casebook status-FSM slice:
 - `python -m py_compile src/odylith/runtime/common/casebook_metadata.py src/odylith/runtime/governance/casebook_source_validation.py src/odylith/runtime/surfaces/render_casebook_dashboard.py src/odylith/install/casebook_metadata_migration.py src/odylith/install/migration_runtime.py src/odylith/install/migration_definitions.py`
@@ -938,6 +941,7 @@ Validation evidence for the Casebook status-FSM slice:
 - `PYTHONPATH=src python -m odylith.runtime.surfaces.auto_update_mermaid_diagrams --repo-root . --all-stale --runtime-mode standalone --dry-run` (`no stale diagrams found`)
 - `PYTHONPATH=src python -m pytest -q tests/unit/install/test_upgrade_reporting.py tests/unit/runtime/test_render_casebook_dashboard.py tests/integration/runtime/test_casebook_sort_browser.py tests/integration/runtime/test_casebook_list_layout_browser.py tests/integration/runtime/test_casebook_consumer_upgrade_browser.py` (`24 passed`)
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_casebook_source_validation.py tests/unit/runtime/test_generated_refresh_guard.py tests/unit/runtime/test_casebook_bug_index.py tests/unit/install/test_casebook_metadata_migration.py tests/unit/install/test_migration_runtime.py tests/integration/install/test_lifecycle_simulator.py::test_lifecycle_simulator_proves_historical_upgrades_to_0_1_13 tests/integration/install/test_lifecycle_simulator.py::test_lifecycle_simulator_proves_historical_upgrades_to_0_1_14` (`107 passed`)
+- `PYTHONPATH=src python -m pytest -q tests/unit/test_cli.py::test_install_existing_complete_repo_routes_through_upgrade_lifecycle tests/unit/test_cli.py::test_install_dry_run_existing_complete_repo_previews_upgrade_lifecycle tests/unit/test_cli.py::test_install_product_repo_shape_does_not_route_through_consumer_upgrade tests/unit/install/test_release_bootstrap.py::test_generated_install_script_routes_complete_already_current_install_through_upgrade_lifecycle` (`4 passed`; hosted installer and direct CLI install both route complete existing consumer installs through upgrade while product-repo maintainer shape stays out of the consumer route)
 - `odylith casebook validate --repo-root .` (`161 records`)
 - `PYTHONPATH=src python -m pytest -q tests/unit/install/test_migration_runtime.py::test_every_registered_upgrade_migration_has_full_lifecycle_fixture_coverage tests/unit/install/test_migration_runtime.py::test_release_migrations_cover_any_historical_0_1_release_to_v014 tests/integration/install/test_lifecycle_simulator.py::test_lifecycle_simulator_proves_historical_upgrades_to_0_1_14` (`3 passed`; unit proof covers unknown legacy state plus every 0.1.0-0.1.13 release, lifecycle proof exercises 0.1.0-0.1.13 install/upgrade activation)
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_casebook_dashboard.py tests/unit/install/test_casebook_metadata_migration.py tests/integration/runtime/test_casebook_list_layout_browser.py` (`22 passed`; proves stale URL cleanup, display-label normalization, and full-width Casebook summary card after source-local render)
