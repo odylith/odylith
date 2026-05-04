@@ -979,6 +979,10 @@ Migration observer markers for this assessment:
 - `migration-observer:0.1.14:browser-surfaces:2d323cc9b2f3`
 - `migration-observer:0.1.14:browser-surfaces:0dbe8cc13855`
 - `migration-observer:0.1.14:install-managed-assets:50b82d75fe4f`
+- `migration-observer:0.1.14:operator-cli-contracts:9871cf63f2ba`
+- `migration-observer:0.1.14:browser-surfaces:537ae469ce88`
+- `migration-observer:0.1.14:browser-surfaces:2ee6238bab31`
+- `migration-observer:0.1.14:install-managed-assets:6aad0d78490e`
 
 Validation evidence for the Casebook status-FSM slice:
 - `python -m py_compile src/odylith/runtime/common/casebook_metadata.py src/odylith/runtime/governance/casebook_source_validation.py src/odylith/runtime/surfaces/render_casebook_dashboard.py src/odylith/install/casebook_metadata_migration.py src/odylith/install/migration_runtime.py src/odylith/install/migration_definitions.py`
@@ -1092,3 +1096,18 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   Atlas, Registry, and Casebook generated assets after broad Compass runtime
   history churn was removed. Existing consumers need no custom data migration
   beyond normal v0.1.14 dashboard refresh and managed asset adoption.
+- The hosted install fallback release-spotlight repair for CB-169 is covered by
+  `migration-observer:0.1.14:operator-cli-contracts:9871cf63f2ba` and
+  `migration-observer:0.1.14:browser-surfaces:537ae469ce88`. The generated
+  hosted installer now captures the previous active version before stale-state
+  cleanup, passes it into compact install, and the install CLI repairs
+  activation history plus writes `release-upgrade-spotlight.v1.json` before the
+  shell-facing dashboard refresh. Existing consumers need no source-truth
+  migration; upgrade-like install fallback paths preserve the release popup,
+  while true first installs stay quiet.
+- The Radar/browser settlement after recording CB-169 is covered by
+  `migration-observer:0.1.14:browser-surfaces:2ee6238bab31` and
+  `migration-observer:0.1.14:install-managed-assets:6aad0d78490e`. These are
+  generated Radar and bundle mirror updates from the completed assessment above;
+  existing consumers receive them through normal v0.1.14 dashboard refresh and
+  managed asset adoption with no custom source migration.

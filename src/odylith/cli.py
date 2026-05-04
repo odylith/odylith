@@ -51,6 +51,7 @@ _DEFAULT_DASHBOARD_REFRESH_SURFACES = ("tooling_shell", "radar", "compass")
 _DEFAULT_DASHBOARD_REFRESH_SURFACES_CSV = ",".join(_DEFAULT_DASHBOARD_REFRESH_SURFACES)
 _BOOTSTRAP_RUNTIME_PRESTAGED_ENV = "ODYLITH_BOOTSTRAP_RUNTIME_PRESTAGED"
 _INSTALL_COMPACT_ENV = "ODYLITH_INSTALL_COMPACT"
+_INSTALL_PREVIOUS_ACTIVE_VERSION_ENV = "ODYLITH_INSTALL_PREVIOUS_ACTIVE_VERSION"
 _UNINSTALL_DESCRIPTION = (
     "Remove Odylith's repo-local runtime state and detach Odylith root guidance.\n\n"
     "Scope:\n"
@@ -994,6 +995,92 @@ def _prepare_consumer_upgrade_spotlight(*, repo_root: Path, summary: object, sou
     return True
 
 
+def _normalize_release_version_token(value: object) -> str:
+    token = str(value or "").strip()
+    if len(token) > 1 and token[0].lower() == "v" and token[1].isdigit():
+        return token[1:].strip()
+    return token
+
+
+def _install_previous_active_version_candidate(*, repo_root: Path) -> str:
+    env_candidate = _normalize_release_version_token(os.environ.get(_INSTALL_PREVIOUS_ACTIVE_VERSION_ENV))
+    if env_candidate:
+        return env_candidate
+    with suppress(Exception):
+        state = _install_state().load_install_state(repo_root=repo_root)
+        state_candidate = _normalize_release_version_token(state.get("active_version"))
+        if state_candidate:
+            return state_candidate
+    return ""
+
+
+def _ensure_activation_history_for_install_upgrade(
+    *,
+    repo_root: Path,
+    previous_version: str,
+    active_version: str,
+) -> None:
+    if not previous_version or not active_version or previous_version == active_version:
+        return
+    state_api = _install_state()
+    state = state_api.load_install_state(repo_root=repo_root)
+    history = [
+        _normalize_release_version_token(value)
+        for value in state.get("activation_history", [])
+        if _normalize_release_version_token(value)
+    ]
+    if len(history) >= 2 and history[-2] == previous_version and history[-1] == active_version:
+        return
+    if history and history[-1] == active_version:
+        history = history[:-1]
+    if not history or history[-1] != previous_version:
+        history.append(previous_version)
+    history.append(active_version)
+    state["activation_history"] = history
+    state["active_version"] = active_version
+    state_api.write_install_state(repo_root=repo_root, payload=state)
+
+
+def _prepare_install_upgrade_spotlight_from_previous(
+    *,
+    repo_root: Path,
+    previous_version: str,
+    active_version: str,
+    summary: object,
+    release_repo: str,
+) -> bool:
+    previous_version = _normalize_release_version_token(previous_version)
+    active_version = _normalize_release_version_token(active_version)
+    if not previous_version or not active_version or previous_version == active_version:
+        return False
+    if repo_role_from_local_shape(repo_root=repo_root) == PRODUCT_REPO_ROLE:
+        return False
+    _ensure_activation_history_for_install_upgrade(
+        repo_root=repo_root,
+        previous_version=previous_version,
+        active_version=active_version,
+    )
+    release_tag = str(getattr(summary, "release_tag", "") or "").strip() or f"v{active_version}"
+    release_url = str(getattr(summary, "release_url", "") or "").strip()
+    if not release_url and release_repo:
+        release_url = f"https://github.com/{release_repo}/releases/tag/{release_tag}"
+    _write_upgrade_spotlight(
+        repo_root=repo_root,
+        from_version=previous_version,
+        to_version=active_version,
+        release_tag=release_tag,
+        release_url=release_url,
+        release_published_at=str(getattr(summary, "release_published_at", "") or "").strip(),
+        release_body=str(getattr(summary, "release_body", "") or "").strip(),
+        highlights=tuple(
+            str(item).strip()
+            for item in getattr(summary, "release_highlights", ()) or ()
+            if str(item).strip()
+        ),
+    )
+    return True
+
+
 def _refresh_dashboard_after_upgrade(
     *,
     repo_root: Path,
@@ -1153,7 +1240,8 @@ def _cmd_install_common(
     adopt_latest_default: bool = False,
 ) -> int:
     requested_repo_root = Path(args.repo_root).expanduser().resolve()
-    first_install = _is_first_install(repo_root=requested_repo_root)
+    pre_install_active_version = _install_previous_active_version_candidate(repo_root=requested_repo_root)
+    first_install = _is_first_install(repo_root=requested_repo_root) and not pre_install_active_version
     adopt_latest = bool(adopt_latest_default or getattr(args, "adopt_latest", False))
     align_pin = bool(getattr(args, "align_pin", False))
     release_repo = str(
@@ -1228,6 +1316,15 @@ def _cmd_install_common(
     _print_legacy_migration_summary(summary)
     install_migration_refresh_required = _summary_has_install_migration_activity(summary)
     final_version = str(summary.version or "").strip() or __version__
+    install_upgrade_spotlight_written = False
+    if not first_install and not adopt_latest:
+        install_upgrade_spotlight_written = _prepare_install_upgrade_spotlight_from_previous(
+            repo_root=summary.repo_root,
+            previous_version=pre_install_active_version,
+            active_version=final_version,
+            summary=summary,
+            release_repo=release_repo,
+        )
     final_launcher_path = summary.launcher_path
     missing_surfaces = _missing_first_run_surfaces(repo_root=summary.repo_root)
     if missing_surfaces:
@@ -1246,7 +1343,12 @@ def _cmd_install_common(
                 compact=compact_output,
             )
         remaining_missing = _missing_first_run_surfaces(repo_root=summary.repo_root)
-        if compact_output and render_rc == 0 and not remaining_missing and not install_migration_refresh_required:
+        if (
+            compact_output
+            and render_rc == 0
+            and not remaining_missing
+            and not (install_migration_refresh_required or install_upgrade_spotlight_written)
+        ):
             _print_install_progress("done", "Dashboard ready.")
         if render_rc != 0 or remaining_missing:
             print("Odylith runtime install succeeded, but the first-run Odylith shell is incomplete.", file=sys.stderr)
@@ -1279,14 +1381,22 @@ def _cmd_install_common(
         if first_install:
             _clear_upgrade_spotlight(repo_root=requested_repo_root)
         else:
-            _prepare_consumer_upgrade_spotlight(
+            upgrade_spotlight_written = _prepare_consumer_upgrade_spotlight(
                 repo_root=requested_repo_root,
                 summary=upgrade_summary,
                 source_repo="",
             )
+            if not upgrade_spotlight_written:
+                _prepare_install_upgrade_spotlight_from_previous(
+                    repo_root=requested_repo_root,
+                    previous_version=pre_install_active_version,
+                    active_version=final_version,
+                    summary=upgrade_summary,
+                    release_repo=release_repo,
+                )
         _refreshed, refresh_message = _refresh_dashboard_after_upgrade(repo_root=summary.repo_root)
         print(refresh_message)
-    elif install_migration_refresh_required:
+    elif install_migration_refresh_required or install_upgrade_spotlight_written:
         refreshed, refresh_message = _refresh_dashboard_after_upgrade(
             repo_root=summary.repo_root,
             compact_output=compact_output,

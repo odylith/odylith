@@ -171,6 +171,7 @@ def _run_generated_install_decision(
                 'state_root="$repo_root/.odylith"',
                 'release_version="1.2.3"',
                 'version_root="$state_root/runtime/versions/$release_version"',
+                'bootstrap_python="$version_root/bin/python"',
                 "say() { :; }",
                 decision_block,
             ]
@@ -361,8 +362,11 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert 'progress_done "setup" "Local runtime ready."' in text
     assert 'say "setup  Writing repo files and launchers."' in text
     assert 'migration_state_dir="$repo_root/.odylith/state/migrations"' in text
+    assert 'previous_active_version=""' in text
+    assert 'previous_active_version="$("$bootstrap_python" -c' in text
+    assert 'previous_active_version="$(basename "$(readlink "$state_root/runtime/current")")"' in text
     assert 'rm -rf "$migration_state_dir"' in text
-    assert 'ODYLITH_INSTALL_COMPACT=1 ODYLITH_BOOTSTRAP_RUNTIME_PRESTAGED=1 "$version_root/bin/python" -m odylith.cli install' in text
+    assert 'ODYLITH_INSTALL_PREVIOUS_ACTIVE_VERSION="$previous_active_version" ODYLITH_INSTALL_COMPACT=1 ODYLITH_BOOTSTRAP_RUNTIME_PRESTAGED=1 "$version_root/bin/python" -m odylith.cli install' in text
     assert 'say "done   Install finished."' in text
     assert "runtime-members.txt" in text
     assert "managed runtime bundle contains unexpected member path" in text

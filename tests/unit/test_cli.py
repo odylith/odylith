@@ -1620,6 +1620,69 @@ def test_compact_install_refreshes_dashboard_after_repo_state_migration(
     assert "done   Dashboard ready." in output
 
 
+def test_install_fallback_preserves_upgrade_spotlight_after_hosted_state_cleanup(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
+    _seed_first_run_surfaces(tmp_path)
+    captured: dict[str, object] = {}
+
+    monkeypatch.setenv("ODYLITH_INSTALL_PREVIOUS_ACTIVE_VERSION", "1.2.3")
+    monkeypatch.setattr(
+        cli,
+        "plan_install_lifecycle",
+        lambda **kwargs: SimpleNamespace(command="install", headline="preview", steps=(), dirty_overlap=(), notes=()),
+    )
+
+    def fake_install_bundle(**kwargs) -> SimpleNamespace:  # noqa: ANN003
+        cli._install_state().write_install_state(
+            repo_root=tmp_path,
+            payload={
+                "active_version": "1.2.4",
+                "activation_history": ["1.2.4"],
+                "installed_versions": {
+                    "1.2.4": {
+                        "runtime_root": str(tmp_path / ".odylith" / "runtime" / "versions" / "1.2.4"),
+                    }
+                },
+            },
+        )
+        return SimpleNamespace(
+            version="1.2.4",
+            repo_root=tmp_path,
+            launcher_path=launcher_path,
+            repo_guidance_created=False,
+            git_repo_present=True,
+            gitignore_updated=False,
+            migration=None,
+        )
+
+    def fake_refresh_dashboard_after_upgrade(**kwargs) -> tuple[bool, str]:  # noqa: ANN003
+        captured.update(kwargs)
+        return True, "Dashboard refreshed."
+
+    monkeypatch.setattr(cli, "install_bundle", fake_install_bundle)
+    monkeypatch.setattr(cli, "_refresh_dashboard_after_upgrade", fake_refresh_dashboard_after_upgrade)
+
+    rc = cli.main(["install", "--repo-root", str(tmp_path), "--version", "1.2.4", "--no-open"])
+    output = capsys.readouterr().out
+    install_state = cli._install_state().load_install_state(repo_root=tmp_path)
+    spotlight_payload = json.loads(
+        (tmp_path / ".odylith" / "runtime" / "release-upgrade-spotlight.v1.json").read_text(encoding="utf-8")
+    )
+
+    assert rc == 0
+    assert install_state["activation_history"] == ["1.2.3", "1.2.4"]
+    assert spotlight_payload["from_version"] == "1.2.3"
+    assert spotlight_payload["to_version"] == "1.2.4"
+    assert spotlight_payload["release_tag"] == "v1.2.4"
+    assert spotlight_payload["release_url"] == "https://github.com/odylith/odylith/releases/tag/v1.2.4"
+    assert captured == {"repo_root": tmp_path, "compact_output": False}
+    assert "Dashboard refreshed." in output
+
+
 def test_install_existing_complete_repo_routes_through_upgrade_lifecycle(
     monkeypatch,
     tmp_path: Path,
