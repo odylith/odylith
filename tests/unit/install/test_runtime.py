@@ -599,6 +599,26 @@ def test_managed_runtime_health_scrubs_macos_metadata_files(tmp_path: Path) -> N
     assert not (version_root / "lib" / "python3.13" / "site-packages" / "._odylith").exists()
 
 
+def test_managed_runtime_health_tolerates_locked_macos_metadata_files(monkeypatch, tmp_path: Path) -> None:
+    repo_root = _repo_root(tmp_path)
+    version_root = repo_root / ".odylith" / "runtime" / "versions" / "1.2.3"
+    _seed_managed_runtime(version_root, verification={"wheel_sha256": "wheel-1.2.3"})
+    locked = version_root / ".DS_Store"
+    locked.write_text("finder\n", encoding="utf-8")
+
+    def _locked_remove(path: Path) -> None:
+        if path == locked:
+            raise PermissionError("operation not permitted")
+        path.unlink(missing_ok=True)
+
+    monkeypatch.setattr(runtime_tree_policy, "remove_path", _locked_remove)
+
+    reasons = runtime._managed_runtime_health_reasons(repo_root=repo_root, runtime_root=version_root)  # noqa: SLF001
+
+    assert reasons == []
+    assert locked.exists()
+
+
 def test_install_release_feature_pack_scrubs_macos_metadata_before_trust_validation(monkeypatch, tmp_path: Path) -> None:
     repo_root = _repo_root(tmp_path)
     version_root = repo_root / ".odylith" / "runtime" / "versions" / "1.2.3"

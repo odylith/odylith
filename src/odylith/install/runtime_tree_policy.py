@@ -32,7 +32,10 @@ def scrub_runtime_tree_metadata(version_root: Path) -> tuple[str, ...]:
             continue
         if not candidate.exists() and not candidate.is_symlink():
             continue
-        remove_path(candidate)
+        try:
+            remove_path(candidate)
+        except OSError:
+            continue
         removed.append(str(candidate))
     return tuple(removed)
 

@@ -525,7 +525,7 @@ def test_force_sync_runs_component_spec_requirements_after_atlas_mutations(tmp_p
                 "unlinked_meaningful_event_count": 0,
             }
 
-    def _fake_run_command(*, repo_root: Path, args: tuple[str, ...], heartbeat_label: str = "") -> int:  # noqa: ARG001
+    def _fake_run_command(*, repo_root: Path, args: tuple[str, ...], heartbeat_label: str = "", **_: object) -> int:  # noqa: ARG001
         executed.append(tuple(args))
         return 0
 
@@ -574,7 +574,7 @@ def test_force_sync_reruns_final_component_spec_refresh_after_generated_surfaces
                 "unlinked_meaningful_event_count": 0,
             }
 
-    def _fake_run_command(*, repo_root: Path, args: tuple[str, ...], heartbeat_label: str = "") -> int:  # noqa: ARG001
+    def _fake_run_command(*, repo_root: Path, args: tuple[str, ...], heartbeat_label: str = "", **_: object) -> int:  # noqa: ARG001
         executed.append(tuple(args))
         return 0
 
@@ -642,30 +642,61 @@ def test_build_sync_execution_plan_defers_runtime_backed_renders_until_after_del
         runtime_mode="auto",
     )
 
-    modules = [
-        command[2]
-        for step in plan.steps
-        if step.command is not None and len(step.command) >= 3 and step.command[:2] == ("python", "-m")
-        for command in (step.command,)
-    ]
-    atlas_update_index = modules.index("odylith.runtime.surfaces.auto_update_mermaid_diagrams")
-    atlas_render_index = modules.index("odylith.runtime.surfaces.render_mermaid_catalog_refresh")
-    registry_sync_index = modules.index("odylith.runtime.governance.sync_component_spec_requirements")
-    delivery_index = modules.index("odylith.runtime.governance.delivery_intelligence_refresh")
-    compass_index = modules.index("odylith.runtime.surfaces.render_compass_dashboard")
-    radar_index = modules.index("odylith.runtime.surfaces.render_backlog_ui")
-    registry_render_index = modules.index("odylith.runtime.surfaces.render_registry_dashboard")
-    casebook_render_index = modules.index("odylith.runtime.surfaces.render_casebook_dashboard")
-    tooling_render_index = modules.index("odylith.runtime.surfaces.render_tooling_dashboard")
+    module_step_indexes: dict[str, int] = {}
+    for index, step in enumerate(plan.steps):
+        if step.command is not None and len(step.command) >= 3 and step.command[:2] == ("python", "-m"):
+            module_step_indexes.setdefault(step.command[2], index)
+    labels = [step.label for step in plan.steps]
+    batch_index = labels.index("Render selected dashboard surfaces in a bounded batch after Atlas/Registry truth settles.")
+    batch_step = plan.steps[batch_index]
 
-    assert atlas_update_index < atlas_render_index
-    assert atlas_render_index < registry_sync_index
-    assert registry_sync_index < delivery_index
-    assert delivery_index < compass_index
-    assert compass_index < radar_index
-    assert radar_index < registry_render_index
-    assert registry_render_index < casebook_render_index
-    assert casebook_render_index < tooling_render_index
+    assert module_step_indexes["odylith.runtime.surfaces.auto_update_mermaid_diagrams"] < module_step_indexes[
+        "odylith.runtime.surfaces.render_mermaid_catalog_refresh"
+    ]
+    assert module_step_indexes["odylith.runtime.surfaces.render_mermaid_catalog_refresh"] < module_step_indexes[
+        "odylith.runtime.governance.sync_component_spec_requirements"
+    ]
+    assert module_step_indexes["odylith.runtime.governance.sync_component_spec_requirements"] < module_step_indexes[
+        "odylith.runtime.governance.delivery_intelligence_refresh"
+    ]
+    assert module_step_indexes["odylith.runtime.governance.delivery_intelligence_refresh"] < batch_index
+    assert batch_step.action is not None
+    for surface in ("compass", "radar", "registry", "casebook", "tooling_shell"):
+        for output in sync_workstream_artifacts._surface_render_outputs(surface):  # noqa: SLF001
+            assert output in batch_step.paths
+
+
+def test_sync_surface_batch_parallelizes_child_surfaces_and_renders_shell_last(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    calls: list[tuple[str, tuple[str, ...]]] = []
+
+    def _fake_parallel(**kwargs) -> list[dict[str, object]]:
+        selected = tuple(kwargs["selected"])
+        calls.append(("parallel", selected))
+        return [{"surface": surface, "status": "passed", "rc": 0} for surface in selected]
+
+    def _fake_worker(**kwargs) -> tuple[str, dict[str, object]]:
+        surface = str(kwargs["surface"])
+        calls.append(("single", (surface,)))
+        return "", {"surface": surface, "status": "passed", "rc": 0}
+
+    monkeypatch.setattr(sync_workstream_artifacts, "_refresh_sync_surfaces_parallel", _fake_parallel)
+    monkeypatch.setattr(sync_workstream_artifacts, "_run_sync_surface_worker", _fake_worker)
+
+    rc = sync_workstream_artifacts._run_sync_surface_render_batch(  # noqa: SLF001
+        repo_root=tmp_path,
+        surfaces=("compass", "radar", "registry", "casebook", "tooling_shell"),
+        runtime_mode="auto",
+    )
+
+    assert rc == 0
+    assert calls == [
+        ("single", ("compass",)),
+        ("parallel", ("radar", "registry", "casebook")),
+        ("single", ("tooling_shell",)),
+    ]
 
 
 def test_check_only_sync_skips_runtime_fast_path_and_warmup(tmp_path: Path, monkeypatch) -> None:
@@ -1937,7 +1968,7 @@ def test_sync_dry_run_prints_plan_without_running_commands(tmp_path: Path, monke
 
     assert rc == 0
     assert "workstream sync dry-run" in output
-    assert "Render Compass before Radar" in output
+    assert "Render selected dashboard surfaces in a bounded batch" in output
 
 
 def test_run_callable_with_heartbeat_reports_progress(monkeypatch, capsys) -> None:
@@ -2080,15 +2111,66 @@ def test_sync_blocks_large_dirty_overlap_without_explicit_ack(monkeypatch, tmp_p
         lambda **_: (_ for _ in ()).throw(AssertionError("dirty-overlap block must run before Radar normalization")),
     )
 
-    rc = sync_workstream_artifacts.main(["--repo-root", str(tmp_path), "--force"])
+    rc = sync_workstream_artifacts.main(["--repo-root", str(tmp_path)])
     output = capsys.readouterr().out
 
     assert rc == 2
     assert "workstream sync blocked" in output
     assert "- writes: none (dirty-overlap gate ran before tracked mutations)" in output
-    assert "- next: odylith dashboard refresh --repo-root . --force" in output
-    assert "- full_sync_override: odylith sync --repo-root . --proceed-with-overlap" in output
-    assert "--force bypasses change detection" in output
+    assert "- next: odylith sync --repo-root . --force" in output
+    assert "- narrow_refresh: odylith dashboard refresh --repo-root . --force" in output
+
+
+def test_sync_allows_large_dirty_overlap_with_force(monkeypatch, tmp_path: Path) -> None:
+    class _Meaningful:
+        def as_dict(self) -> dict[str, int]:
+            return {
+                "linked_meaningful_event_count": 0,
+                "unlinked_meaningful_event_count": 0,
+            }
+
+    executed = {"value": False}
+
+    monkeypatch.setattr(sync_workstream_artifacts, "_effective_changed_paths", lambda **_: ("odylith/radar/source/INDEX.md",))
+    monkeypatch.setattr(sync_workstream_artifacts, "_requires_sync", lambda **_: True)
+    monkeypatch.setattr(sync_workstream_artifacts, "_use_runtime_fast_path", lambda _mode: False)
+    monkeypatch.setattr(
+        sync_workstream_artifacts.governance,
+        "build_dashboard_impact",
+        lambda **_: SimpleNamespace(
+            radar=False,
+            atlas=False,
+            compass=False,
+            registry=False,
+            casebook=False,
+            tooling_shell=False,
+        ),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts.governance,
+        "collect_meaningful_activity_evidence",
+        lambda **_: _Meaningful(),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "build_sync_execution_plan",
+        lambda **_: sync_workstream_artifacts.ExecutionPlan(
+            headline="preview",
+            steps=(),
+            dirty_overlap=tuple(f"M path-{index}" for index in range(50)),
+            notes=(),
+        ),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "_execute_plan",
+        lambda **_: executed.__setitem__("value", True) or 0,
+    )
+
+    rc = sync_workstream_artifacts.main(["--repo-root", str(tmp_path), "--force"])
+
+    assert rc == 0
+    assert executed["value"] is True
 
 
 def test_sync_allows_large_dirty_overlap_with_explicit_ack(monkeypatch, tmp_path: Path) -> None:
@@ -2137,7 +2219,7 @@ def test_sync_allows_large_dirty_overlap_with_explicit_ack(monkeypatch, tmp_path
         lambda **_: executed.__setitem__("value", True) or 0,
     )
 
-    rc = sync_workstream_artifacts.main(["--repo-root", str(tmp_path), "--force", "--proceed-with-overlap"])
+    rc = sync_workstream_artifacts.main(["--repo-root", str(tmp_path), "--proceed-with-overlap"])
 
     assert rc == 0
     assert executed["value"] is True

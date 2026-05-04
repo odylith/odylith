@@ -34,7 +34,8 @@ def configure_sync_parser(
         action="store_true",
         help=(
             "Run sync workflow even when changed paths are not matched and bypass generated refresh-guard reuse "
-            "where the selected plan supports it; does not acknowledge dirty-overlap writes."
+            "where the selected plan supports it; also acknowledges Odylith-owned dirty overlap in the selected "
+            "sync mutation plan."
         ),
     )
     parser.add_argument(

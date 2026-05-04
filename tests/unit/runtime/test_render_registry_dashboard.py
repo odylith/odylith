@@ -475,6 +475,30 @@ def test_render_registry_dashboard_happy_path(tmp_path: Path) -> None:
     assert component_button_html
 
 
+def test_render_registry_dashboard_reuses_compass_runtime_summary(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    _seed_repo(tmp_path)
+    current_path = tmp_path / "odylith" / "compass" / "runtime" / "current.v1.json"
+    current_path.parent.mkdir(parents=True, exist_ok=True)
+    current_path.write_text(
+        json.dumps({"odylith_runtime": {"advisory_depth": "cached", "yield_state": "ready"}}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        renderer.odylith_runtime_surface_summary,
+        "load_runtime_surface_summary",
+        lambda **_: (_ for _ in ()).throw(AssertionError("runtime summary should reuse Compass cache")),
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/registry/registry.html"])
+
+    assert rc == 0
+    payload = _load_registry_payload(tmp_path)
+    assert payload["odylith_runtime"] == {"advisory_depth": "cached", "yield_state": "ready"}
+
+
 def test_render_registry_dashboard_forensic_evidence_uses_digest_first_contract(tmp_path: Path) -> None:
     _seed_repo(tmp_path)
     stream_path = tmp_path / "odylith" / "compass" / "runtime" / "agent-stream.v1.jsonl"

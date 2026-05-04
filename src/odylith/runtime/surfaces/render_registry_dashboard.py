@@ -342,7 +342,7 @@ def _build_payload(
             repo_root=repo_root,
             runtime_mode=runtime_mode,
         ),
-        "odylith_runtime": odylith_runtime_surface_summary.load_runtime_surface_summary(repo_root=repo_root),
+        "odylith_runtime": _load_registry_runtime_summary(repo_root=repo_root),
         "counts": {
             "components": len(rows),
             "events": len(report.mapped_events),
@@ -413,6 +413,17 @@ def _build_registry_delivery_intelligence_payload(
             if field in snapshot
         }
     return {"components": projected} if projected else {}
+
+
+def _load_registry_runtime_summary(*, repo_root: Path) -> dict[str, Any]:
+    current_payload = odylith_context_cache.read_json_object(
+        Path(repo_root).resolve() / "odylith" / "compass" / "runtime" / "current.v1.json"
+    )
+    if isinstance(current_payload, Mapping):
+        cached_summary = current_payload.get("odylith_runtime")
+        if isinstance(cached_summary, Mapping):
+            return dict(cached_summary)
+    return odylith_runtime_surface_summary.load_runtime_surface_summary(repo_root=repo_root)
 
 
 def _chunk_registry_items(

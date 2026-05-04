@@ -1111,3 +1111,15 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   generated Radar and bundle mirror updates from the completed assessment above;
   existing consumers receive them through normal v0.1.14 dashboard refresh and
   managed asset adoption with no custom source migration.
+- The sync-force recovery and latency hardening for CB-168 is covered by
+  `migration-observer:0.1.14:operator-cli-contracts:241615c298f2`,
+  `migration-observer:0.1.14:browser-surfaces:2de7b3690a67`, and
+  `migration-observer:0.1.14:install-managed-assets:d37ada8eb939`. The CLI
+  contract change makes `odylith sync --force` the explicit selected-plan dirty
+  overlap acknowledgement, the browser-surface change batches Compass, Radar,
+  Registry, Casebook, and shell rendering with Registry reusing the current
+  Compass runtime summary, and the install-managed asset change is the generated
+  bundle mirror of those settled surfaces. Existing consumers need no bespoke
+  source-truth migration beyond the registered v0.1.14 migrations, normal
+  managed asset adoption, and the now-functional `odylith sync --repo-root . --force`
+  recovery path after upgrade/migration.

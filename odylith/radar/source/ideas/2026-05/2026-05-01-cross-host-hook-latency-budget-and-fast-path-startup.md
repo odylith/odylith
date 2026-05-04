@@ -162,8 +162,23 @@ Prompt-submit and stop hooks stay under a documented local latency budget on war
   shell drift path: upgrade now writes a runtime version-state sidecar, forces
   the default shell-facing dashboard refresh, the open shell warns when
   generated payload version lags `odylith version`, and `odylith sync --force`
-  blocks dirty-overlap before tracked Radar normalization while recommending
-  the narrow `odylith dashboard refresh --repo-root . --force` recovery.
+  recovery is now a real explicit selected-plan dirty-overlap acknowledgement.
+  The non-force path still blocks broad overlap before tracked Radar
+  normalization and recommends the narrow
+  `odylith dashboard refresh --repo-root . --force` recovery for shell-only
+  drift. The dentoai-orion post-upgrade evidence also hardened managed-runtime
+  health so locked ignored metadata such as `.DS_Store` cannot crash
+  `odylith version`.
+- 2026-05-04 sync-force latency proof keeps the engine stack active while
+  removing additive dashboard render cost: full sync warms Compass first,
+  renders Radar/Registry/Casebook as child surfaces in a bounded batch, and
+  renders the shell last. Registry also reuses Compass's current runtime
+  summary during the same sync pass instead of rebuilding the architecture
+  summary it only needs for payload continuity. Source-local validation on this branch proved
+  `odylith sync --repo-root . --force --runtime-mode auto` succeeds against a
+  dirty governed worktree; warmed wall clock settled at `real 10.42s` with a
+  `6.8s` dashboard surface batch versus the prior warmed baseline of about
+  `real 15.97s`.
 
 ## Rollout
 - Execute through the bound v0.1.14 technical plan and keep the implementation
@@ -218,8 +233,10 @@ Claude, Codex, and future host adapters should get the same grounded value witho
 - Integration tests also cover governed sync/operator latency, no-provider credit burn, dashboard all-surface refresh behavior, and parallel multi-surface dashboard execution.
 - Focused v0.1.14 post-release tests cover compact `odylith start` output,
   forced dashboard refresh after upgrade, dashboard stale-version sidecar
-  payload and warning copy, and sync dirty-overlap blocking before Radar
-  normalization.
+  payload and warning copy, non-force sync dirty-overlap blocking before Radar
+  normalization, force sync dirty-overlap acknowledgement, sync surface batch
+  ordering, Registry runtime-summary reuse, and locked managed-runtime metadata
+  tolerance.
 - Guidance tests cover serial start/context ordering across root guidance,
   install-generated guidance, Claude project assets, Codex/Claude skill shims,
   and source/bundle skill mirrors.

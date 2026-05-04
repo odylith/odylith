@@ -916,6 +916,27 @@ def _run_command_in_process(
     )
 
 
+def _run_command_in_process_direct(
+    *,
+    repo_root: Path,
+    args: Sequence[str],
+    heartbeat_label: str = "",
+    timeout_seconds: float | None = None,
+) -> int:
+    tokens = tuple(str(token) for token in args)
+    if len(tokens) >= 3 and tokens[0] == "python" and tokens[1] == "-m":
+        module = importlib.import_module(tokens[2])
+        main = getattr(module, "main", None)
+        if callable(main):
+            return _coerce_callable_step_result(main(list(tokens[3:])))
+    return _run_command(
+        repo_root=repo_root,
+        args=tokens,
+        heartbeat_label=heartbeat_label,
+        timeout_seconds=timeout_seconds,
+    )
+
+
 def _use_runtime_fast_path(runtime_mode: str) -> bool:
     return str(runtime_mode).strip().lower() != "standalone"
 
@@ -2030,6 +2051,208 @@ def refresh_dashboard_surfaces(
     return 0
 
 
+def _sync_surface_batch_outputs(surfaces: Sequence[str]) -> tuple[str, ...]:
+    outputs: list[str] = []
+    seen: set[str] = set()
+    for surface in surfaces:
+        for output in _surface_render_outputs(surface):
+            if output not in seen:
+                seen.add(output)
+                outputs.append(output)
+    return tuple(outputs)
+
+
+def _sync_surface_steps(*, repo_root: Path, surface: str, runtime_mode: str) -> list[ExecutionStep]:
+    steps = _dashboard_surface_steps(
+        repo_root=repo_root,
+        surface=surface,
+        runtime_mode=runtime_mode,
+        atlas_sync=False,
+    )
+    return [
+        step
+        for step in steps
+        if not step.label.startswith("Refresh delivery intelligence inputs")
+        and not step.label.startswith("Normalize and validate Casebook bugs")
+    ]
+
+
+def _run_sync_surface_worker(
+    *,
+    repo_root: Path,
+    surface: str,
+    runtime_mode: str,
+    run_impl: Callable[..., int],
+) -> tuple[str, dict[str, Any]]:
+    capture = io.StringIO()
+    _dashboard_thread_capture.buf = capture
+    try:
+        steps = _sync_surface_steps(
+            repo_root=repo_root,
+            surface=surface,
+            runtime_mode=runtime_mode,
+        )
+        result = _execute_dashboard_refresh_surface(
+            repo_root=repo_root,
+            surface=surface,
+            steps=steps,
+            runtime_mode=runtime_mode,
+            run_impl=run_impl,
+        )
+    finally:
+        _dashboard_thread_capture.buf = None
+    return capture.getvalue(), result
+
+
+def _refresh_sync_surfaces_parallel(
+    *,
+    repo_root: Path,
+    selected: Sequence[str],
+    runtime_mode: str,
+    run_impl: Callable[..., int],
+) -> list[dict[str, Any]]:
+    future_map: dict[concurrent.futures.Future[tuple[str, dict[str, Any]]], str] = {}
+    real_stdout = sys.stdout
+    capture_proxy = _ThreadCapturePrint(real_stdout)
+    sys.stdout = capture_proxy  # type: ignore[assignment]
+    try:
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=len(selected),
+            thread_name_prefix="sync_surface",
+        ) as executor:
+            for surface in selected:
+                worker_context = copy_context()
+                future = executor.submit(
+                    worker_context.run,
+                    _run_sync_surface_worker,
+                    repo_root=repo_root,
+                    surface=surface,
+                    runtime_mode=runtime_mode,
+                    run_impl=run_impl,
+                )
+                future_map[future] = surface
+    finally:
+        sys.stdout = real_stdout
+    results_by_surface: dict[str, tuple[str, dict[str, Any]]] = {}
+    for future, surface in future_map.items():
+        output, result = future.result()
+        results_by_surface[surface] = (output, result)
+    ordered_results: list[dict[str, Any]] = []
+    for surface in selected:
+        output, result = results_by_surface[surface]
+        if output:
+            sys.stdout.write(output)
+            if not output.endswith("\n"):
+                sys.stdout.write("\n")
+        ordered_results.append(result)
+    return ordered_results
+
+
+def _run_sync_surface_render_batch(
+    *,
+    repo_root: Path,
+    surfaces: Sequence[str],
+    runtime_mode: str,
+) -> int:
+    selected = normalize_dashboard_surfaces(surfaces)
+    normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
+    run_impl = _run_command
+    runtime_fallback_used = False
+    if _use_runtime_fast_path(normalized_runtime_mode) and _runtime_fast_path_prerequisites_met(repo_root):
+        run_impl = _run_command_in_process_direct
+    elif _use_runtime_fast_path(normalized_runtime_mode):
+        print("- runtime_fallback: standalone (runtime prerequisites missing)")
+        runtime_fallback_used = True
+
+    started_at = time.perf_counter()
+    surface_results: list[dict[str, Any]] = []
+    previous_guard_skip = os.environ.get(_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV)
+    os.environ[_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV] = "1"
+    try:
+        surface_groups: list[list[str]]
+        if "compass" in selected and len(selected) > 1:
+            surface_groups = [
+                ["compass"],
+                [surface for surface in selected if surface not in {"compass", "tooling_shell"}],
+            ]
+            if "tooling_shell" in selected:
+                surface_groups.append(["tooling_shell"])
+        elif "tooling_shell" in selected and len(selected) > 1:
+            surface_groups = [
+                [surface for surface in selected if surface != "tooling_shell"],
+                ["tooling_shell"],
+            ]
+        else:
+            surface_groups = [list(selected)]
+        for surface_group in surface_groups:
+            if not surface_group:
+                continue
+            if len(surface_group) >= 2:
+                surface_results.extend(
+                    _refresh_sync_surfaces_parallel(
+                        repo_root=repo_root,
+                        selected=surface_group,
+                        runtime_mode=normalized_runtime_mode,
+                        run_impl=run_impl,
+                    )
+                )
+                continue
+            for surface in surface_group:
+                output, result = _run_sync_surface_worker(
+                    repo_root=repo_root,
+                    surface=surface,
+                    runtime_mode=normalized_runtime_mode,
+                    run_impl=run_impl,
+                )
+                if output:
+                    sys.stdout.write(output)
+                    if not output.endswith("\n"):
+                        sys.stdout.write("\n")
+                surface_results.append(result)
+    finally:
+        if previous_guard_skip is None:
+            os.environ.pop(_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV, None)
+        else:
+            os.environ[_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV] = previous_guard_skip
+
+    for result in surface_results:
+        runtime_fallback_used = runtime_fallback_used or bool(result.get("fallback_used"))
+    elapsed = time.perf_counter() - started_at
+    failures = [result for result in surface_results if str(result.get("status", "")).strip() == "failed"]
+    queued = [result for result in surface_results if str(result.get("status", "")).strip() == "queued"]
+    print("sync surface render batch completed")
+    if failures:
+        print("- outcome: failed")
+    elif queued:
+        print("- outcome: queued")
+    else:
+        print("- outcome: passed")
+    print("- surfaces: " + ", ".join(selected))
+    print(f"- elapsed_seconds: {elapsed:.1f}")
+    print(f"- runtime_fallback_used: {'yes' if runtime_fallback_used else 'no'}")
+    for result in surface_results:
+        surface = str(result.get("surface", "")).strip()
+        status = str(result.get("status", "")).strip() or "failed"
+        suffix = " (standalone fallback used)" if bool(result.get("fallback_used")) else ""
+        if bool(result.get("cache_hit")):
+            suffix += " (fingerprint reuse)"
+        print(f"- {surface}: {status}{suffix}")
+        if status not in {"passed", "queued"}:
+            failed_step = str(result.get("failed_step", "")).strip()
+            next_command = str(result.get("next_command", "")).strip()
+            if failed_step:
+                print(f"  failed_step: {failed_step}")
+            if next_command:
+                print(f"  next: {next_command}")
+        elif status == "queued":
+            next_command = str(result.get("next_command", "")).strip()
+            if next_command:
+                print(f"  next: {next_command}")
+    if failures:
+        return 2
+    return 0
+
+
 def generated_output_targets() -> tuple[str, ...]:
     return (
         "odylith/radar/radar.html",
@@ -2444,89 +2667,29 @@ def build_sync_execution_plan(
             next_command_on_failure=sync_failure_command,
         )
     ]
+    sync_surface_batch: list[str] = []
     if bool(getattr(impact, "compass", False)):
-        post_registry_truth_steps.append(
-            _execution_step(
-                "Render Compass before Radar after Atlas/Registry truth settles so runtime-backed surfaces warm once against final state.",
-                command=(
-                    "python",
-                    "-m",
-                    "odylith.runtime.surfaces.render_compass_dashboard",
-                    "--repo-root",
-                    str(repo_root),
-                    *_runtime_args(runtime_mode),
-                ),
-                mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("compass"),
-                next_command_on_failure=sync_failure_command,
-            )
-        )
+        sync_surface_batch.append("compass")
     if bool(getattr(impact, "radar", False)):
-        post_registry_truth_steps.append(
-            _execution_step(
-                "Render Radar after Compass so execution overlays see the latest runtime snapshot.",
-                command=(
-                    "python",
-                    "-m",
-                    "odylith.runtime.surfaces.render_backlog_ui",
-                    "--repo-root",
-                    str(repo_root),
-                    *_runtime_args(runtime_mode),
-                ),
-                mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("radar"),
-                change_watch_paths=("odylith/radar/traceability-graph.v1.json",),
-                next_command_on_failure=sync_failure_command,
-            )
-        )
+        sync_surface_batch.append("radar")
     if bool(getattr(impact, "registry", False)):
-        post_registry_truth_steps.append(
-            _execution_step(
-                "Render Registry for the impacted component view.",
-                command=(
-                    "python",
-                    "-m",
-                    "odylith.runtime.surfaces.render_registry_dashboard",
-                    "--repo-root",
-                    str(repo_root),
-                    *_runtime_args(runtime_mode),
-                ),
-                mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("registry"),
-                next_command_on_failure=sync_failure_command,
-            )
-        )
+        sync_surface_batch.append("registry")
     if bool(getattr(impact, "casebook", False)):
-        post_registry_truth_steps.append(
-            _execution_step(
-                "Render Casebook for the refreshed bug index.",
-                command=(
-                    "python",
-                    "-m",
-                    "odylith.runtime.surfaces.render_casebook_dashboard",
-                    "--repo-root",
-                    str(repo_root),
-                    *_runtime_args(runtime_mode),
-                ),
-                mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("casebook"),
-                next_command_on_failure=sync_failure_command,
-            )
-        )
+        sync_surface_batch.append("casebook")
     if bool(impact_tooling_shell):
+        sync_surface_batch.append("tooling_shell")
+    if sync_surface_batch:
         post_registry_truth_steps.append(
             _execution_step(
-                "Render the top-level Odylith shell after the selected surfaces settle.",
-                command=(
-                    "python",
-                    "-m",
-                    "odylith.runtime.surfaces.render_tooling_dashboard",
-                    "--repo-root",
-                    str(repo_root),
-                    *_runtime_args(runtime_mode),
+                "Render selected dashboard surfaces in a bounded batch after Atlas/Registry truth settles.",
+                action=lambda surfaces=tuple(sync_surface_batch): _run_sync_surface_render_batch(
+                    repo_root=repo_root,
+                    surfaces=surfaces,
+                    runtime_mode=runtime_mode,
                 ),
                 mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("tooling_shell"),
+                paths=_sync_surface_batch_outputs(sync_surface_batch),
+                change_watch_paths=("odylith/radar/traceability-graph.v1.json",),
                 next_command_on_failure=sync_failure_command,
             )
         )
@@ -2779,6 +2942,8 @@ def _execute_plan(
 def _dirty_overlap_gate_required(*, args: argparse.Namespace, plan: ExecutionPlan) -> bool:
     if bool(getattr(args, "dry_run", False)) or bool(getattr(args, "check_only", False)):
         return False
+    if bool(getattr(args, "force", False)):
+        return False
     if bool(getattr(args, "proceed_with_overlap", False)):
         return False
     return len(plan.dirty_overlap) >= DEFAULT_SYNC_OVERLAP_GATE_THRESHOLD
@@ -2921,18 +3086,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             f"(threshold {DEFAULT_SYNC_OVERLAP_GATE_THRESHOLD})."
         )
         print("- writes: none (dirty-overlap gate ran before tracked mutations)")
-        if bool(getattr(args, "force", False)):
-            print(
-                "- note: --force bypasses change detection and generated refresh-guard reuse; "
-                "it does not acknowledge dirty-overlap writes."
-            )
         print(
             "- next: "
-            f"{display_command('dashboard', 'refresh', '--repo-root', '.', '--force')}"
+            f"{display_command('sync', '--repo-root', '.', '--force')}"
         )
         print(
-            "- full_sync_override: "
-            f"{display_command('sync', '--repo-root', '.', '--proceed-with-overlap')}"
+            "- narrow_refresh: "
+            f"{display_command('dashboard', 'refresh', '--repo-root', '.', '--force')}"
         )
         print(
             "- preview: "
