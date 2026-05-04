@@ -220,9 +220,9 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                     "    class shopper,storefront actor;\n"
                     "    class checkout,payment,order service;\n"
                     "    class governance evidence;\n"
-                    "    style experience_lane fill:#effcf9,stroke:#9bd8cf,stroke-width:1px,color:#062f2b\n"
-                    "    style transaction_lane fill:#f1f7ff,stroke:#a8c7f7,stroke-width:1px,color:#102f5f\n"
-                    "    style governance_lane fill:#fff3f0,stroke:#efb3a4,stroke-width:1px,color:#5c2418\n"
+                    "    style experience_lane fill:#fafffe,stroke:#d8f2ed,stroke-width:1px,color:#062f2b\n"
+                    "    style transaction_lane fill:#f9fcff,stroke:#dceaff,stroke-width:1px,color:#102f5f\n"
+                    "    style governance_lane fill:#fff9f8,stroke:#f6d8d0,stroke-width:1px,color:#5c2418\n"
                 ),
             },
             {

@@ -139,7 +139,9 @@ Atlas color is a deterministic readability aid, not source truth. Authored
 Mermaid remains topology truth, but rendered fill, stroke, and text color are
 Atlas-owned so legacy diagrams and newly scaffolded diagrams share one visual
 contract. Container/subgraph colors use semantic lane labels first, then a
-restrained darker pastel rotation only when the lane has no clear role. Inner
+restrained wash-tone rotation only when the lane has no clear role. The
+container tone must stay visibly lighter than the matching node tone, so lanes
+read as quiet grouping and never compete with the boxes inside them. Inner
 node colors respect authored semantic classes such as `input`, `intelligence`,
 `decision`, `apply`, and `memory` before falling back to normalized label text
 through broad semantic buckets: inputs/sources/operators/signals,
@@ -151,9 +153,9 @@ freshness, correctness, or evidence quality; those remain governed by catalog
 metadata, labels, traceability, and source records.
 The decision/gate node bucket uses the Soft Coral accent (`#ffece7` fill,
 `#df8f7d` stroke, `#5c2418` text) so it stays visually distinct without
-reading as warning/status truth. Containers never reuse that full-strength node
-accent over large areas; the matching container rotation uses Soft Coral Wash
-(`#fff3f0` fill, `#efb3a4` stroke) so grouped lanes stay quiet.
+reading as warning/status truth. Containers never reuse full-strength node
+accents over large areas; the matching container rotation uses a much lighter
+wash (`#fff9f8` fill, `#f6d8d0` stroke) so grouped lanes stay quiet.
 
 Strict callers can pass `--require-links` to preserve the older fail-closed
 behavior when at least one Radar backlog path, technical-plan path, and doc path
@@ -274,4 +276,5 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-09: Bound Atlas default active-workstream promotion to Delivery Intelligence's shared Scope Signal Ladder so low-signal governance churn and broad fanout activity stop masquerading as architecture-relevant active work by default. (Plan: [B-071](odylith/radar/radar.html?view=plan&workstream=B-071); Bug: `CB-090`)
 - 2026-04-09: Added diagram `D-032` so Compass refresh now has a first-class Atlas topology covering the one bounded command lane, cold-start narrated-cache warming, scoped budget gating, and the edge cases that must fail closed instead of reviving a hidden deeper refresh path. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-09: Replaced Atlas watched-path freshness mtimes with stored content fingerprints, taught auto-update to distinguish review-only versus render-needed work before printing its plan, and repaired the persistent Mermaid worker bootstrap so real render jobs work again on the optimized path. Review-only Atlas refresh now updates freshness truth without regenerating unchanged SVG and PNG assets. (Plan: [B-080](odylith/radar/radar.html?view=plan&workstream=B-080); Bugs: `CB-097`, `CB-098`, `CB-099`, `CB-100`)
-- 2026-05-03: Added the v0.1.14 deterministic Atlas visual grammar: pure-white viewer stage, darker harmonious container and semantic node palettes, Soft Coral decision/gate node coloring instead of amber or warning-coded yellow, lighter Soft Coral Wash for decision/gate lanes, semantic-label-first container coloring, managed render-color precedence over legacy Mermaid color tokens, render-style fingerprints, and migration-backed rerendering for stale SVG/PNG assets from 0.1.10/0.1.11/0.1.12/0.1.13 installs. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-162`)
+- 2026-05-03: Added the v0.1.14 deterministic Atlas visual grammar: pure-white viewer stage, harmonious container and semantic node palettes, Soft Coral decision/gate node coloring instead of amber or warning-coded yellow, lighter wash tones for grouped lanes, semantic-label-first container coloring, managed render-color precedence over legacy Mermaid color tokens, render-style fingerprints, and migration-backed rerendering for stale SVG/PNG assets from 0.1.10/0.1.11/0.1.12/0.1.13 installs. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-162`)
+- 2026-05-04: Tightened the Atlas palette rule so container/subgraph fills use a near-white wash layer while inner node boxes keep the stronger semantic tone. The migration detector treats old full-strength container fills and container-inherited node fills as stale, forcing existing consumer diagrams to rerender during upgrade. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-162`)

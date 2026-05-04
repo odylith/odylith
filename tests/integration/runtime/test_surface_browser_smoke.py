@@ -114,6 +114,27 @@ def _ready_compass_fixture_root(tmp_path: Path) -> Path:
         "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
         encoding="utf-8",
     )
+    version_state_dir = fixture_root / ".odylith" / "runtime"
+    version_state_dir.mkdir(parents=True, exist_ok=True)
+    version_state_payload = {
+        "schema_version": "odylith.dashboard.version_state.v1",
+        "generated_utc": generated_utc,
+        "source": "browser fixture",
+        "active_version": "0.1.14",
+        "pinned_version": "0.1.14",
+        "authoritative_version": "0.1.14",
+        "authoritative_label": "v0.1.14",
+    }
+    (version_state_dir / "odylith-version-state.v1.json").write_text(
+        json.dumps(version_state_payload, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (version_state_dir / "odylith-version-state.v1.js").write_text(
+        "window.__ODYLITH_VERSION_STATE__ = "
+        + json.dumps(version_state_payload, separators=(",", ":"))
+        + ";\n",
+        encoding="utf-8",
+    )
     return fixture_root
 
 
@@ -615,6 +636,65 @@ def test_compass_failed_global_brief_uses_header_status_and_previous_brief(
     _run_in_browser_thread(_exercise)
 
 
+def test_compass_failed_same_window_brief_uses_header_status_and_keeps_last_ready_body(
+    tmp_path: Path,
+) -> None:
+    fixture_root = _ready_compass_fixture_root(tmp_path)
+    runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
+    payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+    standup_brief = payload.get("standup_brief") if isinstance(payload.get("standup_brief"), dict) else {}
+    ready_24h = standup_brief.get("24h") if isinstance(standup_brief.get("24h"), dict) else {}
+    ready_sections = ready_24h.get("sections") if isinstance(ready_24h.get("sections"), list) else []
+    assert ready_sections
+    ready_sections[1]["bullets"][0]["text"] = "The last known standup brief stays intact in the body."
+    ready_24h["sections"] = ready_sections
+    ready_24h["notice"] = {
+        "title": "Brief unavailable right now",
+        "message": (
+            "The narration provider failed on the last attempt. "
+            "Showing the last known standup brief while Compass retries."
+        ),
+        "reason": "global_provider_error_showing_previous",
+        "next_retry_utc": "2026-05-04T22:22:00Z",
+    }
+    standup_brief["24h"] = ready_24h
+    payload["standup_brief"] = standup_brief
+    _write_compass_fixture_runtime_payloads(fixture_root, runtime_payload=payload)
+
+    def _exercise() -> None:
+        with _static_server(root=fixture_root) as base_url:
+            for _pw, browser in _browser():
+                context = browser.new_context(viewport={"width": 1440, "height": 1100})
+                try:
+                    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                    response = page.goto(
+                        base_url + "/odylith/index.html?tab=compass&window=24h&date=live",
+                        wait_until="domcontentloaded",
+                    )
+                    assert response is not None and response.ok
+
+                    compass = page.frame_locator("#frame-compass")
+                    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                    _assert_compass_live_state(compass, window_token="24h")
+                    status_banner = compass.locator("#status-banner")
+                    status_banner.wait_for(timeout=15000)
+                    status_text = status_banner.inner_text().strip()
+                    assert status_banner.evaluate("(node) => node.classList.contains('warn')") is True
+                    assert "Brief unavailable right now" in status_text
+                    assert "provider failed on the last attempt" in status_text
+                    assert "Will retry after" in status_text
+                    digest_text = compass.locator("#digest-list").inner_text().strip()
+                    assert "The last known standup brief stays intact in the body." in digest_text
+                    assert "Brief unavailable right now" not in digest_text
+                    assert compass.locator("#digest-list .brief-status-card").count() == 0
+                    assert compass.locator("#digest-list .standup-brief-sections").count() == 1
+                    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+                finally:
+                    context.close()
+
+    _run_in_browser_thread(_exercise)
+
+
 def test_compass_current_workstreams_excludes_rows_already_represented_in_programs_or_release_targets(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
@@ -636,8 +716,7 @@ def test_compass_current_workstreams_excludes_rows_already_represented_in_progra
         compass.locator(
             "#execution-waves-host .execution-wave-section-title, "
             "#execution-waves-host a.execution-wave-chip-link, "
-            "#release-groups-host a.execution-wave-chip-link, "
-            "#release-groups-host a.execution-wave-card-link"
+            "#release-groups-host a.execution-wave-chip-link"
         ).evaluate_all(
             """(nodes) => {
                 const seen = new Set();
@@ -821,11 +900,46 @@ def test_compass_deeplinks_into_radar_and_registry_contexts(browser_context) -> 
     release_section = compass.locator("#release-groups-host details.execution-wave-section").first
     release_section.wait_for(state="attached", timeout=15000)
     release_section.evaluate("node => { node.open = true; }")
-    release_workstream_card = compass.locator("#release-groups-host a.execution-wave-card-link").first
-    release_workstream_card.wait_for(timeout=15000)
-    release_workstream_id = str(release_workstream_card.get_attribute("data-workstream-id") or "").strip()
+    release_member_card = compass.locator("#release-groups-host .execution-wave-card").first
+    release_member_card.wait_for(timeout=15000)
+    before_blank_click_url = page.url
+    blank_click_result = release_member_card.evaluate(
+        """(node) => {
+            const box = node.getBoundingClientRect();
+            const probes = [
+              [0.58, 0.62],
+              [0.48, 0.62],
+              [0.42, 0.50],
+              [0.70, 0.50],
+            ];
+            for (const [xRatio, yRatio] of probes) {
+              const x = box.left + box.width * xRatio;
+              const y = box.top + box.height * yRatio;
+              const target = document.elementFromPoint(x, y);
+              if (!target || !node.contains(target)) continue;
+              if (target.closest("a, button")) continue;
+              target.dispatchEvent(new MouseEvent("click", {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+                clientX: x,
+                clientY: y,
+              }));
+              return { clicked: true, tag: target.tagName, className: String(target.className || "") };
+            }
+            return { clicked: false };
+        }"""
+    )
+    assert blank_click_result["clicked"] is True, blank_click_result
+    page.wait_for_timeout(150)
+    assert page.url == before_blank_click_url
+    assert compass.locator("#release-groups-host a.execution-wave-card-link").count() == 0
+
+    release_workstream_chip = compass.locator("#release-groups-host a.execution-wave-chip-link").first
+    release_workstream_chip.wait_for(timeout=15000)
+    release_workstream_id = release_workstream_chip.inner_text().strip()
     assert re.fullmatch(r"B-\d{3,}", release_workstream_id), release_workstream_id
-    release_workstream_card.click()
+    release_workstream_chip.click()
     page.wait_for_url(
         re.compile(rf".*/odylith/index\.html\?tab=radar(&.*)?workstream={re.escape(release_workstream_id)}(&.*|$)"),
         timeout=15000,

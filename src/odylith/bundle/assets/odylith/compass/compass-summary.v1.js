@@ -251,7 +251,7 @@
     function briefNoticeBelongsInHeaderStatus(brief) {
       const notice = visibleBriefNotice(brief);
       const reason = String(notice.reason || "").trim().toLowerCase();
-      return reason === "skipped_not_worth_calling" || (reason.startsWith("global_") && reason.includes("_showing_previous"));
+      return reason === "skipped_not_worth_calling" || reason.includes("_showing_previous");
     }
 
     function briefHeaderStatusNotice(brief) {

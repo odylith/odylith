@@ -30,7 +30,7 @@
   same workstream anchor. A missing B-110 anchor is treated as benchmark
   corpus drift because it can create false `requires_widening` advisory noise
   even when required-path recall and validation are green.
-Last updated: 2026-04-29
+Last updated: 2026-05-04
 
 
 Last updated (UTC): 2026-04-28
@@ -53,6 +53,8 @@ reviewer framing that explains how Odylith should be compared.
 - Maintained benchmark graph generation in
   `src/odylith/runtime/evaluation/odylith_benchmark_graphs.py`.
 - Public benchmark framing and reviewer guidance under `docs/benchmarks/`.
+- Research interpretation notes and formal claim models under
+  `docs/research/`, including the benchmark formal model.
 - Local benchmark history under `.odylith/runtime/odylith-benchmarks/`.
 - The release-safe benchmark publication contract used by README and maintainer
   release proof.

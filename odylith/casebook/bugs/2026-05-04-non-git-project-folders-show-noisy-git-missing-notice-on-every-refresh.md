@@ -44,11 +44,11 @@
 
 - Root Cause: shell_onboarding._welcome_notices converted absence of .git into a warning notice, and the dashboard presenter rendered any notice while show=false as a compact modal.
 
-- Solution: Remove the Git-missing warning from welcome notices while preserving actionable legacy-upgrade notices.
+- Solution: Remove the Git-missing warning from welcome notices and remove the compact "Odylith needs attention in this repository" notice-modal presenter entirely once onboarding truth exists. Legacy upgrade rescue payloads can remain in source payload truth, but the shell must not interrupt refresh with this notice modal.
 
 - Rollback/Forward Fix: Forward fix in v0.1.14; no consumer source migration needed because the notice is generated from runtime shell payload logic.
 
-- Verification: `PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_shell_onboarding.py tests/unit/runtime/test_render_tooling_dashboard.py::test_render_tooling_dashboard_hides_welcome_state_once_truth_exists tests/unit/runtime/test_render_tooling_dashboard.py::test_render_tooling_dashboard_shows_compact_legacy_upgrade_notice` (`17 passed`); `PYTHONPATH=src .venv/bin/pytest -q tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_first_install_launchpad_hides_git_notice_and_keeps_mental_model_visible` (`1 passed`); `./.odylith/bin/odylith casebook validate --repo-root .` passed.
+- Verification: `PYTHONPATH=src pytest -q tests/unit/runtime/test_shell_onboarding.py tests/unit/runtime/test_render_tooling_dashboard.py::test_render_tooling_dashboard_does_not_show_notice_modal_once_truth_exists tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_first_install_launchpad_hides_git_notice_and_keeps_mental_model_visible` (`17 passed`); `./.odylith/bin/odylith casebook validate --repo-root .` passed.
 
 - Prevention: Keep welcome notices reserved for actionable conditions, not passive capability limitations.
 
@@ -56,7 +56,7 @@
 
 - Preflight Checks: Search existing Casebook bugs for Git missing notice before capture; validate Casebook after writing.
 
-- Regression Tests Added: tests/unit/runtime/test_shell_onboarding.py and tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py
+- Regression Tests Added: tests/unit/runtime/test_shell_onboarding.py, tests/unit/runtime/test_render_tooling_dashboard.py::test_render_tooling_dashboard_does_not_show_notice_modal_once_truth_exists, and tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_first_install_launchpad_hides_git_notice_and_keeps_mental_model_visible
 
 - Monitoring Updates: Casebook regression coverage plus browser layout test for non-Git first install.
 
@@ -71,3 +71,5 @@
 - Public Response: pending
 
 - Code References: - src/odylith/runtime/surfaces/shell_onboarding.py
+  - src/odylith/runtime/surfaces/tooling_dashboard_welcome_presenter.py
+  - src/odylith/runtime/surfaces/templates/tooling_dashboard/style.css

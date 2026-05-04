@@ -27,7 +27,7 @@ def _write_polished_cluster_svg(path: Path) -> None:
         "\n".join(
             [
                 '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80" viewBox="0 0 120 80">',
-                '  <g class="cluster default"><rect x="2" y="2" width="100" height="60" style="fill:#effcf9 !important;stroke:#9bd8cf !important;"></rect><g class="cluster-label"><text>Source truth</text></g></g>',
+                '  <g class="cluster default"><rect x="2" y="2" width="100" height="60" style="fill:#fafffe !important;stroke:#d8f2ed !important;"></rect><g class="cluster-label"><text>Source truth</text></g></g>',
                 '  <g class="nodes"><g class="node default"><rect class="basic label-container" x="8" y="10" width="80" height="28" style="fill:#e8fbf7 !important;stroke:#5bbfb2 !important;"></rect></g></g>',
                 "</svg>",
                 "",
@@ -75,7 +75,7 @@ def _write_matching_semantic_cluster_svg_with_label_fill(path: Path) -> None:
         "\n".join(
             [
                 '<svg xmlns="http://www.w3.org/2000/svg" width="180" height="120" viewBox="0 0 180 120">',
-                '  <g class="cluster" id="decision_gate"><rect style="fill:#fff3f0 !important;stroke:#efb3a4 !important;"></rect><g class="cluster-label"><text style="fill:#5c2418 !important;">Decision gate</text></g></g>',
+                '  <g class="cluster" id="decision_gate"><rect style="fill:#fff9f8 !important;stroke:#f6d8d0 !important;"></rect><g class="cluster-label"><text style="fill:#5c2418 !important;">Decision gate</text></g></g>',
                 '  <g class="nodes"><g class="node default"><rect style="fill:#ffece7 !important;stroke:#df8f7d !important;"></rect></g></g>',
                 "</svg>",
                 "",
@@ -181,7 +181,7 @@ def test_atlas_surface_migration_accepts_semantic_cluster_rect_despite_label_fil
     assert atlas_surface_migration._svg_needs_polish(svg_path, source_mmd_path=mmd_path) is False  # noqa: SLF001
 
 
-def test_atlas_surface_migration_accepts_cluster_inherited_node_fill(tmp_path: Path) -> None:
+def test_atlas_surface_migration_flags_cluster_inherited_node_fill(tmp_path: Path) -> None:
     svg_path = tmp_path / "cluster-tone-node.svg"
     svg_path.write_text(
         "\n".join(
@@ -196,7 +196,43 @@ def test_atlas_surface_migration_accepts_cluster_inherited_node_fill(tmp_path: P
         encoding="utf-8",
     )
 
+    assert atlas_surface_migration._svg_needs_polish(svg_path) is True  # noqa: SLF001
+
+
+def test_atlas_surface_migration_accepts_effective_final_wash_over_stale_authored_tokens(tmp_path: Path) -> None:
+    svg_path = tmp_path / "final-style-wins.svg"
+    svg_path.write_text(
+        "\n".join(
+            [
+                '<svg xmlns="http://www.w3.org/2000/svg" width="180" height="120" viewBox="0 0 180 120">',
+                '  <g class="cluster" id="input_lane"><rect style="fill:#effcf9 !important;stroke:#9bd8cf !important;fill:#fafffe !important;stroke:#d8f2ed !important;"></rect><g class="cluster-label"><text>Input lane</text></g></g>',
+                '  <g class="nodes"><g class="node default"><rect class="basic label-container" style="fill:#eafbf7 !important;stroke:#78c9bd !important;fill:#e8fbf7 !important;stroke:#5bbfb2 !important;"></rect><g class="label"><text>source request</text></g></g></g>',
+                "</svg>",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
     assert atlas_surface_migration._svg_needs_polish(svg_path) is False  # noqa: SLF001
+
+
+def test_atlas_surface_migration_flags_partial_final_wash_with_legacy_stroke(tmp_path: Path) -> None:
+    svg_path = tmp_path / "partial-style.svg"
+    svg_path.write_text(
+        "\n".join(
+            [
+                '<svg xmlns="http://www.w3.org/2000/svg" width="180" height="120" viewBox="0 0 180 120">',
+                '  <g class="cluster" id="input_lane"><rect style="fill:#fafffe !important;stroke:#9bd8cf !important;"></rect><g class="cluster-label"><text>Input lane</text></g></g>',
+                '  <g class="nodes"><g class="node default"><rect class="basic label-container" style="fill:#e8fbf7 !important;stroke:#5bbfb2 !important;"></rect></g></g>',
+                "</svg>",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    assert atlas_surface_migration._svg_needs_polish(svg_path) is True  # noqa: SLF001
 
 
 def test_atlas_surface_migration_uses_cluster_identifier_like_renderer(tmp_path: Path) -> None:
@@ -218,7 +254,7 @@ def test_atlas_surface_migration_uses_cluster_identifier_like_renderer(tmp_path:
         "\n".join(
             [
                 '<svg xmlns="http://www.w3.org/2000/svg" width="180" height="120" viewBox="0 0 180 120">',
-                '  <g class="cluster" id="flowchart-Release-1"><rect style="fill:#fbf7ff !important;stroke:#d3b9f5 !important;"></rect><g class="cluster-label"><text>Maintainer proof and public claim</text></g></g>',
+                '  <g class="cluster" id="flowchart-Release-1"><rect style="fill:#fdfaff !important;stroke:#e8dcfb !important;"></rect><g class="cluster-label"><text>Maintainer proof and public claim</text></g></g>',
                 '  <g class="nodes"><g class="node default"><rect style="fill:#f4ebff !important;stroke:#ad8ae6 !important;"></rect></g></g>',
                 "</svg>",
                 "",
@@ -227,7 +263,7 @@ def test_atlas_surface_migration_uses_cluster_identifier_like_renderer(tmp_path:
         encoding="utf-8",
     )
 
-    assert atlas_surface_migration._semantic_cluster_expected_fills(mmd_path) == ("#fbf7ff",)  # noqa: SLF001
+    assert atlas_surface_migration._semantic_cluster_expected_fills(mmd_path) == ("#fdfaff",)  # noqa: SLF001
     assert atlas_surface_migration._svg_needs_polish(svg_path, source_mmd_path=mmd_path) is False  # noqa: SLF001
 
 
@@ -260,8 +296,8 @@ def test_atlas_surface_migration_renders_polished_assets_and_dashboard(tmp_path:
     assert result.applied is True
     assert result.migration_id == atlas_surface_migration.MIGRATION_ID
     assert catalog["diagrams"][0]["render_source_fingerprint"]
-    assert "fill:#effcf9" in svg_text
-    assert "stroke:#9bd8cf" in svg_text
+    assert "fill:#fafffe" in svg_text
+    assert "stroke:#d8f2ed" in svg_text
     assert "fill:#e8fbf7" in svg_text
     assert "stroke:#5bbfb2" in svg_text
     assert ".viewer-stage::before" not in html_text
@@ -291,6 +327,42 @@ def test_atlas_surface_migration_is_idempotent_after_verified_ledger(tmp_path: P
     assert first.applied is True
     assert second.applied is False
     assert second.skipped_reason == "ledger_and_atlas_surfaces_already_verify"
+
+
+def test_atlas_surface_migration_rerenders_existing_014_consumers_when_palette_rule_changes(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    _seed_atlas_catalog(tmp_path)
+    _patch_mermaid_render(monkeypatch)
+    ledger = tmp_path / ".odylith" / "state" / "migrations" / "v0.1.14-atlas-render-surface-polish.v1.json"
+    ledger.parent.mkdir(parents=True, exist_ok=True)
+    ledger.write_text(
+        json.dumps(
+            {
+                "schema_version": atlas_surface_migration.MIGRATION_SCHEMA_VERSION,
+                "migration_id": atlas_surface_migration.MIGRATION_ID,
+                "verification_result": {"status": "passed"},
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    inspection = atlas_surface_migration.inspect_atlas_surface_migration(
+        repo_root=tmp_path,
+        previous_version="0.1.14",
+        target_version="0.1.15",
+    )
+    result = atlas_surface_migration.migrate_atlas_surface_polish(
+        repo_root=tmp_path,
+        previous_version="0.1.14",
+        target_version="0.1.15",
+    )
+
+    assert inspection.ledger_valid is True
+    assert inspection.migration_required is True
+    assert result.applied is True
 
 
 def test_atlas_surface_migration_applies_from_each_supported_prior_release(tmp_path: Path, monkeypatch) -> None:

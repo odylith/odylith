@@ -39,7 +39,10 @@ _OLD_VIEWER_BACKGROUND_TOKENS = (
     "linear-gradient(rgba(15, 23, 42, 0.06)",
 )
 _POLISHED_CLUSTER_FILLS = frozenset(
-    {"#effcf9", "#f1f7ff", "#fff3f0", "#f2fbef", "#fbf7ff"}
+    {"#fafffe", "#f9fcff", "#fff9f8", "#f9fff7", "#fdfaff"}
+)
+_POLISHED_CLUSTER_STROKES = frozenset(
+    {"#d8f2ed", "#dceaff", "#f6d8d0", "#ddefd6", "#e8dcfb"}
 )
 _POLISHED_NODE_FILLS = frozenset(
     {
@@ -49,19 +52,17 @@ _POLISHED_NODE_FILLS = frozenset(
         "#f4ebff",
         "#ebf9e8",
         "#f5f8fb",
-        "#effcf9",
-        "#f1f7ff",
-        "#fff3f0",
-        "#f2fbef",
-        "#fbf7ff",
     }
 )
+_POLISHED_NODE_STROKES = frozenset(
+    {"#5bbfb2", "#77a9ef", "#df8f7d", "#ad8ae6", "#7ec373", "#b7c7d9"}
+)
 _SEMANTIC_CLUSTER_FILL_BY_BUCKET = {
-    "input": "#effcf9",
-    "intelligence": "#f1f7ff",
-    "decision": "#fff3f0",
-    "apply": "#fbf7ff",
-    "memory": "#f2fbef",
+    "input": "#fafffe",
+    "intelligence": "#f9fcff",
+    "decision": "#fff9f8",
+    "apply": "#fdfaff",
+    "memory": "#f9fff7",
 }
 _LEGACY_CLUSTER_STYLE_TOKENS = (
     "style=\"\"",
@@ -77,6 +78,16 @@ _LEGACY_CLUSTER_STYLE_TOKENS = (
     "stroke:#ebd0a0",
     "stroke:#cbe4c3",
     "stroke:#dccbf4",
+    "fill:#effcf9",
+    "fill:#f1f7ff",
+    "fill:#fff3f0",
+    "fill:#f2fbef",
+    "fill:#fbf7ff",
+    "stroke:#9bd8cf",
+    "stroke:#a8c7f7",
+    "stroke:#efb3a4",
+    "stroke:#a9d69e",
+    "stroke:#d3b9f5",
 )
 _LEGACY_NODE_STYLE_TOKENS = (
     "fill:#eafbf7",
@@ -235,10 +246,10 @@ def _write_ledger(
         "verification_result": dict(verification_result),
         "notes": (
             "v0.1.14 migrates Atlas generated diagram assets and the Atlas "
-            "dashboard to the pure-white viewer background plus the darker "
-            "managed cluster and semantic node color contract, including the "
-            "Soft Coral decision/gate node accent and lighter Soft Coral Wash "
-            "container tone with semantic-label-first lane coloring. Source "
+            "dashboard to the pure-white viewer background plus the managed "
+            "wash-layer cluster and semantic node color contract, including the "
+            "Soft Coral decision/gate node accent and the lighter wash-layer "
+            "container tones with semantic-label-first lane coloring. Source "
             "Mermaid remains topology truth; the migration regenerates derived render "
             "surfaces, rebuilds the shared topology traceability graph, and "
             "records verified fingerprints plus topology integrity evidence."
@@ -346,12 +357,22 @@ def _svg_cluster_needs_polish_from_inspection(inspection: _SvgStyleInspection) -
     if not cluster_blocks:
         return any(token in inspection.lowered_text for token in _LEGACY_CLUSTER_STYLE_TOKENS)
     for block in cluster_blocks:
-        if any(token in block for token in _LEGACY_CLUSTER_STYLE_TOKENS):
-            return True
+        actual_fill = _cluster_rect_fill(block)
+        actual_stroke = _cluster_rect_stroke(block)
+        if actual_fill in _POLISHED_CLUSTER_FILLS:
+            if actual_stroke and actual_stroke not in _POLISHED_CLUSTER_STROKES:
+                return True
+            if _semantic_cluster_style_mismatch(block):
+                return True
+            continue
         if _semantic_cluster_style_mismatch(block):
             return True
-        if any(fill in block for fill in _POLISHED_CLUSTER_FILLS):
-            continue
+        if actual_fill and actual_fill not in _POLISHED_CLUSTER_FILLS:
+            return True
+        if actual_stroke and any(token == f"stroke:{actual_stroke}" for token in _LEGACY_CLUSTER_STYLE_TOKENS):
+            return True
+        if any(token in block for token in _LEGACY_CLUSTER_STYLE_TOKENS):
+            return True
         return True
     return False
 
@@ -456,18 +477,29 @@ def _svg_cluster_semantic_text(block: str) -> str:
     return " ".join(part for part in (_svg_cluster_label_text(block), root.attrib.get("id", "")) if part).strip()
 
 
-def _cluster_rect_fill(block: str) -> str:
+def _svg_color_value(tag: str, property_name: str) -> str:
+    style = re.search(r"\bstyle\s*=\s*['\"]([^'\"]*)['\"]", tag, flags=re.IGNORECASE)
+    if style:
+        values = re.findall(rf"{re.escape(property_name)}\s*:\s*(#[0-9a-fA-F]{{6}})", style.group(1))
+        if values:
+            return values[-1].lower()
+    attr = re.search(rf"\b{re.escape(property_name)}\s*=\s*['\"](#[0-9a-fA-F]{{6}})['\"]", tag, flags=re.IGNORECASE)
+    return attr.group(1).lower() if attr else ""
+
+
+def _cluster_rect_style_value(block: str, property_name: str) -> str:
     match = re.search(r"<(?:\w+:)?rect\b[^>]*>", str(block or ""), flags=re.IGNORECASE)
     if not match:
         return ""
-    rect = match.group(0)
-    style = re.search(r"\bstyle\s*=\s*['\"]([^'\"]*)['\"]", rect, flags=re.IGNORECASE)
-    if style:
-        fills = re.findall(r"fill\s*:\s*(#[0-9a-fA-F]{6})", style.group(1))
-        if fills:
-            return fills[-1].lower()
-    attr = re.search(r"\bfill\s*=\s*['\"](#[0-9a-fA-F]{6})['\"]", rect, flags=re.IGNORECASE)
-    return attr.group(1).lower() if attr else ""
+    return _svg_color_value(match.group(0), property_name)
+
+
+def _cluster_rect_fill(block: str) -> str:
+    return _cluster_rect_style_value(block, "fill")
+
+
+def _cluster_rect_stroke(block: str) -> str:
+    return _cluster_rect_style_value(block, "stroke")
 
 
 def _semantic_cluster_style_mismatch(block: str) -> bool:
@@ -523,10 +555,16 @@ def _svg_node_needs_polish_from_inspection(inspection: _SvgStyleInspection) -> b
     node_blocks = inspection.node_blocks
     if node_blocks:
         for block in node_blocks:
+            actual_fill = _node_shape_fill(block)
+            if actual_fill in _POLISHED_NODE_FILLS:
+                actual_stroke = _node_shape_stroke(block)
+                if actual_stroke and actual_stroke not in _POLISHED_NODE_STROKES:
+                    return True
+                continue
+            if actual_fill and actual_fill not in _POLISHED_NODE_FILLS:
+                return True
             if any(token in block for token in _LEGACY_NODE_STYLE_TOKENS):
                 return True
-            if any(fill in block for fill in _POLISHED_NODE_FILLS):
-                continue
             return True
         return False
     if any(token in inspection.lowered_text for token in _LEGACY_NODE_STYLE_TOKENS):
@@ -534,6 +572,30 @@ def _svg_node_needs_polish_from_inspection(inspection: _SvgStyleInspection) -> b
     if any(fill in inspection.lowered_text for fill in _POLISHED_NODE_FILLS):
         return False
     return True
+
+
+def _node_shape_fill(block: str) -> str:
+    return _node_shape_style_value(block, "fill")
+
+
+def _node_shape_stroke(block: str) -> str:
+    return _node_shape_style_value(block, "stroke")
+
+
+def _node_shape_style_value(block: str, property_name: str) -> str:
+    label_container = re.search(
+        r"<(?:\w+:)?rect\b(?=[^>]*\b(?:label-container|basic)\b)[^>]*>",
+        str(block or ""),
+        flags=re.IGNORECASE,
+    )
+    if label_container:
+        return _svg_color_value(label_container.group(0), property_name)
+    shape = re.search(
+        r"<(?:\w+:)?(?:rect|circle|ellipse|polygon|path)\b[^>]*>",
+        str(block or ""),
+        flags=re.IGNORECASE,
+    )
+    return _svg_color_value(shape.group(0), property_name) if shape else ""
 
 
 def _svg_needs_polish(path: Path, *, source_mmd_path: Path | None = None) -> bool:

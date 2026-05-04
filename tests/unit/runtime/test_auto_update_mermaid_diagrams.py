@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -122,17 +123,46 @@ def test_mermaid_worker_applies_managed_palette_to_legacy_and_new_diagrams() -> 
     assert "clusterPalette[index % clusterPalette.length]" in worker_source
     assert "const tone = clusterPalette[index % clusterPalette.length];" not in worker_source
     assert "const tone = toneForCluster(cluster, clusterPalette[index % clusterPalette.length]);" in worker_source
-    assert "#effcf9" in worker_source
-    assert "#f1f7ff" in worker_source
-    assert "#fff3f0" in worker_source
+    assert "#fafffe" in worker_source
+    assert "#f9fcff" in worker_source
+    assert "#fff9f8" in worker_source
     assert "#ffece7" in worker_source
     assert "#e8fbf7" in worker_source
     assert "#df8f7d" in worker_source
     assert "#f4ebff" in worker_source
+    assert "nodes never inherit the container fill directly" in worker_source
+    assert "stripManagedShapeStyle" in worker_source
+    assert "/^(fill|stroke|stroke-width)" in worker_source
     assert "Atlas owns rendered color for consistency across legacy and new diagrams." in worker_source
     assert "styleDeclares(authoredStyle, 'fill')" not in worker_source
     assert "styleDeclares(authoredStyle, 'stroke')" not in worker_source
-    assert "clusterToneForNode" in worker_source
+    assert "clusterNodeToneForNode" in worker_source
+
+
+def test_mermaid_worker_container_wash_is_lighter_than_matching_node_tone() -> None:
+    worker_source = (Path(mermaid.__file__).with_name("assets") / "mermaid_cli_worker.mjs").read_text(encoding="utf-8")
+
+    node_fills = dict(re.findall(r"^\s+(\w+): \{ fill: '(#[0-9a-f]{6})'", worker_source, flags=re.MULTILINE))
+    cluster_rows = re.findall(
+        r"\{ bucket: '(\w+)', fill: '(#[0-9a-f]{6})', stroke: '(#[0-9a-f]{6})'",
+        worker_source,
+    )
+
+    assert len(cluster_rows) == 5
+    for bucket, cluster_fill, _cluster_stroke in cluster_rows:
+        assert bucket in node_fills
+        assert _relative_luminance(cluster_fill) > _relative_luminance(node_fills[bucket])
+
+
+def _relative_luminance(hex_color: str) -> float:
+    value = str(hex_color).lstrip("#")
+    channels = [int(value[index : index + 2], 16) / 255 for index in (0, 2, 4)]
+
+    def linear(channel: float) -> float:
+        return channel / 12.92 if channel <= 0.04045 else ((channel + 0.055) / 1.055) ** 2.4
+
+    red, green, blue = [linear(channel) for channel in channels]
+    return 0.2126 * red + 0.7152 * green + 0.0722 * blue
 
 
 def test_mermaid_worker_request_prints_heartbeat(monkeypatch, capsys) -> None:

@@ -9,7 +9,7 @@ from typing import Callable, Sequence
 _READ_CHUNK_SIZE = 64 * 1024
 _IGNORED_DIRECTORY_FINGERPRINT_PARTS = frozenset({"__pycache__"})
 _IGNORED_DIRECTORY_FINGERPRINT_SUFFIXES = frozenset({".pyc", ".pyo"})
-_MERMAID_RENDER_STYLE_VERSION = "atlas-mermaid-polish-v2"
+_MERMAID_RENDER_STYLE_VERSION = "atlas-mermaid-polish-v3"
 _MERMAID_RENDER_CONFIG_PATH = (
     Path(__file__).resolve().parents[1] / "surfaces" / "assets" / "mermaid_render_config.json"
 )

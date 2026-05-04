@@ -255,13 +255,6 @@ async function main() {
           }
         `;
         svg.insertBefore(style, svg.firstChild);
-        const clusterPalette = [
-          { fill: '#effcf9', stroke: '#9bd8cf', label: '#062f2b' },
-          { fill: '#f1f7ff', stroke: '#a8c7f7', label: '#102f5f' },
-          { fill: '#fff3f0', stroke: '#efb3a4', label: '#5c2418' },
-          { fill: '#f2fbef', stroke: '#a9d69e', label: '#0f3a24' },
-          { fill: '#fbf7ff', stroke: '#d3b9f5', label: '#31135f' },
-        ];
         const nodePalette = {
           input: { fill: '#e8fbf7', stroke: '#5bbfb2', label: '#062f2b' },
           intelligence: { fill: '#eaf3ff', stroke: '#77a9ef', label: '#102f5f' },
@@ -270,6 +263,13 @@ async function main() {
           memory: { fill: '#ebf9e8', stroke: '#7ec373', label: '#0f3a24' },
           neutral: { fill: '#f5f8fb', stroke: '#b7c7d9', label: '#1f2937' },
         };
+        const clusterPalette = [
+          { bucket: 'input', fill: '#fafffe', stroke: '#d8f2ed', label: '#062f2b', nodeTone: nodePalette.input },
+          { bucket: 'intelligence', fill: '#f9fcff', stroke: '#dceaff', label: '#102f5f', nodeTone: nodePalette.intelligence },
+          { bucket: 'decision', fill: '#fff9f8', stroke: '#f6d8d0', label: '#5c2418', nodeTone: nodePalette.decision },
+          { bucket: 'memory', fill: '#f9fff7', stroke: '#ddefd6', label: '#0f3a24', nodeTone: nodePalette.memory },
+          { bucket: 'apply', fill: '#fdfaff', stroke: '#e8dcfb', label: '#31135f', nodeTone: nodePalette.apply },
+        ];
         const clusterPaletteByBucket = {
           input: clusterPalette[0],
           intelligence: clusterPalette[1],
@@ -288,6 +288,19 @@ async function main() {
         // Atlas owns rendered color for consistency across legacy and new diagrams.
         // Source Mermaid stays topology truth; rendered fill/stroke/text color is a
         // surface-level readability contract and may override authored color tokens.
+        // Containers use wash tones that are deliberately lighter than their
+        // matching node tone; nodes never inherit the container fill directly.
+        const stripManagedShapeStyle = styleText => (
+          String(styleText || '')
+            .split(';')
+            .map(part => part.trim())
+            .filter(part => part && !/^(fill|stroke|stroke-width)\s*:/i.test(part))
+            .join(';')
+        );
+        const managedShapeStyle = (authoredStyle, managedStyleText) => {
+          const retainedStyle = stripManagedShapeStyle(authoredStyle);
+          return `${retainedStyle ? `${retainedStyle};` : ''}${managedStyleText}`;
+        };
         const numericAttr = (element, name) => {
           const value = Number.parseFloat(element?.getAttribute(name) || '');
           return Number.isFinite(value) ? value : null;
@@ -373,17 +386,20 @@ async function main() {
           const width = numericAttr(rect, 'width');
           const height = numericAttr(rect, 'height');
           if (x !== null && y !== null && width !== null && height !== null) {
-            clusterBounds.push({ x, y, width, height, tone });
+            clusterBounds.push({ x, y, width, height, nodeTone: tone.nodeTone || null });
           }
           rect.setAttribute(
             'style',
-            `${authoredStyle};fill:${tone.fill} !important;stroke:${tone.stroke} !important;stroke-width:1.15px !important`,
+            managedShapeStyle(
+              authoredStyle,
+              `fill:${tone.fill} !important;stroke:${tone.stroke} !important;stroke-width:1.15px !important`,
+            ),
           );
           for (const label of cluster.querySelectorAll('.cluster-label, .cluster-label span, .cluster-label text, .cluster-label p')) {
             label.setAttribute('style', `${label.getAttribute('style') || ''};color:${tone.label} !important;fill:${tone.label} !important`);
           }
         }
-        const clusterToneForNode = node => {
+        const clusterNodeToneForNode = node => {
           const point = translatePoint(node);
           if (!point) {
             return null;
@@ -396,7 +412,7 @@ async function main() {
               && point.y <= bounds.y + bounds.height
             ))
             .sort((a, b) => (a.width * a.height) - (b.width * b.height));
-          return matches[0]?.tone || null;
+          return matches[0]?.nodeTone || null;
         };
         const nodeShape = node => (
           node.querySelector(':scope > rect.label-container, :scope > rect.basic, :scope > polygon, :scope > circle, :scope > ellipse, :scope > path')
@@ -412,12 +428,15 @@ async function main() {
             shape.setAttribute('ry', shape.getAttribute('ry') || '8');
           }
           const authoredStyle = shape.getAttribute('style') || '';
-          const clusterTone = clusterToneForNode(node);
-          const fallbackTone = clusterTone || fallbackNodeTones[index % fallbackNodeTones.length];
+          const clusterNodeTone = clusterNodeToneForNode(node);
+          const fallbackTone = clusterNodeTone || fallbackNodeTones[index % fallbackNodeTones.length];
           const tone = toneForNode(node, fallbackTone);
           shape.setAttribute(
             'style',
-            `${authoredStyle};fill:${tone.fill} !important;stroke:${tone.stroke} !important;stroke-width:1.35px !important`,
+            managedShapeStyle(
+              authoredStyle,
+              `fill:${tone.fill} !important;stroke:${tone.stroke} !important;stroke-width:1.35px !important`,
+            ),
           );
           for (const label of node.querySelectorAll('.label, .nodeLabel, .label span, .label text, .label p, .label div')) {
             label.setAttribute('style', `${label.getAttribute('style') || ''};color:${tone.label} !important;fill:${tone.label} !important`);

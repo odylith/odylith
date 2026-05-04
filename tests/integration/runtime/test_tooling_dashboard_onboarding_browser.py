@@ -485,6 +485,7 @@ def test_first_install_launchpad_hides_git_notice_and_keeps_mental_model_visible
         welcome.wait_for(timeout=15000)
         assert page.locator(".welcome-card-notice .welcome-card-kicker", has_text="Git missing").count() == 0
         assert "Git missing" not in welcome.inner_text()
+        assert "Odylith needs attention in this repository" not in welcome.inner_text()
         assert page.locator(".welcome-explainer-title").inner_text().strip() == "How Odylith thinks about a repo"
 
         metrics = page.evaluate(

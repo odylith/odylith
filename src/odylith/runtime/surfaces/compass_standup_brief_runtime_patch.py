@@ -175,8 +175,13 @@ def runtime_payload_with_brief_results(
         if not isinstance(brief, Mapping):
             continue
         window_token = str(window_key).strip()
-        mutable_standup_brief[window_token] = dict(brief)
-        mutable_digest[window_token] = compass_standup_brief_narrator.brief_to_digest_lines(brief)
+        patched_brief = _brief_preserving_ready_narrative(
+            existing=mutable_standup_brief.get(window_token),
+            failure=brief,
+            scope_kind="global",
+        )
+        mutable_standup_brief[window_token] = patched_brief
+        mutable_digest[window_token] = compass_standup_brief_narrator.brief_to_digest_lines(patched_brief)
         changed = True
     for window_key, window_results in scoped_results.items():
         if not isinstance(window_results, Mapping):
@@ -206,8 +211,13 @@ def runtime_payload_with_brief_results(
             scope_token = str(scope_id).strip()
             if not scope_token:
                 continue
-            scoped_window[scope_token] = dict(brief)
-            digest_window[scope_token] = compass_standup_brief_narrator.brief_to_digest_lines(brief)
+            patched_brief = _brief_preserving_ready_narrative(
+                existing=scoped_window.get(scope_token),
+                failure=brief,
+                scope_kind="scoped",
+            )
+            scoped_window[scope_token] = patched_brief
+            digest_window[scope_token] = compass_standup_brief_narrator.brief_to_digest_lines(patched_brief)
             changed = True
         mutable_standup_brief_scoped[window_token] = scoped_window
         mutable_digest_scoped[window_token] = digest_window
@@ -218,6 +228,71 @@ def runtime_payload_with_brief_results(
     patched_payload["standup_brief_scoped"] = mutable_standup_brief_scoped
     patched_payload["digest_scoped"] = mutable_digest_scoped
     return patched_payload, True
+
+
+def _brief_preserving_ready_narrative(
+    *,
+    existing: Any,
+    failure: Mapping[str, Any],
+    scope_kind: str,
+) -> dict[str, Any]:
+    if not isinstance(existing, Mapping):
+        return dict(failure)
+    if str(existing.get("status", "")).strip().lower() != "ready":
+        return dict(failure)
+    preserved = dict(existing)
+    preserved["notice"] = _failure_notice_for_ready_brief(
+        failure=failure,
+        scope_kind=scope_kind,
+    )
+    return preserved
+
+
+def _failure_notice_for_ready_brief(
+    *,
+    failure: Mapping[str, Any],
+    scope_kind: str,
+) -> dict[str, str]:
+    diagnostics = (
+        dict(failure.get("diagnostics"))
+        if isinstance(failure.get("diagnostics"), Mapping)
+        else {}
+    )
+    title = str(diagnostics.get("title", "")).strip() or "Brief unavailable right now"
+    message = str(diagnostics.get("message", "")).strip() or (
+        "The latest narration pass did not produce a usable standup brief."
+    )
+    if "last" not in message.lower() or "brief" not in message.lower():
+        message = f"{message} Showing the last known standup brief while Compass retries."
+    reason = _notice_reason_token(
+        str(diagnostics.get("reason", "")).strip()
+        or str(failure.get("source", "")).strip()
+        or "brief_unavailable"
+    )
+    prefix = "scoped" if str(scope_kind).strip().lower() == "scoped" else "global"
+    notice = {
+        "title": title,
+        "message": message,
+        "reason": f"{prefix}_{reason}_showing_previous",
+    }
+    next_retry_utc = str(diagnostics.get("next_retry_utc", "")).strip()
+    if next_retry_utc:
+        notice["next_retry_utc"] = next_retry_utc
+    return notice
+
+
+def _notice_reason_token(value: str) -> str:
+    token_chars: list[str] = []
+    previous_underscore = False
+    for char in str(value).strip().lower():
+        if char.isalnum():
+            token_chars.append(char)
+            previous_underscore = False
+        elif not previous_underscore:
+            token_chars.append("_")
+            previous_underscore = True
+    token = "".join(token_chars).strip("_")
+    return token or "brief_unavailable"
 
 
 def _terminal_global_failures_from_runtime_payload(

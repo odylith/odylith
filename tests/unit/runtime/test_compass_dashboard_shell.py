@@ -117,7 +117,7 @@ def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic(
     assert "No validated narrative bullets available for this section." not in summary_js
     assert "No standup brief available for this view." not in summary_js
     assert "function briefHasRenderableNarrative(brief)" in summary_js
-    assert 'reason.startsWith("global_") && reason.includes("_showing_previous")' in summary_js
+    assert 'reason.includes("_showing_previous")' in summary_js
     assert 'const retryUtc = String(notice.next_retry_utc || "").trim();' in summary_js
     assert "function briefIsScopedGlobalFallback(brief)" not in summary_js
     assert "function briefAllowsCopy(brief)" not in summary_js
@@ -219,9 +219,10 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert 'Object.prototype.hasOwnProperty.call(plan, "display_progress_ratio")' in waves_js
     assert '${renderMemberChip(ideaId, { selected: ideaId === scopedWorkstream })}' in releases_js
     assert '<article class="${cardClassNames.join(" ")}" data-workstream-id="${escapeHtml(ideaId)}">' in releases_js
-    assert '<a class="execution-wave-title execution-wave-card-link"' in releases_js
-    assert 'data-workstream-id="${escapeHtml(ideaId)}"' in releases_js
-    assert 'aria-label="${escapeHtml(cardLabel)}"' in releases_js
+    assert '<a class="execution-wave-title execution-wave-card-link"' not in releases_js
+    assert 'const workstreamHref = radarWorkstreamHref(ideaId);' not in releases_js
+    assert 'aria-label="${escapeHtml(cardLabel)}"' not in releases_js
+    assert '<div class="execution-wave-title">${escapeHtml(title)}</div>' in releases_js
     assert '${titleChips.join("")}' in releases_js
     assert '<div class="execution-wave-member-head">' in releases_js
     assert '<div class="execution-wave-member-title-chips">' in releases_js
@@ -235,7 +236,7 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert "Release-owned targeted workstreams for this selection." not in releases_js
     assert "execution-wave-focus-grid" not in releases_js
     assert 'progressLabel ? `<span class="label execution-wave-label wave-progress-chip">${escapeHtml(progressLabel)}</span>` : ""' in releases_js
-    assert releases_js.index('${titleChips.join("")}') < releases_js.index('<a class="execution-wave-title execution-wave-card-link"')
+    assert releases_js.index('${titleChips.join("")}') < releases_js.index('<div class="execution-wave-title">${escapeHtml(title)}</div>')
     assert releases_js.index('const metaChips = [') < releases_js.index('progressLabel ? `<span class="label execution-wave-label wave-progress-chip">${escapeHtml(progressLabel)}</span>` : ""')
     assert "execution-wave-focus-title" not in releases_js
     assert "`Open radar for ${token}`" in releases_js
@@ -379,8 +380,8 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert "border-color: #e2ece5;" in execution_wave_css
     assert "font-size: 14px;" in execution_wave_css
     assert ".execution-wave-program-stack-release .execution-wave-title {" in execution_wave_css
-    assert ".execution-wave-card-link {" in execution_wave_css
-    assert ".execution-wave-card-link:focus-visible {" in execution_wave_css
+    assert ".execution-wave-card-link {" not in execution_wave_css
+    assert ".execution-wave-card-link:focus-visible {" not in execution_wave_css
     assert "font-size: 12px;" in execution_wave_css
     assert ".execution-wave-program-stack-release .execution-wave-member-head {" in execution_wave_css
     assert ".execution-wave-program-stack-release .execution-wave-member-title-chips {" in execution_wave_css

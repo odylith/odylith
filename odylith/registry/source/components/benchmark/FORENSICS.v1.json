@@ -24,10 +24,10 @@
     "empty_reasons": [],
     "explicit_event_count": 129,
     "mapped_workstream_evidence_count": 129,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 15,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 129
+    "timeline_event_count": 130
   },
   "name": "Benchmark",
   "path_prefixes": [
@@ -40,6 +40,24 @@
   ],
   "spec_ref": "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "docs/benchmarks/BENCHMARK_FORMAL_MODEL.md",
+        "docs/benchmarks/README.md",
+        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 457,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "benchmark"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: docs/benchmarks/BENCHMARK_FORMAL_MODEL.md, docs/benchmarks/README.md +1 more",
+      "ts_iso": "2026-05-04T12:01:58-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",

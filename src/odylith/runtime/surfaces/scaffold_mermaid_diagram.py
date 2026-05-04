@@ -196,9 +196,9 @@ def _starter_source(
             lines.append("    class followup followup;")
     lines.extend(
         [
-            "    style intent_lane fill:#effcf9,stroke:#9bd8cf,stroke-width:1px,color:#062f2b",
-            "    style component_lane fill:#f1f7ff,stroke:#a8c7f7,stroke-width:1px,color:#102f5f",
-            "    style evidence_lane fill:#fff3f0,stroke:#efb3a4,stroke-width:1px,color:#5c2418",
+            "    style intent_lane fill:#fafffe,stroke:#d8f2ed,stroke-width:1px,color:#062f2b",
+            "    style component_lane fill:#f9fcff,stroke:#dceaff,stroke-width:1px,color:#102f5f",
+            "    style evidence_lane fill:#fff9f8,stroke:#f6d8d0,stroke-width:1px,color:#5c2418",
             "    linkStyle default stroke:#647d96,stroke-width:1.4px",
         ]
     )

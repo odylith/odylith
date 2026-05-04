@@ -235,8 +235,6 @@
         const status = String(member && member.status ? member.status : "").trim().toLowerCase();
         const statusLabel = compassReleaseStatusLabel(status);
         const progressLabel = formatMemberProgress(member);
-        const workstreamHref = radarWorkstreamHref(ideaId);
-        const cardLabel = `Open radar for ${ideaId}: ${title}`;
         const cardClassNames = ["execution-wave-card", compassReleaseMemberStatusClass(status)];
         if (ideaId === scopedWorkstream) cardClassNames.push("is-member");
         const titleChips = [
@@ -256,7 +254,7 @@
                       ${renderMemberChip(ideaId, { selected: ideaId === scopedWorkstream })}
                       ${titleChips.join("")}
                     </div>
-                    <a class="execution-wave-title execution-wave-card-link" href="${escapeHtml(workstreamHref)}" target="_top" data-workstream-id="${escapeHtml(ideaId)}" aria-label="${escapeHtml(cardLabel)}">${escapeHtml(title)}</a>
+                    <div class="execution-wave-title">${escapeHtml(title)}</div>
                   </div>
                 </div>
                 ${metaChips.length ? `<div class="execution-wave-card-meta"><div class="execution-wave-card-stat-rail">${metaChips.join("")}</div></div>` : ""}

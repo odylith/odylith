@@ -871,7 +871,7 @@ def test_render_tooling_dashboard_hides_welcome_state_once_truth_exists(tmp_path
     assert '"show": false' in payload_js
 
 
-def test_render_tooling_dashboard_shows_compact_legacy_upgrade_notice(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_render_tooling_dashboard_does_not_show_notice_modal_once_truth_exists(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     _seed_existing_odylith_truth(tmp_path)
     _seed_legacy_consumer_launcher(tmp_path)
@@ -885,10 +885,12 @@ def test_render_tooling_dashboard_shows_compact_legacy_upgrade_notice(tmp_path: 
 
     assert rc == 0
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
-    assert "Odylith needs attention in this repository" in html
-    assert "Legacy upgrade path detected" in html
-    assert "Copy rescue install" in html
-    assert "https://odylith.ai/install.sh | bash" in html
+    payload_js = (tmp_path / "odylith" / "tooling-payload.v1.js").read_text(encoding="utf-8")
+    assert "Odylith needs attention in this repository" not in html
+    assert "Odylith Notice" not in html
+    assert "Legacy upgrade path detected" not in html
+    assert "Copy rescue install" not in html
+    assert "https://odylith.ai/install.sh | bash" in payload_js
     assert "Odylith is live in this repository" not in html
 
 

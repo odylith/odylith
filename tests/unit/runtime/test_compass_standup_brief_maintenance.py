@@ -1130,6 +1130,138 @@ def test_stamp_request_runtime_input_fingerprint_patches_current_runtime_from_ex
     assert runtime_payload["standup_brief"]["24h"]["diagnostics"]["next_retry_utc"] == "2026-04-09T00:21:00Z"
 
 
+def test_stamp_request_runtime_input_fingerprint_keeps_ready_brief_on_provider_failure(
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path
+    current_json_path = repo_root / "odylith/compass/runtime/current.v1.json"
+    current_js_path = repo_root / "odylith/compass/runtime/current.v1.js"
+    current_json_path.parent.mkdir(parents=True, exist_ok=True)
+    ready_global = {
+        **_brief(source="provider"),
+        "fingerprint": "previous-global-fp",
+        "sections": [
+            {
+                "key": "current_execution",
+                "label": "Current execution",
+                "bullets": [{"text": "The last ready global brief remains visible.", "fact_ids": []}],
+            }
+        ],
+    }
+    ready_scoped = {
+        **_brief(source="provider"),
+        "fingerprint": "previous-scoped-fp",
+        "sections": [
+            {
+                "key": "current_execution",
+                "label": "Current execution",
+                "bullets": [{"text": "The last ready scoped brief remains visible.", "fact_ids": []}],
+            }
+        ],
+    }
+    current_json_path.write_text(
+        json.dumps(
+            {
+                "generated_utc": "2026-04-09T00:00:00Z",
+                "runtime_contract": {"input_fingerprint": "runtime-fp"},
+                "standup_brief": {"24h": ready_global},
+                "standup_brief_scoped": {"24h": {"B-141": ready_scoped}},
+                "digest": {"24h": ["old global"]},
+                "digest_scoped": {"24h": {"B-141": ["old scoped"]}},
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    current_js_path.write_text("window.__ODYLITH_COMPASS_RUNTIME__ = {};\n", encoding="utf-8")
+
+    request_path = maintenance.maintenance_request_path(repo_root=repo_root)
+    request_path.parent.mkdir(parents=True, exist_ok=True)
+    request_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "generated_utc": "2026-04-09T00:00:00Z",
+                "runtime_input_fingerprint": "",
+                "global": {
+                    "24h": {"fingerprint": "new-global-fp", "fact_packet": {"scope_id": "global-24h"}}
+                },
+                "scoped": {
+                    "24h": {
+                        "B-141": {"fingerprint": "new-scoped-fp", "fact_packet": {"scope_id": "B-141"}}
+                    }
+                },
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    state_path = maintenance.maintenance_state_path(repo_root=repo_root)
+    state_path.parent.mkdir(parents=True, exist_ok=True)
+    state_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "active_pid": 0,
+                "entries": {
+                    "global:24h": {
+                        "fingerprint": "new-global-fp",
+                        "status": "failed",
+                        "next_retry_utc": "2026-04-09T00:21:00Z",
+                        "diagnostics": {
+                            "reason": "provider_error",
+                            "title": "Brief unavailable right now",
+                            "message": "The narration provider failed on the last attempt.",
+                        },
+                    },
+                    "scoped:24h:B-141": {
+                        "fingerprint": "new-scoped-fp",
+                        "status": "failed",
+                        "next_retry_utc": "2026-04-09T00:22:00Z",
+                        "diagnostics": {
+                            "reason": "invalid_batch",
+                            "title": "Brief needs another provider pass",
+                            "message": "Compass received a narration reply, but it was not usable yet.",
+                        },
+                    },
+                },
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    maintenance.stamp_request_runtime_input_fingerprint(
+        repo_root=repo_root,
+        runtime_input_fingerprint="runtime-fp",
+    )
+
+    runtime_payload = json.loads(current_json_path.read_text(encoding="utf-8"))
+    global_brief = runtime_payload["standup_brief"]["24h"]
+    scoped_brief = runtime_payload["standup_brief_scoped"]["24h"]["B-141"]
+
+    assert global_brief["status"] == "ready"
+    assert global_brief["fingerprint"] == "previous-global-fp"
+    assert "The last ready global brief remains visible." in json.dumps(global_brief)
+    assert global_brief["notice"]["reason"] == "global_provider_error_showing_previous"
+    assert global_brief["notice"]["next_retry_utc"] == "2026-04-09T00:21:00Z"
+    assert "Showing the last known standup brief" in global_brief["notice"]["message"]
+    assert "The last ready global brief remains visible." in "\n".join(runtime_payload["digest"]["24h"])
+
+    assert scoped_brief["status"] == "ready"
+    assert scoped_brief["fingerprint"] == "previous-scoped-fp"
+    assert "The last ready scoped brief remains visible." in json.dumps(scoped_brief)
+    assert scoped_brief["notice"]["reason"] == "scoped_invalid_batch_showing_previous"
+    assert scoped_brief["notice"]["next_retry_utc"] == "2026-04-09T00:22:00Z"
+    assert "The last ready scoped brief remains visible." in "\n".join(
+        runtime_payload["digest_scoped"]["24h"]["B-141"]
+    )
+
+
 def test_stamp_request_runtime_input_fingerprint_patches_terminal_skipped_state_without_request(
     tmp_path: Path,
 ) -> None:
