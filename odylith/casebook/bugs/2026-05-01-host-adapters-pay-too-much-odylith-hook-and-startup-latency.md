@@ -102,7 +102,7 @@
 
 - Consumer Start Regression Update: Operator feedback after installing
   Odylith v0.1.13 showed `./.odylith/bin/odylith start --repo-root .` taking
-  about 25-30s in a consumer lane. Live repro against `dentoai-orion` measured
+  about 25-30s in a consumer lane. Live repro against a consumer repo measured
   `real 25.40` on the installed runtime for an expected multi-path fallback,
   with profiling attributing the cost to repeated managed-runtime tree
   integrity scans and context-engine projection/test-history fingerprinting.
@@ -168,7 +168,7 @@
 
 - Verification Update: The v0.1.13 consumer-start repro measured
   `/usr/bin/time -p ./.odylith/bin/odylith start --repo-root .` in
-  `dentoai-orion` at `real 25.40`, `user 13.27`, `sys 11.62` before this
+  a consumer repo at `real 25.40`, `user 13.27`, `sys 11.62` before this
   patch. The patched source path against the same consumer repo now returns the
   expected `Need one code path` fallback in `real 2.55` after an initial
   `real 2.88` run. Focused coverage passed for fast start preflight,

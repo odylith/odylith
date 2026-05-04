@@ -56,18 +56,19 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md"
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py"
       ],
       "confidence": "high",
-      "event_index": 462,
+      "event_index": 459,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "odylith-chatter"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
-      "ts_iso": "2026-05-03T14:55:30-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md, src/odylith/runtime/orchestration/subagent_orchestrator.py",
+      "ts_iso": "2026-05-03T17:40:30-07:00",
       "workstreams": []
     },
     {

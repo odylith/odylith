@@ -212,15 +212,15 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                     "    checkout --> order\n"
                     "    order --> governance\n"
                     "    payment -. failure recovery .-> checkout\n"
-                    "    classDef actor fill:#eafbf7,stroke:#78c9bd,color:#103f3a,stroke-width:1px;\n"
-                    "    classDef service fill:#eef5ff,stroke:#91b9f4,color:#183a68,stroke-width:1px;\n"
-                    "    classDef evidence fill:#fff6e3,stroke:#e7b96f,color:#5b3a18,stroke-width:1px;\n"
+                    "    classDef actor fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b,stroke-width:1px;\n"
+                    "    classDef service fill:#eaf3ff,stroke:#77a9ef,color:#102f5f,stroke-width:1px;\n"
+                    "    classDef evidence fill:#fff4dc,stroke:#dfaa54,color:#4a2605,stroke-width:1px;\n"
                     "    class shopper,storefront actor;\n"
                     "    class checkout,payment,order service;\n"
                     "    class governance evidence;\n"
-                    "    style experience_lane fill:#f7fdfb,stroke:#b8e1db,stroke-width:1px,color:#103f3a\n"
-                    "    style transaction_lane fill:#f8fbff,stroke:#c9dafa,stroke-width:1px,color:#183a68\n"
-                    "    style governance_lane fill:#fffaf0,stroke:#ebd0a0,stroke-width:1px,color:#5b3a18\n"
+                    "    style experience_lane fill:#effcf9,stroke:#9bd8cf,stroke-width:1px,color:#062f2b\n"
+                    "    style transaction_lane fill:#f1f7ff,stroke:#a8c7f7,stroke-width:1px,color:#102f5f\n"
+                    "    style governance_lane fill:#fff8e8,stroke:#eac47f,stroke-width:1px,color:#4a2605\n"
                 ),
             },
             {
@@ -369,8 +369,8 @@ def test_greenfield_apply_allows_styled_flowchart_without_forced_lanes(tmp_path,
         "    checkout[\"Checkout<br/>orchestrator\"]\n"
         "    payment[\"Payment sandbox\"]\n"
         "    shopper --> checkout --> payment\n"
-        "    classDef actor fill:#eafbf7,stroke:#78c9bd,color:#103f3a,stroke-width:1px;\n"
-        "    classDef service fill:#eef5ff,stroke:#91b9f4,color:#183a68,stroke-width:1px;\n"
+        "    classDef actor fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b,stroke-width:1px;\n"
+        "    classDef service fill:#eaf3ff,stroke:#77a9ef,color:#102f5f,stroke-width:1px;\n"
         "    class shopper actor;\n"
         "    class checkout,payment service;\n"
     )
@@ -393,7 +393,7 @@ def test_greenfield_apply_rejects_overlong_unwrapped_flowchart_labels(tmp_path) 
         "    subgraph transaction_lane[\"Transaction lane\"]\n"
         "      checkout[\"Checkout orchestrator that owns payment handoff order draft idempotency retry recovery and user visible repair state\"]\n"
         "    end\n"
-        "    classDef service fill:#eef5ff,stroke:#91b9f4,color:#183a68,stroke-width:1px;\n"
+        "    classDef service fill:#eaf3ff,stroke:#77a9ef,color:#102f5f,stroke-width:1px;\n"
         "    class checkout service;\n"
     )
 

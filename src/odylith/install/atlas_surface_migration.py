@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path, PurePosixPath
@@ -37,17 +38,49 @@ _OLD_VIEWER_BACKGROUND_TOKENS = (
     "linear-gradient(rgba(15, 23, 42, 0.06)",
 )
 _POLISHED_CLUSTER_FILLS = frozenset(
-    {"#f7fdfb", "#f8fbff", "#fffaf0", "#f9fdf6", "#fcf9ff"}
+    {"#effcf9", "#f1f7ff", "#fff8e8", "#f2fbef", "#fbf7ff"}
+)
+_POLISHED_NODE_FILLS = frozenset(
+    {"#e8fbf7", "#eaf3ff", "#fff4dc", "#f4ebff", "#ebf9e8", "#f5f8fb"}
 )
 _LEGACY_CLUSTER_STYLE_TOKENS = (
     "style=\"\"",
     "fill:#fbfdff",
     "stroke:#c7d7e8",
+    "fill:#f7fdfb",
+    "fill:#f8fbff",
+    "fill:#fffaf0",
+    "fill:#f9fdf6",
+    "fill:#fcf9ff",
+    "stroke:#b8e1db",
+    "stroke:#c9dafa",
+    "stroke:#ebd0a0",
+    "stroke:#cbe4c3",
+    "stroke:#dccbf4",
 )
-_UNSTYLED_NODE_SHAPE_RE = re.compile(
-    r"<(?:rect|polygon|circle|ellipse|path)\b[^>]*(?:class=[\"'][^\"']*(?:basic|label-container)[^\"']*[\"'][^>]*style=[\"']\s*[\"']|style=[\"']\s*[\"'][^>]*class=[\"'][^\"']*(?:basic|label-container)[^\"']*[\"'])",
-    re.IGNORECASE,
+_LEGACY_NODE_STYLE_TOKENS = (
+    "fill:#eafbf7",
+    "fill:#eef5ff",
+    "fill:#fff6e3",
+    "fill:#f5efff",
+    "fill:#f0faed",
+    "fill:#f7fafc",
+    "stroke:#78c9bd",
+    "stroke:#91b9f4",
+    "stroke:#e7b96f",
+    "stroke:#bea5ea",
+    "stroke:#95cf8c",
+    "stroke:#cbd7e4",
 )
+
+
+@dataclass(frozen=True)
+class _SvgStyleInspection:
+    """One-pass rendered SVG style evidence for Atlas migration decisions."""
+
+    lowered_text: str
+    cluster_blocks: tuple[str, ...]
+    node_blocks: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -182,9 +215,9 @@ def _write_ledger(
         "verification_result": dict(verification_result),
         "notes": (
             "v0.1.14 migrates Atlas generated diagram assets and the Atlas "
-            "dashboard to the pure-white viewer background plus subtle "
-            "diagram-internal cluster and node color contract. Source Mermaid "
-            "remains the repo truth; the migration regenerates derived render "
+            "dashboard to the pure-white viewer background plus the darker "
+            "managed cluster and semantic node color contract. Source Mermaid "
+            "remains topology truth; the migration regenerates derived render "
             "surfaces, rebuilds the shared topology traceability graph, and "
             "records verified fingerprints plus topology integrity evidence."
         ),
@@ -265,34 +298,92 @@ def _source_tokens(item: Mapping[str, Any]) -> tuple[str, str, str]:
     )
 
 
-def _svg_cluster_needs_polish(path: Path) -> bool:
+def _svg_style_inspection(path: Path) -> _SvgStyleInspection | None:
     try:
         text = path.read_text(encoding="utf-8", errors="ignore")
     except OSError:
-        return False
-    if 'class="cluster"' not in text and "class='cluster'" not in text:
-        return False
-    cluster_blocks = re.findall(r"<g\b[^>]*class=[\"'][^\"']*cluster[^\"']*[\"'][\s\S]*?</g>", text)
+        return None
+    lowered_text = text.lower()
+    class_blocks = _svg_class_blocks(text)
+    cluster_blocks = class_blocks.get("cluster", ())
     if not cluster_blocks:
-        return any(token in text for token in _LEGACY_CLUSTER_STYLE_TOKENS)
+        cluster_blocks = tuple(
+            block.lower()
+            for block in re.findall(r"<g\b[^>]*class=[\"'][^\"']*cluster[^\"']*[\"'][\s\S]*?</g>", text)
+        )
+    return _SvgStyleInspection(
+        lowered_text=lowered_text,
+        cluster_blocks=cluster_blocks,
+        node_blocks=class_blocks.get("node", ()),
+    )
+
+
+def _svg_cluster_needs_polish(path: Path) -> bool:
+    inspection = _svg_style_inspection(path)
+    return _svg_cluster_needs_polish_from_inspection(inspection) if inspection else False
+
+
+def _svg_cluster_needs_polish_from_inspection(inspection: _SvgStyleInspection) -> bool:
+    if "cluster" not in inspection.lowered_text:
+        return False
+    cluster_blocks = inspection.cluster_blocks
+    if not cluster_blocks:
+        return any(token in inspection.lowered_text for token in _LEGACY_CLUSTER_STYLE_TOKENS)
     for block in cluster_blocks:
-        lowered = block.lower()
-        if any(fill in lowered for fill in _POLISHED_CLUSTER_FILLS):
-            continue
-        if any(token in lowered for token in _LEGACY_CLUSTER_STYLE_TOKENS):
+        if any(token in block for token in _LEGACY_CLUSTER_STYLE_TOKENS):
             return True
+        if any(fill in block for fill in _POLISHED_CLUSTER_FILLS):
+            continue
+        return True
     return False
 
 
-def _svg_node_needs_polish(path: Path) -> bool:
+def _svg_class_blocks(text: str) -> dict[str, tuple[str, ...]]:
     try:
-        text = path.read_text(encoding="utf-8", errors="ignore")
-    except OSError:
+        root = ET.fromstring(text)
+    except ET.ParseError:
+        return {}
+    matches: dict[str, list[str]] = {"cluster": [], "node": []}
+    for element in root.iter():
+        class_names = set(str(element.attrib.get("class", "")).split())
+        for class_name in matches:
+            if class_name in class_names:
+                matches[class_name].append(ET.tostring(element, encoding="unicode").lower())
+    return {class_name: tuple(blocks) for class_name, blocks in matches.items()}
+
+
+def _svg_node_needs_polish(path: Path) -> bool:
+    inspection = _svg_style_inspection(path)
+    return _svg_node_needs_polish_from_inspection(inspection) if inspection else False
+
+
+def _svg_node_needs_polish_from_inspection(inspection: _SvgStyleInspection) -> bool:
+    if "node" not in inspection.lowered_text:
         return False
-    lowered = text.lower()
-    if 'class="node' not in lowered and "class='node" not in lowered:
+    node_blocks = inspection.node_blocks
+    if node_blocks:
+        for block in node_blocks:
+            if any(token in block for token in _LEGACY_NODE_STYLE_TOKENS):
+                return True
+            if any(fill in block for fill in _POLISHED_NODE_FILLS):
+                continue
+            return True
         return False
-    return bool(_UNSTYLED_NODE_SHAPE_RE.search(text))
+    if any(token in inspection.lowered_text for token in _LEGACY_NODE_STYLE_TOKENS):
+        return True
+    if any(fill in inspection.lowered_text for fill in _POLISHED_NODE_FILLS):
+        return False
+    return True
+
+
+def _svg_needs_polish(path: Path) -> bool:
+    inspection = _svg_style_inspection(path)
+    if inspection is None:
+        return False
+    return (
+        _svg_cluster_needs_polish_from_inspection(inspection)
+        or _svg_node_needs_polish_from_inspection(inspection)
+    )
 
 
 def _render_paths_needing_migration(
@@ -322,7 +413,7 @@ def _render_paths_needing_migration(
         if not source_svg_path.is_file() or not source_png_path.is_file():
             needing.append(display_path(repo_root=repo_root, path=source_mmd_path))
             continue
-        if _svg_cluster_needs_polish(source_svg_path) or _svg_node_needs_polish(source_svg_path):
+        if _svg_needs_polish(source_svg_path):
             needing.append(display_path(repo_root=repo_root, path=source_mmd_path))
     return tuple(dict.fromkeys(needing))
 

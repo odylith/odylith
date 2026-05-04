@@ -66,7 +66,6 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Use the daemon-backed thin client when available; `local` bypasses the daemon.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
-
     warmup = subparsers.add_parser("warmup", help="Build or refresh local projections.")
     warmup.add_argument("--force", action="store_true", help="Force rebuilding all projections.")
     warmup.add_argument(
@@ -75,7 +74,6 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default="full",
         help="Projection scope to build (`full` includes engineering/code/test intelligence).",
     )
-
     serve = subparsers.add_parser("serve", help="Continuously keep projections warm.")
     serve.add_argument("--force", action="store_true", help="Force rebuilding all projections on the first pass.")
     serve.add_argument("--interval-seconds", type=int, default=5, help="Polling interval for the runtime loop.")
@@ -103,7 +101,6 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default=0,
         help=argparse.SUPPRESS,
     )
-
     query = subparsers.add_parser(
         "query",
         help="Search the local projection store and report when a raw repo scan is still recommended.",
@@ -116,7 +113,6 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default=[],
         help="Restrict to one or more entity kinds (repeatable).",
     )
-
     surface_read = subparsers.add_parser(
         "surface-read",
         help="Read dashboard surface list/detail/document payloads from the local runtime store.",
@@ -160,7 +156,6 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default="spec",
         help="Document variant for backlog-document reads.",
     )
-
     context = subparsers.add_parser("context", help="Resolve one repo entity/path into a local context dossier.")
     context.add_argument("ref", help="Entity id, component name, or repo-relative path.")
     context.add_argument(
@@ -183,7 +178,6 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     )
     context.add_argument("--event-limit", type=int, default=2, help="Maximum linked agent events to return.")
     context.add_argument("--relation-limit", type=int, default=2, help="Maximum relation rows to return.")
-
     impact = subparsers.add_parser("impact", help="Resolve architecture impact for one or more changed paths.")
     impact.add_argument("paths", nargs="*", help="Changed repo-relative paths.")
     impact.add_argument("--working-tree", action="store_true", help="Use meaningful changed paths from the git working tree.")
@@ -201,7 +195,6 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Extra repo-relative paths to treat as session-owned seeds when `--working-tree-scope session` is used.",
     )
     impact.add_argument("--test-limit", type=int, default=12, help="Maximum recommended test rows.")
-
     architecture = subparsers.add_parser(
         "architecture",
         help="Resolve plane/stack topology grounding and diagram-watch gaps for one or more changed paths.",

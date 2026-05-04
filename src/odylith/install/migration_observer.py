@@ -27,6 +27,7 @@ _MARKER_RE = re.compile(
     r"\bmigration-observer:[A-Za-z0-9_.-]+:[A-Za-z0-9_.-]+(?::[A-Fa-f0-9]{12})?\b"
 )
 _CACHE_BUSTER_RE = re.compile(r"\?v=[A-Fa-f0-9]{12}\b")
+_MARKER_PLACEHOLDER = "migration-observer:<version>:<surface>:<fingerprint>"
 _GENERATED_SURFACE_PREFIXES = (
     "odylith/atlas/",
     "odylith/casebook/",
@@ -334,13 +335,15 @@ def _fingerprintable_file_digest(path: Path) -> str:
     except UnicodeDecodeError:
         payload = raw
     else:
-        normalized = _MARKER_RE.sub(
-            "migration-observer:<version>:<surface>:<fingerprint>",
-            text,
-        )
+        normalized = _MARKER_RE.sub(_MARKER_PLACEHOLDER, text)
         normalized = _CACHE_BUSTER_RE.sub("?v=<fingerprint>", normalized)
+        normalized = _drop_observer_marker_lines(normalized)
         payload = normalized.encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
+
+
+def _drop_observer_marker_lines(text: str) -> str:
+    return "".join(line for line in text.splitlines(keepends=True) if _MARKER_PLACEHOLDER not in line)
 
 
 def _observer_records(*, repo_root: Path) -> tuple[SurfaceMigrationRecord, ...]:

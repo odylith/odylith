@@ -256,19 +256,19 @@ async function main() {
         `;
         svg.insertBefore(style, svg.firstChild);
         const clusterPalette = [
-          { fill: '#f7fdfb', stroke: '#b8e1db', label: '#103f3a' },
-          { fill: '#f8fbff', stroke: '#c9dafa', label: '#183a68' },
-          { fill: '#fffaf0', stroke: '#ebd0a0', label: '#5b3a18' },
-          { fill: '#f9fdf6', stroke: '#cbe4c3', label: '#174a2f' },
-          { fill: '#fcf9ff', stroke: '#dccbf4', label: '#3f2b68' },
+          { fill: '#effcf9', stroke: '#9bd8cf', label: '#062f2b' },
+          { fill: '#f1f7ff', stroke: '#a8c7f7', label: '#102f5f' },
+          { fill: '#fff8e8', stroke: '#eac47f', label: '#4a2605' },
+          { fill: '#f2fbef', stroke: '#a9d69e', label: '#0f3a24' },
+          { fill: '#fbf7ff', stroke: '#d3b9f5', label: '#31135f' },
         ];
         const nodePalette = {
-          input: { fill: '#eafbf7', stroke: '#78c9bd', label: '#103f3a' },
-          intelligence: { fill: '#eef5ff', stroke: '#91b9f4', label: '#183a68' },
-          decision: { fill: '#fff6e3', stroke: '#e7b96f', label: '#5b3a18' },
-          apply: { fill: '#f5efff', stroke: '#bea5ea', label: '#3f2b68' },
-          memory: { fill: '#f0faed', stroke: '#95cf8c', label: '#174a2f' },
-          neutral: { fill: '#f7fafc', stroke: '#cbd7e4', label: '#334155' },
+          input: { fill: '#e8fbf7', stroke: '#5bbfb2', label: '#062f2b' },
+          intelligence: { fill: '#eaf3ff', stroke: '#77a9ef', label: '#102f5f' },
+          decision: { fill: '#fff4dc', stroke: '#dfaa54', label: '#4a2605' },
+          apply: { fill: '#f4ebff', stroke: '#ad8ae6', label: '#31135f' },
+          memory: { fill: '#ebf9e8', stroke: '#7ec373', label: '#0f3a24' },
+          neutral: { fill: '#f5f8fb', stroke: '#b7c7d9', label: '#1f2937' },
         };
         const fallbackNodeTones = [
           nodePalette.input,
@@ -278,10 +278,9 @@ async function main() {
           nodePalette.memory,
           nodePalette.neutral,
         ];
-        const styleDeclares = (styleText, property) => {
-          const pattern = new RegExp(`(?:^|;)\\s*${property}\\s*:`, 'i');
-          return pattern.test(String(styleText || ''));
-        };
+        // Atlas owns rendered color for consistency across legacy and new diagrams.
+        // Source Mermaid stays topology truth; rendered fill/stroke/text color is a
+        // surface-level readability contract and may override authored color tokens.
         const numericAttr = (element, name) => {
           const value = Number.parseFloat(element?.getAttribute(name) || '');
           return Number.isFinite(value) ? value : null;
@@ -339,9 +338,6 @@ async function main() {
           if (x !== null && y !== null && width !== null && height !== null) {
             clusterBounds.push({ x, y, width, height, tone });
           }
-          if (styleDeclares(authoredStyle, 'fill') || styleDeclares(authoredStyle, 'stroke')) {
-            continue;
-          }
           rect.setAttribute(
             'style',
             `${authoredStyle};fill:${tone.fill} !important;stroke:${tone.stroke} !important;stroke-width:1.15px !important`,
@@ -379,9 +375,6 @@ async function main() {
             shape.setAttribute('ry', shape.getAttribute('ry') || '8');
           }
           const authoredStyle = shape.getAttribute('style') || '';
-          if (styleDeclares(authoredStyle, 'fill') || styleDeclares(authoredStyle, 'stroke')) {
-            continue;
-          }
           const clusterTone = clusterToneForNode(node);
           const fallbackTone = clusterTone || fallbackNodeTones[index % fallbackNodeTones.length];
           const tone = toneForNodeText(node.textContent || '', fallbackTone);

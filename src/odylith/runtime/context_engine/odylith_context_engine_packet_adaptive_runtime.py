@@ -52,7 +52,7 @@ def build_adaptive_coding_packet(
         claimed_paths=claimed_paths,
         runtime_mode=runtime_mode,
         intent=intent,
-        delivery_profile=context_engine_store._CODEX_HOT_PATH_PROFILE,
+        delivery_profile=context_engine_store._AGENT_HOT_PATH_PROFILE,
         family_hint=family_hint,
         workstream_hint=workstream_hint,
         validation_command_hints=validation_command_hints,
@@ -97,7 +97,7 @@ def build_adaptive_coding_packet(
             intent=intent,
             claimed_paths=claimed_paths,
             runtime_mode=runtime_mode,
-            delivery_profile=context_engine_store._CODEX_HOT_PATH_PROFILE,
+            delivery_profile=context_engine_store._AGENT_HOT_PATH_PROFILE,
             family_hint=family_hint,
             validation_command_hints=validation_command_hints,
             impact_override=impact_payload,
@@ -185,7 +185,7 @@ def build_adaptive_coding_packet(
             changed_paths=changed_paths,
             perform_scan=family not in context_engine_store._HOT_PATH_SUMMARY_ONLY_FALLBACK_FAMILIES,
             result_limit=8,
-            delivery_profile=context_engine_store._CODEX_HOT_PATH_PROFILE,
+            delivery_profile=context_engine_store._AGENT_HOT_PATH_PROFILE,
         )
         attempts.append(
             {
@@ -272,7 +272,7 @@ def build_adaptive_coding_packet_reusing_daemon(
         "claim_paths": [str(token).strip() for token in claimed_paths if str(token).strip()],
         "runtime_mode": str(runtime_mode or "auto").strip() or "auto",
         "intent": str(intent or "").strip(),
-        "delivery_profile": context_engine_store._CODEX_HOT_PATH_PROFILE,
+        "delivery_profile": context_engine_store._AGENT_HOT_PATH_PROFILE,
         "family_hint": str(family_hint or "").strip(),
         "workstream_hint": str(workstream_hint or "").strip(),
         "validation_command_hints": [str(token).strip() for token in validation_command_hints if str(token).strip()],
@@ -346,7 +346,7 @@ def build_adaptive_coding_packet_reusing_daemon(
             "intent": str(intent or "").strip(),
             "claim_paths": [str(token).strip() for token in claimed_paths if str(token).strip()],
             "runtime_mode": str(runtime_mode or "auto").strip() or "auto",
-            "delivery_profile": context_engine_store._CODEX_HOT_PATH_PROFILE,
+            "delivery_profile": context_engine_store._AGENT_HOT_PATH_PROFILE,
             "family_hint": str(family_hint or "").strip(),
             "validation_command_hints": [str(token).strip() for token in validation_command_hints if str(token).strip()],
         }
@@ -368,7 +368,7 @@ def build_adaptive_coding_packet_reusing_daemon(
                 intent=intent,
                 claimed_paths=claimed_paths,
                 runtime_mode=runtime_mode,
-                delivery_profile=context_engine_store._CODEX_HOT_PATH_PROFILE,
+                delivery_profile=context_engine_store._AGENT_HOT_PATH_PROFILE,
                 family_hint=family_hint,
                 validation_command_hints=validation_command_hints,
                 impact_override=impact_payload,
@@ -496,7 +496,7 @@ def build_adaptive_coding_packet_reusing_daemon(
             changed_paths=changed_paths,
             perform_scan=family not in context_engine_store._HOT_PATH_SUMMARY_ONLY_FALLBACK_FAMILIES,
             result_limit=8,
-            delivery_profile=context_engine_store._CODEX_HOT_PATH_PROFILE,
+            delivery_profile=context_engine_store._AGENT_HOT_PATH_PROFILE,
         )
         attempts.append(
             {

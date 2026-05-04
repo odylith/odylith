@@ -109,18 +109,19 @@ def test_one_shot_mermaid_render_uses_atlas_render_config(tmp_path: Path, monkey
         assert command[command.index("--configFile") + 1].endswith("mermaid_render_config.json")
 
 
-def test_mermaid_worker_applies_subtle_palette_to_unstyled_clusters() -> None:
+def test_mermaid_worker_applies_managed_palette_to_legacy_and_new_diagrams() -> None:
     worker_source = (Path(mermaid.__file__).with_name("assets") / "mermaid_cli_worker.mjs").read_text(encoding="utf-8")
 
     assert "const clusterPalette = [" in worker_source
     assert "const nodePalette = {" in worker_source
     assert "toneForNodeText" in worker_source
-    assert "#f7fdfb" in worker_source
-    assert "#f8fbff" in worker_source
-    assert "#eafbf7" in worker_source
-    assert "#f5efff" in worker_source
-    assert "styleDeclares(authoredStyle, 'fill')" in worker_source
-    assert "styleDeclares(authoredStyle, 'stroke')" in worker_source
+    assert "#effcf9" in worker_source
+    assert "#f1f7ff" in worker_source
+    assert "#e8fbf7" in worker_source
+    assert "#f4ebff" in worker_source
+    assert "Atlas owns rendered color for consistency across legacy and new diagrams." in worker_source
+    assert "styleDeclares(authoredStyle, 'fill')" not in worker_source
+    assert "styleDeclares(authoredStyle, 'stroke')" not in worker_source
     assert "clusterToneForNode" in worker_source
 
 

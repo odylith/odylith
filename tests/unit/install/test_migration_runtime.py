@@ -1120,6 +1120,55 @@ def test_surface_migration_observer_fingerprint_ignores_rendered_observer_marker
     assert covered_report.blocked_need_ids == ()
 
 
+def test_surface_migration_observer_fingerprint_ignores_added_observer_marker_lines(tmp_path: Path) -> None:
+    rendered = tmp_path / "odylith" / "radar" / "radar.html"
+    rendered.parent.mkdir(parents=True)
+    rendered.write_text(
+        "rendered release note without observer marker\n"
+        '<script src="backlog-payload.v1.js?v=aaaaaaaaaaaa"></script>\n',
+        encoding="utf-8",
+    )
+    first_report = migration_observer.observe_surface_migration_needs(
+        repo_root=tmp_path,
+        target_version="0.1.12",
+        changed_paths=("odylith/radar/radar.html",),
+    )
+    marker = first_report.needs[0].governance_marker
+    record = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "migration.md"
+    record.parent.mkdir(parents=True)
+    record.write_text(
+        "\n".join(
+            [
+                "status: finished",
+                "idea_id: B-994",
+                "title: Added observer marker proof",
+                "",
+                "Assessment: generated browser refresh is covered by the renderer migration.",
+                f"- `{marker}`",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    rendered.write_text(
+        "rendered release note without observer marker\n"
+        "Migration observer markers:\n"
+        f"- `{marker}`\n"
+        '<script src="backlog-payload.v1.js?v=bbbbbbbbbbbb"></script>\n',
+        encoding="utf-8",
+    )
+
+    covered_report = migration_observer.observe_surface_migration_needs(
+        repo_root=tmp_path,
+        target_version="0.1.12",
+        changed_paths=("odylith/radar/radar.html",),
+    )
+
+    assert covered_report.ok is True
+    assert covered_report.needs[0].governance_marker == marker
+    assert covered_report.blocked_need_ids == ()
+
+
 def test_surface_migration_observer_fingerprint_ignores_generated_derivative_churn(tmp_path: Path) -> None:
     changed_paths = (
         "odylith/runtime/delivery_intelligence.v4.json",

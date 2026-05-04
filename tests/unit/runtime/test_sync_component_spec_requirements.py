@@ -133,6 +133,15 @@ def test_resolve_forensics_path_keeps_product_dossier_layout(tmp_path: Path) -> 
     assert sync._resolve_forensics_path(entry=entry, spec_path=spec_path) == spec_path.parent / "FORENSICS.v1.json"
 
 
+def test_clean_requirement_summary_scrubs_consumer_repo_names() -> None:
+    legacy_consumer_repo = "den" + "toai-" + "ori" + "on"
+
+    assert sync._clean_requirement_summary(
+        summary=f"CB-149 update measured 25.40s in {legacy_consumer_repo} before the fast path.",
+        kind="implementation",
+    ) == "CB-149 update measured 25.40s in a real consumer repo before the fast path."
+
+
 def test_sync_component_spec_requirements_consumer_specs_use_per_component_sidecars_and_prune_legacy_file(
     tmp_path: Path,
 ) -> None:

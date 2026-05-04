@@ -58,7 +58,7 @@
 
 - Follow-Up Verification (2026-04-30 / 0.1.12): Claude Stop main no longer emits any Stop `systemMessage` for visible-intervention replay or Assist closeout, `stop_payload` no longer blocks Stop dispatch for visibility delivery, and consumer-repo visibility recovery does not mention Odylith product repo IDs. Focused proof: `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_claude_host_stop_summary.py` plus the broader visibility suite before release.
 
-- Follow-Up Evidence (2026-04-30 / 0.1.12): A Claude PostToolUse Edit transcript showed the same class through a different hook: after updating `odylith/registry/source/components/dentoai-isb-ingest/CURRENT_SPEC.md`, the Edit hook visibly printed Risks/History/Observation text and `CB-122` instead of staying silent on successful governed refresh.
+- Follow-Up Evidence (2026-04-30 / 0.1.12): A Claude PostToolUse Edit transcript showed the same class through a different hook: after updating a consumer Registry component spec, the Edit hook visibly printed Risks/History/Observation text and `CB-122` instead of staying silent on successful governed refresh.
 
 - Follow-Up Evidence (2026-04-30 / 0.1.12): Read-only inspection of the affected consumer repo showed the Registry manifest was normalized, but stale 0.1.11 Compass streams and rendered Registry detail timelines still contained `B-096`, `CB-122`, `transcript confirmation`, and `Odylith is ready to speak` events. This required an upgrade-repair cleanup, not only prevention of new hook output.
 

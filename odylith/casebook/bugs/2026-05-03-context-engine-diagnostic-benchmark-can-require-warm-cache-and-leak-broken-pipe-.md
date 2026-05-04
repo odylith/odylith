@@ -24,7 +24,7 @@
 
 - Failure Signature: RuntimeError: Benchmark warm cache requires an active local LanceDB/Tantivy memory substrate before proof runs; BrokenPipeError: [Errno 32] Broken pipe.
 
-- Trigger Path: PYTHONPATH=src python -m odylith.cli context-engine benchmark --profile diagnostic --no-write-report --json | head -n 1
+- Trigger Path: odylith context-engine benchmark --profile diagnostic --no-write-report --json | head -n 1
 
 - Ownership: Benchmark and Context Engine CLI proof lane.
 
@@ -48,7 +48,7 @@
 
 - Rollback/Forward Fix: Forward fix in 0.1.14; no rollback required.
 
-- Verification: PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_odylith_context_engine_turn_cli.py tests/unit/runtime/test_odylith_benchmark_runner.py::test_diagnostic_profile_keeps_public_pair_packet_only; PYTHONPATH=src python -m odylith.cli context-engine benchmark --profile diagnostic --limit 5 --no-write-report; set -o pipefail; PYTHONPATH=src python -m odylith.cli context-engine benchmark --profile diagnostic --limit 1 --no-write-report --json | head -n 1 >/dev/null.
+- Verification: PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_odylith_context_engine_turn_cli.py tests/unit/runtime/test_odylith_benchmark_runner.py::test_diagnostic_profile_keeps_public_pair_packet_only; odylith context-engine benchmark --profile diagnostic --limit 5 --no-write-report; set -o pipefail; odylith context-engine benchmark --profile diagnostic --limit 1 --no-write-report --json | head -n 1 >/dev/null.
 
 - Prevention: Keep diagnostic benchmark defaults dependency-light; keep closed-pipe behavior covered by a CLI regression test.
 

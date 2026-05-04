@@ -577,7 +577,7 @@ evidence is missing or drifting.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-05-03 · Implementation:** CB-149 consumer start latency update: installed v0.1.13 measured 25.40s in dentoai-orion; source fix now returns expected fallback in 2.55s with fast start preflight and hot-path bootstrap.
+- **2026-05-03 · Implementation:** CB-149 consumer start latency update: installed v0.1.13 measured 25.40s in a real consumer repo; source fix now returns expected fallback in 2.55s with fast start preflight and hot-path bootstrap.
   - Scope: B-141
   - Evidence: odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md, src/odylith/cli.py +3 more
 - **2026-04-17 · Implementation:** B-110 hardening pass made Character signal extraction negation-aware and proof-execution aware, prevented false blocks for technical-plan authoring, release-proof execution, credit-safety work, and negated delegation, added modern Codex/Claude model alias coverage, expanded deterministic corpus to 24 cases, and added benchmark summary rates for false allow/block, unknown-pressure handling, stance vectors, noise suppression, intervention precision, and unseen-pressure generalization. Proof: 48 focused Character tests passed, 225 benchmark/corpus/guidance tests passed, 2120 runtime tests passed, validate discipline and validate guidance-behavior passed, quick discipline report 1be88ce4ead87770 passed, quick guidance_behavior report 61d3b6a2b1cbe33e passed; hot-path host/provider call counts remained zero.

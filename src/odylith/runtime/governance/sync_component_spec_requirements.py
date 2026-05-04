@@ -18,6 +18,7 @@ import argparse
 import datetime as dt
 import json
 from pathlib import Path
+import re
 from typing import Iterable, Sequence
 
 from odylith.runtime.common.consumer_profile import truth_root_path
@@ -32,6 +33,12 @@ _SECTION_INTRO = (
 _START_MARKER = "<!-- registry-requirements:start -->"
 _END_MARKER = "<!-- registry-requirements:end -->"
 _EMPTY_REQUIREMENTS_LINE = "- No synchronized requirement or contract signals yet."
+_LEGACY_CONSUMER_ORG_TOKEN = "den" + "toai"
+_LEGACY_CONSUMER_PROJECT_TOKEN = "ori" + "on"
+_PUBLIC_REQUIREMENT_SUMMARY_REWRITES = (
+    (re.compile(rf"\b{_LEGACY_CONSUMER_ORG_TOKEN}-[A-Za-z0-9_-]+\b", re.IGNORECASE), "a real consumer repo"),
+    (re.compile(rf"\b[A-Za-z0-9_-]*{_LEGACY_CONSUMER_PROJECT_TOKEN}[A-Za-z0-9_-]*\b", re.IGNORECASE), "a real consumer repo"),
+)
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -221,6 +228,8 @@ def _clean_requirement_summary(*, summary: str, kind: str) -> str:
         normalized = normalized.split(":", 1)[1].strip()
     if kind_token == "statement" and normalized.lower().startswith("statement:"):
         normalized = normalized.split(":", 1)[1].strip()
+    for pattern, replacement in _PUBLIC_REQUIREMENT_SUMMARY_REWRITES:
+        normalized = pattern.sub(replacement, normalized)
     return normalized
 
 

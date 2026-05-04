@@ -176,10 +176,11 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   tests (`56 passed`), Atlas browser/render tests (`85 passed`), migration and
   registry intelligence tests (`75 passed`), `atlas auto-update --all-stale`
   (`43` diagrams rendered fresh), `atlas render --fail-on-stale` (`43 fresh`,
-  `0 stale`), and `git diff --check`. The deterministic palette preserves
-  authored Mermaid styling first, applies harmonious grouping colors to
-  containers, applies semantic role colors to inner nodes, and keeps the Atlas
-  viewer stage pure white.
+  `0 stale`), and `git diff --check`. The deterministic palette now treats
+  authored Mermaid as topology truth while Atlas owns rendered color, applies
+  darker harmonious grouping colors to containers, applies semantic role colors
+  to inner nodes across legacy and new diagrams, and keeps the Atlas viewer stage
+  pure white.
 
 ## Rollout
 - Ship in v0.1.14 with B-141 because the user-facing failure is inseparable from consumer-lane host UX hardening: low latency is not enough if empty-repo greenfield prompts dead-end or if accepted proposals fail to show programs, waves, release targets, Registry topology, and Atlas traceability.

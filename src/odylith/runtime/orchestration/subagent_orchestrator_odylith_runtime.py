@@ -17,7 +17,7 @@ from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.intervention_engine import conversation_runtime
 from odylith.runtime.orchestration import subagent_router as leaf_router
 from odylith.runtime.orchestration.subagent_orchestrator_support import _ARCHITECTURE_GROUNDING_KEYWORDS
-from odylith.runtime.orchestration.subagent_orchestrator_support import _CODEX_HOT_PATH_PROFILE
+from odylith.runtime.orchestration.subagent_orchestrator_support import _AGENT_HOT_PATH_PROFILE
 from odylith.runtime.orchestration.subagent_orchestrator_support import _GOVERNANCE_GROUNDING_KEYWORDS
 from odylith.runtime.orchestration.subagent_orchestrator_support import _clamp_confidence
 from odylith.runtime.orchestration.subagent_orchestrator_support import _compact_selection_state_parts
@@ -731,7 +731,7 @@ def _auto_ground_request_with_odylith(
                 "intent": request.intent or request.phase or request.task_kind,
                 "claim_paths": list(request.claimed_paths),
                 "runtime_mode": "auto",
-                "delivery_profile": _CODEX_HOT_PATH_PROFILE,
+                "delivery_profile": _AGENT_HOT_PATH_PROFILE,
                 "family_hint": assessment.task_family,
                 "validation_command_hints": list(request.validation_commands),
             },
@@ -742,7 +742,7 @@ def _auto_ground_request_with_odylith(
             payload = packet_session_runtime.build_session_bootstrap(
                 **base_kwargs,
                 workstream=workstream_hint,
-                delivery_profile=_CODEX_HOT_PATH_PROFILE,
+                delivery_profile=_AGENT_HOT_PATH_PROFILE,
                 family_hint=assessment.task_family,
             )
             runtime_execution = odylith_store._local_runtime_execution_summary(  # noqa: SLF001
@@ -766,7 +766,7 @@ def _auto_ground_request_with_odylith(
                 "intent": request.intent or request.phase or request.task_kind,
                 "claim_paths": list(request.claimed_paths),
                 "runtime_mode": "auto",
-                "delivery_profile": _CODEX_HOT_PATH_PROFILE,
+                "delivery_profile": _AGENT_HOT_PATH_PROFILE,
                 "family_hint": assessment.task_family,
                 "validation_command_hints": list(request.validation_commands),
             },
@@ -777,7 +777,7 @@ def _auto_ground_request_with_odylith(
             payload = packet_session_runtime.build_session_brief(
                 **base_kwargs,
                 workstream=workstream_hint,
-                delivery_profile=_CODEX_HOT_PATH_PROFILE,
+                delivery_profile=_AGENT_HOT_PATH_PROFILE,
                 family_hint=assessment.task_family,
             )
             runtime_execution = odylith_store._local_runtime_execution_summary(  # noqa: SLF001
@@ -801,7 +801,7 @@ def _auto_ground_request_with_odylith(
                 "session_id": request.session_id,
                 "claim_paths": list(request.claimed_paths),
                 "runtime_mode": "auto",
-                "delivery_profile": _CODEX_HOT_PATH_PROFILE,
+                "delivery_profile": _AGENT_HOT_PATH_PROFILE,
                 "family_hint": assessment.task_family,
                 "validation_command_hints": list(request.validation_commands),
             },
@@ -813,7 +813,7 @@ def _auto_ground_request_with_odylith(
                 **base_kwargs,
                 workstream=workstream_hint,
                 component=component_hint,
-                delivery_profile=_CODEX_HOT_PATH_PROFILE,
+                delivery_profile=_AGENT_HOT_PATH_PROFILE,
                 family_hint=assessment.task_family,
             )
             runtime_execution = odylith_store._local_runtime_execution_summary(  # noqa: SLF001

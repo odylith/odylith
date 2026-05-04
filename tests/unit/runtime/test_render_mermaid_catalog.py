@@ -121,7 +121,7 @@ def test_render_mermaid_catalog_prefers_readable_initial_view() -> None:
         tooling_base_href="../index.html",
     )
 
-    assert "let initialFactor = 0.98;" in html
+    assert "let initialFactor = 1.0;" in html
     assert "const MIN_INITIAL_FIT_FACTOR = 0.94;" in html
     assert "initialFactor = clamp(rawOverrideFactor, MIN_INITIAL_FIT_FACTOR, initialFactor);" in html
     assert "function stageFitPadding()" in html

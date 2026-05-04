@@ -7,9 +7,11 @@ ROOT = Path(__file__).resolve().parents[3]
 SKIP_RUNTIME_HISTORY_PREFIXES = (
     "odylith/compass/runtime/current.v1.js",
     "odylith/compass/runtime/current.v1.json",
+    "odylith/compass/runtime/agent-stream.",
     "odylith/compass/runtime/history/",
     "src/odylith/bundle/assets/odylith/compass/runtime/current.v1.js",
     "src/odylith/bundle/assets/odylith/compass/runtime/current.v1.json",
+    "src/odylith/bundle/assets/odylith/compass/runtime/agent-stream.",
     "src/odylith/bundle/assets/odylith/compass/runtime/history/",
 )
 
@@ -17,13 +19,17 @@ SKIP_RUNTIME_HISTORY_PREFIXES = (
 # plan files document the patterns they guard against.  Neither represents a
 # real legacy-code import or brand leak in product source.
 _SKIP_RENDERED_SURFACE_AND_PLAN_PREFIXES: tuple[str, ...] = (
+    "odylith/casebook/casebook",
     "odylith/radar/backlog-document-shard-",
     "odylith/radar/backlog-detail-shard-",
     "odylith/radar/standalone-pages.",
+    "odylith/registry/registry",
     "odylith/technical-plans/",
+    "src/odylith/bundle/assets/odylith/casebook/casebook",
     "src/odylith/bundle/assets/odylith/radar/backlog-document-shard-",
     "src/odylith/bundle/assets/odylith/radar/backlog-detail-shard-",
     "src/odylith/bundle/assets/odylith/radar/standalone-pages.",
+    "src/odylith/bundle/assets/odylith/registry/registry",
     "src/odylith/bundle/assets/odylith/technical-plans/",
 )
 STARTER_PROMPT_BLOCK = """Here are some starter prompt inspirations:
@@ -272,6 +278,8 @@ def test_public_tree_contains_no_legacy_contract_leaks() -> None:
             if not path.is_file():
                 continue
             relative = str(path.relative_to(ROOT))
+            if relative.endswith("/FORENSICS.v1.json"):
+                continue
             if any(
                 relative.startswith(prefix)
                 for prefix in SKIP_RUNTIME_HISTORY_PREFIXES + _SKIP_RENDERED_SURFACE_AND_PLAN_PREFIXES

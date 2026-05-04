@@ -291,7 +291,7 @@ end-of-work outcomes instead of canned self-promotion.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-05-03 · Implementation:** CB-149 consumer start latency update: installed v0.1.13 measured 25.40s in dentoai-orion; source fix now returns expected fallback in 2.55s with fast start preflight and hot-path bootstrap.
+- **2026-05-03 · Implementation:** CB-149 consumer start latency update: installed v0.1.13 measured 25.40s in a real consumer repo; source fix now returns expected fallback in 2.55s with fast start preflight and hot-path bootstrap.
   - Scope: B-141
   - Evidence: odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md, src/odylith/cli.py +3 more
 - **2026-05-02 · Implementation:** B-141 now enforces serial Odylith startup before context/search across host guidance, skills, and installed bundle assets, with Casebook index-only migration guard proof.

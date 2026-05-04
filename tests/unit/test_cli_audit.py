@@ -741,6 +741,13 @@ _DOWNSTREAM_ARGV_CASES = [
         "expected_argv": lambda root: ["--repo-root", str(root)],
     },
     {
+        "path": ("validate", "topology-integrity"),
+        "argv": lambda root: ["validate", "topology-integrity", f"--repo-root={root}"],
+        "target_obj": cli.topology_integrity,
+        "target_attr": "main",
+        "expected_argv": lambda root: ["--repo-root", str(root)],
+    },
+    {
         "path": ("validate", "version-truth"),
         "argv": lambda root: ["validate", "version-truth", f"--repo-root={root}"],
         "target_obj": cli.version_truth,

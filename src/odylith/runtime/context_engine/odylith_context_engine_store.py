@@ -111,7 +111,6 @@ BOOTSTRAPS_DIRNAME = odylith_context_engine_runtime_artifacts.BOOTSTRAPS_DIRNAME
 JUDGMENT_MEMORY_FILENAME = odylith_context_engine_runtime_artifacts.JUDGMENT_MEMORY_FILENAME
 SCHEMA_VERSION = odylith_context_engine_runtime_support.SCHEMA_VERSION
 _AGENT_HOT_PATH_PROFILE = agent_runtime_contract.AGENT_HOT_PATH_PROFILE
-_CODEX_HOT_PATH_PROFILE = _AGENT_HOT_PATH_PROFILE
 _FALLBACK_LOCAL_MEMORY_BACKEND = {
     "provider": "odylith-context-engine",
     "storage": "compiler_projection_snapshot",
@@ -244,10 +243,8 @@ _BUG_CORE_FIELD_ORDER = (
 
 def _normalize_bug_field_name(field: str) -> str:
     return " ".join(str(field or "").strip().split())
-
 def _normalize_bug_field_key(field: str) -> str:
     return _normalize_bug_field_name(field).casefold()
-
 
 _BUG_CORE_FIELD_ORDER_SET = frozenset(_normalize_bug_field_key(name) for name in _BUG_CORE_FIELD_ORDER)
 _ARCHIVE_GLOB = "*.md"

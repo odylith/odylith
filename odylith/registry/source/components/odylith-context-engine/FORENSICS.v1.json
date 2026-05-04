@@ -59,18 +59,22 @@
     {
       "artifacts": [
         "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
-        "src/odylith/runtime/context_engine/odylith_context_engine.py"
+        "src/odylith/runtime/context_engine/odylith_context_engine.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_packet_adaptive_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_connection_runtime.py"
       ],
       "confidence": "high",
-      "event_index": 463,
+      "event_index": 460,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "odylith-context-engine"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md, src/odylith/runtime/context_engine/odylith_context_engine.py",
-      "ts_iso": "2026-05-03T14:55:30-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md, src/odylith/runtime/context_engine/odylith_context_engine.py +4 more",
+      "ts_iso": "2026-05-03T17:40:30-07:00",
       "workstreams": []
     },
     {
