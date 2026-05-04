@@ -5,7 +5,7 @@
   B-111 through B-117. The surface should show the umbrella, execution waves,
   release target `release-0-1-11`, and proof gates without turning Odylith Discipline
   into noisy task theater.
-Last updated: 2026-05-03
+Last updated: 2026-05-04
 
 
 Last updated (UTC): 2026-04-15
@@ -206,6 +206,22 @@ Radar's traceability layer is first-class, not optional garnish.
 - it does not overwrite explicit metadata unless forced
 - it emits a JSON autofix report instead of silently mutating everything
 
+### Program And Child Adoption
+Radar authoring must offer a CLI-only path for the reciprocal topology that its
+validators require. Operators must not be forced to hand-edit front matter to
+set `workstream_parent` or update an umbrella's `workstream_children`.
+
+- `odylith backlog create --parent <umbrella>` creates new workstreams as
+  children and updates the existing umbrella.
+- `odylith program adopt <umbrella> <workstream>` adopts an existing orphan
+  workstream into an umbrella.
+- `odylith wave assign <umbrella> <wave> <workstream> --adopt` handles the
+  common assign-and-adopt case in one command.
+
+Operator-facing errors for missing parent links must name these commands. They
+must not leak Tribunal or hard-scope vocabulary when the actionable fix is a
+governed adoption step.
+
 ### Default-surface diagnostics policy
 - `traceability-autofix-report.v1.json` is a maintainer-facing diagnostics
   artifact, not a primary product surface.
@@ -317,6 +333,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-05-04: Added CLI-owned reciprocal workstream adoption through `backlog create --parent/--umbrella`, `program adopt`, and `wave assign --adopt`; wave assignment errors now translate missing `workstream_parent` into an actionable adoption command instead of a hard-scope denial. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-167`)
 - 2026-05-03: Created `release-0-1-14`, moved active B-141/B-142 targeting to it, and tagged completed B-140 migration-observer proof against the same release so Radar, Compass, and release-planning read models show the v0.1.14 work in one target. (Plans: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141), [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-04-15: Hardened Radar detail and authoring so runtime backlog detail exposes renderer-ready workstream fields, summary payloads retain fail-closed fallback detail, `odylith backlog create` requires grounded core detail, backlog validation rejects placeholder or boilerplate Problem/Customer/Opportunity/Product View/Success Metrics sections, and stale finished-workstream plan bindings cannot mint accidental successor backlogs. (Plan: [B-098](odylith/radar/radar.html?view=plan&workstream=B-098))
 - 2026-04-09: Switched Radar default operational ordering onto Delivery Intelligence's shared Scope Signal Ladder while keeping the underlying backlog exhaustive. (Plan: [B-071](odylith/radar/radar.html?view=plan&workstream=B-071); Bug: `CB-090`)

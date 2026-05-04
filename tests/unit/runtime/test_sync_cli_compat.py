@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import time
 from types import SimpleNamespace
@@ -1038,6 +1039,68 @@ def test_dashboard_refresh_dry_run_accepts_shell_alias_without_running_commands(
     assert rc == 0
     assert "dashboard refresh dry-run" in output
     assert "tooling_shell" in output
+
+
+def test_dashboard_refresh_force_bypasses_generated_refresh_guard(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(sync_workstream_artifacts, "_use_runtime_fast_path", lambda _mode: False)
+
+    def fake_worker(**kwargs):  # noqa: ANN003
+        assert os.environ.get("ODYLITH_SYNC_SKIP_GENERATED_REFRESH_GUARD") == "1"
+        return "", {"surface": kwargs["surface"], "status": "passed"}
+
+    monkeypatch.setattr(sync_workstream_artifacts, "_run_surface_worker", fake_worker)
+
+    rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
+        repo_root=tmp_path,
+        surfaces=("registry",),
+        runtime_mode="auto",
+        force=True,
+    )
+
+    assert rc == 0
+    assert os.environ.get("ODYLITH_SYNC_SKIP_GENERATED_REFRESH_GUARD") is None
+
+
+def test_dashboard_refresh_force_bypasses_surface_fingerprint_reuse(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    executed: list[tuple[str, ...]] = []
+
+    monkeypatch.setattr(sync_workstream_artifacts, "_use_runtime_fast_path", lambda _mode: False)
+    monkeypatch.setattr(
+        sync_workstream_artifacts.surface_refresh_fingerprint_dag,
+        "can_reuse_surface_refresh",
+        lambda **_: (True, {"reason": "fixture cache hit"}),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts.surface_refresh_fingerprint_dag,
+        "record_surface_refresh",
+        lambda **_: None,
+    )
+
+    def fake_run_command(*, repo_root: Path, args: tuple[str, ...], heartbeat_label: str = "", **_: object) -> int:  # noqa: ARG001
+        executed.append(tuple(args))
+        return 0
+
+    monkeypatch.setattr(sync_workstream_artifacts, "_run_command", fake_run_command)
+
+    rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
+        repo_root=tmp_path,
+        surfaces=("registry",),
+        runtime_mode="standalone",
+        force=True,
+    )
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert executed
+    assert "fingerprint reuse" not in output
+    assert "Render Registry without re-running broader governance reconciliation." in output
 
 
 def test_dashboard_refresh_normalizes_legacy_radar_source_before_render(

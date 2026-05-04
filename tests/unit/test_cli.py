@@ -271,8 +271,44 @@ def test_backlog_create_help_forwards_backend_flags(capsys) -> None:
     assert "--sizing {XS,S,M,L,XL}" in output
     assert "--complexity {Low,Medium,High,VeryHigh}" in output
     assert "--release" in output
+    assert "--parent" in output
     assert "--dry-run" in output
     assert "--json" in output
+
+
+def test_program_create_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["program", "create", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith program create" in output
+    assert "umbrella_id" in output
+    assert "--dry-run" in output
+    assert "--json" in output
+
+
+def test_wave_create_and_assign_help_forward_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["wave", "create", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith wave create" in output
+    assert "umbrella_id" in output
+    assert "wave_id" in output
+    assert "--label" in output
+    assert "--depends-on" in output
+
+    with pytest.raises(SystemExit) as assign_excinfo:
+        cli.main(["wave", "assign", "--help"])
+
+    assign_output = capsys.readouterr().out
+    assert assign_excinfo.value.code == 0
+    assert "usage: odylith wave assign" in assign_output
+    assert "workstream_id" in assign_output
+    assert "--role" in assign_output
+    assert "--adopt" in assign_output
 
 
 def test_greenfield_propose_help_forwards_backend_flags(capsys) -> None:

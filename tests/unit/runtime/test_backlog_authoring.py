@@ -270,6 +270,43 @@ def test_backlog_create_can_create_umbrella_with_children_topology(tmp_path: Pat
     assert "workstream_parent: B-102" in child_two_text
 
 
+def test_backlog_create_parent_adopts_new_children_under_existing_umbrella(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    _seed_backlog_repo(tmp_path)
+    monkeypatch.setattr(backlog_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **kwargs: None)
+    seed_path = next((tmp_path / "odylith" / "radar" / "source" / "ideas").rglob("*seed-workstream*.md"))
+    seed_path.write_text(
+        seed_path.read_text(encoding="utf-8").replace(
+            "workstream_type: standalone",
+            "workstream_type: umbrella",
+        ),
+        encoding="utf-8",
+    )
+
+    rc = backlog_authoring.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--title",
+            "Existing umbrella child",
+            "--parent",
+            "B-101",
+            *_grounded_backlog_args(),
+        ]
+    )
+
+    assert rc == 0
+    ideas_root = tmp_path / "odylith" / "radar" / "source" / "ideas"
+    umbrella_text = seed_path.read_text(encoding="utf-8")
+    child_text = next(ideas_root.rglob("*existing-umbrella-child*.md")).read_text(encoding="utf-8")
+    assert "workstream_children: B-102" in umbrella_text
+    assert "idea_id: B-102" in child_text
+    assert "workstream_type: child" in child_text
+    assert "workstream_parent: B-101" in child_text
+
+
 def test_backlog_create_requires_override_review_date(tmp_path: Path, capsys) -> None:
     _seed_backlog_repo(tmp_path)
 

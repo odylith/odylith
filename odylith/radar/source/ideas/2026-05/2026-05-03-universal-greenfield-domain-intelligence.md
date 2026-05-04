@@ -187,6 +187,15 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   passed the focused `67` test Atlas/greenfield/migration slice plus `4` Atlas
   browser tests, and kept old amber tokens out of source and generated Atlas
   text assets.
+- v0.1.14 post-release greenfield/wave hardening captured `CB-167` and closed
+  the fresh-consumer failure path where generated refresh guards could report
+  fingerprint reuse over stale Registry/Radar payloads, greenfield apply could
+  silently drop proposed waves with no token-overlap children, and wave
+  authoring forced hand-edits that the CLI contract forbids. Focused proof now
+  covers byte-content refresh fingerprints, `dashboard refresh --force`,
+  preserved zero-overlap waves, `program adopt`, `wave assign --adopt`,
+  `backlog create --parent/--umbrella`, translated wave assignment errors, and
+  non-tautological program next actions.
 
 ## Rollout
 - Ship in v0.1.14 with B-141 because the user-facing failure is inseparable from consumer-lane host UX hardening: low latency is not enough if empty-repo greenfield prompts dead-end or if accepted proposals fail to show programs, waves, release targets, Registry topology, and Atlas traceability.
@@ -214,6 +223,14 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
 ## Interface Changes
 - New CLI family: `odylith greenfield propose`.
 - New CLI family: `odylith greenfield apply`.
+- New CLI path: `odylith program adopt <umbrella> <workstream>` sets the
+  reciprocal parent/child topology required before wave assignment.
+- `odylith wave assign` accepts `--adopt` for the common orphan-child case.
+- `odylith backlog create` accepts `--parent` / `--umbrella` so new children can
+  be born under an existing umbrella without hand-editing governed front matter.
+- `odylith dashboard refresh` and owned-surface refresh commands accept
+  `--force` to bypass generated refresh-guard reuse when an operator needs an
+  explicit rerender.
 - `odylith show` empty/thin scenarios now point to proposal-first greenfield governance instead of only asking the operator to provide all fields.
 - Component registration can record planned consumer components with `user_intent` evidence without claiming source-backed ownership.
 
@@ -221,6 +238,15 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
 - Existing consumer repos need no source-truth migration for greenfield behavior. Upgrading to v0.1.14 installs the additive CLI/runtime path, managed guidance, host skill shims, greenfield `0.0.1` default release targeting, program/wave authoring, and Atlas render polish. Existing source-backed governance remains unchanged; greenfield proposals are additive and confirmation-gated.
 - v0.1.14 greenfield behavior remains backward compatible: accepted proposals that name a release selector keep using that selector, while omitted selectors default to the first project release `0.0.1`. Apply now creates the umbrella execution-wave program document when child workstreams exist and targets the first wave plus umbrella to the first release so Compass can show program and release power without over-targeting every child workstream.
 - One-word `Customer` values are now valid backlog truth. The relaxation is intentionally scoped to Customer only; Problem, Opportunity, Product View, and Success Metrics keep the stronger detail threshold and placeholder rejection.
+- Generated refresh-guard caches are versioned to `v2` and include file bytes,
+  not only filesystem size/mtime shape. Upgrades from older releases therefore
+  cannot reuse stale `v1` cache entries, and same-size source manifest edits
+  force the selected surface to rerender. The new `--force` path remains the
+  documented manual escape hatch for explicit operator proof.
+- Existing greenfield records do not need a destructive migration. The additive
+  authoring verbs let orphan children be adopted into an umbrella through CLI
+  truth updates, while future greenfield applies preserve every proposed wave
+  even when a wave has no confident child-token overlap.
 - Migration observer markers for this slice:
   `migration-observer:0.1.13:guidance-and-skills:d8c8ff0d951d`,
   `migration-observer:0.1.13:guidance-and-skills:b6ccbcebbd7c`,

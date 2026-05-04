@@ -2084,6 +2084,7 @@ def _cmd_dashboard_refresh(args: argparse.Namespace) -> int:
         atlas_sync=bool(args.atlas_sync),
         dry_run=bool(args.dry_run),
         verbose=bool(getattr(args, "verbose", False)),
+        force=bool(getattr(args, "force", False)),
     )
 
 
@@ -2098,6 +2099,7 @@ def _cmd_owned_surface_refresh(args: argparse.Namespace, *, surface: str) -> int
         atlas_sync=bool(getattr(args, "atlas_sync", False)),
         dry_run=bool(getattr(args, "dry_run", False)),
         verbose=bool(getattr(args, "verbose", False)),
+        force=bool(getattr(args, "force", False)),
     )
 
 
@@ -2325,9 +2327,13 @@ def _cmd_release(args: argparse.Namespace) -> int:
 
 
 def _cmd_program(args: argparse.Namespace) -> int:
-    if args.program_command in {"create", "update"} and not _forwarded_has_flag(
+    if (
+        args.program_command in {"create", "update", "adopt"}
+        and not _help_requested(args.forwarded)
+        and not _forwarded_has_flag(
         args.forwarded,
         "--dry-run",
+        )
     ):
         blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
         if blocked:
@@ -2341,9 +2347,13 @@ def _cmd_program(args: argparse.Namespace) -> int:
 
 
 def _cmd_wave(args: argparse.Namespace) -> int:
-    if args.wave_command in {"create", "update", "assign", "unassign", "gate-add", "gate-remove"} and not _forwarded_has_flag(
+    if (
+        args.wave_command in {"create", "update", "assign", "unassign", "gate-add", "gate-remove"}
+        and not _help_requested(args.forwarded)
+        and not _forwarded_has_flag(
         args.forwarded,
         "--dry-run",
+        )
     ):
         blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
         if blocked:
@@ -2630,6 +2640,7 @@ def _parse_dashboard_refresh_fast_args(*, repo_root: str, forwarded: Sequence[st
     )
     parser.add_argument("--repo-root", default=repo_root, help=argparse.SUPPRESS)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--force", action="store_true")
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument("--surfaces", default=_DEFAULT_DASHBOARD_REFRESH_SURFACES_CSV)
     parser.add_argument("--atlas-sync", action="store_true")
@@ -2650,6 +2661,7 @@ def _parse_owned_surface_refresh_fast_args(
     )
     parser.add_argument("--repo-root", default=repo_root, help=argparse.SUPPRESS)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--force", action="store_true")
     parser.add_argument("--verbose", action="store_true")
     if atlas:
         parser.add_argument("--atlas-sync", action="store_true")
@@ -2663,6 +2675,11 @@ def _configure_surface_refresh_parser(parser: argparse.ArgumentParser, *, atlas:
         "--dry-run",
         action="store_true",
         help="Preview the owned-surface refresh plan without writing files.",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Bypass generated refresh-guard reuse and rerender selected surfaces.",
     )
     parser.add_argument(
         "--verbose",
@@ -2932,6 +2949,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Preview the dashboard refresh plan without writing files.",
     )
     dashboard_refresh.add_argument(
+        "--force",
+        action="store_true",
+        help="Bypass generated refresh-guard reuse and rerender selected surfaces.",
+    )
+    dashboard_refresh.add_argument(
         "--verbose",
         action="store_true",
         help="Show the full refresh plan, including all overlap entries.",
@@ -3037,6 +3059,7 @@ def build_parser() -> argparse.ArgumentParser:
     for command, help_text in (
         ("create", "Create one umbrella execution-wave program."),
         ("update", "Update program-level wave posture."),
+        ("adopt", "Adopt one workstream under an umbrella program."),
         ("list", "List known execution-wave programs."),
         ("show", "Show one umbrella execution-wave program."),
         ("status", "Show one program summary and next posture."),
@@ -3469,6 +3492,24 @@ def main(argv: list[str] | None = None) -> int:
                         forwarded=forwarded,
                     )
                 )
+        if tokens[0] == "program" and len(tokens) >= 2:
+            repo_root, forwarded = _extract_repo_root(tokens[2:])
+            return _cmd_program(
+                argparse.Namespace(
+                    repo_root=repo_root,
+                    program_command=tokens[1],
+                    forwarded=forwarded,
+                )
+            )
+        if tokens[0] == "wave" and len(tokens) >= 2:
+            repo_root, forwarded = _extract_repo_root(tokens[2:])
+            return _cmd_wave(
+                argparse.Namespace(
+                    repo_root=repo_root,
+                    wave_command=tokens[1],
+                    forwarded=forwarded,
+                )
+            )
         if tokens[0] in {"radar", "registry", "casebook"} and len(tokens) >= 2 and tokens[1] == "refresh":
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             surface = tokens[0]

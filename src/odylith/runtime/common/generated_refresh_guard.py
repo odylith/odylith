@@ -9,7 +9,7 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.context_engine import odylith_context_cache
 
-_CACHE_VERSION = "v1"
+_CACHE_VERSION = "v2"
 
 
 def _normalize_watch_tokens(watched_paths: Sequence[str | Path]) -> tuple[str, ...]:
@@ -37,7 +37,7 @@ def _resolve_watch_path(*, repo_root: Path, token: str) -> Path:
 
 
 def _update_tree_digest(hasher: hashlib._Hash, path: Path, *, root: Path) -> None:
-    """Add filesystem shape and mtimes for one path subtree into the digest."""
+    """Add filesystem shape and file bytes for one path subtree into the digest."""
     try:
         stat = path.stat()
     except OSError:
@@ -45,14 +45,20 @@ def _update_tree_digest(hasher: hashlib._Hash, path: Path, *, root: Path) -> Non
         return
     if path.is_file():
         rel = path.relative_to(root).as_posix()
-        hasher.update(f"file\0{rel}\0{int(stat.st_size)}\0{int(stat.st_mtime_ns)}\0".encode("utf-8"))
+        hasher.update(f"file\0{rel}\0{int(stat.st_size)}\0".encode("utf-8"))
+        try:
+            with path.open("rb") as handle:
+                for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                    hasher.update(chunk)
+        except OSError:
+            hasher.update(f"unreadable-file\0{rel}\0".encode("utf-8"))
         return
     if not path.is_dir():
         rel = path.relative_to(root).as_posix()
         hasher.update(f"other\0{rel}\0{int(stat.st_size)}\0{int(stat.st_mtime_ns)}\0".encode("utf-8"))
         return
     rel = path.relative_to(root).as_posix() if path != root else "."
-    hasher.update(f"dir\0{rel}\0{int(stat.st_mtime_ns)}\0".encode("utf-8"))
+    hasher.update(f"dir\0{rel}\0".encode("utf-8"))
     try:
         entries = sorted(os.scandir(path), key=lambda entry: entry.name)
     except OSError:

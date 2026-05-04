@@ -176,3 +176,41 @@ def wave_governance_decision(
         critical_path=[action, "validate_backlog_contract"],
         preferred_alternative=preferred_alternative,
     )
+
+
+def adopt_governance_decision(
+    *,
+    repo_root: Path,
+    umbrella_spec: backlog_contract.IdeaSpec,
+    workstream_spec: backlog_contract.IdeaSpec,
+    args: argparse.Namespace,
+) -> authoring_execution_policy.GovernedAuthoringDecision:
+    umbrella_id = str(umbrella_spec.metadata.get("idea_id", "")).strip()
+    workstream_id = str(workstream_spec.metadata.get("idea_id", "")).strip()
+    existing_scope = _governed_child_scope(umbrella_spec) or [umbrella_id]
+    governed_scope = [*existing_scope, *([] if workstream_id in existing_scope else [workstream_id])]
+    action = "mutate_program_adopt"
+    return authoring_execution_policy.evaluate_governed_authoring_action(
+        action=action,
+        objective=(
+            f"Adopt workstream `{workstream_id}` under umbrella `{umbrella_id}` "
+            "so wave assignment can proceed through governed metadata."
+        ),
+        authoritative_lane="governance.program_wave.authoritative",
+        target_scope=governed_scope,
+        requested_scope=[umbrella_id, workstream_id],
+        governed_scope=governed_scope,
+        resource_set=[
+            execution_wave_contract.program_relative_path(umbrella_id),
+            str(umbrella_spec.path.relative_to(repo_root)),
+            str(workstream_spec.path.relative_to(repo_root)),
+        ],
+        success_criteria=[
+            f"`{workstream_id}` has `workstream_parent: {umbrella_id}`",
+            f"`{umbrella_id}.workstream_children` includes `{workstream_id}`",
+        ],
+        validation_plan=["odylith validate backlog-contract --repo-root ."],
+        allowed_moves=[action, "re_anchor"],
+        critical_path=[action, "validate_backlog_contract"],
+        preferred_alternative=f"odylith program status {umbrella_id}",
+    )

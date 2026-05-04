@@ -52,6 +52,12 @@ def _parse_program_args(argv: Sequence[str] | None = None) -> argparse.Namespace
     update.add_argument("--dry-run", action="store_true")
     update.add_argument("--json", action="store_true", dest="as_json")
 
+    adopt = subparsers.add_parser("adopt", help="Adopt one workstream under an umbrella program.")
+    adopt.add_argument("umbrella_id")
+    adopt.add_argument("workstream_id")
+    adopt.add_argument("--dry-run", action="store_true")
+    adopt.add_argument("--json", action="store_true", dest="as_json")
+
     listing = subparsers.add_parser("list", help="List known execution-wave programs.")
     listing.add_argument("--json", action="store_true", dest="as_json")
 
@@ -103,6 +109,11 @@ def _parse_wave_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     assign.add_argument("wave_id")
     assign.add_argument("workstream_id")
     assign.add_argument("--role", default="primary", choices=sorted(_ROLE_TO_FIELD))
+    assign.add_argument(
+        "--adopt",
+        action="store_true",
+        help="Adopt an orphan workstream under the umbrella before assigning it.",
+    )
     assign.add_argument("--dry-run", action="store_true")
     assign.add_argument("--json", action="store_true", dest="as_json")
 
@@ -179,9 +190,86 @@ def _ensure_child_of_umbrella(
     if workstream_id == umbrella_id:
         raise ValueError(f"umbrella `{umbrella_id}` cannot be assigned as a wave member")
     if parent != umbrella_id:
+        if not parent:
+            raise ValueError(
+                f"`{workstream_id}` has no `workstream_parent`; run "
+                f"`odylith program adopt {umbrella_id} {workstream_id}` to set the reciprocal "
+                f"child link, then retry the wave assignment."
+            )
         raise ValueError(
-            f"workstream `{workstream_id}` is not a child of umbrella `{umbrella_id}`"
+            f"`{workstream_id}` belongs to `{parent}`, not umbrella `{umbrella_id}`; "
+            "choose a workstream already listed in the umbrella's `workstream_children`, "
+            "or move the workstream deliberately before assigning it to this program."
         )
+
+
+def _replace_spec_metadata(
+    spec: backlog_contract.IdeaSpec,
+    updates: Mapping[str, str],
+) -> backlog_contract.IdeaSpec:
+    metadata = dict(spec.metadata)
+    for key, value in updates.items():
+        metadata[str(key)] = str(value or "").strip()
+    return type(spec)(
+        path=spec.path,
+        metadata=metadata,
+        sections=set(spec.sections),
+        section_bodies=dict(spec.section_bodies),
+    )
+
+
+def _adopt_workstream_under_umbrella(
+    *,
+    umbrella_spec: backlog_contract.IdeaSpec,
+    workstream_spec: backlog_contract.IdeaSpec,
+    dry_run: bool,
+) -> dict[str, Any]:
+    umbrella_id = str(umbrella_spec.metadata.get("idea_id", "")).strip().upper()
+    workstream_id = str(workstream_spec.metadata.get("idea_id", "")).strip().upper()
+    if not workstream_id:
+        raise ValueError("cannot adopt workstream with missing `idea_id`")
+    if workstream_id == umbrella_id:
+        raise ValueError(f"umbrella `{umbrella_id}` cannot adopt itself")
+    current_type = str(workstream_spec.metadata.get("workstream_type", "")).strip().lower()
+    if current_type == "umbrella":
+        raise ValueError(f"`{workstream_id}` is an umbrella workstream and cannot be adopted as a child")
+    current_parent = str(workstream_spec.metadata.get("workstream_parent", "")).strip().upper()
+    if current_parent and current_parent != umbrella_id:
+        raise ValueError(
+            f"`{workstream_id}` already has `workstream_parent: {current_parent}`; "
+            "program adopt only fills missing reciprocal links and will not move a child between umbrellas."
+        )
+    children = _metadata_list(umbrella_spec, "workstream_children")
+    normalized_children = [str(item).strip().upper() for item in children if str(item).strip()]
+    changed = False
+    if workstream_id not in normalized_children:
+        normalized_children.append(workstream_id)
+        changed = True
+    child_updates = {
+        "workstream_type": "child",
+        "workstream_parent": umbrella_id,
+        "workstream_children": "",
+    }
+    if current_type != "child" or current_parent != umbrella_id:
+        changed = True
+    umbrella_updates = {
+        "workstream_type": "umbrella",
+        "workstream_children": ", ".join(normalized_children),
+    }
+    updated_umbrella = _replace_spec_metadata(umbrella_spec, umbrella_updates)
+    updated_workstream = _replace_spec_metadata(workstream_spec, child_updates)
+    if not dry_run and changed:
+        _update_idea_metadata(umbrella_spec.path, umbrella_updates)
+        _update_idea_metadata(workstream_spec.path, child_updates)
+    return {
+        "umbrella_id": umbrella_id,
+        "workstream_id": workstream_id,
+        "changed": changed,
+        "dry_run": dry_run,
+        "next_command": f"odylith wave assign {umbrella_id} <wave-id> {workstream_id} --role primary",
+        "_umbrella_spec": updated_umbrella,
+        "_workstream_spec": updated_workstream,
+    }
 
 
 def _parse_front_matter(path: Path) -> tuple[list[tuple[str, str]], str]:
@@ -445,7 +533,7 @@ def _next_command(status_payload: Mapping[str, Any], *, idea_specs: Mapping[str,
     if not isinstance(active_wave, Mapping):
         if isinstance(next_wave, Mapping):
             return f"odylith program update {umbrella_id} --activate-wave {str(next_wave.get('wave_id', '')).strip()}"
-        return f"odylith program status {umbrella_id}"
+        return ""
     active_wave_id = str(active_wave.get("wave_id", "")).strip()
     primary = [str(item).strip() for item in active_wave.get("primary_workstreams", []) if str(item).strip()]
     if not primary and unassigned_children:
@@ -462,7 +550,7 @@ def _next_command(status_payload: Mapping[str, Any], *, idea_specs: Mapping[str,
         if str(spec.metadata.get("promoted_to_plan", "")).strip() and workstream_id not in gate_workstreams:
             title = str(spec.metadata.get("title", "")).strip() or workstream_id
             return f'odylith wave gate-add {umbrella_id} {active_wave_id} {workstream_id} --label "{title} gate"'
-    return f"odylith program status {umbrella_id}"
+    return ""
 
 
 def _print_program_payload(*, payload: Mapping[str, Any], as_json: bool) -> None:
@@ -489,6 +577,20 @@ def _print_program_payload(*, payload: Mapping[str, Any], as_json: bool) -> None
     if command == "next":
         print(str(payload.get("next_command", "")).strip())
         return
+    if command == "show":
+        program = payload.get("program", {})
+        waves = program.get("waves", []) if isinstance(program, Mapping) else []
+        print(f"program {str(payload.get('umbrella_id', '')).strip()}")
+        print(f"- waves: {len(waves) if isinstance(waves, list) else 0}")
+        if isinstance(waves, list):
+            for wave in _sorted_waves({"waves": waves}):
+                print(
+                    "- "
+                    + f"{str(wave.get('wave_id', '')).strip()} "
+                    + f"[{str(wave.get('status', '')).strip() or 'unknown'}] "
+                    + f"{str(wave.get('label', '')).strip() or '-'}"
+                )
+        return
     if command == "status":
         print(str(payload.get("title", "")).strip() or str(payload.get("umbrella_id", "")).strip())
         active_wave = payload.get("active_wave")
@@ -503,6 +605,17 @@ def _print_program_payload(*, payload: Mapping[str, Any], as_json: bool) -> None
         missing_gates = [str(item).strip() for item in payload.get("active_missing_gate_workstreams", []) if str(item).strip()]
         print(f"- active missing gates: {', '.join(missing_gates) if missing_gates else '-'}")
         print(f"- next command: {str(payload.get('next_command', '')).strip() or '-'}")
+        return
+    if command == "adopt":
+        adoption = payload.get("adoption", {})
+        if not isinstance(adoption, Mapping):
+            adoption = {}
+        umbrella_id = str(payload.get("umbrella_id", "")).strip()
+        workstream_id = str(adoption.get("workstream_id", "")).strip()
+        mode = "would adopt" if bool(adoption.get("dry_run")) else "adopted"
+        print(f"{mode} {workstream_id} under {umbrella_id}")
+        print(f"- changed: {'yes' if bool(adoption.get('changed')) else 'no'}")
+        print(f"- next command: {str(adoption.get('next_command', '')).strip() or '-'}")
         return
     print(json.dumps(payload, indent=2) + "\n", end="")
 
@@ -567,6 +680,36 @@ def program_main(argv: Sequence[str] | None = None) -> int:
 
     umbrella_spec = _resolve_umbrella_spec(selector=args.umbrella_id, idea_specs=idea_specs)
     umbrella_id = str(umbrella_spec.metadata.get("idea_id", "")).strip()
+
+    if args.program_command == "adopt":
+        workstream_id = str(args.workstream_id or "").strip().upper()
+        workstream_spec = _resolve_workstream_spec(selector=workstream_id, idea_specs=idea_specs)
+        adoption = _adopt_workstream_under_umbrella(
+            umbrella_spec=umbrella_spec,
+            workstream_spec=workstream_spec,
+            dry_run=True,
+        )
+        governance = program_wave_execution_engine.adopt_governance_decision(
+            repo_root=repo_root,
+            umbrella_spec=adoption["_umbrella_spec"],
+            workstream_spec=adoption["_workstream_spec"],
+            args=args,
+        )
+        authoring_execution_policy.enforce_governed_authoring_action(governance)
+        if not bool(args.dry_run):
+            adoption = _adopt_workstream_under_umbrella(
+                umbrella_spec=umbrella_spec,
+                workstream_spec=workstream_spec,
+                dry_run=False,
+            )
+        payload = {
+            "command": "adopt",
+            "umbrella_id": umbrella_id,
+            "adoption": {key: value for key, value in adoption.items() if not str(key).startswith("_")},
+            "execution_engine": governance.to_dict(),
+        }
+        _print_program_payload(payload=payload, as_json=bool(args.as_json))
+        return 0
 
     if args.program_command == "create":
         if _program_path(repo_root, umbrella_id).is_file():
@@ -691,6 +834,7 @@ def wave_main(argv: Sequence[str] | None = None) -> int:
     umbrella_id = str(umbrella_spec.metadata.get("idea_id", "")).strip()
     document = _load_program_document(repo_root, umbrella_id)
     mutable_document = copy.deepcopy(document)
+    adoption: dict[str, Any] | None = None
 
     if args.wave_command == "create":
         governance = program_wave_execution_engine.wave_governance_decision(
@@ -717,6 +861,23 @@ def wave_main(argv: Sequence[str] | None = None) -> int:
             }
         )
     else:
+        wave = _find_wave(mutable_document, args.wave_id)
+        if args.wave_command == "assign":
+            workstream_id = str(args.workstream_id or "").strip().upper()
+            workstream_spec = _resolve_workstream_spec(selector=workstream_id, idea_specs=idea_specs)
+            if bool(getattr(args, "adopt", False)):
+                adoption = _adopt_workstream_under_umbrella(
+                    umbrella_spec=umbrella_spec,
+                    workstream_spec=workstream_spec,
+                    dry_run=bool(args.dry_run),
+                )
+                idea_specs = dict(idea_specs)
+                umbrella_spec = adoption["_umbrella_spec"]
+                workstream_spec = adoption["_workstream_spec"]
+                idea_specs[umbrella_id] = umbrella_spec
+                idea_specs[workstream_id] = workstream_spec
+            else:
+                _ensure_child_of_umbrella(umbrella_id=umbrella_id, workstream_spec=workstream_spec)
         governance = program_wave_execution_engine.wave_governance_decision(
             repo_root=repo_root,
             umbrella_spec=umbrella_spec,
@@ -724,7 +885,6 @@ def wave_main(argv: Sequence[str] | None = None) -> int:
             args=args,
         )
         authoring_execution_policy.enforce_governed_authoring_action(governance)
-        wave = _find_wave(mutable_document, args.wave_id)
         if args.wave_command == "update":
             if args.label is not None:
                 wave["label"] = str(args.label or "").strip()
@@ -788,6 +948,8 @@ def wave_main(argv: Sequence[str] | None = None) -> int:
         target_wave = _find_wave(mutable_document, args.wave_id)
         payload["wave"] = target_wave
         payload["execution_engine"] = governance.to_dict()
+        if adoption is not None:
+            payload["adoption"] = {key: value for key, value in adoption.items() if not str(key).startswith("_")}
         if not args.dry_run:
             _write_program_document(repo_root, umbrella_id, mutable_document)
         _print_wave_payload(payload=payload, as_json=bool(args.as_json))

@@ -526,10 +526,15 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert len(result["diagrams"]) == 2
     assert result["program"]["created"] is True
     assert result["program"]["umbrella_id"] == "B-001"
+    assert len(result["program"]["waves"]) == 2
     assert result["program"]["waves"][0]["wave_id"] == "W1"
     assert result["program"]["waves"][0]["primary_workstreams"] == ["B-002"]
+    assert result["program"]["waves"][1]["wave_id"] == "W2"
+    assert result["program"]["waves"][1]["primary_workstreams"] == ["B-002"]
     assert execution_program["waves"][0]["label"] == "Checkout spine"
     assert execution_program["waves"][0]["primary_workstreams"] == ["B-002"]
+    assert execution_program["waves"][1]["label"] == "Catalog integrity"
+    assert execution_program["waves"][1]["primary_workstreams"] == ["B-002"]
     assert result["release_bootstrap"]["release"]["version"] == "0.0.1"
     assert result["release_bootstrap"]["release"]["tag"] == "v0.0.1"
     assert result["release_target"]["workstream_ids"] == ["B-001", "B-002"]

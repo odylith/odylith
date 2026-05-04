@@ -188,8 +188,12 @@ def _assign_wave_members(
                 overlap = wave_tokens.intersection(_backlog_text(proposal_by_created_id.get(child_id, {})))
                 if overlap:
                     members.append(child_id)
-        if not members and unassigned:
-            members.append(unassigned[0])
+        if not members:
+            if unassigned:
+                members.append(unassigned[0])
+            elif child_ids:
+                fallback_index = min(len(raw_assignments), len(child_ids) - 1)
+                members.append(child_ids[fallback_index])
         deduped = []
         for item in members:
             if item in child_ids and item not in deduped:
@@ -207,8 +211,6 @@ def _assign_wave_members(
     previous_wave_id = ""
     used_wave_ids: set[str] = set()
     for index, (row, members) in enumerate(zip(wave_rows, raw_assignments, strict=False), start=1):
-        if not members:
-            continue
         wave_id = _wave_id_for_row(row, index)
         if wave_id in used_wave_ids:
             wave_id = f"W{index}"

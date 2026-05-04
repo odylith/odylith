@@ -963,6 +963,13 @@ Migration observer markers for this assessment:
 - `migration-observer:0.1.14:install-managed-assets:b6f3e45c2bb6`
 - `migration-observer:0.1.14:browser-surfaces:3a0922f20803`
 - `migration-observer:0.1.14:install-managed-assets:d7ee76b62591`
+- `migration-observer:0.1.14:operator-cli-contracts:672d8e71e5fb`
+- `migration-observer:0.1.14:browser-surfaces:a0f2462f7333`
+- `migration-observer:0.1.14:install-managed-assets:026e981d2397`
+- `migration-observer:0.1.14:operator-cli-contracts:d1546b46cab4`
+- `migration-observer:0.1.14:browser-surfaces:082d686c209c`
+- `migration-observer:0.1.14:install-managed-assets:13f26f2bb451`
+- `migration-observer:0.1.14:operator-cli-contracts:6ab68b8ca8b4`
 
 Validation evidence for the Casebook status-FSM slice:
 - `python -m py_compile src/odylith/runtime/common/casebook_metadata.py src/odylith/runtime/governance/casebook_source_validation.py src/odylith/runtime/surfaces/render_casebook_dashboard.py src/odylith/install/casebook_metadata_migration.py src/odylith/install/migration_runtime.py src/odylith/install/migration_definitions.py`

@@ -1453,6 +1453,7 @@ def build_dashboard_refresh_plan(
     surfaces: Sequence[str],
     runtime_mode: str,
     atlas_sync: bool = False,
+    force: bool = False,
 ) -> ExecutionPlan:
     selected = normalize_dashboard_surfaces(surfaces)
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
@@ -1460,6 +1461,7 @@ def build_dashboard_refresh_plan(
         repo_root=repo_root,
         selected=selected,
         atlas_sync=bool(atlas_sync),
+        force=bool(force),
     )
     return _execution_plan(
         headline=(
@@ -1510,6 +1512,7 @@ def _dashboard_refresh_notes(
     repo_root: Path,
     selected: Sequence[str],
     atlas_sync: bool,
+    force: bool,
 ) -> list[str]:
     selected_tokens = [str(token).strip() for token in selected if str(token).strip()]
     excluded = [surface for surface in _VALID_DASHBOARD_SURFACES if surface not in selected_tokens]
@@ -1527,6 +1530,8 @@ def _dashboard_refresh_notes(
             "It does not rewrite `odylith/compass/runtime/current.v1.json`; if the visible Compass brief is stale, run "
             + display_command("compass", "refresh", "--repo-root", ".")
         )
+    if force:
+        notes.append("`--force` bypasses generated refresh-guard reuse for the selected surface renderers.")
     if atlas_sync and "atlas" in selected_tokens:
         notes.append(
             "`--atlas-sync` mutates repo-owned Atlas truth by touching selected `.mmd` review markers and rewriting "
@@ -1740,6 +1745,7 @@ def _run_surface_worker(
     surface: str,
     runtime_mode: str,
     atlas_sync: bool,
+    force: bool = False,
     run_impl: Callable[..., int],
 ) -> tuple[str, dict[str, Any]]:
     """Execute one surface's step chain and capture its stdout.
@@ -1753,12 +1759,16 @@ def _run_surface_worker(
         if surface == "radar":
             _normalize_radar_source_before_surface_refresh(repo_root=repo_root)
         outputs = _surface_render_outputs(surface)
-        cache_hit, cache_details = surface_refresh_fingerprint_dag.can_reuse_surface_refresh(
-            repo_root=repo_root,
-            surface=surface,
-            atlas_sync=atlas_sync if surface == "atlas" else False,
-            outputs=outputs,
-        )
+        if force:
+            cache_hit = False
+            cache_details = {"force": True}
+        else:
+            cache_hit, cache_details = surface_refresh_fingerprint_dag.can_reuse_surface_refresh(
+                repo_root=repo_root,
+                surface=surface,
+                atlas_sync=atlas_sync if surface == "atlas" else False,
+                outputs=outputs,
+            )
         if cache_hit and surface == "casebook":
             validation_rc = _casebook_source_validation_action(repo_root=repo_root)
             if validation_rc != 0:
@@ -1814,6 +1824,7 @@ def _refresh_surfaces_parallel(
     selected: Sequence[str],
     runtime_mode: str,
     atlas_sync: bool,
+    force: bool,
     run_impl: Callable[..., int],
 ) -> list[dict[str, Any]]:
     """Refresh multiple dashboard surfaces concurrently.
@@ -1842,6 +1853,7 @@ def _refresh_surfaces_parallel(
                     surface=surface,
                     runtime_mode=runtime_mode,
                     atlas_sync=atlas_sync,
+                    force=force,
                     run_impl=run_impl,
                 )
                 future_map[future] = surface
@@ -1871,6 +1883,7 @@ def refresh_dashboard_surfaces(
     atlas_sync: bool = False,
     dry_run: bool = False,
     verbose: bool = False,
+    force: bool = False,
 ) -> int:
     selected = normalize_dashboard_surfaces(surfaces)
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
@@ -1879,6 +1892,7 @@ def refresh_dashboard_surfaces(
         surfaces=selected,
         runtime_mode=normalized_runtime_mode,
         atlas_sync=atlas_sync,
+        force=bool(force),
     )
     _print_execution_plan("dashboard refresh", plan, dry_run=bool(dry_run), verbose=bool(verbose))
     if dry_run:
@@ -1896,42 +1910,54 @@ def refresh_dashboard_surfaces(
     elif len(selected) == 1 and _use_runtime_fast_path(normalized_runtime_mode):
         print("- runtime_fallback: standalone (runtime prerequisites missing)")
         runtime_fallback_used = True
-    with session_context:
-        surface_groups: list[list[str]]
-        if "tooling_shell" in selected and len(selected) > 1:
-            surface_groups = [
-                [surface for surface in selected if surface != "tooling_shell"],
-                ["tooling_shell"],
-            ]
-        else:
-            surface_groups = [list(selected)]
-        for surface_group in surface_groups:
-            if not surface_group:
-                continue
-            if len(surface_group) >= 2:
-                surface_results.extend(
-                    _refresh_surfaces_parallel(
+    previous_guard_skip = os.environ.get(_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV)
+    if force:
+        os.environ[_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV] = "1"
+    try:
+        with session_context:
+            surface_groups: list[list[str]]
+            if "tooling_shell" in selected and len(selected) > 1:
+                surface_groups = [
+                    [surface for surface in selected if surface != "tooling_shell"],
+                    ["tooling_shell"],
+                ]
+            else:
+                surface_groups = [list(selected)]
+            for surface_group in surface_groups:
+                if not surface_group:
+                    continue
+                if len(surface_group) >= 2:
+                    surface_results.extend(
+                        _refresh_surfaces_parallel(
+                            repo_root=repo_root,
+                            selected=surface_group,
+                            runtime_mode=normalized_runtime_mode,
+                            atlas_sync=atlas_sync,
+                            force=bool(force),
+                            run_impl=run_impl,
+                        )
+                    )
+                    continue
+                for surface in surface_group:
+                    output, result = _run_surface_worker(
                         repo_root=repo_root,
-                        selected=surface_group,
+                        surface=surface,
                         runtime_mode=normalized_runtime_mode,
                         atlas_sync=atlas_sync,
+                        force=bool(force),
                         run_impl=run_impl,
                     )
-                )
-                continue
-            for surface in surface_group:
-                output, result = _run_surface_worker(
-                    repo_root=repo_root,
-                    surface=surface,
-                    runtime_mode=normalized_runtime_mode,
-                    atlas_sync=atlas_sync,
-                    run_impl=run_impl,
-                )
-                if output:
-                    sys.stdout.write(output)
-                    if not output.endswith("\n"):
-                        sys.stdout.write("\n")
-                surface_results.append(result)
+                    if output:
+                        sys.stdout.write(output)
+                        if not output.endswith("\n"):
+                            sys.stdout.write("\n")
+                    surface_results.append(result)
+    finally:
+        if force:
+            if previous_guard_skip is None:
+                os.environ.pop(_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV, None)
+            else:
+                os.environ[_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV] = previous_guard_skip
     for result in surface_results:
         runtime_fallback_used = runtime_fallback_used or bool(result.get("fallback_used"))
     elapsed = time.perf_counter() - started_at

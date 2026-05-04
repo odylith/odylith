@@ -5,10 +5,10 @@
   benchmark proof, and release-gate indicators may surface when useful, but
   passing checks should stay quiet and no dashboard claim should imply shipped
   behavior before pinned dogfood and benchmark proof exist.
-Last updated: 2026-04-17
+Last updated: 2026-05-04
 
 
-Last updated (UTC): 2026-04-17
+Last updated (UTC): 2026-05-04
 
 ## Purpose
 Dashboard is the shell host for Odylith. It provides the top-level tabbed,
@@ -165,6 +165,12 @@ Compass no longer carries a second deep-refresh contract. The shell may ask
 Compass to refresh or wait for that refresh, but it must not invent or
 advertise a minute-scale `full` rerender path the child surface no longer
 supports.
+
+`odylith dashboard refresh --force` is the documented operator escape hatch for
+stale generated-surface cache suspicion. It bypasses generated refresh-guard
+reuse for the selected child renderers without changing source truth by itself.
+Default refresh may stay optimized, but a green check must never be based on a
+stale cache whose input fingerprint missed changed source bytes.
 
 ### Live-refresh policy contract
 Dashboard owns the shell-side policy that decides when a currently open tab may
@@ -363,6 +369,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-05-04: Added `dashboard refresh --force` and byte-content generated refresh guard fingerprints so source manifest edits cannot receive a stale fingerprint-reuse success; older guard caches are invalidated by the v2 cache version. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-167`)
 - 2026-04-17: Remembered the Compass Programs card-shape contract in Dashboard governance so visible program records stay as release-like inner cards rather than borderless rows inside the outer Programs container. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-18: Hardened dashboard refresh structured-result handling so queued child refreshes remain non-failures, failed structured refresh payloads without an explicit `rc` fail closed, and selective sync no longer crashes or falsely passes when Compass or Radar refresh actions return dictionaries. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))
 - 2026-04-27: Reframed first-run Starter Guide as a compact activation panel with one primary prompt, compact repo-condition notices, and visible Radar/Registry/Atlas/Casebook/Compass mental model proof for 0.1.12 onboarding. (Plan: [B-030](odylith/radar/radar.html?view=plan&workstream=B-030))

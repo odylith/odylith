@@ -97,6 +97,13 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
             "the first title becomes the umbrella and the remaining titles become reciprocal child workstreams."
         ),
     )
+    parser.add_argument(
+        "--parent",
+        "--umbrella",
+        dest="parent",
+        default="",
+        help="Optional existing umbrella workstream ID to adopt newly created workstreams under.",
+    )
     parser.add_argument("--founder-override", action="store_true")
     parser.add_argument("--override-note", default="")
     parser.add_argument("--override-review-date", default="")
@@ -404,6 +411,17 @@ def _created_workstream_topology(
     allocated_ids: Sequence[str],
     args: argparse.Namespace,
 ) -> dict[str, dict[str, object]]:
+    parent_id = str(getattr(args, "parent", "") or "").strip().upper()
+    if parent_id:
+        return {
+            str(idea_id).strip().upper(): {
+                "workstream_type": "child",
+                "workstream_parent": parent_id,
+                "workstream_children": [],
+            }
+            for idea_id in allocated_ids
+            if str(idea_id).strip()
+        }
     requested_type = str(args.workstream_type or "standalone").strip().lower()
     if requested_type == "standalone":
         return {
@@ -434,6 +452,44 @@ def _created_workstream_topology(
             "workstream_children": [],
         }
     return topology
+
+
+def _metadata_csv(value: str) -> list[str]:
+    return [token.strip().upper() for token in str(value or "").split(",") if token.strip()]
+
+
+def _existing_parent_update(
+    *,
+    parent_id: str,
+    child_ids: Sequence[str],
+    ideas: Mapping[str, backlog_contract.IdeaSpec],
+) -> tuple[Path, str, backlog_contract.IdeaSpec] | None:
+    if not parent_id:
+        return None
+    parent = ideas.get(parent_id)
+    if parent is None:
+        raise ValueError(f"unknown parent umbrella `{parent_id}`")
+    if str(parent.metadata.get("workstream_type", "")).strip().lower() != "umbrella":
+        raise ValueError(f"`{parent_id}` is not an umbrella workstream")
+    metadata, sections = _parse_metadata_and_sections(parent.path)
+    children = _metadata_csv(str(metadata.get("workstream_children", "")))
+    changed = False
+    for child_id in child_ids:
+        token = str(child_id or "").strip().upper()
+        if token and token not in children:
+            children.append(token)
+            changed = True
+    metadata["workstream_type"] = "umbrella"
+    metadata["workstream_children"] = ", ".join(children)
+    updated_spec = backlog_contract.IdeaSpec(
+        path=parent.path,
+        metadata=metadata,
+        sections=set(sections),
+        section_bodies=dict(sections),
+    )
+    if not changed:
+        return parent.path, parent.path.read_text(encoding="utf-8"), updated_spec
+    return parent.path, _render_idea_text(metadata=metadata, sections=sections), updated_spec
 
 
 def _build_rationale_lines(
@@ -592,6 +648,15 @@ def create_queued_backlog_items(
             raise ValueError("backlog titles must be non-empty")
         normalized_titles.append(title)
     allocated_ids = _allocated_workstream_ids(ideas=mutable_ideas, count=len(normalized_titles))
+    parent_id = str(getattr(args, "parent", "") or "").strip().upper()
+    existing_text_by_path: dict[Path, str] = {}
+    if parent_id and str(args.workstream_type or "standalone").strip().lower() != "standalone":
+        raise ValueError("--parent/--umbrella creates child workstreams and cannot be combined with --workstream-type umbrella")
+    parent_update = _existing_parent_update(parent_id=parent_id, child_ids=allocated_ids, ideas=mutable_ideas)
+    if parent_update is not None:
+        parent_path, parent_text, parent_spec = parent_update
+        existing_text_by_path[parent_path] = parent_text
+        mutable_ideas[parent_id] = parent_spec
     topology_by_id = _created_workstream_topology(allocated_ids=allocated_ids, args=args)
     for idea_id, title in zip(allocated_ids, normalized_titles, strict=True):
         row_args = _title_specific_args(title=title, args=args)
@@ -738,6 +803,7 @@ def create_queued_backlog_items(
         "backlog_index_text": updated_index_text,
         "idea_files": {str(path.resolve()): text for path, text in new_text_by_path.items()},
         "_candidate_idea_specs": mutable_ideas,
+        "existing_idea_files": {str(path.resolve()): text for path, text in existing_text_by_path.items()},
     }
 
 
@@ -798,6 +864,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
 
     if not bool(args.dry_run):
+        for raw_path, text in result.get("existing_idea_files", {}).items():
+            Path(raw_path).write_text(str(text), encoding="utf-8")
         for raw_path, text in result["idea_files"].items():
             Path(raw_path).write_text(str(text), encoding="utf-8")
         backlog_index_path.write_text(str(result["backlog_index_text"]), encoding="utf-8")

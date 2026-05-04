@@ -40,10 +40,10 @@
     "empty_reasons": [],
     "explicit_event_count": 112,
     "mapped_workstream_evidence_count": 64,
-    "recent_path_match_count": 0,
-    "spec_history_event_count": 18,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 19,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 112
+    "timeline_event_count": 113
   },
   "name": "Dashboard",
   "path_prefixes": [
@@ -53,6 +53,22 @@
   ],
   "spec_ref": "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 457,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "dashboard"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+      "ts_iso": "2026-05-04T08:05:24-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/install.json",

@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-05-03
+Last updated: 2026-05-04
 
 
 ## Overview
@@ -46,6 +46,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-03: Deleted the in-code taxonomy and proposal-planning modules from the active proposal-authoring path. The active host model now owns project-specific reasoning; Odylith owns source posture, evidence tiers, schema validation, apply safety, and durable memory. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-05-03: Added `proposal_rendering.py` so operator-facing text and apply commands have a focused owner without encoding canned narration or project templates. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-05-03: Retargeted the greenfield lane to v0.1.14 and made the proposal/apply path show release and program power by default: omitted release selectors become `0.0.1`, child workstreams form an umbrella execution-wave program, and the umbrella plus first wave target the first release while later waves remain visible future work. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
+- 2026-05-04: Hardened greenfield apply so proposed waves are never silently dropped when token overlap fails; every accepted program wave remains visible, with deterministic fallback child assignment preserving operator-authored structure for follow-up refinement. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-167`)
 
 ## Contract
 
@@ -69,6 +70,9 @@ This section captures synchronized requirement and contract signals derived from
   an umbrella execution-wave program and target the umbrella plus first wave to
   the first release so Compass can show program/wave/release structure without
   pretending every future child is ready for the first release.
+- Apply must preserve all host-authored program waves. A weak or missing
+  token-overlap match may choose a deterministic fallback child, but it must not
+  erase the wave or report success with fewer waves than the accepted proposal.
 - `Customer` may be a one-token governed value. Problem, Opportunity, Product
   View, and Success Metrics keep the stronger detail and placeholder-rejection
   rules.

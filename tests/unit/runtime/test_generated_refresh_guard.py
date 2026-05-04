@@ -46,6 +46,27 @@ def test_compute_input_fingerprint_tracks_dirty_file_content(tmp_path: Path) -> 
     assert first != second
 
 
+def test_compute_input_fingerprint_tracks_same_size_content_change(tmp_path: Path) -> None:
+    watched = tmp_path / "odylith" / "registry" / "source" / "component_registry.v1.json"
+    watched.parent.mkdir(parents=True, exist_ok=True)
+    watched.write_text('{"components":["a"]}\n', encoding="utf-8")
+    initial_size = watched.stat().st_size
+
+    first = generated_refresh_guard.compute_input_fingerprint(
+        repo_root=tmp_path,
+        watched_paths=("odylith/registry/source/component_registry.v1.json",),
+    )
+
+    watched.write_text('{"components":["b"]}\n', encoding="utf-8")
+    second = generated_refresh_guard.compute_input_fingerprint(
+        repo_root=tmp_path,
+        watched_paths=("odylith/registry/source/component_registry.v1.json",),
+    )
+
+    assert watched.stat().st_size == initial_size
+    assert first != second
+
+
 def test_surface_refresh_guard_bypasses_tree_scan_when_sync_already_forced_rebuild(
     tmp_path: Path,
     monkeypatch,
