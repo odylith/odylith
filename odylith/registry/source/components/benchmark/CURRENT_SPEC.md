@@ -271,6 +271,13 @@ reviewer framing that explains how Odylith should be compared.
   while benchmark compare correctly refused stale authority under `CB-116`.
   This is an exact-version benchmark-advisory release, not current benchmark
   proof, and the normal release compare gate remains the default.
+- Active release exception:
+  `v0.1.14` carries a tracked `skip_proof_and_compare` override after the
+  maintainer explicitly waived full benchmark runs for GA. This release is
+  benchmark-advisory while the shipped benchmark story is the product Turn Gate
+  formal model plus migration, browser, install, topology, guidance,
+  discipline, and release-candidate proof. Do not describe `v0.1.14` as fresh
+  benchmark proof.
 
 ## Current Benchmark Priorities
 

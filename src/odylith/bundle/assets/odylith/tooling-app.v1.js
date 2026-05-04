@@ -422,6 +422,12 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
       shellRefreshTimer = window.setTimeout(checkForShellRefresh, delayMs);
     }
 
+    function reloadShellAfterPayloadRefresh() {
+      const nextUrl = new URL(window.location.href);
+      nextUrl.searchParams.set("odylith-shell-refresh", String(Date.now()));
+      window.location.replace(nextUrl.toString());
+    }
+
     function checkForShellRefresh() {
       if (!payloadScript || !payloadScript.src || (!shellPayloadGeneratedUtc && !shellPayloadRefreshFingerprint)) return;
       if (shellRefreshInFlight) return;
@@ -448,7 +454,7 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
           (nextGeneratedUtc && nextGeneratedUtc !== shellPayloadGeneratedUtc)
           || (nextFingerprint && nextFingerprint !== shellPayloadRefreshFingerprint)
         ) {
-          window.location.reload();
+          reloadShellAfterPayloadRefresh();
           return;
         }
         scheduleShellRefreshPoll(4000);

@@ -953,6 +953,16 @@ Migration observer markers for this assessment:
 - `migration-observer:0.1.14:public-docs-and-release-guidance:7ae5ea00d66a`
 - `migration-observer:0.1.14:browser-surfaces:a34583a76e66`
 - `migration-observer:0.1.14:install-managed-assets:38450e754d08`
+- `migration-observer:0.1.14:public-docs-and-release-guidance:b434849a9cbc`
+- `migration-observer:0.1.14:browser-surfaces:210b4d5b31c0`
+- `migration-observer:0.1.14:install-managed-assets:94f47e9c8cac`
+- `migration-observer:0.1.14:public-docs-and-release-guidance:ce303c4cd30f`
+- `migration-observer:0.1.14:install-managed-assets:13f15f932050`
+- `migration-observer:0.1.14:browser-surfaces:3dc864525c0a`
+- `migration-observer:0.1.14:browser-surfaces:2bc16e52e857`
+- `migration-observer:0.1.14:install-managed-assets:b6f3e45c2bb6`
+- `migration-observer:0.1.14:browser-surfaces:3a0922f20803`
+- `migration-observer:0.1.14:install-managed-assets:d7ee76b62591`
 
 Validation evidence for the Casebook status-FSM slice:
 - `python -m py_compile src/odylith/runtime/common/casebook_metadata.py src/odylith/runtime/governance/casebook_source_validation.py src/odylith/runtime/surfaces/render_casebook_dashboard.py src/odylith/install/casebook_metadata_migration.py src/odylith/install/migration_runtime.py src/odylith/install/migration_definitions.py`
@@ -1010,3 +1020,8 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
 - The generated Radar install-managed asset change for marker `migration-observer:0.1.14:install-managed-assets:121a792a1657` is a bundle mirror of this refreshed B-140 assessment and requires no custom consumer data migration beyond the normal v0.1.14 bundle/dashboard refresh path.
 - The Benchmark Formal Model public-docs change for marker `migration-observer:0.1.14:public-docs-and-release-guidance:2dea6c816224` is interpretation-only documentation for the v0.1.14 Turn Gate benchmark model. Existing consumer installs do not require data migration; the release requirement is accurate docs publication with the normal bundle/docs refresh.
 - The governed sync repair for markers `migration-observer:0.1.14:public-docs-and-release-guidance:7ae5ea00d66a`, `migration-observer:0.1.14:browser-surfaces:a34583a76e66`, and `migration-observer:0.1.14:install-managed-assets:38450e754d08` refreshed component spec forensics, Atlas/Radar/Registry/Casebook/Compass browser surfaces, and bundle mirrors from source truth. Existing consumer installs do not require a custom data migration beyond the normal v0.1.14 managed surface refresh path.
+- The v0.1.14 GA release metadata and security refresh for markers `migration-observer:0.1.14:public-docs-and-release-guidance:b434849a9cbc`, `migration-observer:0.1.14:browser-surfaces:210b4d5b31c0`, and `migration-observer:0.1.14:install-managed-assets:94f47e9c8cac` bumps tracked version truth to 0.1.14, adds the v0.1.14 release note, updates root and bundled security posture, records the exact benchmark-proof override, and regenerates governed browser surfaces plus install bundle mirrors. Existing consumer installs do not require a custom data migration beyond normal v0.1.14 version adoption, release-note sync, security-doc refresh, dashboard refresh, and the registered 0.1.14 migration set already covered by the release migration gate.
+- The release-note YAML-safety repair for markers `migration-observer:0.1.14:public-docs-and-release-guidance:ce303c4cd30f` and `migration-observer:0.1.14:install-managed-assets:13f15f932050` is a front-matter wording correction in the source and bundled v0.1.14 release note. Existing consumer installs do not require a custom data migration; the normal v0.1.14 release-note sync is sufficient.
+- The final governed-sync browser refresh for marker `migration-observer:0.1.14:browser-surfaces:3dc864525c0a` updates Radar, Registry, Casebook, Compass, Atlas, and shell render outputs after the v0.1.14 release/security/governance truth changed. Existing consumer installs do not require a custom data migration beyond the normal v0.1.14 dashboard refresh and registered migration set.
+- The release-candidate shell auto-refresh hardening for markers `migration-observer:0.1.14:browser-surfaces:2bc16e52e857` and `migration-observer:0.1.14:install-managed-assets:b6f3e45c2bb6` replaces same-URL shell reload with a cache-busted state-preserving reload after the checked-in payload fingerprint changes, then refreshes the generated shell and bundle mirror. Existing consumer installs do not require a custom data migration beyond normal v0.1.14 managed asset adoption and dashboard refresh; focused proof passed the Turn Gate CLI audit matrix and the upgrade spotlight auto-refresh browser cases.
+- The post-sync release-candidate marker settlement for `migration-observer:0.1.14:browser-surfaces:3a0922f20803` and `migration-observer:0.1.14:install-managed-assets:d7ee76b62591` records the final content-addressed browser and bundle fingerprints after the shell auto-refresh hardening was rendered. Existing consumer installs still require no bespoke data migration beyond normal v0.1.14 managed asset adoption, dashboard refresh, and the registered 0.1.14 migration set.

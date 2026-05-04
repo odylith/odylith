@@ -80,6 +80,12 @@ governed subsystem.
   release story must say benchmark proof is advisory for `v0.1.12`, not current
   proof, and the default benchmark gate remains active for releases without an
   exact-version override.
+- The current `v0.1.14` release uses that exact tracked-exception contract
+  because the maintainer explicitly waived full benchmark runs for GA. The
+  release story must say benchmark proof is advisory for `v0.1.14`; product
+  Turn Gate formal-model truth, migrations, browser surfaces, install/runtime
+  tests, topology/guidance/discipline validation, and release-candidate proof
+  carry the GA lane without claiming fresh benchmark proof.
 - Preflight is the session initializer. Dispatch reuses the active session
   rather than recomputing a version.
 - The canonical release lane is authoritative only when it runs from the
