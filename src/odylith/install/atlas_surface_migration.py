@@ -38,10 +38,10 @@ _OLD_VIEWER_BACKGROUND_TOKENS = (
     "linear-gradient(rgba(15, 23, 42, 0.06)",
 )
 _POLISHED_CLUSTER_FILLS = frozenset(
-    {"#effcf9", "#f1f7ff", "#fff8e8", "#f2fbef", "#fbf7ff"}
+    {"#effcf9", "#f1f7ff", "#fff3f0", "#f2fbef", "#fbf7ff"}
 )
 _POLISHED_NODE_FILLS = frozenset(
-    {"#e8fbf7", "#eaf3ff", "#fff4dc", "#f4ebff", "#ebf9e8", "#f5f8fb"}
+    {"#e8fbf7", "#eaf3ff", "#ffece7", "#f4ebff", "#ebf9e8", "#f5f8fb"}
 )
 _LEGACY_CLUSTER_STYLE_TOKENS = (
     "style=\"\"",

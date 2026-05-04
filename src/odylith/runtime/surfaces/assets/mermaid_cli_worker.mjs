@@ -258,14 +258,14 @@ async function main() {
         const clusterPalette = [
           { fill: '#effcf9', stroke: '#9bd8cf', label: '#062f2b' },
           { fill: '#f1f7ff', stroke: '#a8c7f7', label: '#102f5f' },
-          { fill: '#fff8e8', stroke: '#eac47f', label: '#4a2605' },
+          { fill: '#fff3f0', stroke: '#efb3a4', label: '#5c2418' },
           { fill: '#f2fbef', stroke: '#a9d69e', label: '#0f3a24' },
           { fill: '#fbf7ff', stroke: '#d3b9f5', label: '#31135f' },
         ];
         const nodePalette = {
           input: { fill: '#e8fbf7', stroke: '#5bbfb2', label: '#062f2b' },
           intelligence: { fill: '#eaf3ff', stroke: '#77a9ef', label: '#102f5f' },
-          decision: { fill: '#fff4dc', stroke: '#dfaa54', label: '#4a2605' },
+          decision: { fill: '#ffece7', stroke: '#df8f7d', label: '#5c2418' },
           apply: { fill: '#f4ebff', stroke: '#ad8ae6', label: '#31135f' },
           memory: { fill: '#ebf9e8', stroke: '#7ec373', label: '#0f3a24' },
           neutral: { fill: '#f5f8fb', stroke: '#b7c7d9', label: '#1f2937' },

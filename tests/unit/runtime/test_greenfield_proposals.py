@@ -214,13 +214,13 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                     "    payment -. failure recovery .-> checkout\n"
                     "    classDef actor fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b,stroke-width:1px;\n"
                     "    classDef service fill:#eaf3ff,stroke:#77a9ef,color:#102f5f,stroke-width:1px;\n"
-                    "    classDef evidence fill:#fff4dc,stroke:#dfaa54,color:#4a2605,stroke-width:1px;\n"
+                    "    classDef evidence fill:#ffece7,stroke:#df8f7d,color:#5c2418,stroke-width:1px;\n"
                     "    class shopper,storefront actor;\n"
                     "    class checkout,payment,order service;\n"
                     "    class governance evidence;\n"
                     "    style experience_lane fill:#effcf9,stroke:#9bd8cf,stroke-width:1px,color:#062f2b\n"
                     "    style transaction_lane fill:#f1f7ff,stroke:#a8c7f7,stroke-width:1px,color:#102f5f\n"
-                    "    style governance_lane fill:#fff8e8,stroke:#eac47f,stroke-width:1px,color:#4a2605\n"
+                    "    style governance_lane fill:#fff3f0,stroke:#efb3a4,stroke-width:1px,color:#5c2418\n"
                 ),
             },
             {

@@ -837,6 +837,11 @@ The observer is now part of the migration-runtime release gate. It records chang
   migration-safe for consumers: browser surfaces are regenerated from governed
   renderer/source truth, and install-managed bundle mirrors are refreshed through
   the existing install/upgrade asset synchronization contract.
+- The decision-color follow-up only changes the Atlas renderer/config palette,
+  regenerated browser surfaces, and bundled generated Atlas/Casebook/Radar/
+  Registry shell assets. Existing consumer source truth remains preserved; the
+  v0.1.14 Atlas render-style migration intentionally detects old SVG/PNG style
+  fingerprints and rerenders them through the same managed upgrade path.
 - Historical-range migration proof is now a required fixture class for every
   registered release migration. The gate no longer accepts a migration
   definition with only dry-run/apply/rerun/stale-ledger/skipped-version proof;
@@ -902,6 +907,8 @@ Migration observer markers for this assessment:
 - `migration-observer:0.1.14:operator-cli-contracts:bf744bbab40d`
 - `migration-observer:0.1.14:browser-surfaces:a371bff537ac`
 - `migration-observer:0.1.14:install-managed-assets:fe7abb4cf478`
+- `migration-observer:0.1.14:browser-surfaces:8d99ed8ed8e2`
+- `migration-observer:0.1.14:install-managed-assets:608e1152e253`
 
 Validation evidence for the Casebook status-FSM slice:
 - `python -m py_compile src/odylith/runtime/common/casebook_metadata.py src/odylith/runtime/governance/casebook_source_validation.py src/odylith/runtime/surfaces/render_casebook_dashboard.py src/odylith/install/casebook_metadata_migration.py src/odylith/install/migration_runtime.py src/odylith/install/migration_definitions.py`

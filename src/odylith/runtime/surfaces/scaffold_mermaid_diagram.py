@@ -181,7 +181,7 @@ def _starter_source(
             "",
             "    classDef anchor fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b,stroke-width:1px;",
             "    classDef component fill:#eaf3ff,stroke:#77a9ef,color:#102f5f,stroke-width:1px;",
-            "    classDef evidence fill:#fff4dc,stroke:#dfaa54,color:#4a2605,stroke-width:1px;",
+            "    classDef evidence fill:#ffece7,stroke:#df8f7d,color:#5c2418,stroke-width:1px;",
             "    classDef followup fill:#f5f8fb,stroke:#b7c7d9,color:#1f2937,stroke-width:1px;",
             "    class diagram,owner anchor;",
         ]
@@ -198,7 +198,7 @@ def _starter_source(
         [
             "    style intent_lane fill:#effcf9,stroke:#9bd8cf,stroke-width:1px,color:#062f2b",
             "    style component_lane fill:#f1f7ff,stroke:#a8c7f7,stroke-width:1px,color:#102f5f",
-            "    style evidence_lane fill:#fff8e8,stroke:#eac47f,stroke-width:1px,color:#4a2605",
+            "    style evidence_lane fill:#fff3f0,stroke:#efb3a4,stroke-width:1px,color:#5c2418",
             "    linkStyle default stroke:#647d96,stroke-width:1.4px",
         ]
     )

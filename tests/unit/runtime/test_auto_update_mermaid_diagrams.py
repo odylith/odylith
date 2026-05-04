@@ -117,7 +117,9 @@ def test_mermaid_worker_applies_managed_palette_to_legacy_and_new_diagrams() -> 
     assert "toneForNodeText" in worker_source
     assert "#effcf9" in worker_source
     assert "#f1f7ff" in worker_source
+    assert "#fff3f0" in worker_source
     assert "#e8fbf7" in worker_source
+    assert "#ffece7" in worker_source
     assert "#f4ebff" in worker_source
     assert "Atlas owns rendered color for consistency across legacy and new diagrams." in worker_source
     assert "styleDeclares(authoredStyle, 'fill')" not in worker_source

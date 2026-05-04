@@ -181,6 +181,12 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   darker harmonious grouping colors to containers, applies semantic role colors
   to inner nodes across legacy and new diagrams, and keeps the Atlas viewer stage
   pure white.
+- The operator-requested decision-color replacement now maps decision/gate/readiness
+  semantics to a soft peach/coral bucket. The follow-up rerendered all `43`
+  Atlas diagrams from the renderer style fingerprint, proved `0` stale diagrams,
+  passed the focused `67` test Atlas/greenfield/migration slice plus `4` Atlas
+  browser tests, and kept old amber tokens out of source and generated Atlas
+  text assets.
 
 ## Rollout
 - Ship in v0.1.14 with B-141 because the user-facing failure is inseparable from consumer-lane host UX hardening: low latency is not enough if empty-repo greenfield prompts dead-end or if accepted proposals fail to show programs, waves, release targets, Registry topology, and Atlas traceability.

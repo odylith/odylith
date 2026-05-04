@@ -2,7 +2,7 @@ flowchart LR
     subgraph intent_lane["Intent + shallow evidence"]
       direction TB
       prompt["Greenfield prompt<br/>build, govern, plan, architect"]
-      host["Claude, Codex, future hosts<br/>thin CLI routing only"]
+      host["Host model surfaces<br/>thin CLI routing only"]
       source["Shallow repo evidence<br/>empty, thin, metadata,<br/>docs, app-ready"]
       catalog["Domain archetype catalog<br/>product, infra, data,<br/>science/math lenses"]
     end
@@ -51,7 +51,7 @@ flowchart LR
 
     classDef input fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b,stroke-width:1.2px;
     classDef intelligence fill:#eaf3ff,stroke:#77a9ef,color:#102f5f,stroke-width:1.2px;
-    classDef decision fill:#fff4dc,stroke:#dfaa54,color:#4a2605,stroke-width:1.3px;
+    classDef decision fill:#ffece7,stroke:#df8f7d,color:#5c2418,stroke-width:1.3px;
     classDef apply fill:#f4ebff,stroke:#ad8ae6,color:#31135f,stroke-width:1.2px;
     classDef memory fill:#ebf9e8,stroke:#7ec373,color:#0f3a24,stroke-width:1.2px;
     class prompt,host,source,catalog input;
@@ -62,6 +62,6 @@ flowchart LR
 
     style intent_lane fill:#effcf9,stroke:#9bd8cf,stroke-width:1px,color:#062f2b
     style reasoning_lane fill:#f1f7ff,stroke:#a8c7f7,stroke-width:1px,color:#102f5f
-    style confirmation_lane fill:#fff8e8,stroke:#eac47f,stroke-width:1px,color:#4a2605
+    style confirmation_lane fill:#fff3f0,stroke:#efb3a4,stroke-width:1px,color:#5c2418
     style memory_lane fill:#f2fbef,stroke:#a9d69e,stroke-width:1px,color:#0f3a24
     linkStyle default stroke:#647d96,stroke-width:1.45px
