@@ -14,7 +14,7 @@
 
 - Type: Tooling
 
-- Description: After upgrade, odylith version can report the new active release while the generated dashboard shell still renders the prior version. A failed odylith sync --force path can also block on dirty overlap after beginning tracked sync preflight work, then recommend the broad --proceed-with-overlap path instead of the narrow dashboard refresh that resolves visible shell drift.
+- Description: After upgrade, odylith version can report the new active release while the generated dashboard shell still renders the prior version. The hosted install path can make this ambiguous because a complete existing install routes through upgrade, while incomplete or legacy installs can run repo-state migrations inside install without an obvious dashboard-refresh settlement. A failed odylith sync --force path can also block on dirty overlap after beginning tracked sync preflight work, then recommend the broad --proceed-with-overlap path instead of the narrow dashboard refresh that resolves visible shell drift.
 
 - Impact: Operators cannot trust the human-facing dashboard as install-state evidence after upgrade, and recovery guidance nudges them toward a broader write path than needed.
 
@@ -24,9 +24,9 @@
 
 - Detected By: Operator feedback from a consumer upgrade where odylith version reported 0.1.14 while the dashboard shell still showed v0.1.13.
 
-- Failure Signature: odylith version reports 0.1.14; odylith/index.html toolbar still renders v0.1.13; odylith sync --force blocks on dirty-overlap entries and recommends odylith sync --proceed-with-overlap instead of dashboard refresh.
+- Failure Signature: odylith version reports 0.1.14; odylith/index.html toolbar still renders v0.1.13; hosted install output says an existing install or migration ran but does not make the upgrade/refresh handoff obvious; odylith sync --force blocks on dirty-overlap entries and recommends odylith sync --proceed-with-overlap instead of dashboard refresh.
 
-- Trigger Path: Run odylith upgrade or hosted install upgrade, open odylith/index.html, then run odylith version and odylith sync --force during recovery.
+- Trigger Path: Run odylith upgrade or hosted install against an existing, incomplete, or legacy-migrating consumer install, open odylith/index.html, then run odylith version and odylith sync --force during recovery.
 
 - Ownership: Tooling dashboard renderer, install/upgrade dashboard refresh handoff, and governed sync dirty-overlap guard.
 
@@ -44,9 +44,9 @@
 
 - Workaround: Run odylith dashboard refresh --repo-root . --force to refresh the shell without broad governance sync overlap acknowledgement.
 
-- Root Cause: Upgrade refresh could reuse generated surface fingerprints instead of forcing the shell render, the shell had no runtime version sidecar to detect drift, and sync normalized Radar source before dirty-overlap blocking.
+- Root Cause: Upgrade refresh could reuse generated surface fingerprints instead of forcing the shell render, the shell had no runtime version sidecar to detect drift, install output did not clearly distinguish upgrade routing from migration-only install repair, install-time repo-state migrations did not always force a dashboard refresh when first-run surfaces already existed, and sync normalized Radar source before dirty-overlap blocking.
 
-- Solution: Persist a runtime version-state sidecar sourced from odylith version, have the dashboard warn when rendered shell version differs, force dashboard refresh after upgrade, and move sync dirty-overlap blocking before tracked Radar normalization with narrow dashboard refresh guidance.
+- Solution: Persist a runtime version-state sidecar sourced from odylith version, have the dashboard warn when rendered shell version differs, force dashboard refresh after upgrade, force dashboard refresh after install-time repo-state migration activity, make complete-install routing explicitly say it is running the upgrade lifecycle and refreshing dashboard surfaces, and move sync dirty-overlap blocking before tracked Radar normalization with narrow dashboard refresh guidance.
 
 - Rollback/Forward Fix: Forward fix in v0.1.14 post-release fixes; do not relax dirty-overlap safety and do not restore broad recovery guidance for shell-only drift.
 
@@ -58,7 +58,7 @@
 
 - Preflight Checks: Search existing Casebook bugs for dashboard stale, version drift, and sync dirty-overlap before capture.
 
-- Regression Tests Added: tests/unit/test_cli.py, tests/unit/runtime/test_sync_cli_compat.py, tests/unit/runtime/test_render_tooling_dashboard.py, tests/unit/runtime/test_tooling_dashboard_runtime_builder.py
+- Regression Tests Added: tests/unit/test_cli.py, tests/unit/install/test_release_bootstrap.py, tests/unit/runtime/test_sync_cli_compat.py, tests/unit/runtime/test_render_tooling_dashboard.py, tests/unit/runtime/test_tooling_dashboard_runtime_builder.py
 
 - Monitoring Updates: Dashboard runtime status now surfaces stale shell version with source, shell generated timestamp, and the narrow force refresh command.
 
@@ -78,3 +78,4 @@
 - src/odylith/runtime/surfaces/templates/tooling_dashboard/control.js
 - src/odylith/runtime/governance/sync_workstream_artifacts.py
 - src/odylith/cli.py
+- scripts/release/publish_release_assets.py

@@ -1128,6 +1128,25 @@ def _print_legacy_migration_summary(summary: object) -> None:
             print(f"Full report: {report_path}")
 
 
+def _summary_has_install_migration_activity(summary: object) -> bool:
+    migration = getattr(summary, "migration", None)
+    if migration is not None and not bool(getattr(migration, "already_migrated", False)):
+        if tuple(getattr(migration, "moved_paths", ()) or ()) or tuple(getattr(migration, "removed_paths", ()) or ()):
+            return True
+        audit = getattr(migration, "stale_reference_audit", None)
+        if audit is not None:
+            return True
+    for raw_result in tuple(getattr(summary, "migration_results", ()) or ()):
+        if not isinstance(raw_result, dict):
+            continue
+        state = str(raw_result.get("state") or raw_result.get("status") or "").strip().lower()
+        if state in {"applied", "satisfied_unrecorded"}:
+            return True
+        if raw_result.get("written_paths") or raw_result.get("removed_paths"):
+            return True
+    return False
+
+
 def _cmd_install_common(
     args: argparse.Namespace,
     *,
@@ -1142,11 +1161,17 @@ def _cmd_install_common(
     ).strip()
     target_version = str(getattr(args, "version", "") or getattr(args, "target_version", "") or "").strip()
     if _has_complete_existing_consumer_install(repo_root=requested_repo_root):
-        if not bool(getattr(args, "dry_run", False)) and not _env_flag_enabled(_INSTALL_COMPACT_ENV):
-            print(
-                "Existing Odylith install detected; routing install through the upgrade lifecycle "
-                "so release migrations run."
-            )
+        if not bool(getattr(args, "dry_run", False)):
+            if _env_flag_enabled(_INSTALL_COMPACT_ENV):
+                _print_install_progress(
+                    "upgrade",
+                    "Existing Odylith install detected; running upgrade lifecycle.",
+                )
+            else:
+                print(
+                    "Existing Odylith install detected; routing install through the upgrade lifecycle "
+                    "so release migrations run and dashboard surfaces refresh."
+                )
         return _cmd_upgrade(
             SimpleNamespace(
                 repo_root=args.repo_root,
@@ -1201,6 +1226,7 @@ def _cmd_install_common(
         print(str(exc), file=sys.stderr)
         return 1
     _print_legacy_migration_summary(summary)
+    install_migration_refresh_required = _summary_has_install_migration_activity(summary)
     final_version = str(summary.version or "").strip() or __version__
     final_launcher_path = summary.launcher_path
     missing_surfaces = _missing_first_run_surfaces(repo_root=summary.repo_root)
@@ -1220,7 +1246,7 @@ def _cmd_install_common(
                 compact=compact_output,
             )
         remaining_missing = _missing_first_run_surfaces(repo_root=summary.repo_root)
-        if compact_output and render_rc == 0 and not remaining_missing:
+        if compact_output and render_rc == 0 and not remaining_missing and not install_migration_refresh_required:
             _print_install_progress("done", "Dashboard ready.")
         if render_rc != 0 or remaining_missing:
             print("Odylith runtime install succeeded, but the first-run Odylith shell is incomplete.", file=sys.stderr)
@@ -1260,6 +1286,15 @@ def _cmd_install_common(
             )
         _refreshed, refresh_message = _refresh_dashboard_after_upgrade(repo_root=summary.repo_root)
         print(refresh_message)
+    elif install_migration_refresh_required:
+        refreshed, refresh_message = _refresh_dashboard_after_upgrade(
+            repo_root=summary.repo_root,
+            compact_output=compact_output,
+        )
+        if compact_output and refreshed:
+            _print_install_progress("done", "Dashboard ready.")
+        else:
+            print(refresh_message)
     dashboard_path = summary.repo_root / "odylith" / "index.html"
     opened_dashboard, open_message = _maybe_open_dashboard_in_browser(
         dashboard_path=dashboard_path,

@@ -588,8 +588,10 @@ def test_generated_install_script_upgrades_only_complete_existing_install(tmp_pa
         repo_root=repo_root,
     )
 
+    script_text = output_path.read_text(encoding="utf-8")
     command_log = (tmp_path / "command.log").read_text(encoding="utf-8")
     assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert 'say "upgrade Running upgrade lifecycle and refreshing dashboard."' in script_text
     assert "-m odylith.cli upgrade --repo-root" in command_log
     assert "-m odylith.cli install --repo-root" not in command_log
     assert install_state.exists()

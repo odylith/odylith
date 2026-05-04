@@ -1521,6 +1521,105 @@ def test_install_align_pin_reports_repo_pin_update(monkeypatch, tmp_path: Path, 
     assert "Repo pin updated to 1.2.4." in output
 
 
+def test_install_refreshes_dashboard_after_repo_state_migration(monkeypatch, tmp_path: Path, capsys) -> None:
+    launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
+    _seed_first_run_surfaces(tmp_path)
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(
+        cli,
+        "plan_install_lifecycle",
+        lambda **kwargs: SimpleNamespace(command="install", headline="preview", steps=(), dirty_overlap=(), notes=()),
+    )
+    monkeypatch.setattr(
+        cli,
+        "install_bundle",
+        lambda **kwargs: SimpleNamespace(
+            version="1.2.4",
+            repo_root=tmp_path,
+            launcher_path=launcher_path,
+            repo_guidance_created=False,
+            git_repo_present=True,
+            gitignore_updated=False,
+            migration=SimpleNamespace(
+                already_migrated=False,
+                moved_paths=("odyssey/ -> odylith/",),
+                removed_paths=(),
+                stale_reference_audit=None,
+            ),
+        ),
+    )
+
+    def fake_refresh_dashboard_after_upgrade(**kwargs) -> tuple[bool, str]:  # noqa: ANN003
+        captured.update(kwargs)
+        return True, "Dashboard refreshed."
+
+    monkeypatch.setattr(cli, "_refresh_dashboard_after_upgrade", fake_refresh_dashboard_after_upgrade)
+
+    rc = cli.main(["install", "--repo-root", str(tmp_path), "--version", "1.2.4", "--no-open"])
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert captured == {
+        "repo_root": tmp_path,
+        "compact_output": False,
+    }
+    assert "Migrated legacy repo roots into the Odylith layout before continuing." in output
+    assert "Dashboard refreshed." in output
+
+
+def test_compact_install_refreshes_dashboard_after_repo_state_migration(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
+    _seed_first_run_surfaces(tmp_path)
+    captured: dict[str, object] = {}
+
+    monkeypatch.setenv("ODYLITH_INSTALL_COMPACT", "1")
+    monkeypatch.setenv("ODYLITH_INSTALL_PROGRESS", "0")
+    monkeypatch.setattr(
+        cli,
+        "plan_install_lifecycle",
+        lambda **kwargs: SimpleNamespace(command="install", headline="preview", steps=(), dirty_overlap=(), notes=()),
+    )
+    monkeypatch.setattr(
+        cli,
+        "install_bundle",
+        lambda **kwargs: SimpleNamespace(
+            version="1.2.4",
+            repo_root=tmp_path,
+            launcher_path=launcher_path,
+            repo_guidance_created=False,
+            git_repo_present=True,
+            gitignore_updated=False,
+            migration=SimpleNamespace(
+                already_migrated=False,
+                moved_paths=("odyssey/ -> odylith/",),
+                removed_paths=(),
+                stale_reference_audit=None,
+            ),
+        ),
+    )
+
+    def fake_refresh_dashboard_after_upgrade(**kwargs) -> tuple[bool, str]:  # noqa: ANN003
+        captured.update(kwargs)
+        return True, "Dashboard refreshed."
+
+    monkeypatch.setattr(cli, "_refresh_dashboard_after_upgrade", fake_refresh_dashboard_after_upgrade)
+
+    rc = cli.main(["install", "--repo-root", str(tmp_path), "--version", "1.2.4", "--no-open"])
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert captured == {
+        "repo_root": tmp_path,
+        "compact_output": True,
+    }
+    assert "done   Dashboard ready." in output
+
+
 def test_install_existing_complete_repo_routes_through_upgrade_lifecycle(
     monkeypatch,
     tmp_path: Path,

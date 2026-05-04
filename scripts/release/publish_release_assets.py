@@ -969,6 +969,7 @@ def _write_install_script(*, output_path: Path, tag: str, repo: str, odylith_whe
         'migration_state_dir="$repo_root/.odylith/state/migrations"',
         'customer_tree_path="$repo_root/odylith/AGENTS.md"',
         'if [[ -f "$pin_path" && -f "$install_state_path" && -f "$customer_tree_path" ]]; then',
+        '  say "upgrade Running upgrade lifecycle and refreshing dashboard."',
         '  "$version_root/bin/python" -m odylith.cli upgrade --repo-root "$repo_root" --to "$release_version" --write-pin',
         "else",
         '  if [[ -f "$install_state_path" || -L "$state_root/runtime/current" ]]; then',

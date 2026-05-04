@@ -48,6 +48,9 @@ contract.
   version sidecar and force the shell-facing dashboard refresh so generated
   `odylith/index.html` cannot silently lag the authoritative `odylith version`
   state after release adoption.
+- Install-time repo-state migrations must also force the shell-facing dashboard
+  refresh before closeout when first-run surfaces already exist, and hosted
+  installer output must make the complete-install upgrade lifecycle explicit.
 - `migration_required=true` releases are blocked only when no registered
   migration can satisfy the declared requirement for the concrete from/to
   version window.
@@ -143,4 +146,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-30: Corrected consumer uninstall to preserve repo-local `odylith/` governed source truth, remove `.odylith/` runtime state, and leave host config directories in place, with symlink-safe runtime-state proof in the destructive-write matrix. (Plan: [B-140](odylith/radar/radar.html?view=plan&workstream=B-140); Casebook: CB-143)
 - 2026-05-03: Bound v0.1.14 upgrade safety to registered migrations instead of repair folklore: install reruns detect existing Odylith installs as upgrades, Casebook source metadata is normalized through the release migration runner, Atlas SVG/PNG assets rerender when render-style fingerprints drift, topology-spine edges are regenerated, and the release migration gate proves 0.1.10/0.1.11/0.1.12/0.1.13 -> 0.1.14. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Assessment: [B-140](odylith/radar/radar.html?view=plan&workstream=B-140); Bugs: `CB-150`, `CB-162`)
 - 2026-05-04: Invalidated generated refresh-guard cache entries with a v2 byte-content fingerprint so existing installs upgrading to v0.1.14 cannot reuse stale surface-render decisions from older size/mtime cache state. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-167`)
-- 2026-05-04: Added the post-upgrade dashboard version-state sidecar and forced default shell refresh so upgraded consumer repos cannot keep showing an old shell version after `odylith version` has advanced. Sync dirty-overlap recovery now blocks before tracked Radar normalization and points shell drift to the narrow dashboard refresh path. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Bug: `CB-168`)
+- 2026-05-04: Added the post-upgrade dashboard version-state sidecar and forced default shell refresh so upgraded consumer repos cannot keep showing an old shell version after `odylith version` has advanced. Install-time repo-state migrations now force the same dashboard refresh when they do not route through upgrade, the hosted installer names the complete-install upgrade lifecycle, and sync dirty-overlap recovery blocks before tracked Radar normalization while pointing shell drift to the narrow dashboard refresh path. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Bug: `CB-168`)

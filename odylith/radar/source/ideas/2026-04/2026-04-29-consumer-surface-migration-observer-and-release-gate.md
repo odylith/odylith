@@ -1061,6 +1061,26 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   version-state sidecar and sync guard changes. Existing consumers need no
   bespoke data migration beyond normal v0.1.14 managed asset adoption and
   dashboard refresh.
+- The install/upgrade dashboard-refresh settlement for marker
+  `migration-observer:0.1.14:operator-cli-contracts:c691540eb853` closes the
+  remaining CB-168 ambiguity: complete existing hosted installs now visibly say
+  they run the upgrade lifecycle and refresh the dashboard, while install-time
+  repo-state migrations that do not route through upgrade still force the
+  shell-facing dashboard refresh before closeout. Existing consumers need no
+  source-truth migration beyond normal v0.1.14 managed runtime adoption,
+  registered repo-state migration execution, and the forced dashboard refresh.
+- The matching Casebook/browser assessment for marker
+  `migration-observer:0.1.14:browser-surfaces:4b2b74b01c2e` records the same
+  CB-168 settlement in governed memory: the product renderer/refresh contract,
+  not a local generated bundle edit, owns post-upgrade dashboard version truth.
+  Existing consumers receive the behavior through upgrade/install dashboard
+  refresh and do not need a bespoke Casebook source migration.
+- The owned-surface refresh after that CB-168 source-truth update is covered by
+  `migration-observer:0.1.14:browser-surfaces:3de239b5f3e2` and
+  `migration-observer:0.1.14:install-managed-assets:81414558e1eb`. It updates
+  generated Casebook, Radar, Registry, and bundled shell surface mirrors only;
+  existing consumers still rely on the normal v0.1.14 dashboard refresh and
+  install-managed asset adoption rather than a custom data migration.
 - The source-local Registry refresh after component forensics reconciliation for
   marker `migration-observer:0.1.14:browser-surfaces:2d323cc9b2f3` updates the
   rendered Registry payload from governed Registry truth. Existing consumers need
