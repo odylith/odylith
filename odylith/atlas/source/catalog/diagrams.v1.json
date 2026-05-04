@@ -3874,8 +3874,8 @@
       "reviewed_watch_fingerprints": {
         "src/odylith/install/migration_runtime.py": "5990ea845369e06b6f0ff23e9dc02e18ce7ff108055d51773562771a6739f2b7",
         "src/odylith/install/manager.py": "786e8f261e2c3c143f01bf643dc0a69395d1e422f497b51e35e709aec3275521",
-        "tests/unit/install/test_migration_runtime.py": "a298bf85fa50be3f67bbab413d3376b0c45c31691358221cbceb94a8f6ca8c81",
-        "tests/integration/install/test_lifecycle_simulator.py": "731063bcda859cb477aa013f90f984b8556fd90936201c32e45b92309147a0f2"
+        "tests/unit/install/test_migration_runtime.py": "3cd94c37d1216799c86eacc4290715cb41243f311052b19fcefc02194cc1c1d9",
+        "tests/integration/install/test_lifecycle_simulator.py": "d21e25c26a124522eb9421019c7b7c77876c5f322d9a6191b69ed995b9c140ba"
       },
       "render_source_fingerprint": "6d2f932e219904ff6e1fe9fe51d47ae570c40df7695505ad74e12f93849b57c3"
     },

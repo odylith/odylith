@@ -27,6 +27,7 @@ _REQUIRED_FIXTURES = (
     "rerun",
     "stale_ledger",
     "skipped_version",
+    "historical_range",
 )
 
 

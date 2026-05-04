@@ -34,10 +34,10 @@
     "empty_reasons": [],
     "explicit_event_count": 75,
     "mapped_workstream_evidence_count": 71,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 5,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 76
+    "timeline_event_count": 75
   },
   "name": "Casebook",
   "path_prefixes": [
@@ -47,22 +47,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/casebook/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "src/odylith/runtime/surfaces/render_casebook_dashboard.py"
-      ],
-      "confidence": "high",
-      "event_index": 458,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "casebook"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/surfaces/render_casebook_dashboard.py",
-      "ts_iso": "2026-05-03T18:28:18-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",

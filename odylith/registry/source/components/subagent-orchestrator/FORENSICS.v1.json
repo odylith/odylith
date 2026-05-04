@@ -34,10 +34,10 @@
     "empty_reasons": [],
     "explicit_event_count": 77,
     "mapped_workstream_evidence_count": 74,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 3,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 78
+    "timeline_event_count": 77
   },
   "name": "Subagent Orchestrator",
   "path_prefixes": [
@@ -46,22 +46,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "src/odylith/runtime/orchestration/subagent_orchestrator.py"
-      ],
-      "confidence": "high",
-      "event_index": 463,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "subagent-orchestrator"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/orchestration/subagent_orchestrator.py",
-      "ts_iso": "2026-05-03T17:06:08-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",

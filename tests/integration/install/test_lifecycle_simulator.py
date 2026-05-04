@@ -14,6 +14,22 @@ from odylith.runtime.surfaces import auto_update_mermaid_diagrams
 from tests.integration.install.simulator import InstallLifecycleSimulator, VerifiedReleaseLifecycleSimulator
 
 VALUE_ENGINE_MIGRATION_ID = "v0.1.11-visible-intervention-value-engine"
+HISTORICAL_0_1_RELEASES_BEFORE_0_1_14 = (
+    "0.1.0",
+    "0.1.1",
+    "0.1.2",
+    "0.1.3",
+    "0.1.4",
+    "0.1.5",
+    "0.1.6",
+    "0.1.7",
+    "0.1.8",
+    "0.1.9",
+    "0.1.10",
+    "0.1.11",
+    "0.1.12",
+    "0.1.13",
+)
 
 
 def _write_legacy_casebook_metadata_bug(repo_root: Path) -> Path:
@@ -201,7 +217,7 @@ def test_lifecycle_simulator_proves_historical_upgrades_to_0_1_14(tmp_path: Path
     target_version = "0.1.14"
     _patch_mermaid_render(monkeypatch)
 
-    for from_version in ("0.1.10", "0.1.11", "0.1.12", "0.1.13"):
+    for from_version in HISTORICAL_0_1_RELEASES_BEFORE_0_1_14:
         case_root = tmp_path / f"v014_{from_version.replace('.', '_')}"
         case_root.mkdir()
         sim = InstallLifecycleSimulator(tmp_path=case_root, monkeypatch=monkeypatch)

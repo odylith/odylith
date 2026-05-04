@@ -786,7 +786,7 @@ Add a migration observer to the migration-runtime release gate. It scans changed
 The observer is now part of the migration-runtime release gate. It records changed consumer-visible surface classes, provides exact governance prompts, and fails the gate until completed Radar migration-assessment markers exist for the target release and observed changed-path fingerprint.
 
 ## 0.1.14 Upgrade Assessment
-- Casebook status is a controlled seven-state FSM in v0.1.14. Existing consumer Casebook records from 0.1.10, 0.1.11, 0.1.12, and 0.1.13 upgrade through the registered `v0.1.14-casebook-status-fsm` migration, which normalizes source records, rerenders Casebook, and writes `.odylith/state/migrations/v0.1.14-casebook-status-fsm.v1.json`.
+- Casebook status is a controlled seven-state FSM in v0.1.14. Existing consumer Casebook records from unknown/legacy install state and every historical 0.1.0 through 0.1.13 release upgrade through the registered `v0.1.14-casebook-status-fsm` migration, which normalizes source records, rerenders Casebook, and writes `.odylith/state/migrations/v0.1.14-casebook-status-fsm.v1.json`.
 - `FixedPendingRelease` remains an active pre-release state and is not treated as terminal; only `Closed` exits the open Casebook lane. Release closeout remains the owner that turns shipped fixed-pending records into `Closed`.
 - Casebook Type is now a controlled but broad host-agnostic taxonomy instead of arbitrary compact acceptance. Legacy consumer labels such as `PrivateJobsRunnerManifes`, `TestHarnessInfraRegressi`, and `ForwardFixUpdatedLocallyPendingPlatformReleaseDeploy` normalize to allowed category tokens during migration, while unknown arbitrary tokens fall back to `Product` instead of passing source validation.
 - Existing consumer installs do not need manual source edits. Upgrade/repair paths use the migration runtime and normal managed-asset refresh to update browser assets, bundled Casebook guidance, and rendered Casebook payloads without overwriting repo-owned governance truth.
@@ -799,7 +799,7 @@ The observer is now part of the migration-runtime release gate. It records chang
 - The shared topology spine is now regenerated as part of the Atlas v0.1.14 migration. The migration rebuilds `odylith/radar/traceability-graph.v1.json`, adds Registry component, Atlas diagram, execution-program, wave, release, and Radar workstream edges, and records a `multipartite-spine-v1` topology integrity score in the migration ledger. Existing consumer installs therefore receive the new traceability graph contract during upgrade instead of carrying a stale graph until a later manual refresh.
 - Compass/Radar/Registry generated asset churn remains generated-surface refresh, not a separate repo data migration, because this slice changed Casebook and Atlas runtime contracts only.
 - Install-managed asset churn is covered by normal bundle update semantics plus registered migration definitions: shipped Casebook guidance mirrors the source guidance, the Casebook FSM migration makes behavioral status conversion automatic during upgrades, and Atlas render-style changes are repaired by the Atlas migration from the consumer repo's own diagram source truth. The node-palette renderer change is covered by the same render fingerprint path, so 0.1.10/0.1.11/0.1.12/0.1.13 installs rerender stale Atlas assets during upgrade instead of requiring hand refresh.
-- Operator CLI contract changes are additive: the migration registry now includes `v0.1.14-casebook-status-fsm` and `v0.1.14-atlas-render-surface-polish`, and release migration-gate reports the 0.1.10/0.1.11/0.1.12/0.1.13 -> 0.1.14 path as covered migration ranges.
+- Operator CLI contract changes are additive: the migration registry now includes `v0.1.14-casebook-status-fsm` and `v0.1.14-atlas-render-surface-polish`, and release migration-gate reports the historical 0.1.x -> 0.1.14 path as covered migration ranges.
 - Greenfield proposal contract changes are additive and source-compatible: new proposals default the first target release selector to `0.0.1`, accepted proposals now create an umbrella execution-wave program document when child workstreams exist, and release assignment targets the first wave plus umbrella instead of blanket-tagging every child. Existing proposal JSON that already names a release selector remains respected, and consumer-owned backlog, Registry, Atlas, Compass, and release truth are still written only after `odylith greenfield apply --confirm`.
 - Customer core-detail validation is relaxed from the old six-word minimum to a one-token minimum for `## Customer` only. The stricter anti-placeholder checks and six-word minimums remain on Problem, Opportunity, Product View, and Success Metrics, so old one-word customer fields migrate by validation compatibility rather than source rewriting.
 - Public release guidance impact is limited to generated delivery-intelligence/readout state in this branch; no consumer-owned source truth requires a manual migration.
@@ -837,6 +837,12 @@ The observer is now part of the migration-runtime release gate. It records chang
   migration-safe for consumers: browser surfaces are regenerated from governed
   renderer/source truth, and install-managed bundle mirrors are refreshed through
   the existing install/upgrade asset synchronization contract.
+- Historical-range migration proof is now a required fixture class for every
+  registered release migration. The gate no longer accepts a migration
+  definition with only dry-run/apply/rerun/stale-ledger/skipped-version proof;
+  it also requires explicit evidence that unknown legacy state and every
+  historical 0.1.x release before the current release plan cleanly into the
+  target migration path.
 
 Migration observer markers for this assessment:
 - `migration-observer:0.1.14:operator-cli-contracts:dce35485ba07`
@@ -884,6 +890,15 @@ Migration observer markers for this assessment:
 - `migration-observer:0.1.14:operator-cli-contracts:a2f8783ca40e`
 - `migration-observer:0.1.14:browser-surfaces:31cad59063eb`
 - `migration-observer:0.1.14:browser-surfaces:7638a63401c0`
+- `migration-observer:0.1.14:install-managed-assets:6cdc35a7067e`
+- `migration-observer:0.1.14:browser-surfaces:534bf25aaff7`
+- `migration-observer:0.1.14:install-managed-assets:9d0a7bcdd9ff`
+- `migration-observer:0.1.14:browser-surfaces:9a28712a1b8f`
+- `migration-observer:0.1.14:install-managed-assets:b8cd0958ad5a`
+- `migration-observer:0.1.14:browser-surfaces:2148442b7f83`
+- `migration-observer:0.1.14:install-managed-assets:1b037b621ef9`
+- `migration-observer:0.1.14:browser-surfaces:ae770b4d8cc7`
+- `migration-observer:0.1.14:install-managed-assets:0ac7ccb1c77d`
 
 Validation evidence for the Casebook status-FSM slice:
 - `python -m py_compile src/odylith/runtime/common/casebook_metadata.py src/odylith/runtime/governance/casebook_source_validation.py src/odylith/runtime/surfaces/render_casebook_dashboard.py src/odylith/install/casebook_metadata_migration.py src/odylith/install/migration_runtime.py src/odylith/install/migration_definitions.py`
@@ -924,3 +939,10 @@ Validation evidence for the Casebook status-FSM slice:
 - `PYTHONPATH=src python -m pytest -q tests/unit/install/test_upgrade_reporting.py tests/unit/runtime/test_render_casebook_dashboard.py tests/integration/runtime/test_casebook_sort_browser.py tests/integration/runtime/test_casebook_list_layout_browser.py tests/integration/runtime/test_casebook_consumer_upgrade_browser.py` (`24 passed`)
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_casebook_source_validation.py tests/unit/runtime/test_generated_refresh_guard.py tests/unit/runtime/test_casebook_bug_index.py tests/unit/install/test_casebook_metadata_migration.py tests/unit/install/test_migration_runtime.py tests/integration/install/test_lifecycle_simulator.py::test_lifecycle_simulator_proves_historical_upgrades_to_0_1_13 tests/integration/install/test_lifecycle_simulator.py::test_lifecycle_simulator_proves_historical_upgrades_to_0_1_14` (`107 passed`)
 - `odylith casebook validate --repo-root .` (`161 records`)
+- `PYTHONPATH=src python -m pytest -q tests/unit/install/test_migration_runtime.py::test_every_registered_upgrade_migration_has_full_lifecycle_fixture_coverage tests/unit/install/test_migration_runtime.py::test_release_migrations_cover_any_historical_0_1_release_to_v014 tests/integration/install/test_lifecycle_simulator.py::test_lifecycle_simulator_proves_historical_upgrades_to_0_1_14` (`3 passed`; unit proof covers unknown legacy state plus every 0.1.0-0.1.13 release, lifecycle proof exercises 0.1.0-0.1.13 install/upgrade activation)
+- `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_casebook_dashboard.py tests/unit/install/test_casebook_metadata_migration.py tests/integration/runtime/test_casebook_list_layout_browser.py` (`22 passed`; proves stale URL cleanup, display-label normalization, and full-width Casebook summary card after source-local render)
+- `PYTHONPATH=src python -m pytest -q tests/unit/install/test_migration_runtime.py tests/integration/install/test_lifecycle_simulator.py` (`61 passed`; historical upgrade matrix covers unknown legacy state plus every 0.1.0-0.1.13 release into 0.1.14)
+- `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_mermaid_catalog.py tests/unit/runtime/test_auto_update_mermaid_diagrams.py tests/unit/runtime/test_diagram_freshness.py tests/unit/install/test_atlas_surface_migration.py` (`52 passed`; Atlas render-surface migration and color/freshness contracts)
+- `PYTHONPATH=src python -m odylith.cli sync --repo-root . --check-only --runtime-mode standalone` (`passed`; source-local sync check, no runtime fallback)
+- `PYTHONPATH=src python -m odylith.cli release migration-gate --repo-root . --target-version 0.1.14 --json` (`blocked_manual_migrations: []`, `ungated_lifecycle_paths: []`)
+- `make dev-validate` (`3733 passed, 1 skipped in 963.19s`; source-local maintainer lane validation, with release eligibility still requiring pinned dogfood proof)

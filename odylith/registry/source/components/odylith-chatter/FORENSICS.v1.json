@@ -18,10 +18,10 @@
     "empty_reasons": [],
     "explicit_event_count": 127,
     "mapped_workstream_evidence_count": 115,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 15,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 128
+    "timeline_event_count": 127
   },
   "name": "Odylith Chatter",
   "path_prefixes": [
@@ -54,23 +54,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
-        "src/odylith/runtime/orchestration/subagent_orchestrator.py"
-      ],
-      "confidence": "high",
-      "event_index": 459,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "odylith-chatter"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md, src/odylith/runtime/orchestration/subagent_orchestrator.py",
-      "ts_iso": "2026-05-03T17:40:30-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",

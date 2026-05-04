@@ -19,33 +19,62 @@ from odylith.install.value_engine_migration import (
     record_visible_intervention_value_engine_migration_satisfied,
 )
 
-FIXTURE_COVERAGE_TOKENS = ("dry_run", "apply", "rerun", "stale_ledger", "skipped_version")
+FIXTURE_COVERAGE_TOKENS = (
+    "dry_run",
+    "apply",
+    "rerun",
+    "stale_ledger",
+    "skipped_version",
+    "historical_range",
+)
 MIGRATION_FIXTURE_COVERAGE_MARKERS = (
     "legacy-odyssey-root-migration:dry_run",
     "legacy-odyssey-root-migration:apply",
     "legacy-odyssey-root-migration:rerun",
     "legacy-odyssey-root-migration:stale_ledger",
     "legacy-odyssey-root-migration:skipped_version",
+    "legacy-odyssey-root-migration:historical_range",
     "v0.1.11-visible-intervention-value-engine:dry_run",
     "v0.1.11-visible-intervention-value-engine:apply",
     "v0.1.11-visible-intervention-value-engine:rerun",
     "v0.1.11-visible-intervention-value-engine:stale_ledger",
     "v0.1.11-visible-intervention-value-engine:skipped_version",
+    "v0.1.11-visible-intervention-value-engine:historical_range",
     "v0.1.13-casebook-compact-metadata:dry_run",
     "v0.1.13-casebook-compact-metadata:apply",
     "v0.1.13-casebook-compact-metadata:rerun",
     "v0.1.13-casebook-compact-metadata:stale_ledger",
     "v0.1.13-casebook-compact-metadata:skipped_version",
+    "v0.1.13-casebook-compact-metadata:historical_range",
     "v0.1.14-casebook-status-fsm:dry_run",
     "v0.1.14-casebook-status-fsm:apply",
     "v0.1.14-casebook-status-fsm:rerun",
     "v0.1.14-casebook-status-fsm:stale_ledger",
     "v0.1.14-casebook-status-fsm:skipped_version",
+    "v0.1.14-casebook-status-fsm:historical_range",
     "v0.1.14-atlas-render-surface-polish:dry_run",
     "v0.1.14-atlas-render-surface-polish:apply",
     "v0.1.14-atlas-render-surface-polish:rerun",
     "v0.1.14-atlas-render-surface-polish:stale_ledger",
     "v0.1.14-atlas-render-surface-polish:skipped_version",
+    "v0.1.14-atlas-render-surface-polish:historical_range",
+)
+HISTORICAL_0_1_RELEASES_BEFORE_0_1_14 = (
+    "",
+    "0.1.0",
+    "0.1.1",
+    "0.1.2",
+    "0.1.3",
+    "0.1.4",
+    "0.1.5",
+    "0.1.6",
+    "0.1.7",
+    "0.1.8",
+    "0.1.9",
+    "0.1.10",
+    "0.1.11",
+    "0.1.12",
+    "0.1.13",
 )
 
 
@@ -851,6 +880,51 @@ def test_atlas_surface_migration_is_selected_for_supported_versions_to_v014(tmp_
         assert decision.state == migration_runtime.STATE_SELECTED
         assert plan.satisfies_manifest_requirement() is True
         assert "no registered migration" not in plan.blocked_reason
+
+
+def test_release_migrations_cover_any_historical_0_1_release_to_v014(tmp_path: Path) -> None:
+    value_engine_required_versions = {
+        "",
+        "0.1.0",
+        "0.1.1",
+        "0.1.2",
+        "0.1.3",
+        "0.1.4",
+        "0.1.5",
+        "0.1.6",
+        "0.1.7",
+        "0.1.8",
+        "0.1.9",
+        "0.1.10",
+    }
+
+    for index, previous_version in enumerate(HISTORICAL_0_1_RELEASES_BEFORE_0_1_14):
+        active_version = previous_version or "0.1.0"
+        repo_root = tmp_path / f"historical_{index:02d}_{active_version.replace('.', '_')}"
+        repo_root.mkdir()
+        _seed_repo(repo_root, active_version=active_version)
+        _seed_casebook_bug(repo_root)
+        _seed_atlas_catalog(repo_root)
+
+        plan = migration_runtime.plan_release_migrations(
+            repo_root=repo_root,
+            repo_role="consumer_repo",
+            previous_version=previous_version,
+            target_version="0.1.14",
+            release_manifest={"migration_required": True, "repo_schema_version": 1},
+        )
+
+        assert not plan.blocked, (previous_version, plan.blocked_reason)
+        assert plan.satisfies_manifest_requirement() is True
+        assert plan.ledger_state[CASEBOOK_METADATA_MIGRATION_ID] == migration_runtime.STATE_SELECTED
+        assert plan.ledger_state[CASEBOOK_STATUS_FSM_MIGRATION_ID] == migration_runtime.STATE_SELECTED
+        assert plan.ledger_state[ATLAS_SURFACE_MIGRATION_ID] == migration_runtime.STATE_SELECTED
+        expected_value_state = (
+            migration_runtime.STATE_SELECTED
+            if previous_version in value_engine_required_versions
+            else migration_runtime.STATE_SKIPPED
+        )
+        assert plan.ledger_state[MIGRATION_ID] == expected_value_state
 
 
 def test_casebook_metadata_migration_skips_index_only_repos_without_blocking_manifest(tmp_path: Path) -> None:
