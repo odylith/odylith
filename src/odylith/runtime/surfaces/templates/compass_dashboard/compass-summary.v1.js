@@ -258,11 +258,15 @@
       if (!briefNoticeBelongsInHeaderStatus(brief)) return "";
       const notice = visibleBriefNotice(brief);
       const title = String(notice.title || "").trim();
-      const message = String(notice.message || "").trim();
-      const retryUtc = String(notice.next_retry_utc || "").trim();
-      const retryCopy = retryUtc ? ` Will retry after ${compactTimestamp(retryUtc)}.` : "";
-      if (title && message) return `${title}: ${message}${retryCopy}`;
-      return `${title || message}${retryCopy}`.trim();
+      const reason = String(notice.reason || "").trim().toLowerCase();
+      let message = String(notice.message || "").trim();
+      if (reason.includes("_showing_previous")) {
+        message = "Showing last ready brief.";
+      } else if (reason === "skipped_not_worth_calling") {
+        message = "Reused last validated brief.";
+      }
+      if (title && message) return `${title}: ${message}`;
+      return `${title || message}`.trim();
     }
 
     function renderBriefNotice(brief) {

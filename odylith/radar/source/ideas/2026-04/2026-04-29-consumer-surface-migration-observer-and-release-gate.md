@@ -1123,3 +1123,28 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   source-truth migration beyond the registered v0.1.14 migrations, normal
   managed asset adoption, and the now-functional `odylith sync --repo-root . --force`
   recovery path after upgrade/migration.
+- The owned-governance refresh hardening is covered by
+  `migration-observer:0.1.14:operator-cli-contracts:25d43cf0c817`,
+  `migration-observer:0.1.14:operator-cli-contracts:9c3ed313cf38`,
+  `migration-observer:0.1.14:public-docs-and-release-guidance:95aa48afbc77`,
+  `migration-observer:0.1.14:browser-surfaces:72933f5c7e93`, and
+  `migration-observer:0.1.14:install-managed-assets:f5544969ec49`. The runtime
+  contract now refreshes Radar, Registry, Atlas, Casebook, and Compass immediately
+  after owned governance mutations, with greenfield apply batching per-surface
+  refreshes to avoid per-record render cost. The second operator-contract marker
+  covers the final CLI handoff wording change from "refresh" to "reload browser
+  tab" so operators do not confuse generated-surface refresh with browser reload.
+  Public docs and generated bundle mirrors changed only to keep the operator copy and shipped browser assets aligned.
+  Existing consumers need no bespoke source-truth migration; upgrading to v0.1.14
+  or later gets the authoring/runtime behavior, and existing generated surfaces are
+  refreshed through the normal dashboard/sync refresh path.
+- The brutal QA hardening pass is covered by
+  `migration-observer:0.1.14:public-docs-and-release-guidance:acb704a4d275`,
+  `migration-observer:0.1.14:browser-surfaces:2cd63ac83fd8`, and
+  `migration-observer:0.1.14:install-managed-assets:8a740f0e37f9`. The pass
+  keeps Benchmark formal-model docs GitHub-safe, tightens Compass failed-brief
+  fallback so provider failures retain the last ready brief while quiet scoped
+  windows stay truthful, and regenerates the shipped browser/bundle assets from
+  product renderers. Existing consumers need no bespoke source-truth migration;
+  upgrade, managed asset adoption, and dashboard refresh apply the browser and
+  documentation fixes.

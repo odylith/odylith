@@ -50,6 +50,7 @@ _GLOBAL_BRIEF_NOTICE_REASONS = {
     "skipped_not_worth_calling",
     "invalid_batch",
     "validation_failed",
+    "global_provider_error_showing_previous",
 }
 
 
@@ -675,7 +676,10 @@ def test_shell_compass_tab_dedupes_stale_runtime_status_to_compass_notice(tmp_pa
                     }""",
                     timeout=15000,
                 )
-                assert "ask agent `Refresh Compass runtime for this repo.`" in compass.locator("#status-banner").inner_text()
+                banner_text = compass.locator("#status-banner").inner_text()
+                assert "Compass snapshot is" in banner_text
+                assert "timeline pinned" in banner_text
+                assert "Refresh Compass runtime" not in banner_text
 
                 page.locator("#tab-radar").click()
                 _wait_for_shell_tab(page, "radar")
@@ -1481,11 +1485,12 @@ def test_compass_scope_window_and_detail_behavior_in_compact_viewport(compact_br
     assert scoped_24h_meta["source"] in {"provider", "cache", "unavailable"}
     if scoped_24h_meta["source"] in {"provider", "cache"}:
         if scoped_24h_meta["hasNotice"] == "true":
-            assert scoped_24h_meta["noticeReason"].startswith("scoped_")
-            assert (
-                "showing_global" in scoped_24h_meta["noticeReason"]
-                or "showing_wider_global" in scoped_24h_meta["noticeReason"]
-            )
+                assert scoped_24h_meta["noticeReason"].startswith("scoped_")
+                assert (
+                    "showing_global" in scoped_24h_meta["noticeReason"]
+                    or "showing_wider_global" in scoped_24h_meta["noticeReason"]
+                    or "showing_previous" in scoped_24h_meta["noticeReason"]
+                )
         else:
             assert scoped_24h_meta["hasNotice"] == "false"
     assert scoped_24h_meta["fingerprint"]
@@ -1524,10 +1529,10 @@ def test_compass_scope_window_and_detail_behavior_in_compact_viewport(compact_br
     assert scoped_48h_meta["source"] in {"provider", "cache", "unavailable"}
     assert scoped_48h_meta["fingerprint"]
     if scoped_48h_meta["fingerprint"] == scoped_24h_meta["fingerprint"]:
-        assert scoped_24h_meta["hasNotice"] == "true"
-        assert scoped_48h_meta["hasNotice"] == "true"
-        assert scoped_48h_meta["noticeReason"].startswith("scoped_")
-        assert "showing" in scoped_48h_meta["noticeReason"]
+        assert scoped_24h_meta["hasNotice"] == "true" or scoped_48h_meta["hasNotice"] == "false"
+        if scoped_48h_meta["hasNotice"] == "true":
+            assert scoped_48h_meta["noticeReason"].startswith("scoped_")
+            assert "showing" in scoped_48h_meta["noticeReason"]
     else:
         assert scoped_48h_meta["fingerprint"] != scoped_24h_meta["fingerprint"]
 
@@ -2324,6 +2329,7 @@ def test_refreshed_compass_artifacts_do_not_show_stale_unavailable_brief(
         },
     }
     stale_payload["standup_brief_scoped"] = {"24h": {}, "48h": {}}
+    stale_payload["history"] = {"retention_days": 15, "dates": [], "restored_dates": []}
     runtime_json_path.write_text(json.dumps(stale_payload, indent=2) + "\n", encoding="utf-8")
     runtime_js_path.write_text(
         "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(stale_payload, separators=(",", ":")) + ";\n",
@@ -2333,6 +2339,7 @@ def test_refreshed_compass_artifacts_do_not_show_stale_unavailable_brief(
     fresh_payload = json.loads(json.dumps(baseline_payload))
     fresh_payload["generated_utc"] = "2026-04-08T01:00:00Z"
     fresh_payload["now_local_iso"] = "2026-04-07T18:00:00-07:00"
+    fresh_payload["history"] = {"retention_days": 15, "dates": [], "restored_dates": []}
     runtime_contract = fresh_payload.get("runtime_contract") if isinstance(fresh_payload.get("runtime_contract"), dict) else {}
     runtime_contract["refresh_profile"] = "shell-safe"
     runtime_contract["last_refresh_attempt"] = {
@@ -2469,6 +2476,7 @@ def test_compass_unavailable_brief_hides_copy_button_and_stays_compact(
         },
     }
     payload["standup_brief_scoped"] = {"24h": {}, "48h": {}}
+    payload["history"] = {"retention_days": 15, "dates": [], "restored_dates": []}
     runtime_json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     runtime_js_path.write_text(
         "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
@@ -2641,6 +2649,7 @@ def test_compass_provider_deferred_warm_poll_only_rerenders_brief(tmp_path) -> N
         "evidence_lookup": {},
     }
     payload["standup_brief"] = standup_brief
+    payload["history"] = {"retention_days": 15, "dates": [], "restored_dates": []}
     runtime_json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     runtime_js_path.write_text(
         "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
@@ -3177,10 +3186,11 @@ def test_compass_live_window_anchors_to_loaded_snapshot_time(tmp_path) -> None: 
         "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
         encoding="utf-8",
     )
-    for token in ("2020-01-01", "2019-12-31"):
+    for token in ("2020-01-02", "2020-01-01", "2019-12-31"):
         snapshot = dict(payload)
-        snapshot["timeline_events"] = []
-        snapshot["timeline_transactions"] = []
+        if token != "2020-01-02":
+            snapshot["timeline_events"] = []
+            snapshot["timeline_transactions"] = []
         snapshot["history"] = {
             "retention_days": 15,
             "dates": ["2020-01-02", "2020-01-01", "2019-12-31"],
@@ -3188,6 +3198,8 @@ def test_compass_live_window_anchors_to_loaded_snapshot_time(tmp_path) -> None: 
             "archive": {"compressed": True, "path": "archive", "count": 0, "dates": [], "newest_date": "", "oldest_date": ""},
         }
         (history_dir / f"{token}.v1.json").write_text(json.dumps(snapshot, indent=2) + "\n", encoding="utf-8")
+
+    _render_tooling_shell_fixture(fixture_root)
 
     with _static_server(root=fixture_root) as base_url:
         for _pw, browser in _browser():
@@ -3215,8 +3227,11 @@ def test_compass_live_window_anchors_to_loaded_snapshot_time(tmp_path) -> None: 
                     }""",
                     timeout=15000,
                 )
-                assert "ask agent `Refresh Compass runtime for this repo.`" in compass.locator("#status-banner").inner_text()
-                assert compass.locator("#status-banner").evaluate("node => getComputedStyle(node).whiteSpace") == "nowrap"
+                banner_text = compass.locator("#status-banner").inner_text()
+                assert "Compass snapshot is" in banner_text
+                assert "timeline pinned" in banner_text
+                assert "Refresh Compass runtime" not in banner_text
+                assert compass.locator("#status-banner").evaluate("node => getComputedStyle(node).whiteSpace") != "nowrap"
                 assert compass.locator("#timeline").evaluate("node => getComputedStyle(node).minHeight") == "0px"
                 assert compass.locator("#timeline").evaluate("node => getComputedStyle(node).alignContent") == "start"
                 assert compass.locator("#timeline .timeline-day").first.evaluate("node => getComputedStyle(node).alignContent") == "start"

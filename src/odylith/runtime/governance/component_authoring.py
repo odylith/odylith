@@ -242,6 +242,7 @@ def register_component(
     validation: Sequence[str] = (),
     risks: Sequence[str] = (),
     dry_run: bool = False,
+    refresh: bool = True,
 ) -> CreatedComponent:
     """Register a new component in the registry and scaffold its spec."""
     registry_path = (repo_root / _REGISTRY_PATH_RELATIVE).resolve()
@@ -300,11 +301,12 @@ def register_component(
         )
         spec_dir.mkdir(parents=True, exist_ok=True)
         spec_path.write_text(spec_text, encoding="utf-8")
-        owned_surface_refresh.raise_for_failed_refresh(
-            repo_root=repo_root,
-            surface="registry",
-            operation_label="Component register",
-        )
+        if refresh:
+            owned_surface_refresh.raise_for_failed_refresh(
+                repo_root=repo_root,
+                surface="registry",
+                operation_label="Component register",
+            )
 
     return CreatedComponent(
         component_id=component_id,

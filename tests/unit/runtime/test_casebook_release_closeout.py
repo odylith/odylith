@@ -10,6 +10,22 @@ from odylith.runtime.governance import casebook_release_closeout
 from odylith.runtime.governance import release_planning_authoring
 
 
+@pytest.fixture(autouse=True)
+def refresh_calls(monkeypatch) -> list[dict[str, object]]:  # noqa: ANN001
+    calls: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        casebook_release_closeout.owned_surface_refresh,
+        "raise_for_failed_refresh",
+        lambda **kwargs: calls.append({"owner": "casebook_closeout", **dict(kwargs)}),
+    )
+    monkeypatch.setattr(
+        release_planning_authoring.owned_surface_refresh,
+        "raise_for_failed_refreshes",
+        lambda **kwargs: calls.append({"owner": "release_planning", **dict(kwargs)}),
+    )
+    return calls
+
+
 def _write_release(repo_root: Path, *, status: str) -> None:
     release_path = repo_root / "odylith" / "radar" / "source" / "releases" / "releases.v1.json"
     release_path.parent.mkdir(parents=True, exist_ok=True)
@@ -149,6 +165,19 @@ def test_casebook_release_closeout_keeps_bugs_pending_until_release_is_shipped(t
     assert "- Status: FixedPendingRelease" in bug_path.read_text(encoding="utf-8")
 
 
+@pytest.mark.parametrize("selector", ["release-0-1-13", "0.1.13", "v0.1.13"])
+def test_casebook_release_closeout_resolves_catalog_release_selectors(tmp_path: Path, selector: str) -> None:
+    _write_release(tmp_path, status="active")
+    _write_bug(tmp_path)
+
+    plan = casebook_release_closeout.build_casebook_release_closeout_plan(repo_root=tmp_path, release=selector)
+
+    assert plan.release == "release-0-1-13"
+    assert plan.fixed_version == "0.1.13"
+    assert plan.release_state == "active"
+    assert [item.reason for item in plan.pending] == ["release is active, not shipped"]
+
+
 def test_casebook_release_closeout_closes_eligible_bugs_after_shipped_release(tmp_path: Path) -> None:
     _write_release(tmp_path, status="shipped")
     bug_path = _write_bug(tmp_path)
@@ -173,7 +202,11 @@ def test_casebook_release_closeout_blocks_shipped_release_when_validation_eviden
         casebook_release_closeout.apply_casebook_release_closeout(repo_root=tmp_path, release="current")
 
 
-def test_release_casebook_closeout_cli_applies_only_with_apply_flag(tmp_path: Path, capsys) -> None:
+def test_release_casebook_closeout_cli_applies_only_with_apply_flag(
+    tmp_path: Path,
+    capsys,
+    refresh_calls: list[dict[str, object]],
+) -> None:
     _write_release(tmp_path, status="shipped")
     bug_path = _write_bug(tmp_path)
 
@@ -198,16 +231,30 @@ def test_release_casebook_closeout_cli_applies_only_with_apply_flag(tmp_path: Pa
     apply_payload = json.loads(capsys.readouterr().out)
     assert apply_rc == 0
     assert apply_payload["applied"] is True
+    assert apply_payload["refresh"] == {"status": "passed", "surface": "casebook"}
+    assert refresh_calls == [
+        {
+            "owner": "casebook_closeout",
+            "repo_root": tmp_path.resolve(),
+            "surface": "casebook",
+            "operation_label": "Casebook release closeout",
+        }
+    ]
     assert "- Status: Closed" in bug_path.read_text(encoding="utf-8")
 
 
-def test_release_update_to_shipped_runs_casebook_closeout_automatically(tmp_path: Path, capsys) -> None:
+def test_release_update_to_shipped_runs_casebook_closeout_automatically(
+    tmp_path: Path,
+    capsys,
+    refresh_calls: list[dict[str, object]],
+) -> None:
     _seed_release_authoring_repo(tmp_path)
     _write_bug(tmp_path)
     assert release_planning_authoring.main(
         ["--repo-root", str(tmp_path), "create", "release-0-1-13", "--version", "0.1.13"]
     ) == 0
     capsys.readouterr()
+    refresh_calls.clear()
 
     rc = release_planning_authoring.main(
         ["--repo-root", str(tmp_path), "update", "release-0-1-13", "--status", "shipped", "--json"]
@@ -217,7 +264,48 @@ def test_release_update_to_shipped_runs_casebook_closeout_automatically(tmp_path
     assert rc == 0
     assert payload["casebook_release_closeout"]["release_state"] == "shipped"
     assert payload["casebook_release_closeout"]["changed_paths"]
+    assert payload["refresh"] == {"status": "passed", "surfaces": ["compass", "casebook"]}
+    assert refresh_calls == [
+        {
+            "owner": "release_planning",
+            "repo_root": tmp_path.resolve(),
+            "surfaces": ("compass", "casebook"),
+            "operation_label": "Release planning authoring",
+        }
+    ]
     bug_text = (tmp_path / "odylith/casebook/bugs/2026-05-02-example-fixed-pending-release.md").read_text(
         encoding="utf-8"
     )
     assert "- Status: Closed" in bug_text
+
+
+def test_release_create_refreshes_compass_surface(
+    tmp_path: Path,
+    capsys,
+    refresh_calls: list[dict[str, object]],
+) -> None:
+    _seed_release_authoring_repo(tmp_path)
+
+    rc = release_planning_authoring.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "create",
+            "release-0-1-15",
+            "--version",
+            "0.1.15",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert rc == 0
+    assert payload["refresh"] == {"status": "passed", "surfaces": ["compass"]}
+    assert refresh_calls == [
+        {
+            "owner": "release_planning",
+            "repo_root": tmp_path.resolve(),
+            "surfaces": ("compass",),
+            "operation_label": "Release planning authoring",
+        }
+    ]

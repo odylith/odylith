@@ -331,7 +331,7 @@ def test_build_release_spotlight_replaces_placeholder_release_copy_with_real_fal
 
 
 def test_build_release_spotlight_ages_out_but_version_story_remains(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
-    assert shell_onboarding._UPGRADE_SPOTLIGHT_MAX_AGE == timedelta(minutes=30)
+    assert shell_onboarding._UPGRADE_SPOTLIGHT_MAX_AGE == timedelta(minutes=10)
     write_install_state(
         repo_root=tmp_path,
         payload={

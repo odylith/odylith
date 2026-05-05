@@ -81,7 +81,7 @@ _PRIORITY_DIRS: tuple[str, ...] = (
     "lib",
 )
 _WELCOME_DISMISS_VERSION = "welcome-v2"
-_UPGRADE_SPOTLIGHT_MAX_AGE = timedelta(minutes=30)
+_UPGRADE_SPOTLIGHT_MAX_AGE = timedelta(minutes=10)
 
 
 @dataclass(frozen=True)

@@ -71,7 +71,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     const upgradeSpotlightPayload = payload && payload.release_spotlight && typeof payload.release_spotlight === "object"
       ? payload.release_spotlight
       : null;
-    const UPGRADE_SPOTLIGHT_MAX_AGE_MS = 30 * 60 * 1000;
+    const UPGRADE_SPOTLIGHT_MAX_AGE_MS = 10 * 60 * 1000;
 
     function parseIsoUtcMs(value) {
       const token = String(value || "").trim();
@@ -1420,7 +1420,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     upgradeSpotlightLinks.forEach((link) => {
       link.addEventListener("click", openUpgradeSpotlightLink);
     });
-    if (upgradeSpotlightDismissed()) {
+    if (upgradeSpotlightDismissed() || !hasUpgradeSpotlight()) {
       setUpgradeSpotlightHidden(true);
     } else if (upgradeSpotlight) {
       setUpgradeSpotlightHidden(false);
@@ -1432,7 +1432,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     scheduleUpgradeSpotlightExpiry();
     initializeWelcomeTaskState();
     applyRuntimeStatus(mergeRuntimeStatusState(payload));
-    scheduleVersionStateProbe(300);
+    scheduleVersionStateProbe(15000);
     scheduleShellRefreshPoll(4000);
     scheduleRuntimeProbe(1200);
     document.addEventListener("visibilitychange", () => {

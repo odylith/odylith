@@ -557,7 +557,7 @@ def test_bug_capture_prints_casebook_dashboard_handoff(tmp_path: Path, monkeypat
 
     output = capsys.readouterr().out
     assert rc == 0
-    assert "view: odylith/index.html?tab=casebook&bug=CB-001 (refresh if already open)" in output
+    assert "view: odylith/index.html?tab=casebook&bug=CB-001 (reload browser tab if already open)" in output
 
 
 def test_bug_capture_raises_when_casebook_refresh_fails(tmp_path: Path, monkeypatch) -> None:

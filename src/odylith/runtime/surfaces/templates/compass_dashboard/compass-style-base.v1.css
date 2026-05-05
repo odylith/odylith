@@ -656,19 +656,22 @@ h1 {
       table-layout: fixed;
     }
     .ws-table .ws-col-id {
-      width: 240px;
+      width: 150px;
     }
     .ws-table .ws-col-wave {
-      width: 180px;
+      width: 150px;
     }
     .ws-table .ws-col-phase {
-      width: 120px;
+      width: 154px;
     }
     .ws-table .ws-col-live {
-      width: 110px;
+      width: 98px;
     }
     .ws-table .ws-col-progress {
-      width: 100px;
+      width: 118px;
+      min-width: 118px;
+      text-align: center;
+      white-space: nowrap;
     }
     .ws-table th,
     .ws-table td {
@@ -676,6 +679,7 @@ h1 {
       border-bottom: 1px solid #e2e8f0;
       vertical-align: top;
       text-align: left;
+      box-sizing: border-box;
     }
     .ws-table th {
       background: #f8fbff;
@@ -692,6 +696,34 @@ h1 {
   font-weight: 800;
   text-transform: uppercase;
 }
+    .ws-table th.ws-col-progress {
+      padding-left: 8px;
+      padding-right: 8px;
+      letter-spacing: 0.04em;
+    }
+    .ws-table td.ws-col-progress {
+      color: var(--ink-soft);
+      font-variant-numeric: tabular-nums;
+      font-weight: 500;
+    }
+    @media (min-width: 960px) {
+      .ws-table .ws-col-id {
+        width: 180px;
+      }
+      .ws-table .ws-col-wave {
+        width: 180px;
+      }
+      .ws-table .ws-col-phase {
+        width: 160px;
+      }
+      .ws-table .ws-col-live {
+        width: 110px;
+      }
+      .ws-table .ws-col-progress {
+        width: 124px;
+        min-width: 124px;
+      }
+    }
     .ws-summary-row {
       cursor: pointer;
     }

@@ -586,11 +586,13 @@
       if (!token) return false;
       return (
         token.includes("no snapshot available") ||
+        token.includes("compass snapshot is") ||
         token.includes("live runtime is") ||
         token.includes("refresh with `odylith") ||
         token.includes("falling back") ||
         token.includes("runtime unavailable") ||
         token.includes("brief reused") ||
+        token.includes("brief unavailable") ||
         token.includes("brief needs another provider pass") ||
         token.includes("not usable yet") ||
         token.includes("failed")
@@ -787,9 +789,9 @@
           await ensureEmbeddedHistoryLoaded();
           dates = normalizeHistoryIndexDates(window.__ODYLITH_COMPASS_HISTORY__);
         }
-        if (liveMeta && Array.isArray(liveMeta.dates) && liveMeta.dates.length) {
+        if (liveMeta && (Array.isArray(liveMeta.dates) || Array.isArray(liveMeta.restored_dates))) {
           dates = normalizeHistoryDateTokens([
-            ...liveMeta.dates,
+            ...(Array.isArray(liveMeta.dates) ? liveMeta.dates : []),
             ...(Array.isArray(liveMeta.restored_dates) ? liveMeta.restored_dates : []),
           ]);
         }
@@ -828,6 +830,177 @@
         payload: null,
         warning: warnOnFailure ? `No snapshot available for this day (${token}). Showing live runtime.` : "",
       };
+    }
+
+    function standupBriefIsReadyForFallback(brief) {
+      if (!brief || typeof brief !== "object") return false;
+      if (String(brief.status || "").trim() !== "ready") return false;
+      return Array.isArray(brief.sections) && brief.sections.length > 0;
+    }
+
+    function standupBriefWindowOrder(requestedWindow) {
+      const primary = requestedWindow === "24h" ? "24h" : "48h";
+      return primary === "24h" ? ["24h", "48h"] : ["48h", "24h"];
+    }
+
+    function historyGlobalStandupBrief(payload, windowKey) {
+      const standupBrief = payload && payload.standup_brief && typeof payload.standup_brief === "object"
+        ? payload.standup_brief
+        : {};
+      const brief = standupBrief[String(windowKey || "").trim()];
+      return standupBriefIsReadyForFallback(brief) ? brief : null;
+    }
+
+    function historyScopedStandupBrief(payload, windowKey, scopeId) {
+      const scoped = payload && payload.standup_brief_scoped && typeof payload.standup_brief_scoped === "object"
+        ? payload.standup_brief_scoped
+        : {};
+      const scopedWindow = scoped[String(windowKey || "").trim()];
+      if (!scopedWindow || typeof scopedWindow !== "object") return null;
+      const brief = scopedWindow[String(scopeId || "").trim()];
+      return standupBriefIsReadyForFallback(brief) ? brief : null;
+    }
+
+    function liveBriefFailureDiagnostics(brief) {
+      if (!brief || typeof brief !== "object") return {};
+      if (brief.diagnostics && typeof brief.diagnostics === "object") return brief.diagnostics;
+      if (brief.notice && typeof brief.notice === "object") return brief.notice;
+      return {};
+    }
+
+    function standupBriefCanUseHistoryFallback(brief) {
+      const diagnostics = liveBriefFailureDiagnostics(brief);
+      const reason = String(diagnostics.reason || "").trim().toLowerCase();
+      return reason !== "scoped_window_inactive";
+    }
+
+    function historyFallbackNotice(failedBrief, fallback) {
+      const diagnostics = liveBriefFailureDiagnostics(failedBrief);
+      const title = String(diagnostics.title || "Brief unavailable right now").trim();
+      const message = String(diagnostics.message || "Compass could not build the requested standup brief.").trim();
+      const reason = String(diagnostics.reason || "brief_unavailable").trim().toLowerCase() || "brief_unavailable";
+      const requestedWindow = fallback.requestedWindow === "24h" ? "24h" : "48h";
+      const fallbackWindow = fallback.window === "24h" ? "24-hour" : "48-hour";
+      const fallbackDate = String(fallback.date || "").trim();
+      const scopePrefix = fallback.scopeKind === "scoped" ? "scoped" : "global";
+      const dateCopy = fallbackDate ? ` from ${fallbackDate}` : "";
+      const messageParts = [
+        message,
+        fallback.window && fallback.window !== requestedWindow
+          ? `Compass is showing the last ready ${fallbackWindow} standup brief${dateCopy} while it retries the ${requestedWindow === "24h" ? "24-hour" : "48-hour"} brief.`
+          : `Compass is showing the last ready standup brief${dateCopy} while it retries.`,
+      ];
+      const notice = {
+        title,
+        message: messageParts.join(" ").trim(),
+        reason: `${scopePrefix}_${reason}_showing_previous`,
+      };
+      const nextRetryUtc = String(diagnostics.next_retry_utc || "").trim();
+      if (nextRetryUtc) notice.next_retry_utc = nextRetryUtc;
+      return notice;
+    }
+
+    function historyFallbackBrief(readyBrief, failedBrief, fallback) {
+      const cloned = cloneJsonPayload(readyBrief);
+      if (!cloned) return null;
+      cloned.notice = historyFallbackNotice(failedBrief, fallback);
+      cloned.history_fallback = {
+        mode: "runtime_history",
+        scope: fallback.scopeKind === "scoped" ? "scoped" : "global",
+        requested_window: fallback.requestedWindow === "24h" ? "24h" : "48h",
+        window: fallback.window === "24h" ? "24h" : "48h",
+        date: String(fallback.date || "").trim(),
+      };
+      return cloned;
+    }
+
+    async function latestReadyHistoryStandupBrief(payload, state, failedBrief) {
+      const scopedWorkstream = WORKSTREAM_RE.test(String(state && state.workstream ? state.workstream : "").trim())
+        ? String(state.workstream || "").trim()
+        : "";
+      const requestedWindow = state && state.window === "24h" ? "24h" : "48h";
+      const windows = standupBriefWindowOrder(requestedWindow);
+      const todayToken = runtimeSnapshotDayToken(payload) || toLocalDateToken(new Date());
+      const dates = await loadAvailableHistoryDates();
+      for (const dateToken of dates) {
+        if (!DATE_RE.test(dateToken)) continue;
+        if (dateToken === todayToken) continue;
+        const history = await loadHistorySnapshot(dateToken, { allowUnknownDirectFetch: false });
+        const historyPayload = history && history.payload && typeof history.payload === "object" ? history.payload : null;
+        if (!historyPayload || historyPayload === payload) continue;
+        if (scopedWorkstream) {
+          for (const windowKey of windows) {
+            const scopedBrief = historyScopedStandupBrief(historyPayload, windowKey, scopedWorkstream);
+            if (scopedBrief) {
+              return {
+                brief: historyFallbackBrief(scopedBrief, failedBrief, {
+                  scopeKind: "scoped",
+                  requestedWindow,
+                  window: windowKey,
+                  date: dateToken,
+                }),
+                scopeKind: "scoped",
+                scopeId: scopedWorkstream,
+                window: windowKey,
+                date: dateToken,
+              };
+            }
+          }
+        }
+        for (const windowKey of windows) {
+          const globalBrief = historyGlobalStandupBrief(historyPayload, windowKey);
+          if (globalBrief) {
+            return {
+              brief: historyFallbackBrief(globalBrief, failedBrief, {
+                scopeKind: scopedWorkstream ? "scoped" : "global",
+                requestedWindow,
+                window: windowKey,
+                date: dateToken,
+              }),
+              scopeKind: scopedWorkstream ? "scoped" : "global",
+              scopeId: scopedWorkstream,
+              window: windowKey,
+              date: dateToken,
+            };
+          }
+        }
+      }
+      return null;
+    }
+
+    async function augmentLiveStandupBriefFallback(payload, state) {
+      if (shellRedirectInProgress()) return payload;
+      if (!payload || typeof payload !== "object") return payload;
+      if (state.date !== "live") return payload;
+      const selectedBrief = standupBriefForState(payload, state);
+      if (standupBriefIsReadyForFallback(selectedBrief)) return payload;
+      if (!standupBriefCanUseHistoryFallback(selectedBrief)) return payload;
+      const fallback = await latestReadyHistoryStandupBrief(payload, state, selectedBrief);
+      if (!fallback || !fallback.brief) return payload;
+      const updated = { ...payload };
+      const windowKey = state.window === "24h" ? "24h" : "48h";
+      if (fallback.scopeId) {
+        const scoped = updated.standup_brief_scoped && typeof updated.standup_brief_scoped === "object"
+          ? { ...updated.standup_brief_scoped }
+          : {};
+        const scopedWindow = scoped[windowKey] && typeof scoped[windowKey] === "object" ? { ...scoped[windowKey] } : {};
+        scopedWindow[fallback.scopeId] = fallback.brief;
+        scoped[windowKey] = scopedWindow;
+        updated.standup_brief_scoped = scoped;
+        const digestScoped = updated.digest_scoped && typeof updated.digest_scoped === "object" ? { ...updated.digest_scoped } : {};
+        const digestWindow = digestScoped[windowKey] && typeof digestScoped[windowKey] === "object" ? { ...digestScoped[windowKey] } : {};
+        digestWindow[fallback.scopeId] = standupBriefToDigestLines(fallback.brief);
+        digestScoped[windowKey] = digestWindow;
+        updated.digest_scoped = digestScoped;
+      } else {
+        const standupBrief = updated.standup_brief && typeof updated.standup_brief === "object" ? { ...updated.standup_brief } : {};
+        standupBrief[windowKey] = fallback.brief;
+        updated.standup_brief = standupBrief;
+        const digest = updated.digest && typeof updated.digest === "object" ? { ...updated.digest } : {};
+        digest[windowKey] = standupBriefToDigestLines(fallback.brief);
+        updated.digest = digest;
+      }
+      return updated;
     }
 
     async function loadRuntime(state) {
@@ -1534,7 +1707,5 @@
       if (String(state && state.date ? state.date : "live") !== "live") return "";
       const ageMinutes = runtimeAgeMinutes(payload);
       if (ageMinutes === null || ageMinutes < 90) return "";
-      const snapshot = runtimeSnapshotDate(payload);
-      const snapshotLabel = snapshot ? formatDateTimeInCompassTimeZone(snapshot) : "unknown time";
-      return `Compass snapshot ${snapshotLabel} is ${formatRuntimeAge(ageMinutes)} old; timeline stays pinned there. Refresh: \`odylith dashboard refresh --repo-root .\` or ask agent \`Refresh Compass runtime for this repo.\``;
+      return `Compass snapshot is ${formatRuntimeAge(ageMinutes)} old; timeline pinned.`;
     }

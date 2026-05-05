@@ -52,34 +52,57 @@ _OWNED_SURFACE_REFRESH_POLICIES: dict[str, OwnedSurfaceRefreshPolicy] = {
 
 
 def refresh_owned_surface(*, repo_root: Path, surface: str) -> int:
+    return refresh_owned_surfaces(repo_root=repo_root, surfaces=(surface,))
+
+
+def refresh_owned_surfaces(*, repo_root: Path, surfaces: tuple[str, ...] | list[str]) -> int:
     from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
     from odylith.runtime.governance import sync_workstream_artifacts
 
-    policy = _policy_for_surface(surface)
+    policies = _policies_for_surfaces(surfaces)
     root = Path(repo_root).resolve()
     odylith_context_engine_projection_search_runtime.clear_runtime_process_caches(repo_root=root)
     return sync_workstream_artifacts.refresh_dashboard_surfaces(
         repo_root=root,
-        surfaces=(policy.surface,),
-        runtime_mode=policy.runtime_mode,
-        atlas_sync=policy.atlas_sync,
+        surfaces=tuple(policy.surface for policy in policies),
+        runtime_mode="auto",
+        atlas_sync=any(policy.atlas_sync for policy in policies),
     )
 
 
 def raise_for_failed_refresh(*, repo_root: Path, surface: str, operation_label: str, detail: str = "") -> None:
-    policy = _policy_for_surface(surface)
+    raise_for_failed_refreshes(
+        repo_root=repo_root,
+        surfaces=(surface,),
+        operation_label=operation_label,
+        detail=detail,
+    )
+
+
+def raise_for_failed_refreshes(
+    *,
+    repo_root: Path,
+    surfaces: tuple[str, ...] | list[str],
+    operation_label: str,
+    detail: str = "",
+) -> None:
+    policies = _policies_for_surfaces(surfaces)
     captured_output = io.StringIO()
     with contextlib.redirect_stdout(captured_output):
-        refresh_rc = refresh_owned_surface(repo_root=repo_root, surface=policy.surface)
+        refresh_rc = refresh_owned_surfaces(
+            repo_root=repo_root,
+            surfaces=tuple(policy.surface for policy in policies),
+        )
     if refresh_rc == 0:
         return
     refresh_detail = " ".join(captured_output.getvalue().split())
     suffix = f" {detail.strip()}" if str(detail).strip() else ""
     output_suffix = f" Refresh output: {refresh_detail}" if refresh_detail else ""
-    retry_command = display_command(*policy.retry_command)
+    surface_names = ", ".join(policy.surface for policy in policies)
+    retry_commands = "; ".join(display_command(*policy.retry_command) for policy in policies)
     raise RuntimeError(
-        f"{operation_label.strip()} succeeded, but the {policy.surface} surface refresh failed; "
-        f"retry with `{retry_command}`.{suffix}{output_suffix}"
+        f"{operation_label.strip()} succeeded, but the {surface_names} surface refresh failed; "
+        f"retry with `{retry_commands}`.{suffix}{output_suffix}"
     )
 
 
@@ -123,7 +146,7 @@ def print_dashboard_handoff(
         diagram=diagram,
         bug=bug,
     )
-    print(f"view: {route} (refresh if already open)")
+    print(f"view: {route} (reload browser tab if already open)")
 
 
 def _policy_for_surface(surface: str) -> OwnedSurfaceRefreshPolicy:
@@ -134,10 +157,26 @@ def _policy_for_surface(surface: str) -> OwnedSurfaceRefreshPolicy:
     return policy
 
 
+def _policies_for_surfaces(surfaces: tuple[str, ...] | list[str]) -> tuple[OwnedSurfaceRefreshPolicy, ...]:
+    policies: list[OwnedSurfaceRefreshPolicy] = []
+    seen: set[str] = set()
+    for surface in surfaces:
+        policy = _policy_for_surface(surface)
+        if policy.surface in seen:
+            continue
+        policies.append(policy)
+        seen.add(policy.surface)
+    if not policies:
+        raise ValueError("owned surface refresh requires at least one surface")
+    return tuple(policies)
+
+
 __all__ = [
     "OwnedSurfaceRefreshPolicy",
     "dashboard_handoff",
     "print_dashboard_handoff",
     "raise_for_failed_refresh",
+    "raise_for_failed_refreshes",
     "refresh_owned_surface",
+    "refresh_owned_surfaces",
 ]

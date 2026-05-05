@@ -437,6 +437,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     main_brand_payload = brand_assets.tooling_shell_brand_payload(repo_root=repo_root, output_path=output_path)
     self_host_payload = _build_self_host_payload(repo_root=repo_root)
     shell_source_payload = _build_shell_source_payload(repo_root=repo_root)
+    version_state_path = tooling_dashboard_version_state.version_state_js_path(repo_root=repo_root)
     build_result = tooling_dashboard_runtime_builder.build_runtime_payload(
         repo_root=repo_root,
         surface_paths=surface_paths,
@@ -451,9 +452,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             self_host_payload=self_host_payload,
             release_spotlight=release_spotlight,
         ),
-        version_state_href=surface_path_helpers.relative_href(
-            output_path=output_path,
-            target=tooling_dashboard_version_state.version_state_js_path(repo_root=repo_root),
+        version_state_href=(
+            surface_path_helpers.relative_href(output_path=output_path, target=version_state_path)
+            if version_state_path.exists()
+            else ""
         ),
         version_state_global_name=tooling_dashboard_version_state.VERSION_STATE_GLOBAL_NAME,
     )

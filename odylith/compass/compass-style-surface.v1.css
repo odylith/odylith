@@ -288,9 +288,10 @@
       padding: 7px 10px;
       font-size: 12px;
       line-height: 1.25;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      max-width: 100%;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
     .status-banner.warn {
       border-color: #f59e0b;

@@ -753,6 +753,13 @@
       target.innerHTML = `
         <div class="ws-table-wrap">
           <table class="ws-table">
+            <colgroup>
+              <col class="ws-col-id" />
+              <col class="ws-col-wave" />
+              <col class="ws-col-phase" />
+              <col class="ws-col-live" />
+              <col class="ws-col-progress" />
+            </colgroup>
             <thead>
               <tr>
                 <th class="ws-col-id">ID</th>

@@ -260,6 +260,7 @@
       let payload = runtime.payload;
       let normalized = normalizeStateWithPayload(rawState, payload);
       payload = await augmentLiveHistoryIntoPayload(payload, normalized.state);
+      payload = await augmentLiveStandupBriefFallback(payload, normalized.state);
       normalized = normalizeStateWithPayload(rawState, payload);
       const state = normalized.state;
       const summaryState = stateForSummary(state);
@@ -303,7 +304,7 @@
       const uniqueNotices = dedupeNoticeLines(notices);
       if (uniqueNotices.length) {
         const hasWarn = uniqueNotices.some((line) => isWarningNotice(line));
-        showStatus(uniqueNotices.join(" "), hasWarn ? "warn" : "info");
+        showStatus(uniqueNotices.join(" · "), hasWarn ? "warn" : "info");
       } else {
         showStatus("");
       }

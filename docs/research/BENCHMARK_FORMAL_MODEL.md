@@ -117,12 +117,13 @@ d_s = d_{\mathrm{early}}
 \land
 W_s^{\mathrm{obs}} = \varnothing
 \land
-\operatorname{source}(\rho_s) = \sigma_G
+S_{\rho}(\rho_s) = \sigma_G
 $$
 
-This is the source-of-truth constraint. The row may close without a model call
-or file write only when product evidence proves sufficiency, the observed write
-set is empty, and the receipt source is the product Turn Gate.
+Here \(S_{\rho}\) is the receipt-source projection. This is the source-of-truth
+constraint. The row may close without a model call or file write only when
+product evidence proves sufficiency, the observed write set is empty, and the
+receipt source is the product Turn Gate.
 
 The implemented sufficiency predicate is:
 
@@ -230,7 +231,7 @@ The generalization claim is conditional and product-wide:
 $$
 \forall x \in \mathcal{X}_{\mathrm{obs}},
 \quad
-\operatorname{Payload}(x,r,h,m) \equiv P_s
+P_O(x,r,h,m) \equiv P_s
 \land
 r \equiv_R r_s
 \land
@@ -238,11 +239,12 @@ h \equiv_H h_s
 \land
 m = m_s
 \Rightarrow
-G_O(\operatorname{Payload}(x,r,h,m),r,h,m) \sim G_O(P_s,r_s,h_s,m_s)
+G_O(P_O(x,r,h,m),r,h,m) \sim G_O(P_s,r_s,h_s,m_s)
 $$
 
-This says ordinary product turns and benchmark rows use the same Turn Gate when
-their product prompt payload, observable evidence, repository state, host
+Here \(P_O\) is the product payload builder. This says ordinary product turns
+and benchmark rows use the same Turn Gate when their product prompt payload,
+observable evidence, repository state, host
 capability, and mode are equivalent. Here \(h_s\) and \(m_s\) are the scenario
 host capability and gate mode carried by \(C_s\). That is the scope of the
 product-policy win: the same general-purpose policy path governs comparable
@@ -298,26 +300,26 @@ A benchmark row that closes through non-mutating evidence is interpreted as
 product early-exit proof only when:
 
 $$
-\operatorname{source}(\rho_s) = \sigma_G
+S_{\rho}(\rho_s) = \sigma_G
 $$
 
 and:
 
 $$
-\operatorname{productPathPresent}(R_s) = 1
+P_{\mathrm{path}}(R_s) = 1
 $$
 
 The second predicate is represented in reports by the field
 `turn_gate_product_path_present`. The corresponding live row status basis is:
 
 $$
-\operatorname{basis}(v_s) = \eta_G
+B_{\mathrm{status}}(v_s) = \eta_G
 $$
 
 where the reported field is `status_basis`. The live execution mode is:
 
 $$
-\operatorname{mode}(a_s) = \eta_G
+M_{\mathrm{exec}}(a_s) = \eta_G
 $$
 
 where the reported field is `validator_execution_mode`.

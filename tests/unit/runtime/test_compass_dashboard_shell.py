@@ -106,6 +106,9 @@ def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic(
     assert "const historyDates = knownHistoryDateTokens(payload);" in state_js
     assert "const minDate = historyDates.length" in state_js
     assert "? historyDates[historyDates.length - 1]" in state_js
+    assert "async function augmentLiveStandupBriefFallback(payload, state)" in state_js
+    assert "async function latestReadyHistoryStandupBrief(payload, state, failedBrief)" in state_js
+    assert 'mode: "runtime_history"' in state_js
     assert "legacyDigestLinesForState(payload, state)" not in state_js
     assert 'source === "provider" || source === "cache"' in summary_js
     assert "AI narrative · provider" not in summary_js
@@ -118,7 +121,9 @@ def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic(
     assert "No standup brief available for this view." not in summary_js
     assert "function briefHasRenderableNarrative(brief)" in summary_js
     assert 'reason.includes("_showing_previous")' in summary_js
-    assert 'const retryUtc = String(notice.next_retry_utc || "").trim();' in summary_js
+    assert 'message = "Showing last ready brief.";' in summary_js
+    assert 'message = "Reused last validated brief.";' in summary_js
+    assert 'const retryUtc = String(notice.next_retry_utc || "").trim();' not in summary_js
     assert "function briefIsScopedGlobalFallback(brief)" not in summary_js
     assert "function briefAllowsCopy(brief)" not in summary_js
     assert 'card.classList.toggle("standup-brief-card--compact", !hasNarrative);' in summary_js
@@ -246,6 +251,14 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert "const progressKnown = progressRatio !== null;" in workstreams_js
     assert 'const progressLabel = String(plan && plan.display_progress_label ? plan.display_progress_label : "").trim();' in workstreams_js
     assert 'const progressCellLabel = progressKnown ? `${progressPct}%` : (progressLabel || "n/a");' in workstreams_js
+    assert "<colgroup>" in workstreams_js
+    assert '<col class="ws-col-progress" />' in workstreams_js
+    assert ".ws-table .ws-col-progress {\n      width: 118px;" in base_template
+    assert "box-sizing: border-box;" in base_template
+    assert ".ws-table th.ws-col-progress" in base_template
+    assert "letter-spacing: 0.04em;" in base_template
+    assert ".ws-table td.ws-col-progress" in base_template
+    assert "font-variant-numeric: tabular-nums;" in base_template
     assert "No active workstreams yet. Create or open one from Radar, then Compass will summarize it here." in workstreams_js
     assert "No additional current workstreams. Program and release lanes already cover the active work." in workstreams_js
     assert "All current workstreams are already represented in Programs or Release Targets." not in workstreams_js
@@ -283,7 +296,8 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert ".stat .kpi-label {" not in base_template
     assert ".card {\n  border: 1px solid #dbeafe;" not in base_template
     assert ".ws-id-stack {" in base_css
-    assert "width: 240px;" in base_css
+    assert ".ws-table .ws-col-id {\n      width: 150px;" in base_css
+    assert "@media (min-width: 960px)" in base_css
     assert "__ODYLITH_COMPASS_KPI_GRID_CONTRACT__" not in base_css
     assert "__ODYLITH_COMPASS_KPI_CARD_CONTRACT__" not in base_css
     assert "__ODYLITH_COMPASS_KPI_TYPOGRAPHY_CONTRACT__" not in base_css

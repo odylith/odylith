@@ -224,6 +224,7 @@ def scaffold_diagram(
     review_date: str,
     require_links: bool = False,
     starter_source: str | None = None,
+    refresh: bool = True,
 ) -> tuple[int, list[str]]:
     """Create one Atlas catalog entry and starter Mermaid source."""
 
@@ -315,15 +316,16 @@ def scaffold_diagram(
             )
         source_path.write_text(source_text, encoding="utf-8")
         logs.append(f"source created: {source_path}")
-    try:
-        owned_surface_refresh.raise_for_failed_refresh(
-            repo_root=repo_root,
-            surface="atlas",
-            operation_label="Atlas scaffold",
-        )
-    except RuntimeError as exc:
-        logs.append(str(exc))
-        return 1, logs
+    if refresh:
+        try:
+            owned_surface_refresh.raise_for_failed_refresh(
+                repo_root=repo_root,
+                surface="atlas",
+                operation_label="Atlas scaffold",
+            )
+        except RuntimeError as exc:
+            logs.append(str(exc))
+            return 1, logs
 
     return 0, logs
 

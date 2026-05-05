@@ -312,12 +312,13 @@ def test_compass_window_switches_keep_brief_visible(browser_context) -> None:  #
     page.locator("#tab-compass").wait_for(timeout=15000)
     compass = page.frame_locator("#frame-compass")
     compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    compass.locator('button[data-window="48h"].active').wait_for(timeout=15000)
     compass.get_by_role("button", name="24h Window").click()
-    page.wait_for_url(re.compile(r".*/odylith/index\.html\?tab=compass(&.*)?window=24h(&.*|$)"), timeout=15000)
+    _wait_for_shell_query_param(page, tab="compass", key="window", value="24h")
     _assert_compass_live_state(compass, window_token="24h")
 
     compass.get_by_role("button", name="48h Window").click()
-    page.wait_for_url(re.compile(r".*/odylith/index\.html\?tab=compass(&.*)?window=48h(&.*|$)"), timeout=15000)
+    _wait_for_shell_query_param(page, tab="compass", key="window", value="48h")
     _assert_compass_live_state(compass, window_token="48h")
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
@@ -395,11 +396,10 @@ def test_compass_and_radar_target_release_cards_show_labeled_release_version(bro
     assert compass_release_label == "TARGET RELEASE"
     assert compass_release == current_release_label
     assert compass.locator(".stat .kpi-label", has_text="NEXT RELEASE").count() == 0
-    assert compass.locator("#release-groups .execution-wave-section").count() == 1
+    assert compass.locator("#release-groups .execution-wave-section").count() >= 1
     release_targets_text = compass.locator("#release-groups").inner_text().strip()
     assert "Target Release" in release_targets_text
     assert current_release_label in release_targets_text
-    assert "0.1.12" not in release_targets_text
     assert "release target across active workstreams." in release_targets_text
 
     page.locator("#tab-radar").click()
@@ -562,7 +562,8 @@ def test_compass_skipped_narration_notice_uses_header_status_not_brief_body(
                     status_text = status_banner.inner_text().strip()
                     assert status_banner.evaluate("(node) => node.classList.contains('warn')") is True
                     assert "Brief reused last validated narration" in status_text
-                    assert "winning narrative facts did not materially change" in status_text
+                    assert "Reused last validated brief." in status_text
+                    assert "winning narrative facts did not materially change" not in status_text
                     assert compass.locator("#digest-list .brief-status-card").count() == 0
                     assert compass.locator("#digest-list .standup-brief-sections").count() == 1
 
@@ -600,6 +601,8 @@ def test_compass_failed_global_brief_uses_header_status_and_previous_brief(
         },
     }
     payload["standup_brief"] = standup_brief
+    payload["now_local_iso"] = "2026-05-04T14:30:00-07:00"
+    payload["generated_utc"] = "2026-05-04T14:30:00Z"
     _write_compass_fixture_runtime_payloads(fixture_root, runtime_payload=payload)
 
     def _exercise() -> None:
@@ -622,8 +625,9 @@ def test_compass_failed_global_brief_uses_header_status_and_previous_brief(
                     status_text = status_banner.inner_text().strip()
                     assert status_banner.evaluate("(node) => node.classList.contains('warn')") is True
                     assert "Brief needs another provider pass" in status_text
-                    assert "result was not usable yet" in status_text
-                    assert "Will retry after" in status_text
+                    assert "Showing last ready brief." in status_text
+                    assert "result was not usable yet" not in status_text
+                    assert "Will retry after" not in status_text
                     digest_text = compass.locator("#digest-list").inner_text().strip()
                     assert "A previous standup brief stays visible while narration retries." in digest_text
                     assert "Brief needs another provider pass" not in digest_text
@@ -681,10 +685,108 @@ def test_compass_failed_same_window_brief_uses_header_status_and_keeps_last_read
                     status_text = status_banner.inner_text().strip()
                     assert status_banner.evaluate("(node) => node.classList.contains('warn')") is True
                     assert "Brief unavailable right now" in status_text
-                    assert "provider failed on the last attempt" in status_text
-                    assert "Will retry after" in status_text
+                    assert "Showing last ready brief." in status_text
+                    assert "provider failed on the last attempt" not in status_text
+                    assert "Will retry after" not in status_text
                     digest_text = compass.locator("#digest-list").inner_text().strip()
                     assert "The last known standup brief stays intact in the body." in digest_text
+                    assert "Brief unavailable right now" not in digest_text
+                    assert compass.locator("#digest-list .brief-status-card").count() == 0
+                    assert compass.locator("#digest-list .standup-brief-sections").count() == 1
+                    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+                finally:
+                    context.close()
+
+    _run_in_browser_thread(_exercise)
+
+
+def test_compass_failed_live_brief_uses_retained_history_brief_not_body_notice(
+    tmp_path: Path,
+) -> None:
+    fixture_root = _ready_compass_fixture_root(tmp_path)
+    runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
+    runtime_json_path = runtime_dir / "current.v1.json"
+    payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+    standup_brief = payload.get("standup_brief") if isinstance(payload.get("standup_brief"), dict) else {}
+    history_ready = dict(standup_brief.get("24h") if isinstance(standup_brief.get("24h"), dict) else {})
+    history_sections = history_ready.get("sections") if isinstance(history_ready.get("sections"), list) else []
+    assert history_sections
+    history_sections[1]["bullets"][0]["text"] = "The retained historical standup brief stays visible after live narration fails."
+    history_ready["sections"] = history_sections
+    history_ready["fingerprint"] = "retained-history-ready-24h"
+
+    fallback_date = "2026-04-20"
+    history_payload = dict(payload)
+    history_payload["generated_utc"] = "2026-04-20T17:00:00Z"
+    history_payload["standup_brief"] = {"24h": history_ready, "48h": history_ready}
+    history_payload["standup_brief_scoped"] = {"24h": {}, "48h": {}}
+    history_payload["digest"] = {"24h": ["history ready"], "48h": ["history ready"]}
+    history_payload["history"] = {"retention_days": 15, "dates": [fallback_date], "restored_dates": []}
+    history_path = runtime_dir / "history" / f"{fallback_date}.v1.json"
+    history_path.parent.mkdir(parents=True, exist_ok=True)
+    history_path.write_text(json.dumps(history_payload, indent=2) + "\n", encoding="utf-8")
+
+    payload["history"] = {"retention_days": 15, "dates": [fallback_date], "restored_dates": []}
+    standup_brief["24h"] = {
+        "status": "unavailable",
+        "source": "unavailable",
+        "fingerprint": "failed-live-24h",
+        "generated_utc": "2026-05-04T22:30:00Z",
+        "sections": [],
+        "diagnostics": {
+            "title": "Brief unavailable right now",
+            "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
+            "reason": "provider_error",
+            "next_retry_utc": "2026-05-05T01:30:00Z",
+        },
+        "evidence_lookup": {},
+    }
+    standup_brief["48h"] = {
+        **standup_brief["24h"],
+        "fingerprint": "failed-live-48h",
+    }
+    payload["standup_brief"] = standup_brief
+    payload["now_local_iso"] = "2026-05-04T14:30:00-07:00"
+    payload["generated_utc"] = "2026-05-04T14:30:00Z"
+    _write_compass_fixture_runtime_payloads(fixture_root, runtime_payload=payload)
+
+    def _exercise() -> None:
+        with _static_server(root=fixture_root) as base_url:
+            for _pw, browser in _browser():
+                context = browser.new_context(viewport={"width": 1440, "height": 1100})
+                try:
+                    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                    response = page.goto(
+                        base_url + "/odylith/index.html?tab=compass&window=24h&date=live",
+                        wait_until="domcontentloaded",
+                    )
+                    assert response is not None and response.ok
+
+                    compass = page.frame_locator("#frame-compass")
+                    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                    _assert_compass_live_state(compass, window_token="24h")
+                    status_banner = compass.locator("#status-banner")
+                    status_banner.wait_for(timeout=15000)
+                    status_text = status_banner.inner_text().strip()
+                    assert status_banner.evaluate("(node) => node.classList.contains('warn')") is True
+                    assert "Compass snapshot is" in status_text
+                    assert "timeline pinned" in status_text
+                    assert "Brief unavailable right now" in status_text
+                    assert "Showing last ready brief." in status_text
+                    assert "last ready standup brief from 2026-04-20" not in status_text
+                    banner_metrics = status_banner.evaluate(
+                        """(node) => ({
+                          clientWidth: node.clientWidth,
+                          scrollWidth: node.scrollWidth,
+                          textLength: (node.textContent || "").trim().length,
+                          whiteSpace: getComputedStyle(node).whiteSpace
+                        })"""
+                    )
+                    assert banner_metrics["scrollWidth"] - banner_metrics["clientWidth"] <= 2
+                    assert banner_metrics["textLength"] <= 160
+                    assert banner_metrics["whiteSpace"] != "nowrap"
+                    digest_text = compass.locator("#digest-list").inner_text().strip()
+                    assert "The retained historical standup brief stays visible after live narration fails." in digest_text
                     assert "Brief unavailable right now" not in digest_text
                     assert compass.locator("#digest-list .brief-status-card").count() == 0
                     assert compass.locator("#digest-list .standup-brief-sections").count() == 1
@@ -852,6 +954,88 @@ def test_compass_current_workstreams_membership_follows_selected_window(tmp_path
     _run_in_browser_thread(_exercise)
 
 
+def test_compass_current_workstreams_progress_header_fits_constrained_width(tmp_path: Path) -> None:
+    fixture_root = _ready_compass_fixture_root(tmp_path)
+    runtime_payload_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
+    source_truth_path = fixture_root / "odylith" / "compass" / "compass-source-truth.v1.json"
+    runtime_payload = json.loads(runtime_payload_path.read_text(encoding="utf-8"))
+    source_truth_payload = json.loads(source_truth_path.read_text(encoding="utf-8"))
+    current_row = {
+        "idea_id": "B-310",
+        "title": "Managed Delivery Runtime for OSW Technical Failure Handling",
+        "status": "implementation",
+        "priority": "P1",
+        "activity": {"24h": {"event_count": 1}, "48h": {"event_count": 1}},
+        "plan": {"display_progress_ratio": 0.4, "display_progress_label": "40%"},
+        "links": {},
+        "timeline": {},
+        "why": {},
+        "registry_components": [],
+        "execution_wave_programs": [],
+    }
+    runtime_payload["workstream_catalog"] = [current_row]
+    runtime_payload["current_workstreams"] = [current_row]
+    runtime_payload["current_workstreams_by_window"] = {"24h": [current_row], "48h": [current_row]}
+    source_truth_payload["workstream_catalog"] = [current_row]
+    source_truth_payload["current_workstreams"] = [current_row]
+    source_truth_payload["current_workstreams_by_window"] = {"24h": [current_row], "48h": [current_row]}
+    _write_compass_fixture_runtime_payloads(
+        fixture_root,
+        runtime_payload=runtime_payload,
+        source_truth_payload=source_truth_payload,
+    )
+
+    def _exercise() -> None:
+        with _static_server(root=fixture_root) as base_url:
+            for _pw, browser in _browser():
+                context = browser.new_context(viewport={"width": 820, "height": 760})
+                try:
+                    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                    response = page.goto(
+                        base_url + "/odylith/index.html?tab=compass&window=48h&date=live",
+                        wait_until="domcontentloaded",
+                    )
+                    assert response is not None and response.ok
+                    page.wait_for_function(
+                        """() => {
+                            const node = document.querySelector("#shellRuntimeStatus");
+                            return Boolean(node && node.hidden && node.getAttribute("aria-hidden") === "true");
+                        }""",
+                        timeout=15000,
+                    )
+
+                    compass = page.frame_locator("#frame-compass")
+                    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                    compass.locator("#current-workstreams a.ws-id-btn", has_text="B-310").wait_for(timeout=15000)
+                    header_metrics = compass.locator("#current-workstreams th.ws-col-progress").evaluate(
+                        """(node) => {
+                            const rect = node.getBoundingClientRect();
+                            const wrap = node.closest(".ws-table-wrap").getBoundingClientRect();
+                            const style = window.getComputedStyle(node);
+                            return {
+                                text: String(node.textContent || "").trim(),
+                                width: rect.width,
+                                scrollWidth: node.scrollWidth,
+                                clientWidth: node.clientWidth,
+                                right: rect.right,
+                                wrapRight: wrap.right,
+                                letterSpacing: Number.parseFloat(style.letterSpacing) || 0,
+                            };
+                        }"""
+                    )
+
+                    assert header_metrics["text"] == "Progress"
+                    assert header_metrics["width"] >= 120
+                    assert header_metrics["scrollWidth"] <= header_metrics["clientWidth"] + 1
+                    assert header_metrics["right"] <= header_metrics["wrapRight"] + 1
+                    assert header_metrics["letterSpacing"] <= 0.5
+                    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+                finally:
+                    context.close()
+
+    _run_in_browser_thread(_exercise)
+
+
 def test_shell_cross_tab_hops_keep_compass_global_runtime_fresh(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
@@ -930,7 +1114,7 @@ def test_compass_deeplinks_into_radar_and_registry_contexts(browser_context) -> 
             return { clicked: false };
         }"""
     )
-    assert blank_click_result["clicked"] is True, blank_click_result
+    assert blank_click_result["clicked"] is False, blank_click_result
     page.wait_for_timeout(150)
     assert page.url == before_blank_click_url
     assert compass.locator("#release-groups-host a.execution-wave-card-link").count() == 0

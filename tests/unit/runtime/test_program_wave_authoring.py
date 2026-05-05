@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from odylith.runtime.governance import program_wave_authoring
 
 
@@ -26,6 +28,17 @@ _SECTIONS = (
     "Test Strategy",
     "Open Questions",
 )
+
+
+@pytest.fixture(autouse=True)
+def refresh_calls(monkeypatch) -> list[dict[str, object]]:  # noqa: ANN001
+    calls: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        program_wave_authoring.owned_surface_refresh,
+        "raise_for_failed_refreshes",
+        lambda **kwargs: calls.append(dict(kwargs)),
+    )
+    return calls
 
 
 def _idea_text(
@@ -159,7 +172,10 @@ def _seed_program_repo(repo_root: Path) -> None:
     _write_plan(repo_root / child_two_plan)
 
 
-def test_program_create_scaffolds_program_and_updates_execution_model(tmp_path: Path) -> None:
+def test_program_create_scaffolds_program_and_updates_execution_model(
+    tmp_path: Path,
+    refresh_calls: list[dict[str, object]],
+) -> None:
     _seed_program_repo(tmp_path)
 
     rc = program_wave_authoring.run_program(["--repo-root", str(tmp_path), "create", "B-201"])
@@ -178,6 +194,13 @@ def test_program_create_scaffolds_program_and_updates_execution_model(tmp_path: 
     assert payload["waves"][0]["status"] == "active"
     assert payload["waves"][0]["primary_workstreams"] == ["B-202"]
     assert payload["waves"][1]["depends_on"] == ["W1"]
+    assert refresh_calls == [
+        {
+            "repo_root": tmp_path.resolve(),
+            "surfaces": ("radar", "compass"),
+            "operation_label": "Program create",
+        }
+    ]
 
 
 def test_program_update_accepts_legacy_key_value_idea_header(tmp_path: Path) -> None:
@@ -243,9 +266,13 @@ def test_program_status_and_next_fail_closed_when_program_file_is_missing(
     assert next_payload["next_command"] == "odylith program create B-201"
 
 
-def test_wave_assign_and_gate_add_round_trip_program_file(tmp_path: Path) -> None:
+def test_wave_assign_and_gate_add_round_trip_program_file(
+    tmp_path: Path,
+    refresh_calls: list[dict[str, object]],
+) -> None:
     _seed_program_repo(tmp_path)
     assert program_wave_authoring.run_program(["--repo-root", str(tmp_path), "create", "B-201"]) == 0
+    refresh_calls.clear()
 
     assert program_wave_authoring.run_wave(["--repo-root", str(tmp_path), "unassign", "B-201", "W2", "B-203"]) == 0
     assert (
@@ -284,6 +311,12 @@ def test_wave_assign_and_gate_add_round_trip_program_file(tmp_path: Path) -> Non
             "label": "Policy middleware gate",
         }
     ]
+    assert [call["operation_label"] for call in refresh_calls] == [
+        "Wave unassign",
+        "Wave assign",
+        "Wave gate-add",
+    ]
+    assert all(call["surfaces"] == ("radar", "compass") for call in refresh_calls)
 
 
 def test_program_status_reports_active_missing_gate_workstreams(

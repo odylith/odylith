@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from odylith.runtime.governance import release_planning_authoring
 from odylith.runtime.governance import release_planning_contract
 from odylith.runtime.governance import release_planning_view_model
@@ -29,6 +31,15 @@ _SECTIONS = (
     "Test Strategy",
     "Open Questions",
 )
+
+
+@pytest.fixture(autouse=True)
+def _skip_surface_refresh(monkeypatch) -> None:  # noqa: ANN001
+    monkeypatch.setattr(
+        release_planning_authoring.owned_surface_refresh,
+        "raise_for_failed_refreshes",
+        lambda **_kwargs: None,
+    )
 
 
 def _idea_text(*, idea_id: str, title: str, status: str) -> str:

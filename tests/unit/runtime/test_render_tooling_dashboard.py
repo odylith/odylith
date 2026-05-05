@@ -791,7 +791,7 @@ def test_render_tooling_dashboard_uses_tab_local_state_for_shell_surface_switche
     assert "const upgradeReopen = document.getElementById(\"upgradeReopen\");" in control_js
     assert "initToolingShellCheatsheetDrawer" in control_js
     assert "const searchInput = root.querySelector(\"[data-cheatsheet-search]\");" in control_js
-    assert "const UPGRADE_SPOTLIGHT_MAX_AGE_MS = 30 * 60 * 1000;" in control_js
+    assert "const UPGRADE_SPOTLIGHT_MAX_AGE_MS = 10 * 60 * 1000;" in control_js
     assert "function resolveUpgradeSpotlightExpiryMs(rawPayload) {" in control_js
     assert "function hasUpgradeSpotlight() {" in control_js
     assert "const shouldDeferWelcomeUntilUpgradeCloses = Boolean(" in control_js

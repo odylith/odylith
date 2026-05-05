@@ -121,12 +121,12 @@ def test_owned_surface_refresh_hides_successful_refresh_internals(
     monkeypatch,
     capsys,
 ) -> None:
-    def fake_refresh_owned_surface(**_kwargs) -> int:
+    def fake_refresh_owned_surfaces(**_kwargs) -> int:
         print("dashboard refresh plan")
         print("- noisy internals")
         return 0
 
-    monkeypatch.setattr(owned_surface_refresh, "refresh_owned_surface", fake_refresh_owned_surface)
+    monkeypatch.setattr(owned_surface_refresh, "refresh_owned_surfaces", fake_refresh_owned_surfaces)
 
     owned_surface_refresh.raise_for_failed_refresh(
         repo_root=tmp_path,
@@ -135,6 +135,47 @@ def test_owned_surface_refresh_hides_successful_refresh_internals(
     )
 
     assert capsys.readouterr().out == ""
+
+
+def test_owned_surface_refresh_batches_multiple_surfaces_once(tmp_path: Path, monkeypatch) -> None:
+    calls: list[dict[str, object]] = []
+    clears: list[Path] = []
+
+    monkeypatch.setattr(
+        owned_surface_refresh,
+        "_policy_for_surface",
+        lambda surface: owned_surface_refresh.OwnedSurfaceRefreshPolicy(surface=str(surface), atlas_sync=str(surface) == "atlas"),
+    )
+
+    def fake_clear_runtime_process_caches(**kwargs) -> None:  # noqa: ANN001
+        clears.append(kwargs["repo_root"])
+
+    def fake_refresh_dashboard_surfaces(**kwargs) -> int:  # noqa: ANN001
+        calls.append(dict(kwargs))
+        return 0
+
+    from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
+    from odylith.runtime.governance import sync_workstream_artifacts
+
+    monkeypatch.setattr(
+        odylith_context_engine_projection_search_runtime,
+        "clear_runtime_process_caches",
+        fake_clear_runtime_process_caches,
+    )
+    monkeypatch.setattr(sync_workstream_artifacts, "refresh_dashboard_surfaces", fake_refresh_dashboard_surfaces)
+
+    rc = owned_surface_refresh.refresh_owned_surfaces(repo_root=tmp_path, surfaces=("radar", "atlas", "radar"))
+
+    assert rc == 0
+    assert clears == [tmp_path.resolve()]
+    assert calls == [
+        {
+            "repo_root": tmp_path.resolve(),
+            "surfaces": ("radar", "atlas"),
+            "runtime_mode": "auto",
+            "atlas_sync": True,
+        }
+    ]
 
 
 def test_backlog_create_refreshes_radar_surface(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -165,7 +206,7 @@ def test_backlog_create_refreshes_radar_surface(tmp_path: Path, monkeypatch, cap
             "operation_label": "Backlog create",
         }
     ]
-    assert "view: odylith/index.html?tab=radar&workstream=B-001 (refresh if already open)" in output
+    assert "view: odylith/index.html?tab=radar&workstream=B-001 (reload browser tab if already open)" in output
 
 
 def test_component_register_refreshes_registry_surface(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -202,7 +243,7 @@ def test_component_register_refreshes_registry_surface(tmp_path: Path, monkeypat
     ]
     assert (
         "view: odylith/index.html?tab=registry&component=registry-refresh "
-        "(refresh if already open)"
+        "(reload browser tab if already open)"
     ) in output
     registry_path = tmp_path / "odylith" / "registry" / "source" / "component_registry.v1.json"
     registry = json.loads(registry_path.read_text(encoding="utf-8"))
@@ -287,7 +328,7 @@ def test_atlas_scaffold_refreshes_atlas_with_shared_lane(tmp_path: Path, monkeyp
             "operation_label": "Atlas scaffold",
         }
     ]
-    assert "view: odylith/index.html?tab=atlas&diagram=D-999 (refresh if already open)" in output
+    assert "view: odylith/index.html?tab=atlas&diagram=D-999 (reload browser tab if already open)" in output
 
 
 def test_atlas_scaffold_allows_atlas_first_draft_without_governance_links(
@@ -357,7 +398,7 @@ def test_atlas_scaffold_allows_atlas_first_draft_without_governance_links(
             "operation_label": "Atlas scaffold",
         }
     ]
-    assert "view: odylith/index.html?tab=atlas&diagram=D-100 (refresh if already open)" in output
+    assert "view: odylith/index.html?tab=atlas&diagram=D-100 (reload browser tab if already open)" in output
 
 
 def test_atlas_scaffold_can_still_require_governance_links(tmp_path: Path, monkeypatch) -> None:
@@ -425,4 +466,4 @@ def test_compass_log_refreshes_compass_surface(tmp_path: Path, monkeypatch, caps
             "operation_label": "Compass timeline append",
         }
     ]
-    assert "view: odylith/index.html?tab=compass (refresh if already open)" in output
+    assert "view: odylith/index.html?tab=compass (reload browser tab if already open)" in output

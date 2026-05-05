@@ -12,6 +12,7 @@ from typing import Sequence
 
 from odylith.runtime.governance import authoring_execution_policy
 from odylith.runtime.governance import casebook_release_closeout
+from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import release_planning_contract
 from odylith.runtime.governance import release_planning_view_model
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
@@ -260,6 +261,32 @@ def _print_or_json(*, payload: Mapping[str, Any], as_json: bool) -> None:
         print(f"- active workstreams: {', '.join(workstreams) if workstreams else '-'}")
         return
     print(_render_release_payload(payload=payload), end="")
+
+
+def _post_write_refresh_surfaces(payload: Mapping[str, Any]) -> tuple[str, ...]:
+    command = str(payload.get("command", "")).strip()
+    if command not in {"create", "update", "add", "remove", "move"} or bool(payload.get("dry_run")):
+        return ()
+    surfaces = ["compass"]
+    closeout = payload.get("casebook_release_closeout")
+    if isinstance(closeout, Mapping) and closeout.get("changed_paths"):
+        surfaces.append("casebook")
+    return tuple(dict.fromkeys(surfaces))
+
+
+def _apply_post_write_refresh(*, repo_root: Path, payload: dict[str, Any]) -> None:
+    surfaces = _post_write_refresh_surfaces(payload)
+    if not surfaces:
+        return
+    owned_surface_refresh.raise_for_failed_refreshes(
+        repo_root=repo_root,
+        surfaces=surfaces,
+        operation_label="Release planning authoring",
+    )
+    payload["refresh"] = {
+        "status": "passed",
+        "surfaces": list(surfaces),
+    }
 
 
 def _event_payload(
@@ -838,6 +865,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     except ValueError as exc:
         print(str(exc))
         return 2
+    try:
+        _apply_post_write_refresh(repo_root=Path(args.repo_root).resolve(), payload=payload)
+    except RuntimeError as exc:
+        print(str(exc))
+        return 1
     _print_or_json(payload=payload, as_json=bool(getattr(args, "as_json", False)))
     return 0
 

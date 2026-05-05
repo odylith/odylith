@@ -51,9 +51,10 @@ def test_benchmark_formal_model_keeps_durable_tokens_out_of_latex_math() -> None
     markdown = FORMAL_MODEL.read_text(encoding="utf-8")
     math_text = "\n".join(_math_regions(markdown))
 
+    assert "\\operatorname" not in math_text
     for token in DURABLE_UNDERSCORE_TOKENS:
         assert token not in math_text
-    for command, body in re.findall(r"\\(mathrm|operatorname|text|mathbf)\{([^}]*)\}", math_text):
+    for command, body in re.findall(r"\\(mathrm|text|mathbf)\{([^}]*)\}", math_text):
         assert "_" not in body, f"GitHub math may parse `{command}{{{body}}}` as nested subscripts"
 
 

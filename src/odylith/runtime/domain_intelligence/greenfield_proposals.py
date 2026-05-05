@@ -473,6 +473,7 @@ def apply_greenfield_proposal(
             watch_paths=watch_paths,
             review_date=dt.date.today().isoformat(),
             starter_source=validated_mermaid_source(row),
+            refresh=False,
         )
         log_text = "\n".join(log_lines).strip()
         if log_text:
@@ -481,6 +482,12 @@ def apply_greenfield_proposal(
             detail = f": {log_text}" if log_text else ""
             raise RuntimeError(f"atlas scaffold failed for {row.get('slug')}{detail}")
         diagrams_created.append(diagram_id)
+    if diagrams_created:
+        owned_surface_refresh.raise_for_failed_refresh(
+            repo_root=root,
+            surface="atlas",
+            operation_label="Greenfield apply Atlas topology",
+        )
     touched_backlog_paths = greenfield_traceability.apply_backlog_traceability(
         repo_root=root,
         proposal=proposal,
@@ -524,8 +531,15 @@ def apply_greenfield_proposal(
             validation=_row_text_tuple(row, "validation", "test_strategy"),
             risks=_row_text_tuple(row, "risks"),
             dry_run=False,
+            refresh=False,
         )
         components_created.append(created.as_dict())
+    if components_created:
+        owned_surface_refresh.raise_for_failed_refresh(
+            repo_root=root,
+            surface="registry",
+            operation_label="Greenfield apply Registry components",
+        )
 
     release_id = "none"
     if isinstance(release_targeting, Mapping):

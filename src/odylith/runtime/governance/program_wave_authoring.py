@@ -12,6 +12,7 @@ from typing import Sequence
 
 from odylith.runtime.governance import authoring_execution_policy
 from odylith.runtime.governance import execution_wave_contract
+from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import program_wave_execution_engine
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 
@@ -336,6 +337,18 @@ def _write_program_document(repo_root: Path, umbrella_id: str, payload: Mapping[
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     return path
+
+
+def _refresh_program_authoring_surfaces(*, repo_root: Path, operation_label: str, payload: dict[str, Any]) -> None:
+    owned_surface_refresh.raise_for_failed_refreshes(
+        repo_root=repo_root,
+        surfaces=("radar", "compass"),
+        operation_label=operation_label,
+    )
+    payload["refresh"] = {
+        "status": "passed",
+        "surfaces": ["radar", "compass"],
+    }
 
 
 def _metadata_list(spec: backlog_contract.IdeaSpec, key: str) -> list[str]:
@@ -708,6 +721,12 @@ def program_main(argv: Sequence[str] | None = None) -> int:
             "adoption": {key: value for key, value in adoption.items() if not str(key).startswith("_")},
             "execution_engine": governance.to_dict(),
         }
+        if not bool(args.dry_run) and bool(adoption.get("changed")):
+            _refresh_program_authoring_surfaces(
+                repo_root=repo_root,
+                operation_label="Program adopt",
+                payload=payload,
+            )
         _print_program_payload(payload=payload, as_json=bool(args.as_json))
         return 0
 
@@ -733,6 +752,11 @@ def program_main(argv: Sequence[str] | None = None) -> int:
         if not args.dry_run:
             _update_idea_metadata(umbrella_spec.path, {"execution_model": "umbrella_waves"})
             _write_program_document(repo_root, umbrella_id, document)
+            _refresh_program_authoring_surfaces(
+                repo_root=repo_root,
+                operation_label="Program create",
+                payload=payload,
+            )
         _print_program_payload(payload=payload, as_json=bool(args.as_json))
         return 0
 
@@ -822,6 +846,11 @@ def program_main(argv: Sequence[str] | None = None) -> int:
     if not args.dry_run:
         _update_idea_metadata(umbrella_spec.path, {"execution_model": "umbrella_waves"})
         _write_program_document(repo_root, umbrella_id, mutable_document)
+        _refresh_program_authoring_surfaces(
+            repo_root=repo_root,
+            operation_label="Program update",
+            payload=payload,
+        )
     _print_program_payload(payload=payload, as_json=bool(args.as_json))
     return 0
 
@@ -952,6 +981,11 @@ def wave_main(argv: Sequence[str] | None = None) -> int:
             payload["adoption"] = {key: value for key, value in adoption.items() if not str(key).startswith("_")}
         if not args.dry_run:
             _write_program_document(repo_root, umbrella_id, mutable_document)
+            _refresh_program_authoring_surfaces(
+                repo_root=repo_root,
+                operation_label=f"Wave {str(args.wave_command).strip()}",
+                payload=payload,
+            )
         _print_wave_payload(payload=payload, as_json=bool(args.as_json))
     return 0
 
@@ -959,14 +993,14 @@ def wave_main(argv: Sequence[str] | None = None) -> int:
 def run_program(argv: Sequence[str] | None = None) -> int:
     try:
         return program_main(argv)
-    except ValueError as exc:
+    except (ValueError, RuntimeError) as exc:
         print(str(exc))
-        return 2
+        return 2 if isinstance(exc, ValueError) else 1
 
 
 def run_wave(argv: Sequence[str] | None = None) -> int:
     try:
         return wave_main(argv)
-    except ValueError as exc:
+    except (ValueError, RuntimeError) as exc:
         print(str(exc))
-        return 2
+        return 2 if isinstance(exc, ValueError) else 1
