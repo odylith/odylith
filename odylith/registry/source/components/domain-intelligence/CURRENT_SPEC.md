@@ -5,8 +5,8 @@ Last updated: 2026-05-04
 ## Overview
 
 Domain Intelligence is the host-reasoning contract and confirmation-gated apply
-runtime for greenfield consumer governance. It gives Claude, Codex, and future
-hosts a strict evidence/schema/validation contract, then writes accepted
+runtime for greenfield consumer governance. It gives every supported host a
+strict evidence/schema/validation contract, then writes accepted
 backlog, Registry, Atlas, release, Compass, assumptions, risks, and validation
 records only after explicit confirmation.
 
@@ -47,6 +47,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-03: Added `proposal_rendering.py` so operator-facing text and apply commands have a focused owner without encoding canned narration or project templates. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-05-03: Retargeted the greenfield lane to v0.1.14 and made the proposal/apply path show release and program power by default: omitted release selectors become `0.0.1`, child workstreams form an umbrella execution-wave program, and the umbrella plus first wave target the first release while later waves remain visible future work. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-05-04: Hardened greenfield apply so proposed waves are never silently dropped when token overlap fails; every accepted program wave remains visible, with deterministic fallback child assignment preserving operator-authored structure for follow-up refinement. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-167`)
+- 2026-05-05: Added the deterministic greenfield proposal Tribunal and collapsed apply-time visibility into one final batched Radar/Registry/Atlas/Compass refresh after all accepted artifacts and Compass memory are written. The gate is host-model agnostic: hosts author proposal content, while Odylith adjudicates topology, component ownership quality, release targeting, wave focus, and surface visibility before source truth changes. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 
 ## Contract
 
@@ -59,6 +60,12 @@ This section captures synchronized requirement and contract signals derived from
   Mermaid source checks, evidence-tier checks, and duplicate-topology rejection.
   Generic Atlas scaffold remains the low-level catalog/source writer; Domain
   Intelligence validates host-authored topology instead of inventing it.
+- `proposal_tribunal.py` owns deterministic pre-write adjudication. It fails
+  proposals whose child workstreams lack component/diagram/dependency/proof
+  topology, whose components lack boundary/interface/dependency/proof
+  expectations, whose diagrams do not connect to backlog and Registry
+  components, or whose release/program structure cannot make Compass visibly
+  useful.
 - Host-reasoned proposal output must include observed source posture, user
   intent, Odylith assumptions, backlog candidates, program formation, program
   waves, release plan, planned Registry components, host-authored draft Atlas
@@ -73,11 +80,16 @@ This section captures synchronized requirement and contract signals derived from
 - Apply must preserve all host-authored program waves. A weak or missing
   token-overlap match may choose a deterministic fallback child, but it must not
   erase the wave or report success with fewer waves than the accepted proposal.
+- Apply must run the greenfield Tribunal before any governed write and must
+  perform one final batched dashboard refresh for Radar, Registry, Atlas, and
+  Compass after backlog, program, release, Atlas, Registry, and Compass memory
+  records are written. Do not insert per-artifact refreshes that slow the happy
+  path or expose partial generated surfaces.
 - `Customer` may be a one-token governed value. Problem, Opportunity, Product
   View, and Success Metrics keep the stronger detail and placeholder-rejection
   rules.
 - Default CLI proposal request generation must not call providers directly; the
-  active host model supplies the reasoning in Claude/Codex sessions.
+  active host model supplies the reasoning in host sessions.
 - Apply must require `--confirm` and write only through owned Radar, Registry,
   Atlas, and release-targeting paths.
 

@@ -93,6 +93,7 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                     "label": "Checkout spine",
                     "goal": "Prove browse, cart, checkout handoff, and order draft.",
                     "validation": "Browser proof covers happy path and failed payment recovery.",
+                    "workstream_titles": ["Define Storefront boundary"],
                     "component_focus": ["commerce-storefront", "commerce-checkout"],
                     "evidence_tier": "odylith_assumption",
                 },
@@ -101,6 +102,7 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                     "label": "Catalog integrity",
                     "goal": "Make product, price, inventory, and merchandising reviewable.",
                     "validation": "Price and inventory snapshot rules are explicit.",
+                    "workstream_titles": ["Define Catalog boundary"],
                     "component_focus": ["commerce-catalog"],
                     "evidence_tier": "odylith_assumption",
                 },
@@ -114,6 +116,7 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
             "release_stages": [
                 {"stage": "wave-1", "label": "Checkout spine", "release_gate": "Browser and recovery proof pass."},
             ],
+            "target_workstream_titles": ["Define Storefront boundary"],
             "milestones": [
                 {
                     "name": "Proposal accepted",
@@ -154,6 +157,44 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                 "sizing": "M",
                 "complexity": "Medium",
                 "recommended_first_slice": "Define the route and state contract for browse-to-cart.",
+                "component_focus": ["commerce-storefront", "commerce-checkout"],
+                "related_diagram_slugs": ["commerce-launch-system-context", "commerce-launch-program-waves"],
+                "dependencies": [
+                    "Depends on checkout handoff semantics and a catalog read model being explicit before source implementation.",
+                ],
+                "interfaces": [
+                    "Defines browse, cart-entry, checkout-entry, and error-state contracts before code exists.",
+                ],
+                "validation": [
+                    "Browser proof must cover browse-to-cart and failed-checkout messaging before implementation starts.",
+                ],
+                "evidence_tier": "user_intent",
+            },
+            {
+                "title": "Define Catalog boundary",
+                "problem": "Product, price, and inventory rules need a named owner before checkout can be evaluated honestly.",
+                "customer": "Builders",
+                "opportunity": "Keep product facts and inventory snapshots separate from checkout orchestration.",
+                "product_view": "Catalog should own product reads, price snapshots, inventory visibility, and merchandising review boundaries.",
+                "success_metrics": [
+                    "Catalog appears in Registry and Atlas with user_intent evidence.",
+                    "Price and inventory snapshot rules have a first-slice validation gate.",
+                ],
+                "priority": "P1",
+                "sizing": "M",
+                "complexity": "Medium",
+                "recommended_first_slice": "Define the product, price, and inventory snapshot contract.",
+                "component_focus": ["commerce-catalog"],
+                "related_diagram_slugs": ["commerce-launch-system-context", "commerce-launch-program-waves"],
+                "dependencies": [
+                    "Depends on source-backed implementation planning to choose the actual catalog storage boundary.",
+                ],
+                "interfaces": [
+                    "Defines read-only product, price, and inventory snapshot interfaces for checkout.",
+                ],
+                "validation": [
+                    "Contract proof must show checkout reads immutable price and inventory snapshots.",
+                ],
                 "evidence_tier": "user_intent",
             },
         ],
@@ -164,6 +205,11 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                 "kind": "application",
                 "intended_path": "apps/web",
                 "responsibility": "Browse, cart entry, checkout entry, and user-facing errors.",
+                "boundary": "Owns shopper-facing browse, cart-entry, checkout-entry, and user-visible error states.",
+                "dependencies": ["Depends on catalog reads and checkout handoff contracts."],
+                "interfaces": ["Browser routes, cart-entry command, checkout-entry command, and error presentation contract."],
+                "validation": ["Browser smoke proof for browse-to-cart and failed-checkout messaging."],
+                "workstream_titles": ["Define Storefront boundary"],
                 "evidence_tier": "user_intent",
                 "status": "planned",
                 "qualification": "candidate",
@@ -174,6 +220,26 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                 "kind": "service",
                 "intended_path": "src/checkout",
                 "responsibility": "Payment handoff, order draft, idempotency, and recovery boundaries.",
+                "boundary": "Owns checkout handoff, payment sandbox interaction, order draft creation, and retry recovery.",
+                "dependencies": ["Depends on storefront checkout entry and catalog price snapshot reads."],
+                "interfaces": ["Checkout command, payment provider sandbox adapter, order-draft writer, and retry contract."],
+                "validation": ["Contract proof for idempotent order draft creation and failed payment recovery."],
+                "workstream_titles": ["Define Storefront boundary"],
+                "evidence_tier": "user_intent",
+                "status": "planned",
+                "qualification": "candidate",
+            },
+            {
+                "component_id": "commerce-catalog",
+                "label": "Catalog Boundary",
+                "kind": "service",
+                "intended_path": "src/catalog",
+                "responsibility": "Product facts, price snapshots, inventory visibility, and merchandising review.",
+                "boundary": "Owns product facts, price snapshots, inventory visibility, and merchandising review semantics.",
+                "dependencies": ["No source dependency is claimed until implementation planning chooses storage."],
+                "interfaces": ["Product-read query, price-snapshot query, and inventory-availability query."],
+                "validation": ["Contract proof that checkout uses immutable price and inventory snapshots."],
+                "workstream_titles": ["Define Catalog boundary"],
                 "evidence_tier": "user_intent",
                 "status": "planned",
                 "qualification": "candidate",
@@ -191,7 +257,9 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                 "components": [
                     {"name": "Storefront", "description": "Browse, cart, checkout entry, and user-visible errors."},
                     {"name": "Checkout Orchestrator", "description": "Payment handoff, order draft, and retry safety."},
+                    {"name": "Catalog Boundary", "description": "Product, price, inventory, and merchandising review."},
                 ],
+                "related_workstream_titles": ["Govern Commerce Launch System", "Define Storefront boundary", "Define Catalog boundary"],
                 "intended_paths": ["apps/web", "src/checkout"],
                 "watch_paths": [],
                 "evidence_tier": "user_intent",
@@ -236,7 +304,9 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                 "components": [
                     {"name": "Storefront", "description": "Browse-to-cart proof and shopper-facing route ownership."},
                     {"name": "Checkout Orchestrator", "description": "Payment recovery proof and order-state handoff."},
+                    {"name": "Catalog Boundary", "description": "Price snapshot and inventory review ownership."},
                 ],
+                "related_workstream_titles": ["Govern Commerce Launch System", "Define Storefront boundary", "Define Catalog boundary"],
                 "intended_paths": ["apps/web", "src/checkout"],
                 "watch_paths": [],
                 "evidence_tier": "user_intent",
@@ -275,6 +345,7 @@ def test_greenfield_prompt_returns_host_reasoning_contract(tmp_path) -> None:
     quality_bar = " ".join(proposal["reasoning_contract"]["quality_bar"])
     assert "colors inside the diagram" in quality_bar
     assert "never rely on viewer background treatment" in quality_bar
+    assert "Tribunal gate" in quality_bar
     assert "--release 0.0.1" in proposal["apply_commands"][1]
     assert "Default the first greenfield release target to 0.0.1" in " ".join(
         proposal["reasoning_contract"]["quality_bar"]
@@ -294,11 +365,13 @@ def test_greenfield_text_keeps_host_reasoning_and_no_write_boundary_visible(tmp_
 
     assert rc == 0
     output = capsys.readouterr().out
-    assert "host model reasoning required" in output
+    assert "active host reasoning required" in output
     assert "do not use canned domain buckets" in output
     assert "Evidence rules" in output
     assert "No files changed." in output
     assert "default_release_selector: 0.0.1" in output
+    assert "deterministic proposal Tribunal before writes" in output
+    assert "Radar, Registry, Atlas, and Compass refresh" in output
 
 
 def test_greenfield_cli_json_is_host_reasoning_contract(tmp_path, capsys) -> None:
@@ -361,7 +434,7 @@ def test_greenfield_apply_rejects_unstyled_flowchart_diagram_sources(tmp_path) -
 
 def test_greenfield_apply_allows_styled_flowchart_without_forced_lanes(tmp_path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
-    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     proposal = _host_reasoned_ecommerce_proposal()
@@ -464,6 +537,49 @@ def test_greenfield_apply_rejects_shallow_component_responsibility(tmp_path) -> 
         )
 
 
+def test_greenfield_apply_rejects_child_without_topology(tmp_path) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    proposal = _host_reasoned_ecommerce_proposal()
+    proposal["backlog"][1].pop("component_focus")
+    proposal["backlog"][1].pop("related_diagram_slugs")
+
+    with pytest.raises(ValueError, match="greenfield proposal Tribunal rejected"):
+        greenfield_proposals.apply_greenfield_proposal(
+            repo_root=tmp_path,
+            proposal=proposal,
+            confirm=True,
+            release_selector="0.0.1",
+        )
+
+
+def test_greenfield_apply_rejects_component_without_ownership_contract(tmp_path) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    proposal = _host_reasoned_ecommerce_proposal()
+    proposal["components"][0].pop("interfaces")
+
+    with pytest.raises(ValueError, match="component `commerce-storefront` must describe planned interfaces"):
+        greenfield_proposals.apply_greenfield_proposal(
+            repo_root=tmp_path,
+            proposal=proposal,
+            confirm=True,
+            release_selector="0.0.1",
+        )
+
+
+def test_greenfield_apply_rejects_diagram_without_workstream_traceability(tmp_path) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    proposal = _host_reasoned_ecommerce_proposal()
+    proposal["diagrams"][0].pop("related_workstream_titles")
+
+    with pytest.raises(ValueError, match="diagram `commerce-launch-system-context` must name related workstream"):
+        greenfield_proposals.apply_greenfield_proposal(
+            repo_root=tmp_path,
+            proposal=proposal,
+            confirm=True,
+            release_selector="0.0.1",
+        )
+
+
 def test_greenfield_backlog_overrides_preserve_child_specific_sections() -> None:
     proposal = _host_reasoned_ecommerce_proposal()
     child = next(row for row in proposal["backlog"] if row["title"].startswith("Define "))
@@ -489,7 +605,12 @@ def test_greenfield_backlog_overrides_preserve_child_specific_sections() -> None
 
 def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
-    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    refresh_calls: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        greenfield_proposals.owned_surface_refresh,
+        "raise_for_failed_refreshes",
+        lambda **kwargs: refresh_calls.append(dict(kwargs)),
+    )
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     proposal = _host_reasoned_ecommerce_proposal()
@@ -521,20 +642,29 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert result["release_bootstrap"]["created"] is True
     assert registry["aliases"]["0.0.1"] == "release-commerce-launch-first"
     assert registry["aliases"]["current"] == "release-commerce-launch-first"
-    assert len(result["backlog"]) == 2
-    assert len(result["components"]) == 2
+    assert len(result["backlog"]) == 3
+    assert len(result["components"]) == 3
     assert len(result["diagrams"]) == 2
+    assert result["tribunal"]["status"] == "passed"
+    assert result["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass"]
+    assert refresh_calls == [
+        {
+            "repo_root": tmp_path.resolve(),
+            "surfaces": ("radar", "registry", "atlas", "compass"),
+            "operation_label": "Greenfield apply dashboard visibility",
+        }
+    ]
     assert result["program"]["created"] is True
     assert result["program"]["umbrella_id"] == "B-001"
     assert len(result["program"]["waves"]) == 2
     assert result["program"]["waves"][0]["wave_id"] == "W1"
     assert result["program"]["waves"][0]["primary_workstreams"] == ["B-002"]
     assert result["program"]["waves"][1]["wave_id"] == "W2"
-    assert result["program"]["waves"][1]["primary_workstreams"] == ["B-002"]
+    assert result["program"]["waves"][1]["primary_workstreams"] == ["B-003"]
     assert execution_program["waves"][0]["label"] == "Checkout spine"
     assert execution_program["waves"][0]["primary_workstreams"] == ["B-002"]
     assert execution_program["waves"][1]["label"] == "Catalog integrity"
-    assert execution_program["waves"][1]["primary_workstreams"] == ["B-002"]
+    assert execution_program["waves"][1]["primary_workstreams"] == ["B-003"]
     assert result["release_bootstrap"]["release"]["version"] == "0.0.1"
     assert result["release_bootstrap"]["release"]["tag"] == "v0.0.1"
     assert result["release_target"]["workstream_ids"] == ["B-001", "B-002"]
@@ -552,6 +682,7 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert result["backlog_topology"] == [
         Path(result["backlog"][0]["idea_path"]).relative_to(tmp_path).as_posix(),
         Path(result["backlog"][1]["idea_path"]).relative_to(tmp_path).as_posix(),
+        Path(result["backlog"][2]["idea_path"]).relative_to(tmp_path).as_posix(),
     ]
     assert "Payment sandbox" in system_context
     assert "Order reliability" in program_waves
@@ -567,7 +698,7 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert "responsible for Browse, cart entry, checkout entry, and user-facing errors" in storefront["what_it_is"]
     assert "Planned responsibility: Browse, cart entry, checkout entry, and user-facing errors." in storefront_spec
     assert "**Related diagrams**: D-001, D-002" in storefront_spec
-    assert "First implementation must add focused contract or smoke proof" in storefront_spec
+    assert "Browser smoke proof for browse-to-cart and failed-checkout messaging" in storefront_spec
     assert result["memory"]["recorded"] is True
     assert result["memory"]["event"]["source"] == "domain-intelligence"
     assert '"release_id": "release-commerce-launch-first"' in events
@@ -587,7 +718,7 @@ def test_greenfield_apply_requires_confirmation(tmp_path) -> None:
 
 def test_greenfield_apply_json_output_is_machine_clean(tmp_path, monkeypatch, capsys) -> None:
     _seed_empty_governance_repo(tmp_path)
-    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     proposal_path = tmp_path / "proposal.json"
@@ -611,4 +742,6 @@ def test_greenfield_apply_json_output_is_machine_clean(tmp_path, monkeypatch, ca
     assert payload["atlas_scaffold_logs"]
     assert payload["memory"]["recorded"] is True
     assert payload["memory"]["event"]["source"] == "domain-intelligence"
+    assert payload["tribunal"]["status"] == "passed"
+    assert payload["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass"]
     assert payload["release_target"]["release_id"] == "release-commerce-launch-first"

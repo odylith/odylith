@@ -38,7 +38,7 @@ validation, confirmation gate, topology hygiene, and apply path.
 |---|---|
 | **"Odylith, build an ecommerce site for me"** | Drafts a confirmation-gated greenfield proposal with backlog candidates, program waves, release plan, planned components, Atlas topology, assumptions, risks, validation obligations, open questions, and exact apply commands. `odylith greenfield propose` |
 | **"Help me govern a physics simulation project"** | Produces a science-aware proposal that distinguishes model, solver, data, experiment runner, visualization, reproducibility, and validation surfaces without inventing scientific claims. |
-| **"Apply this greenfield proposal"** | Validates the accepted proposal, requires confirmation, rejects missing or duplicated Atlas topology, then writes through owned Radar, Registry, Atlas, release-targeting, and Compass memory paths. `odylith greenfield apply --confirm` |
+| **"Apply this greenfield proposal"** | Validates the accepted proposal, runs the deterministic greenfield Tribunal, requires confirmation, rejects disconnected topology, writes through owned Radar, Registry, Atlas, release-targeting, and Compass memory paths, then refreshes the visible dashboard surfaces in one batch. `odylith greenfield apply --confirm` |
 
 ### Workstreams (Radar)
 

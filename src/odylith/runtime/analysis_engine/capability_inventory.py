@@ -41,7 +41,8 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                 owns=(
                     "provider-free greenfield project classification, backlog proposals, program "
                     "waves, provisional release plans, planned Registry components, draft Atlas "
-                    "topology, assumptions, risks, and validation obligations before source exists"
+                    "topology, assumptions, risks, validation obligations, deterministic proposal "
+                    "Tribunal gating, and final visible surface refresh before source exists"
                 ),
                 commands=("odylith greenfield propose", "odylith greenfield apply"),
                 anchors=("src/odylith/runtime/domain_intelligence/",),

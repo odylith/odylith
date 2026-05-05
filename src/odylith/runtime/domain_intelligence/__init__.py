@@ -5,5 +5,6 @@ __all__ = [
     "greenfield_proposals",
     "proposal_memory",
     "proposal_rendering",
+    "proposal_tribunal",
     "proposal_validation",
 ]

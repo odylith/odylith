@@ -115,7 +115,10 @@ Odylith does not claim full protection against:
 - Apply-time validation rejects missing host-authored Atlas Mermaid source,
   duplicated topology, invalid evidence tiers, and incomplete proposal sections
   before any governed file changes.
-- Host-specific Codex and Claude routes stay thin; the Odylith runtime owns
+- The greenfield proposal Tribunal rejects disconnected child topology, shallow
+  component ownership, and invisible release/program structures before durable
+  source truth changes.
+- Supported host routes stay thin; the Odylith runtime owns
   validation, confirmation, topology hygiene, and durable memory boundaries.
 
 ### Product Governed Harness safety

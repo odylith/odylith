@@ -31,11 +31,12 @@ def build_apply_commands(proposal: Mapping[str, Any]) -> list[str]:
         + release_arg,
     ]
     if backlog:
-        commands.append("# apply will create Radar backlog records after validating grounded proposal fields")
+        commands.append("# apply will create Radar backlog records after validation and Tribunal review")
     if components:
         commands.append("# apply will register planned candidate Registry components with user_intent evidence")
     if diagrams:
         commands.append("# apply will scaffold draft Atlas topology with atlas_first_draft link state")
+    commands.append("# apply will refresh Radar, Registry, Atlas, and Compass after all artifacts are written")
     return commands
 
 
@@ -51,9 +52,11 @@ def format_proposal_text(proposal: Mapping[str, Any]) -> str:
         lines = [
             f"Odylith greenfield reasoning brief: {title}",
             f"- source evidence: {source.get('source_posture', 'unknown')}; writes stay confirmation-gated",
-            "- proposal authorship: host model reasoning required",
+            "- proposal authorship: active host reasoning required",
             f"- provider_calls_by_odylith_cli: {proposal.get('provider_calls', 0)}",
             f"- default_release_selector: {DEFAULT_GREENFIELD_RELEASE_SELECTOR} unless the operator supplies another target",
+            "- apply gate: deterministic proposal Tribunal before writes",
+            "- visibility: Radar, Registry, Atlas, and Compass refresh after accepted artifacts are written",
             "",
             "Host reasoning task",
             f"- {proposal.get('host_instruction', 'Draft a concrete proposal from prompt and repo evidence.')}",
@@ -166,6 +169,9 @@ def format_proposal_text(proposal: Mapping[str, Any]) -> str:
     lines.extend(["", "Validation focus"])
     for item in proposal.get("validation_strategy", []):
         lines.append(f"- {item}")
+    lines.extend(["", "Apply gates"])
+    lines.append("- deterministic proposal Tribunal must pass before any source-truth writes")
+    lines.append("- final dashboard refresh makes Radar, Registry, Atlas, and Compass visible after writes")
     lines.extend(["", "Assumptions"])
     for item in proposal.get("assumptions", []):
         lines.append(f"- {item}")

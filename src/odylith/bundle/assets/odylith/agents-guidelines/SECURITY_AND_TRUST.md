@@ -61,8 +61,11 @@
 - `odylith greenfield apply` must remain confirmation-gated and must reject
   missing host-authored Atlas Mermaid source, duplicated topology, invalid
   evidence tiers, and incomplete proposal sections before any governed write.
-- Host routes may help the operator draft a proposal, but Codex, Claude Code,
-  and future hosts must not own the durable validation or write boundary.
+- The deterministic greenfield proposal Tribunal must reject disconnected child
+  topology, shallow component ownership, and invisible release/program
+  structures before durable source truth changes.
+- Host routes may help the operator draft a proposal, but supported hosts must
+  not own the durable validation or write boundary.
 
 ## Host Configuration Rules
 - Managed Codex and Claude assets must merge additively with user-owned host

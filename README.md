@@ -75,7 +75,9 @@ odylith greenfield propose --repo-root . --prompt "build an ecommerce site"
 The proposal can include backlog candidates, program waves, release planning,
 planned Registry components, host-authored Atlas topology, assumptions, risks,
 open questions, and validation obligations. Nothing is written until an
-accepted proposal is applied with confirmation.
+accepted proposal is applied with confirmation. Apply runs a deterministic
+greenfield Tribunal before writes, targets the first release lane, and refreshes
+Radar, Registry, Atlas, and Compass after all accepted artifacts are written.
 
 Then open `odylith/index.html` in a browser and follow the Cheatsheet in the
 drawer.

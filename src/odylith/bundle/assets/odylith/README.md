@@ -106,11 +106,12 @@ greenfield proposal lane before source-backed governance exists:
 
 The active host model authors the project-specific proposal in chat. Odylith
 owns the evidence contract, topology requirements, validation, confirmation
-gate, and apply path. Accepted proposals can be applied only with explicit
-confirmation:
+gate, proposal Tribunal, and apply path. Accepted proposals can be applied only
+with explicit confirmation; apply refreshes Radar, Registry, Atlas, and Compass
+after all accepted artifacts are written:
 
 ```bash
-./.odylith/bin/odylith greenfield apply --repo-root . --proposal-file <proposal.json> --confirm
+./.odylith/bin/odylith greenfield apply --repo-root . --proposal-file <proposal.json> --confirm --release 0.0.1
 ```
 
 For the common governance authoring fast paths, use:

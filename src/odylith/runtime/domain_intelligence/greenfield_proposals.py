@@ -22,6 +22,8 @@ from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.proposal_memory import record_greenfield_acceptance
 from odylith.runtime.domain_intelligence.proposal_rendering import format_proposal_text
+from odylith.runtime.domain_intelligence.proposal_tribunal import raise_for_failed_greenfield_tribunal
+from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
 from odylith.runtime.domain_intelligence.proposal_validation import validated_mermaid_source
 from odylith.runtime.governance import backlog_authoring
@@ -148,6 +150,7 @@ def _proposal_contract() -> dict[str, Any]:
             "diagrams": "purposeful Atlas drafts such as system context, program waves, runtime/data/validation topology, or a better domain-specific set; each diagram must name related components and workstream/backlog focus, and flowcharts must use subtle diagram-internal colors plus wrapped labels",
             "program": "wave plan with goals, validation gates, component focus, and evidence tier",
             "release_plan": "provisional release selector, first-target workstreams, stages, milestones, and promotion criteria; default selector is 0.0.1 unless the operator supplies a different release target",
+            "tribunal": "apply runs a deterministic proposal Tribunal before writes; proposals fail if Radar, Registry, Atlas, program waves, or release targeting do not form a coherent topology",
         },
         "quality_bar": [
             "Reason from the actual prompt, not from a fixed in-code domain list.",
@@ -162,6 +165,8 @@ def _proposal_contract() -> dict[str, Any]:
             "For simple projects, keep the plan small; for complex projects, form waves and release gates.",
             "Default the first greenfield release target to 0.0.1 unless the operator explicitly asks for another release selector.",
             "Name the first release target workstreams from the first wave so Compass can show a concrete release lane without pretending every child belongs to the first release.",
+            "Make the proposal easy to operate: name the program, waves, release selector, first target workstreams, impacted components, diagrams, and proof gates in plain language.",
+            "Expect a Tribunal gate: child workstreams need component and diagram references, components need boundary/interface/dependency/proof expectations, and diagrams need workstream plus component traceability.",
         ],
     }
 
@@ -215,6 +220,9 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
             "a useful Registry CURRENT_SPEC.md. Default the provisional release selector "
             "to 0.0.1 unless the operator explicitly asks for another release target, "
             "and identify the first-wave workstreams that should target that release."
+            " Odylith will run the confirmed proposal through a deterministic Tribunal "
+            "before writes and will refresh Radar, Registry, Atlas, and Compass after "
+            "the accepted artifacts are written."
         ),
         "apply_commands": [
             "Save the host-reasoned proposal JSON to odylith-greenfield-proposal.json after operator review.",
@@ -371,6 +379,22 @@ def _ensure_release_target(*, repo_root: Path, proposal: Mapping[str, Any], sele
     )
 
 
+_GREENFIELD_VISIBLE_SURFACES = ("radar", "registry", "atlas", "compass")
+
+
+def _refresh_greenfield_dashboard(*, repo_root: Path) -> dict[str, Any]:
+    owned_surface_refresh.raise_for_failed_refreshes(
+        repo_root=repo_root,
+        surfaces=_GREENFIELD_VISIBLE_SURFACES,
+        operation_label="Greenfield apply dashboard visibility",
+    )
+    return {
+        "status": "passed",
+        "surfaces": list(_GREENFIELD_VISIBLE_SURFACES),
+        "view": owned_surface_refresh.dashboard_handoff(surface="compass"),
+    }
+
+
 def apply_greenfield_proposal(
     *,
     repo_root: Path,
@@ -388,6 +412,8 @@ def apply_greenfield_proposal(
     if not backlog_rows:
         raise ValueError("proposal has no backlog records")
     release_selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
+    tribunal = run_greenfield_tribunal(proposal, release_selector=release_selector)
+    raise_for_failed_greenfield_tribunal(tribunal)
     backlog_args = _backlog_apply_args(proposal, release_selector=release_selector)
     backlog_result = backlog_authoring.create_queued_backlog_items(
         repo_root=root,
@@ -482,28 +508,11 @@ def apply_greenfield_proposal(
             detail = f": {log_text}" if log_text else ""
             raise RuntimeError(f"atlas scaffold failed for {row.get('slug')}{detail}")
         diagrams_created.append(diagram_id)
-    if diagrams_created:
-        owned_surface_refresh.raise_for_failed_refresh(
-            repo_root=root,
-            surface="atlas",
-            operation_label="Greenfield apply Atlas topology",
-        )
     touched_backlog_paths = greenfield_traceability.apply_backlog_traceability(
         repo_root=root,
         proposal=proposal,
         plan=traceability_plan,
     )
-    owned_surface_refresh.raise_for_failed_refresh(
-        repo_root=root,
-        surface="radar",
-        operation_label="Greenfield apply backlog topology",
-    )
-    if release_selector:
-        owned_surface_refresh.raise_for_failed_refresh(
-            repo_root=root,
-            surface="compass",
-            operation_label="Greenfield apply release targeting",
-        )
 
     components_created: list[dict[str, Any]] = []
     for row in proposal.get("components", []):
@@ -534,12 +543,6 @@ def apply_greenfield_proposal(
             refresh=False,
         )
         components_created.append(created.as_dict())
-    if components_created:
-        owned_surface_refresh.raise_for_failed_refresh(
-            repo_root=root,
-            surface="registry",
-            operation_label="Greenfield apply Registry components",
-        )
 
     release_id = "none"
     if isinstance(release_targeting, Mapping):
@@ -553,9 +556,11 @@ def apply_greenfield_proposal(
         release_selector=release_selector,
         release_id=release_id,
     )
+    dashboard_refresh = _refresh_greenfield_dashboard(repo_root=root)
 
     return {
         "mode": "applied",
+        "tribunal": tribunal.to_dict(),
         "backlog": backlog_result["created"],
         "components": components_created,
         "diagrams": diagrams_created,
@@ -563,6 +568,7 @@ def apply_greenfield_proposal(
         "backlog_topology": touched_backlog_paths,
         "atlas_scaffold_logs": atlas_scaffold_logs,
         "memory": memory_record,
+        "dashboard_refresh": dashboard_refresh,
         "release_bootstrap": release_bootstrap or {"created": False, "release": {}},
         "release_target": release_targeting or {"selector": release_selector, "release_id": "none", "events": []},
     }
@@ -611,6 +617,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(json.dumps(result, indent=2, sort_keys=True))
         else:
             print("odylith greenfield apply wrote confirmed proposal")
+            tribunal = result.get("tribunal", {})
+            if isinstance(tribunal, Mapping):
+                print(f"- tribunal: {tribunal.get('status', 'unknown')}")
             print(f"- backlog: {len(result['backlog'])}")
             print(f"- components: {len(result['components'])}")
             print(f"- diagrams: {len(result['diagrams'])}")
@@ -619,7 +628,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                 print(f"- program: {program.get('umbrella_id')} ({len(program.get('waves', []))} waves)")
             release_target = result.get("release_target", {})
             if isinstance(release_target, Mapping) and str(release_target.get("release_id", "none")).strip() != "none":
-                print(f"- release: {release_target.get('release_id')}")
+                workstreams = release_target.get("workstream_ids", [])
+                count = len(workstreams) if isinstance(workstreams, list) else 0
+                print(f"- release: {release_target.get('release_id')} ({count} targeted workstreams)")
+            dashboard = result.get("dashboard_refresh", {})
+            if isinstance(dashboard, Mapping):
+                surfaces = ", ".join(str(item) for item in dashboard.get("surfaces", []))
+                print(f"- dashboard: refreshed {surfaces}")
+                print(f"- view: {dashboard.get('view')}")
         return 0
     return 2
 

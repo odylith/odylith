@@ -17,6 +17,7 @@ _REF_FIELDS = (
     "related_workstreams",
     "related_workstream_ids",
     "related_workstream_titles",
+    "workstream_focus",
     "backlog",
     "backlog_titles",
 )

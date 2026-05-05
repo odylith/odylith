@@ -70,14 +70,14 @@ Consumer-lane operators starting a new product, research project, science or mat
 Add a host-reasoned Domain Intelligence contract that turns vague greenfield intent into concrete backlog, program waves, provisional release plan, planned Registry components, host-authored Atlas topology, assumptions, risks, and validation obligations while keeping observed source, user intent, and Odylith assumptions distinct.
 
 ## Proposed Solution
-Create a first-class `runtime/domain_intelligence` package that makes Odylith the evidence/schema/validation/apply layer, not the project-authoring brain. `odylith greenfield propose` performs a shallow repo evidence scan and emits a host-agnostic reasoning contract. Claude, Codex, or any future host then uses its full reasoning capability to draft the concrete backlog, components, Atlas Mermaid sources, waves, release plan, assumptions, risks, validation strategy, and open questions in normal chat. `odylith greenfield apply` validates the accepted proposal, requires host-authored `mermaid_source` for each Atlas draft, rejects identical diagram bodies, and writes only through owned Radar, Registry, Atlas, release-targeting, and Compass memory paths after `--confirm`.
+Create a first-class `runtime/domain_intelligence` package that makes Odylith the evidence/schema/validation/apply layer, not the project-authoring brain. `odylith greenfield propose` performs a shallow repo evidence scan and emits a host-agnostic reasoning contract. The active supported host then uses its full reasoning capability to draft the concrete backlog, components, Atlas Mermaid sources, waves, release plan, assumptions, risks, validation strategy, and open questions in normal chat. `odylith greenfield apply` validates the accepted proposal, runs a deterministic greenfield Tribunal, requires host-authored `mermaid_source` for each Atlas draft, rejects disconnected or duplicated topology, writes only through owned Radar, Registry, Atlas, release-targeting, and Compass memory paths after `--confirm`, and performs one final Radar/Registry/Atlas/Compass refresh after all accepted artifacts exist.
 
 ## Research Signals
 External ecosystem checks argue against a small in-code taxonomy as the proposal author. GitHub Octoverse 2025 shows high-volume new repository creation, AI/agent growth, TypeScript-heavy application work, Python/Jupyter AI and data-science work, and private/product repos growing alongside public open source. CNCF organizes cloud-native work around infrastructure, delivery, observability, security, AI/ML, and runtime ecosystems. Apache describes mature open-source projects across data, cloud, search, libraries, geospatial, IoT, and related categories. NASA's software and open-data surfaces show science projects built from code, data, analysis pipelines, simulation/modeling tools, visualization, reproducibility, and sustained scientific libraries. Those signals prove greenfield intent is open-world; v0.1.14 therefore keeps host reasoning responsible for the project-specific plan while Odylith runtime validation owns evidence tiers, confirmation gates, topology hygiene, release targeting, program/wave formation, and durable memory.
 
 ## Scope
 - Add `odylith greenfield propose` and `odylith greenfield apply`.
-- Keep host adapters thin; Claude, Codex, and future hosts route to the same CLI/runtime path.
+- Keep host adapters thin; every supported host routes to the same CLI/runtime path.
 - Let the host model reason over any product, science, math, research,
   infrastructure, art, education, policy, device, data, or mixed project shape;
   do not constrain the proposal to an in-code domain list.
@@ -115,6 +115,7 @@ The host-authored proposal includes backlog candidates, program waves, release p
 Greenfield apply writes through owned Radar, Registry, Atlas, release-targeting, and Compass memory paths only after --confirm, preserving user_intent evidence and source-backed truth separation.
 Apply rejects missing Mermaid source, duplicated diagram source, incomplete proposal sections, and invalid evidence tiers before any governed write.
 Host prompt routing avoids noisy raw Observation chatter for normal greenfield intents while preserving earned intervention paths.
+Greenfield apply runs a deterministic proposal Tribunal before any governed write and refreshes Radar, Registry, Atlas, and Compass once after all accepted artifacts are written.
 Compass timeline audit filters zero-file prompt-intervention narration so routing notes do not render as fake implementation history.
 
 ## Validation
@@ -196,6 +197,18 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   preserved zero-overlap waves, `program adopt`, `wave assign --adopt`,
   `backlog create --parent/--umbrella`, translated wave assignment errors, and
   non-tautological program next actions.
+- v0.1.15 greenfield quality hardening added `proposal_tribunal.py` as a
+  deterministic, host-model agnostic pre-write gate for accepted proposals. The
+  gate rejects child workstreams without component/diagram/dependency/proof
+  topology, candidate components without boundary/interface/dependency/proof
+  expectations, diagrams that do not connect to backlog and Registry topology,
+  and release/program structures that cannot make Compass visibly useful. Apply
+  now batches the visible Radar/Registry/Atlas/Compass refresh after all truth
+  writes and Compass memory recording, avoiding repeated partial refreshes on
+  the happy path. Focused proof passed `60` adjacent
+  greenfield/program/release/component/surface-refresh tests, `65`
+  bundle/capability mirror tests, `39` public-bundle/project-asset tests, and
+  the Compass/Radar release-target browser smoke.
 
 ## Rollout
 - Ship in v0.1.14 with B-141 because the user-facing failure is inseparable from consumer-lane host UX hardening: low latency is not enough if empty-repo greenfield prompts dead-end or if accepted proposals fail to show programs, waves, release targets, Registry topology, and Atlas traceability.
@@ -237,6 +250,12 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
 ## Migration/Compatibility
 - Existing consumer repos need no source-truth migration for greenfield behavior. Upgrading to v0.1.14 installs the additive CLI/runtime path, managed guidance, host skill shims, greenfield `0.0.1` default release targeting, program/wave authoring, and Atlas render polish. Existing source-backed governance remains unchanged; greenfield proposals are additive and confirmation-gated.
 - v0.1.14 greenfield behavior remains backward compatible: accepted proposals that name a release selector keep using that selector, while omitted selectors default to the first project release `0.0.1`. Apply now creates the umbrella execution-wave program document when child workstreams exist and targets the first wave plus umbrella to the first release so Compass can show program and release power without over-targeting every child workstream.
+- v0.1.15 greenfield apply is still confirmation-gated and backward-compatible
+  for already-written consumer truth, but newly accepted proposal JSON must meet
+  the stricter Tribunal quality bar before Odylith writes source truth. This is
+  intentional: missing topology, shallow component ownership, or invisible
+  release/program structure should fail before durable governance artifacts are
+  created.
 - One-word `Customer` values are now valid backlog truth. The relaxation is intentionally scoped to Customer only; Problem, Opportunity, Product View, and Success Metrics keep the stronger detail threshold and placeholder rejection.
 - Generated refresh-guard caches are versioned to `v2` and include file bytes,
   not only filesystem size/mtime shape. Upgrades from older releases therefore
