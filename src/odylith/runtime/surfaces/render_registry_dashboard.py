@@ -77,9 +77,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--ideas-root", default=registry.DEFAULT_IDEAS_ROOT)
     parser.add_argument("--stream", default=registry.DEFAULT_STREAM_PATH)
     parser.add_argument(
-        "--runtime-mode",
-        choices=("auto", "standalone", "daemon"),
-        default="auto",
+        "--runtime-mode", choices=("auto", "standalone", "daemon"), default="auto",
         help="Use the local runtime projection store when available for delivery-intelligence slices.",
     )
     return parser.parse_args(argv)
@@ -3176,15 +3174,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         stream_path=stream_path,
         runtime_mode=str(args.runtime_mode),
     )
-    component_rows = [
-        row
-        for row in payload.get("components", [])
-        if isinstance(row, dict)
-    ]
+    component_rows = [row for row in payload.get("components", []) if isinstance(row, dict)]
     detail_rows = {
-        str(row.get("component_id", "")).strip().lower(): _build_registry_detail_row(row)
+        component_id: _build_registry_detail_row(row)
         for row in component_rows
-        if str(row.get("component_id", "")).strip()
+        if (component_id := str(row.get("component_id", "")).strip().lower())
     }
     detail_manifest, detail_shards = _chunk_registry_items(
         items=detail_rows,
@@ -3195,9 +3189,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     payload["detail_manifest"] = detail_manifest
     payload["brand_head_html"] = brand_assets.render_brand_head_html(repo_root=repo_root, output_path=output_path)
     payload["data_source"] = {
-        "preferred_backend": (
-            "runtime" if str(args.runtime_mode).strip().lower() != "standalone" else "staticSnapshot"
-        ),
+        "preferred_backend": "runtime" if str(args.runtime_mode).strip().lower() != "standalone" else "staticSnapshot",
         "available_backends": ["runtime", "staticSnapshot"],
         "runtime_base_url": "",
     }
@@ -3215,10 +3207,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         global_name="__ODYLITH_REGISTRY_DATA__",
         payload=payload,
     )
-    payload["generated_local_date"] = dashboard_time.pacific_display_date_from_utc_token(
-        payload["generated_utc"],
-        default="-",
-    )
+    payload["generated_local_date"] = dashboard_time.pacific_display_date_from_utc_token(payload["generated_utc"], default="-")
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     bundled_html, payload_js, control_js = dashboard_surface_bundle.externalize_surface_bundle(
@@ -3233,9 +3222,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             allow_missing_embedded_json=True,
             shell_tab="registry",
             shell_frame_id="frame-registry",
-            query_passthrough=(
-                ("component", ("component",)),
-            ),
+            query_passthrough=(("component", ("component",)),),
         ),
     )
     odylith_context_cache.write_text_if_changed(

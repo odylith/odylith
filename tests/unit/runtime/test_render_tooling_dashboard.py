@@ -301,11 +301,14 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "Create a Registry component named" in html
     assert "Create an Atlas diagram for the payments component." in html
     assert "Duplicate payment capture after webhook retry" in html
-    assert "Release planning: pick the ship target" in html
-    assert "Program/wave planning: sequence umbrella execution" in html
-    assert "Release planning picks the ship target for one workstream" in html
+    assert "Create a target release" in html
+    assert "Assign a workstream to a release" in html
+    assert "Create programs and waves" in html
+    assert "Release planning has two steps: create the target release" in html
     assert "Program/wave planning picks execution order under one umbrella" in html
-    assert "A workstream can belong to both." in html
+    assert "A workstream can belong to a release and a program wave at the same time." in html
+    assert "Create target release 0.1.15" in html
+    assert "odylith release create release-v0-1-15" in html
     assert "Add B-067 to release 0.1.11." in html
     assert "odylith release add B-067 0.1.11 --repo-root ." in html
     assert "For umbrella workstream B-021, create a 3-wave execution program." in html

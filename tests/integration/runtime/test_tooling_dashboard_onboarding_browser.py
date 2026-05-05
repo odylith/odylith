@@ -683,11 +683,25 @@ def test_shell_cheatsheet_drawer_filters_and_copies_commands(tmp_path: Path, mon
         assert writes
         assert writes[-1] == "odylith compass watch-transactions --repo-root ."
 
-        search.fill("ship target")
-        page.locator(".cheatsheet-card-title", has_text="Release planning: pick the ship target").wait_for(timeout=15000)
-        assert page.locator(".cheatsheet-card", has_text="Program/wave planning: sequence umbrella execution").first.is_hidden()
+        search.fill("target release")
+        page.locator(".cheatsheet-card-title", has_text="Create a target release").wait_for(timeout=15000)
+        assert page.locator(".cheatsheet-card", has_text="Create programs and waves").first.is_hidden()
 
-        release_card = page.locator(".cheatsheet-card", has_text="Release planning: pick the ship target").first
+        release_create_card = page.locator(".cheatsheet-card", has_text="Create a target release").first
+        _click_visible(release_create_card.locator("button", has_text="Copy CLI"))
+        page.locator("#agentCheatsheetCopyStatus", has_text="CLI equivalent copied.").wait_for(timeout=15000)
+        writes = _clipboard_writes(page)
+        assert writes
+        assert writes[-1] == (
+            "odylith release create release-v0-1-15 --version 0.1.15 --tag v0.1.15 "
+            '--name "v0.1.15 stabilization" --status planning --alias current --repo-root .'
+        )
+
+        search.fill("ship target")
+        page.locator(".cheatsheet-card-title", has_text="Assign a workstream to a release").wait_for(timeout=15000)
+        assert page.locator(".cheatsheet-card", has_text="Create programs and waves").first.is_hidden()
+
+        release_card = page.locator(".cheatsheet-card", has_text="Assign a workstream to a release").first
         _click_visible(release_card.locator("button", has_text="Copy CLI"))
         page.locator("#agentCheatsheetCopyStatus", has_text="CLI equivalent copied.").wait_for(timeout=15000)
         writes = _clipboard_writes(page)
@@ -695,10 +709,10 @@ def test_shell_cheatsheet_drawer_filters_and_copies_commands(tmp_path: Path, mon
         assert writes[-1] == "odylith release add B-067 0.1.11 --repo-root ."
 
         search.fill("umbrella execution")
-        page.locator(".cheatsheet-card-title", has_text="Program/wave planning: sequence umbrella execution").wait_for(timeout=15000)
-        assert page.locator(".cheatsheet-card", has_text="Release planning: pick the ship target").first.is_hidden()
+        page.locator(".cheatsheet-card-title", has_text="Create programs and waves").wait_for(timeout=15000)
+        assert page.locator(".cheatsheet-card", has_text="Assign a workstream to a release").first.is_hidden()
 
-        wave_card = page.locator(".cheatsheet-card", has_text="Program/wave planning: sequence umbrella execution").first
+        wave_card = page.locator(".cheatsheet-card", has_text="Create programs and waves").first
         _click_visible(wave_card.locator("button", has_text="Copy CLI"))
         page.locator("#agentCheatsheetCopyStatus", has_text="CLI copied.").wait_for(timeout=15000)
         writes = _clipboard_writes(page)

@@ -141,18 +141,33 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             tags=("casebook", "create", "bug", "debugging"),
         ),
         _card(
-            card_id="plan-release-target",
+            card_id="create-release-target",
             category="Planning",
-            title="Release planning: pick the ship target",
-            summary="Use release planning when the question is which release one workstream should ship in. Example: add `B-067` to `0.1.11`. This does not decide umbrella sequencing or wave order.",
-            prompt="Add B-067 to release 0.1.11.",
-            command="odylith release add B-067 0.1.11 --repo-root .",
-            tags=("release", "planning", "ship-target", "0.1.11"),
+            title="Create a target release",
+            summary="Use this when the repo needs a governed release lane before workstreams are assigned to it. Create the release first, then assign workstreams separately.",
+            prompt=(
+                'Create target release 0.1.15 named "v0.1.15 stabilization". '
+                "Mark it as planning, make it the current release alias, and note that it is the next governed stabilization target."
+            ),
+            command=(
+                "odylith release create release-v0-1-15 --version 0.1.15 --tag v0.1.15 "
+                '--name "v0.1.15 stabilization" --status planning --alias current --repo-root .'
+            ),
+            tags=("release", "create", "target-release", "0.1.15"),
         ),
         _card(
-            card_id="plan-program-waves",
+            card_id="assign-workstream-release",
             category="Planning",
-            title="Program/wave planning: sequence umbrella execution",
+            title="Assign a workstream to a release",
+            summary="Use this when the release already exists and one workstream needs a ship target. This does not decide umbrella sequencing or wave order.",
+            prompt="Add B-067 to release 0.1.11.",
+            command="odylith release add B-067 0.1.11 --repo-root .",
+            tags=("release", "assign", "workstream", "ship-target", "0.1.11"),
+        ),
+        _card(
+            card_id="create-program-waves",
+            category="Planning",
+            title="Create programs and waves",
             summary="Use program/wave planning when the question is how one umbrella effort should execute. Start with `odylith program next` so the agent gets one exact next command instead of hand-editing wave JSON. This does not choose the release; the same workstream can still target `0.1.11` separately.",
             prompt=(
                 "For umbrella workstream B-021, create a 3-wave execution program. "
@@ -588,7 +603,7 @@ def build_agent_cheatsheet_state(payload: Mapping[str, Any]) -> AgentCheatsheetS
         title=str(raw_state.get("title", "")).strip() or "Odylith Dashboard Cheatsheet",
         note=(
             str(raw_state.get("note", "")).strip()
-            or "Release planning picks the ship target for one workstream, like `B-067 -> 0.1.11`. Program/wave planning picks execution order under one umbrella, like `B-021 -> W1, W2, W3`. A workstream can belong to both. Replace the names and ids; when a prompt names a component like payments or a workstream id like B-025, Odylith scopes to the tied files and governed records."
+            or "Release planning has two steps: create the target release, then assign workstreams to it. Program/wave planning picks execution order under one umbrella, like `B-021 -> W1, W2, W3`. A workstream can belong to a release and a program wave at the same time. Replace the names and ids; when a prompt names a component like payments or a workstream id like B-025, Odylith scopes to the tied files and governed records."
         ),
         search_placeholder=(
             str(raw_state.get("search_placeholder", "")).strip()

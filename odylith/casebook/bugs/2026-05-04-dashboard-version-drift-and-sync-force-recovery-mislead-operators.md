@@ -14,7 +14,7 @@
 
 - Type: Tooling
 
-- Description: After upgrade, odylith version can report the new active release while the generated dashboard shell still renders the prior version. The hosted install path can make this ambiguous because a complete existing install routes through upgrade, while incomplete or legacy installs can run repo-state migrations inside install without an obvious dashboard-refresh settlement. The dentoai-orion post-upgrade lane also proved odylith sync --force was not a reliable recovery command: the repo had broad Odylith-owned dirty overlap after migration, the upgrade dashboard refresh took 22.1s, and runtime version inspection could crash while trying to delete a locked `.DS_Store` metadata file from the managed runtime tree.
+- Description: After upgrade, odylith version can report the new active release while the generated dashboard shell still renders the prior version. The hosted install path can make this ambiguous because a complete existing install routes through upgrade, while incomplete or legacy installs can run repo-state migrations inside install without an obvious dashboard-refresh settlement. A real consumer post-upgrade lane also proved odylith sync --force was not a reliable recovery command: the repo had broad Odylith-owned dirty overlap after migration, the upgrade dashboard refresh took 22.1s, and runtime version inspection could crash while trying to delete a locked `.DS_Store` metadata file from the managed runtime tree.
 
 - Impact: Operators cannot trust the human-facing dashboard as install-state evidence after upgrade, and recovery guidance nudges them toward a broader write path than needed.
 

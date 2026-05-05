@@ -1148,3 +1148,34 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   product renderers. Existing consumers need no bespoke source-truth migration;
   upgrade, managed asset adoption, and dashboard refresh apply the browser and
   documentation fixes.
+- The host-neutral startup and shell-cheatsheet hardening is covered by
+  `migration-observer:0.1.14:guidance-and-skills:21cdcaafabc1`,
+  `migration-observer:0.1.14:operator-cli-contracts:425798d4b69d`,
+  `migration-observer:0.1.14:browser-surfaces:078031117cb6`,
+  `migration-observer:0.1.14:browser-surfaces:39484747861d`,
+  `migration-observer:0.1.14:install-managed-assets:48e232bef174`, and
+  `migration-observer:0.1.14:install-managed-assets:4782e24d1e80`. The CLI
+  keeps plain `odylith start` compact while host packet consumers request
+  `--json`, shared host summary logic collapses narrowing/fallback packet
+  internals into a human target request, managed guidance bans chat-visible
+  "Startup fell back" narration across supported coding agents, and the shell
+  cheatsheet refresh adds release/program prompts to checked-in and bundled
+  browser assets. Existing consumers need no bespoke source-truth migration;
+  normal v0.1.14 managed guidance adoption and dashboard refresh apply the
+  host-summary, CLI, shell, and bundle changes.
+- The sync hot-path decomposition is covered by
+  `migration-observer:0.1.14:operator-cli-contracts:da1177e62411` and
+  `migration-observer:0.1.14:browser-surfaces:b4ddee9276b9`. The pass moves
+  sync-only surface batching and generated-output git status helpers into
+  focused runtime modules while preserving the existing `odylith sync` command
+  contract, generated-output target list, and dashboard surface render order.
+  Existing consumer installs need no source-truth migration; upgrade adoption
+  gets the refactored runtime code and existing generated surfaces continue to
+  refresh through the same sync/dashboard paths.
+- The post-QA Radar and Casebook rendered-surface settlement is covered by
+  `migration-observer:0.1.14:browser-surfaces:017861c55f14` and
+  `migration-observer:0.1.14:install-managed-assets:e8b797046465`. The pass
+  refreshes the owned browser surfaces after the source-truth assessment and
+  host-neutral Casebook wording changed. Existing consumer installs need no
+  bespoke source-truth migration; dashboard/sync refresh will regenerate those
+  surfaces under the same installed renderer contract.

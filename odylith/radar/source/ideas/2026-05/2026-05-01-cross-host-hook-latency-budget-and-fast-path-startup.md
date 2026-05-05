@@ -166,7 +166,7 @@ Prompt-submit and stop hooks stay under a documented local latency budget on war
   The non-force path still blocks broad overlap before tracked Radar
   normalization and recommends the narrow
   `odylith dashboard refresh --repo-root . --force` recovery for shell-only
-  drift. The dentoai-orion post-upgrade evidence also hardened managed-runtime
+  drift. The real consumer post-upgrade evidence also hardened managed-runtime
   health so locked ignored metadata such as `.DS_Store` cannot crash
   `odylith version`.
 - 2026-05-04 sync-force latency proof keeps the engine stack active while

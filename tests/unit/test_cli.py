@@ -3695,11 +3695,14 @@ def test_start_fallback_lane_prints_exact_next_command(monkeypatch, tmp_path: Pa
     captured = capsys.readouterr().out
 
     assert rc == 1
-    assert "- lane: fallback" in captured
+    assert "- lane: narrowing" in captured
+    assert "- status: needs target" in captured
+    assert "Name one code path, workstream, component, bug, or file before implementation." in captured
     assert "- next: rg --files | rg 'src/odylith/cli.py'" in captured
     assert "- followup: sed -n '1,200p' src/odylith/cli.py" in captured
     assert "- lane: bootstrap" not in captured
     assert '"packet_kind": "bootstrap_session"' not in captured
+    assert "lane: fallback" not in captured
 
 
 def test_start_status_only_routes_to_version(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -3791,7 +3794,7 @@ def test_start_bootstrap_exception_prints_repair_guidance(monkeypatch, tmp_path:
     captured = capsys.readouterr().out
 
     assert rc == 1
-    assert "- lane: fallback" in captured
+    assert "- lane: repair" in captured
     assert "projection cache corrupted" in captured
     assert "- next: ./.odylith/bin/odylith doctor --repo-root . --repair" in captured
     assert "- followup: ./.odylith/bin/odylith bootstrap --repo-root . --no-working-tree" in captured

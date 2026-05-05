@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+from types import SimpleNamespace
 
 from odylith.runtime.surfaces import claude_host_session_brief
 
@@ -62,6 +63,55 @@ def test_render_session_brief_summarizes_start_output() -> None:
 def test_render_session_brief_returns_empty_string_when_start_output_empty() -> None:
     rendered = claude_host_session_brief.render_session_brief(start_output_override="")
     assert rendered == ""
+
+
+def test_render_session_brief_sanitizes_start_narrowing_output() -> None:
+    start_output = """
+odylith start
+- lane: fallback
+- reason: Need one code path.
+{
+  "context_packet": {
+    "packet_state": "gated_ambiguous"
+  }
+}
+"""
+
+    rendered = claude_host_session_brief.render_session_brief(start_output_override=start_output)
+
+    assert rendered == (
+        "Odylith startup: needs a narrower target before implementation. "
+        "Name one code path, workstream, component, bug, or file."
+    )
+    assert "fallback" not in rendered.casefold()
+    assert "gated_ambiguous" not in rendered
+
+
+def test_render_session_brief_eager_start_requests_json_packet(monkeypatch, tmp_path: Path) -> None:
+    calls: list[tuple[str, list[str], int]] = []
+
+    def _fake_run_odylith(**kwargs: object) -> SimpleNamespace:
+        calls.append(
+            (
+                str(kwargs["project_dir"]),
+                list(kwargs["args"]),  # type: ignore[arg-type]
+                int(kwargs["timeout"]),
+            )
+        )
+        return SimpleNamespace(
+            stdout=(
+                "odylith start\n"
+                "- lane: bootstrap\n"
+                '{"selection_reason":"focused on B-083","recommended_commands":["odylith context --repo-root . B-083"]}'
+            )
+        )
+
+    monkeypatch.setattr(claude_host_session_brief.claude_host_shared, "run_odylith", _fake_run_odylith)
+
+    rendered = claude_host_session_brief.render_session_brief(repo_root=tmp_path, eager_start=True)
+
+    assert "selection: focused on B-083" in rendered
+    assert calls == [(str(tmp_path), ["start", "--repo-root", ".", "--json"], 20)]
 
 
 def test_render_session_brief_uses_substrate_without_start(tmp_path: Path, monkeypatch) -> None:

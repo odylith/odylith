@@ -840,7 +840,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "Let `start` finish first; then narrow." in root_agents
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in root_agents
     assert "the exact file/workstream, the bug under test, or the validation in flight" in root_agents
-    assert "If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history." in root_agents
+    assert "never say `Startup fell back`" in root_agents
     assert "Do not surface routine `odylith start`, `odylith context`, or `odylith query` commands in progress updates" in root_agents
     assert "never prefix commentary with control-plane receipt labels" in root_agents
     assert "Mention Odylith during the work only when the user explicitly asks for the command, a real blocker requires it, or a consumer-versus-maintainer lane distinction matters." in root_agents

@@ -6,6 +6,7 @@ from types import SimpleNamespace
 from odylith.runtime.context_engine import odylith_context_engine
 from odylith.runtime.governance import agent_governance_intelligence as governance
 from odylith.runtime.governance import sync_session
+from odylith.runtime.governance import sync_surface_render_batch
 from odylith.runtime.governance import sync_workstream_artifacts
 from odylith.runtime.surfaces import compass_dashboard_runtime
 from odylith.runtime.surfaces import render_backlog_ui
@@ -682,8 +683,8 @@ def test_sync_surface_batch_parallelizes_child_surfaces_and_renders_shell_last(
         calls.append(("single", (surface,)))
         return "", {"surface": surface, "status": "passed", "rc": 0}
 
-    monkeypatch.setattr(sync_workstream_artifacts, "_refresh_sync_surfaces_parallel", _fake_parallel)
-    monkeypatch.setattr(sync_workstream_artifacts, "_run_sync_surface_worker", _fake_worker)
+    monkeypatch.setattr(sync_surface_render_batch, "_refresh_sync_surfaces_parallel", _fake_parallel)
+    monkeypatch.setattr(sync_surface_render_batch, "_run_sync_surface_worker", _fake_worker)
 
     rc = sync_workstream_artifacts._run_sync_surface_render_batch(  # noqa: SLF001
         repo_root=tmp_path,

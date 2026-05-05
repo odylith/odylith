@@ -103,7 +103,7 @@ def json_payload_from_output(output: str) -> dict[str, Any]:
 
 
 def start_payload(project_dir: Path | str) -> Mapping[str, Any] | None:
-    completed = run_odylith(project_dir=project_dir, args=["start", "--repo-root", "."], timeout=20)
+    completed = run_odylith(project_dir=project_dir, args=["start", "--repo-root", ".", "--json"], timeout=20)
     if completed is None:
         return None
     payload = json_payload_from_output(completed.stdout)

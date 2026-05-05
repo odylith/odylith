@@ -49,6 +49,10 @@ _FIRST_RUN_SURFACE_OUTPUTS = (
 )
 _DEFAULT_DASHBOARD_REFRESH_SURFACES = ("tooling_shell", "radar", "compass")
 _DEFAULT_DASHBOARD_REFRESH_SURFACES_CSV = ",".join(_DEFAULT_DASHBOARD_REFRESH_SURFACES)
+_START_NARROWING_REASON_LABELS = {
+    "Need one code path.": "Name one code path, workstream, component, bug, or file before implementation.",
+    "Need one code or contract path.": "Name one code or contract path, workstream, component, bug, or file before implementation.",
+}
 _BOOTSTRAP_RUNTIME_PRESTAGED_ENV = "ODYLITH_BOOTSTRAP_RUNTIME_PRESTAGED"
 _INSTALL_COMPACT_ENV = "ODYLITH_INSTALL_COMPACT"
 _INSTALL_PREVIOUS_ACTIVE_VERSION_ENV = "ODYLITH_INSTALL_PREVIOUS_ACTIVE_VERSION"
@@ -2086,6 +2090,11 @@ def _cmd_migrate_legacy_install(args: argparse.Namespace) -> int:
     return 0
 
 
+def _start_operator_reason(reason: str) -> str:
+    compact = str(reason or "").strip()
+    return _START_NARROWING_REASON_LABELS.get(compact, compact)
+
+
 def _cmd_start(args: argparse.Namespace) -> int:
     preflight = evaluate_start_preflight(
         repo_root=args.repo_root,
@@ -2106,7 +2115,7 @@ def _cmd_start(args: argparse.Namespace) -> int:
         payload = _start_bootstrap_payload(args)
     except Exception as exc:
         next_command, next_followup = _bootstrap_failure_guidance(repo_root=args.repo_root)
-        print("- lane: fallback")
+        print("- lane: repair")
         print(f"- reason: bootstrap packet build failed: {_single_line_error(exc)}")
         print(f"- next: {next_command}")
         print(f"- followup: {next_followup}")
@@ -2117,10 +2126,12 @@ def _cmd_start(args: argparse.Namespace) -> int:
         else {}
     )
     fallback_required = bool(narrowing_guidance.get("required"))
-    final_lane = "fallback" if fallback_required else "bootstrap"
+    final_lane = "narrowing" if fallback_required else "bootstrap"
     final_reason = str(narrowing_guidance.get("reason", "")).strip() if fallback_required else preflight.reason
     print(f"- lane: {final_lane}")
-    print(f"- reason: {final_reason or preflight.reason}")
+    if fallback_required:
+        print("- status: needs target")
+    print(f"- reason: {_start_operator_reason(final_reason) or preflight.reason}")
     if fallback_required:
         next_command = str(narrowing_guidance.get("next_fallback_command", "")).strip()
         next_followup = str(narrowing_guidance.get("next_fallback_followup", "")).strip()
@@ -2131,7 +2142,7 @@ def _cmd_start(args: argparse.Namespace) -> int:
     if bool(getattr(args, "json", False)):
         print(json.dumps(payload, indent=2, ensure_ascii=False))
     elif fallback_required:
-        print("- json: rerun with --json for packet diagnostics")
+        print("- diagnostics: rerun with --json for packet details")
     else:
         packet_kind = str(payload.get("packet_kind", "")).strip()
         context_packet = payload.get("context_packet")

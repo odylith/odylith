@@ -42,7 +42,9 @@ from odylith.runtime.governance import compass_dashboard_refresh_inputs
 from odylith.runtime.governance import dashboard_refresh_contract
 from odylith.runtime.governance import release_truth_runtime
 from odylith.runtime.governance import surface_refresh_fingerprint_dag
+from odylith.runtime.governance import sync_generated_outputs
 from odylith.runtime.governance import sync_session as governed_sync_session
+from odylith.runtime.governance import sync_surface_render_batch
 from odylith.runtime.governance.legacy_backlog_normalization import backlog_next_action
 from odylith.runtime.governance.legacy_backlog_normalization import collect_backlog_contract_errors
 from odylith.runtime.governance.legacy_backlog_normalization import normalize_legacy_backlog_index
@@ -2052,100 +2054,24 @@ def refresh_dashboard_surfaces(
 
 
 def _sync_surface_batch_outputs(surfaces: Sequence[str]) -> tuple[str, ...]:
-    outputs: list[str] = []
-    seen: set[str] = set()
-    for surface in surfaces:
-        for output in _surface_render_outputs(surface):
-            if output not in seen:
-                seen.add(output)
-                outputs.append(output)
-    return tuple(outputs)
-
-
-def _sync_surface_steps(*, repo_root: Path, surface: str, runtime_mode: str) -> list[ExecutionStep]:
-    steps = _dashboard_surface_steps(
-        repo_root=repo_root,
-        surface=surface,
-        runtime_mode=runtime_mode,
-        atlas_sync=False,
+    return sync_surface_render_batch.sync_surface_batch_outputs(
+        surfaces=surfaces,
+        surface_render_outputs=_surface_render_outputs,
     )
-    return [
-        step
-        for step in steps
-        if not step.label.startswith("Refresh delivery intelligence inputs")
-        and not step.label.startswith("Normalize and validate Casebook bugs")
-    ]
 
 
-def _run_sync_surface_worker(
-    *,
-    repo_root: Path,
-    surface: str,
-    runtime_mode: str,
-    run_impl: Callable[..., int],
-) -> tuple[str, dict[str, Any]]:
-    capture = io.StringIO()
-    _dashboard_thread_capture.buf = capture
-    try:
-        steps = _sync_surface_steps(
-            repo_root=repo_root,
-            surface=surface,
-            runtime_mode=runtime_mode,
-        )
-        result = _execute_dashboard_refresh_surface(
-            repo_root=repo_root,
-            surface=surface,
-            steps=steps,
-            runtime_mode=runtime_mode,
-            run_impl=run_impl,
-        )
-    finally:
-        _dashboard_thread_capture.buf = None
-    return capture.getvalue(), result
-
-
-def _refresh_sync_surfaces_parallel(
-    *,
-    repo_root: Path,
-    selected: Sequence[str],
-    runtime_mode: str,
-    run_impl: Callable[..., int],
-) -> list[dict[str, Any]]:
-    future_map: dict[concurrent.futures.Future[tuple[str, dict[str, Any]]], str] = {}
-    real_stdout = sys.stdout
-    capture_proxy = _ThreadCapturePrint(real_stdout)
-    sys.stdout = capture_proxy  # type: ignore[assignment]
-    try:
-        with concurrent.futures.ThreadPoolExecutor(
-            max_workers=len(selected),
-            thread_name_prefix="sync_surface",
-        ) as executor:
-            for surface in selected:
-                worker_context = copy_context()
-                future = executor.submit(
-                    worker_context.run,
-                    _run_sync_surface_worker,
-                    repo_root=repo_root,
-                    surface=surface,
-                    runtime_mode=runtime_mode,
-                    run_impl=run_impl,
-                )
-                future_map[future] = surface
-    finally:
-        sys.stdout = real_stdout
-    results_by_surface: dict[str, tuple[str, dict[str, Any]]] = {}
-    for future, surface in future_map.items():
-        output, result = future.result()
-        results_by_surface[surface] = (output, result)
-    ordered_results: list[dict[str, Any]] = []
-    for surface in selected:
-        output, result = results_by_surface[surface]
-        if output:
-            sys.stdout.write(output)
-            if not output.endswith("\n"):
-                sys.stdout.write("\n")
-        ordered_results.append(result)
-    return ordered_results
+def _sync_surface_batch_runtime() -> sync_surface_render_batch.SyncSurfaceBatchRuntime:
+    return sync_surface_render_batch.SyncSurfaceBatchRuntime(
+        normalize_dashboard_surfaces=normalize_dashboard_surfaces,
+        surface_render_outputs=_surface_render_outputs,
+        dashboard_surface_steps=_dashboard_surface_steps,
+        execute_dashboard_refresh_surface=_execute_dashboard_refresh_surface,
+        use_runtime_fast_path=_use_runtime_fast_path,
+        runtime_fast_path_prerequisites_met=_runtime_fast_path_prerequisites_met,
+        run_command=_run_command,
+        run_command_in_process_direct=_run_command_in_process_direct,
+        skip_generated_refresh_guard_env=_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV,
+    )
 
 
 def _run_sync_surface_render_batch(
@@ -2154,190 +2080,28 @@ def _run_sync_surface_render_batch(
     surfaces: Sequence[str],
     runtime_mode: str,
 ) -> int:
-    selected = normalize_dashboard_surfaces(surfaces)
-    normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
-    run_impl = _run_command
-    runtime_fallback_used = False
-    if _use_runtime_fast_path(normalized_runtime_mode) and _runtime_fast_path_prerequisites_met(repo_root):
-        run_impl = _run_command_in_process_direct
-    elif _use_runtime_fast_path(normalized_runtime_mode):
-        print("- runtime_fallback: standalone (runtime prerequisites missing)")
-        runtime_fallback_used = True
-
-    started_at = time.perf_counter()
-    surface_results: list[dict[str, Any]] = []
-    previous_guard_skip = os.environ.get(_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV)
-    os.environ[_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV] = "1"
-    try:
-        surface_groups: list[list[str]]
-        if "compass" in selected and len(selected) > 1:
-            surface_groups = [
-                ["compass"],
-                [surface for surface in selected if surface not in {"compass", "tooling_shell"}],
-            ]
-            if "tooling_shell" in selected:
-                surface_groups.append(["tooling_shell"])
-        elif "tooling_shell" in selected and len(selected) > 1:
-            surface_groups = [
-                [surface for surface in selected if surface != "tooling_shell"],
-                ["tooling_shell"],
-            ]
-        else:
-            surface_groups = [list(selected)]
-        for surface_group in surface_groups:
-            if not surface_group:
-                continue
-            if len(surface_group) >= 2:
-                surface_results.extend(
-                    _refresh_sync_surfaces_parallel(
-                        repo_root=repo_root,
-                        selected=surface_group,
-                        runtime_mode=normalized_runtime_mode,
-                        run_impl=run_impl,
-                    )
-                )
-                continue
-            for surface in surface_group:
-                output, result = _run_sync_surface_worker(
-                    repo_root=repo_root,
-                    surface=surface,
-                    runtime_mode=normalized_runtime_mode,
-                    run_impl=run_impl,
-                )
-                if output:
-                    sys.stdout.write(output)
-                    if not output.endswith("\n"):
-                        sys.stdout.write("\n")
-                surface_results.append(result)
-    finally:
-        if previous_guard_skip is None:
-            os.environ.pop(_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV, None)
-        else:
-            os.environ[_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV] = previous_guard_skip
-
-    for result in surface_results:
-        runtime_fallback_used = runtime_fallback_used or bool(result.get("fallback_used"))
-    elapsed = time.perf_counter() - started_at
-    failures = [result for result in surface_results if str(result.get("status", "")).strip() == "failed"]
-    queued = [result for result in surface_results if str(result.get("status", "")).strip() == "queued"]
-    print("sync surface render batch completed")
-    if failures:
-        print("- outcome: failed")
-    elif queued:
-        print("- outcome: queued")
-    else:
-        print("- outcome: passed")
-    print("- surfaces: " + ", ".join(selected))
-    print(f"- elapsed_seconds: {elapsed:.1f}")
-    print(f"- runtime_fallback_used: {'yes' if runtime_fallback_used else 'no'}")
-    for result in surface_results:
-        surface = str(result.get("surface", "")).strip()
-        status = str(result.get("status", "")).strip() or "failed"
-        suffix = " (standalone fallback used)" if bool(result.get("fallback_used")) else ""
-        if bool(result.get("cache_hit")):
-            suffix += " (fingerprint reuse)"
-        print(f"- {surface}: {status}{suffix}")
-        if status not in {"passed", "queued"}:
-            failed_step = str(result.get("failed_step", "")).strip()
-            next_command = str(result.get("next_command", "")).strip()
-            if failed_step:
-                print(f"  failed_step: {failed_step}")
-            if next_command:
-                print(f"  next: {next_command}")
-        elif status == "queued":
-            next_command = str(result.get("next_command", "")).strip()
-            if next_command:
-                print(f"  next: {next_command}")
-    if failures:
-        return 2
-    return 0
+    return sync_surface_render_batch.run_sync_surface_render_batch(
+        runtime=_sync_surface_batch_runtime(),
+        repo_root=repo_root,
+        surfaces=surfaces,
+        runtime_mode=runtime_mode,
+    )
 
 
 def generated_output_targets() -> tuple[str, ...]:
-    return (
-        "odylith/radar/radar.html",
-        "odylith/radar/backlog-payload.v1.js",
-        "odylith/radar/backlog-app.v1.js",
-        "odylith/radar/backlog-detail-shard-*.v1.js",
-        "odylith/radar/backlog-document-shard-*.v1.js",
-        "odylith/radar/standalone-pages.v1.js",
-        "odylith/radar/traceability-graph.v1.json",
-        "odylith/radar/traceability-autofix-report.v1.json",
-        "odylith/atlas/atlas.html",
-        "odylith/atlas/mermaid-payload.v1.js",
-        "odylith/atlas/mermaid-app.v1.js",
-        "odylith/compass/compass.html",
-        "odylith/compass/compass-payload.v1.js",
-        "odylith/compass/compass-app.v1.js",
-        "odylith/compass/compass-style-base.v1.css",
-        "odylith/compass/compass-style-execution-waves.v1.css",
-        "odylith/compass/compass-style-surface.v1.css",
-        "odylith/compass/compass-shared.v1.js",
-        "odylith/compass/compass-state.v1.js",
-        "odylith/compass/compass-summary.v1.js",
-        "odylith/compass/compass-timeline.v1.js",
-        "odylith/compass/compass-waves.v1.js",
-        "odylith/compass/compass-workstreams.v1.js",
-        "odylith/compass/compass-ui-runtime.v1.js",
-        "odylith/registry/registry.html",
-        "odylith/registry/registry-payload.v1.js",
-        "odylith/registry/registry-app.v1.js",
-        "odylith/casebook/casebook.html",
-        "odylith/casebook/casebook-payload.v1.js",
-        "odylith/casebook/casebook-app.v1.js",
-        "odylith/casebook/casebook-detail-shard-*.v1.js",
-        "odylith/index.html",
-        "odylith/tooling-payload.v1.js",
-        "odylith/tooling-app.v1.js",
-        "odylith/runtime/delivery_intelligence.v4.json",
-        "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
-        "odylith/atlas/source/catalog/diagrams.v1.json",
-        "odylith/atlas/source/*.svg",
-        "odylith/atlas/source/*.png",
-        "odylith/registry/registry-detail-shard-*.v1.js",
-    )
+    return sync_generated_outputs.generated_output_targets()
 
 
 def _git_status_generated_outputs(*, repo_root: Path) -> list[str]:
-    completed = subprocess.run(
-        [
-            "git",
-            "-C",
-            str(repo_root),
-            "status",
-            "--porcelain",
-            "--untracked-files=all",
-            "--",
-            *generated_output_targets(),
-        ],
-        capture_output=True,
-        check=False,
-        text=True,
-    )
-    raw = str(completed.stdout or "")
-    return [line for line in raw.splitlines() if line]
+    return sync_generated_outputs.git_status_generated_outputs(repo_root=repo_root)
 
 
 def _git_dirty_generated_outputs(*, repo_root: Path) -> str:
-    return "\n".join(_git_status_generated_outputs(repo_root=repo_root)).rstrip()
-
-
-def _commit_ready_dirty_status_line(line: str) -> bool:
-    status = line[:2]
-    if status == "??":
-        return True
-    if len(status) < 2:
-        return True
-    return status[1] != " "
+    return sync_generated_outputs.git_dirty_generated_outputs(repo_root=repo_root)
 
 
 def _git_commit_ready_generated_outputs(*, repo_root: Path) -> str:
-    lines = [
-        line
-        for line in _git_status_generated_outputs(repo_root=repo_root)
-        if _commit_ready_dirty_status_line(line)
-    ]
-    return "\n".join(lines).rstrip()
+    return sync_generated_outputs.git_commit_ready_generated_outputs(repo_root=repo_root)
 
 
 def build_sync_execution_plan(
