@@ -25,6 +25,50 @@ EXPECTED_LINK_TARGETS = {
     / "release-notes"
     / "v0.1.14.md": "../../../../docs/research/BENCHMARK_FORMAL_MODEL.md",
 }
+GITHUB_FRAGILE_MATH_MARKERS = (
+    "$$",
+    "\\(",
+    "\\)",
+    "\\[",
+    "\\]",
+    "\\operatorname",
+    "\\mathrm",
+    "\\mathbb",
+    "\\mathcal",
+    "\\Delta",
+)
+EXPECTED_SECTIONS = (
+    "## Scope",
+    "## Rendering Contract",
+    "## Core Entities",
+    "## Product Turn Gate Contract",
+    "## Decision Vocabulary",
+    "## Early-Exit Proof Contract",
+    "## Scenario Model",
+    "## Matched-Lane Fairness",
+    "## Utility Interpretation",
+    "## Generalization Claim",
+    "## Public Report Validity",
+    "## Migration Interpretation",
+    "## Invalid Row Conditions",
+    "## Operational Reading",
+)
+REQUIRED_REPORT_FIELDS = (
+    "turn_gate_decision",
+    "turn_gate_receipt",
+    "turn_gate_product_path_present",
+    "execution_capsule",
+    "tool_gate_summary",
+    "stop_gate_summary",
+    "status_basis",
+    "validator_execution_mode",
+    "validator_status_basis",
+    "preflight_evidence_mode",
+    "preflight_evidence_result_status",
+    "candidate_write_paths",
+    "workspace_delta_paths",
+    "fairness_findings",
+)
 DURABLE_UNDERSCORE_TOKENS = (
     "answer_only",
     "early_exit_proof",
@@ -40,22 +84,24 @@ DURABLE_UNDERSCORE_TOKENS = (
 )
 
 
-def _math_regions(markdown: str) -> list[str]:
-    regions: list[str] = []
-    for pattern in (r"\$\$(.*?)\$\$", r"\\\[(.*?)\\\]", r"\\\((.*?)\\\)"):
-        regions.extend(match.group(1) for match in re.finditer(pattern, markdown, flags=re.DOTALL))
-    return regions
-
-
-def test_benchmark_formal_model_keeps_durable_tokens_out_of_latex_math() -> None:
+def test_benchmark_formal_model_uses_github_safe_plain_markdown() -> None:
     markdown = FORMAL_MODEL.read_text(encoding="utf-8")
-    math_text = "\n".join(_math_regions(markdown))
 
-    assert "\\operatorname" not in math_text
+    for marker in GITHUB_FRAGILE_MATH_MARKERS:
+        assert marker not in markdown
+    assert not re.search(r"\\[A-Za-z]+", markdown)
+    assert "```text" in markdown
+
+
+def test_benchmark_formal_model_exposes_public_interpretation_contract() -> None:
+    markdown = FORMAL_MODEL.read_text(encoding="utf-8")
+
+    for heading in EXPECTED_SECTIONS:
+        assert heading in markdown
+    for field in REQUIRED_REPORT_FIELDS:
+        assert field in markdown
     for token in DURABLE_UNDERSCORE_TOKENS:
-        assert token not in math_text
-    for command, body in re.findall(r"\\(mathrm|text|mathbf)\{([^}]*)\}", math_text):
-        assert "_" not in body, f"GitHub math may parse `{command}{{{body}}}` as nested subscripts"
+        assert token in markdown
 
 
 def test_benchmark_formal_model_links_point_to_research_folder() -> None:
