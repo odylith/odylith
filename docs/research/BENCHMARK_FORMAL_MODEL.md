@@ -23,13 +23,13 @@ a benchmark row is valid public evidence for the Odylith operating policy.
 
 ## Rendering Contract
 
-This document must render cleanly in GitHub Markdown. It deliberately avoids
-LaTeX display blocks and LaTeX inline math. Equations are written as plain text
-inside fenced `text` blocks, and durable report fields or enum tokens stay in
-Markdown code spans.
+This document must render cleanly in GitHub Markdown while still showing real
+LaTeX equations. Equations use fenced `math` blocks. Durable report fields or
+enum tokens stay in Markdown code spans and out of LaTeX identifiers.
 
 That rule is part of the benchmark contract. Public benchmark interpretation
-should not depend on a renderer accepting a particular math macro set.
+should not depend on unsafe macros, raw dollar-sign math delimiters, or durable
+source tokens being interpreted as mathematical subscripts.
 
 ## Core Entities
 
@@ -56,8 +56,8 @@ should not depend on a renderer accepting a particular math macro set.
 
 The product Turn Gate has this shape:
 
-```text
-G_O(P_s, r_s, h_s, m_s) -> (d_s, E_s, C_s, rho_s)
+```math
+G_O(P_s, r_s, h_s, m_s) \to (d_s, E_s, C_s, \rho_s)
 ```
 
 Inputs:
@@ -79,15 +79,15 @@ Outputs:
 
 The Odylith-on lane is the host running under this product decision:
 
-```text
-odylith_on_policy(P_s, r_s, h_s, m_s) =
-  host_execute(G_O(P_s, r_s, h_s, m_s), P_s, r_s, h_s)
+```math
+\pi_O(P_s, r_s, h_s, m_s)
+= H(G_O(P_s, r_s, h_s, m_s), P_s, r_s, h_s)
 ```
 
 The benchmark wrapper is only an observation function:
 
-```text
-Y_s = benchmark_measure(d_s, E_s, C_s, rho_s, timing_s, V_s, A_s, W_s)
+```math
+Y_s = M_B(d_s, E_s, C_s, \rho_s, \tau_s, V_s, A_s, W_s)
 ```
 
 The wrapper may sandbox, time, log, and score. It may run focused local checks
@@ -120,6 +120,33 @@ labels, but reports must preserve the durable token.
 An early-exit proof is valid only when the product Turn Gate, not the benchmark
 wrapper, admits the row:
 
+```math
+d_s = d_{\mathrm{early}}
+\Rightarrow
+\Phi_G(P_s, E_s, r_s) = 1
+\land W_s^{\mathrm{obs}} = \varnothing
+\land S_\rho(\rho_s) = \sigma_G
+```
+
+Here `d_early` denotes the `early_exit_proof` decision and `sigma_G` denotes the
+`product_turn_gate` receipt source. The implemented predicate is:
+
+```math
+\Phi_G(P_s, E_s, r_s) = A_s \land B_s \land K_s \land \neg U_s
+```
+
+with:
+
+```math
+A_s, B_s, K_s, U_s \in \{0,1\}
+```
+
+where `A_s` is product-policy admission for validator-backed non-mutating
+closure, `B_s` is focused evidence pass or non-applicability, `K_s` is coverage
+of the declared validation contract, and `U_s` is unsafe-side-effect pressure.
+
+The report-field equivalent is:
+
 ```text
 early_exit_is_valid(s) =
   turn_gate_decision.decision_type == early_exit_proof
@@ -150,21 +177,21 @@ The legacy compatibility hint consumed by
 still requires product-path presence, focused evidence coverage, a
 `product_turn_gate` receipt, and an empty observed write set.
 
+For live benchmark rows:
+
+```math
+W_s^{\mathrm{obs}} = CWP_s \cup WDP_s
+```
+
+where `CWP_s` is the reported `candidate_write_paths` set and `WDP_s` is the
+reported `workspace_delta_paths` set.
+
 ## Scenario Model
 
 A benchmark scenario is:
 
-```text
-S_s = (
-  scenario_id,
-  x_s,
-  r_s,
-  h_s,
-  m_s,
-  declared_contract_s,
-  validators_s,
-  truth_predicate_s
-)
+```math
+S_s = (x_s, r_s, h_s, m_s, C_s, V_s, \Phi_s)
 ```
 
 The declared contract includes required paths, writable paths, cache posture,
@@ -177,6 +204,12 @@ matched-lane fairness contract holds.
 
 Comparisons must use matched lanes. For each scenario `s`, the Odylith-on lane
 and the baseline lane must share the same task contract:
+
+```math
+F_s = 1
+\iff
+\mathrm{fair\_row}(s)
+```
 
 ```text
 fair_row(s) =
@@ -209,25 +242,34 @@ need to emit one scalar `Q` field for the interpretation to be valid.
 | `wall_time` | End-to-end row latency. | Lower is better. |
 | `unsafe_or_unsupported_risk` | Unsafe action or unsupported completion risk. | Lower is better. |
 
-Plain-text utility form:
+LaTeX utility form:
 
-```text
-Q(policy, s) =
-  + alpha * grounded_recall(policy, s)
-  + beta  * validator_success(policy, s)
-  + gamma * write_boundary_precision(policy, s)
-  + delta * claim_honesty(policy, s)
-  - lambda * token_cost(policy, s)
-  - mu     * wall_time(policy, s)
-  - nu     * unsafe_or_unsupported_risk(policy, s)
+```math
+Q(\pi, s)
+= \alpha R_{\mathrm{ground}}(\pi, s)
++ \beta R_{\mathrm{valid}}(\pi, s)
++ \gamma R_{\mathrm{bounded}}(\pi, s)
++ \delta R_{\mathrm{claim}}(\pi, s)
+- \lambda C_{\mathrm{tokens}}(\pi, s)
+- \mu C_{\mathrm{time}}(\pi, s)
+- \nu R_{\mathrm{unsafe}}(\pi, s)
 ```
 
 Paired lift over matched public rows:
 
-```text
-lift_Q =
-  average over s in matched_public_rows:
-    Q(odylith_on, s) - Q(baseline, s)
+```math
+\Delta Q
+= \mathbb{E}_{s \sim \mathcal{S}}[Q(\pi_O, s)]
+- \mathbb{E}_{s \sim \mathcal{S}}[Q(\pi_B, s)]
+```
+
+Finite report estimate:
+
+```math
+\widehat{\Delta Q}
+= \frac{1}{|\mathcal{P}|}
+\sum_{s \in \mathcal{P}}
+\left[Q(\pi_O, s) - Q(\pi_B, s)\right]
 ```
 
 The weights are an interpretation lens for a benchmark family. They are not a
@@ -237,14 +279,17 @@ hidden product score unless a report explicitly publishes the chosen weights.
 
 The generalization claim is conditional and product-wide:
 
-```text
-For any observed turn x:
-  if product_payload(x, r, h, m) is equivalent to P_s
-  and repo_state_class(r) is equivalent to repo_state_class(r_s)
-  and host_capability_profile(h) is equivalent to h_s
-  and mode(m) is m_s
-  and declared_evidence_contract(x) is equivalent to the scenario contract
-  then the same product Turn Gate path is the relevant operating-policy path.
+```math
+\forall x \in X_{\mathrm{obs}}:
+\quad
+P_O(x, r, h, m) \equiv P_s
+\land r \equiv_R r_s
+\land h \equiv_H h_s
+\land m = m_s
+\Rightarrow
+G_O(P_O(x, r, h, m), r, h, m)
+\sim
+G_O(P_s, r_s, h_s, m_s)
 ```
 
 This is the scope of the product-policy win: comparable ordinary product turns
@@ -290,10 +335,15 @@ reconstruct why the row closed.
 If evidence changes the outcome but is not reported, the row is not valid
 public evidence:
 
-```text
-if outcome_depends_on(evidence_item)
-and evidence_item is not in the public report:
-  fairness_state = failed
+```math
+R_s \supseteq \{d_s, E_s, C_s, \rho_s, V_s, W_s, F_s\}
+```
+
+```math
+\exists e:
+Y_s = f(e)
+\land e \not\subset R_s
+\Rightarrow F_s = 0
 ```
 
 ## Migration Interpretation
@@ -306,6 +356,25 @@ Turn Gate fields.
 
 A row that closes through non-mutating evidence is interpreted as product
 early-exit proof only when all of these are true:
+
+```math
+S_\rho(\rho_s) = \sigma_G
+```
+
+```math
+P_{\mathrm{path}}(R_s) = 1
+```
+
+```math
+B_{\mathrm{status}}(V_s) = \eta_G
+```
+
+```math
+M_{\mathrm{exec}}(A_s) = \eta_G
+```
+
+where `eta_G` denotes the live row token `turn_gate_early_exit_proof`. The
+report-field equivalent is:
 
 ```text
 turn_gate_receipt.source == product_turn_gate

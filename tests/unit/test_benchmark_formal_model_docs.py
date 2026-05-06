@@ -25,17 +25,15 @@ EXPECTED_LINK_TARGETS = {
     / "release-notes"
     / "v0.1.14.md": "../../../../docs/research/BENCHMARK_FORMAL_MODEL.md",
 }
-GITHUB_FRAGILE_MATH_MARKERS = (
+GITHUB_FRAGILE_MATH_DELIMITERS = (
     "$$",
     "\\(",
     "\\)",
     "\\[",
     "\\]",
+)
+BLOCKED_LATEX_MACROS = (
     "\\operatorname",
-    "\\mathrm",
-    "\\mathbb",
-    "\\mathcal",
-    "\\Delta",
 )
 EXPECTED_SECTIONS = (
     "## Scope",
@@ -84,12 +82,24 @@ DURABLE_UNDERSCORE_TOKENS = (
 )
 
 
-def test_benchmark_formal_model_uses_github_safe_plain_markdown() -> None:
-    markdown = FORMAL_MODEL.read_text(encoding="utf-8")
+def _math_fence_regions(markdown: str) -> list[str]:
+    return re.findall(r"```math\n(.*?)\n```", markdown, flags=re.DOTALL)
 
-    for marker in GITHUB_FRAGILE_MATH_MARKERS:
+
+def test_benchmark_formal_model_uses_github_safe_latex_math() -> None:
+    markdown = FORMAL_MODEL.read_text(encoding="utf-8")
+    math_text = "\n".join(_math_fence_regions(markdown))
+
+    for marker in GITHUB_FRAGILE_MATH_DELIMITERS:
         assert marker not in markdown
-    assert not re.search(r"\\[A-Za-z]+", markdown)
+    for macro in BLOCKED_LATEX_MACROS:
+        assert macro not in math_text
+    for token in DURABLE_UNDERSCORE_TOKENS:
+        assert token not in math_text
+    assert len(_math_fence_regions(markdown)) >= 10
+    assert "\\Delta Q" in math_text
+    assert "\\mathbb{E}" in math_text
+    assert "\\mathrm{" in math_text
     assert "```text" in markdown
 
 
