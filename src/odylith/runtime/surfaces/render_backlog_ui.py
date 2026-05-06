@@ -40,6 +40,7 @@ from odylith.runtime.surfaces import surface_path_helpers
 from odylith.runtime.governance import execution_wave_view_model
 from odylith.runtime.surfaces import generated_surface_cleanup
 from odylith.runtime.governance import plan_progress
+from odylith.runtime.governance import traceability_freshness
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.governance import traceability_ui_lookup
@@ -670,6 +671,10 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     traceability_graph_path = (output_path.parent / "traceability-graph.v1.json").resolve()
     traceability_graph: dict[str, object] = {}
+    traceability_freshness.ensure_traceability_graph_fresh(
+        repo_root=repo_root,
+        graph_path=traceability_graph_path,
+    )
     if traceability_graph_path.is_file():
         try:
             traceability_graph = json.loads(traceability_graph_path.read_text(encoding="utf-8"))

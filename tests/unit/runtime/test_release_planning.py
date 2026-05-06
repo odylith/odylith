@@ -255,6 +255,44 @@ def test_release_authoring_round_trips_registry_and_event_history(tmp_path: Path
     assert "Launch Title" not in payload["workstreams"]["B-101"]["history_summary"]
 
 
+def test_release_alias_update_does_not_bulk_retarget_existing_workstreams(tmp_path: Path) -> None:
+    _seed_release_repo(tmp_path)
+
+    assert (
+        release_planning_authoring.main(
+            ["--repo-root", str(tmp_path), "create", "release-0-1-14", "--version", "0.1.14", "--alias", "current"]
+        )
+        == 0
+    )
+    assert (
+        release_planning_authoring.main(
+            ["--repo-root", str(tmp_path), "create", "release-0-1-15", "--version", "0.1.15"]
+        )
+        == 0
+    )
+    assert release_planning_authoring.main(["--repo-root", str(tmp_path), "add", "B-101", "current"]) == 0
+
+    assert release_planning_authoring.main(["--repo-root", str(tmp_path), "update", "release-0-1-15", "--alias", "current"]) == 0
+
+    event_path = release_planning_contract.release_assignment_event_log_path(repo_root=tmp_path)
+    event_documents, event_errors = release_planning_contract.load_assignment_event_documents(path=event_path)
+    assert event_errors == []
+    assert [row["action"] for row in event_documents] == ["add"]
+    assert event_documents[0]["release_id"] == "release-0-1-14"
+
+    payload, errors, state = release_planning_view_model.build_release_view_from_repo(
+        repo_root=tmp_path,
+        idea_specs={"B-101": SimpleNamespace(status="implementation")},
+    )
+    assert errors == []
+    assert state.release_for_selector("current").release_id == "release-0-1-15"
+    assert state.active_release_by_workstream == {"B-101": "release-0-1-14"}
+    old_release = next(row for row in payload["catalog"] if row["release_id"] == "release-0-1-14")
+    new_release = next(row for row in payload["catalog"] if row["release_id"] == "release-0-1-15")
+    assert old_release["active_workstreams"] == ["B-101"]
+    assert new_release["active_workstreams"] == []
+
+
 def test_release_authoring_dry_run_does_not_write_and_noop_update_fails(
     tmp_path: Path,
     capsys,  # noqa: ANN001

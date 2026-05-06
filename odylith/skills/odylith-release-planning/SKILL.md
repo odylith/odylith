@@ -71,6 +71,12 @@ release.
 - The current active release remains visible in governed read surfaces until it
   is explicitly updated to `shipped` or `closed`. Zero targeted workstreams is
   an empty state, not implicit GA.
+- Changing the `current` or `next` alias only changes the release selector. It
+  does not move any workstreams. Never bulk-retarget older active work just
+  because the target release changed.
+- Move only the explicit workstream ids that are part of the current release
+  slice. Older release workstreams, including completed work, keep their
+  original release history so Radar and Compass filters stay truthful.
 - Finished work removed during release closeout may still appear in governed
   read surfaces as completed release members; that history does not make the
   workstream an active target again.

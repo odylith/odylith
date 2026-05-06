@@ -24,6 +24,8 @@ _REGISTRY_RENDERER_INPUTS = (
     Path("src/odylith/runtime/surfaces/registry_forensic_evidence_ui.py"),
 )
 _RADAR_RENDERER_INPUTS = (
+    Path("src/odylith/runtime/governance/build_traceability_graph.py"),
+    Path("src/odylith/runtime/governance/traceability_freshness.py"),
     Path("src/odylith/runtime/surfaces/backlog_detail_pages.py"),
     Path("src/odylith/runtime/surfaces/backlog_render_support.py"),
     Path("src/odylith/runtime/surfaces/backlog_rich_text.py"),

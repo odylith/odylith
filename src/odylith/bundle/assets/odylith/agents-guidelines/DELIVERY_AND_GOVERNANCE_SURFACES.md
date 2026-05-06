@@ -147,6 +147,9 @@
   - `odylith/radar/source/releases/release-assignment-events.v1.jsonl`
 - `release_id` is the immutable source key. `version`, `tag`, and `name` are optional metadata. `current` and `next` are explicit aliases owned by source truth, not inferred from semver or dates.
 - One workstream may have at most one active target release at a time. Carry-forward belongs in append-only `move` history or explicit child workstreams, not simultaneous active multi-release membership.
+- Changing a release alias is not a bulk retarget operation. Preserve older
+  release membership and move only explicit workstream ids that are genuinely
+  part of the current release slice.
 - Use the release authoring CLI instead of inventing prose-only release ownership:
   - `odylith release list`
   - `odylith release show current`

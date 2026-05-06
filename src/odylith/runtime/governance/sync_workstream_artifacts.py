@@ -45,6 +45,7 @@ from odylith.runtime.governance import surface_refresh_fingerprint_dag
 from odylith.runtime.governance import sync_generated_outputs
 from odylith.runtime.governance import sync_session as governed_sync_session
 from odylith.runtime.governance import sync_surface_render_batch
+from odylith.runtime.governance import traceability_freshness
 from odylith.runtime.governance.legacy_backlog_normalization import backlog_next_action
 from odylith.runtime.governance.legacy_backlog_normalization import collect_backlog_contract_errors
 from odylith.runtime.governance.legacy_backlog_normalization import normalize_legacy_backlog_index
@@ -64,6 +65,7 @@ _SYNC_PATH_PREFIXES: tuple[str, ...] = (
     "odylith/radar/source/INDEX.md",
     "odylith/radar/source/ideas/",
     "odylith/radar/source/programs/",
+    "odylith/radar/source/releases/",
     "odylith/radar/source/policy/",
     "odylith/radar/source/templates/",
     "odylith/radar/source/AGENTS.md",
@@ -1300,6 +1302,25 @@ def _normalize_radar_source_for_sync(*, repo_root: Path) -> int:
     return 0
 
 
+def _ensure_radar_traceability_graph_fresh(*, repo_root: Path) -> dict[str, Any]:
+    graph_path = Path(repo_root).resolve() / "odylith" / "radar" / "traceability-graph.v1.json"
+    changed = traceability_freshness.ensure_traceability_graph_fresh(
+        repo_root=repo_root,
+        graph_path=graph_path,
+    )
+    print(
+        "- radar traceability graph: "
+        + ("rebuilt from current source fingerprint" if changed else "already fresh")
+    )
+    return {
+        "rc": 0,
+        "status": "passed",
+        "state": {
+            "changed": changed,
+        },
+    }
+
+
 def _run_backlog_contract_preflight_for_sync(*, repo_root: Path) -> int:
     normalization_rc = _normalize_radar_source_for_sync(repo_root=repo_root)
     if normalization_rc != 0:
@@ -1381,6 +1402,17 @@ def _dashboard_surface_steps(
         )
         return steps
     if surface == "radar":
+        steps.append(
+            _execution_step(
+                "Refresh Radar traceability graph when governed source truth changed.",
+                surface=surface,
+                action=lambda: _ensure_radar_traceability_graph_fresh(repo_root=repo_root),
+                mutation_classes=("generated_surfaces",),
+                paths=("odylith/radar/traceability-graph.v1.json",),
+                change_watch_paths=("odylith/radar/traceability-graph.v1.json",),
+                next_command_on_failure=refresh_command,
+            )
+        )
         command = (
             "python",
             "-m",
@@ -2641,7 +2673,7 @@ def _execute_plan(
             if step.action is not None:
                 rc = _run_callable_with_heartbeat(
                     label=step.label,
-                    callable_=lambda: int(step.action() or 0),
+                    callable_=lambda: _coerce_callable_step_result(step.action()),
                 )
             elif step.command:
                 heartbeat_label = _display_sync_step_command(repo_root=repo_root, command=step.command)

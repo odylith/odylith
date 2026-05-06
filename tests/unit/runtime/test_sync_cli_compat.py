@@ -1601,6 +1601,47 @@ def test_build_sync_execution_plan_validates_radar_for_backlog_only_selective_sl
 
     assert "Normalize legacy Radar backlog sections for the touched selective slice before validation." in labels
     assert "Validate Radar backlog contract for the touched selective slice." in labels
+    assert "Refresh Radar traceability graph when governed source truth changed." in labels
+    assert "Render Radar without widening into the full governance sync pipeline." in labels
+
+
+def test_release_assignment_events_are_sync_relevant_and_refresh_traceability(tmp_path: Path) -> None:
+    changed_path = "odylith/radar/source/releases/release-assignment-events.v1.jsonl"
+
+    assert sync_workstream_artifacts._requires_sync(  # noqa: SLF001
+        repo_root=tmp_path,
+        changed_paths=(changed_path,),
+        force=False,
+    )
+
+    plan = sync_workstream_artifacts.build_sync_execution_plan(
+        repo_root=tmp_path,
+        args=SimpleNamespace(
+            check_only=False,
+            force=False,
+            impact_mode="selective",
+            registry_policy_mode="advisory",
+            enforce_deep_skills=False,
+            no_traceability_autofix=False,
+            proceed_with_overlap=False,
+            dry_run=False,
+        ),
+        changed_paths=(changed_path,),
+        impact=SimpleNamespace(
+            atlas=False,
+            radar=True,
+            compass=False,
+            registry=False,
+            casebook=False,
+        ),
+        impact_tooling_shell=True,
+        runtime_mode="standalone",
+    )
+
+    labels = [step.label for step in plan.steps]
+
+    assert "Validate Radar backlog contract for the touched selective slice." in labels
+    assert "Refresh Radar traceability graph when governed source truth changed." in labels
     assert "Render Radar without widening into the full governance sync pipeline." in labels
 
 
@@ -1689,6 +1730,29 @@ def test_execute_plan_runs_change_followups_only_when_watched_inputs_mutate(tmp_
 
     assert rc == 0
     assert executed == ["primary", "followup"]
+
+
+def test_execute_plan_accepts_structured_action_results(tmp_path: Path) -> None:
+    plan = sync_workstream_artifacts.ExecutionPlan(
+        headline="structured action",
+        steps=(
+            sync_workstream_artifacts.ExecutionStep(
+                label="Structured action",
+                action=lambda: {"rc": 0, "status": "passed"},
+            ),
+        ),
+        dirty_overlap=(),
+    )
+
+    rc = sync_workstream_artifacts._execute_plan(  # noqa: SLF001
+        repo_root=tmp_path,
+        plan_name="workstream sync",
+        plan=plan,
+        run_impl=lambda **_: 0,
+        runtime_fallback_used=False,
+    )
+
+    assert rc == 0
 
 
 def test_dashboard_refresh_retries_auto_surface_with_standalone_fallback(tmp_path: Path, monkeypatch, capsys) -> None:

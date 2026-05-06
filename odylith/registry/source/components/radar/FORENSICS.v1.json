@@ -54,20 +54,20 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
         "odylith/radar/source/releases/release-assignment-events.v1.jsonl",
-        "odylith/radar/source/releases/releases.v1.json"
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui.py"
       ],
       "confidence": "high",
-      "event_index": 459,
+      "event_index": 460,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "radar"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md, odylith/radar/source/releases/release-assignment-events.v1.jsonl +1 more",
-      "ts_iso": "2026-05-05T16:53:57-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/releases/release-assignment-events.v1.jsonl, src/odylith/runtime/governance/sync_workstream_artifacts.py +1 more",
+      "ts_iso": "2026-05-05T19:53:51-07:00",
       "workstreams": []
     },
     {
