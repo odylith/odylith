@@ -121,7 +121,8 @@ def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic(
     assert "No standup brief available for this view." not in summary_js
     assert "function briefHasRenderableNarrative(brief)" in summary_js
     assert 'reason.includes("_showing_previous")' in summary_js
-    assert 'message = "Showing last ready brief.";' in summary_js
+    assert "function compactPreviousBriefReason(message, reason)" in summary_js
+    assert "showing last ready brief until retry succeeds." in summary_js
     assert 'message = "Reused last validated brief.";' in summary_js
     assert 'const retryUtc = String(notice.next_retry_utc || "").trim();' not in summary_js
     assert "function briefIsScopedGlobalFallback(brief)" not in summary_js

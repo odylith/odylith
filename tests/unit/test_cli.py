@@ -2047,7 +2047,7 @@ def test_release_migration_gate_json_reports_registered_runtime(capsys) -> None:
             "--repo-root",
             str(repo_root),
             "--target-version",
-            "0.1.14",
+            "0.1.15",
             "--json",
         ])
     payload = json.loads(capsys.readouterr().out)
@@ -2063,6 +2063,17 @@ def test_release_migration_gate_json_reports_registered_runtime(capsys) -> None:
     assert payload["ungated_lifecycle_paths"] == []
     assert payload["surface_migration_observer"]["schema_version"] == "odylith.surface-migration-observer.v1"
     assert payload["surface_migration_observer"]["ok"] is True
+
+
+def test_release_group_help_includes_maintainer_commands(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["release", "--help"])
+
+    output = capsys.readouterr().out
+
+    assert excinfo.value.code == 0
+    assert "migration-gate" in output
+    assert "casebook-closeout" in output
 
 
 def test_release_migration_gate_blocks_consumer_repo_json(tmp_path: Path, capsys) -> None:

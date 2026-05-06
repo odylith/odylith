@@ -1179,3 +1179,22 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   host-neutral Casebook wording changed. Existing consumer installs need no
   bespoke source-truth migration; dashboard/sync refresh will regenerate those
   surfaces under the same installed renderer contract.
+- The v0.1.15 release-integrity pass is covered by
+  `migration-observer:0.1.15:operator-cli-contracts:446b97fb4045`,
+  `migration-observer:0.1.15:public-docs-and-release-guidance:af873a74f56b`,
+  `migration-observer:0.1.15:browser-surfaces:ae313258120f`, and
+  `migration-observer:0.1.15:install-managed-assets:404087092989`. The pass
+  aligns source, package, product pin, bundled pin, security docs, release
+  notes, release CLI help, Compass fallback status copy, Radar/Compass release
+  targeting, and generated surface mirrors under the `0.1.15` target. Existing
+  consumers need no bespoke source-truth migration beyond the registered
+  historical migrations, the install/upgrade dashboard refresh, and the normal
+  managed asset adoption path; historical 0.1.10 through 0.1.14 installs are
+  still validated through the release rehearsal matrix before publication.
+- The final v0.1.15 post-sync rendered-payload settlement is covered by
+  `migration-observer:0.1.15:browser-surfaces:43a7e21038d9` and
+  `migration-observer:0.1.15:install-managed-assets:84934535f042`. The pass
+  binds the release assessment to the exact generated Atlas, Casebook, Compass,
+  Radar, Registry, and shell payloads emitted after `odylith sync --force`.
+  Existing consumers need no additional source-truth migration; upgrade and
+  forced sync converge installed generated surfaces to this payload contract.

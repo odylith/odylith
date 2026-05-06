@@ -24,17 +24,33 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 _TEMP_ROOT_CLEANUP_RETRY_COUNT = 5
 _TEMP_ROOT_CLEANUP_RETRY_DELAY_SECONDS = 0.2
 _TEMP_ROOT_CLEANUP_RETRYABLE_ERRNOS = {errno.EACCES, errno.EBUSY, errno.ENOTEMPTY, errno.EPERM}
+_COMMAND_TIMEOUT_SECONDS = 300
 
 
 def _run(*, cwd: Path, env: dict[str, str], command: list[str]) -> subprocess.CompletedProcess[str]:
-    completed = subprocess.run(
-        command,
-        cwd=str(cwd),
-        env=env,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    try:
+        completed = subprocess.run(
+            command,
+            cwd=str(cwd),
+            env=env,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=_COMMAND_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as exc:
+        stdout = exc.stdout.decode("utf-8", errors="replace") if isinstance(exc.stdout, bytes) else str(exc.stdout or "")
+        stderr = exc.stderr.decode("utf-8", errors="replace") if isinstance(exc.stderr, bytes) else str(exc.stderr or "")
+        raise RuntimeError(
+            "\n".join(
+                [
+                    f"command timed out after {_COMMAND_TIMEOUT_SECONDS}s: {' '.join(command)}",
+                    f"cwd: {cwd}",
+                    stdout.strip(),
+                    stderr.strip(),
+                ]
+            ).strip()
+        ) from exc
     if completed.returncode != 0:
         raise RuntimeError(
             "\n".join(
@@ -127,6 +143,11 @@ def _force_deterministic_reasoning_env(env: dict[str, str]) -> dict[str, str]:
     # have a local reasoning provider available or exported in the shell.
     env["ODYLITH_REASONING_MODE"] = "disabled"
     env["ODYLITH_REASONING_PROVIDER"] = "auto-local"
+    env["ODYLITH_REASONING_TIMEOUT_SECONDS"] = "1"
+    env["ODYLITH_REASONING_CODEX_BIN"] = "/usr/bin/false"
+    env["ODYLITH_REASONING_CLAUDE_BIN"] = "/usr/bin/false"
+    env["ODYLITH_COMPASS_STANDUP_BACKGROUND_DISABLE"] = "1"
+    env["ODYLITH_NO_BROWSER"] = "1"
     return env
 
 
@@ -350,6 +371,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run local Odylith release smoke tests against generated assets.")
     parser.add_argument("--version", required=True, help="Release version, for example 0.1.0.")
     parser.add_argument("--dist-dir", default="dist", help="Directory containing generated release assets.")
+    parser.add_argument(
+        "--previous-version",
+        action="append",
+        default=[],
+        help=(
+            "Published previous version to rehearse into the local target. "
+            "May be repeated; defaults to the immediate semver predecessor."
+        ),
+    )
     return parser
 
 
@@ -367,24 +397,29 @@ def main(argv: list[str] | None = None) -> int:
         fresh_repo = _repo_root(temp_root, "fresh-install")
         _install_and_smoke(repo_root=fresh_repo, install_script=install_script, env=local_env)
 
-        previous_version = _semver_previous(args.version)
-        if previous_version and _previous_release_is_published(version=previous_version):
-            lifecycle_repo = _repo_root(temp_root, "upgrade-cycle")
-            _upgrade_cycle(
-                repo_root=lifecycle_repo,
-                install_script=install_script,
-                previous_version=previous_version,
-                target_version=args.version,
-                local_env=local_env,
-            )
-            stale_residue_repo = _repo_root(temp_root, "stale-uninstall-residue")
-            _stale_uninstall_residue_cycle(
-                repo_root=stale_residue_repo,
-                install_script=install_script,
-                previous_version=previous_version,
-                target_version=args.version,
-                local_env=local_env,
-            )
+        previous_versions = tuple(str(version).strip() for version in args.previous_version if str(version).strip())
+        if not previous_versions:
+            immediate_previous = _semver_previous(args.version)
+            previous_versions = (immediate_previous,) if immediate_previous else ()
+        for previous_version in previous_versions:
+            if previous_version and _previous_release_is_published(version=previous_version):
+                suffix = previous_version.replace(".", "-")
+                lifecycle_repo = _repo_root(temp_root, f"upgrade-cycle-{suffix}")
+                _upgrade_cycle(
+                    repo_root=lifecycle_repo,
+                    install_script=install_script,
+                    previous_version=previous_version,
+                    target_version=args.version,
+                    local_env=local_env,
+                )
+                stale_residue_repo = _repo_root(temp_root, f"stale-uninstall-residue-{suffix}")
+                _stale_uninstall_residue_cycle(
+                    repo_root=stale_residue_repo,
+                    install_script=install_script,
+                    previous_version=previous_version,
+                    target_version=args.version,
+                    local_env=local_env,
+                )
     finally:
         server.shutdown()
         server.server_close()

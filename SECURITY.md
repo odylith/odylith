@@ -1,12 +1,12 @@
 # Security Policy
 
-Last updated: 2026-05-04
+Last updated: 2026-05-05
 
 ## Supported Versions
 
 Odylith is GA on supported public install platforms.
 
-Public GitHub releases are live. This release branch prepares `v0.1.14` as
+Public GitHub releases are live. This release branch prepares `v0.1.15` as
 the next supported line; after publication, operators should treat older
 releases as upgrade targets before expecting fixes. Security reports are
 handled on a best-effort basis, with the supported release posture defined
@@ -14,13 +14,13 @@ below.
 
 | Version | Supported |
 | --- | --- |
-| Current release line (`v0.1.14`) | Yes, best effort |
+| Current release line (`v0.1.15`) | Yes, best effort |
 | Older published releases | Upgrade to the latest release before expecting a fix |
 | `main` | Development branch only; may contain unreleased changes |
 
-## v0.1.14 Security-Relevant Prep
+## v0.1.15 Security-Relevant Prep
 
-The `v0.1.14` release prep must keep these security-relevant boundaries
+The `v0.1.15` release prep must keep these security-relevant boundaries
 explicit in release notes, README/operator guidance, release-preflight proof,
 and the bundled security posture docs:
 
@@ -45,10 +45,10 @@ and the bundled security posture docs:
   Odylith-only templates.
 - Release migration proof must include changed public docs, browser-rendered
   governance surfaces, install-managed assets, and security-facing docs through
-  `odylith release migration-gate --target-version 0.1.14`.
-- The benchmark proof exception for `v0.1.14` must remain exact-version,
-  tracked, and explicit. It makes benchmark proof advisory for this release; it
-  does not permit stale benchmark reports, benchmark-only policy branches, or
+  `odylith release migration-gate --target-version 0.1.15`.
+- Historical release exceptions, including the exact-version `v0.1.14`
+  benchmark proof waiver, must stay tracked and must not become implicit
+  permission for stale benchmark reports, benchmark-only policy branches, or
   untracked release exceptions.
 
 ## Reporting A Vulnerability

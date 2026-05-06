@@ -254,6 +254,34 @@
       return reason === "skipped_not_worth_calling" || reason.includes("_showing_previous");
     }
 
+    function compactPreviousBriefReason(message, reason) {
+      const text = String(message || "").replace(/\s+/g, " ").trim().toLowerCase();
+      const token = String(reason || "").trim().toLowerCase();
+      const suffix = "showing last ready brief until retry succeeds.";
+      if (token.includes("invalid_batch") || text.includes("not usable")) {
+        return `latest narration unusable; ${suffix}`;
+      }
+      if (token.includes("provider_error") || text.includes("provider failed")) {
+        return `provider failed; ${suffix}`;
+      }
+      if (token.includes("provider_unavailable") || text.includes("not reachable") || text.includes("unreachable")) {
+        return `provider unreachable; ${suffix}`;
+      }
+      if (token.includes("timeout") || text.includes("timed out") || text.includes("too long")) {
+        return `provider timed out; ${suffix}`;
+      }
+      if (token.includes("auth_error") || text.includes("rejected the request")) {
+        return `provider access failed; ${suffix}`;
+      }
+      if (token.includes("rate_limited") || token.includes("credits_exhausted") || text.includes("budget") || text.includes("capacity")) {
+        return `provider capacity limited; ${suffix}`;
+      }
+      if (token.includes("validation_failed") || text.includes("failed validation") || text.includes("invalid brief")) {
+        return `narration failed validation; ${suffix}`;
+      }
+      return `fresh narration unavailable; ${suffix}`;
+    }
+
     function briefHeaderStatusNotice(brief) {
       if (!briefNoticeBelongsInHeaderStatus(brief)) return "";
       const notice = visibleBriefNotice(brief);
@@ -261,7 +289,7 @@
       const reason = String(notice.reason || "").trim().toLowerCase();
       let message = String(notice.message || "").trim();
       if (reason.includes("_showing_previous")) {
-        message = "Showing last ready brief.";
+        message = compactPreviousBriefReason(message, reason);
       } else if (reason === "skipped_not_worth_calling") {
         message = "Reused last validated brief.";
       }

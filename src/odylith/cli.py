@@ -485,6 +485,27 @@ def _help_requested(tokens: Sequence[str]) -> bool:
     return False
 
 
+def _group_help_requested(tokens: Sequence[str], *, subcommands: set[str]) -> bool:
+    """Return whether argv asks for a command group's help, not child help."""
+    index = 1
+    while index < len(tokens):
+        token = str(tokens[index]).strip()
+        if token == "--":
+            return False
+        if token in subcommands:
+            return False
+        if token in {"-h", "--help"}:
+            return True
+        if token == "--repo-root":
+            index += 2
+            continue
+        if token.startswith("--repo-root="):
+            index += 1
+            continue
+        index += 1
+    return False
+
+
 def _missing_first_run_surfaces(*, repo_root: Path) -> list[Path]:
     root = Path(repo_root).expanduser().resolve()
     return [root / relative_path for relative_path in _FIRST_RUN_SURFACE_OUTPUTS if not (root / relative_path).is_file()]
@@ -3211,6 +3232,7 @@ def build_parser() -> argparse.ArgumentParser:
     _configure_surface_refresh_parser(radar_refresh)
 
     release = subparsers.add_parser("release", help="Create and maintain repo-local release planning truth.")
+    release.add_argument("--repo-root", default=".", help="Consumer repository root.")
     release_subparsers = release.add_subparsers(dest="release_command", required=True)
     for command, help_text in (
         ("create", "Create one release definition."),
@@ -3716,6 +3738,23 @@ def main(argv: list[str] | None = None) -> int:
                 ensure_repo_root_args(repo_root=repo_root, argv=forwarded),
             )
         if tokens[0] == "release" and len(tokens) >= 2:
+            if _group_help_requested(
+                tokens,
+                subcommands={
+                    "create",
+                    "update",
+                    "list",
+                    "show",
+                    "add",
+                    "remove",
+                    "move",
+                    "casebook-closeout",
+                    "migration-gate",
+                },
+            ):
+                parser = build_parser()
+                parser.parse_args(tokens)
+                return 0
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             if tokens[1] == "migration-gate":
                 parser = build_parser()

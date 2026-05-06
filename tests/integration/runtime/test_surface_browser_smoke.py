@@ -625,7 +625,8 @@ def test_compass_failed_global_brief_uses_header_status_and_previous_brief(
                     status_text = status_banner.inner_text().strip()
                     assert status_banner.evaluate("(node) => node.classList.contains('warn')") is True
                     assert "Brief needs another provider pass" in status_text
-                    assert "Showing last ready brief." in status_text
+                    assert "latest narration unusable" in status_text
+                    assert "showing last ready brief until retry succeeds" in status_text
                     assert "result was not usable yet" not in status_text
                     assert "Will retry after" not in status_text
                     digest_text = compass.locator("#digest-list").inner_text().strip()
@@ -685,8 +686,8 @@ def test_compass_failed_same_window_brief_uses_header_status_and_keeps_last_read
                     status_text = status_banner.inner_text().strip()
                     assert status_banner.evaluate("(node) => node.classList.contains('warn')") is True
                     assert "Brief unavailable right now" in status_text
-                    assert "Showing last ready brief." in status_text
-                    assert "provider failed on the last attempt" not in status_text
+                    assert "provider failed" in status_text
+                    assert "showing last ready brief until retry succeeds" in status_text
                     assert "Will retry after" not in status_text
                     digest_text = compass.locator("#digest-list").inner_text().strip()
                     assert "The last known standup brief stays intact in the body." in digest_text
@@ -772,7 +773,7 @@ def test_compass_failed_live_brief_uses_retained_history_brief_not_body_notice(
                     assert "Compass snapshot is" in status_text
                     assert "timeline pinned" in status_text
                     assert "Brief unavailable right now" in status_text
-                    assert "Showing last ready brief." in status_text
+                    assert "showing last ready brief until retry succeeds" in status_text
                     assert "last ready standup brief from 2026-04-20" not in status_text
                     banner_metrics = status_banner.evaluate(
                         """(node) => ({

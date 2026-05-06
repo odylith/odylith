@@ -1,5 +1,5 @@
 # Security Posture
-Last updated: 2026-05-04
+Last updated: 2026-05-05
 
 ## Purpose
 
@@ -8,7 +8,7 @@ first-class product boundaries. It hardens `.odylith/` against runtime drift,
 fails closed on insecure consumer-lane overrides, and keeps Odylith-owned
 Python helpers on a tight leash.
 
-This posture is authored for the `v0.1.14` release line prepared by this
+This posture is authored for the `v0.1.15` release line prepared by this
 branch.
 
 ## Threat Model
@@ -143,12 +143,11 @@ Odylith does not claim full protection against:
   Odylith-only template.
 - Consumer-visible docs, browser-rendered governance surfaces, and
   install-managed assets are release-observed. `odylith release
-  migration-gate --target-version 0.1.14` must pass before release prep can
+  migration-gate --target-version 0.1.15` must pass before release prep can
   treat those surfaces as migration-safe.
-- The `v0.1.14` benchmark proof waiver is exact-version tracked release truth.
-  It keeps benchmark proof advisory for this release while preserving the
-  default release rule that benchmark proof is required without an explicit
-  maintainer override.
+- Historical benchmark proof waivers, including the exact-version `v0.1.14`
+  waiver, stay tracked release truth and do not create a standing bypass for
+  later releases.
 
 ## Recovery
 

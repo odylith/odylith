@@ -3178,21 +3178,23 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-12",
+      "active_release_id": "release-0-1-15",
       "active_release": {
-        "release_id": "release-0-1-12",
+        "release_id": "release-0-1-15",
         "status": "active",
-        "version": "0.1.12",
-        "tag": "v0.1.12",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
         "name": "",
-        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
-        "effective_name": "0.1.12",
-        "display_label": "0.1.12",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
         "notes": "",
-        "created_utc": "2026-04-09",
+        "created_utc": "2026-05-05",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [],
+        "aliases": [
+          "current"
+        ],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -3203,14 +3205,36 @@
           "B-092",
           "B-093",
           "B-097",
-          "B-126"
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
+          "B-141",
+          "B-142"
         ],
         "completed_workstreams": [
-          "B-127"
+          "B-140"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 10,
+        "active_workstream_count": 32,
         "completed_workstream_count": 1
       },
       "release_history": [
@@ -3249,9 +3273,21 @@
           "release_label": "0.1.12",
           "from_release_label": "",
           "to_release_label": ""
+        },
+        {
+          "action": "move",
+          "workstream_id": "B-070",
+          "release_id": "release-0-1-15",
+          "from_release_id": "release-0-1-12",
+          "to_release_id": "release-0-1-15",
+          "recorded_at": "2026-05-05T22:59:42Z",
+          "note": "Retarget active workstream to the current 0.1.15 release.",
+          "release_label": "0.1.15",
+          "from_release_label": "0.1.12",
+          "to_release_label": "0.1.15"
         }
       ],
-      "release_history_summary": "Active: 0.1.12 \u00b7 Added to 0.1.12",
+      "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.12 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 1,
@@ -4113,21 +4149,23 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-12",
+      "active_release_id": "release-0-1-15",
       "active_release": {
-        "release_id": "release-0-1-12",
+        "release_id": "release-0-1-15",
         "status": "active",
-        "version": "0.1.12",
-        "tag": "v0.1.12",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
         "name": "",
-        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
-        "effective_name": "0.1.12",
-        "display_label": "0.1.12",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
         "notes": "",
-        "created_utc": "2026-04-09",
+        "created_utc": "2026-05-05",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [],
+        "aliases": [
+          "current"
+        ],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -4138,14 +4176,36 @@
           "B-092",
           "B-093",
           "B-097",
-          "B-126"
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
+          "B-141",
+          "B-142"
         ],
         "completed_workstreams": [
-          "B-127"
+          "B-140"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 10,
+        "active_workstream_count": 32,
         "completed_workstream_count": 1
       },
       "release_history": [
@@ -4172,9 +4232,21 @@
           "release_label": "0.1.12",
           "from_release_label": "0.1.11",
           "to_release_label": "0.1.12"
+        },
+        {
+          "action": "move",
+          "workstream_id": "B-083",
+          "release_id": "release-0-1-15",
+          "from_release_id": "release-0-1-12",
+          "to_release_id": "release-0-1-15",
+          "recorded_at": "2026-05-05T23:00:01Z",
+          "note": "Retarget active workstream to the current 0.1.15 release.",
+          "release_label": "0.1.15",
+          "from_release_label": "0.1.12",
+          "to_release_label": "0.1.15"
         }
       ],
-      "release_history_summary": "Active: 0.1.12 \u00b7 Latest move: 0.1.11 -> 0.1.12",
+      "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.12 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 6,
@@ -4213,21 +4285,23 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-12",
+      "active_release_id": "release-0-1-15",
       "active_release": {
-        "release_id": "release-0-1-12",
+        "release_id": "release-0-1-15",
         "status": "active",
-        "version": "0.1.12",
-        "tag": "v0.1.12",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
         "name": "",
-        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
-        "effective_name": "0.1.12",
-        "display_label": "0.1.12",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
         "notes": "",
-        "created_utc": "2026-04-09",
+        "created_utc": "2026-05-05",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [],
+        "aliases": [
+          "current"
+        ],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -4238,14 +4312,36 @@
           "B-092",
           "B-093",
           "B-097",
-          "B-126"
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
+          "B-141",
+          "B-142"
         ],
         "completed_workstreams": [
-          "B-127"
+          "B-140"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 10,
+        "active_workstream_count": 32,
         "completed_workstream_count": 1
       },
       "release_history": [
@@ -4272,9 +4368,21 @@
           "release_label": "0.1.12",
           "from_release_label": "0.1.11",
           "to_release_label": "0.1.12"
+        },
+        {
+          "action": "move",
+          "workstream_id": "B-084",
+          "release_id": "release-0-1-15",
+          "from_release_id": "release-0-1-12",
+          "to_release_id": "release-0-1-15",
+          "recorded_at": "2026-05-05T23:00:15Z",
+          "note": "Retarget active workstream to the current 0.1.15 release.",
+          "release_label": "0.1.15",
+          "from_release_label": "0.1.12",
+          "to_release_label": "0.1.15"
         }
       ],
-      "release_history_summary": "Active: 0.1.12 \u00b7 Latest move: 0.1.11 -> 0.1.12",
+      "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.12 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 1,
@@ -4311,21 +4419,23 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-12",
+      "active_release_id": "release-0-1-15",
       "active_release": {
-        "release_id": "release-0-1-12",
+        "release_id": "release-0-1-15",
         "status": "active",
-        "version": "0.1.12",
-        "tag": "v0.1.12",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
         "name": "",
-        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
-        "effective_name": "0.1.12",
-        "display_label": "0.1.12",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
         "notes": "",
-        "created_utc": "2026-04-09",
+        "created_utc": "2026-05-05",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [],
+        "aliases": [
+          "current"
+        ],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -4336,14 +4446,36 @@
           "B-092",
           "B-093",
           "B-097",
-          "B-126"
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
+          "B-141",
+          "B-142"
         ],
         "completed_workstreams": [
-          "B-127"
+          "B-140"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 10,
+        "active_workstream_count": 32,
         "completed_workstream_count": 1
       },
       "release_history": [
@@ -4370,9 +4502,21 @@
           "release_label": "0.1.12",
           "from_release_label": "0.1.11",
           "to_release_label": "0.1.12"
+        },
+        {
+          "action": "move",
+          "workstream_id": "B-085",
+          "release_id": "release-0-1-15",
+          "from_release_id": "release-0-1-12",
+          "to_release_id": "release-0-1-15",
+          "recorded_at": "2026-05-05T23:00:28Z",
+          "note": "Retarget active workstream to the current 0.1.15 release.",
+          "release_label": "0.1.15",
+          "from_release_label": "0.1.12",
+          "to_release_label": "0.1.15"
         }
       ],
-      "release_history_summary": "Active: 0.1.12 \u00b7 Latest move: 0.1.11 -> 0.1.12",
+      "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.12 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 1,
@@ -4447,21 +4591,23 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-12",
+      "active_release_id": "release-0-1-15",
       "active_release": {
-        "release_id": "release-0-1-12",
+        "release_id": "release-0-1-15",
         "status": "active",
-        "version": "0.1.12",
-        "tag": "v0.1.12",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
         "name": "",
-        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
-        "effective_name": "0.1.12",
-        "display_label": "0.1.12",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
         "notes": "",
-        "created_utc": "2026-04-09",
+        "created_utc": "2026-05-05",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [],
+        "aliases": [
+          "current"
+        ],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -4472,14 +4618,36 @@
           "B-092",
           "B-093",
           "B-097",
-          "B-126"
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
+          "B-141",
+          "B-142"
         ],
         "completed_workstreams": [
-          "B-127"
+          "B-140"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 10,
+        "active_workstream_count": 32,
         "completed_workstream_count": 1
       },
       "release_history": [
@@ -4518,9 +4686,21 @@
           "release_label": "0.1.12",
           "from_release_label": "0.1.11",
           "to_release_label": "0.1.12"
+        },
+        {
+          "action": "move",
+          "workstream_id": "B-087",
+          "release_id": "release-0-1-15",
+          "from_release_id": "release-0-1-12",
+          "to_release_id": "release-0-1-15",
+          "recorded_at": "2026-05-05T23:00:40Z",
+          "note": "Retarget active workstream to the current 0.1.15 release.",
+          "release_label": "0.1.15",
+          "from_release_label": "0.1.12",
+          "to_release_label": "0.1.15"
         }
       ],
-      "release_history_summary": "Active: 0.1.12 \u00b7 Latest move: 0.1.11 -> 0.1.12",
+      "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.12 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -4555,21 +4735,23 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-12",
+      "active_release_id": "release-0-1-15",
       "active_release": {
-        "release_id": "release-0-1-12",
+        "release_id": "release-0-1-15",
         "status": "active",
-        "version": "0.1.12",
-        "tag": "v0.1.12",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
         "name": "",
-        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
-        "effective_name": "0.1.12",
-        "display_label": "0.1.12",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
         "notes": "",
-        "created_utc": "2026-04-09",
+        "created_utc": "2026-05-05",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [],
+        "aliases": [
+          "current"
+        ],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -4580,14 +4762,36 @@
           "B-092",
           "B-093",
           "B-097",
-          "B-126"
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
+          "B-141",
+          "B-142"
         ],
         "completed_workstreams": [
-          "B-127"
+          "B-140"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 10,
+        "active_workstream_count": 32,
         "completed_workstream_count": 1
       },
       "release_history": [
@@ -4614,9 +4818,21 @@
           "release_label": "0.1.12",
           "from_release_label": "0.1.11",
           "to_release_label": "0.1.12"
+        },
+        {
+          "action": "move",
+          "workstream_id": "B-088",
+          "release_id": "release-0-1-15",
+          "from_release_id": "release-0-1-12",
+          "to_release_id": "release-0-1-15",
+          "recorded_at": "2026-05-05T23:00:47Z",
+          "note": "Retarget active workstream to the current 0.1.15 release.",
+          "release_label": "0.1.15",
+          "from_release_label": "0.1.12",
+          "to_release_label": "0.1.15"
         }
       ],
-      "release_history_summary": "Active: 0.1.12 \u00b7 Latest move: 0.1.11 -> 0.1.12",
+      "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.12 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -4772,21 +4988,23 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-12",
+      "active_release_id": "release-0-1-15",
       "active_release": {
-        "release_id": "release-0-1-12",
+        "release_id": "release-0-1-15",
         "status": "active",
-        "version": "0.1.12",
-        "tag": "v0.1.12",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
         "name": "",
-        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
-        "effective_name": "0.1.12",
-        "display_label": "0.1.12",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
         "notes": "",
-        "created_utc": "2026-04-09",
+        "created_utc": "2026-05-05",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [],
+        "aliases": [
+          "current"
+        ],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -4797,14 +5015,36 @@
           "B-092",
           "B-093",
           "B-097",
-          "B-126"
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
+          "B-141",
+          "B-142"
         ],
         "completed_workstreams": [
-          "B-127"
+          "B-140"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 10,
+        "active_workstream_count": 32,
         "completed_workstream_count": 1
       },
       "release_history": [
@@ -4831,9 +5071,21 @@
           "release_label": "0.1.12",
           "from_release_label": "0.1.11",
           "to_release_label": "0.1.12"
+        },
+        {
+          "action": "move",
+          "workstream_id": "B-092",
+          "release_id": "release-0-1-15",
+          "from_release_id": "release-0-1-12",
+          "to_release_id": "release-0-1-15",
+          "recorded_at": "2026-05-05T23:00:54Z",
+          "note": "Retarget active workstream to the current 0.1.15 release.",
+          "release_label": "0.1.15",
+          "from_release_label": "0.1.12",
+          "to_release_label": "0.1.15"
         }
       ],
-      "release_history_summary": "Active: 0.1.12 \u00b7 Latest move: 0.1.11 -> 0.1.12",
+      "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.12 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 2,
@@ -4872,21 +5124,23 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-12",
+      "active_release_id": "release-0-1-15",
       "active_release": {
-        "release_id": "release-0-1-12",
+        "release_id": "release-0-1-15",
         "status": "active",
-        "version": "0.1.12",
-        "tag": "v0.1.12",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
         "name": "",
-        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
-        "effective_name": "0.1.12",
-        "display_label": "0.1.12",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
         "notes": "",
-        "created_utc": "2026-04-09",
+        "created_utc": "2026-05-05",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [],
+        "aliases": [
+          "current"
+        ],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -4897,14 +5151,36 @@
           "B-092",
           "B-093",
           "B-097",
-          "B-126"
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
+          "B-141",
+          "B-142"
         ],
         "completed_workstreams": [
-          "B-127"
+          "B-140"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 10,
+        "active_workstream_count": 32,
         "completed_workstream_count": 1
       },
       "release_history": [
@@ -4931,9 +5207,21 @@
           "release_label": "0.1.12",
           "from_release_label": "0.1.11",
           "to_release_label": "0.1.12"
+        },
+        {
+          "action": "move",
+          "workstream_id": "B-093",
+          "release_id": "release-0-1-15",
+          "from_release_id": "release-0-1-12",
+          "to_release_id": "release-0-1-15",
+          "recorded_at": "2026-05-05T23:01:02Z",
+          "note": "Retarget active workstream to the current 0.1.15 release.",
+          "release_label": "0.1.15",
+          "from_release_label": "0.1.12",
+          "to_release_label": "0.1.15"
         }
       ],
-      "release_history_summary": "Active: 0.1.12 \u00b7 Latest move: 0.1.11 -> 0.1.12",
+      "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.12 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 1,
@@ -5110,21 +5398,23 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-12",
+      "active_release_id": "release-0-1-15",
       "active_release": {
-        "release_id": "release-0-1-12",
+        "release_id": "release-0-1-15",
         "status": "active",
-        "version": "0.1.12",
-        "tag": "v0.1.12",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
         "name": "",
-        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
-        "effective_name": "0.1.12",
-        "display_label": "0.1.12",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
         "notes": "",
-        "created_utc": "2026-04-09",
+        "created_utc": "2026-05-05",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [],
+        "aliases": [
+          "current"
+        ],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -5135,14 +5425,36 @@
           "B-092",
           "B-093",
           "B-097",
-          "B-126"
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
+          "B-141",
+          "B-142"
         ],
         "completed_workstreams": [
-          "B-127"
+          "B-140"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 10,
+        "active_workstream_count": 32,
         "completed_workstream_count": 1
       },
       "release_history": [
@@ -5169,9 +5481,21 @@
           "release_label": "0.1.12",
           "from_release_label": "0.1.11",
           "to_release_label": "0.1.12"
+        },
+        {
+          "action": "move",
+          "workstream_id": "B-097",
+          "release_id": "release-0-1-15",
+          "from_release_id": "release-0-1-12",
+          "to_release_id": "release-0-1-15",
+          "recorded_at": "2026-05-05T23:01:09Z",
+          "note": "Retarget active workstream to the current 0.1.15 release.",
+          "release_label": "0.1.15",
+          "from_release_label": "0.1.12",
+          "to_release_label": "0.1.15"
         }
       ],
-      "release_history_summary": "Active: 0.1.12 \u00b7 Latest move: 0.1.11 -> 0.1.12",
+      "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.12 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -6640,24 +6964,33 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-14",
+      "active_release_id": "release-0-1-15",
       "active_release": {
-        "release_id": "release-0-1-14",
+        "release_id": "release-0-1-15",
         "status": "active",
-        "version": "0.1.14",
-        "tag": "v0.1.14",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
         "name": "",
-        "inherited_name": "Product Governed Harness and General-Purpose Benchmark Model",
-        "effective_name": "0.1.14",
-        "display_label": "0.1.14",
-        "notes": "Casebook lifecycle normalization, robust upgrade migrations, greenfield program/release topology, polished Atlas diagram rendering, and Product Governed Harness Turn Gate benchmark formalization.",
-        "created_utc": "2026-05-03",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
+        "notes": "",
+        "created_utc": "2026-05-05",
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
           "current"
         ],
         "active_workstreams": [
+          "B-070",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097",
           "B-118",
           "B-119",
           "B-120",
@@ -6666,6 +6999,19 @@
           "B-123",
           "B-124",
           "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
           "B-141",
           "B-142"
         ],
@@ -6674,7 +7020,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 10,
+        "active_workstream_count": 32,
         "completed_workstream_count": 1
       },
       "release_history": [
@@ -6701,9 +7047,21 @@
           "release_label": "0.1.14",
           "from_release_label": "0.1.12",
           "to_release_label": "0.1.14"
+        },
+        {
+          "action": "move",
+          "workstream_id": "B-118",
+          "release_id": "release-0-1-15",
+          "from_release_id": "release-0-1-14",
+          "to_release_id": "release-0-1-15",
+          "recorded_at": "2026-05-05T23:01:24Z",
+          "note": "Retarget active workstream to the current 0.1.15 release.",
+          "release_label": "0.1.15",
+          "from_release_label": "0.1.14",
+          "to_release_label": "0.1.15"
         }
       ],
-      "release_history_summary": "Active: 0.1.14 \u00b7 Latest move: 0.1.12 -> 0.1.14",
+      "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.14 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -6736,24 +7094,33 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-14",
+      "active_release_id": "release-0-1-15",
       "active_release": {
-        "release_id": "release-0-1-14",
+        "release_id": "release-0-1-15",
         "status": "active",
-        "version": "0.1.14",
-        "tag": "v0.1.14",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
         "name": "",
-        "inherited_name": "Product Governed Harness and General-Purpose Benchmark Model",
-        "effective_name": "0.1.14",
-        "display_label": "0.1.14",
-        "notes": "Casebook lifecycle normalization, robust upgrade migrations, greenfield program/release topology, polished Atlas diagram rendering, and Product Governed Harness Turn Gate benchmark formalization.",
-        "created_utc": "2026-05-03",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
+        "notes": "",
+        "created_utc": "2026-05-05",
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
           "current"
         ],
         "active_workstreams": [
+          "B-070",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097",
           "B-118",
           "B-119",
           "B-120",
@@ -6762,6 +7129,19 @@
           "B-123",
           "B-124",
           "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
           "B-141",
           "B-142"
         ],
@@ -6770,7 +7150,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 10,
+        "active_workstream_count": 32,
         "completed_workstream_count": 1
       },
       "release_history": [
@@ -6797,9 +7177,21 @@
           "release_label": "0.1.14",
           "from_release_label": "0.1.12",
           "to_release_label": "0.1.14"
+        },
+        {
+          "action": "move",
+          "workstream_id": "B-119",
+          "release_id": "release-0-1-15",
+          "from_release_id": "release-0-1-14",
+          "to_release_id": "release-0-1-15",
+          "recorded_at": "2026-05-05T23:01:31Z",
+          "note": "Retarget active workstream to the current 0.1.15 release.",
+          "release_label": "0.1.15",
+          "from_release_label": "0.1.14",
+          "to_release_label": "0.1.15"
         }
       ],
-      "release_history_summary": "Active: 0.1.14 \u00b7 Latest move: 0.1.12 -> 0.1.14",
+      "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.14 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -6832,24 +7224,33 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-14",
+      "active_release_id": "release-0-1-15",
       "active_release": {
-        "release_id": "release-0-1-14",
+        "release_id": "release-0-1-15",
         "status": "active",
-        "version": "0.1.14",
-        "tag": "v0.1.14",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
         "name": "",
-        "inherited_name": "Product Governed Harness and General-Purpose Benchmark Model",
-        "effective_name": "0.1.14",
-        "display_label": "0.1.14",
-        "notes": "Casebook lifecycle normalization, robust upgrade migrations, greenfield program/release topology, polished Atlas diagram rendering, and Product Governed Harness Turn Gate benchmark formalization.",
-        "created_utc": "2026-05-03",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
+        "notes": "",
+        "created_utc": "2026-05-05",
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
           "current"
         ],
         "active_workstreams": [
+          "B-070",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097",
           "B-118",
           "B-119",
           "B-120",
@@ -6858,6 +7259,19 @@
           "B-123",
           "B-124",
           "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
           "B-141",
           "B-142"
         ],
@@ -6866,7 +7280,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 10,
+        "active_workstream_count": 32,
         "completed_workstream_count": 1
       },
       "release_history": [
@@ -6893,9 +7307,21 @@
           "release_label": "0.1.14",
           "from_release_label": "0.1.12",
           "to_release_label": "0.1.14"
+        },
+        {
+          "action": "move",
+          "workstream_id": "B-120",
+          "release_id": "release-0-1-15",
+          "from_release_id": "release-0-1-14",
+          "to_release_id": "release-0-1-15",
+          "recorded_at": "2026-05-05T23:01:37Z",
+          "note": "Retarget active workstream to the current 0.1.15 release.",
+          "release_label": "0.1.15",
+          "from_release_label": "0.1.14",
+          "to_release_label": "0.1.15"
         }
       ],
-      "release_history_summary": "Active: 0.1.14 \u00b7 Latest move: 0.1.12 -> 0.1.14",
+      "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.14 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -6928,24 +7354,33 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-14",
+      "active_release_id": "release-0-1-15",
       "active_release": {
-        "release_id": "release-0-1-14",
+        "release_id": "release-0-1-15",
         "status": "active",
-        "version": "0.1.14",
-        "tag": "v0.1.14",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
         "name": "",
-        "inherited_name": "Product Governed Harness and General-Purpose Benchmark Model",
-        "effective_name": "0.1.14",
-        "display_label": "0.1.14",
-        "notes": "Casebook lifecycle normalization, robust upgrade migrations, greenfield program/release topology, polished Atlas diagram rendering, and Product Governed Harness Turn Gate benchmark formalization.",
-        "created_utc": "2026-05-03",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
+        "notes": "",
+        "created_utc": "2026-05-05",
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
           "current"
         ],
         "active_workstreams": [
+          "B-070",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097",
           "B-118",
           "B-119",
           "B-120",
@@ -6954,6 +7389,19 @@
           "B-123",
           "B-124",
           "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
           "B-141",
           "B-142"
         ],
@@ -6962,7 +7410,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 10,
+        "active_workstream_count": 32,
         "completed_workstream_count": 1
       },
       "release_history": [
@@ -6989,9 +7437,21 @@
           "release_label": "0.1.14",
           "from_release_label": "0.1.12",
           "to_release_label": "0.1.14"
+        },
+        {
+          "action": "move",
+          "workstream_id": "B-121",
+          "release_id": "release-0-1-15",
+          "from_release_id": "release-0-1-14",
+          "to_release_id": "release-0-1-15",
+          "recorded_at": "2026-05-05T23:01:43Z",
+          "note": "Retarget active workstream to the current 0.1.15 release.",
+          "release_label": "0.1.15",
+          "from_release_label": "0.1.14",
+          "to_release_label": "0.1.15"
         }
       ],
-      "release_history_summary": "Active: 0.1.14 \u00b7 Latest move: 0.1.12 -> 0.1.14",
+      "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.14 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -7024,24 +7484,33 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-14",
+      "active_release_id": "release-0-1-15",
       "active_release": {
-        "release_id": "release-0-1-14",
+        "release_id": "release-0-1-15",
         "status": "active",
-        "version": "0.1.14",
-        "tag": "v0.1.14",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
         "name": "",
-        "inherited_name": "Product Governed Harness and General-Purpose Benchmark Model",
-        "effective_name": "0.1.14",
-        "display_label": "0.1.14",
-        "notes": "Casebook lifecycle normalization, robust upgrade migrations, greenfield program/release topology, polished Atlas diagram rendering, and Product Governed Harness Turn Gate benchmark formalization.",
-        "created_utc": "2026-05-03",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
+        "notes": "",
+        "created_utc": "2026-05-05",
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
           "current"
         ],
         "active_workstreams": [
+          "B-070",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097",
           "B-118",
           "B-119",
           "B-120",
@@ -7050,6 +7519,19 @@
           "B-123",
           "B-124",
           "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
           "B-141",
           "B-142"
         ],
@@ -7058,7 +7540,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 10,
+        "active_workstream_count": 32,
         "completed_workstream_count": 1
       },
       "release_history": [
@@ -7085,9 +7567,21 @@
           "release_label": "0.1.14",
           "from_release_label": "0.1.12",
           "to_release_label": "0.1.14"
+        },
+        {
+          "action": "move",
+          "workstream_id": "B-122",
+          "release_id": "release-0-1-15",
+          "from_release_id": "release-0-1-14",
+          "to_release_id": "release-0-1-15",
+          "recorded_at": "2026-05-05T23:03:05Z",
+          "note": "Retarget active workstream to the current 0.1.15 release.",
+          "release_label": "0.1.15",
+          "from_release_label": "0.1.14",
+          "to_release_label": "0.1.15"
         }
       ],
-      "release_history_summary": "Active: 0.1.14 \u00b7 Latest move: 0.1.12 -> 0.1.14",
+      "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.14 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -7120,24 +7614,33 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-14",
+      "active_release_id": "release-0-1-15",
       "active_release": {
-        "release_id": "release-0-1-14",
+        "release_id": "release-0-1-15",
         "status": "active",
-        "version": "0.1.14",
-        "tag": "v0.1.14",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
         "name": "",
-        "inherited_name": "Product Governed Harness and General-Purpose Benchmark Model",
-        "effective_name": "0.1.14",
-        "display_label": "0.1.14",
-        "notes": "Casebook lifecycle normalization, robust upgrade migrations, greenfield program/release topology, polished Atlas diagram rendering, and Product Governed Harness Turn Gate benchmark formalization.",
-        "created_utc": "2026-05-03",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
+        "notes": "",
+        "created_utc": "2026-05-05",
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
           "current"
         ],
         "active_workstreams": [
+          "B-070",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097",
           "B-118",
           "B-119",
           "B-120",
@@ -7146,6 +7649,19 @@
           "B-123",
           "B-124",
           "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
           "B-141",
           "B-142"
         ],
@@ -7154,7 +7670,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 10,
+        "active_workstream_count": 32,
         "completed_workstream_count": 1
       },
       "release_history": [
@@ -7181,9 +7697,21 @@
           "release_label": "0.1.14",
           "from_release_label": "0.1.12",
           "to_release_label": "0.1.14"
+        },
+        {
+          "action": "move",
+          "workstream_id": "B-123",
+          "release_id": "release-0-1-15",
+          "from_release_id": "release-0-1-14",
+          "to_release_id": "release-0-1-15",
+          "recorded_at": "2026-05-05T23:03:09Z",
+          "note": "Retarget active workstream to the current 0.1.15 release.",
+          "release_label": "0.1.15",
+          "from_release_label": "0.1.14",
+          "to_release_label": "0.1.15"
         }
       ],
-      "release_history_summary": "Active: 0.1.14 \u00b7 Latest move: 0.1.12 -> 0.1.14",
+      "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.14 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -7216,24 +7744,33 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-14",
+      "active_release_id": "release-0-1-15",
       "active_release": {
-        "release_id": "release-0-1-14",
+        "release_id": "release-0-1-15",
         "status": "active",
-        "version": "0.1.14",
-        "tag": "v0.1.14",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
         "name": "",
-        "inherited_name": "Product Governed Harness and General-Purpose Benchmark Model",
-        "effective_name": "0.1.14",
-        "display_label": "0.1.14",
-        "notes": "Casebook lifecycle normalization, robust upgrade migrations, greenfield program/release topology, polished Atlas diagram rendering, and Product Governed Harness Turn Gate benchmark formalization.",
-        "created_utc": "2026-05-03",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
+        "notes": "",
+        "created_utc": "2026-05-05",
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
           "current"
         ],
         "active_workstreams": [
+          "B-070",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097",
           "B-118",
           "B-119",
           "B-120",
@@ -7242,6 +7779,19 @@
           "B-123",
           "B-124",
           "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
           "B-141",
           "B-142"
         ],
@@ -7250,7 +7800,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 10,
+        "active_workstream_count": 32,
         "completed_workstream_count": 1
       },
       "release_history": [
@@ -7277,9 +7827,21 @@
           "release_label": "0.1.14",
           "from_release_label": "0.1.12",
           "to_release_label": "0.1.14"
+        },
+        {
+          "action": "move",
+          "workstream_id": "B-124",
+          "release_id": "release-0-1-15",
+          "from_release_id": "release-0-1-14",
+          "to_release_id": "release-0-1-15",
+          "recorded_at": "2026-05-05T23:03:13Z",
+          "note": "Retarget active workstream to the current 0.1.15 release.",
+          "release_label": "0.1.15",
+          "from_release_label": "0.1.14",
+          "to_release_label": "0.1.15"
         }
       ],
-      "release_history_summary": "Active: 0.1.14 \u00b7 Latest move: 0.1.12 -> 0.1.14",
+      "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.14 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -7312,24 +7874,33 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-14",
+      "active_release_id": "release-0-1-15",
       "active_release": {
-        "release_id": "release-0-1-14",
+        "release_id": "release-0-1-15",
         "status": "active",
-        "version": "0.1.14",
-        "tag": "v0.1.14",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
         "name": "",
-        "inherited_name": "Product Governed Harness and General-Purpose Benchmark Model",
-        "effective_name": "0.1.14",
-        "display_label": "0.1.14",
-        "notes": "Casebook lifecycle normalization, robust upgrade migrations, greenfield program/release topology, polished Atlas diagram rendering, and Product Governed Harness Turn Gate benchmark formalization.",
-        "created_utc": "2026-05-03",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
+        "notes": "",
+        "created_utc": "2026-05-05",
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
           "current"
         ],
         "active_workstreams": [
+          "B-070",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097",
           "B-118",
           "B-119",
           "B-120",
@@ -7338,6 +7909,19 @@
           "B-123",
           "B-124",
           "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
           "B-141",
           "B-142"
         ],
@@ -7346,7 +7930,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 10,
+        "active_workstream_count": 32,
         "completed_workstream_count": 1
       },
       "release_history": [
@@ -7373,9 +7957,21 @@
           "release_label": "0.1.14",
           "from_release_label": "0.1.12",
           "to_release_label": "0.1.14"
+        },
+        {
+          "action": "move",
+          "workstream_id": "B-125",
+          "release_id": "release-0-1-15",
+          "from_release_id": "release-0-1-14",
+          "to_release_id": "release-0-1-15",
+          "recorded_at": "2026-05-05T23:03:18Z",
+          "note": "Retarget active workstream to the current 0.1.15 release.",
+          "release_label": "0.1.15",
+          "from_release_label": "0.1.14",
+          "to_release_label": "0.1.15"
         }
       ],
-      "release_history_summary": "Active: 0.1.14 \u00b7 Latest move: 0.1.12 -> 0.1.14",
+      "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.14 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -7408,21 +8004,23 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-12",
+      "active_release_id": "release-0-1-15",
       "active_release": {
-        "release_id": "release-0-1-12",
+        "release_id": "release-0-1-15",
         "status": "active",
-        "version": "0.1.12",
-        "tag": "v0.1.12",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
         "name": "",
-        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
-        "effective_name": "0.1.12",
-        "display_label": "0.1.12",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
         "notes": "",
-        "created_utc": "2026-04-09",
+        "created_utc": "2026-05-05",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [],
+        "aliases": [
+          "current"
+        ],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -7433,14 +8031,36 @@
           "B-092",
           "B-093",
           "B-097",
-          "B-126"
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
+          "B-141",
+          "B-142"
         ],
         "completed_workstreams": [
-          "B-127"
+          "B-140"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 10,
+        "active_workstream_count": 32,
         "completed_workstream_count": 1
       },
       "release_history": [
@@ -7455,9 +8075,21 @@
           "release_label": "0.1.12",
           "from_release_label": "",
           "to_release_label": ""
+        },
+        {
+          "action": "move",
+          "workstream_id": "B-126",
+          "release_id": "release-0-1-15",
+          "from_release_id": "release-0-1-12",
+          "to_release_id": "release-0-1-15",
+          "recorded_at": "2026-05-05T23:01:17Z",
+          "note": "Retarget active workstream to the current 0.1.15 release.",
+          "release_label": "0.1.15",
+          "from_release_label": "0.1.12",
+          "to_release_label": "0.1.15"
         }
       ],
-      "release_history_summary": "Active: 0.1.12 \u00b7 Added to 0.1.12",
+      "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.12 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -7553,10 +8185,80 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "",
-      "active_release": {},
-      "release_history": [],
-      "release_history_summary": "",
+      "active_release_id": "release-0-1-15",
+      "active_release": {
+        "release_id": "release-0-1-15",
+        "status": "active",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
+        "name": "",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
+        "notes": "",
+        "created_utc": "2026-05-05",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-070",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097",
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
+          "B-141",
+          "B-142"
+        ],
+        "completed_workstreams": [
+          "B-140"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 32,
+        "completed_workstream_count": 1
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-128",
+          "release_id": "release-0-1-15",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-05-05T22:43:24Z",
+          "note": "Targeted to v0.1.15 for the current stabilization and agentic-context release lane.",
+          "release_label": "0.1.15",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.15 \u00b7 Added to 0.1.15",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -7589,10 +8291,80 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "",
-      "active_release": {},
-      "release_history": [],
-      "release_history_summary": "",
+      "active_release_id": "release-0-1-15",
+      "active_release": {
+        "release_id": "release-0-1-15",
+        "status": "active",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
+        "name": "",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
+        "notes": "",
+        "created_utc": "2026-05-05",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-070",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097",
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
+          "B-141",
+          "B-142"
+        ],
+        "completed_workstreams": [
+          "B-140"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 32,
+        "completed_workstream_count": 1
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-129",
+          "release_id": "release-0-1-15",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-05-05T22:43:29Z",
+          "note": "Targeted to v0.1.15 for the current stabilization and agentic-context release lane.",
+          "release_label": "0.1.15",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.15 \u00b7 Added to 0.1.15",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -7625,10 +8397,80 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "",
-      "active_release": {},
-      "release_history": [],
-      "release_history_summary": "",
+      "active_release_id": "release-0-1-15",
+      "active_release": {
+        "release_id": "release-0-1-15",
+        "status": "active",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
+        "name": "",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
+        "notes": "",
+        "created_utc": "2026-05-05",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-070",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097",
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
+          "B-141",
+          "B-142"
+        ],
+        "completed_workstreams": [
+          "B-140"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 32,
+        "completed_workstream_count": 1
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-130",
+          "release_id": "release-0-1-15",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-05-05T22:43:34Z",
+          "note": "Targeted to v0.1.15 for the current stabilization and agentic-context release lane.",
+          "release_label": "0.1.15",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.15 \u00b7 Added to 0.1.15",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -7661,10 +8503,80 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "",
-      "active_release": {},
-      "release_history": [],
-      "release_history_summary": "",
+      "active_release_id": "release-0-1-15",
+      "active_release": {
+        "release_id": "release-0-1-15",
+        "status": "active",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
+        "name": "",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
+        "notes": "",
+        "created_utc": "2026-05-05",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-070",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097",
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
+          "B-141",
+          "B-142"
+        ],
+        "completed_workstreams": [
+          "B-140"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 32,
+        "completed_workstream_count": 1
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-131",
+          "release_id": "release-0-1-15",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-05-05T22:43:40Z",
+          "note": "Targeted to v0.1.15 for the current stabilization and agentic-context release lane.",
+          "release_label": "0.1.15",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.15 \u00b7 Added to 0.1.15",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -7697,10 +8609,80 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "",
-      "active_release": {},
-      "release_history": [],
-      "release_history_summary": "",
+      "active_release_id": "release-0-1-15",
+      "active_release": {
+        "release_id": "release-0-1-15",
+        "status": "active",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
+        "name": "",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
+        "notes": "",
+        "created_utc": "2026-05-05",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-070",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097",
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
+          "B-141",
+          "B-142"
+        ],
+        "completed_workstreams": [
+          "B-140"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 32,
+        "completed_workstream_count": 1
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-132",
+          "release_id": "release-0-1-15",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-05-05T22:43:44Z",
+          "note": "Targeted to v0.1.15 for the current stabilization and agentic-context release lane.",
+          "release_label": "0.1.15",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.15 \u00b7 Added to 0.1.15",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -7733,10 +8715,80 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "",
-      "active_release": {},
-      "release_history": [],
-      "release_history_summary": "",
+      "active_release_id": "release-0-1-15",
+      "active_release": {
+        "release_id": "release-0-1-15",
+        "status": "active",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
+        "name": "",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
+        "notes": "",
+        "created_utc": "2026-05-05",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-070",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097",
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
+          "B-141",
+          "B-142"
+        ],
+        "completed_workstreams": [
+          "B-140"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 32,
+        "completed_workstream_count": 1
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-133",
+          "release_id": "release-0-1-15",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-05-05T22:43:48Z",
+          "note": "Targeted to v0.1.15 for the current stabilization and agentic-context release lane.",
+          "release_label": "0.1.15",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.15 \u00b7 Added to 0.1.15",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -7769,10 +8821,80 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "",
-      "active_release": {},
-      "release_history": [],
-      "release_history_summary": "",
+      "active_release_id": "release-0-1-15",
+      "active_release": {
+        "release_id": "release-0-1-15",
+        "status": "active",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
+        "name": "",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
+        "notes": "",
+        "created_utc": "2026-05-05",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-070",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097",
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
+          "B-141",
+          "B-142"
+        ],
+        "completed_workstreams": [
+          "B-140"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 32,
+        "completed_workstream_count": 1
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-134",
+          "release_id": "release-0-1-15",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-05-05T22:43:52Z",
+          "note": "Targeted to v0.1.15 for the current stabilization and agentic-context release lane.",
+          "release_label": "0.1.15",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.15 \u00b7 Added to 0.1.15",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -7805,10 +8927,80 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "",
-      "active_release": {},
-      "release_history": [],
-      "release_history_summary": "",
+      "active_release_id": "release-0-1-15",
+      "active_release": {
+        "release_id": "release-0-1-15",
+        "status": "active",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
+        "name": "",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
+        "notes": "",
+        "created_utc": "2026-05-05",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-070",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097",
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
+          "B-141",
+          "B-142"
+        ],
+        "completed_workstreams": [
+          "B-140"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 32,
+        "completed_workstream_count": 1
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-135",
+          "release_id": "release-0-1-15",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-05-05T22:43:56Z",
+          "note": "Targeted to v0.1.15 for the current stabilization and agentic-context release lane.",
+          "release_label": "0.1.15",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.15 \u00b7 Added to 0.1.15",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -7841,10 +9033,80 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "",
-      "active_release": {},
-      "release_history": [],
-      "release_history_summary": "",
+      "active_release_id": "release-0-1-15",
+      "active_release": {
+        "release_id": "release-0-1-15",
+        "status": "active",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
+        "name": "",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
+        "notes": "",
+        "created_utc": "2026-05-05",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-070",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097",
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
+          "B-141",
+          "B-142"
+        ],
+        "completed_workstreams": [
+          "B-140"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 32,
+        "completed_workstream_count": 1
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-136",
+          "release_id": "release-0-1-15",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-05-05T22:44:01Z",
+          "note": "Targeted to v0.1.15 for the current stabilization and agentic-context release lane.",
+          "release_label": "0.1.15",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.15 \u00b7 Added to 0.1.15",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -7877,10 +9139,80 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "",
-      "active_release": {},
-      "release_history": [],
-      "release_history_summary": "",
+      "active_release_id": "release-0-1-15",
+      "active_release": {
+        "release_id": "release-0-1-15",
+        "status": "active",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
+        "name": "",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
+        "notes": "",
+        "created_utc": "2026-05-05",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-070",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097",
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
+          "B-141",
+          "B-142"
+        ],
+        "completed_workstreams": [
+          "B-140"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 32,
+        "completed_workstream_count": 1
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-137",
+          "release_id": "release-0-1-15",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-05-05T22:44:05Z",
+          "note": "Targeted to v0.1.15 for the current stabilization and agentic-context release lane.",
+          "release_label": "0.1.15",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.15 \u00b7 Added to 0.1.15",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -7913,10 +9245,80 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "",
-      "active_release": {},
-      "release_history": [],
-      "release_history_summary": "",
+      "active_release_id": "release-0-1-15",
+      "active_release": {
+        "release_id": "release-0-1-15",
+        "status": "active",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
+        "name": "",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
+        "notes": "",
+        "created_utc": "2026-05-05",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-070",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097",
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
+          "B-141",
+          "B-142"
+        ],
+        "completed_workstreams": [
+          "B-140"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 32,
+        "completed_workstream_count": 1
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-138",
+          "release_id": "release-0-1-15",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-05-05T22:44:10Z",
+          "note": "Targeted to v0.1.15 for the current stabilization and agentic-context release lane.",
+          "release_label": "0.1.15",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.15 \u00b7 Added to 0.1.15",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -7949,10 +9351,80 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "",
-      "active_release": {},
-      "release_history": [],
-      "release_history_summary": "",
+      "active_release_id": "release-0-1-15",
+      "active_release": {
+        "release_id": "release-0-1-15",
+        "status": "active",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
+        "name": "",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
+        "notes": "",
+        "created_utc": "2026-05-05",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-070",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097",
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
+          "B-141",
+          "B-142"
+        ],
+        "completed_workstreams": [
+          "B-140"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 32,
+        "completed_workstream_count": 1
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-139",
+          "release_id": "release-0-1-15",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-05-05T22:44:14Z",
+          "note": "Targeted to v0.1.15 for the current stabilization and agentic-context release lane.",
+          "release_label": "0.1.15",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.15 \u00b7 Added to 0.1.15",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -8040,9 +9512,33 @@
           "release_label": "0.1.14",
           "from_release_label": "",
           "to_release_label": ""
+        },
+        {
+          "action": "add",
+          "workstream_id": "B-140",
+          "release_id": "release-0-1-15",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-05-05T22:44:18Z",
+          "note": "Targeted to v0.1.15 for the current stabilization and agentic-context release lane.",
+          "release_label": "0.1.15",
+          "from_release_label": "",
+          "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-140",
+          "release_id": "release-0-1-15",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-05-05T22:44:18Z",
+          "note": "Targeted to v0.1.15 for the current stabilization and agentic-context release lane.",
+          "release_label": "0.1.15",
+          "from_release_label": "",
+          "to_release_label": ""
         }
       ],
-      "release_history_summary": "Removed from 0.1.14",
+      "release_history_summary": "Removed from 0.1.15",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 4,
@@ -8083,24 +9579,33 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-14",
+      "active_release_id": "release-0-1-15",
       "active_release": {
-        "release_id": "release-0-1-14",
+        "release_id": "release-0-1-15",
         "status": "active",
-        "version": "0.1.14",
-        "tag": "v0.1.14",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
         "name": "",
-        "inherited_name": "Product Governed Harness and General-Purpose Benchmark Model",
-        "effective_name": "0.1.14",
-        "display_label": "0.1.14",
-        "notes": "Casebook lifecycle normalization, robust upgrade migrations, greenfield program/release topology, polished Atlas diagram rendering, and Product Governed Harness Turn Gate benchmark formalization.",
-        "created_utc": "2026-05-03",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
+        "notes": "",
+        "created_utc": "2026-05-05",
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
           "current"
         ],
         "active_workstreams": [
+          "B-070",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097",
           "B-118",
           "B-119",
           "B-120",
@@ -8109,6 +9614,19 @@
           "B-123",
           "B-124",
           "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
           "B-141",
           "B-142"
         ],
@@ -8117,7 +9635,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 10,
+        "active_workstream_count": 32,
         "completed_workstream_count": 1
       },
       "release_history": [
@@ -8144,9 +9662,21 @@
           "release_label": "0.1.14",
           "from_release_label": "0.1.13",
           "to_release_label": "0.1.14"
+        },
+        {
+          "action": "move",
+          "workstream_id": "B-141",
+          "release_id": "release-0-1-15",
+          "from_release_id": "release-0-1-14",
+          "to_release_id": "release-0-1-15",
+          "recorded_at": "2026-05-05T22:44:50Z",
+          "note": "Move current v0.1.15 session hardening work from v0.1.14 post-release fixes into the v0.1.15 target.",
+          "release_label": "0.1.15",
+          "from_release_label": "0.1.14",
+          "to_release_label": "0.1.15"
         }
       ],
-      "release_history_summary": "Active: 0.1.14 \u00b7 Latest move: 0.1.13 -> 0.1.14",
+      "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.14 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 7,
@@ -8183,24 +9713,33 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-14",
+      "active_release_id": "release-0-1-15",
       "active_release": {
-        "release_id": "release-0-1-14",
+        "release_id": "release-0-1-15",
         "status": "active",
-        "version": "0.1.14",
-        "tag": "v0.1.14",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
         "name": "",
-        "inherited_name": "Product Governed Harness and General-Purpose Benchmark Model",
-        "effective_name": "0.1.14",
-        "display_label": "0.1.14",
-        "notes": "Casebook lifecycle normalization, robust upgrade migrations, greenfield program/release topology, polished Atlas diagram rendering, and Product Governed Harness Turn Gate benchmark formalization.",
-        "created_utc": "2026-05-03",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
+        "notes": "",
+        "created_utc": "2026-05-05",
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
           "current"
         ],
         "active_workstreams": [
+          "B-070",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097",
           "B-118",
           "B-119",
           "B-120",
@@ -8209,6 +9748,19 @@
           "B-123",
           "B-124",
           "B-125",
+          "B-126",
+          "B-128",
+          "B-129",
+          "B-130",
+          "B-131",
+          "B-132",
+          "B-133",
+          "B-134",
+          "B-135",
+          "B-136",
+          "B-137",
+          "B-138",
+          "B-139",
           "B-141",
           "B-142"
         ],
@@ -8217,7 +9769,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 10,
+        "active_workstream_count": 32,
         "completed_workstream_count": 1
       },
       "release_history": [
@@ -8244,9 +9796,21 @@
           "release_label": "0.1.14",
           "from_release_label": "0.1.13",
           "to_release_label": "0.1.14"
+        },
+        {
+          "action": "move",
+          "workstream_id": "B-142",
+          "release_id": "release-0-1-15",
+          "from_release_id": "release-0-1-14",
+          "to_release_id": "release-0-1-15",
+          "recorded_at": "2026-05-05T22:44:54Z",
+          "note": "Move current v0.1.15 session hardening work from v0.1.14 post-release fixes into the v0.1.15 target.",
+          "release_label": "0.1.15",
+          "from_release_label": "0.1.14",
+          "to_release_label": "0.1.15"
         }
       ],
-      "release_history_summary": "Active: 0.1.14 \u00b7 Latest move: 0.1.13 -> 0.1.14",
+      "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.14 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 1,
@@ -8330,24 +9894,13 @@
       "shipped_utc": "",
       "closed_utc": "",
       "aliases": [],
-      "active_workstreams": [
-        "B-070",
-        "B-083",
-        "B-084",
-        "B-085",
-        "B-087",
-        "B-088",
-        "B-092",
-        "B-093",
-        "B-097",
-        "B-126"
-      ],
+      "active_workstreams": [],
       "completed_workstreams": [
         "B-127"
       ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 10,
+      "active_workstream_count": 0,
       "completed_workstream_count": 1
     },
     {
@@ -8384,48 +9937,40 @@
       "created_utc": "2026-05-03",
       "shipped_utc": "",
       "closed_utc": "",
-      "aliases": [
-        "current"
-      ],
-      "active_workstreams": [
-        "B-118",
-        "B-119",
-        "B-120",
-        "B-121",
-        "B-122",
-        "B-123",
-        "B-124",
-        "B-125",
-        "B-141",
-        "B-142"
-      ],
-      "completed_workstreams": [
-        "B-140"
-      ],
+      "aliases": [],
+      "active_workstreams": [],
+      "completed_workstreams": [],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 10,
-      "completed_workstream_count": 1
-    }
-  ],
-  "release_aliases": {
-    "current": {
-      "release_id": "release-0-1-14",
+      "active_workstream_count": 0,
+      "completed_workstream_count": 0
+    },
+    {
+      "release_id": "release-0-1-15",
       "status": "active",
-      "version": "0.1.14",
-      "tag": "v0.1.14",
+      "version": "0.1.15",
+      "tag": "v0.1.15",
       "name": "",
-      "inherited_name": "Product Governed Harness and General-Purpose Benchmark Model",
-      "effective_name": "0.1.14",
-      "display_label": "0.1.14",
-      "notes": "Casebook lifecycle normalization, robust upgrade migrations, greenfield program/release topology, polished Atlas diagram rendering, and Product Governed Harness Turn Gate benchmark formalization.",
-      "created_utc": "2026-05-03",
+      "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+      "effective_name": "0.1.15",
+      "display_label": "0.1.15",
+      "notes": "",
+      "created_utc": "2026-05-05",
       "shipped_utc": "",
       "closed_utc": "",
       "aliases": [
         "current"
       ],
       "active_workstreams": [
+        "B-070",
+        "B-083",
+        "B-084",
+        "B-085",
+        "B-087",
+        "B-088",
+        "B-092",
+        "B-093",
+        "B-097",
         "B-118",
         "B-119",
         "B-120",
@@ -8434,6 +9979,19 @@
         "B-123",
         "B-124",
         "B-125",
+        "B-126",
+        "B-128",
+        "B-129",
+        "B-130",
+        "B-131",
+        "B-132",
+        "B-133",
+        "B-134",
+        "B-135",
+        "B-136",
+        "B-137",
+        "B-138",
+        "B-139",
         "B-141",
         "B-142"
       ],
@@ -8442,27 +10000,96 @@
       ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 10,
+      "active_workstream_count": 32,
+      "completed_workstream_count": 1
+    }
+  ],
+  "release_aliases": {
+    "current": {
+      "release_id": "release-0-1-15",
+      "status": "active",
+      "version": "0.1.15",
+      "tag": "v0.1.15",
+      "name": "",
+      "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+      "effective_name": "0.1.15",
+      "display_label": "0.1.15",
+      "notes": "",
+      "created_utc": "2026-05-05",
+      "shipped_utc": "",
+      "closed_utc": "",
+      "aliases": [
+        "current"
+      ],
+      "active_workstreams": [
+        "B-070",
+        "B-083",
+        "B-084",
+        "B-085",
+        "B-087",
+        "B-088",
+        "B-092",
+        "B-093",
+        "B-097",
+        "B-118",
+        "B-119",
+        "B-120",
+        "B-121",
+        "B-122",
+        "B-123",
+        "B-124",
+        "B-125",
+        "B-126",
+        "B-128",
+        "B-129",
+        "B-130",
+        "B-131",
+        "B-132",
+        "B-133",
+        "B-134",
+        "B-135",
+        "B-136",
+        "B-137",
+        "B-138",
+        "B-139",
+        "B-141",
+        "B-142"
+      ],
+      "completed_workstreams": [
+        "B-140"
+      ],
+      "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+      "terminal": false,
+      "active_workstream_count": 32,
       "completed_workstream_count": 1
     }
   },
   "current_release": {
-    "release_id": "release-0-1-14",
+    "release_id": "release-0-1-15",
     "status": "active",
-    "version": "0.1.14",
-    "tag": "v0.1.14",
+    "version": "0.1.15",
+    "tag": "v0.1.15",
     "name": "",
-    "inherited_name": "Product Governed Harness and General-Purpose Benchmark Model",
-    "effective_name": "0.1.14",
-    "display_label": "0.1.14",
-    "notes": "Casebook lifecycle normalization, robust upgrade migrations, greenfield program/release topology, polished Atlas diagram rendering, and Product Governed Harness Turn Gate benchmark formalization.",
-    "created_utc": "2026-05-03",
+    "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+    "effective_name": "0.1.15",
+    "display_label": "0.1.15",
+    "notes": "",
+    "created_utc": "2026-05-05",
     "shipped_utc": "",
     "closed_utc": "",
     "aliases": [
       "current"
     ],
     "active_workstreams": [
+      "B-070",
+      "B-083",
+      "B-084",
+      "B-085",
+      "B-087",
+      "B-088",
+      "B-092",
+      "B-093",
+      "B-097",
       "B-118",
       "B-119",
       "B-120",
@@ -8471,6 +10098,19 @@
       "B-123",
       "B-124",
       "B-125",
+      "B-126",
+      "B-128",
+      "B-129",
+      "B-130",
+      "B-131",
+      "B-132",
+      "B-133",
+      "B-134",
+      "B-135",
+      "B-136",
+      "B-137",
+      "B-138",
+      "B-139",
       "B-141",
       "B-142"
     ],
@@ -8479,14 +10119,14 @@
     ],
     "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
     "terminal": false,
-    "active_workstream_count": 10,
+    "active_workstream_count": 32,
     "completed_workstream_count": 1
   },
   "next_release": {},
   "release_summary": {
-    "release_count": 4,
+    "release_count": 5,
     "alias_count": 1,
-    "active_assignment_count": 20
+    "active_assignment_count": 32
   },
   "execution_programs": [
     {
@@ -13729,6 +15369,18 @@
       "version": "0.1.14",
       "tag": "v0.1.14",
       "name": "0.1.14",
+      "aliases": [],
+      "file": "odylith/radar/source/releases/releases.v1.json"
+    },
+    {
+      "id": "release:release-0-1-15",
+      "type": "release",
+      "label": "0.1.15",
+      "release_id": "release-0-1-15",
+      "status": "active",
+      "version": "0.1.15",
+      "tag": "v0.1.15",
+      "name": "0.1.15",
       "aliases": [
         "current"
       ],
@@ -17475,7 +19127,7 @@
     },
     {
       "source": "B-070",
-      "target": "release:release-0-1-12",
+      "target": "release:release-0-1-15",
       "edge_type": "active_release"
     },
     {
@@ -18090,7 +19742,7 @@
     },
     {
       "source": "B-083",
-      "target": "release:release-0-1-12",
+      "target": "release:release-0-1-15",
       "edge_type": "active_release"
     },
     {
@@ -18150,7 +19802,7 @@
     },
     {
       "source": "B-084",
-      "target": "release:release-0-1-12",
+      "target": "release:release-0-1-15",
       "edge_type": "active_release"
     },
     {
@@ -18175,7 +19827,7 @@
     },
     {
       "source": "B-085",
-      "target": "release:release-0-1-12",
+      "target": "release:release-0-1-15",
       "edge_type": "active_release"
     },
     {
@@ -18225,7 +19877,7 @@
     },
     {
       "source": "B-087",
-      "target": "release:release-0-1-12",
+      "target": "release:release-0-1-15",
       "edge_type": "active_release"
     },
     {
@@ -18245,7 +19897,7 @@
     },
     {
       "source": "B-088",
-      "target": "release:release-0-1-12",
+      "target": "release:release-0-1-15",
       "edge_type": "active_release"
     },
     {
@@ -18390,7 +20042,7 @@
     },
     {
       "source": "B-092",
-      "target": "release:release-0-1-12",
+      "target": "release:release-0-1-15",
       "edge_type": "active_release"
     },
     {
@@ -18435,7 +20087,7 @@
     },
     {
       "source": "B-093",
-      "target": "release:release-0-1-12",
+      "target": "release:release-0-1-15",
       "edge_type": "active_release"
     },
     {
@@ -18565,7 +20217,7 @@
     },
     {
       "source": "B-097",
-      "target": "release:release-0-1-12",
+      "target": "release:release-0-1-15",
       "edge_type": "active_release"
     },
     {
@@ -19315,7 +20967,7 @@
     },
     {
       "source": "B-118",
-      "target": "release:release-0-1-14",
+      "target": "release:release-0-1-15",
       "edge_type": "active_release"
     },
     {
@@ -19325,7 +20977,7 @@
     },
     {
       "source": "B-119",
-      "target": "release:release-0-1-14",
+      "target": "release:release-0-1-15",
       "edge_type": "active_release"
     },
     {
@@ -19335,7 +20987,7 @@
     },
     {
       "source": "B-120",
-      "target": "release:release-0-1-14",
+      "target": "release:release-0-1-15",
       "edge_type": "active_release"
     },
     {
@@ -19350,7 +21002,7 @@
     },
     {
       "source": "B-121",
-      "target": "release:release-0-1-14",
+      "target": "release:release-0-1-15",
       "edge_type": "active_release"
     },
     {
@@ -19365,7 +21017,7 @@
     },
     {
       "source": "B-122",
-      "target": "release:release-0-1-14",
+      "target": "release:release-0-1-15",
       "edge_type": "active_release"
     },
     {
@@ -19380,7 +21032,7 @@
     },
     {
       "source": "B-123",
-      "target": "release:release-0-1-14",
+      "target": "release:release-0-1-15",
       "edge_type": "active_release"
     },
     {
@@ -19395,7 +21047,7 @@
     },
     {
       "source": "B-124",
-      "target": "release:release-0-1-14",
+      "target": "release:release-0-1-15",
       "edge_type": "active_release"
     },
     {
@@ -19410,7 +21062,7 @@
     },
     {
       "source": "B-125",
-      "target": "release:release-0-1-14",
+      "target": "release:release-0-1-15",
       "edge_type": "active_release"
     },
     {
@@ -19425,7 +21077,7 @@
     },
     {
       "source": "B-126",
-      "target": "release:release-0-1-12",
+      "target": "release:release-0-1-15",
       "edge_type": "active_release"
     },
     {
@@ -19459,9 +21111,19 @@
       "edge_type": "component_linkage"
     },
     {
+      "source": "B-128",
+      "target": "release:release-0-1-15",
+      "edge_type": "active_release"
+    },
+    {
       "source": "B-129",
       "target": "component:odylith",
       "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-129",
+      "target": "release:release-0-1-15",
+      "edge_type": "active_release"
     },
     {
       "source": "B-130",
@@ -19469,9 +21131,19 @@
       "edge_type": "component_linkage"
     },
     {
+      "source": "B-130",
+      "target": "release:release-0-1-15",
+      "edge_type": "active_release"
+    },
+    {
       "source": "B-131",
       "target": "component:odylith",
       "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-131",
+      "target": "release:release-0-1-15",
+      "edge_type": "active_release"
     },
     {
       "source": "B-132",
@@ -19479,9 +21151,19 @@
       "edge_type": "component_linkage"
     },
     {
+      "source": "B-132",
+      "target": "release:release-0-1-15",
+      "edge_type": "active_release"
+    },
+    {
       "source": "B-133",
       "target": "component:odylith",
       "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-133",
+      "target": "release:release-0-1-15",
+      "edge_type": "active_release"
     },
     {
       "source": "B-134",
@@ -19489,9 +21171,19 @@
       "edge_type": "component_linkage"
     },
     {
+      "source": "B-134",
+      "target": "release:release-0-1-15",
+      "edge_type": "active_release"
+    },
+    {
       "source": "B-135",
       "target": "component:odylith",
       "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-135",
+      "target": "release:release-0-1-15",
+      "edge_type": "active_release"
     },
     {
       "source": "B-136",
@@ -19499,9 +21191,19 @@
       "edge_type": "component_linkage"
     },
     {
+      "source": "B-136",
+      "target": "release:release-0-1-15",
+      "edge_type": "active_release"
+    },
+    {
       "source": "B-137",
       "target": "component:odylith",
       "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-137",
+      "target": "release:release-0-1-15",
+      "edge_type": "active_release"
     },
     {
       "source": "B-138",
@@ -19509,9 +21211,19 @@
       "edge_type": "component_linkage"
     },
     {
+      "source": "B-138",
+      "target": "release:release-0-1-15",
+      "edge_type": "active_release"
+    },
+    {
       "source": "B-139",
       "target": "component:odylith",
       "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-139",
+      "target": "release:release-0-1-15",
+      "edge_type": "active_release"
     },
     {
       "source": "B-140",
@@ -19655,7 +21367,7 @@
     },
     {
       "source": "B-141",
-      "target": "release:release-0-1-14",
+      "target": "release:release-0-1-15",
       "edge_type": "active_release"
     },
     {
@@ -19705,7 +21417,7 @@
     },
     {
       "source": "B-142",
-      "target": "release:release-0-1-14",
+      "target": "release:release-0-1-15",
       "edge_type": "active_release"
     },
     {
@@ -23646,31 +25358,33 @@
       "info": 0
     },
     "connectivity": {
-      "spine_node_count": 246,
-      "structural_edge_count": 1572,
-      "connected_component_count": 3,
-      "largest_component_size": 244,
-      "isolated_node_count": 2,
+      "spine_node_count": 247,
+      "structural_edge_count": 1584,
+      "connected_component_count": 5,
+      "largest_component_size": 243,
+      "isolated_node_count": 4,
       "isolated_nodes": [
         "release:release-0-1-11",
-        "release:release-0-1-13"
+        "release:release-0-1-12",
+        "release:release-0-1-13",
+        "release:release-0-1-14"
       ]
     },
     "findings": []
   },
   "summary": {
     "workstream_count": 142,
-    "release_count": 4,
+    "release_count": 5,
     "component_count": 30,
-    "active_release_assignment_count": 20,
+    "active_release_assignment_count": 32,
     "execution_program_count": 4,
     "execution_wave_count": 23,
-    "node_count": 366,
-    "edge_count": 1725,
+    "node_count": 367,
+    "edge_count": 1737,
     "warning_count": 6,
     "warning_item_count": 6,
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-05-04 06:05:32Z"
+  "generated_utc": "2026-05-06 01:19:55Z"
 }

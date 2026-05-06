@@ -8,7 +8,7 @@
     "explicit_event_count": 24,
     "mapped_workstream_evidence_count": 24,
     "recent_path_match_count": 0,
-    "spec_history_event_count": 7,
+    "spec_history_event_count": 8,
     "status": "forensic_coverage_present",
     "timeline_event_count": 24
   },
@@ -936,8 +936,8 @@
     "runbooks": []
   },
   "version": "v1",
-  "what_it_is": "Provider-free domain-intelligence runtime that turns greenfield consumer intent into confirmation-gated governance proposals with backlog, program waves, release plan, planned Registry components, draft Atlas topology, assumptions, risks, and validation obligations.",
-  "why_tracked": "Owns the consumer-lane boundary between missing source evidence and useful greenfield guidance, so Claude, Codex, and future hosts route broad project intents through one low-latency Odylith runtime path instead of refusing or inventing source-backed truth.",
+  "what_it_is": "Provider-free domain-intelligence runtime that turns greenfield consumer intent into confirmation-gated governance proposals with backlog, program waves, release plan, planned Registry components, draft Atlas topology, assumptions, risks, validation obligations, deterministic Tribunal gating, and final surface refresh.",
+  "why_tracked": "Owns the consumer-lane boundary between missing source evidence and useful greenfield guidance, so every supported host routes broad project intents through one low-latency Odylith runtime path instead of refusing or inventing source-backed truth.",
   "workstreams": [
     "B-141",
     "B-142"

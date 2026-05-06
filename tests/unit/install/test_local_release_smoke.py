@@ -3,6 +3,7 @@ from __future__ import annotations
 import errno
 import importlib.util
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 from urllib.error import HTTPError
@@ -36,6 +37,11 @@ def test_local_release_env_forces_deterministic_reasoning(monkeypatch) -> None: 
     assert env["ODYLITH_RELEASE_MAINTAINER_ROOT"] == str(module.REPO_ROOT)
     assert env["ODYLITH_REASONING_MODE"] == "disabled"
     assert env["ODYLITH_REASONING_PROVIDER"] == "auto-local"
+    assert env["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "1"
+    assert env["ODYLITH_REASONING_CODEX_BIN"] == "/usr/bin/false"
+    assert env["ODYLITH_REASONING_CLAUDE_BIN"] == "/usr/bin/false"
+    assert env["ODYLITH_COMPASS_STANDUP_BACKGROUND_DISABLE"] == "1"
+    assert env["ODYLITH_NO_BROWSER"] == "1"
     assert env["ODYLITH_VERSION"] == "0.1.6"
 
 
@@ -51,6 +57,11 @@ def test_force_deterministic_reasoning_env_overrides_exported_provider() -> None
 
     assert env["ODYLITH_REASONING_MODE"] == "disabled"
     assert env["ODYLITH_REASONING_PROVIDER"] == "auto-local"
+    assert env["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "1"
+    assert env["ODYLITH_REASONING_CODEX_BIN"] == "/usr/bin/false"
+    assert env["ODYLITH_REASONING_CLAUDE_BIN"] == "/usr/bin/false"
+    assert env["ODYLITH_COMPASS_STANDUP_BACKGROUND_DISABLE"] == "1"
+    assert env["ODYLITH_NO_BROWSER"] == "1"
 
 
 def test_cleanup_smoke_temp_root_retries_enotempty(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
@@ -124,6 +135,28 @@ def test_previous_release_is_published_returns_true_when_release_exists(monkeypa
     assert seen["version"] == "0.1.5"
 
 
+def test_run_reports_timeout_with_command_and_cwd(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
+    module = _module()
+
+    def fake_run(*args, **kwargs):  # noqa: ANN001
+        raise subprocess.TimeoutExpired(cmd=args[0], timeout=300, output="out", stderr="err")
+
+    monkeypatch.setattr(module.subprocess, "run", fake_run)
+
+    try:
+        module._run(cwd=tmp_path, env={}, command=["odylith", "sync", "--force"])
+    except RuntimeError as exc:
+        message = str(exc)
+    else:  # pragma: no cover - assertion branch
+        raise AssertionError("timeout should raise RuntimeError")
+
+    assert "command timed out after" in message
+    assert "odylith sync --force" in message
+    assert f"cwd: {tmp_path}" in message
+    assert "out" in message
+    assert "err" in message
+
+
 def test_main_skips_upgrade_cycle_when_previous_release_missing(monkeypatch, tmp_path: Path) -> None:
     module = _module()
     dist_dir = tmp_path / "dist"
@@ -176,6 +209,56 @@ def test_main_runs_upgrade_cycle_when_previous_release_exists(monkeypatch, tmp_p
 
     assert rc == 0
     assert events == ["install", "upgrade", "stale-residue", "shutdown", "server_close"]
+
+
+def test_main_runs_all_explicit_previous_versions(monkeypatch, tmp_path: Path) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    dist_dir.mkdir()
+    (dist_dir / "install.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+
+    events: list[str] = []
+
+    class _DummyServer:
+        def shutdown(self) -> None:
+            events.append("shutdown")
+
+        def server_close(self) -> None:
+            events.append("server_close")
+
+    monkeypatch.setattr(module, "_serve_directory", lambda directory: (_DummyServer(), "http://127.0.0.1:8123"))
+    monkeypatch.setattr(module, "_install_and_smoke", lambda **kwargs: events.append("install"))
+    monkeypatch.setattr(module, "_upgrade_cycle", lambda **kwargs: events.append(f"upgrade:{kwargs['previous_version']}"))
+    monkeypatch.setattr(
+        module,
+        "_stale_uninstall_residue_cycle",
+        lambda **kwargs: events.append(f"stale-residue:{kwargs['previous_version']}"),
+    )
+    monkeypatch.setattr(module, "_previous_release_is_published", lambda **kwargs: True)
+
+    rc = module.main(
+        [
+            "--version",
+            "0.1.15",
+            "--dist-dir",
+            str(dist_dir),
+            "--previous-version",
+            "0.1.10",
+            "--previous-version",
+            "0.1.14",
+        ]
+    )
+
+    assert rc == 0
+    assert events == [
+        "install",
+        "upgrade:0.1.10",
+        "stale-residue:0.1.10",
+        "upgrade:0.1.14",
+        "stale-residue:0.1.14",
+        "shutdown",
+        "server_close",
+    ]
 
 
 def test_upgrade_cycle_proves_dashboard_refresh_after_each_target_activation(

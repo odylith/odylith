@@ -365,8 +365,16 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert 'previous_active_version=""' in text
     assert 'previous_active_version="$("$bootstrap_python" -c' in text
     assert 'previous_active_version="$(basename "$(readlink "$state_root/runtime/current")")"' in text
+    assert "install_child_env=(" in text
+    assert '"ODYLITH_REASONING_MODE=disabled"' in text
+    assert '"ODYLITH_REASONING_PROVIDER=auto-local"' in text
+    assert '"ODYLITH_REASONING_TIMEOUT_SECONDS=1"' in text
+    assert '"ODYLITH_REASONING_CODEX_BIN=/usr/bin/false"' in text
+    assert '"ODYLITH_REASONING_CLAUDE_BIN=/usr/bin/false"' in text
+    assert '"ODYLITH_COMPASS_STANDUP_BACKGROUND_DISABLE=1"' in text
+    assert '"ODYLITH_NO_BROWSER=1"' in text
     assert 'rm -rf "$migration_state_dir"' in text
-    assert 'ODYLITH_INSTALL_PREVIOUS_ACTIVE_VERSION="$previous_active_version" ODYLITH_INSTALL_COMPACT=1 ODYLITH_BOOTSTRAP_RUNTIME_PRESTAGED=1 "$version_root/bin/python" -m odylith.cli install' in text
+    assert 'env "${install_child_env[@]}" ODYLITH_INSTALL_PREVIOUS_ACTIVE_VERSION="$previous_active_version" ODYLITH_INSTALL_COMPACT=1 ODYLITH_BOOTSTRAP_RUNTIME_PRESTAGED=1 "$version_root/bin/python" -m odylith.cli install' in text
     assert 'say "done   Install finished."' in text
     assert "runtime-members.txt" in text
     assert "managed runtime bundle contains unexpected member path" in text
@@ -403,7 +411,7 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert 'customer_tree_path="$repo_root/odylith/AGENTS.md"' in text
     assert 'if [[ -f "$pin_path" && -f "$install_state_path" && -f "$customer_tree_path" ]]; then' in text
     assert (
-        '"$version_root/bin/python" -m odylith.cli upgrade --repo-root "$repo_root" --to "$release_version" --write-pin'
+        'env "${install_child_env[@]}" "$version_root/bin/python" -m odylith.cli upgrade --repo-root "$repo_root" --to "$release_version" --write-pin'
         in text
     )
     assert "read_install_versions.py" not in text

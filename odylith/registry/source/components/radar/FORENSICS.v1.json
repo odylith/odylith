@@ -39,10 +39,10 @@
     "empty_reasons": [],
     "explicit_event_count": 153,
     "mapped_workstream_evidence_count": 112,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 12,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 153
+    "timeline_event_count": 154
   },
   "name": "Radar",
   "path_prefixes": [
@@ -52,6 +52,24 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+        "odylith/radar/source/releases/release-assignment-events.v1.jsonl",
+        "odylith/radar/source/releases/releases.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 459,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md, odylith/radar/source/releases/release-assignment-events.v1.jsonl +1 more",
+      "ts_iso": "2026-05-05T16:53:57-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
