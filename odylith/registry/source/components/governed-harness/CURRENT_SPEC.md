@@ -30,6 +30,7 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-05-05: Backfilled B-118/B-119-B-125 program-wave topology and Atlas diagram coverage. (Plan: [B-118](odylith/radar/radar.html?view=plan&workstream=B-118)) Atlas: D-044 Governed Harness Turn Gate Topology.
 - 2026-05-03: Registered `governed-harness` through `odylith component register`. (Plan: [B-118](odylith/radar/radar.html?view=plan&workstream=B-118))
 
 ## Contract

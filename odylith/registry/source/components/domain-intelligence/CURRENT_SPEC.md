@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-05-04
+Last updated: 2026-05-06
 
 
 ## Overview
@@ -24,6 +24,8 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-05-06 · Implementation:** Hardened greenfield engine alignment: exact code-path context now carries Registry owner into the Execution Engine handshake, greenfield proposal requests expose all activation layers, CB-174 captured, and sync check-only passes after Registry/Atlas refresh.
+  - Evidence: odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md, src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py +1 more
 - **2026-05-02 · Implementation:** Replaced Domain Intelligence template catalog path with host-reasoned proposal contract, apply-time schema validation, and host-authored Atlas Mermaid source requirements; reran engine, migration, and browser proof.
   - Scope: B-142
   - Evidence: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_proposals.py +1 more
@@ -48,12 +50,23 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-03: Retargeted the greenfield lane to v0.1.14 and made the proposal/apply path show release and program power by default: omitted release selectors become `0.0.1`, child workstreams form an umbrella execution-wave program, and the umbrella plus first wave target the first release while later waves remain visible future work. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-05-04: Hardened greenfield apply so proposed waves are never silently dropped when token overlap fails; every accepted program wave remains visible, with deterministic fallback child assignment preserving operator-authored structure for follow-up refinement. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-167`)
 - 2026-05-05: Added the deterministic greenfield proposal Tribunal and collapsed apply-time visibility into one final batched Radar/Registry/Atlas/Compass refresh after all accepted artifacts and Compass memory are written. The gate is host-model agnostic: hosts author proposal content, while Odylith adjudicates topology, component ownership quality, release targeting, wave focus, and surface visibility before source truth changes. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
+- 2026-05-06: Hardened greenfield apply against loose host-authored proposal JSON and failed retry poison: common field shapes normalize before validation, generic diagram slugs are project-scoped, diagram traceability accepts workstream IDs as well as titles, sequence labels normalize parser-sensitive semicolons, and failed apply rolls back greenfield source truth instead of leaving duplicate Radar, Registry, Atlas, release, or Compass acceptance state. The proposal request contract now also requires domain-proportional security, privacy, compliance, abuse, accessibility, data-retention, and operational risk posture. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-173`)
 
 ## Contract
 
 - `greenfield_proposals.py` owns the host-reasoning request contract and the
   confirmed apply path. It must not infer final project boundaries from a fixed
   in-code domain list.
+- `proposal_normalization.py` owns compatibility normalization for reasonable
+  host-authored proposal shapes before strict validation. It may repair field
+  spelling, release-plan shape, component proof-field aliases, generic diagram
+  slugs, and Mermaid sequence message punctuation, but it must not invent
+  project topology or source-backed evidence.
+- `greenfield_transaction.py` owns retry-safe source-truth rollback for failed
+  greenfield apply runs. It snapshots the greenfield-owned Radar, Registry,
+  Atlas, and Compass acceptance source paths before writes and restores them on
+  failure so a retry cannot be blocked by duplicate ideas, stale catalog rows,
+  stale component dossiers, or release events from a rejected apply.
 - `proposal_rendering.py` owns operator-facing text and apply-command rendering
   so proposal compilation, planning, and presentation stay decoupled.
 - `proposal_validation.py` owns host-reasoned proposal validation, required
@@ -70,7 +83,9 @@ This section captures synchronized requirement and contract signals derived from
   intent, Odylith assumptions, backlog candidates, program formation, program
   waves, release plan, planned Registry components, host-authored draft Atlas
   Mermaid sources,
-  validation strategy, risks, open questions, and exact apply commands.
+  validation strategy, risks, open questions, exact apply commands, and
+  domain-proportional security, privacy, compliance, abuse, accessibility,
+  data-retention, and operational risk posture.
 - If the operator does not provide a release target for a greenfield proposal,
   the default first release selector is `0.0.1`, not an Odylith product-version
   alias such as `next`. Accepted proposals with child workstreams should create
@@ -85,6 +100,10 @@ This section captures synchronized requirement and contract signals derived from
   Compass after backlog, program, release, Atlas, Registry, and Compass memory
   records are written. Do not insert per-artifact refreshes that slow the happy
   path or expose partial generated surfaces.
+- Apply failures after the pre-write Tribunal must restore the greenfield-owned
+  source truth paths before returning an error. Operators must not be asked to
+  hand-delete partial Radar ideas, Registry dossiers, Atlas catalog/source, or
+  release assignment artifacts before retrying the same confirmed proposal.
 - `Customer` may be a one-token governed value. Problem, Opportunity, Product
   View, and Success Metrics keep the stronger detail and placeholder-rejection
   rules.
@@ -115,6 +134,7 @@ confirmation gates, topology requirements, apply schema, and durable memory.
 
 - `tests/unit/runtime/test_greenfield_proposals.py`
 - `tests/unit/runtime/test_greenfield_host_routing.py`
+- `tests/unit/runtime/test_tribunal_engine.py`
 - `tests/unit/test_cli.py`
 - `tests/unit/runtime/test_component_authoring.py`
 - `tests/unit/runtime/test_compass_transaction_runtime.py`

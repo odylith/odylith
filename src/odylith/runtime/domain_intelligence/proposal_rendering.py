@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
-DEFAULT_GREENFIELD_RELEASE_SELECTOR = "0.0.1"
+from odylith.runtime.domain_intelligence import greenfield_programs
+
+DEFAULT_GREENFIELD_RELEASE_SELECTOR = greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR
 
 
 def shell_quote(value: str) -> str:
@@ -69,6 +71,20 @@ def format_proposal_text(proposal: Mapping[str, Any]) -> str:
         lines.extend(["", "Evidence rules"])
         for rule in contract.get("evidence_rules", []) if isinstance(contract.get("evidence_rules"), list) else []:
             lines.append(f"- {rule}")
+        template = proposal.get("proposal_template", {}) if isinstance(proposal.get("proposal_template"), Mapping) else {}
+        release_plan = template.get("release_plan", {}) if isinstance(template.get("release_plan"), Mapping) else {}
+        lines.extend(
+            [
+                "",
+                "Canonical apply JSON shape",
+                f"- mode: {template.get('mode', 'host_reasoned_greenfield_proposal')} (not greenfield and not host_reasoned_proposal_request)",
+                f"- release_plan.selector: {release_plan.get('selector', DEFAULT_GREENFIELD_RELEASE_SELECTOR)}",
+                f"- release_plan.label: {release_plan.get('label', DEFAULT_GREENFIELD_RELEASE_SELECTOR)}",
+                "- components[].qualification: candidate; use components[].validation for proof expectations",
+                "- diagrams[].kind plus diagrams[].mermaid_source; related_workstreams may use proposal-local WS ids",
+                "- apply normalizes common aliases, but canonical fields avoid review-loop churn",
+            ]
+        )
         lines.extend(["", "Quality bar"])
         for rule in contract.get("quality_bar", []) if isinstance(contract.get("quality_bar"), list) else []:
             lines.append(f"- {rule}")
@@ -133,11 +149,9 @@ def format_proposal_text(proposal: Mapping[str, Any]) -> str:
             lines.append(f"- Wave {row.get('wave')}: {row.get('label')} - {row.get('goal')} Proof: {row.get('validation')}")
     release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
     release_selector = _release_selector(release_plan)
+    release_display = greenfield_programs.compact_release_target_label(release_selector)
     lines.extend(["", "Release plan"])
-    lines.append(
-        f"- target: {release_selector} "
-        f"({release_plan.get('label', 'First governed release')}; {release_plan.get('provisional_release_id', 'release-greenfield-first')})"
-    )
+    lines.append(f"- target: {release_display}")
     if not str(release_plan.get("selector", "")).strip():
         lines.append("- default: greenfield proposals start at 0.0.1 when no release target is provided")
     target_refs = release_plan.get("target_workstreams") or release_plan.get("target_workstream_titles")

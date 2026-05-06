@@ -20,7 +20,11 @@ from odylith.runtime.analysis_engine import repo_analysis
 from odylith.runtime.analysis_engine.types import SourceSummary, slugify
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_traceability
+from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
+from odylith.runtime.domain_intelligence.proposal_contract import build_proposal_contract
+from odylith.runtime.domain_intelligence.proposal_contract import build_proposal_template
 from odylith.runtime.domain_intelligence.proposal_memory import record_greenfield_acceptance
+from odylith.runtime.domain_intelligence.proposal_normalization import normalize_host_reasoned_proposal
 from odylith.runtime.domain_intelligence.proposal_rendering import format_proposal_text
 from odylith.runtime.domain_intelligence.proposal_tribunal import raise_for_failed_greenfield_tribunal
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
@@ -121,56 +125,6 @@ def _source_evidence(repo_root: Path) -> dict[str, Any]:
     }
 
 
-def _proposal_contract() -> dict[str, Any]:
-    return {
-        "required_top_level_keys": [
-            "schema_version",
-            "mode",
-            "intent",
-            "observed_source",
-            "assumptions",
-            "open_questions",
-            "risks",
-            "validation_strategy",
-            "program",
-            "release_plan",
-            "backlog",
-            "components",
-            "diagrams",
-        ],
-        "evidence_rules": [
-            "Use observed_source only for facts found in the repo.",
-            "Use user_intent for facts stated or directly implied by the operator prompt.",
-            "Use odylith_assumption for useful architecture choices that need confirmation.",
-            "Never mark source-backed ownership or scientific/math correctness from prompt text alone.",
-        ],
-        "minimum_content": {
-            "backlog": "parent workstream plus child workstreams when the project has multiple meaningful boundaries; every child should carry first-slice, validation, component_focus, and related_diagram_slugs or enough specific language for Odylith to infer the topology",
-            "components": "candidate Registry components with component_id, label, intended_path, responsibility, boundary/interfaces/dependencies where known, evidence_tier, status, and qualification",
-            "diagrams": "purposeful Atlas drafts such as system context, program waves, runtime/data/validation topology, or a better domain-specific set; each diagram must name related components and workstream/backlog focus, and flowcharts must use subtle diagram-internal colors plus wrapped labels",
-            "program": "wave plan with goals, validation gates, component focus, and evidence tier",
-            "release_plan": "provisional release selector, first-target workstreams, stages, milestones, and promotion criteria; default selector is 0.0.1 unless the operator supplies a different release target",
-            "tribunal": "apply runs a deterministic proposal Tribunal before writes; proposals fail if Radar, Registry, Atlas, program waves, or release targeting do not form a coherent topology",
-        },
-        "quality_bar": [
-            "Reason from the actual prompt, not from a fixed in-code domain list.",
-            "Prefer fewer high-quality boundaries over many generic buckets.",
-            "Choose diagram types because they clarify the project, not because every project gets the same set.",
-            "Each diagram must include host-authored mermaid_source; Odylith validates it but does not invent topology.",
-            "For flowchart mermaid_source, use classDef/style colors inside the diagram for semantic grouping and <br/> to wrap long labels so text stays readable. Use subgraph lanes only where they clarify the topology; never rely on viewer background treatment.",
-            "Child workstreams must not be title-only tickets; include concrete first-slice proof, impacted candidate components, topology/dependency hints, and validation gates.",
-            "Registry components must read like planned ownership specs, not labels; include boundary, responsibility, interface, dependency, and proof expectations where the prompt supports them.",
-            "Atlas diagrams and Radar workstreams must be mutually traceable through related workstream/component hints.",
-            "For science and math, propose validation obligations and review gates; do not invent claims or results.",
-            "For simple projects, keep the plan small; for complex projects, form waves and release gates.",
-            "Default the first greenfield release target to 0.0.1 unless the operator explicitly asks for another release selector.",
-            "Name the first release target workstreams from the first wave so Compass can show a concrete release lane without pretending every child belongs to the first release.",
-            "Make the proposal easy to operate: name the program, waves, release selector, first target workstreams, impacted components, diagrams, and proof gates in plain language.",
-            "Expect a Tribunal gate: child workstreams need component and diagram references, components need boundary/interface/dependency/proof expectations, and diagrams need workstream plus component traceability.",
-        ],
-    }
-
-
 def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]:
     """Return the host-reasoning contract for an open-world greenfield prompt."""
 
@@ -208,7 +162,20 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
             "write_guardrail": "This command does not write proposal records; host reasoning produces the draft, apply validates and writes after confirmation.",
             "next_best_action": f"Use host reasoning to draft backlog, Registry, Atlas, waves, release plan, validation, and open questions for {intent_title}.",
         },
-        "reasoning_contract": _proposal_contract(),
+        "reasoning_contract": build_proposal_contract(),
+        "proposal_template": build_proposal_template(
+            intent_title=intent_title,
+            project_slug=project_slug,
+            source_posture=str(evidence.get("source_posture", "unknown")),
+        ),
+        "accepted_aliases": {
+            "mode": ["greenfield", "host_reasoned_proposal"],
+            "component_id": ["id", "name"],
+            "kind": ["type"],
+            "validation": ["proof_expectations", "test_strategy"],
+            "recommended_first_slice": ["first_slice_proof"],
+            "release_plan": ["list of release rows", "default_release plus releases"],
+        },
         "host_instruction": (
             "Draft a concrete proposal for the operator now. Be specific to the prompt; "
             "do not use canned domain buckets. Label observed_source, user_intent, "
@@ -218,11 +185,14 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
             "plus first-slice validation. For every component, include enough boundary, "
             "responsibility, dependencies, interfaces, and validation expectations to seed "
             "a useful Registry CURRENT_SPEC.md. Default the provisional release selector "
-            "to 0.0.1 unless the operator explicitly asks for another release target, "
+            "and release label to exactly 0.0.1 unless the operator explicitly asks for another release target; "
+            "do not add project names or descriptive words to release targets, "
             "and identify the first-wave workstreams that should target that release."
             " Odylith will run the confirmed proposal through a deterministic Tribunal "
             "before writes and will refresh Radar, Registry, Atlas, and Compass after "
-            "the accepted artifacts are written."
+            "the accepted artifacts are written. Include a domain-appropriate security, "
+            "privacy, compliance, abuse, accessibility, data retention, and operational "
+            "risk posture; keep it proportional, specific, and host-model agnostic."
         ),
         "apply_commands": [
             "Save the host-reasoned proposal JSON to odylith-greenfield-proposal.json after operator review.",
@@ -278,6 +248,40 @@ def _row_text_tuple(row: Mapping[str, Any], *keys: str) -> tuple[str, ...]:
     return ()
 
 
+def _proposal_posture_text(proposal: Mapping[str, Any], *keys: str) -> str:
+    rows: list[str] = []
+    for key in keys:
+        value = proposal.get(key)
+        if isinstance(value, Mapping):
+            rows.extend(str(item).strip() for item in value.values() if str(item).strip())
+        elif isinstance(value, (list, tuple, set)):
+            rows.extend(str(item).strip() for item in value if str(item).strip())
+        elif str(value or "").strip():
+            rows.append(str(value).strip())
+    return " ".join(rows).strip()
+
+
+def _row_posture_text(row: Mapping[str, Any], proposal: Mapping[str, Any], *keys: str) -> str:
+    local = _row_text_tuple(row, *keys)
+    if local:
+        return " ".join(local).strip()
+    return _proposal_posture_text(proposal, *keys)
+
+
+def _domain_risk_for_row(row: Mapping[str, Any], proposal: Mapping[str, Any]) -> str:
+    return (
+        _row_posture_text(row, proposal, "domain_risk", "risk_posture", "risks")
+        or _proposal_posture_text(proposal, "risks", "security_compliance")
+    )
+
+
+def _security_posture_for_row(row: Mapping[str, Any], proposal: Mapping[str, Any]) -> str:
+    return (
+        _row_posture_text(row, proposal, "security_posture", "security_compliance", "compliance_posture")
+        or _proposal_posture_text(proposal, "security_compliance")
+    )
+
+
 def _backlog_section_overrides(proposal: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
     overrides: dict[str, dict[str, Any]] = {}
     backlog_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
@@ -300,6 +304,8 @@ def _backlog_section_overrides(proposal: Mapping[str, Any]) -> dict[str, dict[st
             "opportunity": str(row.get("opportunity", "")).strip(),
             "product_view": str(row.get("product_view", "")).strip(),
             "success_metrics": success_metrics,
+            "domain_risk": _domain_risk_for_row(row, proposal),
+            "security_posture": _security_posture_for_row(row, proposal),
             "priority": str(row.get("priority", "P1")).strip() or "P1",
             "sizing": str(row.get("sizing", "M")).strip() or "M",
             "complexity": str(row.get("complexity", "Medium")).strip() or "Medium",
@@ -320,6 +326,8 @@ def _backlog_apply_args(proposal: Mapping[str, Any], *, release_selector: str) -
         opportunity=str(first.get("opportunity", "")).strip(),
         product_view=str(first.get("product_view", "")).strip(),
         success_metrics="\n".join(f"- {item}" for item in first.get("success_metrics", []) if str(item).strip()),
+        domain_risk=_domain_risk_for_row(first, proposal),
+        security_posture=_security_posture_for_row(first, proposal),
         priority=str(first.get("priority", "P1")).strip() or "P1",
         commercial_value=3,
         product_impact=4,
@@ -365,6 +373,7 @@ def _ensure_release_target(*, repo_root: Path, proposal: Mapping[str, Any], sele
     release_aliases = [selector]
     if release_planning_contract.canonical_alias_token("current") not in aliases:
         release_aliases.append("current")
+    release_name = greenfield_programs.compact_release_target_label(version or selector)
     return release_planning_authoring.ensure_release_selector(
         repo_root=repo_root,
         selector=selector,
@@ -372,7 +381,7 @@ def _ensure_release_target(*, repo_root: Path, proposal: Mapping[str, Any], sele
         status="planning",
         version=version,
         tag=tag,
-        name=str(release_plan.get("label", "")).strip() or f"{title} {selector}",
+        name=release_name,
         notes=f"Greenfield release plan for {title}; created only after proposal confirmation.",
         aliases=tuple(release_aliases),
         dry_run=False,
@@ -406,6 +415,7 @@ def apply_greenfield_proposal(
 
     if not confirm:
         raise ValueError("--confirm is required before greenfield apply writes governance records")
+    proposal = normalize_host_reasoned_proposal(proposal)
     validate_host_reasoned_proposal(proposal)
     root = Path(repo_root).expanduser().resolve()
     backlog_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
@@ -422,6 +432,83 @@ def apply_greenfield_proposal(
         titles=[str(row.get("title", "")).strip() for row in backlog_rows if str(row.get("title", "")).strip()],
         args=backlog_args,
     )
+    with GreenfieldApplyTransaction(root) as transaction:
+        result = _write_greenfield_proposal(
+            root=root,
+            proposal=proposal,
+            release_selector=release_selector,
+            tribunal=tribunal,
+            backlog_result=backlog_result,
+        )
+        transaction.commit()
+        return result
+
+
+def _scaffold_proposal_diagram(
+    *,
+    root: Path,
+    row: Mapping[str, Any],
+    diagram_id: str,
+    traceability_plan: Any,
+    atlas_scaffold_logs: list[str],
+) -> None:
+    components: list[dict[str, str]] = []
+    for component in row.get("components", []):
+        if not isinstance(component, Mapping):
+            continue
+        name = str(component.get("name", "")).strip()
+        description = str(component.get("description", "")).strip()
+        if name and description:
+            components.append({"name": name, "description": description})
+    link = next((item for item in traceability_plan.diagram_links if item.diagram_id == diagram_id), None)
+    related_backlog = list(link.related_backlog_paths) if link is not None else []
+    watch_paths: list[str] = []
+    for path in row.get("watch_paths", []):
+        token = str(path).strip()
+        if not token:
+            continue
+        candidate = (root / token).resolve() if not Path(token).is_absolute() else Path(token).resolve()
+        try:
+            candidate.relative_to(root)
+        except ValueError:
+            continue
+        if candidate.exists():
+            watch_paths.append(token)
+    rc, log_lines = scaffold_mermaid_diagram.scaffold_diagram(
+        repo_root=root,
+        catalog="odylith/atlas/source/catalog/diagrams.v1.json",
+        diagram_id=diagram_id,
+        slug=str(row.get("slug", "")).strip(),
+        title=str(row.get("title", "")).strip(),
+        kind=str(row.get("kind", "flowchart")).strip() or "flowchart",
+        owner=str(row.get("owner", "repo")).strip() or "repo",
+        summary=str(row.get("summary", "")).strip(),
+        components=components,
+        related_backlog=related_backlog,
+        related_plans=[],
+        related_docs=[],
+        related_code=[],
+        watch_paths=watch_paths,
+        review_date=dt.date.today().isoformat(),
+        starter_source=validated_mermaid_source(row),
+        refresh=False,
+    )
+    log_text = "\n".join(log_lines).strip()
+    if log_text:
+        atlas_scaffold_logs.append(log_text)
+    if rc != 0:
+        detail = f": {log_text}" if log_text else ""
+        raise RuntimeError(f"atlas scaffold failed for {row.get('slug')}{detail}")
+
+
+def _write_greenfield_proposal(
+    *,
+    root: Path,
+    proposal: Mapping[str, Any],
+    release_selector: str,
+    tribunal: Any,
+    backlog_result: Mapping[str, Any],
+) -> dict[str, Any]:
     release_bootstrap = None
     release_targeting = None
     if release_selector:
@@ -460,53 +547,13 @@ def apply_greenfield_proposal(
         diagram_ids=diagram_ids,
     )
     for row, diagram_id in zip(diagram_rows, diagram_ids, strict=False):
-        components: list[dict[str, str]] = []
-        for component in row.get("components", []):
-            if not isinstance(component, Mapping):
-                continue
-            name = str(component.get("name", "")).strip()
-            description = str(component.get("description", "")).strip()
-            if name and description:
-                components.append({"name": name, "description": description})
-        link = next((item for item in traceability_plan.diagram_links if item.diagram_id == diagram_id), None)
-        related_backlog = list(link.related_backlog_paths) if link is not None else []
-        watch_paths: list[str] = []
-        for path in row.get("watch_paths", []):
-            token = str(path).strip()
-            if not token:
-                continue
-            candidate = (root / token).resolve() if not Path(token).is_absolute() else Path(token).resolve()
-            try:
-                candidate.relative_to(root)
-            except ValueError:
-                continue
-            if candidate.exists():
-                watch_paths.append(token)
-        rc, log_lines = scaffold_mermaid_diagram.scaffold_diagram(
-            repo_root=root,
-            catalog="odylith/atlas/source/catalog/diagrams.v1.json",
+        _scaffold_proposal_diagram(
+            root=root,
+            row=row,
             diagram_id=diagram_id,
-            slug=str(row.get("slug", "")).strip(),
-            title=str(row.get("title", "")).strip(),
-            kind=str(row.get("kind", "flowchart")).strip() or "flowchart",
-            owner=str(row.get("owner", "repo")).strip() or "repo",
-            summary=str(row.get("summary", "")).strip(),
-            components=components,
-            related_backlog=related_backlog,
-            related_plans=[],
-            related_docs=[],
-            related_code=[],
-            watch_paths=watch_paths,
-            review_date=dt.date.today().isoformat(),
-            starter_source=validated_mermaid_source(row),
-            refresh=False,
+            traceability_plan=traceability_plan,
+            atlas_scaffold_logs=atlas_scaffold_logs,
         )
-        log_text = "\n".join(log_lines).strip()
-        if log_text:
-            atlas_scaffold_logs.append(log_text)
-        if rc != 0:
-            detail = f": {log_text}" if log_text else ""
-            raise RuntimeError(f"atlas scaffold failed for {row.get('slug')}{detail}")
         diagrams_created.append(diagram_id)
     touched_backlog_paths = greenfield_traceability.apply_backlog_traceability(
         repo_root=root,
@@ -538,7 +585,7 @@ def apply_greenfield_proposal(
             dependencies=_row_text_tuple(row, "dependencies", "depends_on"),
             interfaces=_row_text_tuple(row, "interfaces", "interface_changes"),
             validation=_row_text_tuple(row, "validation", "test_strategy"),
-            risks=_row_text_tuple(row, "risks"),
+            risks=_row_text_tuple(row, "risks") or (_security_posture_for_row(row, proposal),),
             dry_run=False,
             refresh=False,
         )

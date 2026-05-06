@@ -351,6 +351,57 @@ def test_backlog_contract_rejects_topology_sensitive_workstream_without_diagram_
     assert rc == 0
 
 
+def test_backlog_contract_rejects_queued_p0_release_spine_without_topology(
+    tmp_path: Path,
+    capsys,  # noqa: ANN001 - pytest fixture
+) -> None:
+    implementation_path, queued_path = _seed_minimal_repo(tmp_path)
+    release_spine_text = queued_path.read_text(encoding="utf-8")
+    release_spine_text = release_spine_text.replace("title: Backlog Bootstrap", "title: v0.1.15 Governed Harness Control Plane")
+    release_spine_text = release_spine_text.replace("priority: P1", "priority: P0")
+    release_spine_text = release_spine_text.replace(
+        "impacted_parts: test surface",
+        "impacted_parts: cross-host runtime hooks, Context Engine, Execution Engine, Radar, Registry, Atlas, and Compass",
+    )
+    queued_path.write_text(release_spine_text, encoding="utf-8")
+    backlog_index = tmp_path / "odylith" / "radar" / "source" / "INDEX.md"
+    backlog_index.write_text(
+        backlog_index.read_text(encoding="utf-8")
+        .replace("Backlog Bootstrap", "v0.1.15 Governed Harness Control Plane")
+        .replace("| P1 | 89 |", "| P0 | 89 |", 1),
+        encoding="utf-8",
+    )
+
+    rc = gate.main(["--repo-root", str(tmp_path)])
+    out = capsys.readouterr().out
+    assert rc == 2
+    assert "release-spine workstream `B-101` must declare `related_diagram_ids`" in out
+    assert "release-spine workstream `B-101` must declare at least one workstream topology relation" in out
+
+    queued_path.write_text(release_spine_text.replace("related_diagram_ids:", "related_diagram_ids: D-002"), encoding="utf-8")
+    rc = gate.main(["--repo-root", str(tmp_path)])
+    out = capsys.readouterr().out
+    assert rc == 2
+    assert "release-spine workstream `B-101` must declare at least one workstream topology relation" in out
+
+    queued_path.write_text(
+        release_spine_text.replace("related_diagram_ids:", "related_diagram_ids: D-002").replace(
+            "workstream_children:",
+            "workstream_children: B-102",
+        ),
+        encoding="utf-8",
+    )
+    implementation_path.write_text(
+        implementation_path.read_text(encoding="utf-8")
+        .replace("workstream_type: standalone", "workstream_type: child")
+        .replace("workstream_parent:", "workstream_parent: B-101"),
+        encoding="utf-8",
+    )
+
+    rc = gate.main(["--repo-root", str(tmp_path)])
+    assert rc == 0
+
+
 def test_backlog_contract_rejects_placeholder_core_detail_section(
     tmp_path: Path,
     capsys,  # noqa: ANN001 - pytest fixture

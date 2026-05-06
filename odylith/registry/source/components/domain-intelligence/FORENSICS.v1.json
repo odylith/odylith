@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 24,
-    "mapped_workstream_evidence_count": 24,
-    "recent_path_match_count": 0,
-    "spec_history_event_count": 8,
+    "explicit_event_count": 26,
+    "mapped_workstream_evidence_count": 25,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 9,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 24
+    "timeline_event_count": 27
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -18,6 +18,89 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 461,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Hardened greenfield and routine governed artifact writes with zero-provider Tribunal posture gates; captured CB-175 and verified targeted tests plus sync check.",
+      "ts_iso": "2026-05-06T13:38:08-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_programs.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+        "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
+        "src/odylith/runtime/domain_intelligence/proposal_tribunal.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
+        "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+        "src/odylith/runtime/domain_intelligence/proposal_normalization.py"
+      ],
+      "confidence": "high",
+      "event_index": 462,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "domain-intelligence"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_programs.py +6 more",
+      "ts_iso": "2026-05-06T13:30:17-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
+        "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+      ],
+      "confidence": "high",
+      "event_index": 460,
+      "explicit_components": [
+        "atlas",
+        "domain-intelligence",
+        "execution-engine",
+        "odylith-context-engine",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "domain-intelligence",
+        "execution-engine",
+        "odylith-context-engine",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Hardened greenfield engine alignment: exact code-path context now carries Registry owner into the Execution Engine handshake, greenfield proposal requests expose all activation layers, CB-174 captured, and sync check-only passes after Registry/Atlas refresh.",
+      "ts_iso": "2026-05-06T13:14:35-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",

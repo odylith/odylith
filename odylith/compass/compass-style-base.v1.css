@@ -400,7 +400,7 @@ h1 {
   font-size: 23px;
   line-height: 1;
   letter-spacing: -0.01em;
-  font-weight: 700;
+  font-weight: 700; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
     .layout {
       display: grid;

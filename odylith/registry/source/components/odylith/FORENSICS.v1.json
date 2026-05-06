@@ -37,6 +37,7 @@
     "D-033",
     "D-034",
     "D-035",
+    "D-044",
     "D-042",
     "D-037",
     "D-038",
@@ -44,12 +45,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 267,
-    "mapped_workstream_evidence_count": 125,
-    "recent_path_match_count": 0,
+    "explicit_event_count": 269,
+    "mapped_workstream_evidence_count": 126,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 28,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 267
+    "timeline_event_count": 270
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -63,6 +64,69 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 459,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Why it matters: Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
+      "ts_iso": "2026-05-06T20:09:28Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 461,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Hardened greenfield and routine governed artifact writes with zero-provider Tribunal posture gates; captured CB-175 and verified targeted tests plus sync check.",
+      "ts_iso": "2026-05-06T13:38:08-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/component_registry.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 465,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/component_registry.v1.json",
+      "ts_iso": "2026-05-05T21:52:41-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/install.json",

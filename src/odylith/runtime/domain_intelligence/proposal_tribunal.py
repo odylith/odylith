@@ -40,6 +40,63 @@ _DIAGRAM_REF_FIELDS = (
     "related_diagrams",
     "diagrams",
 )
+_SECURITY_POSTURE_FIELDS = (
+    "security_compliance",
+    "security_posture",
+    "compliance_posture",
+    "domain_risk",
+    "risk_posture",
+)
+_RISK_TOKENS = (
+    "risk",
+    "failure",
+    "fallback",
+    "rollback",
+    "mitigation",
+    "blast radius",
+    "slo",
+    "sla",
+    "recovery",
+    "degraded",
+    "scope",
+    "operational",
+)
+_SECURITY_TOKENS = (
+    "security",
+    "auth",
+    "authentication",
+    "authorization",
+    "credential",
+    "permission",
+    "session",
+    "secret",
+    "token",
+    "access",
+    "ownership",
+    "private",
+    "abuse",
+    "threat",
+    "payment",
+    "pii",
+    "data risk",
+)
+_POLICY_TOKENS = (
+    "compliance",
+    "policy",
+    "privacy",
+    "retention",
+    "audit",
+    "regulated",
+    "gdpr",
+    "hipaa",
+    "pci",
+    "soc2",
+    "moderation",
+    "accessibility",
+    "public",
+    "private",
+    "safety",
+)
 
 
 @dataclass(frozen=True)
@@ -114,6 +171,9 @@ def run_greenfield_tribunal(
         issues=issues,
     )
     dimensions["atlas"] = "diagrams carry explicit workstream and component traceability hints"
+
+    _check_domain_security_posture(proposal=proposal, issues=issues)
+    dimensions["domain_security"] = "explicit domain risk, security, compliance, policy, and abuse posture present"
 
     dimensions["surfaces"] = "apply refreshes Radar, Registry, Atlas, and Compass after all writes"
     status = "failed" if issues else "passed"
@@ -248,22 +308,32 @@ def _check_diagram_traceability(
     components: Sequence[Mapping[str, Any]],
     issues: list[str],
 ) -> None:
-    backlog_titles = {
-        slugify(str(row.get("title", "")))
-        for row in backlog
-        if str(row.get("title", "")).strip()
-    }
+    backlog_aliases = _backlog_aliases(backlog)
     component_aliases = _component_aliases(components)
     for index, row in enumerate(diagrams, start=1):
         slug = str(row.get("slug", f"diagram {index}")).strip() or f"diagram {index}"
         refs = _slug_values(_collect_values(row, _WORKSTREAM_REF_FIELDS))
         if not refs:
             issues.append(f"diagram `{slug}` must name related workstream or backlog focus")
-        elif backlog_titles and not (refs & backlog_titles):
-            issues.append(f"diagram `{slug}` workstream focus does not match proposed backlog titles")
+        elif backlog_aliases and not (refs & backlog_aliases):
+            issues.append(f"diagram `{slug}` workstream focus does not match proposed backlog ids or titles")
         aliases = _diagram_component_aliases((row,))
         if component_aliases and not (aliases & component_aliases):
             issues.append(f"diagram `{slug}` components do not match planned Registry components")
+
+
+def _check_domain_security_posture(*, proposal: Mapping[str, Any], issues: list[str]) -> None:
+    explicit_posture = _collect_values(proposal, _SECURITY_POSTURE_FIELDS)
+    if not explicit_posture:
+        issues.append("proposal must include explicit security_compliance, security_posture, or domain risk posture")
+        return
+    text = " ".join((*explicit_posture, *_text_items(proposal))).casefold()
+    if not _contains_any(text, _RISK_TOKENS):
+        issues.append("proposal security_compliance posture must assess domain, delivery, or operational risk")
+    if not _contains_any(text, _SECURITY_TOKENS):
+        issues.append("proposal security_compliance posture must assess security posture")
+    if not _contains_any(text, _POLICY_TOKENS):
+        issues.append("proposal security_compliance posture must assess compliance, policy, privacy, accessibility, or safety posture")
 
 
 def _mapping_rows(value: Any) -> list[Mapping[str, Any]]:
@@ -302,6 +372,10 @@ def _text_items(value: Any) -> list[str]:
     return [token] if token else []
 
 
+def _contains_any(text: str, tokens: Sequence[str]) -> bool:
+    return any(token in text for token in tokens)
+
+
 def _slug_values(values: Sequence[str]) -> set[str]:
     result: set[str] = set()
     for value in values:
@@ -321,6 +395,22 @@ def _component_aliases(components: Sequence[Mapping[str, Any]]) -> set[str]:
                     str(row.get("component_id", "")),
                     str(row.get("label", "")),
                     str(row.get("name", "")),
+                )
+            )
+        )
+    return aliases
+
+
+def _backlog_aliases(backlog: Sequence[Mapping[str, Any]]) -> set[str]:
+    aliases: set[str] = set()
+    for row in backlog:
+        aliases.update(
+            _slug_values(
+                (
+                    str(row.get("id", "")),
+                    str(row.get("idea_id", "")),
+                    str(row.get("workstream_id", "")),
+                    str(row.get("title", "")),
                 )
             )
         )

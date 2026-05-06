@@ -981,7 +981,6 @@ def _write_install_script(*, output_path: Path, tag: str, repo: str, odylith_whe
         '  "ODYLITH_REASONING_CODEX_BIN=/usr/bin/false"',
         '  "ODYLITH_REASONING_CLAUDE_BIN=/usr/bin/false"',
         '  "ODYLITH_COMPASS_STANDUP_BACKGROUND_DISABLE=1"',
-        '  "ODYLITH_NO_BROWSER=1"',
         ")",
         'if [[ -f "$pin_path" && -f "$install_state_path" && -f "$customer_tree_path" ]]; then',
         '  say "upgrade Running upgrade lifecycle and refreshing dashboard."',

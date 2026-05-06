@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import json
 from pathlib import Path
 
 from odylith.runtime.common import agent_runtime_contract
@@ -63,6 +64,57 @@ def test_resolve_context_entity_exact_repo_paths_skip_runtime_search(tmp_path: P
         assert entity is not None
         assert entity["kind"] == expected_kind
         assert entity["path"] == ref
+
+
+def test_code_path_context_carries_registry_owner_into_execution_handshake() -> None:
+    component_row = {
+        "component_id": "domain-intelligence",
+        "name": "Domain Intelligence",
+        "status": "active",
+        "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "owner": "product",
+        "aliases_json": "[]",
+        "workstreams_json": '["B-142"]',
+        "diagrams_json": '["D-043"]',
+        "metadata_json": json.dumps({"path_prefixes": ["src/odylith/runtime/domain_intelligence"]}),
+    }
+
+    class _ComponentConnection:
+        def execute(self, sql: str, _params: tuple[object, ...] = ()) -> _Cursor:
+            if "FROM components" in sql:
+                return _Cursor(rows=[component_row])
+            return _Cursor()
+
+    code_entity = {
+        "kind": "code",
+        "entity_id": "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+        "title": "greenfield_proposals.py",
+        "path": "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+        "status": "",
+    }
+    related = store._related_entities(_ComponentConnection(), entity=code_entity, relations=[])  # noqa: SLF001
+
+    assert related["component"][0]["entity_id"] == "domain-intelligence"
+
+    compact = dossier_compaction_runtime.compact_context_dossier_for_delivery(
+        {
+            "resolved": True,
+            "entity": code_entity,
+            "lookup": {"resolution_mode": "path_exact"},
+            "matches": [],
+            "relations": [],
+            "related_entities": related,
+            "recent_agent_events": [],
+            "delivery_scopes": [],
+            "full_scan_recommended": False,
+            "full_scan_reason": "",
+        }
+    )
+
+    handshake = compact["execution_engine_handshake"]
+    assert handshake["target_component_id"] == "domain-intelligence"
+    assert handshake["target_component_ids"] == ["domain-intelligence"]
+    assert handshake["target_component_status"] == "other_component"
 
 
 def test_entity_by_path_rejects_missing_or_outside_repo_files(tmp_path: Path) -> None:

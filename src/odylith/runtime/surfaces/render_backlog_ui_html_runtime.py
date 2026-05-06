@@ -2417,13 +2417,10 @@ def _render_html(*, payload: dict[str, object]) -> str:
 
     function releaseLabel(row) {
       const release = row && typeof row === "object" ? row : {};
-      const nameLabel = String(release.effective_name || release.name || "").trim();
-      if (nameLabel) return nameLabel;
-      const versionLabel = String(release.version || release.display_label || "").trim();
-      if (versionLabel) return /^v\\d/.test(versionLabel) ? versionLabel.slice(1) : versionLabel;
-      const tagLabel = String(release.tag || "").trim();
-      if (tagLabel) return /^v\\d/.test(tagLabel) ? tagLabel.slice(1) : tagLabel;
-      return String(release.release_id || "").trim();
+      const text = String(release.version || release.display_label || release.tag || release.effective_name || release.name || release.release_id || "").trim().replace(/\\s+/g, " ");
+      const match = /\\bv?(\\d+(?:\\.\\d+){1,3})\\b/i.exec(text);
+      if (match && match[1]) return match[1];
+      return text.length > 18 ? `${text.slice(0, 15).trimEnd()}...` : text;
     }
 
     function releaseCardLabel(row) {

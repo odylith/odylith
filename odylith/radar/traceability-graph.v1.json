@@ -9,8 +9,8 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "451e6c2753006456b06232616bc9b6e1ce3896109143fa512a5f0f017e2e60c7",
-    "file_count": 311,
+    "digest": "daf7138b4467d6de90514524df2b1861dfa474ccb842ddbde9aa4009c1e9a98f",
+    "file_count": 312,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
       "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
@@ -159,6 +159,7 @@
       "odylith/radar/source/programs/B-096.execution-waves.v1.json",
       "odylith/radar/source/programs/B-099.execution-waves.v1.json",
       "odylith/radar/source/programs/B-110.execution-waves.v1.json",
+      "odylith/radar/source/programs/B-118.execution-waves.v1.json",
       "odylith/radar/source/releases/AGENTS.md",
       "odylith/radar/source/releases/release-assignment-events.v1.jsonl",
       "odylith/radar/source/releases/releases.v1.json",
@@ -3500,7 +3501,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "active",
+        "status": "planning",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -4435,7 +4436,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "active",
+        "status": "planning",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -4535,7 +4536,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "active",
+        "status": "planning",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -4633,7 +4634,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "active",
+        "status": "planning",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -4769,7 +4770,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "active",
+        "status": "planning",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -4877,7 +4878,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "active",
+        "status": "planning",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -5094,7 +5095,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "active",
+        "status": "planning",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -5194,7 +5195,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "active",
+        "status": "planning",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -5432,7 +5433,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "active",
+        "status": "planning",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -6940,9 +6941,17 @@
       "idea_id": "B-118",
       "title": "v0.1.14 Governed Harness: Agent SDK Control Plane And Deep Benchmark Proof",
       "status": "queued",
-      "workstream_type": "standalone",
+      "workstream_type": "umbrella",
       "workstream_parent": "",
-      "workstream_children": [],
+      "workstream_children": [
+        "B-119",
+        "B-120",
+        "B-121",
+        "B-122",
+        "B-123",
+        "B-124",
+        "B-125"
+      ],
       "workstream_depends_on": [],
       "workstream_blocks": [],
       "workstream_reopens": "",
@@ -6951,7 +6960,9 @@
       "workstream_split_into": [],
       "workstream_merged_into": "",
       "workstream_merged_from": [],
-      "related_diagram_ids": [],
+      "related_diagram_ids": [
+        "D-044"
+      ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-agent-sdk-control-plane-and-deep-benchmark-proof.md",
       "promoted_to_plan": "",
       "plan_traceability": {
@@ -6962,7 +6973,7 @@
       "active_release_id": "release-0-1-14",
       "active_release": {
         "release_id": "release-0-1-14",
-        "status": "active",
+        "status": "planning",
         "version": "0.1.14",
         "tag": "v0.1.14",
         "name": "",
@@ -7019,7 +7030,7 @@
       "release_history_summary": "Active: 0.1.14 \u00b7 Latest move: 0.1.12 -> 0.1.14",
       "coverage": {
         "linked_plan_count": 0,
-        "linked_diagram_count": 0,
+        "linked_diagram_count": 1,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
@@ -7030,10 +7041,12 @@
       "idea_id": "B-119",
       "title": "v0.1.14 Governed Harness: Deep Benchmark Coverage Matrix And Baseline Proof",
       "status": "queued",
-      "workstream_type": "standalone",
-      "workstream_parent": "",
+      "workstream_type": "child",
+      "workstream_parent": "B-118",
       "workstream_children": [],
-      "workstream_depends_on": [],
+      "workstream_depends_on": [
+        "B-118"
+      ],
       "workstream_blocks": [],
       "workstream_reopens": "",
       "workstream_reopened_by": "",
@@ -7041,7 +7054,9 @@
       "workstream_split_into": [],
       "workstream_merged_into": "",
       "workstream_merged_from": [],
-      "related_diagram_ids": [],
+      "related_diagram_ids": [
+        "D-044"
+      ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-deep-benchmark-coverage-matrix-and-baseline-proof.md",
       "promoted_to_plan": "",
       "plan_traceability": {
@@ -7052,7 +7067,7 @@
       "active_release_id": "release-0-1-14",
       "active_release": {
         "release_id": "release-0-1-14",
-        "status": "active",
+        "status": "planning",
         "version": "0.1.14",
         "tag": "v0.1.14",
         "name": "",
@@ -7109,21 +7124,32 @@
       "release_history_summary": "Active: 0.1.14 \u00b7 Latest move: 0.1.12 -> 0.1.14",
       "coverage": {
         "linked_plan_count": 0,
-        "linked_diagram_count": 0,
+        "linked_diagram_count": 1,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
       },
-      "execution_wave_refs": []
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-118",
+          "wave_id": "W1",
+          "wave_label": "Benchmark baseline proof",
+          "wave_status": "planned",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-118.execution-waves.v1.json"
+        }
+      ]
     },
     {
       "idea_id": "B-120",
       "title": "v0.1.14 Governed Harness: Governed Harness Manifest Contract",
       "status": "queued",
-      "workstream_type": "standalone",
-      "workstream_parent": "",
+      "workstream_type": "child",
+      "workstream_parent": "B-118",
       "workstream_children": [],
-      "workstream_depends_on": [],
+      "workstream_depends_on": [
+        "B-119"
+      ],
       "workstream_blocks": [],
       "workstream_reopens": "",
       "workstream_reopened_by": "",
@@ -7131,7 +7157,9 @@
       "workstream_split_into": [],
       "workstream_merged_into": "",
       "workstream_merged_from": [],
-      "related_diagram_ids": [],
+      "related_diagram_ids": [
+        "D-044"
+      ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-governed-harness-manifest-contract.md",
       "promoted_to_plan": "",
       "plan_traceability": {
@@ -7142,7 +7170,7 @@
       "active_release_id": "release-0-1-14",
       "active_release": {
         "release_id": "release-0-1-14",
-        "status": "active",
+        "status": "planning",
         "version": "0.1.14",
         "tag": "v0.1.14",
         "name": "",
@@ -7199,21 +7227,32 @@
       "release_history_summary": "Active: 0.1.14 \u00b7 Latest move: 0.1.12 -> 0.1.14",
       "coverage": {
         "linked_plan_count": 0,
-        "linked_diagram_count": 0,
+        "linked_diagram_count": 1,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
       },
-      "execution_wave_refs": []
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-118",
+          "wave_id": "W2",
+          "wave_label": "Harness manifest contract",
+          "wave_status": "planned",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-118.execution-waves.v1.json"
+        }
+      ]
     },
     {
       "idea_id": "B-121",
       "title": "v0.1.14 Governed Harness: Admissibility Guardrails And Approval Policy",
       "status": "queued",
-      "workstream_type": "standalone",
-      "workstream_parent": "",
+      "workstream_type": "child",
+      "workstream_parent": "B-118",
       "workstream_children": [],
-      "workstream_depends_on": [],
+      "workstream_depends_on": [
+        "B-120"
+      ],
       "workstream_blocks": [],
       "workstream_reopens": "",
       "workstream_reopened_by": "",
@@ -7221,7 +7260,9 @@
       "workstream_split_into": [],
       "workstream_merged_into": "",
       "workstream_merged_from": [],
-      "related_diagram_ids": [],
+      "related_diagram_ids": [
+        "D-044"
+      ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-admissibility-guardrails-and-approval-policy.md",
       "promoted_to_plan": "",
       "plan_traceability": {
@@ -7232,7 +7273,7 @@
       "active_release_id": "release-0-1-14",
       "active_release": {
         "release_id": "release-0-1-14",
-        "status": "active",
+        "status": "planning",
         "version": "0.1.14",
         "tag": "v0.1.14",
         "name": "",
@@ -7289,21 +7330,32 @@
       "release_history_summary": "Active: 0.1.14 \u00b7 Latest move: 0.1.12 -> 0.1.14",
       "coverage": {
         "linked_plan_count": 0,
-        "linked_diagram_count": 0,
+        "linked_diagram_count": 1,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
       },
-      "execution_wave_refs": []
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-118",
+          "wave_id": "W3",
+          "wave_label": "Admissibility guardrails",
+          "wave_status": "planned",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-118.execution-waves.v1.json"
+        }
+      ]
     },
     {
       "idea_id": "B-122",
       "title": "v0.1.14 Governed Harness: Harness Receipts, Tracing, And Resumable Proof",
       "status": "queued",
-      "workstream_type": "standalone",
-      "workstream_parent": "",
+      "workstream_type": "child",
+      "workstream_parent": "B-118",
       "workstream_children": [],
-      "workstream_depends_on": [],
+      "workstream_depends_on": [
+        "B-121"
+      ],
       "workstream_blocks": [],
       "workstream_reopens": "",
       "workstream_reopened_by": "",
@@ -7311,7 +7363,9 @@
       "workstream_split_into": [],
       "workstream_merged_into": "",
       "workstream_merged_from": [],
-      "related_diagram_ids": [],
+      "related_diagram_ids": [
+        "D-044"
+      ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-harness-receipts-tracing-and-resumable-proof.md",
       "promoted_to_plan": "",
       "plan_traceability": {
@@ -7322,7 +7376,7 @@
       "active_release_id": "release-0-1-14",
       "active_release": {
         "release_id": "release-0-1-14",
-        "status": "active",
+        "status": "planning",
         "version": "0.1.14",
         "tag": "v0.1.14",
         "name": "",
@@ -7379,21 +7433,32 @@
       "release_history_summary": "Active: 0.1.14 \u00b7 Latest move: 0.1.12 -> 0.1.14",
       "coverage": {
         "linked_plan_count": 0,
-        "linked_diagram_count": 0,
+        "linked_diagram_count": 1,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
       },
-      "execution_wave_refs": []
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-118",
+          "wave_id": "W4",
+          "wave_label": "Receipts and tracing",
+          "wave_status": "planned",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-118.execution-waves.v1.json"
+        }
+      ]
     },
     {
       "idea_id": "B-123",
       "title": "v0.1.14 Governed Harness: OpenAI Agents SDK Adapter And Generic Harness Contract",
       "status": "queued",
-      "workstream_type": "standalone",
-      "workstream_parent": "",
+      "workstream_type": "child",
+      "workstream_parent": "B-118",
       "workstream_children": [],
-      "workstream_depends_on": [],
+      "workstream_depends_on": [
+        "B-122"
+      ],
       "workstream_blocks": [],
       "workstream_reopens": "",
       "workstream_reopened_by": "",
@@ -7401,7 +7466,9 @@
       "workstream_split_into": [],
       "workstream_merged_into": "",
       "workstream_merged_from": [],
-      "related_diagram_ids": [],
+      "related_diagram_ids": [
+        "D-044"
+      ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-openai-agents-sdk-adapter-and-generic-harness-contract.md",
       "promoted_to_plan": "",
       "plan_traceability": {
@@ -7412,7 +7479,7 @@
       "active_release_id": "release-0-1-14",
       "active_release": {
         "release_id": "release-0-1-14",
-        "status": "active",
+        "status": "planning",
         "version": "0.1.14",
         "tag": "v0.1.14",
         "name": "",
@@ -7469,21 +7536,32 @@
       "release_history_summary": "Active: 0.1.14 \u00b7 Latest move: 0.1.12 -> 0.1.14",
       "coverage": {
         "linked_plan_count": 0,
-        "linked_diagram_count": 0,
+        "linked_diagram_count": 1,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
       },
-      "execution_wave_refs": []
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-118",
+          "wave_id": "W5",
+          "wave_label": "Generic SDK adapter",
+          "wave_status": "planned",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-118.execution-waves.v1.json"
+        }
+      ]
     },
     {
       "idea_id": "B-124",
       "title": "v0.1.14 Governed Harness: Cross-Host Harness Ablations And Deep Benchmark Execution",
       "status": "queued",
-      "workstream_type": "standalone",
-      "workstream_parent": "",
+      "workstream_type": "child",
+      "workstream_parent": "B-118",
       "workstream_children": [],
-      "workstream_depends_on": [],
+      "workstream_depends_on": [
+        "B-123"
+      ],
       "workstream_blocks": [],
       "workstream_reopens": "",
       "workstream_reopened_by": "",
@@ -7491,7 +7569,9 @@
       "workstream_split_into": [],
       "workstream_merged_into": "",
       "workstream_merged_from": [],
-      "related_diagram_ids": [],
+      "related_diagram_ids": [
+        "D-044"
+      ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-cross-host-harness-ablations-and-deep-benchmark-execution.md",
       "promoted_to_plan": "",
       "plan_traceability": {
@@ -7502,7 +7582,7 @@
       "active_release_id": "release-0-1-14",
       "active_release": {
         "release_id": "release-0-1-14",
-        "status": "active",
+        "status": "planning",
         "version": "0.1.14",
         "tag": "v0.1.14",
         "name": "",
@@ -7559,21 +7639,32 @@
       "release_history_summary": "Active: 0.1.14 \u00b7 Latest move: 0.1.12 -> 0.1.14",
       "coverage": {
         "linked_plan_count": 0,
-        "linked_diagram_count": 0,
+        "linked_diagram_count": 1,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
       },
-      "execution_wave_refs": []
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-118",
+          "wave_id": "W6",
+          "wave_label": "Cross-host ablations",
+          "wave_status": "planned",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-118.execution-waves.v1.json"
+        }
+      ]
     },
     {
       "idea_id": "B-125",
       "title": "v0.1.14 Governed Harness: Release Publication, Docs, And Benchmark Closure",
       "status": "queued",
-      "workstream_type": "standalone",
-      "workstream_parent": "",
+      "workstream_type": "child",
+      "workstream_parent": "B-118",
       "workstream_children": [],
-      "workstream_depends_on": [],
+      "workstream_depends_on": [
+        "B-124"
+      ],
       "workstream_blocks": [],
       "workstream_reopens": "",
       "workstream_reopened_by": "",
@@ -7581,7 +7672,9 @@
       "workstream_split_into": [],
       "workstream_merged_into": "",
       "workstream_merged_from": [],
-      "related_diagram_ids": [],
+      "related_diagram_ids": [
+        "D-044"
+      ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-release-publication-docs-and-benchmark-closure.md",
       "promoted_to_plan": "",
       "plan_traceability": {
@@ -7592,7 +7685,7 @@
       "active_release_id": "release-0-1-14",
       "active_release": {
         "release_id": "release-0-1-14",
-        "status": "active",
+        "status": "planning",
         "version": "0.1.14",
         "tag": "v0.1.14",
         "name": "",
@@ -7649,12 +7742,21 @@
       "release_history_summary": "Active: 0.1.14 \u00b7 Latest move: 0.1.12 -> 0.1.14",
       "coverage": {
         "linked_plan_count": 0,
-        "linked_diagram_count": 0,
+        "linked_diagram_count": 1,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
       },
-      "execution_wave_refs": []
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-118",
+          "wave_id": "W7",
+          "wave_label": "Docs and release closure",
+          "wave_status": "planned",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-118.execution-waves.v1.json"
+        }
+      ]
     },
     {
       "idea_id": "B-126",
@@ -7682,7 +7784,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "active",
+        "status": "planning",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -8621,7 +8723,7 @@
     },
     {
       "release_id": "release-0-1-12",
-      "status": "active",
+      "status": "planning",
       "version": "0.1.12",
       "tag": "v0.1.12",
       "name": "",
@@ -8655,7 +8757,7 @@
     },
     {
       "release_id": "release-0-1-13",
-      "status": "active",
+      "status": "planning",
       "version": "0.1.13",
       "tag": "v0.1.13",
       "name": "",
@@ -8676,7 +8778,7 @@
     },
     {
       "release_id": "release-0-1-14",
-      "status": "active",
+      "status": "planning",
       "version": "0.1.14",
       "tag": "v0.1.14",
       "name": "",
@@ -9312,6 +9414,116 @@
               "label": "Surfaces and release proof gate"
             }
           ]
+        }
+      ]
+    },
+    {
+      "umbrella_id": "B-118",
+      "version": "v1",
+      "source_file": "odylith/radar/source/programs/B-118.execution-waves.v1.json",
+      "waves": [
+        {
+          "wave_id": "W1",
+          "label": "Benchmark baseline proof",
+          "status": "planned",
+          "summary": "Define the live benchmark matrix and baseline proof before implementation claims.",
+          "depends_on": [],
+          "primary_workstreams": [
+            "B-119"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": []
+        },
+        {
+          "wave_id": "W2",
+          "label": "Harness manifest contract",
+          "status": "planned",
+          "summary": "Define the governed-harness manifest and public payload contract.",
+          "depends_on": [
+            "W1"
+          ],
+          "primary_workstreams": [
+            "B-120"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": []
+        },
+        {
+          "wave_id": "W3",
+          "label": "Admissibility guardrails",
+          "status": "planned",
+          "summary": "Define approval, deny, ask, defer, and rewrite policy for tool and action gates.",
+          "depends_on": [
+            "W2"
+          ],
+          "primary_workstreams": [
+            "B-121"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": []
+        },
+        {
+          "wave_id": "W4",
+          "label": "Receipts and tracing",
+          "status": "planned",
+          "summary": "Bind harness receipts, tracing fields, and resumable proof across hosts.",
+          "depends_on": [
+            "W3"
+          ],
+          "primary_workstreams": [
+            "B-122"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": []
+        },
+        {
+          "wave_id": "W5",
+          "label": "Generic SDK adapter",
+          "status": "planned",
+          "summary": "Implement the host-neutral adapter contract with managed SDK early-exit support where possible.",
+          "depends_on": [
+            "W4"
+          ],
+          "primary_workstreams": [
+            "B-123"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": []
+        },
+        {
+          "wave_id": "W6",
+          "label": "Cross-host ablations",
+          "status": "planned",
+          "summary": "Run cross-host ablations through the product Turn Gate without benchmark-private shortcuts.",
+          "depends_on": [
+            "W5"
+          ],
+          "primary_workstreams": [
+            "B-124"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": []
+        },
+        {
+          "wave_id": "W7",
+          "label": "Docs and release closure",
+          "status": "planned",
+          "summary": "Close public docs, release notes, and benchmark proof for the governed-harness lane.",
+          "depends_on": [
+            "W6"
+          ],
+          "primary_workstreams": [
+            "B-125"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": []
         }
       ]
     }
@@ -10258,7 +10470,7 @@
       "type": "workstream",
       "label": "v0.1.14 Governed Harness: Agent SDK Control Plane And Deep Benchmark Proof",
       "status": "queued",
-      "workstream_type": "standalone",
+      "workstream_type": "umbrella",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-agent-sdk-control-plane-and-deep-benchmark-proof.md"
     },
     {
@@ -10266,7 +10478,7 @@
       "type": "workstream",
       "label": "v0.1.14 Governed Harness: Deep Benchmark Coverage Matrix And Baseline Proof",
       "status": "queued",
-      "workstream_type": "standalone",
+      "workstream_type": "child",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-deep-benchmark-coverage-matrix-and-baseline-proof.md"
     },
     {
@@ -10274,7 +10486,7 @@
       "type": "workstream",
       "label": "v0.1.14 Governed Harness: Governed Harness Manifest Contract",
       "status": "queued",
-      "workstream_type": "standalone",
+      "workstream_type": "child",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-governed-harness-manifest-contract.md"
     },
     {
@@ -10282,7 +10494,7 @@
       "type": "workstream",
       "label": "v0.1.14 Governed Harness: Admissibility Guardrails And Approval Policy",
       "status": "queued",
-      "workstream_type": "standalone",
+      "workstream_type": "child",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-admissibility-guardrails-and-approval-policy.md"
     },
     {
@@ -10290,7 +10502,7 @@
       "type": "workstream",
       "label": "v0.1.14 Governed Harness: Harness Receipts, Tracing, And Resumable Proof",
       "status": "queued",
-      "workstream_type": "standalone",
+      "workstream_type": "child",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-harness-receipts-tracing-and-resumable-proof.md"
     },
     {
@@ -10298,7 +10510,7 @@
       "type": "workstream",
       "label": "v0.1.14 Governed Harness: OpenAI Agents SDK Adapter And Generic Harness Contract",
       "status": "queued",
-      "workstream_type": "standalone",
+      "workstream_type": "child",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-openai-agents-sdk-adapter-and-generic-harness-contract.md"
     },
     {
@@ -10306,7 +10518,7 @@
       "type": "workstream",
       "label": "v0.1.14 Governed Harness: Cross-Host Harness Ablations And Deep Benchmark Execution",
       "status": "queued",
-      "workstream_type": "standalone",
+      "workstream_type": "child",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-cross-host-harness-ablations-and-deep-benchmark-execution.md"
     },
     {
@@ -10314,7 +10526,7 @@
       "type": "workstream",
       "label": "v0.1.14 Governed Harness: Release Publication, Docs, And Benchmark Closure",
       "status": "queued",
-      "workstream_type": "standalone",
+      "workstream_type": "child",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-release-publication-docs-and-benchmark-closure.md"
     },
     {
@@ -10715,6 +10927,7 @@
         "D-040",
         "D-041",
         "D-043",
+        "D-044",
         "D-005",
         "D-006",
         "D-007",
@@ -10793,6 +11006,7 @@
         "D-024",
         "D-039",
         "D-041",
+        "D-044",
         "D-007",
         "D-002",
         "D-012",
@@ -11235,6 +11449,7 @@
         "D-031",
         "D-038",
         "D-039",
+        "D-044",
         "D-018",
         "D-020",
         "D-037",
@@ -11329,15 +11544,21 @@
       "file": "odylith/registry/source/components/governed-harness/CURRENT_SPEC.md",
       "workstreams": [
         "B-118",
+        "B-119",
+        "B-120",
         "B-121",
         "B-122",
         "B-123",
         "B-124",
         "B-125"
       ],
-      "diagrams": [],
+      "diagrams": [
+        "D-044"
+      ],
       "sources": [
-        "manifest"
+        "manifest",
+        "catalog",
+        "idea_specs"
       ]
     },
     {
@@ -11530,6 +11751,7 @@
         "D-033",
         "D-034",
         "D-035",
+        "D-044",
         "D-042",
         "D-037",
         "D-038",
@@ -11672,6 +11894,7 @@
         "D-024",
         "D-037",
         "D-039",
+        "D-044",
         "D-001",
         "D-003",
         "D-007",
@@ -11906,6 +12129,7 @@
       ],
       "diagrams": [
         "D-026",
+        "D-044",
         "D-004",
         "D-002",
         "D-030",
@@ -11916,6 +12140,7 @@
       ],
       "sources": [
         "manifest",
+        "catalog",
         "idea_specs"
       ]
     },
@@ -11969,6 +12194,7 @@
         "D-006",
         "D-036",
         "D-043",
+        "D-044",
         "D-002",
         "D-003",
         "D-007",
@@ -13422,6 +13648,36 @@
       "related_component_ids": []
     },
     {
+      "id": "diagram:D-044",
+      "type": "diagram",
+      "label": "Governed Harness Turn Gate Topology",
+      "diagram_id": "D-044",
+      "status": "active",
+      "owner": "freedom-research",
+      "file": "odylith/atlas/source/governed-harness-turn-gate-topology.mmd",
+      "related_workstreams": [
+        "B-118",
+        "B-119",
+        "B-120",
+        "B-121",
+        "B-122",
+        "B-123",
+        "B-124",
+        "B-125"
+      ],
+      "component_names": [
+        "Governed Harness",
+        "Context Engine",
+        "Execution Engine",
+        "Proof State",
+        "Benchmark",
+        "Host Adapters",
+        "Radar",
+        "Atlas"
+      ],
+      "related_component_ids": []
+    },
+    {
       "id": "plan:odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
       "type": "plan",
       "label": "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
@@ -13994,6 +14250,14 @@
       "file": "odylith/radar/source/programs/B-110.execution-waves.v1.json"
     },
     {
+      "id": "program:B-118",
+      "type": "program",
+      "label": "B-118 execution waves",
+      "umbrella_id": "B-118",
+      "version": "v1",
+      "file": "odylith/radar/source/programs/B-118.execution-waves.v1.json"
+    },
+    {
       "id": "release:release-0-1-11",
       "type": "release",
       "label": "0.1.11",
@@ -14010,7 +14274,7 @@
       "type": "release",
       "label": "0.1.12",
       "release_id": "release-0-1-12",
-      "status": "active",
+      "status": "planning",
       "version": "0.1.12",
       "tag": "v0.1.12",
       "name": "0.1.12",
@@ -14022,7 +14286,7 @@
       "type": "release",
       "label": "0.1.13",
       "release_id": "release-0-1-13",
-      "status": "active",
+      "status": "planning",
       "version": "0.1.13",
       "tag": "v0.1.13",
       "name": "0.1.13",
@@ -14034,7 +14298,7 @@
       "type": "release",
       "label": "0.1.14",
       "release_id": "release-0-1-14",
-      "status": "active",
+      "status": "planning",
       "version": "0.1.14",
       "tag": "v0.1.14",
       "name": "0.1.14",
@@ -14261,6 +14525,69 @@
       "umbrella_id": "B-110",
       "wave_id": "W7",
       "file": "odylith/radar/source/programs/B-110.execution-waves.v1.json"
+    },
+    {
+      "id": "wave:B-118:W1",
+      "type": "wave",
+      "label": "Benchmark baseline proof",
+      "status": "planned",
+      "umbrella_id": "B-118",
+      "wave_id": "W1",
+      "file": "odylith/radar/source/programs/B-118.execution-waves.v1.json"
+    },
+    {
+      "id": "wave:B-118:W2",
+      "type": "wave",
+      "label": "Harness manifest contract",
+      "status": "planned",
+      "umbrella_id": "B-118",
+      "wave_id": "W2",
+      "file": "odylith/radar/source/programs/B-118.execution-waves.v1.json"
+    },
+    {
+      "id": "wave:B-118:W3",
+      "type": "wave",
+      "label": "Admissibility guardrails",
+      "status": "planned",
+      "umbrella_id": "B-118",
+      "wave_id": "W3",
+      "file": "odylith/radar/source/programs/B-118.execution-waves.v1.json"
+    },
+    {
+      "id": "wave:B-118:W4",
+      "type": "wave",
+      "label": "Receipts and tracing",
+      "status": "planned",
+      "umbrella_id": "B-118",
+      "wave_id": "W4",
+      "file": "odylith/radar/source/programs/B-118.execution-waves.v1.json"
+    },
+    {
+      "id": "wave:B-118:W5",
+      "type": "wave",
+      "label": "Generic SDK adapter",
+      "status": "planned",
+      "umbrella_id": "B-118",
+      "wave_id": "W5",
+      "file": "odylith/radar/source/programs/B-118.execution-waves.v1.json"
+    },
+    {
+      "id": "wave:B-118:W6",
+      "type": "wave",
+      "label": "Cross-host ablations",
+      "status": "planned",
+      "umbrella_id": "B-118",
+      "wave_id": "W6",
+      "file": "odylith/radar/source/programs/B-118.execution-waves.v1.json"
+    },
+    {
+      "id": "wave:B-118:W7",
+      "type": "wave",
+      "label": "Docs and release closure",
+      "status": "planned",
+      "umbrella_id": "B-118",
+      "wave_id": "W7",
+      "file": "odylith/radar/source/programs/B-118.execution-waves.v1.json"
     }
   ],
   "edges": [
@@ -19626,6 +19953,46 @@
     },
     {
       "source": "B-118",
+      "target": "B-119",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-118",
+      "target": "B-119",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-118",
+      "target": "B-120",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-118",
+      "target": "B-121",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-118",
+      "target": "B-122",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-118",
+      "target": "B-123",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-118",
+      "target": "B-124",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-118",
+      "target": "B-125",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-118",
       "target": "component:governed-harness",
       "edge_type": "component_linkage"
     },
@@ -19636,8 +20003,28 @@
     },
     {
       "source": "B-118",
+      "target": "diagram:D-044",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-118",
+      "target": "program:B-118",
+      "edge_type": "execution_program"
+    },
+    {
+      "source": "B-118",
       "target": "release:release-0-1-14",
       "edge_type": "active_release"
+    },
+    {
+      "source": "B-119",
+      "target": "B-120",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-119",
+      "target": "component:governed-harness",
+      "edge_type": "component_linkage"
     },
     {
       "source": "B-119",
@@ -19646,8 +20033,23 @@
     },
     {
       "source": "B-119",
+      "target": "diagram:D-044",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-119",
       "target": "release:release-0-1-14",
       "edge_type": "active_release"
+    },
+    {
+      "source": "B-120",
+      "target": "B-121",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-120",
+      "target": "component:governed-harness",
+      "edge_type": "component_linkage"
     },
     {
       "source": "B-120",
@@ -19656,8 +20058,18 @@
     },
     {
       "source": "B-120",
+      "target": "diagram:D-044",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-120",
       "target": "release:release-0-1-14",
       "edge_type": "active_release"
+    },
+    {
+      "source": "B-121",
+      "target": "B-122",
+      "edge_type": "depends_on"
     },
     {
       "source": "B-121",
@@ -19671,8 +20083,18 @@
     },
     {
       "source": "B-121",
+      "target": "diagram:D-044",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-121",
       "target": "release:release-0-1-14",
       "edge_type": "active_release"
+    },
+    {
+      "source": "B-122",
+      "target": "B-123",
+      "edge_type": "depends_on"
     },
     {
       "source": "B-122",
@@ -19686,8 +20108,18 @@
     },
     {
       "source": "B-122",
+      "target": "diagram:D-044",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-122",
       "target": "release:release-0-1-14",
       "edge_type": "active_release"
+    },
+    {
+      "source": "B-123",
+      "target": "B-124",
+      "edge_type": "depends_on"
     },
     {
       "source": "B-123",
@@ -19701,8 +20133,18 @@
     },
     {
       "source": "B-123",
+      "target": "diagram:D-044",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-123",
       "target": "release:release-0-1-14",
       "edge_type": "active_release"
+    },
+    {
+      "source": "B-124",
+      "target": "B-125",
+      "edge_type": "depends_on"
     },
     {
       "source": "B-124",
@@ -19713,6 +20155,11 @@
       "source": "B-124",
       "target": "component:odylith",
       "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-124",
+      "target": "diagram:D-044",
+      "edge_type": "diagram_linkage"
     },
     {
       "source": "B-124",
@@ -19728,6 +20175,11 @@
       "source": "B-125",
       "target": "component:odylith",
       "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-125",
+      "target": "diagram:D-044",
+      "edge_type": "diagram_linkage"
     },
     {
       "source": "B-125",
@@ -20190,6 +20642,11 @@
       "edge_type": "component_diagram"
     },
     {
+      "source": "component:atlas",
+      "target": "diagram:D-044",
+      "edge_type": "component_diagram"
+    },
+    {
       "source": "component:benchmark",
       "target": "diagram:D-002",
       "edge_type": "component_diagram"
@@ -20287,6 +20744,11 @@
     {
       "source": "component:benchmark",
       "target": "diagram:D-042",
+      "edge_type": "component_diagram"
+    },
+    {
+      "source": "component:benchmark",
+      "target": "diagram:D-044",
       "edge_type": "component_diagram"
     },
     {
@@ -20945,6 +21407,11 @@
       "edge_type": "component_diagram"
     },
     {
+      "source": "component:execution-engine",
+      "target": "diagram:D-044",
+      "edge_type": "component_diagram"
+    },
+    {
       "source": "component:governance-intervention-engine",
       "target": "diagram:D-002",
       "edge_type": "component_diagram"
@@ -21002,6 +21469,11 @@
     {
       "source": "component:governance-intervention-engine",
       "target": "diagram:D-043",
+      "edge_type": "component_diagram"
+    },
+    {
+      "source": "component:governed-harness",
+      "target": "diagram:D-044",
       "edge_type": "component_diagram"
     },
     {
@@ -21237,6 +21709,11 @@
     {
       "source": "component:odylith",
       "target": "diagram:D-043",
+      "edge_type": "component_diagram"
+    },
+    {
+      "source": "component:odylith",
+      "target": "diagram:D-044",
       "edge_type": "component_diagram"
     },
     {
@@ -21490,6 +21967,11 @@
       "edge_type": "component_diagram"
     },
     {
+      "source": "component:odylith-context-engine",
+      "target": "diagram:D-044",
+      "edge_type": "component_diagram"
+    },
+    {
       "source": "component:odylith-memory-backend",
       "target": "diagram:D-002",
       "edge_type": "component_diagram"
@@ -21655,6 +22137,11 @@
       "edge_type": "component_diagram"
     },
     {
+      "source": "component:proof-state",
+      "target": "diagram:D-044",
+      "edge_type": "component_diagram"
+    },
+    {
       "source": "component:radar",
       "target": "diagram:D-001",
       "edge_type": "component_diagram"
@@ -21817,6 +22304,11 @@
     {
       "source": "component:radar",
       "target": "diagram:D-043",
+      "edge_type": "component_diagram"
+    },
+    {
+      "source": "component:radar",
+      "target": "diagram:D-044",
       "edge_type": "component_diagram"
     },
     {
@@ -22665,6 +23157,41 @@
       "edge_type": "execution_wave"
     },
     {
+      "source": "program:B-118",
+      "target": "wave:B-118:W1",
+      "edge_type": "execution_wave"
+    },
+    {
+      "source": "program:B-118",
+      "target": "wave:B-118:W2",
+      "edge_type": "execution_wave"
+    },
+    {
+      "source": "program:B-118",
+      "target": "wave:B-118:W3",
+      "edge_type": "execution_wave"
+    },
+    {
+      "source": "program:B-118",
+      "target": "wave:B-118:W4",
+      "edge_type": "execution_wave"
+    },
+    {
+      "source": "program:B-118",
+      "target": "wave:B-118:W5",
+      "edge_type": "execution_wave"
+    },
+    {
+      "source": "program:B-118",
+      "target": "wave:B-118:W6",
+      "edge_type": "execution_wave"
+    },
+    {
+      "source": "program:B-118",
+      "target": "wave:B-118:W7",
+      "edge_type": "execution_wave"
+    },
+    {
       "source": "wave:B-072:W1",
       "target": "B-073",
       "edge_type": "wave_membership"
@@ -22887,6 +23414,71 @@
     {
       "source": "wave:B-110:W7",
       "target": "B-117",
+      "edge_type": "wave_membership"
+    },
+    {
+      "source": "wave:B-118:W1",
+      "target": "B-119",
+      "edge_type": "wave_membership"
+    },
+    {
+      "source": "wave:B-118:W1",
+      "target": "wave:B-118:W2",
+      "edge_type": "wave_dependency"
+    },
+    {
+      "source": "wave:B-118:W2",
+      "target": "B-120",
+      "edge_type": "wave_membership"
+    },
+    {
+      "source": "wave:B-118:W2",
+      "target": "wave:B-118:W3",
+      "edge_type": "wave_dependency"
+    },
+    {
+      "source": "wave:B-118:W3",
+      "target": "B-121",
+      "edge_type": "wave_membership"
+    },
+    {
+      "source": "wave:B-118:W3",
+      "target": "wave:B-118:W4",
+      "edge_type": "wave_dependency"
+    },
+    {
+      "source": "wave:B-118:W4",
+      "target": "B-122",
+      "edge_type": "wave_membership"
+    },
+    {
+      "source": "wave:B-118:W4",
+      "target": "wave:B-118:W5",
+      "edge_type": "wave_dependency"
+    },
+    {
+      "source": "wave:B-118:W5",
+      "target": "B-123",
+      "edge_type": "wave_membership"
+    },
+    {
+      "source": "wave:B-118:W5",
+      "target": "wave:B-118:W6",
+      "edge_type": "wave_dependency"
+    },
+    {
+      "source": "wave:B-118:W6",
+      "target": "B-124",
+      "edge_type": "wave_membership"
+    },
+    {
+      "source": "wave:B-118:W6",
+      "target": "wave:B-118:W7",
+      "edge_type": "wave_dependency"
+    },
+    {
+      "source": "wave:B-118:W7",
+      "target": "B-125",
       "edge_type": "wave_membership"
     }
   ],
@@ -23712,56 +24304,56 @@
     },
     "B-118": {
       "linked_plan_count": 0,
-      "linked_diagram_count": 0,
+      "linked_diagram_count": 1,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
     },
     "B-119": {
       "linked_plan_count": 0,
-      "linked_diagram_count": 0,
+      "linked_diagram_count": 1,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
     },
     "B-120": {
       "linked_plan_count": 0,
-      "linked_diagram_count": 0,
+      "linked_diagram_count": 1,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
     },
     "B-121": {
       "linked_plan_count": 0,
-      "linked_diagram_count": 0,
+      "linked_diagram_count": 1,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
     },
     "B-122": {
       "linked_plan_count": 0,
-      "linked_diagram_count": 0,
+      "linked_diagram_count": 1,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
     },
     "B-123": {
       "linked_plan_count": 0,
-      "linked_diagram_count": 0,
+      "linked_diagram_count": 1,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
     },
     "B-124": {
       "linked_plan_count": 0,
-      "linked_diagram_count": 0,
+      "linked_diagram_count": 1,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
     },
     "B-125": {
       "linked_plan_count": 0,
-      "linked_diagram_count": 0,
+      "linked_diagram_count": 1,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
@@ -23967,10 +24559,10 @@
       "info": 0
     },
     "connectivity": {
-      "spine_node_count": 247,
-      "structural_edge_count": 1572,
+      "spine_node_count": 256,
+      "structural_edge_count": 1625,
       "connected_component_count": 3,
-      "largest_component_size": 245,
+      "largest_component_size": 254,
       "isolated_node_count": 2,
       "isolated_nodes": [
         "release:release-0-1-11",
@@ -23984,14 +24576,14 @@
     "release_count": 5,
     "component_count": 30,
     "active_release_assignment_count": 20,
-    "execution_program_count": 4,
-    "execution_wave_count": 23,
-    "node_count": 367,
-    "edge_count": 1725,
+    "execution_program_count": 5,
+    "execution_wave_count": 30,
+    "node_count": 376,
+    "edge_count": 1778,
     "warning_count": 6,
     "warning_item_count": 6,
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-05-06 03:04:03Z"
+  "generated_utc": "2026-05-06 22:08:27Z"
 }

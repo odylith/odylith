@@ -11,6 +11,7 @@ import re
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import repo_path_resolver
+from odylith.runtime.governance import artifact_tribunal
 from odylith.runtime.governance import backlog_title_contract
 from odylith.runtime.governance import execution_wave_contract
 from odylith.runtime.governance import owned_surface_refresh
@@ -64,6 +65,16 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--opportunity", required=True, help="Grounded Opportunity section text.")
     parser.add_argument("--product-view", required=True, help="Grounded Product View section text.")
     parser.add_argument("--success-metrics", required=True, help="Grounded Success Metrics section text.")
+    parser.add_argument(
+        "--domain-risk",
+        required=True,
+        help="Domain, compliance, policy, and operational risk posture for this workstream.",
+    )
+    parser.add_argument(
+        "--security-posture",
+        required=True,
+        help="Security posture and AI-agent-assisted engineering guardrails for this workstream.",
+    )
     parser.add_argument("--priority", default=_DEFAULT_PRIORITY)
     parser.add_argument("--commercial-value", type=int, default=3)
     parser.add_argument("--product-impact", type=int, default=3)
@@ -295,6 +306,17 @@ def _grounded_sections_for_title(*, title: str, args: argparse.Namespace) -> dic
     sections["Opportunity"] = str(args.opportunity).strip()
     sections["Product View"] = str(args.product_view).strip()
     sections["Success Metrics"] = str(args.success_metrics).strip()
+    domain_risk = str(getattr(args, "domain_risk", "") or "").strip()
+    security_posture = str(getattr(args, "security_posture", "") or "").strip()
+    if domain_risk or security_posture:
+        sections["Risks"] = "\n".join(
+            line
+            for line in (
+                f"- Domain/compliance/policy risk: {domain_risk}" if domain_risk else "",
+                f"- Security posture: {security_posture}" if security_posture else "",
+            )
+            if line
+        )
     validation_errors = backlog_contract.core_detail_section_errors(
         title=title,
         sections=sections,
@@ -303,6 +325,24 @@ def _grounded_sections_for_title(*, title: str, args: argparse.Namespace) -> dic
     if validation_errors:
         raise ValueError("; ".join(validation_errors))
     return sections
+
+
+def _backlog_tribunal_decision(*, title: str, sections: Mapping[str, str]) -> artifact_tribunal.GovernedArtifactTribunalDecision:
+    tribunal = artifact_tribunal.run_governed_artifact_tribunal(
+        artifact_kind="backlog",
+        payload={
+            "title": title,
+            "problem": sections.get("Problem", ""),
+            "customer": sections.get("Customer", ""),
+            "opportunity": sections.get("Opportunity", ""),
+            "product_view": sections.get("Product View", ""),
+            "success_metrics": sections.get("Success Metrics", ""),
+            "risks": sections.get("Risks", ""),
+            "validation": sections.get("Validation", ""),
+        },
+    )
+    artifact_tribunal.raise_for_failed_artifact_tribunal(tribunal)
+    return tribunal
 
 
 def _title_specific_args(*, title: str, args: argparse.Namespace) -> argparse.Namespace:
@@ -321,6 +361,8 @@ def _title_specific_args(*, title: str, args: argparse.Namespace) -> argparse.Na
         "opportunity",
         "product_view",
         "success_metrics",
+        "domain_risk",
+        "security_posture",
         "priority",
         "sizing",
         "complexity",
@@ -636,6 +678,7 @@ def create_queued_backlog_items(
     created_items: list[CreatedBacklogItem] = []
     new_text_by_path: dict[Path, str] = {}
     metadata_by_idea_id: dict[str, dict[str, str]] = {}
+    tribunal_decisions: list[dict[str, Any]] = []
     mutable_ideas = dict(ideas)
     reserved_paths: set[Path] = set()
     normalized_titles: list[str] = []
@@ -677,6 +720,7 @@ def create_queued_backlog_items(
         idea_path = _unique_idea_path(ideas_root=ideas_root, title=title, today=today, reserved=reserved_paths)
         reserved_paths.add(idea_path)
         sections = _grounded_sections_for_title(title=title, args=row_args)
+        tribunal_decisions.append(_backlog_tribunal_decision(title=title, sections=sections).to_dict())
         text = _render_idea_text(metadata=metadata, sections=sections)
         new_text_by_path[idea_path] = text
         item = CreatedBacklogItem(
@@ -804,6 +848,11 @@ def create_queued_backlog_items(
         "idea_files": {str(path.resolve()): text for path, text in new_text_by_path.items()},
         "_candidate_idea_specs": mutable_ideas,
         "existing_idea_files": {str(path.resolve()): text for path, text in existing_text_by_path.items()},
+        "tribunal": {
+            "status": "passed",
+            "version": "governed-artifact-tribunal-v1",
+            "items": tribunal_decisions,
+        },
     }
 
 
@@ -933,6 +982,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "radar": radar_refresh,
                 "compass": compass_refresh,
             },
+            "tribunal": result.get("tribunal", {}),
             "dashboard": ""
             if args.dry_run
             else owned_surface_refresh.dashboard_handoff(
@@ -950,6 +1000,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"- created_ids: {', '.join(str(item['idea_id']) for item in result['created'])}")
         print(f"- release_target: {release_payload['release_id'] or 'none'}")
         print("- queued_status_preserved: yes")
+        print(f"- tribunal: {result.get('tribunal', {}).get('status', 'unknown')}")
         print(f"- radar_refresh: {radar_refresh['status']}")
         print(f"- compass_refresh: {compass_refresh['status']}")
         first_created_id = str(result["created"][0]["idea_id"]) if result["created"] else ""

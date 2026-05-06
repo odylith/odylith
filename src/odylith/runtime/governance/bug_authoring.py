@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import casebook_metadata
+from odylith.runtime.governance import artifact_tribunal
 from odylith.runtime.governance import casebook_source_validation
 from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import sync_casebook_bug_index
@@ -86,9 +87,10 @@ class CreatedBug:
     severity: str
     component: str
     capture_contract: str = _CAPTURE_CONTRACT
+    tribunal: dict[str, Any] | None = None
 
     def as_dict(self) -> dict[str, Any]:
-        return {
+        payload = {
             "bug_id": self.bug_id,
             "title": self.title,
             "bug_path": str(self.bug_path),
@@ -96,6 +98,9 @@ class CreatedBug:
             "component": self.component,
             "capture_contract": self.capture_contract,
         }
+        if self.tribunal is not None:
+            payload["tribunal"] = self.tribunal
+        return payload
 
 
 def _refresh_casebook_surface(*, repo_root: Path) -> int:
@@ -503,6 +508,19 @@ def capture_bug(
         required_fields=cleaned_required,
         optional_fields=cleaned_optional,
     )
+    tribunal = artifact_tribunal.run_governed_artifact_tribunal(
+        artifact_kind="casebook_bug",
+        payload={
+            "title": normalized_title,
+            "component": normalized_component,
+            "severity": normalized_severity,
+            "description": normalized_description,
+            "bug_type": normalized_type,
+            **cleaned_required,
+            **cleaned_optional,
+        },
+    )
+    artifact_tribunal.raise_for_failed_artifact_tribunal(tribunal)
 
     created_bug = CreatedBug(
         bug_id=bug_id,
@@ -510,6 +528,7 @@ def capture_bug(
         bug_path=bug_path,
         severity=normalized_severity,
         component=normalized_component,
+        tribunal=tribunal.to_dict(),
     )
 
     if not dry_run:
@@ -736,6 +755,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"  title: {result.title}")
         print(f"  severity: {result.severity}")
         print(f"  component: {result.component}")
+        print(f"  tribunal: {(result.tribunal or {}).get('status', 'unknown')}")
         print(f"  path: {result.bug_path}")
         owned_surface_refresh.print_dashboard_handoff(
             surface="casebook",

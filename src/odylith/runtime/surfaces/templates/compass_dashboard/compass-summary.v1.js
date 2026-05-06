@@ -1,16 +1,27 @@
+    const RELEASE_TARGET_VERSION_RE = /\bv?(\d+(?:\.\d+){1,3})\b/i;
+    const MAX_RELEASE_TARGET_LABEL_CHARS = 18;
+
+    function compactReleaseTargetLabel(value) {
+      const text = String(value || "").trim().replace(/\s+/g, " ");
+      const match = RELEASE_TARGET_VERSION_RE.exec(text);
+      if (match && match[1]) return match[1];
+      if (text.length <= MAX_RELEASE_TARGET_LABEL_CHARS) return text;
+      return `${text.slice(0, MAX_RELEASE_TARGET_LABEL_CHARS - 3).trimEnd()}...`;
+    }
+
     function releaseHeroLabel(release) {
       const releaseRow = release && typeof release === "object" ? release : {};
-      const nameLabel = String(releaseRow.name || "").trim();
-      if (nameLabel) return nameLabel;
       const versionLabel = String(releaseRow.version || "").trim();
-      if (versionLabel) return versionLabel;
+      if (versionLabel) return compactReleaseTargetLabel(versionLabel);
+      const tagLabel = String(releaseRow.tag || "").trim();
+      if (tagLabel) return compactReleaseTargetLabel(tagLabel);
       const effectiveLabel = String(
         releaseRow.effective_name || releaseRow.display_label || ""
       ).trim();
-      if (effectiveLabel) return effectiveLabel;
-      const tagLabel = String(releaseRow.tag || "").trim();
-      if (tagLabel) return /^v\d/.test(tagLabel) ? tagLabel.slice(1) : tagLabel;
-      return String(release && (release.release_id || "") || "").trim();
+      if (effectiveLabel) return compactReleaseTargetLabel(effectiveLabel);
+      const nameLabel = String(releaseRow.name || "").trim();
+      if (nameLabel) return compactReleaseTargetLabel(nameLabel);
+      return compactReleaseTargetLabel(release && (release.release_id || "") || "");
     }
 
     function heroKpiRows(base, state, touchedIds, riskRows, scopedTouch, commitCount, localCount) {
@@ -57,7 +68,7 @@
       target.innerHTML = kpis.map(([label, value, cardClass]) => `
         <article class="stat${cardClass ? ` ${cardClass}` : ""}">
           ${label ? `<p class="kpi-label">${escapeHtml(label)}</p>` : ""}
-          <p class="kpi-value">${escapeHtml(value)}</p>
+          <p class="kpi-value" title="${escapeHtml(value)}">${escapeHtml(value)}</p>
         </article>
       `).join("");
     }

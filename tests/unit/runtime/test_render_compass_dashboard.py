@@ -443,10 +443,15 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     assert 'rows.push(["Next Release"' not in summary_js
     assert 'class="stat${cardClass ? ` ${cardClass}` : ""}"' in summary_js
     assert "function releaseHeroLabel(release)" in summary_js
-    assert 'const nameLabel = String(releaseRow.name || "").trim();' in summary_js
+    assert "function compactReleaseTargetLabel(value)" in summary_js
     assert 'const versionLabel = String(releaseRow.version || "").trim();' in summary_js
     assert 'const tagLabel = String(releaseRow.tag || "").trim();' in summary_js
-    assert 'return /^v\\d/.test(tagLabel) ? tagLabel.slice(1) : tagLabel;' in summary_js
+    assert "if (versionLabel) return compactReleaseTargetLabel(versionLabel);" in summary_js
+    assert "if (tagLabel) return compactReleaseTargetLabel(tagLabel);" in summary_js
+    assert 'const nameLabel = String(releaseRow.name || "").trim();' in summary_js
+    assert "if (nameLabel) return compactReleaseTargetLabel(nameLabel);" in summary_js
+    assert '<p class="kpi-value" title="${escapeHtml(value)}">${escapeHtml(value)}</p>' in summary_js
+    assert 'return /^v\\d/.test(tagLabel) ? tagLabel.slice(1) : tagLabel;' not in summary_js
     assert 'return versionLabel.startsWith("v") ? versionLabel : `v${versionLabel}`;' not in summary_js
     assert "function renderReleaseGroups(payload, state)" in releases_js
     assert "Release Targets" in releases_js
@@ -466,6 +471,9 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     assert 'return visibleGroups;' in releases_js
     assert 'const currentOnlyGroups = currentReleaseId' not in releases_js
     assert 'Target Release</span>' in releases_js
+    assert "function compactCompassReleaseTargetLabel(value)" in releases_js
+    assert "const displayLabel = compassReleaseDisplayName(group);" in releases_js
+    assert '<span class="execution-wave-section-title">${escapeHtml(displayLabel)}</span>' in releases_js
     assert "No targeted workstreams." in releases_js
     assert "execution-wave-focus-title" not in releases_js
     assert '<span class="execution-wave-section-title-row">' in releases_js
@@ -480,7 +488,8 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     assert "Release-owned targeted workstreams for this release." not in releases_js
     assert "Release-owned targeted workstreams for this selection." not in releases_js
     assert "function compassReleaseDisplayName(release)" in releases_js
-    assert "row.name || row.version || row.tag || row.display_label || row.effective_name" in releases_js
+    assert "compactCompassReleaseTargetLabel(row.version)" in releases_js
+    assert "compactCompassReleaseTargetLabel(row.name)" in releases_js
     assert "resolveCompassDisclosureOpen(" in releases_js
     assert 'data-compass-disclosure-key="${escapeHtml(disclosureKey)}"' in releases_js
     assert 'bindCompassDisclosurePersistence(target, disclosureGroup, state);' in releases_js
@@ -492,7 +501,9 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     assert 'group.is_current || groups.length === 1' not in releases_js
     assert "function compassWorkstreamReleaseLabel(release)" in workstreams_js
     assert "function compassGovernanceRepresentedWorkstreamIds(payload)" in workstreams_js
-    assert "row.name || row.version || row.tag || row.display_label || row.effective_name" in workstreams_js
+    assert "function compactCompassWorkstreamReleaseTargetLabel(value)" in workstreams_js
+    assert "compactCompassWorkstreamReleaseTargetLabel(row.version)" in workstreams_js
+    assert "compactCompassWorkstreamReleaseTargetLabel(row.name)" in workstreams_js
     assert "Release: ${escapeHtml(selected.releaseLabel)}" not in workstreams_js
     assert "Release ${item.releaseLabel}" not in workstreams_js
     assert "<strong>Release history:</strong>" in workstreams_js

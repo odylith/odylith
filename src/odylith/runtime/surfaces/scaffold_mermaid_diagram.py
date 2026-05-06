@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 from typing import Sequence
 
+from odylith.runtime.governance import artifact_tribunal
 from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.surfaces import surface_path_helpers
 
@@ -69,12 +70,7 @@ def _parse_components(tokens: list[str]) -> list[dict[str, str]]:
             raise ValueError(f"invalid component `{raw}`; name/description must be non-empty")
         components.append({"name": name, "description": description})
     if not components:
-        components = [
-            {
-                "name": "Component Placeholder",
-                "description": "Replace with concrete behavior component mapping.",
-            }
-        ]
+        raise ValueError("atlas scaffold requires at least one concrete --component Name::Description")
     return components
 
 
@@ -290,11 +286,33 @@ def scaffold_diagram(
     }
     if not has_governance_links:
         entry["link_state"] = "atlas_first_draft"
+    tribunal = artifact_tribunal.run_governed_artifact_tribunal(
+        artifact_kind="atlas_diagram",
+        payload={
+            "diagram_id": diagram_id,
+            "slug": slug,
+            "title": title,
+            "kind": kind,
+            "owner": owner,
+            "summary": summary,
+            "components": components,
+            "related_backlog": related_backlog,
+            "related_plans": related_plans,
+            "related_docs": related_docs,
+            "related_code": related_code,
+            "watch_paths": watch_paths,
+        },
+    )
+    try:
+        artifact_tribunal.raise_for_failed_artifact_tribunal(tribunal)
+    except ValueError as exc:
+        return 2, [f"FAILED: {exc}"]
     diagrams.append(entry)
 
     catalog_path.write_text(f"{json.dumps(payload, indent=2)}\n", encoding="utf-8")
     logs.append(f"catalog updated: {catalog_path}")
     logs.append(f"added: {diagram_id} ({slug})")
+    logs.append(f"tribunal: {tribunal.status}")
 
     source_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=source_mmd)
     if source_path.exists():
@@ -333,25 +351,29 @@ def scaffold_diagram(
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(args.repo_root).resolve()
-    components = _parse_components(args.component)
-    rc, logs = scaffold_diagram(
-        repo_root=repo_root,
-        catalog=str(args.catalog),
-        diagram_id=str(args.diagram_id),
-        slug=str(args.slug),
-        title=str(args.title),
-        kind=str(args.kind),
-        owner=str(args.owner),
-        summary=str(args.summary),
-        components=components,
-        related_backlog=list(args.backlog),
-        related_plans=list(args.plan),
-        related_docs=list(args.doc),
-        related_code=list(args.code),
-        watch_paths=list(args.watch),
-        review_date=str(args.review_date),
-        require_links=bool(args.require_links),
-    )
+    try:
+        components = _parse_components(args.component)
+        rc, logs = scaffold_diagram(
+            repo_root=repo_root,
+            catalog=str(args.catalog),
+            diagram_id=str(args.diagram_id),
+            slug=str(args.slug),
+            title=str(args.title),
+            kind=str(args.kind),
+            owner=str(args.owner),
+            summary=str(args.summary),
+            components=components,
+            related_backlog=list(args.backlog),
+            related_plans=list(args.plan),
+            related_docs=list(args.doc),
+            related_code=list(args.code),
+            watch_paths=list(args.watch),
+            review_date=str(args.review_date),
+            require_links=bool(args.require_links),
+        )
+    except ValueError as exc:
+        print(str(exc))
+        return 2
     for line in logs:
         print(line)
     if rc != 0:

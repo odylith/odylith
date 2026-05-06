@@ -1198,3 +1198,18 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   Radar, Registry, and shell payloads emitted after `odylith sync --force`.
   Existing consumers need no additional source-truth migration; upgrade and
   forced sync converge installed generated surfaces to this payload contract.
+- The v0.1.15 greenfield Tribunal and governed-artifact hardening pass is
+  covered by `migration-observer:0.1.15:guidance-and-skills:ad47eeee311f`,
+  `migration-observer:0.1.15:operator-cli-contracts:7844f71bd458`,
+  `migration-observer:0.1.15:public-docs-and-release-guidance:c8276a3cb8e8`,
+  `migration-observer:0.1.15:browser-surfaces:a855f8659a6c`,
+  `migration-observer:0.1.15:browser-surfaces:30d9efac0b2f`, and
+  `migration-observer:0.1.15:install-managed-assets:c6d00f4dc129`. The pass
+  makes greenfield proposals and routine governed Radar, Registry, Atlas, and
+  Casebook writes fail closed on deterministic Tribunal posture checks covering
+  domain risk, security posture, compliance/policy posture, ownership, proof,
+  and traceability before source truth changes. Existing consumers need no
+  destructive migration: the stricter checks apply only to future CLI-owned
+  writes, while existing governed records remain readable and generated
+  dashboards converge through normal sync/dashboard refresh and managed asset
+  adoption.

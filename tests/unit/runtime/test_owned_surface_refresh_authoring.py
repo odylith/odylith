@@ -23,6 +23,10 @@ def _grounded_backlog_args() -> list[str]:
         "The backlog should look like governed product truth on first render.",
         "--success-metrics",
         "- The record is grounded.\n- Radar refresh picks it up.",
+        "--domain-risk",
+        "Domain and compliance risk is limited to Radar truth quality and dashboard visibility.",
+        "--security-posture",
+        "Security posture: no credentials change; agent-assisted risk is ungrounded governance memory.",
     ]
 
 
@@ -229,6 +233,18 @@ def test_component_register_refreshes_registry_surface(tmp_path: Path, monkeypat
             "registry-refresh",
             "--path",
             "src/odylith/runtime/governance",
+            "--responsibility",
+            "Own Registry refresh authoring proof for governed component capture.",
+            "--boundary",
+            "Registry authoring boundary for this test component and its dashboard refresh.",
+            "--dependency",
+            "Depends on Registry source validation and dashboard rendering.",
+            "--interface",
+            "component register CLI and Registry dashboard read model.",
+            "--validation",
+            "Registry validation and dashboard refresh pass after capture.",
+            "--risk",
+            "Security/compliance risk is stale agent-authored component truth entering durable Registry memory.",
         ]
     )
 
@@ -251,10 +267,7 @@ def test_component_register_refreshes_registry_surface(tmp_path: Path, monkeypat
     assert entry["category"] == "governance_engine"
     assert entry["qualification"] == "candidate"
     assert entry["sources"] == ["manifest"]
-    assert entry["what_it_is"] == (
-        "Logical component registered through `odylith component register` "
-        "with `src/odylith/runtime/governance` as its initial evidence anchor."
-    )
+    assert "responsible for Own Registry refresh authoring proof" in entry["what_it_is"]
     assert "path prefixes seed the intended boundary" in entry["why_tracked"]
     spec_path = (
         tmp_path
@@ -309,6 +322,8 @@ def test_atlas_scaffold_refreshes_atlas_with_shared_lane(tmp_path: Path, monkeyp
             "product",
             "--summary",
             "Atlas quick refresh path.",
+            "--component",
+            "AtlasRefresh::Diagram owner for Atlas quick refresh proof.",
             "--backlog",
             "odylith/radar/source/ideas/2026-04/example.md",
             "--plan",
@@ -427,6 +442,8 @@ def test_atlas_scaffold_can_still_require_governance_links(tmp_path: Path, monke
             "product",
             "--summary",
             "Strict boundary draft.",
+            "--component",
+            "StrictBoundary::Strict boundary owner for link requirement proof.",
             "--require-links",
         ]
     )

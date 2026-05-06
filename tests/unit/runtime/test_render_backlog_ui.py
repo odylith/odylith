@@ -543,8 +543,9 @@ def test_render_backlog_ui_includes_release_filters_summary_cards_and_release_ch
     assert 'if (state.release !== "all" && workstreamActiveReleaseId(row) !== state.release) return false;' in html
     assert "seedSelect(\n      el.release," in html
     assert "Active target release for this workstream." in html
-    assert 'const nameLabel = String(release.effective_name || release.name || "").trim();' in html
-    assert 'const versionLabel = String(release.version || release.display_label || "").trim();' in html
+    assert 'const text = String(release.version || release.display_label || release.tag || release.effective_name || release.name || release.release_id || "").trim().replace(/\\s+/g, " ");' in html
+    assert 'const match = /\\bv?(\\d+(?:\\.\\d+){1,3})\\b/i.exec(text);' in html
+    assert "return text.length > 18 ?" in html
     assert 'escapeHtml(workstreamActiveReleaseLabel(row))' in html
     assert "Release ${workstreamActiveReleaseLabel(row)}" not in html
     assert "function releaseCardLabel(row)" in html

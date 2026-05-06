@@ -49,7 +49,9 @@ def _current_release_label() -> str:
     payload = json.loads((_REPO_ROOT / "odylith" / "radar" / "traceability-graph.v1.json").read_text(encoding="utf-8"))
     current = payload.get("current_release")
     if isinstance(current, dict):
-        label = str(current.get("display_label") or current.get("version") or "").strip()
+        label = str(current.get("version") or current.get("tag") or current.get("display_label") or "").strip()
+        if label.startswith("v") and len(label) > 1 and label[1].isdigit():
+            label = label[1:]
         if label:
             return label
     return "current"

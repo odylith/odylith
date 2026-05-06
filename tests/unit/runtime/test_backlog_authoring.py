@@ -53,6 +53,10 @@ def _grounded_backlog_args() -> list[str]:
         "Backlog records should read like product truth, not a title template.",
         "--success-metrics",
         "- The workstream renders with real detail.\n- The backlog contract stays valid.",
+        "--domain-risk",
+        "Domain and compliance risk is scoped to Radar truth quality and low operational blast radius.",
+        "--security-posture",
+        "Security posture: no credentials or runtime access change; agent-assisted risk is ungrounded governance memory.",
     ]
 
 
@@ -718,6 +722,10 @@ def test_backlog_create_rejects_boilerplate_core_detail(tmp_path: Path, capsys) 
             "If the team is already acting as if this work exists, the backlog should say so explicitly.",
             "--success-metrics",
             "- The workstream is specific enough to guide implementation and validation without further backlog surgery.",
+            "--domain-risk",
+            "Domain and compliance risk is intentionally present so this test reaches boilerplate validation.",
+            "--security-posture",
+            "Security posture: no credentials change; this test isolates boilerplate governance truth.",
         ]
     )
     output = capsys.readouterr().out

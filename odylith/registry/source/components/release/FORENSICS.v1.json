@@ -46,18 +46,18 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/radar/source/releases/release-assignment-events.v1.jsonl"
+        "odylith/radar/source/releases/releases.v1.json"
       ],
       "confidence": "high",
-      "event_index": 461,
+      "event_index": 469,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "release"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/releases/release-assignment-events.v1.jsonl",
-      "ts_iso": "2026-05-05T19:07:27-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/releases/releases.v1.json",
+      "ts_iso": "2026-05-05T21:17:16-07:00",
       "workstreams": []
     },
     {

@@ -2274,7 +2274,7 @@ def governance_kpi_label_value_css(
   font-size: {int(value_size_px)}px;
   line-height: {float(value_line_height):g};
   letter-spacing: {float(value_letter_spacing_em):g}em;
-  font-weight: {int(value_weight)};
+  font-weight: {int(value_weight)}; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }}
 """.strip()
 

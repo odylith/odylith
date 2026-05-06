@@ -173,6 +173,9 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert '<div class="ws-links">' not in workstreams_js
     assert '<div class="ws-id-stack"><a class="ws-id-btn"' in workstreams_js
     assert "function compassWorkstreamReleaseLabel(release)" in workstreams_js
+    assert "function compactCompassWorkstreamReleaseTargetLabel(value)" in workstreams_js
+    assert "compactCompassWorkstreamReleaseTargetLabel(row.version)" in workstreams_js
+    assert "compactCompassWorkstreamReleaseTargetLabel(row.name)" in workstreams_js
     assert "function compassGovernanceRepresentedWorkstreamIds(payload)" in workstreams_js
     assert "executionWavePrograms(payload).forEach((program) => {" in workstreams_js
     assert "addWorkstreamRefList(release && release.active_workstreams);" in workstreams_js
@@ -306,6 +309,8 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert expected_stats_grid_css in base_css
     assert expected_stat_card_css in base_css
     assert expected_stat_typography_css in base_css
+    assert "text-overflow: ellipsis;" in expected_stat_typography_css
+    assert "white-space: nowrap;" in expected_stat_typography_css
     assert expected_card_surface_css in base_css
     assert ".card.release-groups-card .execution-wave-board {" not in base_css
     assert ".stat.stat-release-only {" not in base_css
@@ -435,10 +440,15 @@ def test_summary_and_timeline_assets_preserve_risk_and_component_spec_context() 
     assert 'rows.push(["Active Waves"' not in summary_js
     assert 'rows.push(["Next Release", nextReleaseLabel]);' not in summary_js
     assert 'rows.push([null, currentReleaseLabel, "stat-release-only"])' not in summary_js
-    assert 'const nameLabel = String(releaseRow.name || "").trim();' in summary_js
+    assert "function compactReleaseTargetLabel(value)" in summary_js
     assert 'const versionLabel = String(releaseRow.version || "").trim();' in summary_js
     assert 'const tagLabel = String(releaseRow.tag || "").trim();' in summary_js
-    assert 'return /^v\\d/.test(tagLabel) ? tagLabel.slice(1) : tagLabel;' in summary_js
+    assert "if (versionLabel) return compactReleaseTargetLabel(versionLabel);" in summary_js
+    assert "if (tagLabel) return compactReleaseTargetLabel(tagLabel);" in summary_js
+    assert 'const nameLabel = String(releaseRow.name || "").trim();' in summary_js
+    assert "if (nameLabel) return compactReleaseTargetLabel(nameLabel);" in summary_js
+    assert '<p class="kpi-value" title="${escapeHtml(value)}">${escapeHtml(value)}</p>' in summary_js
+    assert 'return /^v\\d/.test(tagLabel) ? tagLabel.slice(1) : tagLabel;' not in summary_js
     assert 'return versionLabel.startsWith("v") ? versionLabel : `v${versionLabel}`;' not in summary_js
     assert 'consumerTruthRoots().component_specs' in timeline_js
     assert 'consumerTruthRoots().runbooks' in timeline_js

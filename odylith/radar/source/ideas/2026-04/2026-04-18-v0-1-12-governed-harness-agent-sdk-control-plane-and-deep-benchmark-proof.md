@@ -1,65 +1,36 @@
+---
 status: queued
-
 idea_id: B-118
-
 title: v0.1.14 Governed Harness: Agent SDK Control Plane And Deep Benchmark Proof
-
 date: 2026-04-18
-
 priority: P0
-
 commercial_value: 5
-
 product_impact: 5
-
 market_value: 5
-
 impacted_parts: Radar backlog, Benchmark, Context Engine, Execution Engine, Proof State, Compass, Casebook, Registry, Atlas, OpenAI Agents SDK adapter strategy
-
 sizing: XL
-
 complexity: High
-
 ordering_score: 83
-
 ordering_rationale: Queued through `odylith backlog create` from the current maintainer lane.
-
 confidence: high
-
 founder_override: no
-
 promoted_to_plan: 
-
-execution_model: standard
-
-workstream_type: standalone
-
+execution_model: umbrella_waves
+workstream_type: umbrella
 workstream_parent: 
-
-workstream_children: 
-
+workstream_children: B-119, B-120, B-121, B-122, B-123, B-124, B-125
 workstream_depends_on: 
-
 workstream_blocks: 
-
-related_diagram_ids: 
-
+related_diagram_ids: D-044
 workstream_reopens: 
-
 workstream_reopened_by: 
-
 workstream_split_from: 
-
 workstream_split_into: 
-
 workstream_merged_into: 
-
 workstream_merged_from: 
-
 supersedes: 
-
 superseded_by: 
-
+---
 ## Problem
 Agent harnesses now provide execution primitives such as tools, approvals, guardrails, tracing, resumability, and sandboxed runs, but repos still need durable engineering judgment about the correct slice, component boundaries, admissible moves, proof obligations, bug memory, and artifacts that survive across sessions. Odylith needs a active v0.1.14 strategy that captures this Governed Harness direction without disturbing the active v0.1.11 release lane.
 
@@ -101,6 +72,7 @@ This slice is active enough that it should exist as explicit backlog truth now.
 Agents SDK gives the harness. Odylith gives that harness durable repo judgment: the right context packet, workstream state, component boundaries, bug memory, admissible next moves, proof requirements, and governed artifacts. The v0.1.14 lane stays product-path-first and release-gated by Turn Gate receipt proof.
 
 ## Impacted Components
+- `governed-harness`
 - `odylith`
 
 ## Interface Changes

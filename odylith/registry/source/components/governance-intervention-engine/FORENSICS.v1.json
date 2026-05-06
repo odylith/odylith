@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 144,
-    "mapped_workstream_evidence_count": 115,
-    "recent_path_match_count": 0,
+    "explicit_event_count": 146,
+    "mapped_workstream_evidence_count": 116,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 31,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 144
+    "timeline_event_count": 147
   },
   "name": "Governance Intervention Engine",
   "path_prefixes": [
@@ -43,6 +43,69 @@
   ],
   "spec_ref": "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 459,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Why it matters: Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
+      "ts_iso": "2026-05-06T20:09:28Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 461,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Hardened greenfield and routine governed artifact writes with zero-provider Tribunal posture gates; captured CB-175 and verified targeted tests plus sync check.",
+      "ts_iso": "2026-05-06T13:38:08-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/apply.py"
+      ],
+      "confidence": "high",
+      "event_index": 463,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "governance-intervention-engine"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/intervention_engine/apply.py",
+      "ts_iso": "2026-05-06T13:30:41-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",

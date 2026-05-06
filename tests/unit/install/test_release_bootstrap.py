@@ -372,7 +372,7 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert '"ODYLITH_REASONING_CODEX_BIN=/usr/bin/false"' in text
     assert '"ODYLITH_REASONING_CLAUDE_BIN=/usr/bin/false"' in text
     assert '"ODYLITH_COMPASS_STANDUP_BACKGROUND_DISABLE=1"' in text
-    assert '"ODYLITH_NO_BROWSER=1"' in text
+    assert '"ODYLITH_NO_BROWSER=1"' not in text
     assert 'rm -rf "$migration_state_dir"' in text
     assert 'env "${install_child_env[@]}" ODYLITH_INSTALL_PREVIOUS_ACTIVE_VERSION="$previous_active_version" ODYLITH_INSTALL_COMPACT=1 ODYLITH_BOOTSTRAP_RUNTIME_PRESTAGED=1 "$version_root/bin/python" -m odylith.cli install' in text
     assert 'say "done   Install finished."' in text

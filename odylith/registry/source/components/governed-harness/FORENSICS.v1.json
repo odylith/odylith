@@ -1,14 +1,16 @@
 {
   "component_id": "governed-harness",
-  "diagrams": [],
+  "diagrams": [
+    "D-044"
+  ],
   "forensic_coverage": {
     "empty_reasons": [],
     "explicit_event_count": 1,
     "mapped_workstream_evidence_count": 1,
-    "recent_path_match_count": 0,
-    "spec_history_event_count": 1,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 2,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 1
+    "timeline_event_count": 2
   },
   "name": "Governed Harness",
   "path_prefixes": [
@@ -16,6 +18,22 @@
   ],
   "spec_ref": "odylith/registry/source/components/governed-harness/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/governed-harness/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 464,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "governed-harness"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/governed-harness/CURRENT_SPEC.md",
+      "ts_iso": "2026-05-05T21:52:41-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "AGENTS.md"
@@ -196,6 +214,8 @@
   "why_tracked": "Owns the shared product path that prevents benchmark-only closure behavior: benchmarks, hooks, SDK adapters, and host surfaces must observe the same governed decision and receipt contract.",
   "workstreams": [
     "B-118",
+    "B-119",
+    "B-120",
     "B-121",
     "B-122",
     "B-123",

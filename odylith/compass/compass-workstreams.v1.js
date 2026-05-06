@@ -20,11 +20,28 @@
         .filter((token) => /^D-\d{3,}$/.test(token));
     }
 
+    const COMPASS_WORKSTREAM_RELEASE_TARGET_VERSION_RE = /\bv?(\d+(?:\.\d+){1,3})\b/i;
+    const MAX_COMPASS_WORKSTREAM_RELEASE_TARGET_LABEL_CHARS = 18;
+
+    function compactCompassWorkstreamReleaseTargetLabel(value) {
+      const text = String(value || "").trim().replace(/\s+/g, " ");
+      const match = COMPASS_WORKSTREAM_RELEASE_TARGET_VERSION_RE.exec(text);
+      if (match && match[1]) return match[1];
+      if (text.length <= MAX_COMPASS_WORKSTREAM_RELEASE_TARGET_LABEL_CHARS) return text;
+      return `${text.slice(0, MAX_COMPASS_WORKSTREAM_RELEASE_TARGET_LABEL_CHARS - 3).trimEnd()}...`;
+    }
+
     function compassWorkstreamReleaseLabel(release) {
       const row = release && typeof release === "object" ? release : {};
-      const nameLabel = String(row.name || row.version || row.tag || row.display_label || row.effective_name || "").trim();
+      const nameLabel = (
+        compactCompassWorkstreamReleaseTargetLabel(row.version) ||
+        compactCompassWorkstreamReleaseTargetLabel(row.tag) ||
+        compactCompassWorkstreamReleaseTargetLabel(row.display_label) ||
+        compactCompassWorkstreamReleaseTargetLabel(row.effective_name) ||
+        compactCompassWorkstreamReleaseTargetLabel(row.name)
+      );
       if (nameLabel) return nameLabel;
-      return String(row.release_id || "").trim();
+      return compactCompassWorkstreamReleaseTargetLabel(row.release_id);
     }
 
     function numericProgressOrNull(value) {

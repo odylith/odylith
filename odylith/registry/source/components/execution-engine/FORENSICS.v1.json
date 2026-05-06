@@ -6,6 +6,7 @@
     "D-031",
     "D-038",
     "D-039",
+    "D-044",
     "D-018",
     "D-020",
     "D-037",
@@ -14,12 +15,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 125,
+    "explicit_event_count": 126,
     "mapped_workstream_evidence_count": 117,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 125
+    "timeline_event_count": 126
   },
   "name": "Execution Engine",
   "path_prefixes": [
@@ -27,6 +28,34 @@
   ],
   "spec_ref": "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
+        "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+      ],
+      "confidence": "high",
+      "event_index": 460,
+      "explicit_components": [
+        "atlas",
+        "domain-intelligence",
+        "execution-engine",
+        "odylith-context-engine",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "domain-intelligence",
+        "execution-engine",
+        "odylith-context-engine",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Hardened greenfield engine alignment: exact code-path context now carries Registry owner into the Execution Engine handshake, greenfield proposal requests expose all activation layers, CB-174 captured, and sync check-only passes after Registry/Atlas refresh.",
+      "ts_iso": "2026-05-06T13:14:35-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",

@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Sequence
 
+from odylith.runtime.governance import artifact_tribunal
 from odylith.runtime.governance import owned_surface_refresh
 
 _REGISTRY_PATH_RELATIVE = Path("odylith/registry/source/component_registry.v1.json")
@@ -32,15 +33,19 @@ class CreatedComponent:
     path: str
     registry_path: Path
     spec_path: Path
+    tribunal: dict[str, Any] | None = None
 
     def as_dict(self) -> dict[str, Any]:
-        return {
+        payload = {
             "component_id": self.component_id,
             "label": self.label,
             "path": self.path,
             "registry_path": str(self.registry_path),
             "spec_path": str(self.spec_path),
         }
+        if self.tribunal is not None:
+            payload["tribunal"] = self.tribunal
+        return payload
 
 
 def _load_registry(registry_path: Path) -> dict[str, Any]:
@@ -73,6 +78,12 @@ def _sentence_fragment(value: str) -> str:
 def _bullet_lines(values: Sequence[str]) -> str:
     lines = [str(item).strip().rstrip(".") for item in values if str(item).strip()]
     return "\n".join(f"- {line}." for line in lines)
+
+
+def _clean_sequence(values: Sequence[str] | str) -> tuple[str, ...]:
+    if isinstance(values, str):
+        return (values.strip(),) if values.strip() else ()
+    return tuple(str(item).strip() for item in values if str(item).strip())
 
 
 def _build_registry_entry(
@@ -251,6 +262,13 @@ def register_component(
     registry = _load_registry(registry_path)
     if _component_exists(registry, component_id):
         raise ValueError(f"Component `{component_id}` already exists in the registry")
+    sources = _clean_sequence(sources) or ("manifest",)
+    workstreams = _clean_sequence(workstreams)
+    diagrams = _clean_sequence(diagrams)
+    dependencies = _clean_sequence(dependencies)
+    interfaces = _clean_sequence(interfaces)
+    validation = _clean_sequence(validation)
+    risks = _clean_sequence(risks)
 
     entry = _build_registry_entry(
         component_id=component_id,
@@ -262,9 +280,9 @@ def register_component(
         owner=str(owner).strip() or "product",
         status=str(status).strip() or "active",
         product_layer=str(product_layer).strip() or "cli_bootstrap",
-        sources=tuple(str(item).strip() for item in sources if str(item).strip()) or ("manifest",),
-        workstreams=tuple(str(item).strip() for item in workstreams if str(item).strip()),
-        diagrams=tuple(str(item).strip() for item in diagrams if str(item).strip()),
+        sources=sources,
+        workstreams=workstreams,
+        diagrams=diagrams,
         responsibility=str(responsibility).strip(),
     )
 
@@ -282,16 +300,32 @@ def register_component(
         path=path,
         kind=kind,
         status=str(status).strip() or "active",
-        sources=tuple(str(item).strip() for item in sources if str(item).strip()) or ("manifest",),
-        workstreams=tuple(str(item).strip() for item in workstreams if str(item).strip()),
-        diagrams=tuple(str(item).strip() for item in diagrams if str(item).strip()),
+        sources=sources,
+        workstreams=workstreams,
+        diagrams=diagrams,
         responsibility=str(responsibility).strip(),
         boundary=str(boundary).strip(),
-        dependencies=tuple(str(item).strip() for item in dependencies if str(item).strip()),
-        interfaces=tuple(str(item).strip() for item in interfaces if str(item).strip()),
-        validation=tuple(str(item).strip() for item in validation if str(item).strip()),
-        risks=tuple(str(item).strip() for item in risks if str(item).strip()),
+        dependencies=dependencies,
+        interfaces=interfaces,
+        validation=validation,
+        risks=risks,
     )
+    tribunal = artifact_tribunal.run_governed_artifact_tribunal(
+        artifact_kind="component",
+        payload={
+            "component_id": component_id,
+            "label": label,
+            "path": path,
+            "kind": kind,
+            "responsibility": responsibility,
+            "boundary": boundary,
+            "interfaces": interfaces,
+            "dependencies": dependencies,
+            "validation": validation,
+            "risks": risks,
+        },
+    )
+    artifact_tribunal.raise_for_failed_artifact_tribunal(tribunal)
 
     if not dry_run:
         registry_path.parent.mkdir(parents=True, exist_ok=True)
@@ -314,6 +348,7 @@ def register_component(
         path=path,
         registry_path=registry_path,
         spec_path=spec_path,
+        tribunal=tribunal.to_dict(),
     )
 
 
@@ -335,6 +370,12 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--source", action="append", default=[], dest="sources", help="Evidence source token; repeatable.")
     parser.add_argument("--workstream", action="append", default=[], help="Related workstream id; repeatable.")
     parser.add_argument("--diagram", action="append", default=[], help="Related diagram id; repeatable.")
+    parser.add_argument("--responsibility", required=True, help="Concrete responsibility and ownership summary.")
+    parser.add_argument("--boundary", required=True, help="Runtime, data, or governance boundary this component owns.")
+    parser.add_argument("--dependency", action="append", default=[], required=True, help="Dependency expectation; repeatable.")
+    parser.add_argument("--interface", action="append", default=[], required=True, dest="interfaces", help="Interface contract; repeatable.")
+    parser.add_argument("--validation", action="append", default=[], required=True, help="Proof expectation; repeatable.")
+    parser.add_argument("--risk", action="append", default=[], required=True, dest="risks", help="Domain/security/compliance risk posture; repeatable.")
     parser.add_argument("--dry-run", action="store_true", help="Preview without writing files.")
     parser.add_argument("--json", action="store_true", dest="as_json", help="Output as JSON.")
     return parser.parse_args(argv)
@@ -363,6 +404,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             sources=tuple(args.sources) if args.sources else ("manifest",),
             workstreams=tuple(args.workstream),
             diagrams=tuple(args.diagram),
+            responsibility=str(args.responsibility).strip(),
+            boundary=str(args.boundary).strip(),
+            dependencies=tuple(args.dependency),
+            interfaces=tuple(args.interfaces),
+            validation=tuple(args.validation),
+            risks=tuple(args.risks),
             dry_run=bool(args.dry_run),
         )
     except (ValueError, RuntimeError) as exc:
@@ -391,6 +438,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"  component_id: {result.component_id}")
         print(f"  label: {result.label}")
         print(f"  path: {result.path}")
+        print(f"  tribunal: {(result.tribunal or {}).get('status', 'unknown')}")
         print(f"  registry: {result.registry_path}")
         print(f"  spec: {result.spec_path}")
         owned_surface_refresh.print_dashboard_handoff(

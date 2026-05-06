@@ -65,7 +65,10 @@ def _bug_capture_kwargs(**overrides: object) -> dict[str, object]:
         "blast_radius": "Casebook bug truth, shared agent guidance, and automated casebook-create paths.",
         "slo_sla_impact": "Maintainer release-proof confidence drops because Casebook truth is visibly ungrounded.",
         "data_risk": "Low product-data risk, high governed-memory trust risk.",
-        "security_compliance": "None directly.",
+        "security_compliance": (
+            "Security/compliance posture: no credentials or regulated user data are exposed directly; "
+            "policy risk is untrusted AI-agent evidence entering durable Casebook memory."
+        ),
         "invariant_violated": "A newly captured bug must not publish placeholder evidence as authoritative Casebook truth.",
     }
     payload.update(overrides)
@@ -267,6 +270,8 @@ def test_backlog_create_help_forwards_backend_flags(capsys) -> None:
     assert "--opportunity" in output
     assert "--product-view" in output
     assert "--success-metrics" in output
+    assert "--domain-risk" in output
+    assert "--security-posture" in output
     assert "--priority" in output
     assert "--sizing {XS,S,M,L,XL}" in output
     assert "--complexity {Low,Medium,High,VeryHigh}" in output
@@ -368,6 +373,8 @@ def test_component_register_help_forwards_backend_flags(capsys) -> None:
     assert "--path" in output
     assert "--label" in output
     assert "--kind" in output
+    assert "--responsibility" in output
+    assert "--risk" in output
 
 
 def test_atlas_scaffold_help_forwards_backend_flags(capsys) -> None:

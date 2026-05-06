@@ -733,6 +733,31 @@ def _related_entities(
                 }
             )
 
+    def _add_path_owner_components() -> None:
+        kind = str(entity.get("kind", "")).strip()
+        if kind not in {"code", "doc", "runbook"}:
+            return
+        path_ref = str(entity.get("path") or entity.get("entity_id") or "").strip()
+        if not path_ref:
+            return
+        for row in connection.execute("SELECT * FROM components").fetchall():
+            metadata = context_engine_store._json_dict(row.get("metadata_json"))
+            path_prefixes = (
+                [str(token).strip() for token in metadata.get("path_prefixes", []) if str(token).strip()]
+                if isinstance(metadata, context_engine_store.Mapping)
+                else []
+            )
+            candidates = [str(row.get("spec_ref", "")).strip(), *path_prefixes]
+            if any(
+                context_engine_store._normalized_path_match_type(
+                    changed_path=path_ref,
+                    target_path=candidate,
+                )
+                for candidate in candidates
+                if candidate
+            ):
+                _add(context_engine_store._summarize_entity(_entity_from_row(kind="component", row=row)))
+
     for row in relations:
         direction = str(row.get("direction", "")).strip()
         if direction == "outgoing":
@@ -766,6 +791,8 @@ def _related_entities(
     elif kind == "bug":
         for component_id in entity.get("components", []) if isinstance(entity.get("components"), list) else []:
             _add_kind_id("component", component_id.lower())
+
+    _add_path_owner_components()
 
     return {
         kind_name: [bucket[key] for key in sorted(bucket)]

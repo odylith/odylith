@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import build_traceability_graph
 from odylith.runtime.governance import release_planning_view_model
@@ -69,6 +70,11 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
         "risks": [
             "Combining cart, payment, and order state would hide failure recovery.",
         ],
+        "security_compliance": {
+            "domain": "Ecommerce checkout domain with payment sandbox, order, inventory, and shopper data risk.",
+            "security": "Security posture covers payment handoff, session access, retry abuse, and idempotent order recovery.",
+            "policy": "Compliance posture keeps PCI/provider policy, privacy, auditability, and accessibility explicit before production payment claims.",
+        },
         "validation_strategy": [
             "Checkout happy path and payment failure recovery must both pass.",
             "Order creation must be idempotent under retry and webhook replay.",
@@ -323,6 +329,261 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
     }
 
 
+def _host_reasoned_recipe_legacy_shape() -> dict[str, object]:
+    return {
+        "schema_version": 1,
+        "mode": "greenfield",
+        "intent": {
+            "title": "Recipe-sharing app",
+            "summary": "A web app where home cooks publish, browse, and search recipes.",
+        },
+        "observed_source": {"evidence_tier": "docs_only", "notes": "Empty repo."},
+        "assumptions": ["Web-first delivery.", "Relational data store."],
+        "open_questions": ["Which runtime should own the first implementation?"],
+        "risks": ["Photo upload can expand scope if it is pulled into the first release."],
+        "security_compliance": {
+            "domain": "Recipe-sharing consumer app with account, recipe visibility, comments, and user-generated content policy risk.",
+            "security": "Security posture covers auth sessions, ownership checks, private edits, abuse prevention, and moderation hooks.",
+            "policy": "Privacy, public publishing, data retention, accessibility, and moderation policy must be explicit before implementation.",
+        },
+        "validation_strategy": {
+            "release_gate": ["Golden path from sign-up to recipe detail must pass."],
+        },
+        "program": {
+            "waves": [
+                {
+                    "id": "W1",
+                    "title": "Core authoring and browsing",
+                    "goal": "Ship account, authoring, browsing, and shared UI shell.",
+                    "release": "0.0.1",
+                    "workstreams": ["WS-01", "WS-02", "WS-03"],
+                },
+                {
+                    "id": "W2",
+                    "title": "Social layer",
+                    "goal": "Add favorites and comments after the first release is stable.",
+                    "release": "0.1.0",
+                    "workstreams": ["WS-04"],
+                },
+            ]
+        },
+        "release_plan": [
+            {
+                "release": "0.0.1",
+                "label": "Recipe-sharing 0.0.1",
+                "first_target_workstreams": ["WS-01", "WS-02", "WS-03"],
+                "exit_criteria": "Golden-path browser E2E, HTTP contract tests, and Atlas render proof all pass.",
+            },
+            {
+                "release": "0.1.0",
+                "label": "Social layer",
+                "first_target_workstreams": ["WS-04"],
+                "exit_criteria": "Favorite and comment flows pass with moderation hooks.",
+            },
+        ],
+        "backlog": [
+            {
+                "id": "WS-00",
+                "title": "Recipe-sharing app program",
+                "problem": "The repo has no confirmed program, release target, component boundaries, topology, or proof gates.",
+                "customer": "Cooks",
+                "opportunity": "Create a governed recipe-sharing plan with explicit first release behavior and proof.",
+                "product_view": "A browser app where cooks can sign in, publish recipes, browse, and search.",
+                "recommended_first_slice": "Create the first governed release lane for accounts, recipe authoring, browsing, and UI shell.",
+                "success_metrics": [
+                    "First release target includes the wave-one workstreams.",
+                    "Registry and Atlas records are linked to the created workstreams.",
+                ],
+            },
+            {
+                "id": "WS-01",
+                "title": "Accounts and sessions",
+                "problem": "Recipes need an owner before authoring and private edits can be governed.",
+                "customer": "Cooks",
+                "opportunity": "Account sessions create the ownership claim used by every recipe write.",
+                "product_view": "Users can sign up, sign in, sign out, and reach protected routes.",
+                "first_slice_proof": "Sign-up, sign-in, sign-out, and protected-route access work in browser and contract tests.",
+                "success_metrics": [
+                    "Authentication contract tests pass for sign-up, sign-in, sign-out, and current-user endpoints.",
+                    "Protected route returns 401 without a session and 200 with a valid session.",
+                ],
+                "component_focus": ["AccountService", "WebUI"],
+                "related_diagram_slugs": ["system-context", "auth-sequence"],
+                "dependencies": ["Relational user and session tables."],
+                "interfaces": ["HTTP /auth/sign-up, /auth/sign-in, /auth/sign-out, and /auth/me."],
+                "validation": ["Browser sign-up to protected route passes."],
+            },
+            {
+                "id": "WS-02",
+                "title": "Recipe authoring CRUD",
+                "problem": "Signed-in cooks need a safe way to create and edit their own recipes.",
+                "customer": "Cooks",
+                "opportunity": "Recipe authoring gives the product its durable content spine.",
+                "product_view": "Authenticated CRUD over recipes with ingredients, steps, and tags.",
+                "first_slice_proof": "A signed-in user creates, edits, and deletes only their own recipe.",
+                "success_metrics": [
+                    "Recipe CRUD contract tests pass for create, read, update, and delete.",
+                    "Cross-user edit and delete attempts return 403.",
+                ],
+                "component_focus": ["RecipeStore", "AccountService", "WebUI"],
+                "related_diagram_slugs": ["system-context", "recipe-domain-er"],
+                "dependencies": ["Accounts and sessions must provide ownership claims."],
+                "interfaces": ["HTTP /recipes and /recipes/{id} CRUD endpoints."],
+                "validation": ["Ownership and CRUD tests pass."],
+            },
+            {
+                "id": "WS-03",
+                "title": "Recipe browsing and search",
+                "problem": "Anonymous visitors need a way to discover recipes that have been published.",
+                "customer": "Readers",
+                "opportunity": "Browsing and title search make the first release useful without social features.",
+                "product_view": "Anonymous list, detail, pagination, and title-substring search over recipes.",
+                "first_slice_proof": "Visitor searches by title and opens a recipe detail page.",
+                "success_metrics": [
+                    "List, detail, pagination, and search contract tests pass.",
+                    "Browser search-to-detail flow passes with seeded data.",
+                ],
+                "component_focus": ["RecipeStore", "WebUI"],
+                "related_diagram_slugs": ["system-context", "recipe-domain-er"],
+                "dependencies": ["Recipe authoring seeds published recipe data."],
+                "interfaces": ["HTTP /recipes list and search plus /recipes/{id} detail."],
+                "validation": ["Browser search-to-detail flow passes."],
+            },
+            {
+                "id": "WS-04",
+                "title": "Favorites and comments",
+                "problem": "The product needs social signals after the first release is stable.",
+                "customer": "Cooks",
+                "opportunity": "Favorites and comments create lightweight engagement without disrupting release 0.0.1.",
+                "product_view": "Users favorite recipes and comment with moderation hooks.",
+                "first_slice_proof": "A user favorites a recipe and comments on it.",
+                "success_metrics": [
+                    "Favorite contract tests pass.",
+                    "Comment moderation smoke test passes.",
+                ],
+                "component_focus": ["SocialGraph", "WebUI"],
+                "related_diagram_slugs": ["system-context"],
+                "dependencies": ["Accounts, recipes, and browsing are already live."],
+                "interfaces": ["HTTP /favorites and /comments endpoints."],
+                "validation": ["Favorite and comment browser path passes."],
+            },
+        ],
+        "components": [
+            {
+                "id": "AccountService",
+                "label": "AccountService",
+                "kind": "service",
+                "intended_path": "src/services/account_service",
+                "qualification": "greenfield",
+                "status": "planned",
+                "responsibility": "Own identity, credentials, sessions, and ownership claims for recipe writes.",
+                "boundary": "Identity, credentials, sessions, and user ownership claims only.",
+                "interfaces": ["HTTP /auth endpoints and internal session validation."],
+                "dependencies": ["Relational data store and password hashing library."],
+                "proof_expectations": ["Auth contract tests and session expiry tests pass."],
+            },
+            {
+                "id": "RecipeStore",
+                "label": "RecipeStore",
+                "kind": "service",
+                "intended_path": "src/services/recipe_store",
+                "qualification": "greenfield",
+                "status": "planned",
+                "responsibility": "Own recipe persistence, ownership enforcement, ingredients, steps, and tags.",
+                "boundary": "Recipe CRUD, child recipe rows, and ownership-scoped writes.",
+                "interfaces": ["HTTP /recipes CRUD and read interfaces."],
+                "dependencies": ["AccountService ownership claims and relational data store."],
+                "proof_expectations": ["CRUD, ownership, and schema migration tests pass."],
+            },
+            {
+                "id": "WebUI",
+                "label": "WebUI",
+                "kind": "ui",
+                "intended_path": "src/web/ui",
+                "qualification": "greenfield",
+                "status": "planned",
+                "responsibility": "Own browser routes, forms, navigation, error states, and empty states.",
+                "boundary": "Browser rendering and form interaction only; no persistence ownership.",
+                "interfaces": ["Browser routes for auth, recipes, search, and future social flows."],
+                "dependencies": ["AccountService and RecipeStore HTTP interfaces."],
+                "proof_expectations": ["Headless browser normal, empty, and error state matrix passes."],
+            },
+            {
+                "id": "SocialGraph",
+                "label": "SocialGraph",
+                "kind": "service",
+                "intended_path": "src/services/social_graph",
+                "qualification": "greenfield",
+                "status": "planned",
+                "responsibility": "Own favorites, comments, social engagement state, and moderation hooks.",
+                "boundary": "Social edges, comments, and moderation records only.",
+                "interfaces": ["HTTP /favorites and /comments endpoints."],
+                "dependencies": ["AccountService users and RecipeStore recipe identifiers."],
+                "proof_expectations": ["Favorite, comment, and moderation hook tests pass."],
+            },
+        ],
+        "diagrams": [
+            {
+                "slug": "system-context",
+                "title": "Recipe system context",
+                "type": "flowchart",
+                "summary": "Top-level flow between browser, services, and data store.",
+                "related_workstreams": ["WS-01", "WS-02", "WS-03", "WS-04"],
+                "related_components": ["AccountService", "RecipeStore", "WebUI", "SocialGraph"],
+                "mermaid_source": (
+                    "flowchart LR\n"
+                    "  User[Home cook<br/>browser] --> WebUI[WebUI<br/>routes]\n"
+                    "  WebUI --> Account[AccountService<br/>sessions]\n"
+                    "  WebUI --> Store[RecipeStore<br/>recipe CRUD]\n"
+                    "  WebUI --> Social[SocialGraph<br/>favorites]\n"
+                    "  Store --> DB[(Relational store)]\n"
+                    "  Account --> DB\n"
+                    "  Social --> DB\n"
+                    "  classDef actor fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b;\n"
+                    "  classDef service fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
+                    "  classDef data fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
+                    "  class User actor;\n"
+                    "  class WebUI,Account,Store,Social service;\n"
+                    "  class DB data;\n"
+                ),
+            },
+            {
+                "slug": "auth-sequence",
+                "title": "Authentication sequence",
+                "type": "sequenceDiagram",
+                "summary": "Sign-in path through browser, WebUI, AccountService, and data store.",
+                "related_workstreams": ["WS-01"],
+                "related_components": ["AccountService", "WebUI"],
+                "mermaid_source": (
+                    "sequenceDiagram\n"
+                    "  participant U as Browser\n"
+                    "  participant W as WebUI\n"
+                    "  participant A as AccountService\n"
+                    "  U->>W: POST /sign-in\n"
+                    "  W->>A: validate credentials\n"
+                    "  A-->>W: session token\n"
+                    "  W-->>U: Set-Cookie session; 302 /\n"
+                ),
+            },
+            {
+                "slug": "recipe-domain-er",
+                "title": "Recipe domain ER",
+                "type": "erDiagram",
+                "summary": "Recipe ownership and child rows for ingredients, steps, and tags.",
+                "related_workstreams": ["WS-02", "WS-03"],
+                "related_components": ["RecipeStore"],
+                "mermaid_source": (
+                    "erDiagram\n"
+                    "  USER ||--o{ RECIPE : authors\n"
+                    "  RECIPE ||--|{ INGREDIENT : has\n"
+                    "  RECIPE ||--|{ STEP : has\n"
+                    "  RECIPE }o--o{ TAG : tagged_with\n"
+                ),
+            },
+        ],
+    }
+
+
 def test_greenfield_prompt_returns_host_reasoning_contract(tmp_path) -> None:
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
@@ -341,15 +602,43 @@ def test_greenfield_prompt_returns_host_reasoning_contract(tmp_path) -> None:
     assert proposal["observed_source"]["source_posture"] == "empty_or_no_app_source"
     assert "do not use canned domain buckets" in proposal["host_instruction"]
     assert "backlog" in proposal["reasoning_contract"]["required_top_level_keys"]
+    assert "security_compliance" in proposal["reasoning_contract"]["required_top_level_keys"]
+    activation_layers = [
+        row["layer"]
+        for row in proposal["reasoning_contract"]["engine_activation_layers"]
+    ]
+    assert activation_layers == [
+        "context_engine",
+        "execution_engine",
+        "tribunal",
+        "intervention_engine",
+        "governance",
+        "subagent_orchestration",
+        "discipline",
+        "surface_dags",
+        "delivery",
+        "analysis",
+        "memory_substrate",
+        "topology",
+        "taxonomies_fsms",
+        "greenfield_domain_intelligence",
+        "overall_ux",
+    ]
     assert "mermaid_source" in " ".join(proposal["reasoning_contract"]["quality_bar"])
     quality_bar = " ".join(proposal["reasoning_contract"]["quality_bar"])
     assert "colors inside the diagram" in quality_bar
     assert "never rely on viewer background treatment" in quality_bar
     assert "Tribunal gate" in quality_bar
+    assert "Surface DAGs" in quality_bar
+    assert "security, privacy, abuse, accessibility" in quality_bar
     assert "--release 0.0.1" in proposal["apply_commands"][1]
-    assert "Default the first greenfield release target to 0.0.1" in " ".join(
+    assert "Default the first greenfield release target to exactly 0.0.1" in " ".join(
         proposal["reasoning_contract"]["quality_bar"]
     )
+    assert "do not add project names or descriptive words to release targets" in proposal["host_instruction"]
+    assert proposal["proposal_template"]["mode"] == "host_reasoned_greenfield_proposal"
+    assert proposal["proposal_template"]["release_plan"]["label"] == "0.0.1"
+    assert proposal["accepted_aliases"]["validation"] == ["proof_expectations", "test_strategy"]
 
 
 def test_greenfield_text_keeps_host_reasoning_and_no_write_boundary_visible(tmp_path, capsys) -> None:
@@ -370,6 +659,9 @@ def test_greenfield_text_keeps_host_reasoning_and_no_write_boundary_visible(tmp_
     assert "Evidence rules" in output
     assert "No files changed." in output
     assert "default_release_selector: 0.0.1" in output
+    assert "Canonical apply JSON shape" in output
+    assert "mode: host_reasoned_greenfield_proposal" in output
+    assert "release_plan.label: 0.0.1" in output
     assert "deterministic proposal Tribunal before writes" in output
     assert "Radar, Registry, Atlas, and Compass refresh" in output
 
@@ -392,6 +684,22 @@ def test_greenfield_cli_json_is_host_reasoning_contract(tmp_path, capsys) -> Non
     assert payload["mode"] == "host_reasoned_proposal_request"
     assert payload["classification"]["method"] == "open_world_host_reasoning"
     assert payload["provider_calls"] == 0
+    assert payload["proposal_template"]["mode"] == "host_reasoned_greenfield_proposal"
+    assert payload["proposal_template"]["release_plan"]["selector"] == "0.0.1"
+
+
+def test_greenfield_normalization_compacts_verbose_release_plan_label_to_selector() -> None:
+    proposal = greenfield_proposals.normalize_host_reasoned_proposal(_host_reasoned_recipe_legacy_shape())
+
+    assert proposal["release_plan"]["selector"] == "0.0.1"
+    assert proposal["release_plan"]["label"] == "0.0.1"
+
+
+def test_greenfield_release_target_label_extracts_numeric_selector_from_custom_text() -> None:
+    assert greenfield_proposals.greenfield_programs.compact_release_target_label("Recipe-sharing 0.0.1") == "0.0.1"
+    assert greenfield_proposals.greenfield_programs.compact_release_target_label("launch candidate release target") == (
+        "launch candidat..."
+    )
 
 
 def test_greenfield_atlas_sources_differ_by_host_reasoned_diagram_purpose() -> None:
@@ -552,6 +860,20 @@ def test_greenfield_apply_rejects_child_without_topology(tmp_path) -> None:
         )
 
 
+def test_greenfield_apply_rejects_missing_security_compliance_posture(tmp_path) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    proposal = _host_reasoned_ecommerce_proposal()
+    proposal.pop("security_compliance")
+
+    with pytest.raises(ValueError, match="security_compliance"):
+        greenfield_proposals.apply_greenfield_proposal(
+            repo_root=tmp_path,
+            proposal=proposal,
+            confirm=True,
+            release_selector="0.0.1",
+        )
+
+
 def test_greenfield_apply_rejects_component_without_ownership_contract(tmp_path) -> None:
     _seed_empty_governance_repo(tmp_path)
     proposal = _host_reasoned_ecommerce_proposal()
@@ -589,6 +911,8 @@ def test_greenfield_backlog_overrides_preserve_child_specific_sections() -> None
         opportunity="parent",
         product_view="parent",
         success_metrics="parent",
+        domain_risk="parent domain risk",
+        security_posture="parent security posture",
         priority="P1",
         sizing="M",
         complexity="Medium",
@@ -642,6 +966,7 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert result["release_bootstrap"]["created"] is True
     assert registry["aliases"]["0.0.1"] == "release-commerce-launch-first"
     assert registry["aliases"]["current"] == "release-commerce-launch-first"
+    assert registry["releases"][0]["name"] == "0.0.1"
     assert len(result["backlog"]) == 3
     assert len(result["components"]) == 3
     assert len(result["diagrams"]) == 2
@@ -667,6 +992,7 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert execution_program["waves"][1]["primary_workstreams"] == ["B-003"]
     assert result["release_bootstrap"]["release"]["version"] == "0.0.1"
     assert result["release_bootstrap"]["release"]["tag"] == "v0.0.1"
+    assert result["release_bootstrap"]["release"]["name"] == "0.0.1"
     assert result["release_target"]["workstream_ids"] == ["B-001", "B-002"]
     release_payload, release_errors, _release_state = release_planning_view_model.build_release_view_from_repo(
         repo_root=tmp_path,
@@ -674,6 +1000,7 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     )
     assert release_errors == []
     assert release_payload["current_release"]["release_id"] == "release-commerce-launch-first"
+    assert release_payload["current_release"]["display_label"] == "0.0.1"
     assert release_payload["current_release"]["active_workstreams"] == ["B-001", "B-002"]
     assert build_traceability_graph.main(["--repo-root", str(tmp_path)]) == 0
     traceability_graph = json.loads((tmp_path / "odylith/radar/traceability-graph.v1.json").read_text(encoding="utf-8"))
@@ -702,6 +1029,169 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert result["memory"]["recorded"] is True
     assert result["memory"]["event"]["source"] == "domain-intelligence"
     assert '"release_id": "release-commerce-launch-first"' in events
+
+
+def test_greenfield_apply_normalizes_common_host_authored_recipe_shape(tmp_path, monkeypatch) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+
+    result = greenfield_proposals.apply_greenfield_proposal(
+        repo_root=tmp_path,
+        proposal=_host_reasoned_recipe_legacy_shape(),
+        confirm=True,
+        release_selector="0.0.1",
+    )
+
+    component_registry = json.loads(
+        (tmp_path / "odylith/registry/source/component_registry.v1.json").read_text(encoding="utf-8")
+    )
+    atlas_catalog = json.loads((tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json").read_text(encoding="utf-8"))
+    assert result["tribunal"]["status"] == "passed"
+    assert len(result["backlog"]) == 5
+    assert result["program"]["waves"][0]["primary_workstreams"] == ["B-002", "B-003", "B-004"]
+    assert result["release_target"]["workstream_ids"] == ["B-001", "B-002", "B-003", "B-004"]
+    assert all(row["qualification"] == "candidate" for row in component_registry["components"])
+    assert (tmp_path / "odylith/atlas/source/recipe-sharing-app-system-context.mmd").is_file()
+    assert not (tmp_path / "odylith/atlas/source/system-context.mmd").exists()
+    auth_sequence = (tmp_path / "odylith/atlas/source/recipe-sharing-app-auth-sequence.mmd").read_text(
+        encoding="utf-8"
+    )
+    assert "Set-Cookie session and 302 /" in auth_sequence
+    assert "Set-Cookie session; 302 /" not in auth_sequence
+    assert {row["slug"] for row in atlas_catalog["diagrams"]} >= {
+        "recipe-sharing-app-system-context",
+        "recipe-sharing-app-auth-sequence",
+        "recipe-sharing-app-recipe-domain-er",
+    }
+
+
+def test_greenfield_apply_namespaces_partial_project_diagram_slugs_before_scaffold(tmp_path, monkeypatch) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    atlas_catalog_path = tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json"
+    atlas_catalog_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "odylith.diagrams.v1",
+                "diagrams": [{"diagram_id": "D-001", "slug": "recipe-domain-er"}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+
+    result = greenfield_proposals.apply_greenfield_proposal(
+        repo_root=tmp_path,
+        proposal=_host_reasoned_recipe_legacy_shape(),
+        confirm=True,
+        release_selector="0.0.1",
+    )
+
+    atlas_catalog = json.loads(atlas_catalog_path.read_text(encoding="utf-8"))
+    assert result["tribunal"]["status"] == "passed"
+    assert "recipe-domain-er" in {row["slug"] for row in atlas_catalog["diagrams"]}
+    assert "recipe-sharing-app-recipe-domain-er" in {row["slug"] for row in atlas_catalog["diagrams"]}
+    assert (tmp_path / "odylith/atlas/source/recipe-sharing-app-recipe-domain-er.mmd").is_file()
+
+
+def test_greenfield_apply_rolls_back_partial_writes_when_late_step_fails(tmp_path, monkeypatch) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    original_index = (tmp_path / "odylith/radar/source/INDEX.md").read_text(encoding="utf-8")
+
+    def fail_scaffold(**_kwargs: object) -> tuple[int, list[str]]:
+        return 1, ["FAILED: synthetic scaffold failure"]
+
+    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram, "scaffold_diagram", fail_scaffold)
+
+    with pytest.raises(RuntimeError, match="synthetic scaffold failure"):
+        greenfield_proposals.apply_greenfield_proposal(
+            repo_root=tmp_path,
+            proposal=_host_reasoned_ecommerce_proposal(),
+            confirm=True,
+            release_selector="0.0.1",
+        )
+
+    assert (tmp_path / "odylith/radar/source/INDEX.md").read_text(encoding="utf-8") == original_index
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
+    assert not (tmp_path / "odylith/radar/source/releases").exists()
+    assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
+    assert not (tmp_path / "odylith/atlas/source/commerce-launch-system-context.mmd").exists()
+
+
+def test_greenfield_apply_rolls_back_generated_surfaces_when_refresh_fails(tmp_path, monkeypatch) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    original_index = (tmp_path / "odylith/radar/source/INDEX.md").read_text(encoding="utf-8")
+
+    def fail_refreshes(**_kwargs: object) -> None:
+        _write(tmp_path / "odylith/radar/radar.html", "partial dashboard\n")
+        _write(tmp_path / "odylith/runtime/delivery_intelligence.v4.json", "{}\n")
+        raise RuntimeError("synthetic dashboard refresh failure")
+
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", fail_refreshes)
+    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+
+    with pytest.raises(RuntimeError, match="synthetic dashboard refresh failure"):
+        greenfield_proposals.apply_greenfield_proposal(
+            repo_root=tmp_path,
+            proposal=_host_reasoned_ecommerce_proposal(),
+            confirm=True,
+            release_selector="0.0.1",
+        )
+
+    assert (tmp_path / "odylith/radar/source/INDEX.md").read_text(encoding="utf-8") == original_index
+    assert not (tmp_path / "odylith/radar/radar.html").exists()
+    assert not (tmp_path / "odylith/runtime/delivery_intelligence.v4.json").exists()
+    assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
+    assert not (tmp_path / "odylith/atlas/source/commerce-launch-system-context.mmd").exists()
+
+
+def test_greenfield_transaction_restores_symlinked_snapshot_root_without_traversal(tmp_path) -> None:
+    external_radar = tmp_path / "external-radar"
+    external_radar.mkdir()
+    _write(external_radar / "outside.md", "external truth\n")
+    radar_link = tmp_path / "odylith/radar"
+    radar_link.parent.mkdir(parents=True)
+    try:
+        radar_link.symlink_to(external_radar, target_is_directory=True)
+    except OSError as exc:
+        pytest.skip(f"directory symlink unavailable: {exc}")
+
+    with pytest.raises(RuntimeError, match="synthetic failure"):
+        with GreenfieldApplyTransaction(tmp_path):
+            radar_link.unlink()
+            _write(tmp_path / "odylith/radar/partial.md", "partial write\n")
+            raise RuntimeError("synthetic failure")
+
+    assert radar_link.is_symlink()
+    assert radar_link.resolve() == external_radar.resolve()
+    assert (external_radar / "outside.md").read_text(encoding="utf-8") == "external truth\n"
+    assert not (tmp_path / "odylith/radar/partial.md").exists()
+
+
+def test_greenfield_transaction_restores_nested_symlink_without_copying_target(tmp_path) -> None:
+    radar_root = tmp_path / "odylith/radar"
+    radar_root.mkdir(parents=True)
+    outside_file = tmp_path / "outside.txt"
+    outside_file.write_text("outside\n", encoding="utf-8")
+    nested_link = radar_root / "linked.txt"
+    try:
+        nested_link.symlink_to(outside_file)
+    except OSError as exc:
+        pytest.skip(f"file symlink unavailable: {exc}")
+
+    with pytest.raises(RuntimeError, match="synthetic failure"):
+        with GreenfieldApplyTransaction(tmp_path):
+            nested_link.unlink()
+            nested_link.write_text("regular replacement\n", encoding="utf-8")
+            raise RuntimeError("synthetic failure")
+
+    assert nested_link.is_symlink()
+    assert nested_link.resolve() == outside_file.resolve()
+    assert outside_file.read_text(encoding="utf-8") == "outside\n"
 
 
 def test_greenfield_apply_requires_confirmation(tmp_path) -> None:
