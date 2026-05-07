@@ -346,6 +346,20 @@ def _unique(values: Sequence[str]) -> list[str]:
     return result
 
 
+def _join_text_values(values: Sequence[str]) -> str:
+    result = ""
+    for value in values:
+        token = " ".join(str(value or "").split()).strip()
+        if not token:
+            continue
+        if not result:
+            result = token
+            continue
+        separator = " " if result[-1:] in {".", "!", "?"} else "; "
+        result = f"{result}{separator}{token}"
+    return result.strip()
+
+
 def _workstream_refs(row: Mapping[str, Any]) -> list[str]:
     values: list[str] = []
     for key in (
@@ -445,7 +459,7 @@ def _wave_label(row: Mapping[str, Any], wave_id: str) -> str:
 
 def _wave_summary(row: Mapping[str, Any]) -> str:
     for key in ("summary", "goal", "validation_gate", "validation", "exit_gate"):
-        token = str(row.get(key, "")).strip()
+        token = _join_text_values(_extract_string_values(row.get(key)))
         if token:
             return token
     return "Confirmed greenfield execution wave."
@@ -455,12 +469,16 @@ def _wave_exit_gate(row: Mapping[str, Any]) -> str:
     for key in ("exit_gate", "validation_gate", "validation"):
         values = _extract_string_values(row.get(key))
         if values:
-            return " ".join(values).strip()
+            return _join_text_values(values)
     return ""
 
 
 def _wave_validation(row: Mapping[str, Any]) -> list[str]:
-    values: list[str] = []
-    for key in ("validation", "validation_gate", "exit_gate"):
-        values.extend(_extract_string_values(row.get(key)))
+    values = _unique(_extract_string_values(row.get("validation")))
+    joined_validation = _join_text_values(values)
+    for key in ("validation_gate", "exit_gate"):
+        for token in _extract_string_values(row.get(key)):
+            if joined_validation and token.casefold() == joined_validation.casefold():
+                continue
+            values.append(token)
     return _unique(values)

@@ -5,10 +5,13 @@ from __future__ import annotations
 from odylith.runtime.common.command_surface import display_command
 
 DEFAULT_DASHBOARD_REFRESH_TIMEOUT_SECONDS = 45.0
+DEFAULT_ATLAS_REFRESH_TIMEOUT_SECONDS = 180.0
 
 
 def dashboard_refresh_timeout_seconds(*, surface: str) -> float:
-    del surface
+    normalized_surface = str(surface).strip().lower()
+    if normalized_surface == "atlas":
+        return DEFAULT_ATLAS_REFRESH_TIMEOUT_SECONDS
     return DEFAULT_DASHBOARD_REFRESH_TIMEOUT_SECONDS
 
 

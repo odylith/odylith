@@ -1381,7 +1381,7 @@ def _dashboard_surface_steps(
                     "odylith/atlas/source/*.png",
                 ),
                 next_command_on_failure=display_command("atlas", "auto-update", "--repo-root", ".", "--all-stale"),
-                timeout_seconds=_DASHBOARD_REFRESH_TIMEOUT_SECONDS,
+                timeout_seconds=dashboard_refresh_contract.dashboard_refresh_timeout_seconds(surface="atlas"),
             )
         )
     if surface == "compass":

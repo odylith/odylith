@@ -5,6 +5,7 @@ from types import SimpleNamespace
 
 from odylith.runtime.context_engine import odylith_context_engine
 from odylith.runtime.governance import agent_governance_intelligence as governance
+from odylith.runtime.governance import dashboard_refresh_contract
 from odylith.runtime.governance import sync_session
 from odylith.runtime.governance import sync_surface_render_batch
 from odylith.runtime.governance import sync_workstream_artifacts
@@ -1566,10 +1567,16 @@ def test_build_sync_execution_plan_refreshes_atlas_for_catalog_only_selective_sl
     )
 
     labels = [step.label for step in plan.steps]
+    atlas_auto_update_step = next(
+        step
+        for step in plan.steps
+        if step.label == "Refresh stale Atlas Mermaid diagrams before rerendering the Atlas surface."
+    )
 
     assert "Refresh stale Atlas Mermaid diagrams before rerendering the Atlas surface." in labels
     assert "Render Atlas from the current Mermaid catalog state." in labels
     assert "Render the top-level Odylith shell after the selected surfaces settle." not in labels
+    assert atlas_auto_update_step.timeout_seconds == dashboard_refresh_contract.DEFAULT_ATLAS_REFRESH_TIMEOUT_SECONDS
 
 
 def test_build_sync_execution_plan_validates_radar_for_backlog_only_selective_slice(tmp_path: Path) -> None:

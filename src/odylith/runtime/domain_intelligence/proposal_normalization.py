@@ -9,6 +9,7 @@ validation and Tribunal review.
 from __future__ import annotations
 
 import copy
+import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
@@ -20,6 +21,49 @@ DEFAULT_GREENFIELD_RELEASE_SELECTOR = greenfield_programs.DEFAULT_GREENFIELD_REL
 
 _VALID_QUALIFICATIONS = {"candidate", "curated"}
 _VALID_MODES = {"host_reasoned_greenfield_proposal", "host_reasoned_proposal"}
+_LIST_SPLIT_RE = re.compile(r"(?:\r?\n|;)+")
+_COMMA_LIST_SPLIT_RE = re.compile(r"(?:\r?\n|;|,)+")
+_LIST_BULLET_RE = re.compile(r"^\s*(?:[-*]|\d+[.)])\s*")
+_BACKLOG_TEXT_LIST_FIELDS = (
+    "success_metrics",
+    "dependencies",
+    "depends_on",
+    "interfaces",
+    "interface_changes",
+    "validation",
+    "test_strategy",
+)
+_BACKLOG_REF_LIST_FIELDS = (
+    "component_focus",
+    "components",
+    "component_ids",
+    "related_components",
+    "related_component_ids",
+    "related_diagram_slugs",
+    "related_diagrams",
+    "diagram_slugs",
+)
+_COMPONENT_TEXT_LIST_FIELDS = (
+    "dependencies",
+    "depends_on",
+    "interfaces",
+    "interface_changes",
+    "proof_expectations",
+    "validation",
+    "test_strategy",
+)
+_WORKSTREAM_REF_LIST_FIELDS = (
+    "workstreams",
+    "workstream_ids",
+    "workstream_titles",
+    "target_workstreams",
+    "target_workstream_ids",
+    "target_workstream_titles",
+    "related_workstreams",
+    "backlog_titles",
+    "primary_workstreams",
+    "first_target_workstreams",
+)
 
 
 def normalize_host_reasoned_proposal(proposal: Mapping[str, Any]) -> dict[str, Any]:
@@ -118,6 +162,51 @@ def _proposal_sequence(value: Any) -> list[Any]:
     return [_text(value)] if _text(value) else []
 
 
+def _joined_text(value: Any) -> str:
+    return _join_text_items(_text_items(value))
+
+
+def _join_text_items(items: Sequence[str]) -> str:
+    result = ""
+    for item in items:
+        token = _text(item)
+        if not token:
+            continue
+        if not result:
+            result = token
+            continue
+        separator = " " if result[-1:] in {".", "!", "?"} else "; "
+        result = f"{result}{separator}{token}"
+    return result.strip()
+
+
+def _normalize_text_list(value: Any, *, split_commas: bool = False) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, Mapping):
+        values: list[str] = []
+        for nested in value.values():
+            values.extend(_normalize_text_list(nested, split_commas=split_commas))
+        return _unique_text(values)
+    if isinstance(value, (list, tuple, set)):
+        values = []
+        for nested in value:
+            values.extend(_normalize_text_list(nested, split_commas=split_commas))
+        return _unique_text(values)
+    splitter = _COMMA_LIST_SPLIT_RE if split_commas else _LIST_SPLIT_RE
+    parts = [
+        _LIST_BULLET_RE.sub("", _text(part))
+        for part in splitter.split(str(value or "").strip())
+    ]
+    return _unique_text(part for part in parts if part)
+
+
+def _normalize_list_fields(row: dict[str, Any], fields: Sequence[str], *, split_commas: bool = False) -> None:
+    for key in fields:
+        if key in row:
+            row[key] = _normalize_text_list(row.get(key), split_commas=split_commas)
+
+
 def _normalize_validation_strategy(value: Any) -> list[Any]:
     rows = _proposal_sequence(value)
     if rows:
@@ -131,6 +220,8 @@ def _normalize_validation_strategy(value: Any) -> list[Any]:
 def _normalize_release_plan(value: Any) -> dict[str, Any]:
     if isinstance(value, list):
         rows = [_proposal_object(row) for row in value if isinstance(row, Mapping)]
+        for row in rows:
+            _normalize_list_fields(row, _WORKSTREAM_REF_LIST_FIELDS, split_commas=True)
         first = rows[0] if rows else {}
         selector = _text(first.get("release")) or DEFAULT_GREENFIELD_RELEASE_SELECTOR
         target_workstreams = first.get("first_target_workstreams") or first.get("target_workstreams") or []
@@ -152,6 +243,8 @@ def _normalize_release_plan(value: Any) -> dict[str, Any]:
     if not isinstance(stages, list) or not stages:
         stages = releases if isinstance(releases, list) else []
     stage_rows = [_proposal_object(row) for row in stages if isinstance(row, Mapping)]
+    for row in stage_rows:
+        _normalize_list_fields(row, _WORKSTREAM_REF_LIST_FIELDS, split_commas=True)
     first = stage_rows[0] if stage_rows else {}
     selector = (
         _text(plan.get("selector"))
@@ -171,6 +264,8 @@ def _normalize_release_plan(value: Any) -> dict[str, Any]:
         plan["milestones"] = _release_milestones(stage_rows)
     if not plan.get("promotion_criteria"):
         plan["promotion_criteria"] = _release_promotion_criteria(stage_rows)
+    _normalize_list_fields(plan, _WORKSTREAM_REF_LIST_FIELDS, split_commas=True)
+    _normalize_list_fields(plan, ("milestones", "promotion_criteria"))
     plan.setdefault("strategy", "Promote accepted greenfield work through explicit release gates.")
     return plan
 
@@ -183,7 +278,7 @@ def _release_milestones(rows: Sequence[Mapping[str, Any]]) -> list[str]:
     milestones: list[str] = []
     for row in rows:
         release = _text(row.get("release")) or "release"
-        gate = _text(row.get("exit_criteria")) or _text(row.get("release_gate"))
+        gate = _joined_text(row.get("exit_criteria")) or _joined_text(row.get("release_gate"))
         if gate:
             milestones.append(f"{release}: {gate}")
     return milestones or ["Proposal accepted and first release target reviewed."]
@@ -191,7 +286,7 @@ def _release_milestones(rows: Sequence[Mapping[str, Any]]) -> list[str]:
 
 def _release_promotion_criteria(rows: Sequence[Mapping[str, Any]]) -> list[str]:
     criteria = [
-        _text(row.get("exit_criteria")) or _text(row.get("release_gate"))
+        _joined_text(row.get("exit_criteria")) or _joined_text(row.get("release_gate"))
         for row in rows
     ]
     return [item for item in criteria if item] or ["First-wave validation gates are satisfied."]
@@ -212,13 +307,14 @@ def _normalize_program(value: Any, *, release_rows: Sequence[Mapping[str, Any]])
         if not isinstance(raw, Mapping):
             continue
         row = dict(raw)
+        _normalize_list_fields(row, _WORKSTREAM_REF_LIST_FIELDS, split_commas=True)
         row.setdefault("wave_id", _text(row.get("id")) or _text(row.get("wave")) or f"W{index}")
         row.setdefault("label", _text(row.get("title")) or _text(row.get("name")) or str(row["wave_id"]))
-        row.setdefault("goal", _text(row.get("summary")) or f"Deliver {row['label']}.")
+        row.setdefault("goal", _joined_text(row.get("summary")) or f"Deliver {row['label']}.")
         gate = (
-            _text(row.get("validation_gate"))
-            or _text(row.get("validation"))
-            or _text(row.get("exit_gate"))
+            _joined_text(row.get("validation_gate"))
+            or _joined_text(row.get("validation"))
+            or _joined_text(row.get("exit_gate"))
             or _release_gate_for(row.get("release"), release_rows=release_rows)
         )
         if gate:
@@ -276,10 +372,12 @@ def _normalize_backlog(
             rows.append(raw)
             continue
         row = dict(raw)
+        _normalize_list_fields(row, _BACKLOG_TEXT_LIST_FIELDS)
+        _normalize_list_fields(row, _BACKLOG_REF_LIST_FIELDS, split_commas=True)
         row.setdefault("evidence_tier", "user_intent" if index == 1 else "odylith_assumption")
         first_slice = _text(row.get("recommended_first_slice")) or _text(row.get("first_slice_proof"))
         if not first_slice:
-            first_slice = _text(row.get("validation")) or _release_gate_for(
+            first_slice = _joined_text(row.get("validation")) or _release_gate_for(
                 row.get("release"),
                 release_rows=release_rows,
             )
@@ -493,6 +591,7 @@ def _normalize_components(value: Any) -> list[Any]:
         row["qualification"] = qualification if qualification in _VALID_QUALIFICATIONS else "candidate"
         if "proof_expectations" in row and "validation" not in row:
             row["validation"] = row.get("proof_expectations")
+        _normalize_list_fields(row, _COMPONENT_TEXT_LIST_FIELDS)
         row.setdefault("evidence_tier", "user_intent")
         rows.append(row)
     return rows

@@ -316,11 +316,35 @@ def _validation_items(*, row: Mapping[str, Any], wave: Mapping[str, Any]) -> tup
         [
             *row_text_tuple(row, "validation", "test_strategy"),
             *row_text_tuple(row, "success_metrics"),
-            *text_values(wave.get("exit_gate")),
-            *text_values(wave.get("validation_gate")),
-            *text_values(wave.get("validation")),
+            *_wave_validation_items(wave),
         ]
     )
+
+
+def _wave_validation_items(wave: Mapping[str, Any]) -> tuple[str, ...]:
+    validation_items = text_values(wave.get("validation"))
+    joined_validation = _join_text_values(validation_items)
+    items: list[str] = []
+    for token in [*text_values(wave.get("exit_gate")), *text_values(wave.get("validation_gate"))]:
+        if joined_validation and token.casefold() == joined_validation.casefold():
+            continue
+        items.append(token)
+    items.extend(validation_items)
+    return unique_text(items)
+
+
+def _join_text_values(items: Sequence[str]) -> str:
+    result = ""
+    for item in items:
+        token = " ".join(str(item or "").split()).strip()
+        if not token:
+            continue
+        if not result:
+            result = token
+            continue
+        separator = " " if result[-1:] in {".", "!", "?"} else "; "
+        result = f"{result}{separator}{token}"
+    return result.strip()
 
 
 def _implementation_prompt(*, start_id: str, title: str, first_slice: str) -> str:

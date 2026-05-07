@@ -828,6 +828,88 @@ def test_greenfield_normalization_compacts_verbose_release_plan_label_to_selecto
     assert proposal["release_plan"]["label"] == "0.0.1"
 
 
+def test_greenfield_normalization_splits_scalar_quality_fields() -> None:
+    proposal = _host_reasoned_crispr_without_parent()
+    identity = proposal["backlog"][0]
+    identity["success_metrics"] = (
+        "Authorization coverage measured by endpoint instrumentation; "
+        "COI access blocking measured by role-matrix integration tests"
+    )
+    identity.pop("recommended_first_slice")
+    identity["validation"] = [
+        "Role matrix proof passes at the API boundary.",
+        "COI negative proof blocks conflicted reads.",
+    ]
+    proposal["release_plan"]["target_workstreams"] = "WS-IA, WS-WORKFLOW"
+    proposal["program"]["waves"][0].pop("validation_gate")
+    proposal["program"]["waves"][0]["validation"] = [
+        "End-to-end protocol proof passes",
+        "Audit completeness proof passes",
+    ]
+
+    normalized = greenfield_proposals.normalize_host_reasoned_proposal(proposal)
+    normalized_identity = next(
+        row for row in normalized["backlog"] if row.get("id") == "WS-IA"
+    )
+    tribunal = greenfield_proposals.run_greenfield_tribunal(normalized, release_selector="0.0.1")
+
+    assert normalized_identity["success_metrics"] == [
+        "Authorization coverage measured by endpoint instrumentation",
+        "COI access blocking measured by role-matrix integration tests",
+    ]
+    assert normalized_identity["recommended_first_slice"] == (
+        "Role matrix proof passes at the API boundary. COI negative proof blocks conflicted reads."
+    )
+    assert normalized["release_plan"]["target_workstreams"] == ["WS-IA", "WS-WORKFLOW"]
+    assert normalized["program"]["waves"][0]["validation_gate"] == (
+        "End-to-end protocol proof passes; Audit completeness proof passes"
+    )
+    assert "['" not in normalized_identity["recommended_first_slice"]
+    assert "['" not in normalized["program"]["waves"][0]["validation_gate"]
+    greenfield_proposals.validate_host_reasoned_proposal(normalized)
+    assert tribunal.passed
+
+
+def test_greenfield_apply_scalar_wave_validation_dedupes_handoff_gates(tmp_path, monkeypatch) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    proposal = _host_reasoned_crispr_without_parent()
+    identity = proposal["backlog"][0]
+    identity["success_metrics"] = (
+        "Authorization coverage measured by endpoint instrumentation; "
+        "COI access blocking measured by role-matrix integration tests"
+    )
+    identity.pop("recommended_first_slice")
+    identity["validation"] = [
+        "Role matrix proof passes at the API boundary",
+        "COI negative proof blocks conflicted reads",
+    ]
+    proposal["program"]["waves"][0].pop("validation_gate")
+    proposal["program"]["waves"][0]["validation"] = [
+        "End-to-end protocol proof passes",
+        "Audit completeness proof passes",
+    ]
+
+    result = greenfield_proposals.apply_greenfield_proposal(
+        repo_root=tmp_path,
+        proposal=proposal,
+        confirm=True,
+        release_selector="0.0.1",
+    )
+    first_wave = result["program"]["waves"][0]
+    joined_wave_gate = "End-to-end protocol proof passes; Audit completeness proof passes"
+
+    assert first_wave["exit_gate"] == joined_wave_gate
+    assert first_wave["validation"] == [
+        "End-to-end protocol proof passes",
+        "Audit completeness proof passes",
+    ]
+    assert joined_wave_gate not in result["next_steps"]["validation_gates"]
+    assert result["next_steps"]["validation_gates"][-2:] == first_wave["validation"]
+
+
 def test_greenfield_release_target_label_extracts_numeric_selector_from_custom_text() -> None:
     assert greenfield_proposals.greenfield_programs.compact_release_target_label("Recipe-sharing 0.0.1") == "0.0.1"
     assert greenfield_proposals.greenfield_programs.compact_release_target_label("launch candidate release target") == (
