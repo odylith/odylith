@@ -384,6 +384,26 @@ def _component_lines_for_workstream(
 def _workstream_refs_to_ids(values: Sequence[str], workstreams: Sequence[CreatedWorkstream]) -> list[str]:
     by_id = {workstream.idea_id: workstream.idea_id for workstream in workstreams}
     by_slug = {slugify(workstream.title): workstream.idea_id for workstream in workstreams}
+    by_ref: dict[str, str] = {}
+    for workstream in workstreams:
+        refs = [
+            workstream.idea_id,
+            workstream.title,
+            workstream.row.get("id"),
+            workstream.row.get("idea_id"),
+            workstream.row.get("workstream_id"),
+            workstream.row.get("slug"),
+            workstream.row.get("title"),
+        ]
+        for ref in refs:
+            token = str(ref or "").strip()
+            if not token:
+                continue
+            by_ref[token.upper()] = workstream.idea_id
+            by_ref[token.casefold()] = workstream.idea_id
+            slug = slugify(token)
+            if slug:
+                by_ref[slug] = workstream.idea_id
     result: list[str] = []
     for value in values:
         token = str(value).strip()
@@ -391,7 +411,16 @@ def _workstream_refs_to_ids(values: Sequence[str], workstreams: Sequence[Created
         if normalized_id in by_id:
             result.append(by_id[normalized_id])
             continue
+        if normalized_id in by_ref:
+            result.append(by_ref[normalized_id])
+            continue
         slug = slugify(token)
+        if token.casefold() in by_ref:
+            result.append(by_ref[token.casefold()])
+            continue
+        if slug in by_ref:
+            result.append(by_ref[slug])
+            continue
         if slug in by_slug:
             result.append(by_slug[slug])
     return _unique(result)
@@ -462,22 +491,14 @@ def _text_items(value: Any) -> list[str]:
     if value is None:
         return []
     if isinstance(value, Mapping):
-        return [
-            ": ".join(str(part).strip() for part in (item.get("name", ""), item.get("exit_criteria", "")) if str(part).strip())
-            if isinstance(item, Mapping)
-            else str(item).strip()
-            for item in value.values()
-            if str(item).strip()
-        ]
+        result: list[str] = []
+        for nested in value.values():
+            result.extend(_text_items(nested))
+        return result
     if isinstance(value, (list, tuple, set)):
         result: list[str] = []
         for item in value:
-            if isinstance(item, Mapping):
-                text = " ".join(str(part).strip() for part in item.values() if str(part).strip())
-            else:
-                text = str(item).strip()
-            if text:
-                result.append(text)
+            result.extend(_text_items(item))
         return result
     raw = str(value).strip()
     if not raw:

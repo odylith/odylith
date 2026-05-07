@@ -76,7 +76,7 @@ def _sentence_fragment(value: str) -> str:
 
 
 def _bullet_lines(values: Sequence[str]) -> str:
-    lines = [str(item).strip().rstrip(".") for item in values if str(item).strip()]
+    lines = [_sentence_fragment(str(item)) for item in values if str(item).strip()]
     return "\n".join(f"- {line}." for line in lines)
 
 
@@ -155,6 +155,7 @@ def _build_spec_template(
     interfaces: Sequence[str] = (),
     validation: Sequence[str] = (),
     risks: Sequence[str] = (),
+    qualification: str = "candidate",
 ) -> str:
     normalized_sources = [str(item).strip() for item in sources if str(item).strip()]
     if "user_intent" in normalized_sources:
@@ -187,6 +188,16 @@ def _build_spec_template(
     risk_lines = _bullet_lines(risks) or "- Candidate boundary may change once source evidence and implementation plans exist."
     related_workstreams = ", ".join(workstream_ids) if workstream_ids else "none"
     related_diagrams = ", ".join(diagram_ids) if diagram_ids else "none"
+    implementation_anchor = (
+        f"Start at `{path}` and keep the first source files inside that boundary until the plan proves a narrower ownership split."
+        if path
+        else "First technical plan must choose the source path before implementation begins."
+    )
+    first_plan = (
+        f"Use `{first_workstream}` as the first implementation-plan anchor for this component."
+        if first_workstream
+        else "Create a Radar-linked implementation plan before source writes."
+    )
     return f"""# {label}
 
 ## Overview
@@ -195,21 +206,30 @@ def _build_spec_template(
 {overview_anchor}
 {f"Planned responsibility: {responsibility_text}." if responsibility_text else ""}
 
+## Planned Ownership
+
+This is a candidate Registry spec, not a source-backed implementation claim. It exists so the first coding pass starts from a named boundary, a proof obligation, and explicit dependencies instead of a label-only ticket.
+
+- **Component ID**: `{component_id}`
+- **Kind**: {kind}
+- **Status**: {status}
+- **Qualification**: {qualification}
+- **Evidence tier**: {", ".join(normalized_sources) if normalized_sources else "manifest"}
+- **Evidence anchor**: `{path}`
+- **Related workstreams**: {related_workstreams}
+- **Related diagrams**: {related_diagrams}
+
 ## Boundary
 
 - **Logical boundary**: {boundary_text or "TBD - define the runtime contract, public API, or ownership rule."}
-- **Evidence anchor**: `{path}`
-- **Kind**: {kind}
-- **Status**: {status}
-- **Evidence tier**: {", ".join(normalized_sources) if normalized_sources else "manifest"}
-- **Related workstreams**: {related_workstreams}
-- **Related diagrams**: {related_diagrams}
+- **Owns**: {responsibility_text or "TBD - define the runtime contract, public API, or ownership boundary for this component."}
+- **Does not claim yet**: source-backed runtime behavior, storage ownership, or production readiness until implementation proof lands.
 
 ## Feature History
 
 - {history_date}: Registered `{component_id}` through `odylith component register`.{plan_route}
 
-## Contract
+## Runtime Contract
 
 {responsibility_text or "TBD - define the runtime contract, public API, or ownership boundary for this component."}
 
@@ -225,9 +245,17 @@ def _build_spec_template(
 
 {validation_lines}
 
-## Risks And Open Questions
+## Security, Compliance, And Open Questions
 
 {risk_lines}
+
+## Implementation Kickoff
+
+- {implementation_anchor}
+- {first_plan}
+- Convert each Candidate Interface into a concrete API, module, route, schema, or event contract before adding dependent code.
+- Convert each Test Coverage bullet into a runnable unit, contract, browser, migration, or smoke proof before marking the component active.
+- Refresh Registry and Compass after the first source-backed slice lands so this candidate spec stops pretending proposal text is implementation evidence.
 """
 
 
@@ -300,6 +328,7 @@ def register_component(
         path=path,
         kind=kind,
         status=str(status).strip() or "active",
+        qualification=str(qualification).strip() or "candidate",
         sources=sources,
         workstreams=workstreams,
         diagrams=diagrams,

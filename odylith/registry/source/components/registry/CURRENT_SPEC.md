@@ -148,6 +148,12 @@ the scaffolded `CURRENT_SPEC.md` must include a dated `## Feature History`
 entry so the component can load into Registry intelligence instead of stranding
 the browser on stale delivery intelligence.
 
+Greenfield-created candidate specs must be readable planned ownership dossiers,
+not raw proposal dumps. The scaffold must preserve evidence boundaries, flatten
+nested proposal posture into bullets, show boundary/interfaces/dependencies,
+name validation proof, and include an implementation kickoff section so the
+first source-backed slice can start without hand-repairing Registry prose.
+
 Consumer repair owns the released 0.1.11 drift where `component register`
 emitted `category: detected`, `qualification: detected`, and specs without
 Feature History. `odylith doctor --repo-root . --repair` must repair only that

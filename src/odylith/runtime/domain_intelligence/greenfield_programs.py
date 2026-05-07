@@ -170,7 +170,12 @@ def first_release_workstream_ids(
     if not created_ids:
         return []
     release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
-    explicit = _resolve_workstream_refs(_workstream_refs(release_plan), created_backlog=created_backlog)
+    proposal_backlog = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
+    explicit = _resolve_workstream_refs(
+        _workstream_refs(release_plan),
+        created_backlog=created_backlog,
+        proposal_backlog=proposal_backlog,
+    )
     selected = [created_ids[0]]
     if explicit:
         selected.extend(item for item in explicit if item not in selected)
@@ -208,7 +213,11 @@ def _assign_wave_members(
     unassigned = [item for item in child_ids if item]
     raw_assignments: list[list[str]] = []
     for row in wave_rows:
-        explicit = _resolve_workstream_refs(_workstream_refs(row), created_backlog=created_backlog)
+        explicit = _resolve_workstream_refs(
+            _workstream_refs(row),
+            created_backlog=created_backlog,
+            proposal_backlog=proposal_backlog,
+        )
         members = [item for item in explicit if item in child_ids]
         if not members:
             wave_tokens = _wave_text(row)
@@ -268,15 +277,42 @@ def _assign_wave_members(
     return waves
 
 
-def _created_title_map(created_backlog: Sequence[Mapping[str, Any]]) -> dict[str, str]:
+def _created_title_map(
+    created_backlog: Sequence[Mapping[str, Any]],
+    proposal_backlog: Sequence[Mapping[str, Any]] = (),
+) -> dict[str, str]:
     mapping: dict[str, str] = {}
-    for item in created_backlog:
+    for index, item in enumerate(created_backlog):
         idea_id = str(item.get("idea_id", "")).strip().upper()
         title = str(item.get("title", "")).strip()
-        if idea_id and title:
-            mapping[title.casefold()] = idea_id
-            mapping[slugify(title)] = idea_id
+        if not idea_id:
+            continue
+        _add_ref_mapping(mapping, idea_id=idea_id, value=idea_id)
+        _add_ref_mapping(mapping, idea_id=idea_id, value=title)
+        raw = proposal_backlog[index] if index < len(proposal_backlog) else {}
+        if isinstance(raw, Mapping):
+            for key in (
+                "id",
+                "idea_id",
+                "workstream_id",
+                "slug",
+                "title",
+                "name",
+                "label",
+            ):
+                _add_ref_mapping(mapping, idea_id=idea_id, value=raw.get(key))
     return mapping
+
+
+def _add_ref_mapping(mapping: dict[str, str], *, idea_id: str, value: Any) -> None:
+    token = str(value or "").strip()
+    if not token:
+        return
+    mapping[token.casefold()] = idea_id
+    mapping[token.upper()] = idea_id
+    slug = slugify(token)
+    if slug:
+        mapping[slug] = idea_id
 
 
 def _extract_string_values(value: Any) -> list[str]:
@@ -316,8 +352,9 @@ def _resolve_workstream_refs(
     refs: Sequence[str],
     *,
     created_backlog: Sequence[Mapping[str, Any]],
+    proposal_backlog: Sequence[Mapping[str, Any]] = (),
 ) -> list[str]:
-    title_map = _created_title_map(created_backlog)
+    title_map = _created_title_map(created_backlog, proposal_backlog)
     created_ids = {str(item.get("idea_id", "")).strip().upper() for item in created_backlog}
     resolved: list[str] = []
     for raw in refs:
@@ -328,7 +365,7 @@ def _resolve_workstream_refs(
         if _IDEA_ID_RE.fullmatch(candidate) and candidate in created_ids and candidate not in resolved:
             resolved.append(candidate)
             continue
-        for key in (token.casefold(), slugify(token)):
+        for key in (candidate, token.casefold(), slugify(token)):
             mapped = title_map.get(key)
             if mapped and mapped not in resolved:
                 resolved.append(mapped)

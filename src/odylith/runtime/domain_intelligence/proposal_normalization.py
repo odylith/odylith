@@ -43,6 +43,14 @@ def normalize_host_reasoned_proposal(proposal: Mapping[str, Any]) -> dict[str, A
     slug_map = _diagram_slug_map(normalized.get("diagrams"), project_slug=project_slug)
     normalized["program"] = _normalize_program(normalized.get("program"), release_rows=releases)
     normalized["backlog"] = _normalize_backlog(normalized.get("backlog"), release_rows=releases, slug_map=slug_map)
+    normalized["backlog"] = _ensure_program_parent(
+        normalized["backlog"],
+        intent=intent,
+        program=normalized["program"],
+        release_plan=normalized["release_plan"],
+        validation_strategy=normalized["validation_strategy"],
+        security_compliance=normalized.get("security_compliance"),
+    )
     normalized["components"] = _normalize_components(normalized.get("components"))
     normalized["diagrams"] = _normalize_diagrams(
         normalized.get("diagrams"),
@@ -58,6 +66,36 @@ def _proposal_object(value: Any) -> dict[str, Any]:
 
 def _text(value: Any) -> str:
     return " ".join(str(value or "").split()).strip()
+
+
+def _text_items(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, Mapping):
+        values: list[str] = []
+        for nested in value.values():
+            values.extend(_text_items(nested))
+        return values
+    if isinstance(value, (list, tuple, set)):
+        values = []
+        for nested in value:
+            values.extend(_text_items(nested))
+        return values
+    token = _text(value)
+    return [token] if token else []
+
+
+def _unique_text(values: Sequence[Any]) -> list[str]:
+    seen: set[str] = set()
+    result: list[str] = []
+    for value in values:
+        for token in _text_items(value):
+            key = token.casefold()
+            if key in seen:
+                continue
+            seen.add(key)
+            result.append(token)
+    return result
 
 
 def _proposal_sequence(value: Any) -> list[Any]:
@@ -253,6 +291,190 @@ def _normalize_backlog(
             row["related_diagram_slugs"] = _remap_diagram_refs(row.get("related_diagram_slugs"), slug_map)
         rows.append(row)
     return rows
+
+
+def _ensure_program_parent(
+    rows: list[Any],
+    *,
+    intent: Mapping[str, Any],
+    program: Mapping[str, Any],
+    release_plan: Mapping[str, Any],
+    validation_strategy: Sequence[Any],
+    security_compliance: Any,
+) -> list[Any]:
+    mapping_rows = [row for row in rows if isinstance(row, Mapping)]
+    waves = [row for row in program.get("waves", []) if isinstance(row, Mapping)] if isinstance(program, Mapping) else []
+    if len(mapping_rows) < 2 or not waves:
+        return rows
+    first = mapping_rows[0]
+    if _looks_like_program_parent(first, intent=intent, program=program, waves=waves):
+        return rows
+
+    parent = _synthesized_program_parent(
+        child_rows=mapping_rows,
+        intent=intent,
+        program=program,
+        release_plan=release_plan,
+        validation_strategy=validation_strategy,
+        security_compliance=security_compliance,
+    )
+    return [parent, *rows]
+
+
+def _looks_like_program_parent(
+    row: Mapping[str, Any],
+    *,
+    intent: Mapping[str, Any],
+    program: Mapping[str, Any],
+    waves: Sequence[Mapping[str, Any]],
+) -> bool:
+    explicit_type = _text(row.get("workstream_type")).casefold()
+    if explicit_type in {"umbrella", "program", "parent", "program_parent"}:
+        return True
+    row_refs = {slugify(value) for value in _row_ref_values(row)}
+    wave_refs = {slugify(value) for wave in waves for value in _workstream_ref_values(wave)}
+    if row_refs & wave_refs:
+        return False
+    title = _text(row.get("title"))
+    title_slug = slugify(title)
+    program_title = (
+        _text(program.get("name"))
+        or _text(program.get("title"))
+        or _text(intent.get("title"))
+        or _text(intent.get("name"))
+    )
+    if title_slug and title_slug == slugify(program_title):
+        return True
+    if title_slug and title_slug == slugify(f"{program_title} program"):
+        return True
+    if title.casefold().startswith(("govern ", "program ", "launch ")):
+        return True
+    title_tokens = {token for token in title_slug.split("-") if len(token) >= 4}
+    program_tokens = {token for token in slugify(program_title).split("-") if len(token) >= 4}
+    return bool(title_tokens and program_tokens and program_tokens.issubset(title_tokens))
+
+
+def _synthesized_program_parent(
+    *,
+    child_rows: Sequence[Mapping[str, Any]],
+    intent: Mapping[str, Any],
+    program: Mapping[str, Any],
+    release_plan: Mapping[str, Any],
+    validation_strategy: Sequence[Any],
+    security_compliance: Any,
+) -> dict[str, Any]:
+    title = _text(intent.get("title")) or _text(intent.get("name")) or "Greenfield Project"
+    parent_title = _text(program.get("parent_workstream")) or _text(program.get("program_workstream")) or f"Govern {title}"
+    first_wave = _first_wave(program)
+    first_wave_label = _text(first_wave.get("label")) or _text(first_wave.get("name")) or _text(first_wave.get("wave_id")) or "first wave"
+    release_selector = _text(release_plan.get("selector")) or DEFAULT_GREENFIELD_RELEASE_SELECTOR
+    component_focus = _unique_text(
+        [
+            first_wave.get("component_focus"),
+            first_wave.get("components"),
+            *[row.get("component_focus") for row in child_rows],
+            *[row.get("related_components") for row in child_rows],
+        ]
+    )
+    diagram_refs = _unique_text(
+        [
+            *[row.get("related_diagram_slugs") for row in child_rows],
+            *[row.get("diagram_slugs") for row in child_rows],
+            *[row.get("related_diagrams") for row in child_rows],
+        ]
+    )
+    validation = _text_items(first_wave.get("validation_gate")) or _text_items(first_wave.get("validation"))
+    validation.extend(_text_items(release_plan.get("promotion_criteria")))
+    validation.extend(_text_items(validation_strategy)[:3])
+    return {
+        "id": "WS-00",
+        "title": parent_title,
+        "workstream_type": "umbrella",
+        "problem": (
+            f"{title} has only proposal-level intent so far; it needs one governed program parent before "
+            "implementation starts, otherwise child workstreams, waves, release targeting, and component specs "
+            "fragment into disconnected tickets."
+        ),
+        "customer": (
+            "Project operator, implementation agents, reviewers, and future maintainers who need one readable "
+            "place to understand the greenfield program before code is written."
+        ),
+        "opportunity": (
+            "Turn the confirmed greenfield intent into an execution spine: child workstreams, candidate Registry "
+            "components, Atlas topology, Compass waves, release target, and proof gates all tied to the same parent."
+        ),
+        "product_view": (
+            f"Umbrella program for {title}: start implementation with `{first_wave_label}`, keep `{release_selector}` "
+            "as the first governed release target, and promote only after the listed validation gates pass."
+        ),
+        "recommended_first_slice": (
+            f"Start coding with the first active wave `{first_wave_label}`; pick the first targeted child workstream, "
+            "write its technical plan, implement the smallest source-backed slice, then run the repository test suite "
+            "plus Odylith surface refresh and release-target validation before expanding to later waves."
+        ),
+        "success_metrics": [
+            "Program coherence: Compass shows this umbrella as the program parent, and every child workstream belongs to an explicit wave rather than being mistaken for the program itself.",
+            "Coding readiness: the first active wave names the implementation-start workstreams, component boundaries, dependencies, interfaces, and validation gates before source edits begin.",
+            "Release traceability: Radar, Registry, Atlas, Compass, and the provisional release target all point at the same first-wave workstreams with no orphaned governance objects.",
+            "Verification clarity: the applied proposal names the behavior tests, component contract tests, dashboard refresh, and release validation needed before claiming the first slice is complete.",
+        ],
+        "component_focus": component_focus,
+        "related_diagram_slugs": diagram_refs,
+        "dependencies": [
+            "Child workstreams must remain children of this umbrella program and must not be promoted independently without updating the execution-wave document.",
+            "First-wave implementation depends on confirming the release target, component boundaries, interfaces, and validation gates captured by the accepted proposal.",
+        ],
+        "interfaces": [
+            "Compass program view exposes the umbrella, active wave, child workstreams, progress, and exit gate.",
+            "Radar child workstreams expose first-slice proof, dependencies, interface expectations, validation, and impacted components.",
+            "Registry candidate specs expose planned ownership, dependencies, interfaces, security posture, and implementation kickoff steps.",
+        ],
+        "validation": validation
+        or [
+            "Greenfield apply Tribunal passes before writes.",
+            "Radar, Registry, Atlas, and Compass refresh after confirmed writes.",
+        ],
+        "domain_risk": _domain_posture_text(security_compliance)
+        or "Greenfield governance can mislead implementation if the program parent, release target, validation gates, or component boundaries are ambiguous.",
+        "security_posture": _domain_posture_text(security_compliance)
+        or "Security and compliance posture must stay explicit on the child workstreams and candidate component specs until source-backed implementation proves the boundary.",
+        "priority": "P1",
+        "sizing": "L",
+        "complexity": "High",
+        "evidence_tier": "user_intent",
+    }
+
+
+def _first_wave(program: Mapping[str, Any]) -> Mapping[str, Any]:
+    waves = program.get("waves", []) if isinstance(program.get("waves"), list) else []
+    return next((row for row in waves if isinstance(row, Mapping)), {})
+
+
+def _row_ref_values(row: Mapping[str, Any]) -> list[str]:
+    return _unique_text([row.get("id"), row.get("workstream_id"), row.get("idea_id"), row.get("title")])
+
+
+def _workstream_ref_values(row: Mapping[str, Any]) -> list[str]:
+    values: list[Any] = []
+    for key in (
+        "workstreams",
+        "workstream_ids",
+        "workstream_titles",
+        "target_workstreams",
+        "target_workstream_ids",
+        "target_workstream_titles",
+        "related_workstreams",
+        "related_workstream_ids",
+        "related_workstream_titles",
+        "backlog_titles",
+        "primary_workstreams",
+    ):
+        values.append(row.get(key))
+    return _unique_text(values)
+
+
+def _domain_posture_text(value: Any) -> str:
+    return " ".join(_text_items(value)).strip()
 
 
 def _normalize_components(value: Any) -> list[Any]:

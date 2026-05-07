@@ -584,6 +584,139 @@ def _host_reasoned_recipe_legacy_shape() -> dict[str, object]:
     }
 
 
+def _host_reasoned_crispr_without_parent() -> dict[str, object]:
+    return {
+        "schema_version": 1,
+        "mode": "host_reasoned_greenfield_proposal",
+        "intent": {"title": "CRISPR Ethics Review App", "project_slug": "crispr-ethics-review-app"},
+        "observed_source": {"summary": "No application source found."},
+        "assumptions": ["Single-institution deployment.", "No PHI stored in the first release."],
+        "open_questions": ["Are decisions advisory or legally binding later?"],
+        "risks": ["DURC protocol details require strict access control and auditability."],
+        "security_compliance": {
+            "frameworks": ["NIH Guidelines for nucleic acid research.", "USG DURC oversight policy."],
+            "scope": ["HIPAA not in 0.0.1 because no PHI is stored.", "WCAG 2.2 AA baseline."],
+            "controls": ["Append-only decision ledger.", "Role and COI-aware authorization at read boundary."],
+            "risk": "Domain risk centers on sensitive DURC protocol details, audit recovery, and access-control failure.",
+        },
+        "validation_strategy": ["Role matrix, FSM, ledger, audit, and browser proof gates must pass."],
+        "program": {
+            "waves": [
+                {
+                    "id": "W1",
+                    "label": "Foundations",
+                    "goal": "Prove attributable protocol review through a decision ledger.",
+                    "validation_gate": "End-to-end protocol submit, transition, decision, and audit proof passes.",
+                    "workstreams": ["WS-IA"],
+                },
+                {
+                    "id": "W2",
+                    "label": "Review intelligence",
+                    "goal": "Add CRISPR-specific review workflow gates.",
+                    "validation_gate": "FSM transition and DURC negative tests pass.",
+                    "workstreams": ["WS-WORKFLOW"],
+                },
+            ]
+        },
+        "release_plan": {
+            "selector": "0.0.1",
+            "label": "0.0.1",
+            "provisional_release_id": "release-crispr-ethics-0-0-1",
+            "target_workstreams": ["WS-IA"],
+            "promotion_criteria": ["First-wave authorization and audit gates pass."],
+        },
+        "backlog": [
+            {
+                "id": "WS-IA",
+                "title": "Identity, sessions, and COI-aware authorization",
+                "problem": "Reviewers with conflicts must be blocked at the API read boundary, not only in UI.",
+                "customer": "Board chair, reviewers, PI submitters, admins, and regulator read-only users.",
+                "opportunity": "Make COI a first-class authorization input before sensitive CRISPR packets exist.",
+                "product_view": "Single authorize(actor, action, resource) choke point consumed by every component.",
+                "recommended_first_slice": "PI can submit; conflicted reviewer cannot read; regulator can read but not write.",
+                "success_metrics": [
+                    "Every write endpoint routes through authorize(actor, action, resource) in CI instrumentation.",
+                    "Zero conflicted reviewer reads succeed in the API role-matrix integration suite.",
+                ],
+                "component_focus": ["identity-access"],
+                "related_diagram_slugs": ["atlas-topology"],
+                "dependencies": ["Audit trail records COI declarations and session events."],
+                "interfaces": ["authenticate, authorize, and declare_coi service contracts."],
+                "validation": ["Role-matrix and COI negative tests pass at the API boundary."],
+            },
+            {
+                "id": "WS-WORKFLOW",
+                "title": "Review workflow phase state machine",
+                "problem": "CRISPR reviews need legal transitions and explicit DURC gate enforcement.",
+                "customer": "Board chair, reviewers, and auditors reconstructing phase history.",
+                "opportunity": "Replace ad-hoc phase updates with deterministic, auditable workflow transitions.",
+                "product_view": "Phase FSM exposes transition() and writes audit events for every legal transition.",
+                "recommended_first_slice": "Protocol moves from intake through decision; illegal transitions are rejected.",
+                "success_metrics": [
+                    "Every phase mutation routes through transition() with no direct setter path.",
+                    "Every illegal transition leaves state unchanged and returns a structured error.",
+                ],
+                "component_focus": ["review-workflow-engine"],
+                "related_diagram_slugs": ["atlas-topology"],
+                "dependencies": ["identity-access authorizes transitions; audit-trail records transition events."],
+                "interfaces": ["transition and current_phase service contracts."],
+                "validation": ["FSM legal and illegal transition tests pass."],
+            },
+        ],
+        "components": [
+            {
+                "component_id": "identity-access",
+                "label": "Identity Access",
+                "kind": "service",
+                "intended_path": "src/identity-access",
+                "status": "planned",
+                "qualification": "candidate",
+                "responsibility": "Authentication, sessions, roles, and COI-aware authorization for all review data.",
+                "boundary": "Owns identity and authorization checks; no downstream component can bypass authorize().",
+                "dependencies": ["audit-trail records declaration events; persistence stores users and roles."],
+                "interfaces": ["authenticate, authorize, and declare_coi service contracts."],
+                "validation": ["Role-matrix, COI negative, and session-lifecycle tests."],
+                "security_posture": ["Authorization enforced at API read boundary, not UI."],
+            },
+            {
+                "component_id": "review-workflow-engine",
+                "label": "Review Workflow Engine",
+                "kind": "service",
+                "intended_path": "src/review-workflow",
+                "status": "planned",
+                "qualification": "candidate",
+                "responsibility": "Authorization-aware phase state machine for CRISPR protocol reviews.",
+                "boundary": "Owns legal phase transitions and emits audit events for each transition.",
+                "dependencies": ["identity-access authorizes transitions; audit-trail records transition events."],
+                "interfaces": ["transition and current_phase service contracts."],
+                "validation": ["FSM legal, illegal, idempotency, and authorization tests."],
+            },
+        ],
+        "diagrams": [
+            {
+                "slug": "atlas-topology",
+                "title": "CRISPR Review Topology",
+                "kind": "flowchart",
+                "summary": "Show authorization and workflow ownership for the first governed release.",
+                "link_state": "atlas_first_draft",
+                "related_workstreams": ["WS-IA", "WS-WORKFLOW"],
+                "components": [
+                    {"name": "identity-access", "description": "Auth, sessions, roles, and COI-aware authorization."},
+                    {"name": "review-workflow-engine", "description": "Legal phase transitions and audit events."},
+                ],
+                "mermaid_source": (
+                    "flowchart LR\n"
+                    "  IA[\"identity-access<br/>COI-aware auth\"] --> WF[\"review-workflow-engine<br/>phase FSM\"]\n"
+                    "  classDef auth fill:#eef9f1,stroke:#2f9e44,color:#163d22;\n"
+                    "  classDef workflow fill:#f4f7ff,stroke:#3b5bdb,color:#1c2c5b;\n"
+                    "  class IA auth;\n"
+                    "  class WF workflow;\n"
+                ),
+            }
+        ],
+    }
+
+
 def test_greenfield_prompt_returns_host_reasoning_contract(tmp_path) -> None:
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
@@ -1065,6 +1198,43 @@ def test_greenfield_apply_normalizes_common_host_authored_recipe_shape(tmp_path,
         "recipe-sharing-app-auth-sequence",
         "recipe-sharing-app-recipe-domain-er",
     }
+
+
+def test_greenfield_apply_synthesizes_parent_and_polishes_component_specs(tmp_path, monkeypatch) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+
+    result = greenfield_proposals.apply_greenfield_proposal(
+        repo_root=tmp_path,
+        proposal=_host_reasoned_crispr_without_parent(),
+        confirm=True,
+        release_selector="0.0.1",
+    )
+
+    spec = (tmp_path / "odylith/registry/source/components/identity-access/CURRENT_SPEC.md").read_text(
+        encoding="utf-8"
+    )
+    execution_program = json.loads(
+        (tmp_path / "odylith/radar/source/programs/B-001.execution-waves.v1.json").read_text(encoding="utf-8")
+    )
+
+    assert result["backlog"][0]["title"] == "Govern CRISPR Ethics Review App"
+    assert result["program"]["umbrella_id"] == "B-001"
+    assert result["program"]["waves"][0]["primary_workstreams"] == ["B-002"]
+    assert result["program"]["waves"][1]["primary_workstreams"] == ["B-003"]
+    assert execution_program["waves"][0]["primary_workstreams"] == ["B-002"]
+    assert result["release_target"]["workstream_ids"] == ["B-001", "B-002"]
+    assert result["next_steps"]["start_workstream_id"] == "B-002"
+    assert result["next_steps"]["first_wave"] == "Foundations"
+    assert "## Planned Ownership" in spec
+    assert "## Implementation Kickoff" in spec
+    assert "Security, Compliance, And Open Questions" in spec
+    assert "NIH Guidelines for nucleic acid research" in spec
+    assert "Authorization enforced at API read boundary, not UI" in spec
+    assert "['" not in spec
+    assert "']" not in spec
 
 
 def test_greenfield_apply_namespaces_partial_project_diagram_slugs_before_scaffold(tmp_path, monkeypatch) -> None:

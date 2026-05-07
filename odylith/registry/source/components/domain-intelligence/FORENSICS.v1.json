@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 26,
-    "mapped_workstream_evidence_count": 25,
+    "explicit_event_count": 27,
+    "mapped_workstream_evidence_count": 26,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 9,
+    "spec_history_event_count": 10,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 27
+    "timeline_event_count": 28
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -18,6 +18,62 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_programs.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_traceability.py",
+        "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+        "src/odylith/runtime/domain_intelligence/proposal_normalization.py"
+      ],
+      "confidence": "high",
+      "event_index": 463,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "domain-intelligence"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_programs.py +4 more",
+      "ts_iso": "2026-05-06T20:49:27-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
+        "tests/unit/runtime/test_greenfield_proposals.py"
+      ],
+      "confidence": "high",
+      "event_index": 462,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Hardened greenfield Tribunal/apply rollback and refreshed generated governance surfaces after migration, CLI, and headless-browser QA.",
+      "ts_iso": "2026-05-06T15:18:38-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "high",
@@ -49,29 +105,6 @@
       "workstreams": [
         "B-142"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_programs.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-        "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
-        "src/odylith/runtime/domain_intelligence/proposal_tribunal.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
-        "src/odylith/runtime/domain_intelligence/proposal_contract.py",
-        "src/odylith/runtime/domain_intelligence/proposal_normalization.py"
-      ],
-      "confidence": "high",
-      "event_index": 462,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "domain-intelligence"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_programs.py +6 more",
-      "ts_iso": "2026-05-06T13:30:17-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [

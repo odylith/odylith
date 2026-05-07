@@ -12,7 +12,10 @@ architect a new project before source code exists.
    canned in-code domain list. Render concrete backlog candidates, program waves,
    release plan, planned Registry components, draft Atlas diagrams, security
    and privacy posture, operational risks, validation strategy, assumptions,
-   and open questions that are specific to the operator prompt. Each draft Atlas diagram must include
+   and open questions that are specific to the operator prompt. Always include
+   one explicit umbrella parent workstream such as `WS-00 Govern <Project>`
+   before child workstreams; child rows use `WS-01+` and should never masquerade
+   as the program itself. Each draft Atlas diagram must include
    host-authored `mermaid_source`; Odylith validates and scaffolds the source
    after confirmation, but it must not invent the topology. Keep Mermaid
    sequence message text parser-safe by using words instead of semicolons in
@@ -21,7 +24,10 @@ architect a new project before source code exists.
    different release target, and identify the first-wave workstreams that should
    target that release. Make the proposal easy to operate: name the program,
    wave labels, release selector, targeted first-wave workstreams, impacted
-   components, related diagram slugs, and proof gates in plain language.
+   components, related diagram slugs, and proof gates in plain language. Also
+   state what happens after apply: which child workstream starts coding first,
+   what tests or browser proofs verify it, and which dashboard view confirms the
+   program is ready for the next wave.
 4. Do not write records until the operator confirms the proposal or gives
    explicit edits. On confirmation, run:
    `./.odylith/bin/odylith greenfield apply --repo-root . --proposal-file <proposal.json> --confirm --release 0.0.1`.

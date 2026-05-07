@@ -38,9 +38,9 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 154,
-    "mapped_workstream_evidence_count": 113,
-    "recent_path_match_count": 1,
+    "explicit_event_count": 155,
+    "mapped_workstream_evidence_count": 114,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 12,
     "status": "forensic_coverage_present",
     "timeline_event_count": 155
@@ -55,29 +55,38 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-admissibility-guardrails-and-approval-policy.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-agent-sdk-control-plane-and-deep-benchmark-proof.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-cross-host-harness-ablations-and-deep-benchmark-execution.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-deep-benchmark-coverage-matrix-and-baseline-proof.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-governed-harness-manifest-contract.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-harness-receipts-tracing-and-resumable-proof.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-openai-agents-sdk-adapter-and-generic-harness-contract.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-release-publication-docs-and-benchmark-closure.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-        "odylith/radar/source/releases/releases.v1.json",
-        "odylith/radar/source/programs/B-118.execution-waves.v1.json"
+        "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
+        "tests/unit/runtime/test_greenfield_proposals.py"
       ],
       "confidence": "high",
-      "event_index": 467,
-      "explicit_components": [],
-      "kind": "workspace_activity",
+      "event_index": 462,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "kind": "implementation",
       "mapped_components": [
-        "radar"
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-admissibility-guardrails-and-approval-policy.md, odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-agent-sdk-control-plane-and-deep-benchmark-proof.md +9 more",
-      "ts_iso": "2026-05-06T14:25:34-07:00",
-      "workstreams": []
+      "summary": "Hardened greenfield Tribunal/apply rollback and refreshed generated governance surfaces after migration, CLI, and headless-browser QA.",
+      "ts_iso": "2026-05-06T15:18:38-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [],

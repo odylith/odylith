@@ -7,10 +7,10 @@
     "empty_reasons": [],
     "explicit_event_count": 1,
     "mapped_workstream_evidence_count": 1,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 2,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 2
+    "timeline_event_count": 1
   },
   "name": "Governed Harness",
   "path_prefixes": [
@@ -18,22 +18,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/governed-harness/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "odylith/registry/source/components/governed-harness/CURRENT_SPEC.md"
-      ],
-      "confidence": "high",
-      "event_index": 464,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "governed-harness"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/governed-harness/CURRENT_SPEC.md",
-      "ts_iso": "2026-05-05T21:52:41-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [
         "AGENTS.md"

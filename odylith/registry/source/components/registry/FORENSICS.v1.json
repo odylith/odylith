@@ -35,12 +35,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 97,
-    "mapped_workstream_evidence_count": 69,
+    "explicit_event_count": 98,
+    "mapped_workstream_evidence_count": 70,
     "recent_path_match_count": 1,
     "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 98
+    "timeline_event_count": 99
   },
   "name": "Registry",
   "path_prefixes": [
@@ -50,6 +50,57 @@
   ],
   "spec_ref": "odylith/registry/source/components/registry/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/registry/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 464,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/registry/CURRENT_SPEC.md",
+      "ts_iso": "2026-05-06T20:48:49-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
+        "tests/unit/runtime/test_greenfield_proposals.py"
+      ],
+      "confidence": "high",
+      "event_index": 462,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Hardened greenfield Tribunal/apply rollback and refreshed generated governance surfaces after migration, CLI, and headless-browser QA.",
+      "ts_iso": "2026-05-06T15:18:38-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "high",
@@ -108,22 +159,6 @@
       "meaningful": true,
       "summary": "Hardened greenfield engine alignment: exact code-path context now carries Registry owner into the Execution Engine handshake, greenfield proposal requests expose all activation layers, CB-174 captured, and sync check-only passes after Registry/Atlas refresh.",
       "ts_iso": "2026-05-06T13:14:35-07:00",
-      "workstreams": []
-    },
-    {
-      "artifacts": [
-        "odylith/registry/source/component_registry.v1.json"
-      ],
-      "confidence": "high",
-      "event_index": 468,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "registry"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/component_registry.v1.json",
-      "ts_iso": "2026-05-05T21:52:41-07:00",
       "workstreams": []
     },
     {

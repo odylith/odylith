@@ -234,31 +234,53 @@ def _allocated_diagram_ids(repo_root: Path, count: int) -> list[str]:
 
 def _row_text_tuple(row: Mapping[str, Any], *keys: str) -> tuple[str, ...]:
     for key in keys:
-        value = row.get(key)
-        if value is None:
-            continue
-        if isinstance(value, (list, tuple, set)):
-            values = tuple(str(item).strip() for item in value if str(item).strip())
-            if values:
-                return values
-            continue
-        token = str(value).strip()
-        if token:
-            return (token,)
+        values = _text_values(row.get(key))
+        if values:
+            return values
     return ()
 
 
-def _proposal_posture_text(proposal: Mapping[str, Any], *keys: str) -> str:
+def _text_values(value: Any) -> tuple[str, ...]:
+    if value is None:
+        return ()
+    if isinstance(value, Mapping):
+        values: list[str] = []
+        for nested in value.values():
+            values.extend(_text_values(nested))
+        return _unique_text(values)
+    if isinstance(value, (list, tuple, set)):
+        values = []
+        for item in value:
+            values.extend(_text_values(item))
+        return _unique_text(values)
+    token = " ".join(str(value or "").split()).strip()
+    return (token,) if token else ()
+
+
+def _unique_text(values: Sequence[Any]) -> tuple[str, ...]:
+    seen: set[str] = set()
+    result: list[str] = []
+    for value in values:
+        token = " ".join(str(value or "").split()).strip()
+        if not token:
+            continue
+        key = token.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        result.append(token)
+    return tuple(result)
+
+
+def _proposal_posture_tuple(proposal: Mapping[str, Any], *keys: str) -> tuple[str, ...]:
     rows: list[str] = []
     for key in keys:
-        value = proposal.get(key)
-        if isinstance(value, Mapping):
-            rows.extend(str(item).strip() for item in value.values() if str(item).strip())
-        elif isinstance(value, (list, tuple, set)):
-            rows.extend(str(item).strip() for item in value if str(item).strip())
-        elif str(value or "").strip():
-            rows.append(str(value).strip())
-    return " ".join(rows).strip()
+        rows.extend(_text_values(proposal.get(key)))
+    return _unique_text(rows)
+
+
+def _proposal_posture_text(proposal: Mapping[str, Any], *keys: str) -> str:
+    return " ".join(_proposal_posture_tuple(proposal, *keys)).strip()
 
 
 def _row_posture_text(row: Mapping[str, Any], proposal: Mapping[str, Any], *keys: str) -> str:
@@ -290,7 +312,7 @@ def _backlog_section_overrides(proposal: Mapping[str, Any]) -> dict[str, dict[st
         title = str(row.get("title", "")).strip()
         if not title:
             continue
-        success_metrics = [str(item).strip() for item in row.get("success_metrics", []) if str(item).strip()]
+        success_metrics = list(_row_text_tuple(row, "success_metrics"))
         if title == parent_title:
             success_metrics.extend(
                 [
@@ -325,7 +347,7 @@ def _backlog_apply_args(proposal: Mapping[str, Any], *, release_selector: str) -
         customer=str(first.get("customer", "")).strip(),
         opportunity=str(first.get("opportunity", "")).strip(),
         product_view=str(first.get("product_view", "")).strip(),
-        success_metrics="\n".join(f"- {item}" for item in first.get("success_metrics", []) if str(item).strip()),
+        success_metrics="\n".join(f"- {item}" for item in _row_text_tuple(first, "success_metrics")),
         domain_risk=_domain_risk_for_row(first, proposal),
         security_posture=_security_posture_for_row(first, proposal),
         priority=str(first.get("priority", "P1")).strip() or "P1",
@@ -348,6 +370,19 @@ def _backlog_apply_args(proposal: Mapping[str, Any], *, release_selector: str) -
 
 def _release_assignment_note(*, selector: str) -> str:
     return f"Target confirmed first-wave greenfield workstream(s) from `odylith greenfield apply --release {selector}`."
+
+
+def _component_risk_lines(row: Mapping[str, Any], proposal: Mapping[str, Any]) -> tuple[str, ...]:
+    local = _unique_text(
+        [
+            *_row_text_tuple(row, "risks", "domain_risk", "risk_posture"),
+            *_row_text_tuple(row, "security_posture", "security_compliance", "compliance_posture"),
+            *_row_text_tuple(row, "dependency_expectations"),
+        ]
+    )
+    inherited = _proposal_posture_tuple(proposal, "security_compliance", "risks")
+    values = _unique_text([*local, *inherited])
+    return values or ("Candidate boundary may change once source evidence and implementation plans exist.",)
 
 
 def _release_id_for_proposal(proposal: Mapping[str, Any], *, selector: str) -> str:
@@ -401,6 +436,77 @@ def _refresh_greenfield_dashboard(*, repo_root: Path) -> dict[str, Any]:
         "status": "passed",
         "surfaces": list(_GREENFIELD_VISIBLE_SURFACES),
         "view": owned_surface_refresh.dashboard_handoff(surface="compass"),
+    }
+
+
+def _greenfield_next_steps(
+    *,
+    proposal: Mapping[str, Any],
+    backlog_result: Mapping[str, Any],
+    first_release_workstreams: Sequence[str],
+    program_result: Mapping[str, Any],
+    release_selector: str,
+) -> dict[str, Any]:
+    created = [row for row in backlog_result.get("created", []) if isinstance(row, Mapping)]
+    by_id = {
+        str(row.get("idea_id", "")).strip().upper(): row
+        for row in created
+        if str(row.get("idea_id", "")).strip()
+    }
+    umbrella_id = str(program_result.get("umbrella_id", "")).strip().upper() if isinstance(program_result, Mapping) else ""
+    candidate_ids = [str(item).strip().upper() for item in first_release_workstreams if str(item).strip().upper() != umbrella_id]
+    if not candidate_ids and isinstance(program_result, Mapping):
+        waves = [row for row in program_result.get("waves", []) if isinstance(row, Mapping)]
+        first_wave = waves[0] if waves else {}
+        for field in ("primary_workstreams", "carried_workstreams", "in_band_workstreams"):
+            for item in first_wave.get(field, []) if isinstance(first_wave.get(field), list) else []:
+                token = str(item).strip().upper()
+                if token and token != umbrella_id and token not in candidate_ids:
+                    candidate_ids.append(token)
+    start_id = candidate_ids[0] if candidate_ids else (umbrella_id or (next(iter(by_id), "")))
+    start_row = by_id.get(start_id, {})
+    waves = [row for row in program_result.get("waves", []) if isinstance(row, Mapping)] if isinstance(program_result, Mapping) else []
+    active_wave = next((row for row in waves if str(row.get("status", "")).strip().casefold() == "active"), waves[0] if waves else {})
+    wave_label = str(active_wave.get("label", "")).strip() or str(active_wave.get("wave_id", "")).strip() or "first wave"
+    proposal_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
+    proposal_by_created_id = {
+        str(created_row.get("idea_id", "")).strip().upper(): proposal_rows[index]
+        for index, created_row in enumerate(created)
+        if index < len(proposal_rows) and str(created_row.get("idea_id", "")).strip()
+    }
+    proposal_row = proposal_by_created_id.get(start_id, {})
+    validation_items = _unique_text(
+        [
+            *_row_text_tuple(proposal_row, "validation", "test_strategy"),
+            *_row_text_tuple(proposal_row, "success_metrics"),
+            *_text_values(active_wave.get("validation_gate")),
+            *_text_values(active_wave.get("validation")),
+        ]
+    )
+    return {
+        "start_workstream_id": start_id,
+        "start_workstream_title": str(start_row.get("title", "")).strip(),
+        "first_wave": wave_label,
+        "release_selector": release_selector,
+        "implementation_prompt": (
+            f"Start {start_id}: implement the smallest source-backed slice for "
+            f"{str(start_row.get('title', '')).strip() or 'the first targeted workstream'}, then run its listed validation gates."
+            if start_id
+            else "Select the first targeted child workstream, write a technical plan, implement the smallest source-backed slice, then run its listed validation gates."
+        ),
+        "validation_gates": list(validation_items[:6]),
+        "operator_sequence": [
+            f"Open Compass and start the active wave `{wave_label}`.",
+            f"Open Radar plan view for `{start_id}` and turn the recommended first slice into the first implementation task.",
+            "Write the source slice, then run the repo-native tests named by the workstream validation gates.",
+            "Refresh Odylith surfaces and verify Compass/Radar/Registry/Atlas still agree before moving to the next wave.",
+        ],
+        "verification_commands": [
+            "./.odylith/bin/odylith context --repo-root . "
+            + (start_id or "<first-workstream-id>"),
+            "run the repo-native test command selected by the first technical plan",
+            "./.odylith/bin/odylith sync --repo-root . --impact-mode selective",
+        ],
     }
 
 
@@ -585,7 +691,7 @@ def _write_greenfield_proposal(
             dependencies=_row_text_tuple(row, "dependencies", "depends_on"),
             interfaces=_row_text_tuple(row, "interfaces", "interface_changes"),
             validation=_row_text_tuple(row, "validation", "test_strategy"),
-            risks=_row_text_tuple(row, "risks") or (_security_posture_for_row(row, proposal),),
+            risks=_component_risk_lines(row, proposal),
             dry_run=False,
             refresh=False,
         )
@@ -604,6 +710,13 @@ def _write_greenfield_proposal(
         release_id=release_id,
     )
     dashboard_refresh = _refresh_greenfield_dashboard(repo_root=root)
+    next_steps = _greenfield_next_steps(
+        proposal=proposal,
+        backlog_result=backlog_result,
+        first_release_workstreams=first_release_workstreams,
+        program_result=program_result,
+        release_selector=release_selector,
+    )
 
     return {
         "mode": "applied",
@@ -616,6 +729,7 @@ def _write_greenfield_proposal(
         "atlas_scaffold_logs": atlas_scaffold_logs,
         "memory": memory_record,
         "dashboard_refresh": dashboard_refresh,
+        "next_steps": next_steps,
         "release_bootstrap": release_bootstrap or {"created": False, "release": {}},
         "release_target": release_targeting or {"selector": release_selector, "release_id": "none", "events": []},
     }
@@ -678,6 +792,25 @@ def main(argv: Sequence[str] | None = None) -> int:
                 workstreams = release_target.get("workstream_ids", [])
                 count = len(workstreams) if isinstance(workstreams, list) else 0
                 print(f"- release: {release_target.get('release_id')} ({count} targeted workstreams)")
+            next_steps = result.get("next_steps", {})
+            if isinstance(next_steps, Mapping):
+                start_id = str(next_steps.get("start_workstream_id", "")).strip()
+                start_title = str(next_steps.get("start_workstream_title", "")).strip()
+                if start_id:
+                    print(f"- start coding: {start_id} {start_title}".rstrip())
+                prompt = str(next_steps.get("implementation_prompt", "")).strip()
+                if prompt:
+                    print(f"- next agent prompt: {prompt}")
+                gates = next_steps.get("validation_gates", [])
+                if isinstance(gates, list) and gates:
+                    print("- first validation gates:")
+                    for gate in gates[:4]:
+                        print(f"  - {gate}")
+                commands = next_steps.get("verification_commands", [])
+                if isinstance(commands, list) and commands:
+                    print("- verify before next wave:")
+                    for command in commands[:3]:
+                        print(f"  - {command}")
             dashboard = result.get("dashboard_refresh", {})
             if isinstance(dashboard, Mapping):
                 surfaces = ", ".join(str(item) for item in dashboard.get("surfaces", []))

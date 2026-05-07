@@ -99,7 +99,7 @@ def build_proposal_contract() -> dict[str, Any]:
         ],
         "minimum_content": {
             "backlog": (
-                "parent workstream plus child workstreams when the project has multiple meaningful boundaries; "
+                "an explicit parent/umbrella program workstream plus child workstreams when the project has multiple meaningful boundaries; "
                 "every child should carry first-slice, validation, component_focus, and related_diagram_slugs "
                 "or enough specific language for Odylith to infer the topology"
             ),
@@ -167,6 +167,14 @@ def build_proposal_contract() -> dict[str, Any]:
             (
                 "Make the proposal easy to operate: name the program, waves, release selector, first target "
                 "workstreams, impacted components, diagrams, and proof gates in plain language."
+            ),
+            (
+                "Make the post-apply coding sequence explicit: which child workstream starts first, what proof "
+                "must pass before the next wave, and which surfaces the operator should open to verify the program."
+            ),
+            (
+                "Never let the first child workstream masquerade as the program parent; use WS-00 or a clearly "
+                "titled umbrella such as `Govern <Project>` for the parent and WS-01+ for implementation children."
             ),
             (
                 "Carry the engine activation layers: Context, Execution, Tribunal, Intervention, Governance, "

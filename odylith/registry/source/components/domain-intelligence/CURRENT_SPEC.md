@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-05-06 · Implementation:** Hardened greenfield Tribunal/apply rollback and refreshed generated governance surfaces after migration, CLI, and headless-browser QA.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_transaction.py, tests/unit/runtime/test_greenfield_proposals.py
 - **2026-05-06 · Implementation:** Hardened greenfield engine alignment: exact code-path context now carries Registry owner into the Execution Engine handshake, greenfield proposal requests expose all activation layers, CB-174 captured, and sync check-only passes after Registry/Atlas refresh.
   - Evidence: odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md, src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py +1 more
 - **2026-05-02 · Implementation:** Replaced Domain Intelligence template catalog path with host-reasoned proposal contract, apply-time schema validation, and host-authored Atlas Mermaid source requirements; reran engine, migration, and browser proof.
@@ -51,6 +54,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-04: Hardened greenfield apply so proposed waves are never silently dropped when token overlap fails; every accepted program wave remains visible, with deterministic fallback child assignment preserving operator-authored structure for follow-up refinement. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-167`)
 - 2026-05-05: Added the deterministic greenfield proposal Tribunal and collapsed apply-time visibility into one final batched Radar/Registry/Atlas/Compass refresh after all accepted artifacts and Compass memory are written. The gate is host-model agnostic: hosts author proposal content, while Odylith adjudicates topology, component ownership quality, release targeting, wave focus, and surface visibility before source truth changes. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-05-06: Hardened greenfield apply against loose host-authored proposal JSON and failed retry poison: common field shapes normalize before validation, generic diagram slugs are project-scoped, diagram traceability accepts workstream IDs as well as titles, sequence labels normalize parser-sensitive semicolons, and failed apply rolls back greenfield source truth instead of leaving duplicate Radar, Registry, Atlas, release, or Compass acceptance state. The proposal request contract now also requires domain-proportional security, privacy, compliance, abuse, accessibility, data-retention, and operational risk posture. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-173`)
+- 2026-05-07: Hardened the release-blocking greenfield path found in CRISPR Ethics manual testing: proposals that omit a true umbrella now synthesize `Govern <Project>` before validation, wave/release/traceability mapping resolves proposal-local `WS-*` IDs to created `B-*` IDs, nested security/compliance posture is flattened into readable bullets instead of raw list literals, component specs now include implementation kickoff guidance, and apply output names the first child workstream plus validation commands. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-176`)
 
 ## Contract
 
@@ -60,8 +64,8 @@ This section captures synchronized requirement and contract signals derived from
 - `proposal_normalization.py` owns compatibility normalization for reasonable
   host-authored proposal shapes before strict validation. It may repair field
   spelling, release-plan shape, component proof-field aliases, generic diagram
-  slugs, and Mermaid sequence message punctuation, but it must not invent
-  project topology or source-backed evidence.
+  slugs, Mermaid sequence message punctuation, and missing umbrella program
+  parents, but it must not invent source-backed implementation evidence.
 - `greenfield_transaction.py` owns retry-safe source-truth rollback for failed
   greenfield apply runs. It snapshots the greenfield-owned Radar, Registry,
   Atlas, and Compass acceptance source paths before writes and restores them on
@@ -95,6 +99,14 @@ This section captures synchronized requirement and contract signals derived from
 - Apply must preserve all host-authored program waves. A weak or missing
   token-overlap match may choose a deterministic fallback child, but it must not
   erase the wave or report success with fewer waves than the accepted proposal.
+- Apply must resolve proposal-local workstream identifiers such as `WS-01` and
+  `WS-IDENTITY-ACCESS` when assigning execution waves, release targets, and
+  traceability. The first child workstream must not become the program parent
+  simply because the host omitted a `WS-00` umbrella row.
+- Apply output must hand off implementation, not just artifact counts: it names
+  the first child workstream to start, the active wave, the first validation
+  gates, and the verification commands/operators should run before moving to the
+  next wave.
 - Apply must run the greenfield Tribunal before any governed write and must
   perform one final batched dashboard refresh for Radar, Registry, Atlas, and
   Compass after backlog, program, release, Atlas, Registry, and Compass memory
@@ -137,4 +149,8 @@ confirmation gates, topology requirements, apply schema, and durable memory.
 - `tests/unit/runtime/test_tribunal_engine.py`
 - `tests/unit/test_cli.py`
 - `tests/unit/runtime/test_component_authoring.py`
+- `tests/unit/runtime/test_program_wave_authoring.py`
+- `tests/unit/runtime/test_execution_wave_view_model.py`
+- `tests/integration/runtime/test_surface_browser_smoke.py`
+- `tests/integration/runtime/test_compass_browser_regression_matrix.py`
 - `tests/unit/runtime/test_compass_transaction_runtime.py`

@@ -45,9 +45,9 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 269,
-    "mapped_workstream_evidence_count": 126,
-    "recent_path_match_count": 1,
+    "explicit_event_count": 270,
+    "mapped_workstream_evidence_count": 127,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 28,
     "status": "forensic_coverage_present",
     "timeline_event_count": 270
@@ -80,6 +80,41 @@
       "workstreams": []
     },
     {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
+        "tests/unit/runtime/test_greenfield_proposals.py"
+      ],
+      "confidence": "high",
+      "event_index": 462,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Hardened greenfield Tribunal/apply rollback and refreshed generated governance surfaces after migration, CLI, and headless-browser QA.",
+      "ts_iso": "2026-05-06T15:18:38-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
       "artifacts": [],
       "confidence": "high",
       "event_index": 461,
@@ -110,22 +145,6 @@
       "workstreams": [
         "B-142"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/registry/source/component_registry.v1.json"
-      ],
-      "confidence": "high",
-      "event_index": 465,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "odylith"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/component_registry.v1.json",
-      "ts_iso": "2026-05-05T21:52:41-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [
