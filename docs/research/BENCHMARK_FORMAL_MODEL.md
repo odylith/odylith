@@ -2,9 +2,10 @@
 
 This note defines the public interpretation contract for Odylith benchmark
 results after the Governed Harness turn-gate migration. The benchmark does not
-own a private success path. It observes the same product-owned operating policy
-that normal Odylith turns use, then records the decision, evidence, actions,
-validation, receipts, latency, and token cost.
+own a private success path: the benchmark harness is not allowed to invent its
+own shortcut for saying "success." It observes the same product-owned operating
+policy that normal Odylith turns use, then records the decision, evidence,
+actions, validation, receipts, latency, and token cost.
 
 The measured win is an operating-policy win: better grounded decisions, tighter
 write admission, stronger validation honesty, safer completion claims, and less
@@ -20,16 +21,6 @@ evidence contract, and public report fields are the invariant surfaces.
 This document is not a claim that one host model is better than another. It is
 also not a claim that every task can close without tool work. It describes when
 a benchmark row is valid public evidence for the Odylith operating policy.
-
-## Rendering Contract
-
-This document must render cleanly in GitHub Markdown while still showing real
-LaTeX equations. Equations use fenced `math` blocks. Durable report fields or
-enum tokens stay in Markdown code spans and out of LaTeX identifiers.
-
-That rule is part of the benchmark contract. Public benchmark interpretation
-should not depend on unsafe macros, raw dollar-sign math delimiters, or durable
-source tokens being interpreted as mathematical subscripts.
 
 ## Core Entities
 
