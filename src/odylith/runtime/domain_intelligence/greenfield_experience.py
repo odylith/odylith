@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence import greenfield_traceability
 
 
@@ -118,16 +119,28 @@ def build_component_handoffs(
     components = [row for row in proposal.get("components", []) if isinstance(row, Mapping)]
     for row in components:
         key = greenfield_traceability.component_key(row)
+        focused_child_ids = _component_focused_child_ids(
+            proposal=proposal,
+            created=created,
+            component_row=row,
+            umbrella_id=umbrella_id,
+        )
         component_workstreams = [
             str(item).strip().upper()
             for item in traceability_plan.component_workstreams.get(key, ())
             if str(item).strip()
         ]
         child_ids = [item for item in component_workstreams if item != umbrella_id]
-        preferred_ids = [item for item in first_release_ids if item in child_ids]
-        start_id = (preferred_ids or child_ids or [item for item in first_release_ids if item != umbrella_id] or [umbrella_id])[
-            0
-        ]
+        release_focused_ids = [item for item in first_release_ids if item in focused_child_ids]
+        release_child_ids = [item for item in first_release_ids if item in child_ids]
+        start_id = (
+            release_focused_ids
+            or focused_child_ids
+            or release_child_ids
+            or child_ids
+            or [item for item in first_release_ids if item != umbrella_id]
+            or [umbrella_id]
+        )[0]
         proposal_row = _proposal_row_for_created_id(proposal=proposal, created=created, created_id=start_id)
         wave = _wave_for_workstream(program_result=program_result, workstream_id=start_id)
         title = str(by_id.get(start_id, {}).get("title", "")).strip()
@@ -154,6 +167,58 @@ def verification_commands(start_workstream_id: str) -> list[str]:
         "run the repo-native test, lint, typecheck, build, and browser proof named by the first technical plan",
         "./.odylith/bin/odylith sync --repo-root . --impact-mode selective",
     ]
+
+
+def _component_focused_child_ids(
+    *,
+    proposal: Mapping[str, Any],
+    created: Sequence[Mapping[str, Any]],
+    component_row: Mapping[str, Any],
+    umbrella_id: str,
+) -> list[str]:
+    aliases = _component_aliases(component_row)
+    if not aliases:
+        return []
+    rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
+    result: list[str] = []
+    for index, row in enumerate(rows):
+        if index >= len(created):
+            break
+        idea_id = str(created[index].get("idea_id", "")).strip().upper()
+        if not idea_id or idea_id == umbrella_id:
+            continue
+        if aliases & _focus_aliases(row):
+            result.append(idea_id)
+    return list(unique_text(result))
+
+
+def _component_aliases(row: Mapping[str, Any]) -> set[str]:
+    return _slug_aliases([row.get("component_id"), row.get("id"), row.get("label"), row.get("name")])
+
+
+def _focus_aliases(row: Mapping[str, Any]) -> set[str]:
+    values: list[Any] = []
+    for key in (
+        "component_focus",
+        "components",
+        "component_ids",
+        "related_components",
+        "related_component_ids",
+    ):
+        values.extend(text_values(row.get(key)))
+    return _slug_aliases(values)
+
+
+def _slug_aliases(values: Sequence[Any]) -> set[str]:
+    aliases: set[str] = set()
+    for value in values:
+        token = " ".join(str(value or "").split()).strip()
+        if not token:
+            continue
+        slug = slugify(token)
+        if slug:
+            aliases.add(slug)
+    return aliases
 
 
 def _created_rows(backlog_result: Mapping[str, Any]) -> list[Mapping[str, Any]]:

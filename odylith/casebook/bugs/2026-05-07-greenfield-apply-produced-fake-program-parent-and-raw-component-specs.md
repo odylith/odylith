@@ -1,6 +1,8 @@
 - Bug ID: CB-176
 
-- Status: Open
+- Status: FixedPendingRelease
+
+- Fixed: Pending
 
 - Created: 2026-05-07
 
@@ -30,6 +32,8 @@
 
 - Follow-up Feedback: 2026-05-07: operator rejected the first mitigation as still not deep enough; the remaining quality gap was that component specs were readable but generic, the first implementation anchor still pointed at the umbrella in some specs, execution waves did not expose exit gates in the UI model, and apply output still under-explained the operator handoff after governance creation.
 
+- Deep-Diagnostics Finding: 2026-05-07: a fresh packaged install smoke found that broad greenfield traceability could still leak the first release workstream into unrelated component specs; `identity-access` correctly started at `B-002`, but `review-workflow-engine` also pointed at `B-002` instead of its explicit `component_focus` child `B-003`.
+
 - Blast Radius: Any empty-repo greenfield proposal where the host omits the umbrella parent, uses proposal-local WS IDs, or supplies nested security/compliance posture.
 
 - SLO/SLA Impact: Blocks release-readiness for the greenfield project creation flow because accepted governance objects are confusing and unactionable.
@@ -46,9 +50,13 @@
 
 - Second-Pass Solution: Extracted greenfield handoff shaping into a dedicated runtime owner, carried wave exit gates and validation text through the execution-wave contract and UI model, upgraded candidate Registry specs with implementation runway sections, fixed first component kickoff anchors to prefer the first child workstream over the umbrella, and expanded CLI apply output with first lane, numbered operator handoff, validation gates, and verification commands.
 
+- Deep-Diagnostics Solution: Component handoff selection now prefers backlog rows whose explicit `component_focus`, `components`, `component_ids`, `related_components`, or `related_component_ids` match the Registry component before falling back to release or broad traceability ordering. This keeps each component spec anchored to its own first coding workstream.
+
 - Rollback/Forward Fix: Forward fix in the greenfield runtime and generated skill mirror; no runtime rollback is useful because the issue is generated governance quality.
 
 - Verification: Unit regression for CRISPR no-parent proposal, component authoring tests, program wave/view-model tests, Compass/Registry browser smoke, install bundle/lifecycle tests, and local dist rebuild.
+
+- Deep-Diagnostics Verification: `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_greenfield_proposals.py tests/unit/runtime/test_component_authoring.py tests/unit/runtime/test_execution_wave_contract.py tests/unit/runtime/test_execution_wave_view_model.py tests/unit/runtime/test_execution_wave_ui_runtime_primitives.py tests/unit/runtime/test_program_wave_authoring.py tests/unit/runtime/test_build_traceability_graph.py tests/unit/runtime/test_compass_dashboard_shell.py tests/unit/runtime/test_compass_governance_source_runtime.py tests/unit/runtime/test_surface_shell_contracts.py tests/unit/runtime/test_dashboard_ui_primitives.py tests/unit/install/test_codex_project_assets.py::test_live_claude_skill_shims_and_review_assets_match_bundle_content tests/unit/install/test_codex_project_assets.py::test_live_claude_skill_shims_cover_repo_owned_odylith_skills tests/unit/runtime/test_show_capabilities.py::test_show_me_skill_blocks_host_status_detours` (`140 passed`); `./.odylith/bin/odylith validate guidance-behavior --repo-root .`; `make local-release-assets VERSION=0.1.15 DIST=/tmp/odylith-local-release-0.1.15`; fresh local install smoke from `http://127.0.0.1:8124` applied the CRISPR proposal and proved `review-workflow-engine` starts from `B-003` while `identity-access` starts from `B-002`, with no raw Python list literals in Registry or Compass.
 
 - Prevention: Keep Tribunal plus normalization tests covering parent synthesis, proposal ID mapping, nested posture flattening, and post-apply next steps.
 
@@ -60,7 +68,13 @@
 
 - Second-Pass Regression Tests Added: tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_apply_cli_prints_operator_handoff, tests/unit/runtime/test_component_authoring.py::test_component_spec_template_uses_greenfield_responsibility_and_links, tests/unit/runtime/test_execution_wave_view_model.py::test_build_execution_wave_view_payload_builds_program_and_workstream_context, and tests/unit/runtime/test_execution_wave_ui_runtime_primitives.py::test_execution_wave_runtime_helpers_expose_shared_renderer.
 
+- Deep-Diagnostics Regression Tests Added: tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_apply_synthesizes_parent_and_polishes_component_specs now asserts the workflow component spec uses `B-003` as its first implementation-plan anchor and does not inherit the identity component's `B-002` anchor.
+
 - Related Incidents/Bugs: CB-160, CB-167, CB-173
+
+- GitHub Status: fixed_pending_release
+
+- Fixed In: 0.1.15
 
 - Code References: - src/odylith/runtime/domain_intelligence/proposal_normalization.py
 - src/odylith/runtime/domain_intelligence/greenfield_programs.py

@@ -1216,6 +1216,9 @@ def test_greenfield_apply_synthesizes_parent_and_polishes_component_specs(tmp_pa
     spec = (tmp_path / "odylith/registry/source/components/identity-access/CURRENT_SPEC.md").read_text(
         encoding="utf-8"
     )
+    workflow_spec = (
+        tmp_path / "odylith/registry/source/components/review-workflow-engine/CURRENT_SPEC.md"
+    ).read_text(encoding="utf-8")
     execution_program = json.loads(
         (tmp_path / "odylith/radar/source/programs/B-001.execution-waves.v1.json").read_text(encoding="utf-8")
     )
@@ -1234,6 +1237,15 @@ def test_greenfield_apply_synthesizes_parent_and_polishes_component_specs(tmp_pa
     assert "## Planned Ownership" in spec
     assert "## Implementation Kickoff" in spec
     assert "Use `B-002` (Identity, sessions, and COI-aware authorization) as the first implementation-plan anchor" in spec
+    assert (
+        "Use `B-003` (Review workflow phase state machine) as the first implementation-plan anchor"
+        in workflow_spec
+    )
+    assert (
+        "Use `B-002` (Identity, sessions, and COI-aware authorization) as the first implementation-plan anchor"
+        not in workflow_spec
+    )
+    assert "./.odylith/bin/odylith context --repo-root . B-003" in workflow_spec
     assert "First coding slice:" in spec
     assert "Definition Of Done For The First Slice" in spec
     assert "Operator Verification Commands" in spec
@@ -1242,6 +1254,8 @@ def test_greenfield_apply_synthesizes_parent_and_polishes_component_specs(tmp_pa
     assert "Authorization enforced at API read boundary, not UI" in spec
     assert "['" not in spec
     assert "']" not in spec
+    assert "['" not in workflow_spec
+    assert "']" not in workflow_spec
 
 
 def test_greenfield_apply_cli_prints_operator_handoff(tmp_path, monkeypatch, capsys) -> None:

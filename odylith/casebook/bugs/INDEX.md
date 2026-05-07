@@ -6,7 +6,7 @@ Last updated (UTC): 2026-05-07
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
-| CB-176 | 2026-05-07 | Greenfield apply produced fake program parent and raw component specs | P1 | domain-intelligence | Open | [2026-05-07-greenfield-apply-produced-fake-program-parent-and-raw-component-specs.md](2026-05-07-greenfield-apply-produced-fake-program-parent-and-raw-component-specs.md) |
+| CB-176 | 2026-05-07 | Greenfield apply produced fake program parent and raw component specs | P1 | domain-intelligence | FixedPendingRelease | [2026-05-07-greenfield-apply-produced-fake-program-parent-and-raw-component-specs.md](2026-05-07-greenfield-apply-produced-fake-program-parent-and-raw-component-specs.md) |
 | CB-172 | 2026-05-06 | Structured sync action results can crash governed sync execution | P1 | sync | FixedPendingRelease | [2026-05-06-structured-sync-action-results-can-crash-governed-sync-execution.md](2026-05-06-structured-sync-action-results-can-crash-governed-sync-execution.md) |
 | CB-175 | 2026-05-06 | Single artifact governed writers lacked tribunal posture gates | P1 | governance authoring writers | Open | [2026-05-06-single-artifact-governed-writers-lacked-tribunal-posture-gates.md](2026-05-06-single-artifact-governed-writers-lacked-tribunal-posture-gates.md) |
 | CB-170 | 2026-05-06 | Release retargeting can corrupt prior release workstream filters | P0 | release-planning | FixedPendingRelease | [2026-05-06-release-retargeting-can-corrupt-prior-release-workstream-filters.md](2026-05-06-release-retargeting-can-corrupt-prior-release-workstream-filters.md) |
