@@ -1114,17 +1114,25 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
           `
           : "",
       ].filter(Boolean).join("");
-      const agentSection = agentBlocks || remainingDetailSections || intelligenceSection
+      const agentEmptyState = !agentBlocks && !remainingDetailSections && !intelligenceSection
         ? `
-          <article class="detail-section detail-section-agent">
-            <h2 class="section-heading">Odylith Agent Learnings</h2>
-            <p class="section-lede">Deeper guardrails, evidence, and nearby context for future Odylith-assisted changes.</p>
-            ${agentBlocks ? `<div class="agent-band">${agentBlocks}</div>` : ""}
-            ${remainingDetailSections}
-            ${intelligenceSection}
-          </article>
+          <div class="agent-band">
+            <div class="agent-band-block">
+              <p class="component-note">No structured Odylith agent learnings have been captured for this bug yet.</p>
+            </div>
+          </div>
         `
         : "";
+      const agentSection = `
+        <article class="detail-section detail-section-agent">
+          <h2 class="section-heading">Odylith Agent Learnings</h2>
+          <p class="section-lede">Deeper guardrails, evidence, and nearby context for future Odylith-assisted changes.</p>
+          ${agentBlocks ? `<div class="agent-band">${agentBlocks}</div>` : ""}
+          ${remainingDetailSections}
+          ${intelligenceSection}
+          ${agentEmptyState}
+        </article>
+      `;
       const sectionBlocks = [
         humanSection,
         proofSection,

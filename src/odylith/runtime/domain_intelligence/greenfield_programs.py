@@ -8,6 +8,9 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.domain_intelligence.greenfield_text import join_sentence_text
+from odylith.runtime.domain_intelligence.greenfield_text import text_values
+from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.governance import authoring_execution_policy
 from odylith.runtime.governance import execution_wave_contract
 from odylith.runtime.governance import program_wave_authoring
@@ -259,7 +262,7 @@ def _assign_wave_members(
         status = str(row.get("status", "")).strip().lower()
         if status not in execution_wave_contract.VALID_WAVE_STATUSES:
             status = "active" if not waves else "planned"
-        depends_on = _extract_string_values(row.get("depends_on"))
+        depends_on = list(text_values(row.get("depends_on")))
         if not depends_on and previous_wave_id:
             depends_on = [previous_wave_id]
         waves.append(
@@ -319,47 +322,6 @@ def _add_ref_mapping(mapping: dict[str, str], *, idea_id: str, value: Any) -> No
         mapping[slug] = idea_id
 
 
-def _extract_string_values(value: Any) -> list[str]:
-    if isinstance(value, Mapping):
-        values: list[str] = []
-        for nested in value.values():
-            values.extend(_extract_string_values(nested))
-        return values
-    if isinstance(value, (list, tuple, set)):
-        values = []
-        for item in value:
-            values.extend(_extract_string_values(item))
-        return values
-    token = str(value or "").strip()
-    return [token] if token else []
-
-
-def _unique(values: Sequence[str]) -> list[str]:
-    seen: set[str] = set()
-    result: list[str] = []
-    for value in values:
-        token = str(value or "").strip()
-        if not token or token.casefold() in seen:
-            continue
-        seen.add(token.casefold())
-        result.append(token)
-    return result
-
-
-def _join_text_values(values: Sequence[str]) -> str:
-    result = ""
-    for value in values:
-        token = " ".join(str(value or "").split()).strip()
-        if not token:
-            continue
-        if not result:
-            result = token
-            continue
-        separator = " " if result[-1:] in {".", "!", "?"} else "; "
-        result = f"{result}{separator}{token}"
-    return result.strip()
-
-
 def _workstream_refs(row: Mapping[str, Any]) -> list[str]:
     values: list[str] = []
     for key in (
@@ -374,7 +336,7 @@ def _workstream_refs(row: Mapping[str, Any]) -> list[str]:
         "primary_workstreams",
     ):
         if key in row:
-            values.extend(_extract_string_values(row.get(key)))
+            values.extend(text_values(row.get(key)))
     return values
 
 
@@ -405,7 +367,7 @@ def _resolve_workstream_refs(
 
 def _row_tokens(*values: Any) -> set[str]:
     tokens: set[str] = set()
-    for value in _extract_string_values(values):
+    for value in text_values(values):
         for token in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", value.casefold()):
             if len(token) >= 3 and token not in _STOP_WORDS:
                 tokens.add(token)
@@ -459,7 +421,7 @@ def _wave_label(row: Mapping[str, Any], wave_id: str) -> str:
 
 def _wave_summary(row: Mapping[str, Any]) -> str:
     for key in ("summary", "goal", "validation_gate", "validation", "exit_gate"):
-        token = _join_text_values(_extract_string_values(row.get(key)))
+        token = join_sentence_text(row.get(key))
         if token:
             return token
     return "Confirmed greenfield execution wave."
@@ -467,18 +429,18 @@ def _wave_summary(row: Mapping[str, Any]) -> str:
 
 def _wave_exit_gate(row: Mapping[str, Any]) -> str:
     for key in ("exit_gate", "validation_gate", "validation"):
-        values = _extract_string_values(row.get(key))
-        if values:
-            return _join_text_values(values)
+        value = join_sentence_text(row.get(key))
+        if value:
+            return value
     return ""
 
 
 def _wave_validation(row: Mapping[str, Any]) -> list[str]:
-    values = _unique(_extract_string_values(row.get("validation")))
-    joined_validation = _join_text_values(values)
+    values = list(unique_text(text_values(row.get("validation"))))
+    joined_validation = join_sentence_text(values)
     for key in ("validation_gate", "exit_gate"):
-        for token in _extract_string_values(row.get(key)):
+        for token in text_values(row.get(key)):
             if joined_validation and token.casefold() == joined_validation.casefold():
                 continue
             values.append(token)
-    return _unique(values)
+    return list(unique_text(values))

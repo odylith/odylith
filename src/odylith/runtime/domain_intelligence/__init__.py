@@ -2,6 +2,7 @@
 
 __all__ = [
     "greenfield_traceability",
+    "greenfield_text",
     "greenfield_proposals",
     "proposal_memory",
     "proposal_rendering",

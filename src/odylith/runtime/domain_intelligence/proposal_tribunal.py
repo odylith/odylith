@@ -11,6 +11,8 @@ from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.domain_intelligence.greenfield_text import collect_text_values
+from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence import greenfield_programs
 
 _WORKSTREAM_REF_FIELDS = (
@@ -257,8 +259,8 @@ def _check_backlog_topology(
     }
     for index, row in enumerate(backlog[1:], start=2):
         title = str(row.get("title", f"row {index}")).strip() or f"row {index}"
-        component_refs = _slug_values(_collect_values(row, _COMPONENT_REF_FIELDS))
-        diagram_refs = _slug_values(_collect_values(row, _DIAGRAM_REF_FIELDS))
+        component_refs = _slug_values(collect_text_values(row, _COMPONENT_REF_FIELDS))
+        diagram_refs = _slug_values(collect_text_values(row, _DIAGRAM_REF_FIELDS))
         if not component_refs:
             issues.append(f"child backlog `{title}` must name component_focus or related_components")
         elif component_aliases and not (component_refs & component_aliases):
@@ -312,7 +314,7 @@ def _check_diagram_traceability(
     component_aliases = _component_aliases(components)
     for index, row in enumerate(diagrams, start=1):
         slug = str(row.get("slug", f"diagram {index}")).strip() or f"diagram {index}"
-        refs = _slug_values(_collect_values(row, _WORKSTREAM_REF_FIELDS))
+        refs = _slug_values(collect_text_values(row, _WORKSTREAM_REF_FIELDS))
         if not refs:
             issues.append(f"diagram `{slug}` must name related workstream or backlog focus")
         elif backlog_aliases and not (refs & backlog_aliases):
@@ -323,11 +325,11 @@ def _check_diagram_traceability(
 
 
 def _check_domain_security_posture(*, proposal: Mapping[str, Any], issues: list[str]) -> None:
-    explicit_posture = _collect_values(proposal, _SECURITY_POSTURE_FIELDS)
+    explicit_posture = collect_text_values(proposal, _SECURITY_POSTURE_FIELDS)
     if not explicit_posture:
         issues.append("proposal must include explicit security_compliance, security_posture, or domain risk posture")
         return
-    text = " ".join((*explicit_posture, *_text_items(proposal))).casefold()
+    text = " ".join((*explicit_posture, *text_values(proposal))).casefold()
     if not _contains_any(text, _RISK_TOKENS):
         issues.append("proposal security_compliance posture must assess domain, delivery, or operational risk")
     if not _contains_any(text, _SECURITY_TOKENS):
@@ -341,35 +343,11 @@ def _mapping_rows(value: Any) -> list[Mapping[str, Any]]:
 
 
 def _has_text(row: Mapping[str, Any], key: str) -> bool:
-    return any(str(item).strip() for item in _text_items(row.get(key)))
+    return any(text_values(row.get(key)))
 
 
 def _has_any_text(row: Mapping[str, Any], keys: Sequence[str]) -> bool:
     return any(_has_text(row, key) for key in keys)
-
-
-def _collect_values(row: Mapping[str, Any], fields: Sequence[str]) -> list[str]:
-    values: list[str] = []
-    for field in fields:
-        values.extend(_text_items(row.get(field)))
-    return values
-
-
-def _text_items(value: Any) -> list[str]:
-    if value is None:
-        return []
-    if isinstance(value, Mapping):
-        items: list[str] = []
-        for nested in value.values():
-            items.extend(_text_items(nested))
-        return items
-    if isinstance(value, (list, tuple, set)):
-        items: list[str] = []
-        for nested in value:
-            items.extend(_text_items(nested))
-        return items
-    token = str(value).strip()
-    return [token] if token else []
 
 
 def _contains_any(text: str, tokens: Sequence[str]) -> bool:
@@ -420,7 +398,7 @@ def _backlog_aliases(backlog: Sequence[Mapping[str, Any]]) -> set[str]:
 def _diagram_component_aliases(diagrams: Sequence[Mapping[str, Any]]) -> set[str]:
     aliases: set[str] = set()
     for row in diagrams:
-        aliases.update(_slug_values(_collect_values(row, _COMPONENT_REF_FIELDS)))
+        aliases.update(_slug_values(collect_text_values(row, _COMPONENT_REF_FIELDS)))
         for component in row.get("components", []) if isinstance(row.get("components"), list) else []:
             if isinstance(component, Mapping):
                 aliases.update(

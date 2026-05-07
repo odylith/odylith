@@ -11,39 +11,10 @@ from __future__ import annotations
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.domain_intelligence.greenfield_text import join_sentence_text
+from odylith.runtime.domain_intelligence.greenfield_text import text_values
+from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence import greenfield_traceability
-
-
-def text_values(value: Any) -> tuple[str, ...]:
-    if value is None:
-        return ()
-    if isinstance(value, Mapping):
-        values: list[str] = []
-        for nested in value.values():
-            values.extend(text_values(nested))
-        return unique_text(values)
-    if isinstance(value, (list, tuple, set)):
-        values = []
-        for item in value:
-            values.extend(text_values(item))
-        return unique_text(values)
-    token = " ".join(str(value or "").split()).strip()
-    return (token,) if token else ()
-
-
-def unique_text(values: Sequence[Any]) -> tuple[str, ...]:
-    seen: set[str] = set()
-    result: list[str] = []
-    for value in values:
-        token = " ".join(str(value or "").split()).strip()
-        if not token:
-            continue
-        key = token.casefold()
-        if key in seen:
-            continue
-        seen.add(key)
-        result.append(token)
-    return tuple(result)
 
 
 def row_text_tuple(row: Mapping[str, Any], *keys: str) -> tuple[str, ...]:
@@ -323,7 +294,7 @@ def _validation_items(*, row: Mapping[str, Any], wave: Mapping[str, Any]) -> tup
 
 def _wave_validation_items(wave: Mapping[str, Any]) -> tuple[str, ...]:
     validation_items = text_values(wave.get("validation"))
-    joined_validation = _join_text_values(validation_items)
+    joined_validation = join_sentence_text(validation_items)
     items: list[str] = []
     for token in [*text_values(wave.get("exit_gate")), *text_values(wave.get("validation_gate"))]:
         if joined_validation and token.casefold() == joined_validation.casefold():
@@ -331,20 +302,6 @@ def _wave_validation_items(wave: Mapping[str, Any]) -> tuple[str, ...]:
         items.append(token)
     items.extend(validation_items)
     return unique_text(items)
-
-
-def _join_text_values(items: Sequence[str]) -> str:
-    result = ""
-    for item in items:
-        token = " ".join(str(item or "").split()).strip()
-        if not token:
-            continue
-        if not result:
-            result = token
-            continue
-        separator = " " if result[-1:] in {".", "!", "?"} else "; "
-        result = f"{result}{separator}{token}"
-    return result.strip()
 
 
 def _implementation_prompt(*, start_id: str, title: str, first_slice: str) -> str:

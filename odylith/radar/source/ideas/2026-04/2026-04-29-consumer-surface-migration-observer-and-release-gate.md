@@ -1213,3 +1213,39 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   writes, while existing governed records remain readable and generated
   dashboards converge through normal sync/dashboard refresh and managed asset
   adoption.
+- The v0.1.15 benchmark formal-model rendering-contract documentation repair is
+  covered by `migration-observer:0.1.15:public-docs-and-release-guidance:8212c7c68290`
+  and `migration-observer:0.1.15:public-docs-and-release-guidance:c330d3a0402c`
+  and `migration-observer:0.1.15:public-docs-and-release-guidance:084a4abb2237`.
+  The pass adds reviewer-readable public interpretation text for benchmark
+  report rendering and does not change installed runtime data, repo-owned
+  governance truth, or managed host assets. Existing consumers need no bespoke
+  migration; normal release-note/docs publication and managed asset adoption are
+  sufficient.
+- The v0.1.15 Radar post-refresh generated-surface settlement is covered by
+  `migration-observer:0.1.15:browser-surfaces:11976f5ea60e` and
+  `migration-observer:0.1.15:install-managed-assets:121a792a1657`. The pass is
+  the rendered Radar browser payload plus bundled managed mirror emitted after
+  the benchmark documentation and migration-observer source assessment changed.
+  Existing consumers need no bespoke source-truth migration: upgrade, normal
+  managed asset adoption, and `odylith sync`/dashboard refresh converge the
+  installed Radar surface to the same renderer output.
+- The v0.1.15 Casebook detail empty-state polish is covered by
+  `migration-observer:0.1.15:browser-surfaces:99b653b0e082` and
+  `migration-observer:0.1.15:install-managed-assets:fe7abb4cf478`. The pass
+  makes the Odylith Agent Learnings section structurally stable even when a bug
+  has no captured agent guidance yet, then refreshes the checked-in Casebook
+  browser payload and bundled managed mirror from the product renderer.
+  Existing consumers need no bespoke data migration: existing bug records remain
+  readable, while upgrade, managed asset adoption, and dashboard refresh
+  converge installed Casebook views to the same empty-state contract.
+- The v0.1.15 Casebook spec and Registry surface alignment is covered by
+  `migration-observer:0.1.15:public-docs-and-release-guidance:801216e122ce`,
+  `migration-observer:0.1.15:browser-surfaces:e2a0ea479a38`, and
+  `migration-observer:0.1.15:install-managed-assets:1c13fad1e9fc`. The pass
+  records the agent-learning empty-state contract in the Casebook component
+  spec, refreshes Registry and delivery-intelligence projections, and keeps the
+  installed browser/bundle mirrors derived from source truth. Existing consumers
+  need no bespoke data migration: the spec text is maintainer-facing governance
+  truth, and installed Registry/Casebook surfaces converge through normal
+  managed asset adoption plus dashboard refresh.

@@ -163,6 +163,9 @@ Casebook detail should keep two distinct read bands:
 
 The renderer should not echo the same field content in both bands unless the
 copy is materially transformed for a different audience.
+- The agent-learning band should remain structurally present for every selected
+  bug and render an explicit empty state when the bug has no captured
+  implementation-adjacent guidance yet.
 - It should also dedupe overlapping proof and evidence links across those
   bands so the same path is not rendered twice under adjacent headings.
 - The selected bug id should appear in the detail-header summary-facts band,

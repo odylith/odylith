@@ -9,11 +9,15 @@ validation and Tribunal review.
 from __future__ import annotations
 
 import copy
-import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import join_sentence_text
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_text_list
+from odylith.runtime.domain_intelligence.greenfield_text import text_values
+from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence import greenfield_programs
 
 DEFAULT_GREENFIELD_RELEASE_SELECTOR = greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR
@@ -21,9 +25,6 @@ DEFAULT_GREENFIELD_RELEASE_SELECTOR = greenfield_programs.DEFAULT_GREENFIELD_REL
 
 _VALID_QUALIFICATIONS = {"candidate", "curated"}
 _VALID_MODES = {"host_reasoned_greenfield_proposal", "host_reasoned_proposal"}
-_LIST_SPLIT_RE = re.compile(r"(?:\r?\n|;)+")
-_COMMA_LIST_SPLIT_RE = re.compile(r"(?:\r?\n|;|,)+")
-_LIST_BULLET_RE = re.compile(r"^\s*(?:[-*]|\d+[.)])\s*")
 _BACKLOG_TEXT_LIST_FIELDS = (
     "success_metrics",
     "dependencies",
@@ -73,8 +74,8 @@ def normalize_host_reasoned_proposal(proposal: Mapping[str, Any]) -> dict[str, A
     if str(normalized.get("mode", "")).strip() not in _VALID_MODES:
         normalized["mode"] = "host_reasoned_greenfield_proposal"
     intent = _proposal_object(normalized.get("intent"))
-    title = _text(intent.get("title")) or _text(intent.get("name")) or "Greenfield Project"
-    project_slug = slugify(_text(intent.get("project_slug")) or title)
+    title = clean_text(intent.get("title")) or clean_text(intent.get("name")) or "Greenfield Project"
+    project_slug = slugify(clean_text(intent.get("project_slug")) or title)
     intent.setdefault("title", title)
     intent.setdefault("project_slug", project_slug)
     normalized["intent"] = intent
@@ -108,40 +109,6 @@ def _proposal_object(value: Any) -> dict[str, Any]:
     return dict(value) if isinstance(value, Mapping) else {}
 
 
-def _text(value: Any) -> str:
-    return " ".join(str(value or "").split()).strip()
-
-
-def _text_items(value: Any) -> list[str]:
-    if value is None:
-        return []
-    if isinstance(value, Mapping):
-        values: list[str] = []
-        for nested in value.values():
-            values.extend(_text_items(nested))
-        return values
-    if isinstance(value, (list, tuple, set)):
-        values = []
-        for nested in value:
-            values.extend(_text_items(nested))
-        return values
-    token = _text(value)
-    return [token] if token else []
-
-
-def _unique_text(values: Sequence[Any]) -> list[str]:
-    seen: set[str] = set()
-    result: list[str] = []
-    for value in values:
-        for token in _text_items(value):
-            key = token.casefold()
-            if key in seen:
-                continue
-            seen.add(key)
-            result.append(token)
-    return result
-
-
 def _proposal_sequence(value: Any) -> list[Any]:
     if isinstance(value, list):
         return value
@@ -156,55 +123,17 @@ def _proposal_sequence(value: Any) -> list[Any]:
                 row = dict(nested)
                 row.setdefault("scope", str(key))
                 rows.append(row)
-            elif _text(nested):
-                rows.append(f"{key}: {_text(nested)}")
+            elif clean_text(nested):
+                rows.append(f"{key}: {clean_text(nested)}")
         return rows
-    return [_text(value)] if _text(value) else []
-
-
-def _joined_text(value: Any) -> str:
-    return _join_text_items(_text_items(value))
-
-
-def _join_text_items(items: Sequence[str]) -> str:
-    result = ""
-    for item in items:
-        token = _text(item)
-        if not token:
-            continue
-        if not result:
-            result = token
-            continue
-        separator = " " if result[-1:] in {".", "!", "?"} else "; "
-        result = f"{result}{separator}{token}"
-    return result.strip()
-
-
-def _normalize_text_list(value: Any, *, split_commas: bool = False) -> list[str]:
-    if value is None:
-        return []
-    if isinstance(value, Mapping):
-        values: list[str] = []
-        for nested in value.values():
-            values.extend(_normalize_text_list(nested, split_commas=split_commas))
-        return _unique_text(values)
-    if isinstance(value, (list, tuple, set)):
-        values = []
-        for nested in value:
-            values.extend(_normalize_text_list(nested, split_commas=split_commas))
-        return _unique_text(values)
-    splitter = _COMMA_LIST_SPLIT_RE if split_commas else _LIST_SPLIT_RE
-    parts = [
-        _LIST_BULLET_RE.sub("", _text(part))
-        for part in splitter.split(str(value or "").strip())
-    ]
-    return _unique_text(part for part in parts if part)
+    token = clean_text(value)
+    return [token] if token else []
 
 
 def _normalize_list_fields(row: dict[str, Any], fields: Sequence[str], *, split_commas: bool = False) -> None:
     for key in fields:
         if key in row:
-            row[key] = _normalize_text_list(row.get(key), split_commas=split_commas)
+            row[key] = normalize_text_list(row.get(key), split_commas=split_commas)
 
 
 def _normalize_validation_strategy(value: Any) -> list[Any]:
@@ -223,14 +152,14 @@ def _normalize_release_plan(value: Any) -> dict[str, Any]:
         for row in rows:
             _normalize_list_fields(row, _WORKSTREAM_REF_LIST_FIELDS, split_commas=True)
         first = rows[0] if rows else {}
-        selector = _text(first.get("release")) or DEFAULT_GREENFIELD_RELEASE_SELECTOR
+        selector = clean_text(first.get("release")) or DEFAULT_GREENFIELD_RELEASE_SELECTOR
         target_workstreams = first.get("first_target_workstreams") or first.get("target_workstreams") or []
         label = greenfield_programs.compact_release_target_label(selector)
         return {
             "selector": selector,
             "label": label,
-            "provisional_release_id": _text(first.get("provisional_release_id")) or f"release-{slugify(selector)}",
-            "strategy": _text(first.get("strategy"))
+            "provisional_release_id": clean_text(first.get("provisional_release_id")) or f"release-{slugify(selector)}",
+            "strategy": clean_text(first.get("strategy"))
             or "Promote the accepted first wave through explicit release gates.",
             "target_workstreams": target_workstreams,
             "release_stages": rows,
@@ -247,9 +176,9 @@ def _normalize_release_plan(value: Any) -> dict[str, Any]:
         _normalize_list_fields(row, _WORKSTREAM_REF_LIST_FIELDS, split_commas=True)
     first = stage_rows[0] if stage_rows else {}
     selector = (
-        _text(plan.get("selector"))
-        or _text(plan.get("default_release"))
-        or _text(first.get("release"))
+        clean_text(plan.get("selector"))
+        or clean_text(plan.get("default_release"))
+        or clean_text(first.get("release"))
         or DEFAULT_GREENFIELD_RELEASE_SELECTOR
     )
     plan["selector"] = selector
@@ -277,8 +206,8 @@ def _release_rows(release_plan: Mapping[str, Any]) -> list[dict[str, Any]]:
 def _release_milestones(rows: Sequence[Mapping[str, Any]]) -> list[str]:
     milestones: list[str] = []
     for row in rows:
-        release = _text(row.get("release")) or "release"
-        gate = _joined_text(row.get("exit_criteria")) or _joined_text(row.get("release_gate"))
+        release = clean_text(row.get("release")) or "release"
+        gate = join_sentence_text(row.get("exit_criteria")) or join_sentence_text(row.get("release_gate"))
         if gate:
             milestones.append(f"{release}: {gate}")
     return milestones or ["Proposal accepted and first release target reviewed."]
@@ -286,17 +215,17 @@ def _release_milestones(rows: Sequence[Mapping[str, Any]]) -> list[str]:
 
 def _release_promotion_criteria(rows: Sequence[Mapping[str, Any]]) -> list[str]:
     criteria = [
-        _joined_text(row.get("exit_criteria")) or _joined_text(row.get("release_gate"))
+        join_sentence_text(row.get("exit_criteria")) or join_sentence_text(row.get("release_gate"))
         for row in rows
     ]
     return [item for item in criteria if item] or ["First-wave validation gates are satisfied."]
 
 
 def _release_gate_for(value: Any, *, release_rows: Sequence[Mapping[str, Any]]) -> str:
-    selector = _text(value)
+    selector = clean_text(value)
     for row in release_rows:
-        if selector and _text(row.get("release")) == selector:
-            return _text(row.get("exit_criteria")) or _text(row.get("release_gate"))
+        if selector and clean_text(row.get("release")) == selector:
+            return join_sentence_text(row.get("exit_criteria")) or join_sentence_text(row.get("release_gate"))
     return ""
 
 
@@ -308,13 +237,13 @@ def _normalize_program(value: Any, *, release_rows: Sequence[Mapping[str, Any]])
             continue
         row = dict(raw)
         _normalize_list_fields(row, _WORKSTREAM_REF_LIST_FIELDS, split_commas=True)
-        row.setdefault("wave_id", _text(row.get("id")) or _text(row.get("wave")) or f"W{index}")
-        row.setdefault("label", _text(row.get("title")) or _text(row.get("name")) or str(row["wave_id"]))
-        row.setdefault("goal", _joined_text(row.get("summary")) or f"Deliver {row['label']}.")
+        row.setdefault("wave_id", clean_text(row.get("id")) or clean_text(row.get("wave")) or f"W{index}")
+        row.setdefault("label", clean_text(row.get("title")) or clean_text(row.get("name")) or str(row["wave_id"]))
+        row.setdefault("goal", join_sentence_text(row.get("summary")) or f"Deliver {row['label']}.")
         gate = (
-            _joined_text(row.get("validation_gate"))
-            or _joined_text(row.get("validation"))
-            or _joined_text(row.get("exit_gate"))
+            join_sentence_text(row.get("validation_gate"))
+            or join_sentence_text(row.get("validation"))
+            or join_sentence_text(row.get("exit_gate"))
             or _release_gate_for(row.get("release"), release_rows=release_rows)
         )
         if gate:
@@ -329,7 +258,7 @@ def _diagram_slug_map(value: Any, *, project_slug: str) -> dict[str, str]:
     for raw in _proposal_sequence(value):
         if not isinstance(raw, Mapping):
             continue
-        original = slugify(_text(raw.get("slug")) or _text(raw.get("title")))
+        original = slugify(clean_text(raw.get("slug")) or clean_text(raw.get("title")))
         if not original:
             continue
         target = (
@@ -356,7 +285,7 @@ def _slug_already_project_scoped(slug: str, *, project_slug: str) -> bool:
 def _remap_diagram_refs(value: Any, slug_map: Mapping[str, str]) -> Any:
     if isinstance(value, list):
         return [_remap_diagram_refs(item, slug_map) for item in value]
-    token = slugify(_text(value))
+    token = slugify(clean_text(value))
     return slug_map.get(token, value)
 
 
@@ -375,9 +304,9 @@ def _normalize_backlog(
         _normalize_list_fields(row, _BACKLOG_TEXT_LIST_FIELDS)
         _normalize_list_fields(row, _BACKLOG_REF_LIST_FIELDS, split_commas=True)
         row.setdefault("evidence_tier", "user_intent" if index == 1 else "odylith_assumption")
-        first_slice = _text(row.get("recommended_first_slice")) or _text(row.get("first_slice_proof"))
+        first_slice = clean_text(row.get("recommended_first_slice")) or clean_text(row.get("first_slice_proof"))
         if not first_slice:
-            first_slice = _joined_text(row.get("validation")) or _release_gate_for(
+            first_slice = join_sentence_text(row.get("validation")) or _release_gate_for(
                 row.get("release"),
                 release_rows=release_rows,
             )
@@ -426,20 +355,20 @@ def _looks_like_program_parent(
     program: Mapping[str, Any],
     waves: Sequence[Mapping[str, Any]],
 ) -> bool:
-    explicit_type = _text(row.get("workstream_type")).casefold()
+    explicit_type = clean_text(row.get("workstream_type")).casefold()
     if explicit_type in {"umbrella", "program", "parent", "program_parent"}:
         return True
     row_refs = {slugify(value) for value in _row_ref_values(row)}
     wave_refs = {slugify(value) for wave in waves for value in _workstream_ref_values(wave)}
     if row_refs & wave_refs:
         return False
-    title = _text(row.get("title"))
+    title = clean_text(row.get("title"))
     title_slug = slugify(title)
     program_title = (
-        _text(program.get("name"))
-        or _text(program.get("title"))
-        or _text(intent.get("title"))
-        or _text(intent.get("name"))
+        clean_text(program.get("name"))
+        or clean_text(program.get("title"))
+        or clean_text(intent.get("title"))
+        or clean_text(intent.get("name"))
     )
     if title_slug and title_slug == slugify(program_title):
         return True
@@ -461,29 +390,34 @@ def _synthesized_program_parent(
     validation_strategy: Sequence[Any],
     security_compliance: Any,
 ) -> dict[str, Any]:
-    title = _text(intent.get("title")) or _text(intent.get("name")) or "Greenfield Project"
-    parent_title = _text(program.get("parent_workstream")) or _text(program.get("program_workstream")) or f"Govern {title}"
+    title = clean_text(intent.get("title")) or clean_text(intent.get("name")) or "Greenfield Project"
+    parent_title = clean_text(program.get("parent_workstream")) or clean_text(program.get("program_workstream")) or f"Govern {title}"
     first_wave = _first_wave(program)
-    first_wave_label = _text(first_wave.get("label")) or _text(first_wave.get("name")) or _text(first_wave.get("wave_id")) or "first wave"
-    release_selector = _text(release_plan.get("selector")) or DEFAULT_GREENFIELD_RELEASE_SELECTOR
-    component_focus = _unique_text(
+    first_wave_label = (
+        clean_text(first_wave.get("label"))
+        or clean_text(first_wave.get("name"))
+        or clean_text(first_wave.get("wave_id"))
+        or "first wave"
+    )
+    release_selector = clean_text(release_plan.get("selector")) or DEFAULT_GREENFIELD_RELEASE_SELECTOR
+    component_focus = list(unique_text(
         [
             first_wave.get("component_focus"),
             first_wave.get("components"),
             *[row.get("component_focus") for row in child_rows],
             *[row.get("related_components") for row in child_rows],
         ]
-    )
-    diagram_refs = _unique_text(
+    ))
+    diagram_refs = list(unique_text(
         [
             *[row.get("related_diagram_slugs") for row in child_rows],
             *[row.get("diagram_slugs") for row in child_rows],
             *[row.get("related_diagrams") for row in child_rows],
         ]
-    )
-    validation = _text_items(first_wave.get("validation_gate")) or _text_items(first_wave.get("validation"))
-    validation.extend(_text_items(release_plan.get("promotion_criteria")))
-    validation.extend(_text_items(validation_strategy)[:3])
+    ))
+    validation = list(text_values(first_wave.get("validation_gate")) or text_values(first_wave.get("validation")))
+    validation.extend(text_values(release_plan.get("promotion_criteria")))
+    validation.extend(text_values(validation_strategy)[:3])
     return {
         "id": "WS-00",
         "title": parent_title,
@@ -549,7 +483,7 @@ def _first_wave(program: Mapping[str, Any]) -> Mapping[str, Any]:
 
 
 def _row_ref_values(row: Mapping[str, Any]) -> list[str]:
-    return _unique_text([row.get("id"), row.get("workstream_id"), row.get("idea_id"), row.get("title")])
+    return list(unique_text([row.get("id"), row.get("workstream_id"), row.get("idea_id"), row.get("title")]))
 
 
 def _workstream_ref_values(row: Mapping[str, Any]) -> list[str]:
@@ -568,11 +502,11 @@ def _workstream_ref_values(row: Mapping[str, Any]) -> list[str]:
         "primary_workstreams",
     ):
         values.append(row.get(key))
-    return _unique_text(values)
+    return list(unique_text(values))
 
 
 def _domain_posture_text(value: Any) -> str:
-    return " ".join(_text_items(value)).strip()
+    return " ".join(text_values(value)).strip()
 
 
 def _normalize_components(value: Any) -> list[Any]:
@@ -582,12 +516,12 @@ def _normalize_components(value: Any) -> list[Any]:
             rows.append(raw)
             continue
         row = dict(raw)
-        row.setdefault("component_id", _text(row.get("id")) or _text(row.get("name")) or _text(row.get("label")))
-        row.setdefault("label", _text(row.get("name")) or _text(row.get("component_id")))
-        row.setdefault("kind", _text(row.get("type")) or "service")
-        row.setdefault("intended_path", _text(row.get("path")) or f"src/{slugify(row.get('component_id'))}")
+        row.setdefault("component_id", clean_text(row.get("id")) or clean_text(row.get("name")) or clean_text(row.get("label")))
+        row.setdefault("label", clean_text(row.get("name")) or clean_text(row.get("component_id")))
+        row.setdefault("kind", clean_text(row.get("type")) or "service")
+        row.setdefault("intended_path", clean_text(row.get("path")) or f"src/{slugify(row.get('component_id'))}")
         row.setdefault("status", "planned")
-        qualification = _text(row.get("qualification")).casefold()
+        qualification = clean_text(row.get("qualification")).casefold()
         row["qualification"] = qualification if qualification in _VALID_QUALIFICATIONS else "candidate"
         if "proof_expectations" in row and "validation" not in row:
             row["validation"] = row.get("proof_expectations")
@@ -602,10 +536,10 @@ def _component_descriptions(components: Sequence[Any]) -> dict[str, str]:
     for row in components:
         if not isinstance(row, Mapping):
             continue
-        for key in (_text(row.get("component_id")), _text(row.get("label")), _text(row.get("name"))):
+        for key in (clean_text(row.get("component_id")), clean_text(row.get("label")), clean_text(row.get("name"))):
             slug = slugify(key)
             if slug:
-                descriptions[slug] = _text(row.get("responsibility")) or f"Planned component {key}."
+                descriptions[slug] = clean_text(row.get("responsibility")) or f"Planned component {key}."
     return descriptions
 
 
@@ -622,20 +556,20 @@ def _normalize_diagrams(
             rows.append(raw)
             continue
         row = dict(raw)
-        original_slug = slugify(_text(row.get("slug")) or _text(row.get("title")))
+        original_slug = slugify(clean_text(row.get("slug")) or clean_text(row.get("title")))
         if original_slug in slug_map:
             row["slug"] = slug_map[original_slug]
-        row.setdefault("kind", _text(row.get("type")) or "flowchart")
+        row.setdefault("kind", clean_text(row.get("type")) or "flowchart")
         source = row.get("mermaid_source") or row.get("source")
-        if _text(source):
+        if clean_text(source):
             row["mermaid_source"] = _normalize_mermaid_source(str(source))
-        row.setdefault("link_state", _text(row.get("status")) or "atlas_first_draft")
+        row.setdefault("link_state", clean_text(row.get("status")) or "atlas_first_draft")
         row.setdefault("evidence_tier", "user_intent")
         related = row.get("related_components")
         if "components" not in row and related:
             component_rows = []
             for item in _proposal_sequence(related):
-                name = _text(item)
+                name = clean_text(item)
                 if not name:
                     continue
                 component_rows.append(

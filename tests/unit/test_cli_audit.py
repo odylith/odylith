@@ -392,6 +392,7 @@ for governance_command in (
 for program_command in (
     "create",
     "update",
+    "adopt",
     "list",
     "show",
     "status",
@@ -400,7 +401,11 @@ for program_command in (
     _HANDLER_CASES.append(
         {
             "path": ("program", program_command),
-            "argv": lambda root, command=program_command: ["program", command, f"--repo-root={root}"],
+            "argv": lambda root, command=program_command: (
+                ["program", command, "B-001", "B-002", f"--repo-root={root}"]
+                if command == "adopt"
+                else ["program", command, f"--repo-root={root}"]
+            ),
             "handler": "_cmd_program",
             "check": lambda args, root, command=program_command: getattr(args, "repo_root", "") == str(root)
             and getattr(args, "program_command", "") == command,

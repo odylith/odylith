@@ -21,6 +21,9 @@ from odylith.runtime.analysis_engine.types import SourceSummary, slugify
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_traceability
+from odylith.runtime.domain_intelligence.greenfield_experience import proposal_posture_tuple
+from odylith.runtime.domain_intelligence.greenfield_experience import row_text_tuple
+from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 from odylith.runtime.domain_intelligence.proposal_contract import build_proposal_contract
 from odylith.runtime.domain_intelligence.proposal_contract import build_proposal_template
@@ -37,12 +40,6 @@ from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import release_planning_authoring
 from odylith.runtime.governance import release_planning_contract
 from odylith.runtime.surfaces import scaffold_mermaid_diagram
-
-_proposal_posture_tuple = greenfield_experience.proposal_posture_tuple
-_row_text_tuple = greenfield_experience.row_text_tuple
-_text_values = greenfield_experience.text_values
-_unique_text = greenfield_experience.unique_text
-
 
 def _prompt_text(prompt: str) -> str:
     text = " ".join(str(prompt or "").split()).strip()
@@ -239,11 +236,11 @@ def _allocated_diagram_ids(repo_root: Path, count: int) -> list[str]:
 
 
 def _proposal_posture_text(proposal: Mapping[str, Any], *keys: str) -> str:
-    return " ".join(_proposal_posture_tuple(proposal, *keys)).strip()
+    return " ".join(proposal_posture_tuple(proposal, *keys)).strip()
 
 
 def _row_posture_text(row: Mapping[str, Any], proposal: Mapping[str, Any], *keys: str) -> str:
-    local = _row_text_tuple(row, *keys)
+    local = row_text_tuple(row, *keys)
     if local:
         return " ".join(local).strip()
     return _proposal_posture_text(proposal, *keys)
@@ -271,7 +268,7 @@ def _backlog_section_overrides(proposal: Mapping[str, Any]) -> dict[str, dict[st
         title = str(row.get("title", "")).strip()
         if not title:
             continue
-        success_metrics = list(_row_text_tuple(row, "success_metrics"))
+        success_metrics = list(row_text_tuple(row, "success_metrics"))
         if title == parent_title:
             success_metrics.extend(
                 [
@@ -306,7 +303,7 @@ def _backlog_apply_args(proposal: Mapping[str, Any], *, release_selector: str) -
         customer=str(first.get("customer", "")).strip(),
         opportunity=str(first.get("opportunity", "")).strip(),
         product_view=str(first.get("product_view", "")).strip(),
-        success_metrics="\n".join(f"- {item}" for item in _row_text_tuple(first, "success_metrics")),
+        success_metrics="\n".join(f"- {item}" for item in row_text_tuple(first, "success_metrics")),
         domain_risk=_domain_risk_for_row(first, proposal),
         security_posture=_security_posture_for_row(first, proposal),
         priority=str(first.get("priority", "P1")).strip() or "P1",
@@ -332,15 +329,15 @@ def _release_assignment_note(*, selector: str) -> str:
 
 
 def _component_risk_lines(row: Mapping[str, Any], proposal: Mapping[str, Any]) -> tuple[str, ...]:
-    local = _unique_text(
+    local = unique_text(
         [
-            *_row_text_tuple(row, "risks", "domain_risk", "risk_posture"),
-            *_row_text_tuple(row, "security_posture", "security_compliance", "compliance_posture"),
-            *_row_text_tuple(row, "dependency_expectations"),
+            *row_text_tuple(row, "risks", "domain_risk", "risk_posture"),
+            *row_text_tuple(row, "security_posture", "security_compliance", "compliance_posture"),
+            *row_text_tuple(row, "dependency_expectations"),
         ]
     )
-    inherited = _proposal_posture_tuple(proposal, "security_compliance", "risks")
-    values = _unique_text([*local, *inherited])
+    inherited = proposal_posture_tuple(proposal, "security_compliance", "risks")
+    values = unique_text([*local, *inherited])
     return values or ("Candidate boundary may change once source evidence and implementation plans exist.",)
 
 
@@ -584,9 +581,9 @@ def _write_greenfield_proposal(
             diagrams=traceability_plan.component_diagrams.get(key, ()),
             responsibility=str(row.get("responsibility", "")).strip(),
             boundary=str(row.get("boundary", "")).strip(),
-            dependencies=_row_text_tuple(row, "dependencies", "depends_on"),
-            interfaces=_row_text_tuple(row, "interfaces", "interface_changes"),
-            validation=_row_text_tuple(row, "validation", "test_strategy"),
+            dependencies=row_text_tuple(row, "dependencies", "depends_on"),
+            interfaces=row_text_tuple(row, "interfaces", "interface_changes"),
+            validation=row_text_tuple(row, "validation", "test_strategy"),
             risks=_component_risk_lines(row, proposal),
             implementation_handoff=component_handoffs.get(key, {}),
             dry_run=False,

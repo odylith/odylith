@@ -22,6 +22,24 @@ This document is not a claim that one host model is better than another. It is
 also not a claim that every task can close without tool work. It describes when
 a benchmark row is valid public evidence for the Odylith operating policy.
 
+## Rendering Contract
+
+The public report must render the product contract in reviewer-readable Markdown
+before any chart, scorecard, or aggregate claim can stand on its own. A rendered
+benchmark row must expose the durable token fields, the Turn Gate receipt, the
+execution capsule, validator basis, write-path evidence, and fairness findings
+as text or tables that survive GitHub Markdown rendering.
+
+The rendering layer is not allowed to replace source-truth tokens with prettier
+labels unless it also preserves the token beside the label. In particular,
+`turn_gate_decision`, `turn_gate_receipt`, `turn_gate_product_path_present`,
+`execution_capsule`, `tool_gate_summary`, `stop_gate_summary`, `status_basis`,
+`validator_execution_mode`, `validator_status_basis`,
+`preflight_evidence_mode`, `preflight_evidence_result_status`,
+`candidate_write_paths`, `workspace_delta_paths`, and `fairness_findings` must
+remain visible enough that a reviewer can reconstruct the row without private
+harness state.
+
 ## Core Entities
 
 | Name | Report surface | Meaning |

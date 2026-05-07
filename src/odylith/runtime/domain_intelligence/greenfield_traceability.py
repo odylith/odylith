@@ -8,6 +8,8 @@ import re
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.domain_intelligence.greenfield_text import collect_delimited_text_values
+from odylith.runtime.domain_intelligence.greenfield_text import delimited_text_values
 from odylith.runtime.governance import backlog_authoring
 
 _REF_FIELDS = (
@@ -141,9 +143,9 @@ def apply_backlog_traceability(
     """Write proposal-derived topology and richer detail sections into new backlog specs."""
 
     touched: list[str] = []
-    risks = _text_items(proposal.get("risks", []))
-    validation_strategy = _text_items(proposal.get("validation_strategy", []))
-    open_questions = _text_items(proposal.get("open_questions", []))
+    risks = delimited_text_values(proposal.get("risks", []))
+    validation_strategy = delimited_text_values(proposal.get("validation_strategy", []))
+    open_questions = delimited_text_values(proposal.get("open_questions", []))
     for workstream in plan.workstreams:
         metadata, sections = backlog_authoring._parse_metadata_and_sections(workstream.path)
         diagrams = plan.backlog_diagrams.get(workstream.idea_id, ())
@@ -194,7 +196,7 @@ def _component_workstream_ids(
     row: Mapping[str, Any],
     workstreams: Sequence[CreatedWorkstream],
 ) -> tuple[str, ...]:
-    explicit = _workstream_refs_to_ids(_collect_values(row, _REF_FIELDS), workstreams)
+    explicit = _workstream_refs_to_ids(collect_delimited_text_values(row, _REF_FIELDS), workstreams)
     parent = workstreams[:1]
     if explicit:
         return tuple(_unique([*(item.idea_id for item in parent), *explicit]))
@@ -226,7 +228,7 @@ def _diagram_link(
     component_workstreams: Mapping[str, Sequence[str]],
 ) -> DiagramLink:
     related_ids: list[str] = [workstreams[0].idea_id] if workstreams else []
-    explicit = _workstream_refs_to_ids(_collect_values(row, _REF_FIELDS), workstreams)
+    explicit = _workstream_refs_to_ids(collect_delimited_text_values(row, _REF_FIELDS), workstreams)
     related_ids.extend(explicit)
     diagram_component_aliases = _diagram_component_aliases(row)
     for component in components:
@@ -263,7 +265,7 @@ def _component_diagram_ids(
     row: Mapping[str, Any],
     diagram_links: Sequence[DiagramLink],
 ) -> tuple[str, ...]:
-    explicit_slugs = {slugify(item) for item in _collect_values(row, _DIAGRAM_FIELDS)}
+    explicit_slugs = {slugify(item) for item in collect_delimited_text_values(row, _DIAGRAM_FIELDS)}
     aliases = _component_aliases(row)
     primary = _semantic_tokens(" ".join([str(row.get("component_id", "")), str(row.get("label", ""))]))
     matches: list[str] = []
@@ -304,32 +306,32 @@ def _patch_sections(
     sections["Scope"] = _bullets(
         [
             first_slice or str(row.get("scope", "")).strip(),
-            *_text_items(row.get("scope_items", [])),
+            *delimited_text_values(row.get("scope_items", [])),
             *component_lines[:6],
         ]
     )
     sections["Non-Goals"] = _bullets(
-        _text_items(row.get("non_goals", []))
+        delimited_text_values(row.get("non_goals", []))
         or [
             "Do not claim source-backed implementation ownership until code exists.",
             "Do not promote research or product claims without the listed validation gates.",
         ]
     )
-    sections["Risks"] = _bullets(_text_items(row.get("risks", [])) or risks[:3])
+    sections["Risks"] = _bullets(delimited_text_values(row.get("risks", [])) or risks[:3])
     sections["Dependencies"] = _bullets(
-        _text_items(row.get("dependencies", []))
-        or _text_items(row.get("depends_on", []))
+        delimited_text_values(row.get("dependencies", []))
+        or delimited_text_values(row.get("depends_on", []))
         or _topology_dependency_lines(metadata)
     )
     validation_items = (
-        _text_items(row.get("validation", []))
-        or _text_items(row.get("validation_gate", []))
-        or _text_items(row.get("success_metrics", []))
+        delimited_text_values(row.get("validation", []))
+        or delimited_text_values(row.get("validation_gate", []))
+        or delimited_text_values(row.get("success_metrics", []))
         or validation_strategy[:3]
     )
     sections["Validation"] = _bullets(validation_items)
     sections["Test Strategy"] = _bullets(
-        _text_items(row.get("test_strategy", []))
+        delimited_text_values(row.get("test_strategy", []))
         or [
             "Turn each success metric into a focused reproducibility, contract, or smoke proof before source implementation starts.",
         ]
@@ -341,21 +343,21 @@ def _patch_sections(
         ]
     )
     sections["Interface Changes"] = _bullets(
-        _text_items(row.get("interfaces", []))
-        or _text_items(row.get("interface_changes", []))
+        delimited_text_values(row.get("interfaces", []))
+        or delimited_text_values(row.get("interface_changes", []))
         or [
             "Candidate interfaces are proposal-level only until the first source-backed plan defines runtime contracts.",
         ]
     )
     sections["Rollout"] = _bullets(
-        _text_items(row.get("rollout", []))
-        or _text_items((proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}).get("milestones", []))[:3]
+        delimited_text_values(row.get("rollout", []))
+        or delimited_text_values((proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}).get("milestones", []))[:3]
         or [
             "Keep the workstream queued until the first implementation plan binds scope, proof, and release gates.",
         ]
     )
     sections["Why Now"] = str(row.get("opportunity", "")).strip() or sections.get("Why Now", "")
-    sections["Open Questions"] = _bullets(_text_items(row.get("open_questions", [])) or open_questions[:3])
+    sections["Open Questions"] = _bullets(delimited_text_values(row.get("open_questions", [])) or open_questions[:3])
 
 
 def _component_lines_for_workstream(
@@ -435,7 +437,7 @@ def _diagram_component_aliases(row: Mapping[str, Any]) -> set[str]:
             aliases.update(_slug_aliases(str(component.get("label", ""))))
         else:
             aliases.update(_slug_aliases(str(component)))
-    aliases.update(_slug_aliases(" ".join(_collect_values(row, _COMPONENT_FIELDS))))
+    aliases.update(_slug_aliases(" ".join(collect_delimited_text_values(row, _COMPONENT_FIELDS))))
     return aliases
 
 
@@ -462,8 +464,8 @@ def _workstream_haystack(row: Mapping[str, Any], *, fallback_title: str) -> str:
         str(row.get("opportunity", "")),
         str(row.get("product_view", "")),
         str(row.get("recommended_first_slice", "")),
-        " ".join(_text_items(row.get("success_metrics", []))),
-        " ".join(_collect_values(row, _COMPONENT_FIELDS)),
+        " ".join(delimited_text_values(row.get("success_metrics", []))),
+        " ".join(collect_delimited_text_values(row, _COMPONENT_FIELDS)),
     ]
     return " ".join(values)
 
@@ -478,32 +480,6 @@ def _semantic_tokens(value: str) -> set[str]:
     for token in tokens:
         expanded.update(part for part in token.replace("_", "-").split("-") if len(part) > 2 and part not in _STOPWORDS)
     return expanded
-
-
-def _collect_values(row: Mapping[str, Any], fields: Sequence[str]) -> list[str]:
-    values: list[str] = []
-    for field in fields:
-        values.extend(_text_items(row.get(field)))
-    return values
-
-
-def _text_items(value: Any) -> list[str]:
-    if value is None:
-        return []
-    if isinstance(value, Mapping):
-        result: list[str] = []
-        for nested in value.values():
-            result.extend(_text_items(nested))
-        return result
-    if isinstance(value, (list, tuple, set)):
-        result: list[str] = []
-        for item in value:
-            result.extend(_text_items(item))
-        return result
-    raw = str(value).strip()
-    if not raw:
-        return []
-    return [item.strip() for item in re.split(r"[,;\n]+", raw) if item.strip()]
 
 
 def _merge_ids(existing: str, additions: Sequence[str]) -> list[str]:
