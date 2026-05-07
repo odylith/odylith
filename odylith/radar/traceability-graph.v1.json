@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "8e358b075435bb2c8afb00eeac04e93a0dbb03db3ba6b2906f2fa14310e5a369",
+    "digest": "c164f8df26176e8f7f2f336c0e41b3c7e3550f831d590e33cf01d58d5b6db28e",
     "file_count": 312,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -8910,6 +8910,8 @@
           "label": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
           "status": "complete",
           "summary": "Stand up the event-sourced execution contract, host-profile envelope, and hard-constraint promotion while carrying the thin program/wave authoring sidecar and structured turn-intake lane in band.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [],
           "primary_workstreams": [
             "B-073"
@@ -8942,6 +8944,8 @@
           "label": "Admissibility Policy Middleware and Re-Anchor Triggers",
           "status": "complete",
           "summary": "Add `admit|deny|defer` policy decisions in front of execution surfaces and trigger re-anchor after repeated drift or contradiction.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W1"
           ],
@@ -8963,6 +8967,8 @@
           "label": "Frontier Extraction, User-Correction Invariants, and Critical-Path Modes",
           "status": "complete",
           "summary": "Derive one truthful frontier and explicit execution modes so verify/recover lanes stop branching indefinitely.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W2"
           ],
@@ -8984,6 +8990,8 @@
           "label": "Resource Closure Analysis and Destructive-Subset Blocking",
           "status": "complete",
           "summary": "Compute safe, incomplete, and destructive scope for the first resource domains instead of relying on operator intuition.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W3"
           ],
@@ -9005,6 +9013,8 @@
           "label": "External Dependency Semantics, Receipts, and Resumability",
           "status": "complete",
           "summary": "Normalize semantic wait states, emit receipts, and default reruns to reattachment when work is already in flight.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W3"
           ],
@@ -9026,6 +9036,8 @@
           "label": "Validation Matrix Synthesis, Contradiction Detection, and History-Based Failure Blocking",
           "status": "complete",
           "summary": "Close the loop with validation synthesis, contradiction records, and executable preflight rules from known failure classes.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W4",
             "W5"
@@ -9055,6 +9067,8 @@
           "label": "Visible Intervention Value Engine Governance Binding",
           "status": "complete",
           "summary": "Binds B-096, child waves, v0.1.11 release assignment, CB-122, CB-123, Registry, Atlas, Radar, Casebook, Compass, and source plan truth to the deterministic value-engine contract.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [],
           "primary_workstreams": [
             "B-105"
@@ -9074,6 +9088,8 @@
           "label": "Visible Intervention Proposition Engine",
           "status": "complete",
           "summary": "Ships the proposition-first deterministic value engine, hard gates, duplicate/conflict graph, adaptive budget, decision log, and Guidance Behavior evidence plus platform-contract handoff.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W1"
           ],
@@ -9095,6 +9111,8 @@
           "label": "Host Visibility Integration And Ruler Canonicalization",
           "status": "complete",
           "summary": "Centralizes chat-visible proof, transcript replay, ruler repair, host parity, Stop recovery, and Assist closeout separation.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W2"
           ],
@@ -9116,6 +9134,8 @@
           "label": "Intervention Adjudication Corpus And Advisory Benchmark",
           "status": "complete",
           "summary": "Adds governed bootstrap/advisory selector evidence plus guidance_behavior benchmark, guidance-surface validation, platform end-to-end proof, live/source-bundle parity checks, and hot-path efficiency gates while keeping calibration non-publishable.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W3"
           ],
@@ -9137,6 +9157,8 @@
           "label": "v0.1.11 Visible Intervention Release Proof",
           "status": "complete",
           "summary": "Collects final runtime, guidance-behavior runtime, platform end-to-end, live/source-bundle parity, hot-path efficiency, host/lane surface, migration, host-visible, generated-surface, governance, browser, sync, and diff-hygiene proof for v0.1.11.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W4"
           ],
@@ -9165,6 +9187,8 @@
           "label": "Execution Engine Benchmark Proof and Canonical Cutover",
           "status": "complete",
           "summary": "Execution Engine Benchmark Proof and Canonical Cutover",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [],
           "primary_workstreams": [
             "B-100"
@@ -9184,6 +9208,8 @@
           "label": "Context Execution Handshake Snapshot Normalization",
           "status": "complete",
           "summary": "Context Execution Handshake Snapshot Normalization",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W1"
           ],
@@ -9205,6 +9231,8 @@
           "label": "Codex Claude Execution Contract Parity",
           "status": "complete",
           "summary": "Codex Claude Execution Contract Parity",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W2"
           ],
@@ -9226,6 +9254,8 @@
           "label": "Execution Snapshot Reuse and Hot Path Cost Reduction",
           "status": "complete",
           "summary": "Execution Snapshot Reuse and Hot Path Cost Reduction",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W3"
           ],
@@ -9247,6 +9277,8 @@
           "label": "Execution Alignment Release Proof and Governance Closure",
           "status": "complete",
           "summary": "Execution Alignment Release Proof and Governance Closure",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W4"
           ],
@@ -9275,6 +9307,8 @@
           "label": "Adaptive Discipline Governance Alignment",
           "status": "complete",
           "summary": "Bind B-110 and child slices to v0.1.11, update source governance, Registry, Atlas, AGENTS, guidelines, skills, Compass, and release targeting before runtime implementation.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [],
           "primary_workstreams": [
             "B-111"
@@ -9294,6 +9328,8 @@
           "label": "Adaptive Discipline Runtime And Budget Kernel",
           "status": "complete",
           "summary": "Add the local discipline runtime package, deterministic hard laws, open-world pressure observations, stance vector inference, ranked affordances, and runtime budget enforcement.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W1"
           ],
@@ -9315,6 +9351,8 @@
           "label": "Adaptive Discipline Learning Spine",
           "status": "complete",
           "summary": "Add compact learning events, retention tiers, recurrence fingerprints, noise suppression, and benchmark/Tribunal promotion hooks.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W2"
           ],
@@ -9336,6 +9374,8 @@
           "label": "Adaptive Discipline Subsystem Integration",
           "status": "complete",
           "summary": "Connect Context, Execution, Proof State, Memory, Router, Orchestrator, Intervention, Chatter, Tribunal, and surfaces through compact discipline contracts.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W3"
           ],
@@ -9357,6 +9397,8 @@
           "label": "Adaptive Discipline Tooling And Host Parity",
           "status": "complete",
           "summary": "Add discipline CLI commands, shared skill, Codex and Claude shims, and lane parity without host-model calls on hot discipline paths.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W4"
           ],
@@ -9378,6 +9420,8 @@
           "label": "Adaptive Discipline Benchmark Sovereignty",
           "status": "complete",
           "summary": "Add the discipline benchmark family, adaptive replay and novelty suites, latency and credit metrics, and publication guards while keeping guidance_behavior green.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W5"
           ],
@@ -9399,6 +9443,8 @@
           "label": "Adaptive Discipline Surfaces And Release Proof",
           "status": "complete",
           "summary": "Closed release-proof governance after full discipline validation, browser surface proof, and prompt-visible intervention Assist fallback hardening.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W6"
           ],
@@ -9427,6 +9473,8 @@
           "label": "Benchmark baseline proof",
           "status": "planned",
           "summary": "Define the live benchmark matrix and baseline proof before implementation claims.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [],
           "primary_workstreams": [
             "B-119"
@@ -9440,6 +9488,8 @@
           "label": "Harness manifest contract",
           "status": "planned",
           "summary": "Define the governed-harness manifest and public payload contract.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W1"
           ],
@@ -9455,6 +9505,8 @@
           "label": "Admissibility guardrails",
           "status": "planned",
           "summary": "Define approval, deny, ask, defer, and rewrite policy for tool and action gates.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W2"
           ],
@@ -9470,6 +9522,8 @@
           "label": "Receipts and tracing",
           "status": "planned",
           "summary": "Bind harness receipts, tracing fields, and resumable proof across hosts.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W3"
           ],
@@ -9485,6 +9539,8 @@
           "label": "Generic SDK adapter",
           "status": "planned",
           "summary": "Implement the host-neutral adapter contract with managed SDK early-exit support where possible.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W4"
           ],
@@ -9500,6 +9556,8 @@
           "label": "Cross-host ablations",
           "status": "planned",
           "summary": "Run cross-host ablations through the product Turn Gate without benchmark-private shortcuts.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W5"
           ],
@@ -9515,6 +9573,8 @@
           "label": "Docs and release closure",
           "status": "planned",
           "summary": "Close public docs, release notes, and benchmark proof for the governed-harness lane.",
+          "exit_gate": "",
+          "validation": [],
           "depends_on": [
             "W6"
           ],
@@ -24585,5 +24645,5 @@
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-05-07 03:49:34Z"
+  "generated_utc": "2026-05-07 05:53:41Z"
 }

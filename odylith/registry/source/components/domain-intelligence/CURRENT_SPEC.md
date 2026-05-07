@@ -107,6 +107,18 @@ This section captures synchronized requirement and contract signals derived from
   the first child workstream to start, the active wave, the first validation
   gates, and the verification commands/operators should run before moving to the
   next wave.
+- Greenfield apply must generate an implementation runway, not a governance
+  dead end. The runway includes a first child workstream, first active wave,
+  release target, first coding slice, definition of done, operator sequence, and
+  verification commands. The umbrella parent remains program context and must
+  not become the first component kickoff anchor.
+- Execution-wave source must preserve accepted proposal exit gates and
+  validation text so Compass and Radar can render what closes a wave instead of
+  only showing membership counts.
+- Candidate component specs created from greenfield proposals must read like
+  project-start runbooks: planned boundary, first source path, dependency
+  expectations, interface expectations, first coding slice, validation gates,
+  and commands to prove the first source-backed implementation pass.
 - Apply must run the greenfield Tribunal before any governed write and must
   perform one final batched dashboard refresh for Radar, Registry, Atlas, and
   Compass after backlog, program, release, Atlas, Registry, and Compass memory
@@ -151,6 +163,7 @@ confirmation gates, topology requirements, apply schema, and durable memory.
 - `tests/unit/runtime/test_component_authoring.py`
 - `tests/unit/runtime/test_program_wave_authoring.py`
 - `tests/unit/runtime/test_execution_wave_view_model.py`
+- `tests/unit/runtime/test_execution_wave_ui_runtime_primitives.py`
 - `tests/integration/runtime/test_surface_browser_smoke.py`
 - `tests/integration/runtime/test_compass_browser_regression_matrix.py`
 - `tests/unit/runtime/test_compass_transaction_runtime.py`

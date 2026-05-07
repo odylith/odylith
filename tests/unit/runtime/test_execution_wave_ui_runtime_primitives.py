@@ -143,4 +143,7 @@ def test_execution_wave_runtime_helpers_expose_shared_renderer() -> None:
     assert '? `<div class="${escapeHtml(boardWrapperClass)}">${boardHtml}</div>`' in runtime
     assert 'String(options.selectedNoteText || "").trim()' in runtime
     assert "execution-wave-highlight-label\">Selected scope" in runtime
+    assert "const exitGate = String(wave.exit_gate || \"\").trim();" in runtime
+    assert "execution-wave-highlight-label\">Exit gate" in runtime
+    assert "execution-wave-highlight-label\">Validation" in runtime
     assert "Selected workstream participates here." not in runtime

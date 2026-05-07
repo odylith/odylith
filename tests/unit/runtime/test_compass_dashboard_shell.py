@@ -164,14 +164,16 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert '<details class="${escapeHtml(sectionClassName)}"' in shared_js
     assert 'execution-wave-card-shell execution-wave-card-shell-full-copy' in shared_js
     assert 'const radarHref = radarWorkstreamHref(item.ideaId);' in workstreams_js
-    assert '<td class="ws-col-id"><div class="ws-id-stack"><a class="ws-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-ws-id="${escapeHtml(item.ideaId)}"' in workstreams_js
+    assert 'const idMarkup = rowsAreProgramCovered' in workstreams_js
+    assert '<a class="ws-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-ws-id="${escapeHtml(item.ideaId)}"' in workstreams_js
+    assert 'data-covered-ws-id' in workstreams_js
     assert 'workstreamTooltipAttrs(item.ideaId, workstreamTitles, `Open radar for ${item.ideaId}`)' in workstreams_js
     assert 'const componentHref = `../index.html?tab=registry&component=${encodeURIComponent(item.component_id)}`;' in workstreams_js
     assert '<strong>Registry components:</strong> ${registryComponentLinks}' in workstreams_js
     assert '<a class="chip chip-link" href="${escapeHtml(componentHref)}" target="_top"${registryComponentTooltipAttrs(item, `Open registry for ${item.component_id}`)}>${escapeHtml(item.component_id)}</a>' in workstreams_js
     assert 'registryComponents.map((item) => `${item.name} (${item.component_id})`).join(", ")' not in workstreams_js
     assert '<div class="ws-links">' not in workstreams_js
-    assert '<div class="ws-id-stack"><a class="ws-id-btn"' in workstreams_js
+    assert '<td class="ws-col-id"><div class="ws-id-stack">${idMarkup}' in workstreams_js
     assert "function compassWorkstreamReleaseLabel(release)" in workstreams_js
     assert "function compactCompassWorkstreamReleaseTargetLabel(value)" in workstreams_js
     assert "compactCompassWorkstreamReleaseTargetLabel(row.version)" in workstreams_js
@@ -184,6 +186,8 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert 'if (WORKSTREAM_RE.test(ideaId) && status === "finished" && releaseHistorySummary === removedSummary)' in workstreams_js
     assert 'scopedRows.filter((row) => !representedIds.has(String(row && row.idea_id ? row.idea_id : "").trim()))' in workstreams_js
     assert "const rows = scopedRows;" not in workstreams_js
+    assert "const representedPreviewLimit = 6;" in workstreams_js
+    assert "Covered workstreams below are a compact detail preview" in workstreams_js
     assert "function numericProgressOrNull(value)" in workstreams_js
     assert '${item.releaseLabel ? `<span class="chip subtle">${escapeHtml(item.releaseLabel)}</span>` : ""}' in workstreams_js
     assert 'Release ${item.releaseLabel}' not in workstreams_js
@@ -250,6 +254,8 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert "execution-wave-focus-title" not in releases_js
     assert "`Open radar for ${token}`" in releases_js
     assert 'href="${escapeHtml(radarWorkstreamHref(token))}"' in releases_js
+    assert 'const summaryClass = options && options.summary ? " ws-id-btn" : "";' in releases_js
+    assert 'renderMemberChip(representativeMember, {' in releases_js
     assert "compassScopeHref(token, state)" not in releases_js
     assert "`Scope to ${token}`" not in releases_js
     assert "const progressKnown = progressRatio !== null;" in workstreams_js
@@ -268,6 +274,8 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert "All current workstreams are already represented in Programs or Release Targets." not in workstreams_js
     assert "No active workstreams in this scope." in workstreams_js
     assert "`Open radar for ${token}`" in waves_js
+    assert "const representativeProgramWorkstreamId = (program) => {" in waves_js
+    assert "sectionChips.push(renderMemberChip(representativeId, { summary: true" in waves_js
     assert 'href="${escapeHtml(radarWorkstreamHref(token))}"' in waves_js
     assert "compassScopeHref(token, state)" not in waves_js
     assert "`Scope to ${token}`" not in waves_js

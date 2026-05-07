@@ -1225,16 +1225,42 @@ def test_greenfield_apply_synthesizes_parent_and_polishes_component_specs(tmp_pa
     assert result["program"]["waves"][0]["primary_workstreams"] == ["B-002"]
     assert result["program"]["waves"][1]["primary_workstreams"] == ["B-003"]
     assert execution_program["waves"][0]["primary_workstreams"] == ["B-002"]
+    assert execution_program["waves"][0]["exit_gate"]
+    assert execution_program["waves"][0]["validation"]
     assert result["release_target"]["workstream_ids"] == ["B-001", "B-002"]
     assert result["next_steps"]["start_workstream_id"] == "B-002"
     assert result["next_steps"]["first_wave"] == "Foundations"
+    assert "Treat `Identity, sessions, and COI-aware authorization` as the first coding scope" in result["next_steps"]["implementation_prompt"]
     assert "## Planned Ownership" in spec
     assert "## Implementation Kickoff" in spec
+    assert "Use `B-002` (Identity, sessions, and COI-aware authorization) as the first implementation-plan anchor" in spec
+    assert "First coding slice:" in spec
+    assert "Definition Of Done For The First Slice" in spec
+    assert "Operator Verification Commands" in spec
     assert "Security, Compliance, And Open Questions" in spec
     assert "NIH Guidelines for nucleic acid research" in spec
     assert "Authorization enforced at API read boundary, not UI" in spec
     assert "['" not in spec
     assert "']" not in spec
+
+
+def test_greenfield_apply_cli_prints_operator_handoff(tmp_path, monkeypatch, capsys) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    proposal_path = tmp_path / "proposal.json"
+    proposal_path.write_text(json.dumps(_host_reasoned_crispr_without_parent()), encoding="utf-8")
+
+    rc = greenfield_proposals.main(
+        ["apply", "--repo-root", str(tmp_path), "--proposal-file", str(proposal_path), "--confirm", "--release", "0.0.1"]
+    )
+
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "- first implementation lane: wave Foundations | release 0.0.1" in out
+    assert "- operator handoff:" in out
+    assert "./.odylith/bin/odylith validate plan-workstream-binding --repo-root ." in out
 
 
 def test_greenfield_apply_namespaces_partial_project_diagram_slugs_before_scaffold(tmp_path, monkeypatch) -> None:

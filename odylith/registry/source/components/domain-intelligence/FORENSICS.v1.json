@@ -23,9 +23,8 @@
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
         "src/odylith/runtime/domain_intelligence/greenfield_programs.py",
         "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_traceability.py",
         "src/odylith/runtime/domain_intelligence/proposal_contract.py",
-        "src/odylith/runtime/domain_intelligence/proposal_normalization.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_experience.py"
       ],
       "confidence": "high",
       "event_index": 463,
@@ -35,8 +34,8 @@
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_programs.py +4 more",
-      "ts_iso": "2026-05-06T20:49:27-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_programs.py +3 more",
+      "ts_iso": "2026-05-06T22:52:58-07:00",
       "workstreams": []
     },
     {

@@ -18,6 +18,7 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine import repo_analysis
 from odylith.runtime.analysis_engine.types import SourceSummary, slugify
+from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
@@ -36,6 +37,11 @@ from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import release_planning_authoring
 from odylith.runtime.governance import release_planning_contract
 from odylith.runtime.surfaces import scaffold_mermaid_diagram
+
+_proposal_posture_tuple = greenfield_experience.proposal_posture_tuple
+_row_text_tuple = greenfield_experience.row_text_tuple
+_text_values = greenfield_experience.text_values
+_unique_text = greenfield_experience.unique_text
 
 
 def _prompt_text(prompt: str) -> str:
@@ -232,53 +238,6 @@ def _allocated_diagram_ids(repo_root: Path, count: int) -> list[str]:
     return [f"D-{value:03d}" for value in range(first, first + max(0, count))]
 
 
-def _row_text_tuple(row: Mapping[str, Any], *keys: str) -> tuple[str, ...]:
-    for key in keys:
-        values = _text_values(row.get(key))
-        if values:
-            return values
-    return ()
-
-
-def _text_values(value: Any) -> tuple[str, ...]:
-    if value is None:
-        return ()
-    if isinstance(value, Mapping):
-        values: list[str] = []
-        for nested in value.values():
-            values.extend(_text_values(nested))
-        return _unique_text(values)
-    if isinstance(value, (list, tuple, set)):
-        values = []
-        for item in value:
-            values.extend(_text_values(item))
-        return _unique_text(values)
-    token = " ".join(str(value or "").split()).strip()
-    return (token,) if token else ()
-
-
-def _unique_text(values: Sequence[Any]) -> tuple[str, ...]:
-    seen: set[str] = set()
-    result: list[str] = []
-    for value in values:
-        token = " ".join(str(value or "").split()).strip()
-        if not token:
-            continue
-        key = token.casefold()
-        if key in seen:
-            continue
-        seen.add(key)
-        result.append(token)
-    return tuple(result)
-
-
-def _proposal_posture_tuple(proposal: Mapping[str, Any], *keys: str) -> tuple[str, ...]:
-    rows: list[str] = []
-    for key in keys:
-        rows.extend(_text_values(proposal.get(key)))
-    return _unique_text(rows)
-
-
 def _proposal_posture_text(proposal: Mapping[str, Any], *keys: str) -> str:
     return " ".join(_proposal_posture_tuple(proposal, *keys)).strip()
 
@@ -439,77 +398,6 @@ def _refresh_greenfield_dashboard(*, repo_root: Path) -> dict[str, Any]:
     }
 
 
-def _greenfield_next_steps(
-    *,
-    proposal: Mapping[str, Any],
-    backlog_result: Mapping[str, Any],
-    first_release_workstreams: Sequence[str],
-    program_result: Mapping[str, Any],
-    release_selector: str,
-) -> dict[str, Any]:
-    created = [row for row in backlog_result.get("created", []) if isinstance(row, Mapping)]
-    by_id = {
-        str(row.get("idea_id", "")).strip().upper(): row
-        for row in created
-        if str(row.get("idea_id", "")).strip()
-    }
-    umbrella_id = str(program_result.get("umbrella_id", "")).strip().upper() if isinstance(program_result, Mapping) else ""
-    candidate_ids = [str(item).strip().upper() for item in first_release_workstreams if str(item).strip().upper() != umbrella_id]
-    if not candidate_ids and isinstance(program_result, Mapping):
-        waves = [row for row in program_result.get("waves", []) if isinstance(row, Mapping)]
-        first_wave = waves[0] if waves else {}
-        for field in ("primary_workstreams", "carried_workstreams", "in_band_workstreams"):
-            for item in first_wave.get(field, []) if isinstance(first_wave.get(field), list) else []:
-                token = str(item).strip().upper()
-                if token and token != umbrella_id and token not in candidate_ids:
-                    candidate_ids.append(token)
-    start_id = candidate_ids[0] if candidate_ids else (umbrella_id or (next(iter(by_id), "")))
-    start_row = by_id.get(start_id, {})
-    waves = [row for row in program_result.get("waves", []) if isinstance(row, Mapping)] if isinstance(program_result, Mapping) else []
-    active_wave = next((row for row in waves if str(row.get("status", "")).strip().casefold() == "active"), waves[0] if waves else {})
-    wave_label = str(active_wave.get("label", "")).strip() or str(active_wave.get("wave_id", "")).strip() or "first wave"
-    proposal_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
-    proposal_by_created_id = {
-        str(created_row.get("idea_id", "")).strip().upper(): proposal_rows[index]
-        for index, created_row in enumerate(created)
-        if index < len(proposal_rows) and str(created_row.get("idea_id", "")).strip()
-    }
-    proposal_row = proposal_by_created_id.get(start_id, {})
-    validation_items = _unique_text(
-        [
-            *_row_text_tuple(proposal_row, "validation", "test_strategy"),
-            *_row_text_tuple(proposal_row, "success_metrics"),
-            *_text_values(active_wave.get("validation_gate")),
-            *_text_values(active_wave.get("validation")),
-        ]
-    )
-    return {
-        "start_workstream_id": start_id,
-        "start_workstream_title": str(start_row.get("title", "")).strip(),
-        "first_wave": wave_label,
-        "release_selector": release_selector,
-        "implementation_prompt": (
-            f"Start {start_id}: implement the smallest source-backed slice for "
-            f"{str(start_row.get('title', '')).strip() or 'the first targeted workstream'}, then run its listed validation gates."
-            if start_id
-            else "Select the first targeted child workstream, write a technical plan, implement the smallest source-backed slice, then run its listed validation gates."
-        ),
-        "validation_gates": list(validation_items[:6]),
-        "operator_sequence": [
-            f"Open Compass and start the active wave `{wave_label}`.",
-            f"Open Radar plan view for `{start_id}` and turn the recommended first slice into the first implementation task.",
-            "Write the source slice, then run the repo-native tests named by the workstream validation gates.",
-            "Refresh Odylith surfaces and verify Compass/Radar/Registry/Atlas still agree before moving to the next wave.",
-        ],
-        "verification_commands": [
-            "./.odylith/bin/odylith context --repo-root . "
-            + (start_id or "<first-workstream-id>"),
-            "run the repo-native test command selected by the first technical plan",
-            "./.odylith/bin/odylith sync --repo-root . --impact-mode selective",
-        ],
-    }
-
-
 def apply_greenfield_proposal(
     *,
     repo_root: Path,
@@ -666,6 +554,14 @@ def _write_greenfield_proposal(
         proposal=proposal,
         plan=traceability_plan,
     )
+    component_handoffs = greenfield_experience.build_component_handoffs(
+        proposal=proposal,
+        backlog_result=backlog_result,
+        first_release_workstreams=first_release_workstreams,
+        program_result=program_result,
+        traceability_plan=traceability_plan,
+        release_selector=release_selector,
+    )
 
     components_created: list[dict[str, Any]] = []
     for row in proposal.get("components", []):
@@ -692,6 +588,7 @@ def _write_greenfield_proposal(
             interfaces=_row_text_tuple(row, "interfaces", "interface_changes"),
             validation=_row_text_tuple(row, "validation", "test_strategy"),
             risks=_component_risk_lines(row, proposal),
+            implementation_handoff=component_handoffs.get(key, {}),
             dry_run=False,
             refresh=False,
         )
@@ -710,7 +607,7 @@ def _write_greenfield_proposal(
         release_id=release_id,
     )
     dashboard_refresh = _refresh_greenfield_dashboard(repo_root=root)
-    next_steps = _greenfield_next_steps(
+    next_steps = greenfield_experience.build_next_steps(
         proposal=proposal,
         backlog_result=backlog_result,
         first_release_workstreams=first_release_workstreams,
@@ -796,20 +693,39 @@ def main(argv: Sequence[str] | None = None) -> int:
             if isinstance(next_steps, Mapping):
                 start_id = str(next_steps.get("start_workstream_id", "")).strip()
                 start_title = str(next_steps.get("start_workstream_title", "")).strip()
+                first_wave = str(next_steps.get("first_wave", "")).strip()
+                next_release = str(next_steps.get("release_selector", "")).strip()
                 if start_id:
                     print(f"- start coding: {start_id} {start_title}".rstrip())
+                if first_wave or next_release:
+                    print(
+                        "- first implementation lane: "
+                        + " | ".join(
+                            item
+                            for item in (
+                                f"wave {first_wave}" if first_wave else "",
+                                f"release {next_release}" if next_release else "",
+                            )
+                            if item
+                        )
+                    )
                 prompt = str(next_steps.get("implementation_prompt", "")).strip()
                 if prompt:
                     print(f"- next agent prompt: {prompt}")
+                sequence = next_steps.get("operator_sequence", [])
+                if isinstance(sequence, list) and sequence:
+                    print("- operator handoff:")
+                    for index, step in enumerate(sequence[:5], start=1):
+                        print(f"  {index}. {step}")
                 gates = next_steps.get("validation_gates", [])
                 if isinstance(gates, list) and gates:
                     print("- first validation gates:")
-                    for gate in gates[:4]:
+                    for gate in gates[:6]:
                         print(f"  - {gate}")
                 commands = next_steps.get("verification_commands", [])
                 if isinstance(commands, list) and commands:
                     print("- verify before next wave:")
-                    for command in commands[:3]:
+                    for command in commands[:6]:
                         print(f"  - {command}")
             dashboard = result.get("dashboard_refresh", {})
             if isinstance(dashboard, Mapping):

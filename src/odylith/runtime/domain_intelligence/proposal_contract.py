@@ -113,6 +113,10 @@ def build_proposal_contract() -> dict[str, Any]:
                 "focus, and flowcharts must use subtle diagram-internal colors plus wrapped labels"
             ),
             "program": "wave plan with goals, validation gates, component focus, and evidence tier",
+            "implementation_runway": (
+                "post-apply handoff that names the first child workstream, first wave, release target, proof gates, "
+                "repo-native validation expectations, and dashboard surfaces to inspect before advancing waves"
+            ),
             "release_plan": (
                 "provisional release selector, first-target workstreams, stages, milestones, and promotion criteria; "
                 "default selector and label are exactly 0.0.1 unless the operator supplies a different release target"
@@ -171,6 +175,11 @@ def build_proposal_contract() -> dict[str, Any]:
             (
                 "Make the post-apply coding sequence explicit: which child workstream starts first, what proof "
                 "must pass before the next wave, and which surfaces the operator should open to verify the program."
+            ),
+            (
+                "Candidate Registry specs must carry an implementation runway: first child workstream, wave, release, "
+                "first coding slice, definition of done, and verification commands. The umbrella parent is context, "
+                "not the first coding anchor."
             ),
             (
                 "Never let the first child workstream masquerade as the program parent; use WS-00 or a clearly "

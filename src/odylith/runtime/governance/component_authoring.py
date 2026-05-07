@@ -12,7 +12,7 @@ import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Mapping, Sequence
 
 from odylith.runtime.governance import artifact_tribunal
 from odylith.runtime.governance import owned_surface_refresh
@@ -86,6 +86,26 @@ def _clean_sequence(values: Sequence[str] | str) -> tuple[str, ...]:
     return tuple(str(item).strip() for item in values if str(item).strip())
 
 
+def _handoff_text(handoff: Mapping[str, Any], key: str) -> str:
+    return " ".join(str(handoff.get(key, "") or "").split()).strip()
+
+
+def _handoff_list(handoff: Mapping[str, Any], key: str) -> tuple[str, ...]:
+    values = handoff.get(key)
+    if not isinstance(values, (list, tuple)):
+        return ()
+    return tuple(" ".join(str(item or "").split()).strip() for item in values if str(item or "").strip())
+
+
+def _command_bullet(value: str) -> str:
+    text = " ".join(str(value or "").split()).strip()
+    if not text:
+        return ""
+    if text.startswith("run "):
+        return f"- {text}"
+    return f"- `{text}`"
+
+
 def _build_registry_entry(
     *,
     component_id: str,
@@ -156,7 +176,9 @@ def _build_spec_template(
     validation: Sequence[str] = (),
     risks: Sequence[str] = (),
     qualification: str = "candidate",
+    implementation_handoff: Mapping[str, Any] | None = None,
 ) -> str:
+    handoff = implementation_handoff or {}
     normalized_sources = [str(item).strip() for item in sources if str(item).strip()]
     if "user_intent" in normalized_sources:
         overview_anchor = (
@@ -173,7 +195,14 @@ def _build_spec_template(
         )
     history_date = dt.date.today().isoformat()
     workstream_ids = [str(item).strip().upper() for item in workstreams if str(item).strip()]
-    first_workstream = workstream_ids[0] if workstream_ids else ""
+    first_workstream = _handoff_text(handoff, "workstream_id") or (workstream_ids[0] if workstream_ids else "")
+    first_workstream_title = _handoff_text(handoff, "workstream_title")
+    first_slice = _handoff_text(handoff, "first_slice")
+    wave_label = _handoff_text(handoff, "wave_label")
+    wave_status = _handoff_text(handoff, "wave_status")
+    release_selector = _handoff_text(handoff, "release_selector")
+    handoff_validation = _handoff_list(handoff, "validation_gates")
+    handoff_commands = _handoff_list(handoff, "verification_commands")
     plan_route = (
         f" (Plan: [{first_workstream}](odylith/radar/radar.html?view=plan&workstream={first_workstream}))"
         if first_workstream
@@ -186,6 +215,9 @@ def _build_spec_template(
     dependency_lines = _bullet_lines(dependencies) or "- No upstream or downstream runtime dependency is source-backed yet."
     validation_lines = _bullet_lines(validation) or "- First implementation must add focused contract or smoke proof before this candidate becomes active."
     risk_lines = _bullet_lines(risks) or "- Candidate boundary may change once source evidence and implementation plans exist."
+    handoff_validation_lines = _bullet_lines(handoff_validation) or validation_lines
+    command_lines = "\n".join(_command_bullet(line) for line in handoff_commands) if handoff_commands else ""
+    command_lines = command_lines or "- Run the repo-native proof command selected by the first technical plan."
     related_workstreams = ", ".join(workstream_ids) if workstream_ids else "none"
     related_diagrams = ", ".join(diagram_ids) if diagram_ids else "none"
     implementation_anchor = (
@@ -193,11 +225,12 @@ def _build_spec_template(
         if path
         else "First technical plan must choose the source path before implementation begins."
     )
-    first_plan = (
-        f"Use `{first_workstream}` as the first implementation-plan anchor for this component."
-        if first_workstream
-        else "Create a Radar-linked implementation plan before source writes."
-    )
+    if first_workstream and first_workstream_title:
+        first_plan = f"Use `{first_workstream}` ({first_workstream_title}) as the first implementation-plan anchor for this component."
+    elif first_workstream:
+        first_plan = f"Use `{first_workstream}` as the first implementation-plan anchor for this component."
+    else:
+        first_plan = "Create a Radar-linked implementation plan before source writes."
     return f"""# {label}
 
 ## Overview
@@ -253,9 +286,20 @@ This is a candidate Registry spec, not a source-backed implementation claim. It 
 
 - {implementation_anchor}
 - {first_plan}
+- {f"Wave: {wave_label} ({wave_status or 'status pending'})." if wave_label else "Wave: first execution wave once the program is applied."}
+- {f"Release target: {release_selector}." if release_selector else "Release target: confirm before promotion."}
+- {f"First coding slice: {first_slice}" if first_slice else "First coding slice: convert the related workstream's recommended first slice into a technical plan before source writes."}
 - Convert each Candidate Interface into a concrete API, module, route, schema, or event contract before adding dependent code.
 - Convert each Test Coverage bullet into a runnable unit, contract, browser, migration, or smoke proof before marking the component active.
 - Refresh Registry and Compass after the first source-backed slice lands so this candidate spec stops pretending proposal text is implementation evidence.
+
+### Definition Of Done For The First Slice
+
+{handoff_validation_lines}
+
+### Operator Verification Commands
+
+{command_lines}
 """
 
 
@@ -280,6 +324,7 @@ def register_component(
     interfaces: Sequence[str] = (),
     validation: Sequence[str] = (),
     risks: Sequence[str] = (),
+    implementation_handoff: Mapping[str, Any] | None = None,
     dry_run: bool = False,
     refresh: bool = True,
 ) -> CreatedComponent:
@@ -338,6 +383,7 @@ def register_component(
         interfaces=interfaces,
         validation=validation,
         risks=risks,
+        implementation_handoff=implementation_handoff,
     )
     tribunal = artifact_tribunal.run_governed_artifact_tribunal(
         artifact_kind="component",
@@ -352,6 +398,7 @@ def register_component(
             "dependencies": dependencies,
             "validation": validation,
             "risks": risks,
+            "implementation_handoff": dict(implementation_handoff or {}),
         },
     )
     artifact_tribunal.raise_for_failed_artifact_tribunal(tribunal)

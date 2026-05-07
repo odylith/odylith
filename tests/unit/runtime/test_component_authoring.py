@@ -61,6 +61,16 @@ def test_component_spec_template_uses_greenfield_responsibility_and_links() -> N
         interfaces=("Checkout request contract", "Payment callback contract"),
         validation=("Happy-path checkout smoke proof", "Payment failure recovery proof"),
         risks=("Provider-specific behavior may change the boundary",),
+        implementation_handoff={
+            "workstream_id": "B-201",
+            "workstream_title": "Checkout first slice",
+            "wave_label": "Checkout spine",
+            "wave_status": "active",
+            "release_selector": "0.0.1",
+            "first_slice": "Implement browse-to-checkout with payment sandbox failure recovery.",
+            "validation_gates": ["Checkout smoke proof passes", "Payment failure recovery proof passes"],
+            "verification_commands": ["./.odylith/bin/odylith context --repo-root . B-201", "run npm test"],
+        },
     )
 
     assert "**Logical boundary**: Checkout owns payment handoff and order-draft recovery" in text
@@ -70,3 +80,11 @@ def test_component_spec_template_uses_greenfield_responsibility_and_links() -> N
     assert "- Checkout request contract." in text
     assert "- Payment failure recovery proof." in text
     assert "- Provider-specific behavior may change the boundary." in text
+    assert "(Plan: [B-201](odylith/radar/radar.html?view=plan&workstream=B-201))" in text
+    assert "Use `B-201` (Checkout first slice) as the first implementation-plan anchor" in text
+    assert "- Wave: Checkout spine (active)." in text
+    assert "- Release target: 0.0.1." in text
+    assert "- First coding slice: Implement browse-to-checkout with payment sandbox failure recovery." in text
+    assert "- Checkout smoke proof passes." in text
+    assert "- `./.odylith/bin/odylith context --repo-root . B-201`" in text
+    assert "- run npm test" in text

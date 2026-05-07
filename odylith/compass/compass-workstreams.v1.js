@@ -376,6 +376,11 @@
       const rows = state.workstream
         ? scopedRows
         : scopedRows.filter((row) => !representedIds.has(String(row && row.idea_id ? row.idea_id : "").trim()));
+      const rowsAreProgramCovered = !state.workstream && !rows.length && scopedRows.length;
+      const representedPreviewLimit = 6;
+      const renderRows = rows.length
+        ? rows
+        : (rowsAreProgramCovered ? scopedRows.slice(0, representedPreviewLimit) : []);
       const target = document.getElementById("current-workstreams");
       const windowKey = state.window === "24h" ? "24h" : "48h";
       const planLookup = planHrefLookup(payload);
@@ -414,12 +419,12 @@
         return "No additional current workstreams. Program and release lanes already cover the active work.";
       };
 
-      if (!rows.length) {
+      if (!renderRows.length) {
         target.innerHTML = `<p class="empty">${escapeHtml(emptyWorkstreamCopy())}</p>`;
         return;
       }
 
-      const records = rows.map((row) => {
+      const records = renderRows.map((row) => {
         const ideaId = String(row.idea_id || "").trim();
         const plan = row.plan || {};
         const timeline = row.timeline || {};
@@ -741,13 +746,17 @@
         return `<div class="ws-wave-chip-row"><span class="label execution-wave-label ${item.hasActiveWaveMembership ? "wave-status-active" : "wave-status-planned"}">${escapeHtml(item.waveSpanLabel)}</span>${item.waveRoleLabel ? `<span class="label execution-wave-label wave-role-chip">${escapeHtml(item.waveRoleLabel)}</span>` : ""}</div>`;
       };
 
-      const renderSummaryRowAttrs = (item, rowKind, isSelected) => (
-        `class="ws-summary-row ${rowKind}${isSelected ? " is-selected" : ""}" data-ws-id="${escapeHtml(item.ideaId)}" tabindex="0" role="button" aria-expanded="${isSelected ? "true" : "false"}" aria-label="Open detail for ${escapeHtml(item.ideaId)}"`
-      );
+      const renderSummaryRowAttrs = (item, rowKind, isSelected) => {
+        const idAttr = rowsAreProgramCovered ? "data-covered-ws-id" : "data-ws-id";
+        return `class="ws-summary-row ${rowKind}${isSelected ? " is-selected" : ""}" ${idAttr}="${escapeHtml(item.ideaId)}" tabindex="0" role="button" aria-expanded="${isSelected ? "true" : "false"}" aria-label="Open detail for ${escapeHtml(item.ideaId)}"`;
+      };
 
       const rowHtml = records.map((item) => {
         const isSelected = item.ideaId === initiallyExpandedId;
         const radarHref = radarWorkstreamHref(item.ideaId);
+        const idMarkup = rowsAreProgramCovered
+          ? `<span class="chip execution-wave-chip-link" data-ws-id="${escapeHtml(item.ideaId)}"${workstreamTooltipAttrs(item.ideaId, workstreamTitles, `Covered by program/release lanes: ${item.ideaId}`)}>${escapeHtml(item.ideaId)}</span>`
+          : `<a class="ws-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-ws-id="${escapeHtml(item.ideaId)}"${workstreamTooltipAttrs(item.ideaId, workstreamTitles, `Open radar for ${item.ideaId}`)}>${escapeHtml(item.ideaId)}</a>`;
         return `
         <tr ${renderSummaryRowAttrs(item, "ws-row-title", isSelected)}>
           <td class="ws-title-cell ws-title-row-cell" colspan="5">
@@ -755,7 +764,7 @@
           </td>
         </tr>
         <tr ${renderSummaryRowAttrs(item, "ws-row-meta", isSelected)}>
-          <td class="ws-col-id"><div class="ws-id-stack"><a class="ws-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-ws-id="${escapeHtml(item.ideaId)}"${workstreamTooltipAttrs(item.ideaId, workstreamTitles, `Open radar for ${item.ideaId}`)}>${escapeHtml(item.ideaId)}</a>${item.releaseLabel ? `<span class="chip subtle">${escapeHtml(item.releaseLabel)}</span>` : ""}</div></td>
+          <td class="ws-col-id"><div class="ws-id-stack">${idMarkup}${item.releaseLabel ? `<span class="chip subtle">${escapeHtml(item.releaseLabel)}</span>` : ""}</div></td>
           <td class="ws-col-wave">${renderWaveSummaryCell(item)}</td>
           <td class="ws-col-phase"><span class="chip ${item.phaseClass}">${escapeHtml(item.phaseLabel)}</span></td>
           <td class="ws-col-live"><span class="chip ${item.liveIsActive ? "" : "subtle"}">${escapeHtml(item.liveLabel)}</span></td>
@@ -767,7 +776,16 @@
       `;
       }).join("");
 
+      const representedPreviewNote = rowsAreProgramCovered
+        ? `
+          <p class="empty">${escapeHtml(emptyWorkstreamCopy())}</p>
+          <p class="muted">Covered workstreams below are a compact detail preview; direct Radar links live in the Program and Release Target lanes above.</p>
+          ${scopedRows.length > renderRows.length ? `<p class="muted">Showing ${renderRows.length} of ${scopedRows.length} covered active workstreams.</p>` : ""}
+        `
+        : "";
+
       target.innerHTML = `
+        ${representedPreviewNote}
         <div class="ws-table-wrap">
           <table class="ws-table">
             <colgroup>
@@ -802,7 +820,7 @@
         target.dataset.selectedWorkstream = selected ? selected.ideaId : "";
 
         tableBody.querySelectorAll("tr.ws-summary-row").forEach((node) => {
-          const rowWs = String(node.getAttribute("data-ws-id") || "").trim();
+          const rowWs = String(node.getAttribute("data-ws-id") || node.getAttribute("data-covered-ws-id") || "").trim();
           const isSelected = Boolean(selected) && rowWs === selected.ideaId;
           node.classList.toggle("is-selected", isSelected);
           node.setAttribute("aria-expanded", isSelected ? "true" : "false");
@@ -830,7 +848,7 @@
       };
 
       tableBody.querySelectorAll("tr.ws-summary-row").forEach((rowNode) => {
-        const wsId = String(rowNode.getAttribute("data-ws-id") || "").trim();
+        const wsId = String(rowNode.getAttribute("data-ws-id") || rowNode.getAttribute("data-covered-ws-id") || "").trim();
         rowNode.addEventListener("click", () => {
           selectRow(wsId);
         });

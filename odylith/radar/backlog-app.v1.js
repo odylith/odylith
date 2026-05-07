@@ -2143,6 +2143,8 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
     const waveTone = waveStatusChipClass(wave.status);
     const compactSummaryLine = String(wave.compact_summary_line || "").trim();
     const gatePreview = String(wave.gate_preview_summary || "").trim();
+    const exitGate = String(wave.exit_gate || "").trim();
+    const validationGateSummary = String(wave.validation_gate_summary || "").trim();
     const dependsOnLabels = Array.isArray(wave.depends_on_labels)
       ? wave.depends_on_labels.map((token) => String(token || "").trim()).filter(Boolean)
       : [];
@@ -2162,6 +2164,22 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
         <div class="execution-wave-highlight">
           <div class="execution-wave-highlight-label">Gate focus</div>
           <div class="execution-wave-highlight-copy">${escapeHtml(gatePreview)}</div>
+        </div>
+      `);
+    }
+    if (exitGate) {
+      supportBlocks.push(`
+        <div class="execution-wave-highlight">
+          <div class="execution-wave-highlight-label">Exit gate</div>
+          <div class="execution-wave-highlight-copy">${escapeHtml(exitGate)}</div>
+        </div>
+      `);
+    }
+    if (validationGateSummary) {
+      supportBlocks.push(`
+        <div class="execution-wave-highlight">
+          <div class="execution-wave-highlight-label">Validation</div>
+          <div class="execution-wave-highlight-copy">${escapeHtml(validationGateSummary)}</div>
         </div>
       `);
     }

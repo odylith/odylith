@@ -23,6 +23,8 @@ def test_build_execution_wave_view_payload_builds_program_and_workstream_context
                             "label": "Wave 1",
                             "status": "active",
                             "summary": "First wave.",
+                            "exit_gate": "Exit only when the first wave has proof.",
+                            "validation": ["Role matrix green.", "Browser proof green."],
                             "depends_on": [],
                             "primary_workstreams": ["B-022"],
                             "carried_workstreams": [],
@@ -71,6 +73,9 @@ def test_build_execution_wave_view_payload_builds_program_and_workstream_context
     assert program["waves"][0]["is_active_tail_wave"] is False
     assert program["waves"][0]["primary_workstreams"][0]["title"] == "Wave One"
     assert program["waves"][0]["gate_refs"][0]["title"] == "Wave One"
+    assert program["waves"][0]["exit_gate"] == "Exit only when the first wave has proof."
+    assert program["waves"][0]["validation_gates"] == ["Role matrix green.", "Browser proof green."]
+    assert program["waves"][0]["validation_gate_summary"] == "Role matrix green.; Browser proof green."
     assert program["waves"][0]["depends_on_summary"] == "Starts here"
     assert program["waves"][0]["compact_summary_line"] == "1 of 2 · Starts here · 1 primary · 1 in band · 1 gate"
     assert program["waves"][0]["gate_preview_labels"] == ["Wave one gate."]

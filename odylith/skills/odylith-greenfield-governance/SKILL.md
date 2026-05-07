@@ -27,7 +27,11 @@ architect a new project before source code exists.
    components, related diagram slugs, and proof gates in plain language. Also
    state what happens after apply: which child workstream starts coding first,
    what tests or browser proofs verify it, and which dashboard view confirms the
-   program is ready for the next wave.
+   program is ready for the next wave. Candidate Registry components must read
+   like implementation runways, not placeholders: include the first child
+   workstream, wave, release target, first coding slice, definition of done,
+   dependency expectations, interface expectations, and verification commands.
+   The umbrella parent gives program context; it is not the first coding anchor.
 4. Do not write records until the operator confirms the proposal or gives
    explicit edits. On confirmation, run:
    `./.odylith/bin/odylith greenfield apply --repo-root . --proposal-file <proposal.json> --confirm --release 0.0.1`.

@@ -213,6 +213,11 @@ governance, and diagnosis to stay coherent.
   available.
 - Requirements-trace sync must preserve surrounding manual spec content even
   when the generated block changes.
+- Greenfield candidate specs must not be placeholder dossiers. They must expose
+  the first child workstream, wave, release target, first coding slice,
+  definition of done, verification commands, dependencies, interfaces, and
+  explicit evidence boundary so the operator can move from governance creation
+  into implementation without reverse-engineering Radar or Compass.
 
 ## Validation Playbook
 ### Registry

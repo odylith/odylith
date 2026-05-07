@@ -106,6 +106,8 @@ def create_greenfield_program(
                 "label": "First release slice",
                 "status": "active",
                 "summary": "Initial greenfield release slice.",
+                "exit_gate": "First release slice exits only after the targeted child workstreams have source-backed proof and refreshed governance surfaces.",
+                "validation": [],
                 "depends_on": [],
                 "primary_workstreams": child_ids,
                 "carried_workstreams": [],
@@ -266,6 +268,8 @@ def _assign_wave_members(
                 "label": _wave_label(row, wave_id),
                 "status": status,
                 "summary": _wave_summary(row),
+                "exit_gate": _wave_exit_gate(row),
+                "validation": _wave_validation(row),
                 "depends_on": depends_on,
                 "primary_workstreams": members,
                 "carried_workstreams": [],
@@ -328,6 +332,18 @@ def _extract_string_values(value: Any) -> list[str]:
         return values
     token = str(value or "").strip()
     return [token] if token else []
+
+
+def _unique(values: Sequence[str]) -> list[str]:
+    seen: set[str] = set()
+    result: list[str] = []
+    for value in values:
+        token = str(value or "").strip()
+        if not token or token.casefold() in seen:
+            continue
+        seen.add(token.casefold())
+        result.append(token)
+    return result
 
 
 def _workstream_refs(row: Mapping[str, Any]) -> list[str]:
@@ -433,3 +449,18 @@ def _wave_summary(row: Mapping[str, Any]) -> str:
         if token:
             return token
     return "Confirmed greenfield execution wave."
+
+
+def _wave_exit_gate(row: Mapping[str, Any]) -> str:
+    for key in ("exit_gate", "validation_gate", "validation"):
+        values = _extract_string_values(row.get(key))
+        if values:
+            return " ".join(values).strip()
+    return ""
+
+
+def _wave_validation(row: Mapping[str, Any]) -> list[str]:
+    values: list[str] = []
+    for key in ("validation", "validation_gate", "exit_gate"):
+        values.extend(_extract_string_values(row.get(key)))
+    return _unique(values)
