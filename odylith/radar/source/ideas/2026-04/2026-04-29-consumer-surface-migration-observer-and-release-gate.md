@@ -1348,6 +1348,18 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   source remains repo-owned truth, while future proposals and normal
   dashboard/sync refresh converge generated browser surfaces to the clearer
   architecture-review UX.
+- The v0.1.15 startup target-recognition hardening pass is covered by
+  `migration-observer:0.1.15:operator-cli-contracts:b196c5a54b60` and
+  `migration-observer:0.1.15:browser-surfaces:c60b6a7c7415`, with the final
+  focused-helper extraction covered by
+  `migration-observer:0.1.15:browser-surfaces:c423443a7fa4`. The pass changes
+  the `odylith start` operator transcript and startup packet intake: unquoted
+  existing file paths and trusted planned new files become explicit startup
+  targets, successful bootstrap output prints the compact recognized target,
+  and untrusted planned suffixes remain rejected. Existing consumer repos need
+  no source-truth migration; upgrade adoption supplies the sharper startup
+  CLI/runtime behavior, and the generated Radar/Registry/Atlas/Compass/Casebook
+  surfaces converge through normal dashboard/sync refresh.
 - The v0.1.15 engine-integrity and execution-benchmark route hardening pass is
   covered by `migration-observer:0.1.15:operator-cli-contracts:a8504a4c60ea`,
   `migration-observer:0.1.15:browser-surfaces:bfc31956720b`, and

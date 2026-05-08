@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.context_engine import odylith_context_engine_intent_anchor_runtime as intent_anchor_runtime
 from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
 from typing import Any
 
@@ -25,7 +26,6 @@ _PATH_CATEGORY_PRIORITY = {
     "unknown": 11,
 }
 
-
 def _intent_anchor_paths(*, repo_root: Path, intent: str, repo_dirty_paths: Sequence[str]) -> list[str]:
     try:
         candidates = _extract_path_refs(text=str(intent or "").strip(), repo_root=repo_root)
@@ -39,7 +39,7 @@ def _intent_anchor_paths(*, repo_root: Path, intent: str, repo_dirty_paths: Sequ
         token = context_engine_store._normalize_repo_token(str(raw), repo_root=repo_root)
         if not token:
             continue
-        if token in repo_dirty or (repo_root / token).exists():
+        if intent_anchor_runtime.path_ref_exists_or_is_planned(repo_root=repo_root, path_ref=token, repo_dirty_paths=repo_dirty):
             normalized.append(token)
     return _prioritize_scope_paths(context_engine_store._dedupe_strings(normalized), max_paths=4)
 

@@ -2117,6 +2117,38 @@ def _start_operator_reason(reason: str) -> str:
     return _START_NARROWING_REASON_LABELS.get(compact, compact)
 
 
+def _start_target_summary(payload: Mapping[str, object]) -> str:
+    target_resolution = (
+        dict(payload.get("target_resolution", {}))
+        if isinstance(payload.get("target_resolution"), Mapping)
+        else {}
+    )
+    candidate_targets = [
+        dict(row)
+        for row in target_resolution.get("candidate_targets", [])
+        if isinstance(row, Mapping) and str(row.get("path", "")).strip()
+    ]
+    writable_targets = [row for row in candidate_targets if bool(row.get("writable"))]
+    selected = writable_targets or candidate_targets
+    if selected:
+        first_path = str(selected[0].get("path", "")).strip()
+        extra = len(selected) - 1
+        return f"{first_path} (+{extra} more)" if extra > 0 else first_path
+    diagnostic_anchors = [
+        dict(row)
+        for row in target_resolution.get("diagnostic_anchors", [])
+        if isinstance(row, Mapping) and str(row.get("value", "")).strip()
+    ]
+    if diagnostic_anchors:
+        first = diagnostic_anchors[0]
+        value = str(first.get("value", "")).strip()
+        kind = str(first.get("kind", "")).strip()
+        extra = len(diagnostic_anchors) - 1
+        label = f"{value} ({kind})" if kind else value
+        return f"{label} (+{extra} more)" if extra > 0 else label
+    return ""
+
+
 def _cmd_start(args: argparse.Namespace) -> int:
     preflight = evaluate_start_preflight(
         repo_root=args.repo_root,
@@ -2171,6 +2203,9 @@ def _cmd_start(args: argparse.Namespace) -> int:
         packet_state = ""
         if isinstance(context_packet, Mapping):
             packet_state = str(context_packet.get("state") or context_packet.get("status") or "").strip()
+        target_summary = _start_target_summary(payload)
+        if target_summary:
+            print(f"- target: {target_summary}")
         print(f"- packet: {packet_kind or 'bootstrap_session'}")
         if packet_state:
             print(f"- state: {packet_state}")

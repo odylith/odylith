@@ -3640,6 +3640,49 @@ def test_start_bootstrap_lane_emits_payload(monkeypatch, tmp_path: Path, capsys)
     assert '"packet_kind": "bootstrap_session"' not in captured
 
 
+def test_start_bootstrap_lane_prints_recognized_target(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setattr(
+        cli,
+        "evaluate_start_preflight",
+        lambda **kwargs: SimpleNamespace(
+            lane="bootstrap",
+            reason="healthy",
+            next_command="./.odylith/bin/odylith start --repo-root .",
+            healthy=True,
+            launcher_exists=True,
+            bootstrap_launcher_exists=True,
+            install_shape_present=True,
+            status=None,
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "_start_bootstrap_payload",
+        lambda args: {
+            "packet_kind": "bootstrap_session",
+            "narrowing_guidance": {"required": False, "reason": "grounded"},
+            "target_resolution": {
+                "candidate_targets": [
+                    {
+                        "path": "src/odylith/runtime/context_engine/new_startup_probe.py",
+                        "source": "path_scope",
+                        "writable": True,
+                    }
+                ],
+                "has_writable_targets": True,
+                "requires_more_consumer_context": False,
+            },
+        },
+    )
+
+    rc = cli.main(["start", "--repo-root", str(tmp_path)])
+    captured = capsys.readouterr().out
+
+    assert rc == 0
+    assert "- target: src/odylith/runtime/context_engine/new_startup_probe.py" in captured
+    assert "- packet: bootstrap_session" in captured
+
+
 def test_start_bootstrap_lane_emits_full_payload_with_json(monkeypatch, tmp_path: Path, capsys) -> None:
     monkeypatch.setattr(
         cli,

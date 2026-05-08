@@ -179,6 +179,14 @@ Prompt-submit and stop hooks stay under a documented local latency budget on war
   dirty governed worktree; warmed wall clock settled at `real 10.42s` with a
   `6.8s` dashboard surface batch versus the prior warmed baseline of about
   `real 15.97s`.
+- 2026-05-08 startup target-recognition proof keeps `odylith start` accurate
+  when the operator names existing source files or planned new source files in
+  unquoted intent text. Existing path repro for CB-183 now returns bootstrap
+  with two writable targets and no needs-target status; planned new-file intent
+  such as `src/odylith/runtime/context_engine/new_startup_probe.py` now returns
+  bootstrap and prints a compact `target` line. The extractor remains bounded
+  to known repo roots and trusted source/config/doc/test suffixes so random
+  prose does not become write scope.
 
 ## Rollout
 - Execute through the bound v0.1.14 technical plan and keep the implementation

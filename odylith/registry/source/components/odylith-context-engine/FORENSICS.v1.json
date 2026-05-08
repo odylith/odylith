@@ -45,10 +45,10 @@
     "empty_reasons": [],
     "explicit_event_count": 184,
     "mapped_workstream_evidence_count": 134,
-    "recent_path_match_count": 0,
-    "spec_history_event_count": 13,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 184
+    "timeline_event_count": 185
   },
   "name": "Odylith Context Engine",
   "path_prefixes": [
@@ -57,6 +57,24 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "src/odylith/runtime/context_engine/odylith_context_engine_hot_path_scope_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_intent_anchor_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 466,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md, src/odylith/runtime/context_engine/odylith_context_engine_hot_path_scope_runtime.py +1 more",
+      "ts_iso": "2026-05-08T12:30:06-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",

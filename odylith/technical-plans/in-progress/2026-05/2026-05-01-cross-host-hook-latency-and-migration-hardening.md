@@ -145,6 +145,11 @@ Related Bugs:
       `odylith start` must be the first visible grounding gate on substantive
       turns; `odylith context`, `odylith query`, `git status`, and broad repo
       search run only after startup completes and an exact anchor is known.
+- [x] Startup target recognition must accept real implementation intent, not
+      just already-existing dirty files. Unquoted existing file paths and
+      planned new file paths under trusted repo roots now become explicit
+      startup anchors, successful startup prints the compact `target` line, and
+      untrusted planned suffixes still fail closed.
 - [x] Claude's measured surface issue was real: root `CLAUDE.md` duplicated the
       managed `AGENTS.md` contract before importing it, `.claude/CLAUDE.md`
       restated several root rules, SessionStart printed a brief already written
