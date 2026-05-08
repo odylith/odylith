@@ -301,6 +301,11 @@ Related Bugs:
       non-negotiable contracts: evidence separation, confirmation gates,
       required host-authored topology, no duplicated diagram bodies, release
       planning, and durable memory.
+- [x] Greenfield Registry component specs stay component-local. Apply now
+      gives each dossier the component's primary child workstream,
+      non-project-level diagrams, component-authored proof rows, and local
+      security/policy posture while leaving broad system context and program
+      topology in Radar/Atlas.
 - [x] Engine-integrity checks need a dependency-light diagnostic lane. The
       diagnostic benchmark now defaults to cold cache so packet/prompt
       readiness can be proven in source-local posture without optional
@@ -623,6 +628,10 @@ Related Bugs:
       (`195 passed, 1 skipped`) across Radar, Registry, Atlas, Casebook,
       Compass, Context/Execution alignment, intervention visibility, filters,
       onboarding, and layout/UX audits.
+- [x] Component-spec topology proof:
+      `python3 -m pytest tests/unit/runtime/test_greenfield_proposals.py
+      tests/unit/runtime/test_component_authoring.py
+      tests/unit/runtime/test_governed_artifact_tribunal.py -q` (`39 passed`).
 - [x] Activation validators passed after the engine-integrity slice:
       `validate engine-integrity`, `validate discipline`,
       `validate guidance-behavior`, `validate topology-integrity`,

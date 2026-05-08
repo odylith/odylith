@@ -24,6 +24,7 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine import repo_analysis
 from odylith.runtime.analysis_engine.types import SourceSummary, slugify
+from odylith.runtime.domain_intelligence import greenfield_component_registry_scope
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_traceability
@@ -401,16 +402,28 @@ def _component_risk_lines(row: Mapping[str, Any], _proposal: Mapping[str, Any]) 
     )
     label = str(row.get("label", "") or row.get("component_id", "") or "Component").strip()
     values = list(local)
-    posture_text = " ".join(values).casefold()
+    posture_text = _component_posture_text(row=row, risk_lines=values)
     if not _has_component_posture(posture_text, _COMPONENT_RISK_TOKENS):
         values.append(_component_operational_risk(row=row, label=label))
-    posture_text = " ".join(values).casefold()
+    posture_text = _component_posture_text(row=row, risk_lines=values)
     if not _has_component_posture(posture_text, _COMPONENT_SECURITY_TOKENS):
         values.append(_component_security_posture(row=row, label=label))
-    posture_text = " ".join(values).casefold()
+    posture_text = _component_posture_text(row=row, risk_lines=values)
     if not _has_component_posture(posture_text, _COMPONENT_POLICY_TOKENS):
         values.append(_component_policy_posture(row=row, label=label))
     return unique_text(values)
+
+
+def _component_posture_text(*, row: Mapping[str, Any], risk_lines: Sequence[str]) -> str:
+    values = [
+        *risk_lines,
+        *row_text_tuple(row, "responsibility"),
+        *row_text_tuple(row, "boundary"),
+        *row_text_tuple(row, "dependencies", "depends_on"),
+        *row_text_tuple(row, "interfaces", "interface_changes"),
+        *row_text_tuple(row, "validation", "test_strategy"),
+    ]
+    return " ".join(values).casefold()
 
 
 def _has_component_posture(text: str, tokens: Sequence[str]) -> bool:
@@ -745,12 +758,17 @@ def _write_greenfield_proposal(
         traceability_plan=traceability_plan,
         release_selector=release_selector,
     )
+    component_diagram_scope = greenfield_component_registry_scope.build_component_diagram_scope(
+        rows=diagram_rows,
+        diagram_ids=diagram_ids,
+    )
 
     components_created: list[dict[str, Any]] = []
     for row in proposal.get("components", []):
         if not isinstance(row, Mapping):
             continue
         key = greenfield_traceability.component_key(row)
+        handoff = component_handoffs.get(key, {})
         created = component_authoring.register_component(
             repo_root=root,
             component_id=str(row.get("component_id", "")).strip(),
@@ -763,15 +781,22 @@ def _write_greenfield_proposal(
             status=str(row.get("status", "planned")).strip() or "planned",
             product_layer="application",
             sources=("user_intent",),
-            workstreams=traceability_plan.component_workstreams.get(key, ()),
-            diagrams=traceability_plan.component_diagrams.get(key, ()),
+            workstreams=greenfield_component_registry_scope.registry_component_workstreams(
+                handoff=handoff,
+                fallback=traceability_plan.component_workstreams.get(key, ()),
+            ),
+            diagrams=greenfield_component_registry_scope.registry_component_diagrams(
+                row=row,
+                diagram_scope=component_diagram_scope,
+                fallback=traceability_plan.component_diagrams.get(key, ()),
+            ),
             responsibility=str(row.get("responsibility", "")).strip(),
             boundary=str(row.get("boundary", "")).strip(),
             dependencies=row_text_tuple(row, "dependencies", "depends_on"),
             interfaces=row_text_tuple(row, "interfaces", "interface_changes"),
             validation=row_text_tuple(row, "validation", "test_strategy"),
             risks=_component_risk_lines(row, proposal),
-            implementation_handoff=component_handoffs.get(key, {}),
+            implementation_handoff=handoff,
             dry_run=False,
             refresh=False,
         )

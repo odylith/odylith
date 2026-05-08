@@ -50,7 +50,13 @@ def build_component_spec(
     plan_link = _plan_link(first_workstream)
     related_workstreams = ", ".join(f"`{item}`" for item in workstream_ids) if workstream_ids else "none yet"
     related_diagrams = ", ".join(f"`{item}`" for item in diagram_ids) if diagram_ids else "none yet"
-    proof_lines = _unique_lines([*validation, *handoff_validation])
+    proof_lines = _component_proof_lines(
+        validation=validation,
+        handoff_validation=handoff_validation,
+        label=label,
+        boundary=boundary_text,
+        responsibility=responsibility_text,
+    )
     interface_lines = _unique_lines(interfaces or (profile["default_interface"],))
     dependency_lines = _unique_lines(dependencies or (profile["default_dependency"],))
     risk_lines = _unique_lines(risks or (profile["default_risk"],))
@@ -283,7 +289,7 @@ def _promotion_bar_lines(
     return (
         f"{label} remains candidate until {anchor} lands source-backed behavior inside {source}.",
         f"Promotion requires {proof} to pass against real source, not proposal text.",
-        "Registry, Radar, Atlas, and Compass must refresh from that proof before the component is marked active.",
+        "This component's Registry spec, linked Radar lane, Atlas view, and Compass projection must refresh from that proof before active status.",
     )
 
 
@@ -322,6 +328,60 @@ def _first_command_hint(commands: Sequence[str]) -> str:
         if text:
             return f"`{text}`" if not text.startswith("run ") else text
     return "Repo-native proof named by the first technical plan"
+
+
+def _component_proof_lines(
+    *,
+    validation: Sequence[str],
+    handoff_validation: Sequence[str],
+    label: str,
+    boundary: str,
+    responsibility: str,
+) -> tuple[str, ...]:
+    local = _unique_lines(validation)
+    if local:
+        return local
+    keywords = _component_keywords(label=label, boundary=boundary, responsibility=responsibility)
+    filtered = [
+        line
+        for line in handoff_validation
+        if _line_mentions_component(line=line, keywords=keywords)
+    ]
+    return _unique_lines(filtered or handoff_validation[:2])
+
+
+def _component_keywords(*, label: str, boundary: str, responsibility: str) -> set[str]:
+    text = " ".join([label, boundary, responsibility]).casefold()
+    words = set(re.findall(r"[a-z0-9][a-z0-9_-]{3,}", text))
+    structural = {
+        "application",
+        "boundary",
+        "candidate",
+        "component",
+        "contract",
+        "first",
+        "implementation",
+        "project",
+        "release",
+        "source",
+        "system",
+        "technical",
+        "workstream",
+    }
+    expanded: set[str] = set()
+    for word in words:
+        if word in structural:
+            continue
+        expanded.add(word)
+        expanded.update(part for part in word.replace("_", "-").split("-") if len(part) >= 4 and part not in structural)
+    return expanded
+
+
+def _line_mentions_component(*, line: str, keywords: set[str]) -> bool:
+    if not keywords:
+        return False
+    text = str(line).casefold()
+    return any(keyword in text for keyword in keywords)
 
 
 def _runway_lines(

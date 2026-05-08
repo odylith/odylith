@@ -1286,11 +1286,12 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert "`commerce-storefront`" in child_idea
     assert any(result["backlog"][1]["idea_path"] in row["related_backlog"] for row in atlas_catalog["diagrams"])
     storefront = next(row for row in component_registry["components"] if row["component_id"] == "commerce-storefront")
-    assert storefront["workstreams"] == ["B-001", "B-002"]
-    assert storefront["diagrams"] == ["D-001", "D-002"]
+    assert storefront["workstreams"] == ["B-002"]
+    assert storefront["diagrams"] == []
     assert "responsible for Browse, cart entry, checkout entry, and user-facing errors" in storefront["what_it_is"]
     assert "Browse, cart entry, checkout entry, and user-facing errors" in storefront_spec
-    assert "| Diagrams | `D-001`, `D-002` |" in storefront_spec
+    assert "| Workstreams | `B-002` |" in storefront_spec
+    assert "| Diagrams | none yet |" in storefront_spec
     assert "Browser smoke proof for browse-to-cart and failed-checkout messaging" in storefront_spec
     assert result["memory"]["recorded"] is True
     assert result["memory"]["event"]["source"] == "domain-intelligence"
@@ -1433,12 +1434,18 @@ def test_greenfield_apply_writes_bespoke_domain_component_specs(tmp_path, monkey
     ]
     assert "wallet/protocol watchlist setup" in console_spec
     assert "stale oracle" in console_spec
+    assert "| Workstreams | `B-002` |" in console_spec
+    assert "| Diagrams | `D-002`, `D-003` |" in console_spec
     assert "Exposure snapshot query" in engine_spec
     assert "liquidity" in engine_spec
+    assert "| Workstreams | `B-003` |" in engine_spec
+    assert "| Diagrams | `D-002`, `D-003`, `D-004` |" in engine_spec
     assert "Use `B-003` (Define domain contract and ownership) as the implementation-plan anchor" in engine_spec
     assert "Use `B-002` (Define first operator workflow) as the implementation-plan anchor" not in engine_spec
     assert "Scenario runner command" in harness_spec
     assert "live chain calls" in harness_spec
+    assert "| Workstreams | `B-004` |" in harness_spec
+    assert "| Diagrams | `D-005` |" in harness_spec
     assert "Use `B-004` (Add release proof and operations harness) as the implementation-plan anchor" in harness_spec
     assert "## Risk Sentinel Console Interaction Boundary" in console_spec
     assert "## Risk Signal Engine Runtime Boundary" in engine_spec
@@ -1460,6 +1467,9 @@ def test_greenfield_apply_writes_bespoke_domain_component_specs(tmp_path, monkey
         assert "Security, privacy, accessibility, and operational risks can be under-modeled" not in text
         assert "Security posture starts with authentication or operator access boundaries" not in text
         assert "Policy posture tracks privacy, retention, accessibility" not in text
+        assert "The first workstream has a technical plan" not in text
+        assert "The workflow boundary appears in Registry and Atlas" not in text
+        assert "| Diagrams | `D-001`" not in text
         assert "R1." not in text
         assert "odylith_assumption" not in text
     assert console_spec != engine_spec

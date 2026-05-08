@@ -119,7 +119,7 @@ Greenfield propose returns a low-latency, provider_calls=0 host-reasoning contra
 The host-authored proposal includes backlog candidates, program waves, release plan, planned Registry components, draft Atlas Mermaid sources, assumptions, risks, validation strategy, open questions, and exact apply commands.
 Provider-free greenfield scaffolds include a multi-view Atlas suite with mutually traceable workstream/component links; the robot-swarm logistics path emits conflict, safety, telemetry, deployment-boundary, and observability/audit views in addition to baseline topology.
 Greenfield proposals carry a project-first brief before backlog: direction options, pre-coding checkpoints, coding-readiness gates, and host-independent commands must be visible in text and JSON before apply.
-Greenfield Registry component specs stay component-owned: they must not copy project-level risk/security/compliance posture into every dossier, and each spec must name the component's own boundary, outside-boundary exclusions, collaborators, interfaces, failure modes, proof obligations, first source path, and most specific child workstream anchor.
+Greenfield Registry component specs stay component-owned: they must not copy project-level risk/security/compliance posture into every dossier, and each spec must name the component's own boundary, outside-boundary exclusions, collaborators, interfaces, failure modes, proof obligations, first source path, most specific child workstream anchor, and component-local diagram set instead of project-wide topology links.
 Greenfield apply writes through owned Radar, Registry, Atlas, release-targeting, and Compass memory paths only after --confirm, preserving user_intent evidence and source-backed truth separation.
 Apply rejects missing Mermaid source, duplicated diagram source, incomplete proposal sections, and invalid evidence tiers before any governed write.
 Apply/create closeout leads with the project workstream and readiness gates, then names the eventual first coding workstream as a later lane rather than the immediate next action.
@@ -214,6 +214,15 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   -> `B-004`): `PYTHONPATH=src pytest -q
   tests/unit/runtime/test_greenfield_proposals.py` (`33 passed`). Casebook bug
   `CB-187` captures the fixed-pending-release UX regression.
+- 2026-05-08 component-spec topology tightening moved broad project links back
+  to Radar/Atlas and kept Registry dossiers component-local: DeFi generated
+  specs now bind Risk Console to `B-002` and `D-002,D-003`, Risk Signal Engine
+  to `B-003` and `D-002,D-003,D-004`, Scenario Replay Harness to `B-004` and
+  `D-005`; host-authored components without component-level diagram refs no
+  longer inherit system-context/program-wave diagrams. Proof:
+  `python3 -m pytest tests/unit/runtime/test_greenfield_proposals.py
+  tests/unit/runtime/test_component_authoring.py
+  tests/unit/runtime/test_governed_artifact_tribunal.py -q` (`39 passed`).
 - Deepening pass split science/math into targeted subdomains and added fixture
   proof for commerce, SaaS, dashboards, AI assistants, data ingestion, CLI
   libraries, physics simulation, differential-equation solvers, computational
@@ -408,7 +417,9 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `migration-observer:0.1.15:browser-surfaces:b4d20ce668d5`, and
   `migration-observer:0.1.15:install-managed-assets:dea842f8c91c`,
   `migration-observer:0.1.15:browser-surfaces:77f6752a8e62`, and
-  `migration-observer:0.1.15:install-managed-assets:4590f557c3cd`.
+  `migration-observer:0.1.15:install-managed-assets:4590f557c3cd`,
+  `migration-observer:0.1.15:operator-cli-contracts:dc5245ee5acc`, and
+  `migration-observer:0.1.15:browser-surfaces:7d4664249c0d`.
   These markers cover the deepened greenfield skill guidance, refreshed
   Domain Intelligence Atlas/Registry/Radar browser surfaces, updated managed
   security-and-trust guidance, updated public README/operator/release-note/security
@@ -417,8 +428,9 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   direction-option/readiness-gate guidance refresh, the engine-integrity
   validator and expanded capability inventory, the canonical project-intelligence
   proposal object and parent Radar persistence, explicit project/workstream
-  invalidation rules, first-class workstream scope and owners, and bundled
-  install-managed dashboard copies. Existing consumer governance truth remains unchanged; upgrades
+  invalidation rules, first-class workstream scope and owners, component-local
+  Registry dossier topology, and bundled install-managed dashboard copies.
+  Existing consumer governance truth remains unchanged; upgrades
   refresh managed guidance/assets and keep proposal writes explicit through
   `odylith greenfield apply --confirm`.
 

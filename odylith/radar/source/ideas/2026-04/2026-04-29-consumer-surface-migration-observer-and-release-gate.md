@@ -1311,6 +1311,16 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   remain repo-owned truth, future greenfield apply runs use the sharper
   generator, and upgrade plus dashboard/sync refresh converges generated
   Registry/Radar/Compass browser surfaces and bundle mirrors.
+- The v0.1.15 greenfield component-spec topology tightening pass is covered by
+  `migration-observer:0.1.15:operator-cli-contracts:dc5245ee5acc` and
+  `migration-observer:0.1.15:browser-surfaces:7d4664249c0d`. The pass keeps
+  Registry dossiers from inheriting project-wide topology by binding future
+  greenfield components to their primary child workstream, component-authored
+  proof rows, component-local Tribunal posture, and non-project-level diagrams
+  only. Existing consumer repos need no destructive migration: already-written
+  Registry specs remain repo-owned truth, and future `odylith greenfield apply`
+  plus normal Registry/Radar/Atlas/Compass refreshes converge the stricter
+  component-local rendering contract.
 - The v0.1.15 engine-integrity and execution-benchmark route hardening pass is
   covered by `migration-observer:0.1.15:operator-cli-contracts:a8504a4c60ea`,
   `migration-observer:0.1.15:browser-surfaces:bfc31956720b`, and
