@@ -108,9 +108,10 @@ def build_proposal_contract() -> dict[str, Any]:
                 "boundary/interfaces/dependencies where known, evidence_tier, status, and qualification"
             ),
             "diagrams": (
-                "purposeful Atlas drafts such as system context, program waves, runtime/data/validation topology, "
-                "or a better domain-specific set; each diagram must name related components and workstream/backlog "
-                "focus, and flowcharts must use subtle diagram-internal colors plus wrapped labels"
+                "a purposeful Atlas view suite such as system context, first-slice sequence, component ownership, "
+                "domain state/data contract, validation/release topology, operational risk, or a better "
+                "domain-specific set; each diagram must name related components and workstream/backlog focus, "
+                "and flowcharts must use subtle diagram-internal colors plus wrapped labels"
             ),
             "program": "wave plan with goals, validation gates, component focus, and evidence tier",
             "implementation_runway": (
@@ -133,7 +134,10 @@ def build_proposal_contract() -> dict[str, Any]:
         "quality_bar": [
             "Reason from the actual prompt, not from a fixed in-code domain list.",
             "Prefer fewer high-quality boundaries over many generic buckets.",
-            "Choose diagram types because they clarify the project, not because every project gets the same set.",
+            (
+                "Choose diagram types because they clarify the project, and for greenfield architecture favor a "
+                "multi-view suite that covers topology, sequence, ownership, state/data, validation, and operational risk."
+            ),
             "Each diagram must include host-authored mermaid_source; Odylith validates it but does not invent topology.",
             (
                 "For flowchart mermaid_source, use classDef/style colors inside the diagram for semantic grouping "

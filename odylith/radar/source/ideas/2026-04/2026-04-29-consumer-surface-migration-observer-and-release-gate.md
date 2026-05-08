@@ -1276,3 +1276,15 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   consumer migration assessment. Existing consumers still need no bespoke data
   migration; normal upgrade adoption and dashboard/sync refresh converge the
   installed surfaces.
+- The v0.1.15 greenfield architecture-diagram suite hardening pass is covered by
+  `migration-observer:0.1.15:browser-surfaces:32f36ad50bff` and
+  `migration-observer:0.1.15:browser-surfaces:1bca44045b6c` plus
+  `migration-observer:0.1.15:install-managed-assets:e1ab4be0a00f`. The pass
+  deepens greenfield Atlas output from a thin starter diagram set into a
+  multi-view architecture suite, refreshes the governed browser surfaces and
+  bundled managed dashboard mirrors, records the final proof-evidence refresh,
+  and keeps proposal writes confirmation gated through the same greenfield
+  Tribunal. Existing consumers need no destructive or bespoke data migration:
+  existing greenfield records remain readable, while upgrade adoption and
+  dashboard/sync refresh converge installed generated surfaces and managed
+  assets to the richer diagram proposal contract.

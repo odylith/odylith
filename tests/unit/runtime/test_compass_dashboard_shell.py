@@ -172,6 +172,7 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert 'const radarHref = radarWorkstreamHref(item.ideaId, { view: "plan" });' in workstreams_js
     assert 'const idMarkup = rowsAreProgramCovered' in workstreams_js
     assert '<a class="ws-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-ws-id="${escapeHtml(item.ideaId)}"' in workstreams_js
+    assert '<a class="chip-link ws-covered-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-covered-ws-id="${escapeHtml(item.ideaId)}"' in workstreams_js
     assert 'data-covered-ws-id' in workstreams_js
     assert 'Open radar for ${item.ideaId}; also covered by program/release lanes' in workstreams_js
     assert '<span class="chip execution-wave-chip-link" data-ws-id="${escapeHtml(item.ideaId)}"' not in workstreams_js

@@ -85,6 +85,11 @@ External ecosystem checks argue against a small in-code taxonomy as the proposal
   candidate Registry components, host-authored Atlas Mermaid sources,
   program formation, wave-to-workstream policy, release strategy, validation
   obligations, risks, assumptions, and open questions.
+- Default apply-ready greenfield scaffolds must carry a multi-view Atlas
+  architecture suite, not a token diagram pair: at minimum topology,
+  first-slice sequence, component ownership, state/data contract, and
+  validation/release topology; domain-specific profiles should add the
+  operational-risk views the prompt makes material.
 - Preserve evidence separation: observed source, user intent, and Odylith assumptions must stay distinct.
 - Keep Odylith CLI proposal generation provider-free by default; the active host
   model performs the reasoning already happening in the chat.
@@ -112,6 +117,7 @@ External ecosystem checks argue against a small in-code taxonomy as the proposal
 ## Success Metrics
 Greenfield propose returns a low-latency, provider_calls=0 host-reasoning contract for any vague or precise greenfield prompt.
 The host-authored proposal includes backlog candidates, program waves, release plan, planned Registry components, draft Atlas Mermaid sources, assumptions, risks, validation strategy, open questions, and exact apply commands.
+Provider-free greenfield scaffolds include a multi-view Atlas suite with mutually traceable workstream/component links; the robot-swarm logistics path emits conflict, safety, telemetry, deployment-boundary, and observability/audit views in addition to baseline topology.
 Greenfield apply writes through owned Radar, Registry, Atlas, release-targeting, and Compass memory paths only after --confirm, preserving user_intent evidence and source-backed truth separation.
 Apply rejects missing Mermaid source, duplicated diagram source, incomplete proposal sections, and invalid evidence tiers before any governed write.
 Host prompt routing avoids noisy raw Observation chatter for normal greenfield intents while preserving earned intervention paths.
@@ -138,6 +144,22 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   greenfield proposal path through the 568-test engine suite, the 208-test
   host/migration suite, and the 185-test browser matrix without provider calls
   or consumer-lane source claims.
+- 2026-05-08 greenfield Atlas suite hardening proved the provider-free generic
+  scaffold now emits five architecture views and the robot-swarm logistics
+  profile emits ten domain-specific views while validation and Tribunal still
+  pass: `PYTHONPATH=src python -m pytest -q
+  tests/unit/runtime/test_greenfield_proposals.py
+  tests/unit/runtime/test_greenfield_atlas_contract.py
+  tests/unit/runtime/test_compass_dashboard_shell.py::test_workstream_and_registry_links_stay_cross_surface_and_without_footer_actions
+  tests/integration/runtime/test_surface_browser_smoke.py::test_compass_current_workstreams_excludes_rows_already_represented_in_programs_or_release_targets
+  tests/unit/test_cli.py::test_release_migration_gate_json_reports_registered_runtime
+  tests/unit/test_cli.py::test_greenfield_propose_command_is_provider_free
+  tests/unit/test_cli.py::test_greenfield_create_help_forwards_backend_flags
+  tests/unit/test_cli.py::test_greenfield_apply_help_forwards_backend_flags`
+  (`43 passed`); `odylith sync --repo-root . --check-only --impact-mode
+  selective`; `odylith casebook validate`; `odylith release migration-gate
+  --target-version 0.1.15 --json` (`blocked_manual_migrations=0`); `git diff
+  --check`; `python -m py_compile` for the touched Domain Intelligence modules.
 - Deepening pass split science/math into targeted subdomains and added fixture
   proof for commerce, SaaS, dashboards, AI assistants, data ingestion, CLI
   libraries, physics simulation, differential-equation solvers, computational
@@ -306,11 +328,17 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `migration-observer:0.1.13:install-managed-assets:378a6ed807cc`,
   `migration-observer:0.1.14:guidance-and-skills:5db32f2987ff`,
   `migration-observer:0.1.14:operator-cli-contracts:e1abf985ede6`,
-  `migration-observer:0.1.14:install-managed-assets:1d4f10095f9b`.
+  `migration-observer:0.1.14:install-managed-assets:1d4f10095f9b`,
+  `migration-observer:0.1.15:browser-surfaces:0a085ecb8c35`,
+  `migration-observer:0.1.15:install-managed-assets:c46b34c03c1d`,
+  `migration-observer:0.1.15:browser-surfaces:32f36ad50bff`,
+  `migration-observer:0.1.15:install-managed-assets:e1ab4be0a00f`.
   These markers cover the deepened greenfield skill guidance, refreshed
   Domain Intelligence Atlas/Registry/Radar browser surfaces, updated managed
   security-and-trust guidance, updated public README/operator/release-note/security
-  guidance, and bundled install-managed dashboard and security posture copies. Existing consumer governance truth remains unchanged; upgrades
+  guidance, the v0.1.15 Compass/Radar/Registry/Casebook browser-surface refresh
+  from the deeper greenfield diagram-suite contract, and bundled
+  install-managed dashboard copies. Existing consumer governance truth remains unchanged; upgrades
   refresh managed guidance/assets and keep proposal writes explicit through
   `odylith greenfield apply --confirm`.
 

@@ -6,6 +6,7 @@ Last updated (UTC): 2026-05-08
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-182 | 2026-05-08 | Greenfield atlas proposal suite is too shallow for architecture review | P2 | domain-intelligence | FixedPendingRelease | [2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md](2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md) |
 | CB-181 | 2026-05-07 | Release smoke omitted exact greenfield propose/apply journey | P2 | release | FixedPendingRelease | [2026-05-07-release-smoke-omitted-greenfield-create-journey.md](2026-05-07-release-smoke-omitted-greenfield-create-journey.md) |
 | CB-178 | 2026-05-07 | Radar sort filter ignored selected score and date modes | P2 | radar | FixedPendingRelease | [2026-05-07-radar-sort-filter-ignored-selected-score-and-date-modes.md](2026-05-07-radar-sort-filter-ignored-selected-score-and-date-modes.md) |
 | CB-180 | 2026-05-07 | Installer progress bar glued child output to elapsed seconds | P3 | installer | FixedPendingRelease | [2026-05-07-installer-progress-bar-glued-child-output-to-elapsed-seconds.md](2026-05-07-installer-progress-bar-glued-child-output-to-elapsed-seconds.md) |

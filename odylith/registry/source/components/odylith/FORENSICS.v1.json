@@ -45,9 +45,9 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 270,
-    "mapped_workstream_evidence_count": 127,
-    "recent_path_match_count": 1,
+    "explicit_event_count": 271,
+    "mapped_workstream_evidence_count": 128,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 29,
     "status": "forensic_coverage_present",
     "timeline_event_count": 271
@@ -66,21 +66,38 @@
   "timeline": [
     {
       "artifacts": [
-        "AGENTS.md",
-        "odylith/README.md",
-        "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
+        "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
+        "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
+        "src/odylith/runtime/domain_intelligence/robot_swarm_profile.py",
+        "tests/unit/runtime/test_greenfield_proposals.py"
       ],
       "confidence": "high",
-      "event_index": 466,
-      "explicit_components": [],
-      "kind": "workspace_activity",
+      "event_index": 463,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
       "mapped_components": [
-        "odylith"
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: AGENTS.md, odylith/README.md +1 more",
-      "ts_iso": "2026-05-07T16:39:05-07:00",
-      "workstreams": []
+      "summary": "Deepened B-142 greenfield Atlas output: generic scaffolds now emit five architecture views and the robot-swarm logistics profile emits ten domain-specific diagrams, tracked by CB-182.",
+      "ts_iso": "2026-05-07T19:49:17-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [],

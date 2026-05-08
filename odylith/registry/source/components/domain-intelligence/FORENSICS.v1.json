@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 27,
-    "mapped_workstream_evidence_count": 26,
+    "explicit_event_count": 28,
+    "mapped_workstream_evidence_count": 27,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 12,
+    "spec_history_event_count": 13,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 28
+    "timeline_event_count": 29
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,26 +21,56 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-        "src/odylith/runtime/domain_intelligence/proposal_normalization.py",
-        "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
-        "src/odylith/runtime/domain_intelligence/proposal_tribunal.py",
-        "src/odylith/runtime/domain_intelligence/proposal_validation.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_cli_output.py",
+        "src/odylith/runtime/domain_intelligence/proposal_contract.py",
         "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
         "src/odylith/runtime/domain_intelligence/robot_swarm_profile.py"
       ],
       "confidence": "high",
-      "event_index": 465,
+      "event_index": 464,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_proposals.py +7 more",
-      "ts_iso": "2026-05-07T15:32:14-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/proposal_contract.py +2 more",
+      "ts_iso": "2026-05-07T19:49:28-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
+        "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
+        "src/odylith/runtime/domain_intelligence/robot_swarm_profile.py",
+        "tests/unit/runtime/test_greenfield_proposals.py"
+      ],
+      "confidence": "high",
+      "event_index": 463,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Deepened B-142 greenfield Atlas output: generic scaffolds now emit five architecture views and the robot-swarm logistics profile emits ten domain-specific diagrams, tracked by CB-182.",
+      "ts_iso": "2026-05-07T19:49:17-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

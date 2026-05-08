@@ -53,7 +53,7 @@ def build_apply_ready_proposal(
             components=components,
             diagrams=diagrams,
         ),
-        "components": _components(components),
+        "components": _components(components, diagrams=diagrams),
         "diagrams": _diagrams(title=title, components=components, diagrams=diagrams),
     }
     if robot_swarm_logistics:
@@ -64,6 +64,7 @@ def build_apply_ready_proposal(
             experience_component=components["experience"],
             domain_component=components["domain"],
             validation_component=components["validation"],
+            diagram_slugs=diagrams,
         )
     proposal["apply_commands"] = build_apply_commands(proposal)
     return proposal
@@ -86,6 +87,9 @@ def _diagram_ids(*, slug: str) -> dict[str, str]:
     return {
         "overview": f"{slug}-system-overview",
         "slice": f"{slug}-first-slice-flow",
+        "component_map": f"{slug}-component-ownership-map",
+        "domain_state": f"{slug}-domain-state-model",
+        "validation_release": f"{slug}-validation-release-topology",
     }
 
 
@@ -279,7 +283,13 @@ def _umbrella_backlog_row(
             "The start workstream includes validation gates and a first implementation prompt.",
         ],
         "component_focus": [components["experience"], components["domain"], components["validation"]],
-        "related_diagram_slugs": [diagrams["overview"], diagrams["slice"]],
+        "related_diagram_slugs": [
+            diagrams["overview"],
+            diagrams["slice"],
+            diagrams["component_map"],
+            diagrams["domain_state"],
+            diagrams["validation_release"],
+        ],
         "dependencies": ["Child workstreams depend on this umbrella for wave membership, release targeting, and proof sequencing."],
         "interfaces": ["Compass, Radar, Registry, and Atlas expose one shared greenfield program topology."],
         "validation": ["Greenfield apply Tribunal passes and all four dashboard surfaces refresh."],
@@ -306,7 +316,7 @@ def _workflow_backlog_row(*, title: str, components: Mapping[str, str], diagrams
             "The workflow boundary appears in Registry and Atlas with linked Radar traceability.",
         ],
         "component_focus": [components["experience"], components["domain"]],
-        "related_diagram_slugs": [diagrams["overview"], diagrams["slice"]],
+        "related_diagram_slugs": [diagrams["overview"], diagrams["slice"], diagrams["component_map"]],
         "dependencies": ["Depends on the domain contract workstream for the data and command boundary used by the first workflow."],
         "interfaces": ["Defines the first user-facing route, command, CLI, or service entrypoint plus visible fallback states."],
         "validation": ["Repository-native behavior proof covers the first workflow normal path and at least one degraded or empty state."],
@@ -331,7 +341,7 @@ def _domain_backlog_row(*, title: str, components: Mapping[str, str], diagrams: 
             "Registry records the domain component interfaces, dependencies, and verification commands.",
         ],
         "component_focus": [components["domain"]],
-        "related_diagram_slugs": [diagrams["overview"], diagrams["slice"]],
+        "related_diagram_slugs": [diagrams["component_map"], diagrams["domain_state"], diagrams["slice"]],
         "dependencies": ["Depends on confirmed first-workflow semantics and defers storage selection until technical planning."],
         "interfaces": ["Defines the initial command, query, event, or file contract consumed by the first workflow."],
         "validation": ["Contract tests cover valid transition, invalid input, and idempotent or retry behavior where relevant."],
@@ -356,7 +366,7 @@ def _verification_backlog_row(*, title: str, components: Mapping[str, str], diag
             "Compass/Radar/Registry/Atlas refresh after the proof and show the same first release lane.",
         ],
         "component_focus": [components["validation"]],
-        "related_diagram_slugs": [diagrams["overview"]],
+        "related_diagram_slugs": [diagrams["validation_release"], diagrams["domain_state"]],
         "dependencies": ["Depends on WS-01 and WS-02 behavior proof before hardening expands scope."],
         "interfaces": ["Defines local smoke commands, fixture inputs, report output, and release-readiness checks."],
         "validation": ["Smoke proof runs under the repo-native toolchain and fails closed on missing fixtures or stale surfaces."],
@@ -367,7 +377,7 @@ def _verification_backlog_row(*, title: str, components: Mapping[str, str], diag
     }
 
 
-def _components(components: Mapping[str, str]) -> list[dict[str, Any]]:
+def _components(components: Mapping[str, str], *, diagrams: Mapping[str, str]) -> list[dict[str, Any]]:
     return [
         _component_row(
             component_id=components["experience"],
@@ -379,6 +389,7 @@ def _components(components: Mapping[str, str]) -> list[dict[str, Any]]:
             dependencies=["Depends on the domain core contract and the verification harness for source-backed proof."],
             interfaces=["User-facing route, command, CLI, or service entrypoint plus visible state contract."],
             validation=["Behavior or browser proof for normal, empty, and degraded/error states."],
+            diagrams=[diagrams["overview"], diagrams["slice"], diagrams["component_map"]],
         ),
         _component_row(
             component_id=components["domain"],
@@ -392,6 +403,7 @@ def _components(components: Mapping[str, str]) -> list[dict[str, Any]]:
             ],
             interfaces=["Initial command, query, event, or file contract consumed by the experience boundary."],
             validation=["Contract tests for valid transition, invalid input rejection, and retry or idempotency behavior."],
+            diagrams=[diagrams["overview"], diagrams["slice"], diagrams["component_map"], diagrams["domain_state"]],
         ),
         _component_row(
             component_id=components["validation"],
@@ -405,6 +417,7 @@ def _components(components: Mapping[str, str]) -> list[dict[str, Any]]:
             ],
             interfaces=["Local smoke command, fixture inputs, report output, and Odylith surface refresh verification."],
             validation=["Smoke, lint, typecheck, build, and dashboard refresh proof named by the first technical plan."],
+            diagrams=[diagrams["overview"], diagrams["validation_release"]],
         ),
     ]
 
@@ -420,6 +433,7 @@ def _component_row(
     dependencies: list[str],
     interfaces: list[str],
     validation: list[str],
+    diagrams: list[str],
 ) -> dict[str, Any]:
     return {
         "component_id": component_id,
@@ -433,6 +447,7 @@ def _component_row(
         "dependencies": dependencies,
         "interfaces": interfaces,
         "validation": validation,
+        "related_diagram_slugs": diagrams,
         "evidence_tier": "user_intent",
     }
 
@@ -469,6 +484,51 @@ def _diagrams(*, title: str, components: Mapping[str, str], diagrams: Mapping[st
             "evidence_tier": "user_intent",
             "mermaid_source": _slice_mermaid(),
         },
+        {
+            "slug": diagrams["component_map"],
+            "title": f"{title} Component Ownership Map",
+            "kind": "flowchart",
+            "summary": "Ownership view showing which planned component owns experience, domain state, proof fixtures, and governance handoff.",
+            "link_state": "atlas_first_draft",
+            "components": [
+                {"name": components["experience"], "description": "Owns the human-facing first workflow boundary and fallback behavior."},
+                {"name": components["domain"], "description": "Owns domain state, command semantics, and invariant enforcement."},
+                {"name": components["validation"], "description": "Owns deterministic proof fixtures and release-readiness reports."},
+            ],
+            "related_workstreams": ["WS-00", "WS-01", "WS-02", "WS-03"],
+            "evidence_tier": "user_intent",
+            "mermaid_source": _component_map_mermaid(),
+        },
+        {
+            "slug": diagrams["domain_state"],
+            "title": f"{title} Domain State Model",
+            "kind": "stateDiagram",
+            "summary": "State view for the first domain contract, including valid completion, rejection, retry, and degraded handling paths.",
+            "link_state": "atlas_first_draft",
+            "components": [
+                {"name": components["domain"], "description": "Owns the domain states and valid transitions for the first slice."},
+                {"name": components["experience"], "description": "Renders accepted, rejected, completed, and degraded states to the operator."},
+                {"name": components["validation"], "description": "Exercises state transitions through deterministic contract proof."},
+            ],
+            "related_workstreams": ["WS-01", "WS-02", "WS-03"],
+            "evidence_tier": "user_intent",
+            "mermaid_source": _domain_state_mermaid(),
+        },
+        {
+            "slug": diagrams["validation_release"],
+            "title": f"{title} Validation And Release Topology",
+            "kind": "flowchart",
+            "summary": "Release-readiness view tying repo-native proof, Odylith surface refresh, Compass lane, and operator handoff together.",
+            "link_state": "atlas_first_draft",
+            "components": [
+                {"name": components["validation"], "description": "Owns the proof command, fixtures, and release-readiness evidence."},
+                {"name": components["experience"], "description": "Supplies behavior proof for normal, empty, and degraded states."},
+                {"name": components["domain"], "description": "Supplies contract proof for state, commands, and invariant failures."},
+            ],
+            "related_workstreams": ["WS-00", "WS-03"],
+            "evidence_tier": "user_intent",
+            "mermaid_source": _validation_release_mermaid(),
+        },
     ]
 
 
@@ -504,6 +564,65 @@ def _slice_mermaid() -> str:
         "  Harness->>Domain: run contract proof\n"
         "  Harness->>Surfaces: refresh Radar Registry Atlas Compass\n"
         "  Surfaces-->>Operator: show first wave and release lane\n"
+    )
+
+
+def _component_map_mermaid() -> str:
+    return (
+        "flowchart TB\n"
+        "  subgraph experience[Experience<br/>ownership]\n"
+        "    Entry[First workflow<br/>entrypoint]:::ux\n"
+        "    States[Visible normal empty<br/>and degraded states]:::ux\n"
+        "  end\n"
+        "  subgraph domain[Domain<br/>ownership]\n"
+        "    Contract[Command query<br/>and event contract]:::core\n"
+        "    Invariants[State invariants<br/>and rejection rules]:::core\n"
+        "  end\n"
+        "  subgraph proof[Proof<br/>ownership]\n"
+        "    Fixtures[Deterministic<br/>fixtures]:::proof\n"
+        "    Report[Release readiness<br/>report]:::proof\n"
+        "  end\n"
+        "  Entry --> Contract --> Invariants --> States\n"
+        "  Fixtures --> Contract\n"
+        "  Fixtures --> Entry\n"
+        "  Report --> Surfaces[Compass Radar<br/>Registry Atlas]:::governance\n"
+        "  classDef ux fill:#fff7df,stroke:#d7a93d,color:#52390a;\n"
+        "  classDef core fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
+        "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
+        "  classDef governance fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
+    )
+
+
+def _domain_state_mermaid() -> str:
+    return (
+        "stateDiagram-v2\n"
+        "  [*] --> Draft\n"
+        "  Draft --> Accepted: valid command\n"
+        "  Draft --> Rejected: invalid input\n"
+        "  Accepted --> InProgress: workflow starts\n"
+        "  InProgress --> Completed: success proof\n"
+        "  InProgress --> Degraded: dependency missing\n"
+        "  Degraded --> Retried: retry allowed\n"
+        "  Retried --> Completed: recovery succeeds\n"
+        "  Retried --> Rejected: retry exhausted\n"
+        "  Completed --> [*]\n"
+        "  Rejected --> [*]\n"
+    )
+
+
+def _validation_release_mermaid() -> str:
+    return (
+        "flowchart LR\n"
+        "  Plan[Technical plan<br/>for first workstream]:::governance --> Behavior[Behavior proof<br/>normal empty degraded]:::proof\n"
+        "  Plan --> Contract[Contract proof<br/>state and invariants]:::proof\n"
+        "  Behavior --> Harness[Verification<br/>harness]:::proof\n"
+        "  Contract --> Harness\n"
+        "  Harness --> Refresh[Surface refresh<br/>Radar Registry Atlas Compass]:::governance\n"
+        "  Refresh --> Lane[Compass lane<br/>release 0.0.1]:::release\n"
+        "  Lane --> Handoff[Operator handoff<br/>next command and gates]:::release\n"
+        "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
+        "  classDef governance fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
+        "  classDef release fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b;\n"
     )
 
 

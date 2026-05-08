@@ -752,7 +752,7 @@
         const isSelected = item.ideaId === initiallyExpandedId;
         const radarHref = radarWorkstreamHref(item.ideaId, { view: "plan" });
         const idMarkup = rowsAreProgramCovered
-          ? `<a class="ws-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-ws-id="${escapeHtml(item.ideaId)}"${workstreamTooltipAttrs(item.ideaId, workstreamTitles, `Open radar for ${item.ideaId}; also covered by program/release lanes`)}>${escapeHtml(item.ideaId)}</a>`
+          ? `<a class="chip-link ws-covered-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-covered-ws-id="${escapeHtml(item.ideaId)}"${workstreamTooltipAttrs(item.ideaId, workstreamTitles, `Open radar for ${item.ideaId}; also covered by program/release lanes`)}>${escapeHtml(item.ideaId)}</a>`
           : `<a class="ws-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-ws-id="${escapeHtml(item.ideaId)}"${workstreamTooltipAttrs(item.ideaId, workstreamTitles, `Open radar for ${item.ideaId}`)}>${escapeHtml(item.ideaId)}</a>`;
         return `
         <tr ${renderSummaryRowAttrs(item, "ws-row-title", isSelected)}>

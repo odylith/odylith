@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-05-07 · Implementation:** Deepened B-142 greenfield Atlas output: generic scaffolds now emit five architecture views and the robot-swarm logistics profile emits ten domain-specific diagrams, tracked by CB-182.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md, src/odylith/runtime/domain_intelligence/proposal_scaffold.py +2 more
 - **2026-05-06 · Implementation:** Hardened greenfield Tribunal/apply rollback and refreshed generated governance surfaces after migration, CLI, and headless-browser QA.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_transaction.py, tests/unit/runtime/test_greenfield_proposals.py
@@ -38,9 +41,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-05-02 · Implementation:** Hardened B-142 Domain Intelligence with alternate-fit classification, acronym-safe titles, dedicated proposal rendering, program-formation output, migration-observer markers, full engine/install/browser proof, and fresh empty-consumer apply proof.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/archetypes.py, src/odylith/runtime/domain_intelligence/greenfield_proposals.py +2 more
-- **2026-05-02 · Implementation:** Deepened B-142 Domain Intelligence with first-class science/math archetypes, greenfield UX/release planning module, refreshed governance surfaces, and full engine/install/browser proof.
-  - Scope: B-142
-  - Evidence: odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md, src/odylith/runtime/domain_intelligence/archetypes.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -57,6 +57,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-07: Hardened the release-blocking greenfield path found in CRISPR Ethics manual testing: proposals that omit a true umbrella now synthesize `Govern <Project>` before validation, wave/release/traceability mapping resolves proposal-local `WS-*` IDs to created `B-*` IDs, nested security/compliance posture is flattened into readable bullets instead of raw list literals, component specs now include implementation kickoff guidance, and apply output names the first child workstream plus validation commands. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-176`)
 - 2026-05-07: Made provider-free greenfield proposals apply-ready by construction: `greenfield propose --format json` emits the canonical proposal object that `greenfield apply` consumes, `greenfield create --confirm` owns the one-command confirmed path, batch validation reports complete remediation issues, the human proposal renders from the same object, and the robot-swarm logistics specialization now lives in a focused profile owner instead of the generic scaffold assembler. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-173`, `CB-176`, `CB-181`)
 - 2026-05-07: Aligned installed and bundled greenfield host guidance with the apply-ready contract: AGENTS, README, `odylith-greenfield-governance`, and `odylith-show-me` now route confirmation to `greenfield create --confirm`, forbid hand-authored proposal JSON, and are pinned by source plus release-smoke guidance tests. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-176`, `CB-181`)
+- 2026-05-08: Deepened greenfield Atlas architecture output so the provider-free default scaffold now emits five views (system overview, first-slice flow, component ownership, domain state, validation/release topology) and the robot-swarm logistics profile emits ten views by adding conflict, safety/e-stop, telemetry contract, deployment-boundary, and observability/audit diagrams. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-182`)
 
 ## Contract
 
@@ -97,6 +98,12 @@ This section captures synchronized requirement and contract signals derived from
   validation strategy, risks, open questions, exact apply commands, and
   domain-proportional security, privacy, compliance, abuse, accessibility,
   data-retention, and operational risk posture.
+- Provider-free default scaffolds must produce a multi-view Atlas architecture
+  suite before apply: topology, first-slice sequence, component ownership,
+  state/data contract, and validation/release topology. Domain-specific
+  profiles may add more diagrams when the prompt reveals material architecture
+  risk, such as robot swarm conflict, safety, telemetry, deployment, and audit
+  views.
 - If the operator does not provide a release target for a greenfield proposal,
   the default first release selector is `0.0.1`, not an Odylith product-version
   alias such as `next`. Accepted proposals with child workstreams should create

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Mapping
 
 
 def is_robot_swarm_logistics_prompt(prompt: str) -> bool:
@@ -20,6 +20,7 @@ def apply_robot_swarm_logistics_profile(
     experience_component: str,
     domain_component: str,
     validation_component: str,
+    diagram_slugs: Mapping[str, str],
 ) -> None:
     """Specialize the deterministic scaffold using only prompt-visible domain facts."""
 
@@ -34,14 +35,15 @@ def apply_robot_swarm_logistics_profile(
         validation_component=validation_component,
     )
     proposal["release_plan"].update(_release_plan_updates(title=title, selector=selector))
-    _apply_backlog_rows(proposal["backlog"], title=title)
-    _apply_components(proposal["components"])
+    _apply_backlog_rows(proposal["backlog"], title=title, diagram_slugs=diagram_slugs)
+    _apply_components(proposal["components"], diagram_slugs=diagram_slugs)
     _apply_diagrams(
         proposal["diagrams"],
         title=title,
         experience_component=experience_component,
         domain_component=domain_component,
         validation_component=validation_component,
+        diagram_slugs=diagram_slugs,
     )
 
 
@@ -188,13 +190,15 @@ def _release_plan_updates(*, title: str, selector: str) -> dict[str, Any]:
     }
 
 
-def _apply_backlog_rows(rows: list[dict[str, Any]], *, title: str) -> None:
-    rows[1].update(_dispatch_backlog_row(title))
-    rows[2].update(_contract_backlog_row(title))
-    rows[3].update(_simulation_backlog_row(title))
+def _apply_backlog_rows(rows: list[dict[str, Any]], *, title: str, diagram_slugs: Mapping[str, str]) -> None:
+    all_diagrams = _robot_diagram_values(diagram_slugs)
+    rows[0].update({"related_diagram_slugs": all_diagrams})
+    rows[1].update(_dispatch_backlog_row(title, diagram_slugs=diagram_slugs))
+    rows[2].update(_contract_backlog_row(title, diagram_slugs=diagram_slugs))
+    rows[3].update(_simulation_backlog_row(title, diagram_slugs=diagram_slugs))
 
 
-def _dispatch_backlog_row(title: str) -> dict[str, Any]:
+def _dispatch_backlog_row(title: str, *, diagram_slugs: Mapping[str, str]) -> dict[str, Any]:
     return {
         "title": "Dispatch and observe one simulated logistics task",
         "problem": f"{title} needs an operator-visible dispatch path before broader fleet automation can be trusted or reviewed.",
@@ -228,12 +232,19 @@ def _dispatch_backlog_row(title: str) -> dict[str, Any]:
             "Browser or UI test for normal dispatch, empty fleet, degraded telemetry, and rejected override paths.",
             "Contract assertion that console state is derived from the domain contract.",
         ],
+        "related_diagram_slugs": [
+            diagram_slugs["overview"],
+            diagram_slugs["slice"],
+            diagram_slugs["component_map"],
+            _robot_diagram_slug(diagram_slugs, "telemetry-contract"),
+            _robot_diagram_slug(diagram_slugs, "observability-audit-loop"),
+        ],
         "domain_risk": "A misleading console can hide robot state, assignment ambiguity, or unsafe operator assumptions.",
         "security_posture": "Operator commands are role-gated, override attempts are confirmation-gated, and fixtures contain no production credentials.",
     }
 
 
-def _contract_backlog_row(title: str) -> dict[str, Any]:
+def _contract_backlog_row(title: str, *, diagram_slugs: Mapping[str, str]) -> dict[str, Any]:
     return {
         "title": "Define robot task, telemetry, and coordination contract",
         "problem": f"{title} cannot safely coordinate robots unless identity, capabilities, task state, telemetry, and reservation semantics are explicit.",
@@ -259,12 +270,18 @@ def _contract_backlog_row(title: str) -> dict[str, Any]:
             "Contract tests cover assignment, invalid capability, lost telemetry, idempotent retry, and reservation-state rejection.",
             "Schema fixtures are deterministic and do not contact live robots or vendor services.",
         ],
+        "related_diagram_slugs": [
+            diagram_slugs["component_map"],
+            diagram_slugs["domain_state"],
+            _robot_diagram_slug(diagram_slugs, "telemetry-contract"),
+            _robot_diagram_slug(diagram_slugs, "multi-robot-conflict"),
+        ],
         "domain_risk": "Loose robot state contracts can double-assign work, hide lost telemetry, or couple core logic to one vendor.",
         "security_posture": "Per-robot identity and command replay protection are planned before any live transport is introduced.",
     }
 
 
-def _simulation_backlog_row(title: str) -> dict[str, Any]:
+def _simulation_backlog_row(title: str, *, diagram_slugs: Mapping[str, str]) -> dict[str, Any]:
     return {
         "title": "Add deterministic simulation and safety smoke",
         "problem": f"{title} needs repeatable fleet proof before coordination, safety, and operator behavior can be trusted beyond a demo.",
@@ -287,12 +304,19 @@ def _simulation_backlog_row(title: str) -> dict[str, Any]:
             "Seeded simulation smoke runs under the repo-native toolchain with no live network or hardware contact.",
             "Fault fixtures fail closed when telemetry, assignment, or audit records are missing.",
         ],
+        "related_diagram_slugs": [
+            diagram_slugs["validation_release"],
+            _robot_diagram_slug(diagram_slugs, "multi-robot-conflict"),
+            _robot_diagram_slug(diagram_slugs, "safety-envelope"),
+            _robot_diagram_slug(diagram_slugs, "deployment-boundaries"),
+            _robot_diagram_slug(diagram_slugs, "observability-audit-loop"),
+        ],
         "domain_risk": "Non-deterministic simulation hides coordination regressions and weakens safety review evidence.",
         "security_posture": "Simulator fixtures contain no production credentials and cannot contact live robot transports by default.",
     }
 
 
-def _apply_components(components: list[dict[str, Any]]) -> None:
+def _apply_components(components: list[dict[str, Any]], *, diagram_slugs: Mapping[str, str]) -> None:
     components[0].update(
         {
             "label": "Fleet Operations Console",
@@ -301,6 +325,12 @@ def _apply_components(components: list[dict[str, Any]]) -> None:
             "dependencies": ["Depends on the coordination core contract and simulation harness for robot/task state fixtures."],
             "interfaces": ["Dispatch route or command, fleet-state read model, override confirmation event, degraded telemetry view contract."],
             "validation": ["Browser or UI proof for normal dispatch, empty fleet, degraded telemetry, rejected override, and audit-link visibility."],
+            "related_diagram_slugs": [
+                diagram_slugs["overview"],
+                diagram_slugs["slice"],
+                diagram_slugs["component_map"],
+                _robot_diagram_slug(diagram_slugs, "observability-audit-loop"),
+            ],
         }
     )
     components[1].update(
@@ -311,6 +341,14 @@ def _apply_components(components: list[dict[str, Any]]) -> None:
             "dependencies": ["Depends on confirmed first workflow semantics and exposes stable contracts to console and simulator."],
             "interfaces": ["Robot identity schema, capability schema, task assignment command, status query, telemetry health event, reservation state."],
             "validation": ["Contract tests for assignment, invalid capability, lost telemetry, idempotent retry, and reservation-state rejection."],
+            "related_diagram_slugs": [
+                diagram_slugs["overview"],
+                diagram_slugs["component_map"],
+                diagram_slugs["domain_state"],
+                _robot_diagram_slug(diagram_slugs, "telemetry-contract"),
+                _robot_diagram_slug(diagram_slugs, "multi-robot-conflict"),
+                _robot_diagram_slug(diagram_slugs, "safety-envelope"),
+            ],
         }
     )
     components[2].update(
@@ -321,6 +359,13 @@ def _apply_components(components: list[dict[str, Any]]) -> None:
             "dependencies": ["Depends on the coordination core contract and first console workflow; uses no live robot transports by default."],
             "interfaces": ["Scenario runner CLI, fixture inputs, telemetry output stream, audit event output, CI smoke report."],
             "validation": ["Seeded replay proof, single-robot dispatch smoke, lost-telemetry fixture, two-robot conflict fixture, audit output check."],
+            "related_diagram_slugs": [
+                diagram_slugs["overview"],
+                diagram_slugs["validation_release"],
+                _robot_diagram_slug(diagram_slugs, "multi-robot-conflict"),
+                _robot_diagram_slug(diagram_slugs, "deployment-boundaries"),
+                _robot_diagram_slug(diagram_slugs, "observability-audit-loop"),
+            ],
         }
     )
 
@@ -332,31 +377,176 @@ def _apply_diagrams(
     experience_component: str,
     domain_component: str,
     validation_component: str,
+    diagram_slugs: Mapping[str, str],
 ) -> None:
-    diagrams[0].update(
+    common_components = _diagram_components(
+        experience_component=experience_component,
+        domain_component=domain_component,
+        validation_component=validation_component,
+    )
+    updates = [
         {
             "title": f"{title} Simulation-First Atlas Overview",
             "summary": "Topology connecting operator console, robot coordination core, deterministic simulation harness, audit proof, and Odylith surfaces.",
-            "components": [
-                {"name": experience_component, "description": "Fleet operations console for dispatch, fleet state, and safe override UX."},
-                {"name": domain_component, "description": "Robot task, telemetry, capability, and reservation contract owner."},
-                {"name": validation_component, "description": "Deterministic simulator and safety smoke proof owner."},
-            ],
+            "components": common_components,
+            "related_workstreams": ["WS-00", "WS-01", "WS-02", "WS-03"],
             "mermaid_source": _overview_mermaid(),
-        }
-    )
-    diagrams[1].update(
+        },
         {
             "title": f"{title} Dispatch And Telemetry Flow",
             "summary": "Sequence for one simulated logistics task moving from operator dispatch through coordination contract, simulator telemetry, audit, and surface refresh.",
-            "components": [
-                {"name": experience_component, "description": "Starts dispatch and renders robot/task progress plus fallback states."},
-                {"name": domain_component, "description": "Validates assignment, telemetry health, and reservation semantics."},
-                {"name": validation_component, "description": "Runs simulation replay and captures smoke/audit evidence."},
-            ],
+            "components": common_components,
+            "related_workstreams": ["WS-01", "WS-02", "WS-03"],
             "mermaid_source": _slice_mermaid(),
-        }
+        },
+        {
+            "title": f"{title} Component Responsibility Map",
+            "summary": "Ownership map separating operator UX, robot coordination contracts, simulation proof, safety audit, and Odylith governance surfaces.",
+            "components": common_components,
+            "related_workstreams": ["WS-00", "WS-01", "WS-02", "WS-03"],
+            "mermaid_source": _component_map_mermaid(),
+        },
+        {
+            "title": f"{title} Robot Task State Machine",
+            "summary": "State model for a robot task, including assignment, execution, telemetry loss, fault, recovery, audit, and completion paths.",
+            "components": common_components,
+            "related_workstreams": ["WS-01", "WS-02", "WS-03"],
+            "mermaid_source": _robot_state_mermaid(),
+        },
+        {
+            "title": f"{title} Release Proof Topology",
+            "summary": "Validation topology for simulator replay, browser proofs, contract tests, audit assertions, surface refresh, and release promotion.",
+            "components": common_components,
+            "related_workstreams": ["WS-00", "WS-03"],
+            "mermaid_source": _validation_release_mermaid(),
+        },
+    ]
+    for row, update in zip(diagrams, updates, strict=False):
+        row.update(update)
+    diagrams.extend(
+        _robot_extra_diagrams(
+            title=title,
+            diagram_slugs=diagram_slugs,
+            components=common_components,
+        )
     )
+
+
+def _diagram_components(
+    *,
+    experience_component: str,
+    domain_component: str,
+    validation_component: str,
+) -> list[dict[str, str]]:
+    return [
+        {"name": experience_component, "description": "Fleet operations console for dispatch, fleet state, and safe override UX."},
+        {"name": domain_component, "description": "Robot task, telemetry, capability, and reservation contract owner."},
+        {"name": validation_component, "description": "Deterministic simulator, safety smoke, and release proof owner."},
+    ]
+
+
+def _project_prefix(diagram_slugs: Mapping[str, str]) -> str:
+    overview = str(diagram_slugs.get("overview", "")).strip()
+    if overview.endswith("-system-overview"):
+        return overview.removesuffix("-system-overview")
+    return "robot-swarm-logistics"
+
+
+def _robot_diagram_slug(diagram_slugs: Mapping[str, str], suffix: str) -> str:
+    return f"{_project_prefix(diagram_slugs)}-{suffix}"
+
+
+def _robot_diagram_values(diagram_slugs: Mapping[str, str]) -> list[str]:
+    return [
+        diagram_slugs["overview"],
+        diagram_slugs["slice"],
+        diagram_slugs["component_map"],
+        diagram_slugs["domain_state"],
+        diagram_slugs["validation_release"],
+        _robot_diagram_slug(diagram_slugs, "multi-robot-conflict"),
+        _robot_diagram_slug(diagram_slugs, "safety-envelope"),
+        _robot_diagram_slug(diagram_slugs, "telemetry-contract"),
+        _robot_diagram_slug(diagram_slugs, "deployment-boundaries"),
+        _robot_diagram_slug(diagram_slugs, "observability-audit-loop"),
+    ]
+
+
+def _robot_extra_diagrams(
+    *,
+    title: str,
+    diagram_slugs: Mapping[str, str],
+    components: list[dict[str, str]],
+) -> list[dict[str, Any]]:
+    return [
+        _robot_diagram_row(
+            slug=_robot_diagram_slug(diagram_slugs, "multi-robot-conflict"),
+            title=f"{title} Multi-Robot Conflict Resolution",
+            kind="sequenceDiagram",
+            summary="Two-robot slot contention sequence showing reservation, bounded wait, release, replay proof, and audit evidence.",
+            components=components,
+            related_workstreams=["WS-02", "WS-03"],
+            mermaid_source=_multi_robot_conflict_mermaid(),
+        ),
+        _robot_diagram_row(
+            slug=_robot_diagram_slug(diagram_slugs, "safety-envelope"),
+            title=f"{title} Safety Envelope And E-Stop Flow",
+            kind="flowchart",
+            summary="Safety view for geofence breach, e-stop fan-out, operator confirmation, simulator proof, and incident audit.",
+            components=components,
+            related_workstreams=["WS-02", "WS-03"],
+            mermaid_source=_safety_envelope_mermaid(),
+        ),
+        _robot_diagram_row(
+            slug=_robot_diagram_slug(diagram_slugs, "telemetry-contract"),
+            title=f"{title} Telemetry Contract And Data Flow",
+            kind="flowchart",
+            summary="Data-contract view from simulator and future robots through canonical telemetry, identity, task state, console read model, and audit.",
+            components=components,
+            related_workstreams=["WS-01", "WS-02"],
+            mermaid_source=_telemetry_contract_mermaid(),
+        ),
+        _robot_diagram_row(
+            slug=_robot_diagram_slug(diagram_slugs, "deployment-boundaries"),
+            title=f"{title} Cloud Edge Simulation Boundaries",
+            kind="flowchart",
+            summary="Deployment-boundary view separating operator UI, control-plane contracts, simulator-only proof, future edge agent, and blocked live hardware paths.",
+            components=components,
+            related_workstreams=["WS-00", "WS-03"],
+            mermaid_source=_deployment_boundaries_mermaid(),
+        ),
+        _robot_diagram_row(
+            slug=_robot_diagram_slug(diagram_slugs, "observability-audit-loop"),
+            title=f"{title} Observability And Audit Loop",
+            kind="flowchart",
+            summary="Operational evidence view tying telemetry health, operator action logs, simulator replay artifacts, audit assertions, and release handoff.",
+            components=components,
+            related_workstreams=["WS-01", "WS-03"],
+            mermaid_source=_observability_audit_mermaid(),
+        ),
+    ]
+
+
+def _robot_diagram_row(
+    *,
+    slug: str,
+    title: str,
+    kind: str,
+    summary: str,
+    components: list[dict[str, str]],
+    related_workstreams: list[str],
+    mermaid_source: str,
+) -> dict[str, Any]:
+    return {
+        "slug": slug,
+        "title": title,
+        "kind": kind,
+        "summary": summary,
+        "link_state": "atlas_first_draft",
+        "components": components,
+        "related_workstreams": related_workstreams,
+        "evidence_tier": "user_intent",
+        "mermaid_source": mermaid_source,
+    }
 
 
 def _overview_mermaid() -> str:
@@ -395,6 +585,179 @@ def _slice_mermaid() -> str:
         "  Sim->>Audit: record assignment, telemetry loss, override checks\n"
         "  Audit->>Surfaces: refresh proof references\n"
         "  Surfaces-->>Operator: show release lane and first workstream\n"
+    )
+
+
+def _component_map_mermaid() -> str:
+    return (
+        "flowchart TB\n"
+        "  subgraph ux[Operator<br/>experience]\n"
+        "    Console[Fleet Operations<br/>Console]:::ux\n"
+        "    Fallback[Empty fleet degraded<br/>telemetry rejected override]:::ux\n"
+        "  end\n"
+        "  subgraph core[Coordination<br/>contract]\n"
+        "    Identity[Robot identity<br/>and capabilities]:::core\n"
+        "    Task[Task assignment<br/>and reservation state]:::core\n"
+        "    Telemetry[Telemetry health<br/>and progress model]:::core\n"
+        "  end\n"
+        "  subgraph proof[Simulation<br/>and safety proof]\n"
+        "    Replay[Seeded scenario<br/>replay]:::proof\n"
+        "    Faults[Lost telemetry conflict<br/>and override fixtures]:::proof\n"
+        "    Audit[Audit evidence<br/>for release gates]:::proof\n"
+        "  end\n"
+        "  Console --> Identity --> Task --> Telemetry --> Console\n"
+        "  Replay --> Task\n"
+        "  Faults --> Telemetry\n"
+        "  Faults --> Audit\n"
+        "  Audit --> Surfaces[Compass Radar<br/>Registry Atlas]:::governance\n"
+        "  classDef ux fill:#fff7df,stroke:#d7a93d,color:#52390a;\n"
+        "  classDef core fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
+        "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
+        "  classDef governance fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
+    )
+
+
+def _robot_state_mermaid() -> str:
+    return (
+        "stateDiagram-v2\n"
+        "  [*] --> Registered\n"
+        "  Registered --> Idle: simulator starts\n"
+        "  Idle --> Assigned: task accepted\n"
+        "  Assigned --> Reserving: request slot\n"
+        "  Reserving --> Executing: reservation granted\n"
+        "  Reserving --> Waiting: bounded wait\n"
+        "  Waiting --> Executing: slot released\n"
+        "  Executing --> Completed: telemetry complete\n"
+        "  Executing --> Degraded: telemetry lost\n"
+        "  Degraded --> Recovering: retry or replay\n"
+        "  Recovering --> Executing: telemetry restored\n"
+        "  Degraded --> Faulted: safety gate trips\n"
+        "  Faulted --> Audited: incident recorded\n"
+        "  Completed --> Audited: task recorded\n"
+        "  Audited --> Idle: next task allowed\n"
+    )
+
+
+def _validation_release_mermaid() -> str:
+    return (
+        "flowchart LR\n"
+        "  Plan[Workstream plan<br/>B-002 first slice]:::governance --> Browser[Console browser<br/>normal empty degraded]:::proof\n"
+        "  Plan --> Contract[Robot contract<br/>assignment telemetry retry]:::proof\n"
+        "  Plan --> Replay[Seeded simulator<br/>replay proof]:::proof\n"
+        "  Browser --> Gate[Release gate<br/>simulation only]:::release\n"
+        "  Contract --> Gate\n"
+        "  Replay --> Gate\n"
+        "  Gate --> Refresh[Refresh Radar Registry<br/>Atlas Compass]:::governance\n"
+        "  Refresh --> Handoff[Next wave<br/>conflict and safety]:::release\n"
+        "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
+        "  classDef governance fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
+        "  classDef release fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b;\n"
+    )
+
+
+def _multi_robot_conflict_mermaid() -> str:
+    return (
+        "sequenceDiagram\n"
+        "  participant RobotA as Robot A\n"
+        "  participant RobotB as Robot B\n"
+        "  participant Core as Coordination Core\n"
+        "  participant Sim as Simulation Harness\n"
+        "  participant Audit as Audit Evidence\n"
+        "  RobotA->>Core: reserve shared slot\n"
+        "  RobotB->>Core: reserve same slot\n"
+        "  Core-->>RobotA: reservation granted\n"
+        "  Core-->>RobotB: bounded wait queued\n"
+        "  RobotA->>Sim: enter slot and emit telemetry\n"
+        "  Sim-->>Core: slot occupied event\n"
+        "  RobotA->>Core: release shared slot\n"
+        "  Core-->>RobotB: reservation granted after release\n"
+        "  RobotB->>Sim: enter slot and emit telemetry\n"
+        "  Core->>Audit: record conflict decision and wait bound\n"
+    )
+
+
+def _safety_envelope_mermaid() -> str:
+    return (
+        "flowchart LR\n"
+        "  Telemetry[Telemetry health<br/>and zone position]:::core --> Safety[Safety envelope<br/>policy checks]:::safety\n"
+        "  Operator[Operator override<br/>attempt]:::ux --> Confirm[Confirmation and<br/>role gate]:::ux\n"
+        "  Confirm --> Safety\n"
+        "  Safety -->|safe| Continue[Continue simulated<br/>task execution]:::core\n"
+        "  Safety -->|breach| Estop[E-stop fan out<br/>simulation only]:::safety\n"
+        "  Estop --> Audit[Incident audit<br/>and replay artifact]:::proof\n"
+        "  Audit --> Review[Safety review<br/>before hardware claim]:::governance\n"
+        "  classDef ux fill:#fff7df,stroke:#d7a93d,color:#52390a;\n"
+        "  classDef core fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
+        "  classDef safety fill:#fee2e2,stroke:#dc2626,color:#5f1212;\n"
+        "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
+        "  classDef governance fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
+    )
+
+
+def _telemetry_contract_mermaid() -> str:
+    return (
+        "flowchart LR\n"
+        "  Sim[Simulation Harness<br/>seeded robot events]:::proof --> Ingress[Telemetry ingress<br/>sim topic]:::core\n"
+        "  Future[Future robot edge<br/>blocked in release one]:::edge -. planned .-> Ingress\n"
+        "  Ingress --> Envelope[Canonical telemetry<br/>envelope]:::core\n"
+        "  Envelope --> Identity[Robot identity<br/>capability lookup]:::core\n"
+        "  Envelope --> Task[Task status<br/>and progress model]:::core\n"
+        "  Task --> ReadModel[Console read<br/>model]:::ux\n"
+        "  Identity --> ReadModel\n"
+        "  Envelope --> Audit[Replayable audit<br/>fixture]:::proof\n"
+        "  classDef edge fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b;\n"
+        "  classDef ux fill:#fff7df,stroke:#d7a93d,color:#52390a;\n"
+        "  classDef core fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
+        "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
+    )
+
+
+def _deployment_boundaries_mermaid() -> str:
+    return (
+        "flowchart TB\n"
+        "  subgraph local[Local developer<br/>and CI lane]\n"
+        "    CLI[Scenario runner<br/>CLI]:::proof\n"
+        "    Tests[Browser and contract<br/>tests]:::proof\n"
+        "  end\n"
+        "  subgraph control[Control plane<br/>proposal target]\n"
+        "    Console[Fleet console<br/>application]:::ux\n"
+        "    Core[Coordination core<br/>contracts]:::core\n"
+        "  end\n"
+        "  subgraph edge[Future edge<br/>not release one]\n"
+        "    Agent[Robot edge agent<br/>vendor adapters]:::edge\n"
+        "    Hardware[Live robot<br/>hardware]:::blocked\n"
+        "  end\n"
+        "  CLI --> Core\n"
+        "  Tests --> Console\n"
+        "  Console --> Core\n"
+        "  Agent -. planned integration .-> Core\n"
+        "  Hardware -. blocked until HIL proof .-> Agent\n"
+        "  Core --> Surfaces[Odylith surfaces<br/>release evidence]:::governance\n"
+        "  classDef ux fill:#fff7df,stroke:#d7a93d,color:#52390a;\n"
+        "  classDef core fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
+        "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
+        "  classDef edge fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b;\n"
+        "  classDef blocked fill:#fee2e2,stroke:#dc2626,color:#5f1212;\n"
+        "  classDef governance fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
+    )
+
+
+def _observability_audit_mermaid() -> str:
+    return (
+        "flowchart LR\n"
+        "  Operator[Operator action<br/>dispatch or override]:::ux --> EventLog[Operator event<br/>log]:::proof\n"
+        "  Telemetry[Telemetry health<br/>stream]:::core --> Metrics[Health metrics<br/>and lost signal]:::core\n"
+        "  Sim[Seeded replay<br/>artifact]:::proof --> Audit[Audit assertion<br/>bundle]:::proof\n"
+        "  EventLog --> Audit\n"
+        "  Metrics --> Audit\n"
+        "  Audit --> Compass[Compass current<br/>release lane]:::governance\n"
+        "  Audit --> Radar[Radar workstream<br/>validation evidence]:::governance\n"
+        "  Audit --> Registry[Registry component<br/>proof links]:::governance\n"
+        "  Audit --> Atlas[Atlas diagram<br/>render proof]:::governance\n"
+        "  classDef ux fill:#fff7df,stroke:#d7a93d,color:#52390a;\n"
+        "  classDef core fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
+        "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
+        "  classDef governance fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
     )
 
 
