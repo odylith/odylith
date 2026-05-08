@@ -1228,37 +1228,13 @@ def _render_html(*, payload: dict[str, object]) -> str:
     function revealIdeaSelection(ideaId) {
       const row = all.find((candidate) => String(candidate.idea_id || "").trim() === ideaId);
       if (!row) return false;
-      const query = String(state.query || "").trim().toLowerCase();
-      const exactIdeaQuery = isExactIdeaIdQuery(query);
-      if (!rowMatchesQuery(row, query, exactIdeaQuery)) {
-        state.query = "";
-      }
-      if (!rowMatchesFilters(row, { query: "", exactIdeaQuery: false })) {
-        if (state.section !== "all" && row.section !== state.section) {
-          state.section = "all";
-        }
-        if (state.phase !== "all") {
-          if (row.section !== "execution" || stageLabel(row.status) !== state.phase) {
-            state.phase = "all";
-          }
-        }
-        if (state.activity !== "all") {
-          const stateToken = normalizeExecutionState(row.execution_state);
-          const activity = (
-            stateToken === "actively_executing"
-            || stateToken === "planning_active"
-          ) ? "active" : "quiet";
-          if (row.section !== "execution" || activity !== state.activity) {
-            state.activity = "all";
-          }
-        }
-        if (state.type !== "all" && workstreamTypeInfo(row).type !== state.type) {
-          state.type = "all";
-        }
-        if (state.priority !== "all" && row.priority !== state.priority) {
-          state.priority = "all";
-        }
-      }
+      state.query = "";
+      state.section = "all";
+      state.phase = "all";
+      state.activity = "all";
+      state.type = "all";
+      state.priority = "all";
+      state.release = "all";
       syncFilterControls();
       return true;
     }

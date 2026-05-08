@@ -49,6 +49,22 @@ def test_execution_engine_family_prefers_governance_slice_and_bounded_profile() 
     assert profile["include_code_neighbors"] is False
 
 
+def test_execution_engine_quick_family_uses_local_packet_lane() -> None:
+    assert (
+        runner._profile_uses_live_public_modes_for_selection(  # noqa: SLF001
+            profile=runner.BENCHMARK_PROFILE_QUICK,
+            selected_families=["execution_engine"],
+        )
+        is False
+    )
+    assert runner._cache_profiles_for_selection(  # noqa: SLF001
+        profile=runner.BENCHMARK_PROFILE_QUICK,
+        selected_families=["execution_engine"],
+        cache_profiles=["warm"],
+        explicit_cache_profile_selection=False,
+    ) == ["cold"]
+
+
 def test_execution_engine_benchmark_payload_enrichment_carries_related_component_identity() -> None:
     payload = odylith_benchmark_execution_engine.enrich_packet_payload_for_execution_engine_family(
         payload={"routing_handoff": {"route_ready": False}},

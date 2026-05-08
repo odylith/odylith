@@ -602,3 +602,39 @@ Related Bugs:
       reported `ok: true`, `blocked: 0`, `ungated: 0` after the new
       migration-observer markers.
 - [x] `git diff --check`
+- [x] Engine-integrity follow-up: added `odylith validate engine-integrity`
+      as the cheap, dependency-light activation gate for Context Engine,
+      Execution Engine, Tribunal, Intervention Engine, Governance, Subagent
+      routing/orchestration, Discipline, Surface DAGs, Delivery, Analysis,
+      Memory, Topology, Taxonomies/FSMs, Greenfield Domain Intelligence, and
+      Overall UX. The capability inventory now exposes Topology Integrity,
+      Taxonomies/FSMs, Operator Experience, and the one-command
+      `greenfield create` path.
+- [x] Quick Execution Engine benchmark routing no longer invokes live raw-host
+      execution for the inner-loop family check. `execution_engine` joins the
+      local-only quick family set so the quick lane proves packet/handshake
+      integrity without waiting on host CLI baseline execution; full live
+      publication proof remains a separate `proof` lane.
+- [x] Final hardening proof for this pass:
+      `PYTHONPATH=src python -m pytest -q tests/unit/runtime`
+      (`2704 passed`), `PYTHONPATH=src python -m pytest -q tests/unit/test_cli.py`
+      (`179 passed`), `PYTHONPATH=src python -m pytest -q tests/unit/install`
+      (`350 passed`), and the comprehensive browser matrix
+      (`195 passed, 1 skipped`) across Radar, Registry, Atlas, Casebook,
+      Compass, Context/Execution alignment, intervention visibility, filters,
+      onboarding, and layout/UX audits.
+- [x] Activation validators passed after the engine-integrity slice:
+      `validate engine-integrity`, `validate discipline`,
+      `validate guidance-behavior`, `validate topology-integrity`,
+      `casebook validate`, `atlas render --fail-on-stale`,
+      `release migration-gate --target-version 0.1.15 --json`,
+      `sync --check-only --impact-mode selective`, `node --check` for the shell
+      controller, and `git diff --check`.
+- [x] `PYTHONPATH=src python -m odylith.cli benchmark --repo-root . --profile quick --family execution_engine --no-write-report --json`
+      now completes locally and clears the hard quality gate
+      (`report_id=c816bd2493538b2e`, `hard_quality_gate_cleared=true`), but
+      still reports `status=hold` because secondary latency/token guardrails
+      fail (`latency_delta_ms=40.072`, `prompt_token_delta=911`,
+      `total_payload_token_delta=1363`). `CB-189` tracks that remaining
+      efficiency debt; do not present the execution-engine quick lane as a clean
+      low-latency pass until that bug closes.

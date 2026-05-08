@@ -386,6 +386,30 @@ def _wait_for_radar_detail_id(radar, idea_id: str) -> None:  # noqa: ANN001
     radar.locator("#detail").filter(has_text=idea_id).wait_for(timeout=15000)
 
 
+def _wait_for_radar_frame_workstream(page, workstream: str) -> None:  # noqa: ANN001
+    """Wait until the Radar iframe itself has navigated to the target workstream."""
+    page.wait_for_function(
+        """({ workstream }) => {
+            const frame = document.querySelector("#frame-radar");
+            const doc = frame && frame.contentDocument;
+            const win = frame && frame.contentWindow;
+            if (!doc || !win) return false;
+            try {
+              const params = new URLSearchParams(win.location.search || "");
+              if (params.get("workstream") === workstream) return true;
+            } catch (_error) {
+              // Fall through to DOM checks when the frame URL is unavailable.
+            }
+            const detailId = doc.querySelector('#detail [data-kpi="workstream-id"] .v');
+            if (detailId && String(detailId.textContent || "").trim() === workstream) return true;
+            const standaloneId = doc.querySelector("p.id");
+            return Boolean(standaloneId && String(standaloneId.textContent || "").trim() === workstream);
+        }""",
+        arg={"workstream": workstream},
+        timeout=15000,
+    )
+
+
 def _open_radar_topology_relations(radar) -> None:  # noqa: ANN001
     """Expand the Radar topology-relations panel if it is present but still closed."""
     panel = radar.locator("#detail details.topology-relations-panel").first
@@ -629,6 +653,7 @@ def _collect_sample_tokens(page, base_url: str) -> dict[str, str]:  # noqa: ANN0
 
 def _assert_radar_selection(page, workstream: str) -> None:  # noqa: ANN001
     assert page.locator("#tab-radar").get_attribute("aria-selected") == "true"
+    _wait_for_radar_frame_workstream(page, workstream)
     radar = page.frame_locator("#frame-radar")
     try:
         radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=5000)

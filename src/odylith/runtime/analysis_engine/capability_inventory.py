@@ -44,7 +44,7 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                     "topology, assumptions, risks, validation obligations, deterministic proposal "
                     "Tribunal gating, and final visible surface refresh before source exists"
                 ),
-                commands=("odylith greenfield propose", "odylith greenfield apply"),
+                commands=("odylith greenfield propose", "odylith greenfield apply", "odylith greenfield create"),
                 anchors=("src/odylith/runtime/domain_intelligence/",),
             ),
             InventoryItem(
@@ -81,7 +81,10 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                     "policy first, optional provider enrichment only when evidence-gated, and "
                     "degraded states that remain explicit"
                 ),
-                anchors=("src/odylith/runtime/reasoning/", "odylith/runtime/odylith-reasoning.v4.json"),
+                anchors=(
+                    "src/odylith/runtime/reasoning/",
+                    "odylith/atlas/source/odylith-tribunal-multi-actor-reasoning-engine.mmd",
+                ),
             ),
             InventoryItem(
                 name="Execution Engine",
@@ -115,6 +118,23 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                     "Intelligence instead of stale local summaries"
                 ),
                 anchors=("src/odylith/runtime/governance/surface_refresh_fingerprint_dag.py",),
+            ),
+            InventoryItem(
+                name="Topology Integrity",
+                layer="topology",
+                kind="integrity layer",
+                owns=(
+                    "shared Radar, Registry, Atlas, Program, Release, and wave topology: "
+                    "traceability graph construction, structural edge validation, component and "
+                    "diagram linkage checks, and topology-quality scoring before generated "
+                    "surfaces claim coherence"
+                ),
+                commands=("odylith validate topology-integrity", "odylith architecture"),
+                anchors=(
+                    "src/odylith/runtime/governance/topology_integrity.py",
+                    "src/odylith/runtime/governance/build_traceability_graph.py",
+                    "src/odylith/runtime/governance/traceability_graph_spine.py",
+                ),
             ),
         ),
     ),
@@ -189,6 +209,23 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                     "release gates, and public product claims"
                 ),
                 commands=("odylith benchmark",),
+            ),
+            InventoryItem(
+                name="Taxonomies and FSMs",
+                layer="governance",
+                kind="integrity layer",
+                owns=(
+                    "controlled product vocabularies and lifecycle state machines, including "
+                    "Casebook status transitions, broad bug-type taxonomy, benchmark family "
+                    "taxonomy, proposal state vocabulary, and migration-normalized legacy tokens"
+                ),
+                commands=("odylith casebook validate", "odylith validate guidance-behavior"),
+                anchors=(
+                    "src/odylith/runtime/common/casebook_metadata.py",
+                    "src/odylith/runtime/governance/casebook_source_validation.py",
+                    "src/odylith/runtime/evaluation/odylith_benchmark_taxonomy.py",
+                    "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+                ),
             ),
         ),
     ),
@@ -346,6 +383,27 @@ _SURFACE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                 kind="surface",
                 owns="the local HTML launchpad that links Radar, Registry, Atlas, Compass, and Casebook",
                 commands=("odylith dashboard refresh",),
+            ),
+            InventoryItem(
+                name="Operator Experience",
+                layer="operator-ui",
+                kind="experience layer",
+                owns=(
+                    "the cross-host operator UX: stdout-clean fast paths, visible intervention "
+                    "fallbacks, dashboard navigation, browser-rendered governance surfaces, "
+                    "greenfield handoff clarity, and low-latency status/diagnostic commands"
+                ),
+                commands=(
+                    "odylith show",
+                    "odylith dashboard refresh",
+                    "odylith codex intervention-status",
+                    "odylith claude intervention-status",
+                ),
+                anchors=(
+                    "src/odylith/runtime/surfaces/",
+                    "src/odylith/runtime/intervention_engine/",
+                    "src/odylith/runtime/analysis_engine/show_capabilities.py",
+                ),
             ),
         ),
     ),

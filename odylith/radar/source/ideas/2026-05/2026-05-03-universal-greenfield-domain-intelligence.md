@@ -359,13 +359,15 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `migration-observer:0.1.15:guidance-and-skills:5ca274eb23df`,
   `migration-observer:0.1.15:public-docs-and-release-guidance:83dd374589cf`,
   `migration-observer:0.1.15:browser-surfaces:23db7fd0ca24`, and
-  `migration-observer:0.1.15:install-managed-assets:5291a3c4b08e`.
+  `migration-observer:0.1.15:install-managed-assets:5291a3c4b08e`, and
+  `migration-observer:0.1.15:operator-cli-contracts:a8504a4c60ea`.
   These markers cover the deepened greenfield skill guidance, refreshed
   Domain Intelligence Atlas/Registry/Radar browser surfaces, updated managed
   security-and-trust guidance, updated public README/operator/release-note/security
   guidance, the v0.1.15 Compass/Radar/Registry/Casebook browser-surface refresh
   from the deeper greenfield diagram-suite contract, the project-first
-  direction-option/readiness-gate guidance refresh, and bundled
+  direction-option/readiness-gate guidance refresh, the engine-integrity
+  validator and expanded capability inventory, and bundled
   install-managed dashboard copies. Existing consumer governance truth remains unchanged; upgrades
   refresh managed guidance/assets and keep proposal writes explicit through
   `odylith greenfield apply --confirm`.

@@ -126,7 +126,7 @@ _FAMILY_ALIASES = {
     "odylith-discipline": "discipline",
     "odylith_discipline": "discipline",
 }
-_LOCAL_ONLY_QUICK_FAMILIES = frozenset({"guidance_behavior", "discipline"})
+_LOCAL_ONLY_QUICK_FAMILIES = frozenset({"guidance_behavior", "discipline", "execution_engine"})
 _MIN_BENCHMARK_RUNTIME_FREE_BYTES = 256 * 1024 * 1024
 _VALID_PACKET_SOURCES = frozenset({"adaptive", "impact", "governance_slice", "session_brief", "bootstrap_session"})
 _ANALYSIS_FAMILIES = frozenset({"analysis", "architecture", "broad_shared_scope"})

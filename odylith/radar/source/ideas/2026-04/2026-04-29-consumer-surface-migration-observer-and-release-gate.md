@@ -1311,3 +1311,36 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   remain repo-owned truth, future greenfield apply runs use the sharper
   generator, and upgrade plus dashboard/sync refresh converges generated
   Registry/Radar/Compass browser surfaces and bundle mirrors.
+- The v0.1.15 engine-integrity and execution-benchmark route hardening pass is
+  covered by `migration-observer:0.1.15:operator-cli-contracts:a8504a4c60ea`,
+  `migration-observer:0.1.15:browser-surfaces:bfc31956720b`, and
+  `migration-observer:0.1.15:install-managed-assets:8afd5be2970e`. The pass
+  adds the `odylith validate engine-integrity` CLI contract, expands the
+  capability map for topology, taxonomies/FSMs, operator UX, and greenfield
+  creation, records `CB-188` for the fixed quick execution-engine benchmark
+  routing regression, records `CB-189` for the remaining quick-lane secondary
+  efficiency hold, and refreshes Casebook/Radar browser payloads plus their
+  managed bundle mirrors. Existing consumer repos need no bespoke data
+  migration: upgrade adoption supplies the new validator/runtime route, future
+  quick execution-engine benchmarks stay in the local packet lane, and normal
+  dashboard/sync refresh converges generated surfaces and installed mirrors;
+  efficiency claims must still cite the live benchmark status until `CB-189`
+  closes.
+- The v0.1.15 Atlas freshness settlement for that same engine-integrity pass is
+  covered by `migration-observer:0.1.15:browser-surfaces:55e6f22469f6` and
+  `migration-observer:0.1.15:install-managed-assets:4d84a40bb751`. The pass
+  refreshes the final stale Atlas catalog fingerprint and rerenders the Atlas
+  browser payload plus managed bundle mirror without changing Mermaid topology
+  source. Existing consumers need no bespoke source-truth migration: upgrade
+  adoption and normal Atlas/dashboard refresh converge installed browser assets
+  to the fresh 44-diagram catalog.
+- The v0.1.15 Radar deeplink reveal-filter repair is covered by
+  `migration-observer:0.1.15:browser-surfaces:55c4e2e519b3`,
+  `migration-observer:0.1.15:browser-surfaces:a345f81c5e3a`, and
+  `migration-observer:0.1.15:install-managed-assets:fdd68873d309`. The pass
+  fixes explicit Compass-to-Radar workstream deeplinks so Radar clears stale
+  visibility filters when the requested workstream is outside the currently
+  selected Radar view. Existing consumers need no data migration: upgrade
+  adoption supplies the corrected Radar renderer, already-owned Radar workstream
+  truth remains unchanged, and normal dashboard/sync refresh regenerates the
+  browser and installed bundle assets.

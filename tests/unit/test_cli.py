@@ -212,6 +212,10 @@ def test_capabilities_command_prints_host_agnostic_engine_inventory(capsys) -> N
     assert "Memory Substrate" in output
     assert "Reasoning Engine" in output
     assert "Surface DAGs" in output
+    assert "Topology Integrity" in output
+    assert "Taxonomies and FSMs" in output
+    assert "Operator Experience" in output
+    assert "odylith greenfield create" in output
     assert "Codex and Claude Code are adapters" in output
     assert "Use `odylith --help` for command syntax." in output
 
@@ -240,9 +244,22 @@ def test_capabilities_command_json_exposes_product_inventory(capsys) -> None:
         "Memory Substrate",
         "Reasoning Engine",
         "Surface DAGs",
+        "Topology Integrity",
+        "Taxonomies and FSMs",
+        "Operator Experience",
         "Codex Adapter",
         "Claude Code Adapter",
     } <= names
+
+
+def test_validate_engine_integrity_command_is_exposed(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["validate", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "engine-integrity" in output
+    assert "Validate Odylith engine inventory" in output
 
 
 def test_compass_log_help_forwards_backend_flags(capsys) -> None:
