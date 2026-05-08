@@ -476,7 +476,7 @@ _MAKE_TARGET_RE = re.compile(r"^([A-Za-z0-9][A-Za-z0-9_.-]*):(?:\s|$)")
 _MARKDOWN_CODE_REF_RE = re.compile(r"`([^`]+)`")
 _RAW_PATH_TOKEN_RE = re.compile(
     r"(?<![A-Za-z0-9._/-])"
-    r"((?:agents-guidelines|bin|configs|contracts|docker|docs|infra|mk|mocks|monitoring|odylith|app|policies|scripts|services|skills|tests)"
+    r"((?:agents-guidelines|bin|configs|contracts|docker|docs|infra|mk|mocks|monitoring|odylith|app|policies|scripts|services|skills|src|tests)"
     r"/[A-Za-z0-9._/@:+-]+(?:/[A-Za-z0-9._/@:+-]+)*)"
 )
 _PYTHON_MODULE_COMMAND_RE = re.compile(r"(?:python|python3)\s+-m\s+([A-Za-z0-9_./-]+)")

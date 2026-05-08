@@ -6,6 +6,9 @@ Last updated (UTC): 2026-05-08
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-183 | 2026-05-08 | Startup target recognition rejected unquoted source paths | P2 | context-engine | Open | [2026-05-08-startup-target-recognition-rejected-unquoted-source-paths.md](2026-05-08-startup-target-recognition-rejected-unquoted-source-paths.md) |
+| CB-184 | 2026-05-08 | Greenfield radar workstreams lack domain intelligence control surface | P2 | domain-intelligence-greenfield | FixedPendingRelease | [2026-05-08-greenfield-radar-workstreams-lack-domain-intelligence-control-surface.md](2026-05-08-greenfield-radar-workstreams-lack-domain-intelligence-control-surface.md) |
+| CB-185 | 2026-05-08 | Greenfield json output leaks refresh progress | P2 | domain-intelligence | FixedPendingRelease | [2026-05-08-greenfield-json-output-leaks-refresh-progress.md](2026-05-08-greenfield-json-output-leaks-refresh-progress.md) |
 | CB-182 | 2026-05-08 | Greenfield atlas proposal suite is too shallow for architecture review | P2 | domain-intelligence | FixedPendingRelease | [2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md](2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md) |
 | CB-181 | 2026-05-07 | Release smoke omitted exact greenfield propose/apply journey | P2 | release | FixedPendingRelease | [2026-05-07-release-smoke-omitted-greenfield-create-journey.md](2026-05-07-release-smoke-omitted-greenfield-create-journey.md) |
 | CB-178 | 2026-05-07 | Radar sort filter ignored selected score and date modes | P2 | radar | FixedPendingRelease | [2026-05-07-radar-sort-filter-ignored-selected-score-and-date-modes.md](2026-05-07-radar-sort-filter-ignored-selected-score-and-date-modes.md) |

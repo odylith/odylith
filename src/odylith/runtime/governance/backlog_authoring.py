@@ -244,6 +244,14 @@ def _render_idea_text(*, metadata: Mapping[str, str], sections: Mapping[str, str
         lines.append(f"## {section}")
         lines.append(str(sections.get(section, "")).strip() or "TBD.")
         lines.append("")
+    required = set(backlog_contract._REQUIRED_SECTIONS)
+    for section, body in sections.items():
+        section_title = str(section).strip()
+        if not section_title or section_title in required:
+            continue
+        lines.append(f"## {section_title}")
+        lines.append(str(body).strip() or "TBD.")
+        lines.append("")
     return "\n".join(lines).rstrip() + "\n"
 
 
@@ -317,6 +325,12 @@ def _grounded_sections_for_title(*, title: str, args: argparse.Namespace) -> dic
             )
             if line
         )
+    extra_sections = getattr(args, "extra_sections", None)
+    if isinstance(extra_sections, Mapping):
+        for section, body in extra_sections.items():
+            section_title = str(section).strip()
+            if section_title and str(body).strip():
+                sections[section_title] = str(body).strip()
     validation_errors = backlog_contract.core_detail_section_errors(
         title=title,
         sections=sections,
@@ -367,12 +381,16 @@ def _title_specific_args(*, title: str, args: argparse.Namespace) -> argparse.Na
         "sizing",
         "complexity",
         "ordering_rationale",
+        "extra_sections",
     ):
         if key in override:
             value = override[key]
             if key == "success_metrics" and isinstance(value, (list, tuple)):
                 value = "\n".join(f"- {item}" for item in value if str(item).strip())
-            setattr(resolved, key, str(value).strip())
+            if key == "extra_sections" and isinstance(value, Mapping):
+                setattr(resolved, key, dict(value))
+            else:
+                setattr(resolved, key, str(value).strip())
     return resolved
 
 

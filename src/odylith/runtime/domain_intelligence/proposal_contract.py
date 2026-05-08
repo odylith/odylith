@@ -101,7 +101,10 @@ def build_proposal_contract() -> dict[str, Any]:
             "backlog": (
                 "an explicit parent/umbrella program workstream plus child workstreams when the project has multiple meaningful boundaries; "
                 "every child should carry first-slice, validation, component_focus, and related_diagram_slugs "
-                "or enough specific language for Odylith to infer the topology"
+                "or enough specific language for Odylith to infer the topology; every row must carry structured "
+                "domain_intelligence covering intent, ontology, state, operators, constraints, source of truth, "
+                "evidence, assumptions, topology, invariants, risks, validation, artifacts, authority, memory, "
+                "metrics, change rules, conflict rules, and reusable priors"
             ),
             "components": (
                 "candidate Registry components with component_id, label, intended_path, responsibility, "
@@ -148,6 +151,12 @@ def build_proposal_contract() -> dict[str, Any]:
             (
                 "Child workstreams must not be title-only tickets; include concrete first-slice proof, impacted "
                 "candidate components, topology/dependency hints, and validation gates."
+            ),
+            (
+                "Greenfield Radar workstreams must be domain-intelligent control surfaces, not task labels: "
+                "capture domain vocabulary, allowed operations, state transitions, constraints, source-of-truth "
+                "hierarchy, evidence grammar, risks, validation obligations, execution memory, change rules, "
+                "conflict rules, and transfer priors with project-specific terms."
             ),
             (
                 "Registry components must read like planned ownership specs, not labels; include boundary, "

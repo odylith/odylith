@@ -19,6 +19,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import normalize_text_l
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence import greenfield_programs
+from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import enrich_backlog_rows
 
 DEFAULT_GREENFIELD_RELEASE_SELECTOR = greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR
 
@@ -103,6 +104,16 @@ def normalize_host_reasoned_proposal(proposal: Mapping[str, Any]) -> dict[str, A
         normalized.get("diagrams"),
         components=normalized["components"],
         slug_map=slug_map,
+    )
+    normalized["backlog"] = enrich_backlog_rows(
+        normalized["backlog"],
+        intent=normalized["intent"],
+        program=normalized["program"],
+        release_plan=normalized["release_plan"],
+        validation_strategy=normalized["validation_strategy"],
+        security_compliance=normalized.get("security_compliance"),
+        components=normalized["components"],
+        diagrams=normalized["diagrams"],
     )
     return normalized
 

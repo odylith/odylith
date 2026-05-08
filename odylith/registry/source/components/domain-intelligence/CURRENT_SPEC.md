@@ -58,6 +58,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-07: Made provider-free greenfield proposals apply-ready by construction: `greenfield propose --format json` emits the canonical proposal object that `greenfield apply` consumes, `greenfield create --confirm` owns the one-command confirmed path, batch validation reports complete remediation issues, the human proposal renders from the same object, and the robot-swarm logistics specialization now lives in a focused profile owner instead of the generic scaffold assembler. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-173`, `CB-176`, `CB-181`)
 - 2026-05-07: Aligned installed and bundled greenfield host guidance with the apply-ready contract: AGENTS, README, `odylith-greenfield-governance`, and `odylith-show-me` now route confirmation to `greenfield create --confirm`, forbid hand-authored proposal JSON, and are pinned by source plus release-smoke guidance tests. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-176`, `CB-181`)
 - 2026-05-08: Deepened greenfield Atlas architecture output so the provider-free default scaffold now emits five views (system overview, first-slice flow, component ownership, domain state, validation/release topology) and the robot-swarm logistics profile emits ten views by adding conflict, safety/e-stop, telemetry contract, deployment-boundary, and observability/audit diagrams. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-182`)
+- 2026-05-08: Deepened greenfield Radar workstreams from task labels into domain-intelligence control surfaces. Each applied workstream now carries structured intent, ontology, state, operators, constraints, source-of-truth hierarchy, evidence grammar, decisions, assumptions, topology, invariants, risks, validation obligations, artifact contracts, authority, execution memory, metrics, change rules, conflict rules, and transfer priors; proposal preview, normalization, validation, Radar writes, and traceability repair all share the same payload. `greenfield apply/create --json` now captures noisy internal refresh/scaffold output and emits one parseable JSON document. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-184`, `CB-185`)
 
 ## Contract
 
@@ -98,6 +99,20 @@ This section captures synchronized requirement and contract signals derived from
   validation strategy, risks, open questions, exact apply commands, and
   domain-proportional security, privacy, compliance, abuse, accessibility,
   data-retention, and operational risk posture.
+- Greenfield backlog rows must carry structured `domain_intelligence` before
+  validation and apply. The payload is not decorative prose: it must encode the
+  workstream as a domain control surface with project-specific vocabulary,
+  allowed operations, state transitions, source-of-truth map, evidence model,
+  topology, invariants, risks, validation obligations, execution memory,
+  change/invalidation rules, conflict rules, and reusable priors. Normalization
+  may enrich legacy proposals, but apply must reject rows that remain shallow.
+- Radar workstream authoring must preserve the `Domain Intelligence` section in
+  source workstream files, and traceability repair must reapply that section if
+  later greenfield topology patching rewrites the same file.
+- `greenfield apply --json` and `greenfield create --json` must keep stdout
+  machine-clean. Internal progress from refresh, scaffold, or renderer helpers
+  may be captured into the JSON payload, but it must not precede or follow the
+  JSON document on stdout.
 - Provider-free default scaffolds must produce a multi-view Atlas architecture
   suite before apply: topology, first-slice sequence, component ownership,
   state/data contract, and validation/release topology. Domain-specific

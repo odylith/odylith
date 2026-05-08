@@ -6,6 +6,9 @@ from typing import Any, Mapping
 
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence import greenfield_programs
+from odylith.runtime.domain_intelligence.greenfield_domain_profile import GreenfieldDomainProfile
+from odylith.runtime.domain_intelligence.greenfield_domain_profile import infer_greenfield_domain_profile
+from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import enrich_backlog_rows
 from odylith.runtime.domain_intelligence.proposal_rendering import build_apply_commands
 from odylith.runtime.domain_intelligence.robot_swarm_profile import apply_robot_swarm_logistics_profile
 from odylith.runtime.domain_intelligence.robot_swarm_profile import is_robot_swarm_logistics_prompt
@@ -25,36 +28,58 @@ def build_apply_ready_proposal(
     title = str(intent_title or "").strip() or "Greenfield Project"
     slug = slugify(str(project_slug or "").strip() or title) or "greenfield-project"
     robot_swarm_logistics = is_robot_swarm_logistics_prompt(prompt)
-    components = _component_ids(slug=slug, robot_swarm_logistics=robot_swarm_logistics)
+    domain_profile = infer_greenfield_domain_profile(prompt=prompt, title=title, slug=slug)
+    components = _component_ids(slug=slug, domain_profile=domain_profile, robot_swarm_logistics=robot_swarm_logistics)
     diagrams = _diagram_ids(slug=slug)
+    intent = _intent(prompt=prompt, title=title, slug=slug, robot_swarm_logistics=robot_swarm_logistics)
+    assumptions = _base_assumptions()
+    open_questions = _base_open_questions()
+    risks = _base_risks()
+    security_compliance = _base_security_compliance(title)
+    validation_strategy = _base_validation_strategy()
+    program = _program(title=title, components=components)
+    release_plan = _release_plan(
+        selector=selector,
+        slug=slug,
+        experience_component=components["experience"],
+        domain_component=components["domain"],
+    )
+    component_rows = _components(components, diagrams=diagrams, domain_profile=domain_profile)
+    diagram_rows = _diagrams(title=title, components=components, diagrams=diagrams)
+    backlog_rows = enrich_backlog_rows(
+        _backlog(
+            title=title,
+            selector=selector,
+            components=components,
+            diagrams=diagrams,
+        ),
+        intent=intent,
+        program=program,
+        release_plan=release_plan,
+        validation_strategy=validation_strategy,
+        security_compliance=security_compliance,
+        components=component_rows,
+        diagrams=diagram_rows,
+        domain_profile=domain_profile,
+    )
     proposal: dict[str, Any] = {
         "schema_version": "odylith.greenfield.host_reasoned.v1",
         "mode": "host_reasoned_greenfield_proposal",
         "provider_calls": 0,
         "host_agnostic": True,
         "write_policy": "proposal_first_confirm_before_apply",
-        "intent": _intent(prompt=prompt, title=title, slug=slug, robot_swarm_logistics=robot_swarm_logistics),
+        "intent": intent,
         "observed_source": dict(observed_source),
-        "assumptions": _base_assumptions(),
-        "open_questions": _base_open_questions(),
-        "risks": _base_risks(),
-        "security_compliance": _base_security_compliance(title),
-        "validation_strategy": _base_validation_strategy(),
-        "program": _program(title=title, components=components),
-        "release_plan": _release_plan(
-            selector=selector,
-            slug=slug,
-            experience_component=components["experience"],
-            domain_component=components["domain"],
-        ),
-        "backlog": _backlog(
-            title=title,
-            selector=selector,
-            components=components,
-            diagrams=diagrams,
-        ),
-        "components": _components(components, diagrams=diagrams),
-        "diagrams": _diagrams(title=title, components=components, diagrams=diagrams),
+        "assumptions": assumptions,
+        "open_questions": open_questions,
+        "risks": risks,
+        "security_compliance": security_compliance,
+        "validation_strategy": validation_strategy,
+        "program": program,
+        "release_plan": release_plan,
+        "backlog": backlog_rows,
+        "components": component_rows,
+        "diagrams": diagram_rows,
     }
     if robot_swarm_logistics:
         apply_robot_swarm_logistics_profile(
@@ -70,11 +95,20 @@ def build_apply_ready_proposal(
     return proposal
 
 
-def _component_ids(*, slug: str, robot_swarm_logistics: bool) -> dict[str, str]:
+def _component_ids(
+    *,
+    slug: str,
+    domain_profile: GreenfieldDomainProfile,
+    robot_swarm_logistics: bool,
+) -> dict[str, str]:
     suffixes = (
         ("fleet-console", "coordination-core", "simulation-harness")
         if robot_swarm_logistics
-        else ("experience", "domain-core", "verification-harness")
+        else (
+            domain_profile.components["experience"].suffix,
+            domain_profile.components["domain"].suffix,
+            domain_profile.components["validation"].suffix,
+        )
     )
     return {
         "experience": f"{slug}-{suffixes[0]}",
@@ -377,46 +411,53 @@ def _verification_backlog_row(*, title: str, components: Mapping[str, str], diag
     }
 
 
-def _components(components: Mapping[str, str], *, diagrams: Mapping[str, str]) -> list[dict[str, Any]]:
+def _components(
+    components: Mapping[str, str],
+    *,
+    diagrams: Mapping[str, str],
+    domain_profile: GreenfieldDomainProfile,
+) -> list[dict[str, Any]]:
+    experience = domain_profile.components["experience"]
+    domain = domain_profile.components["domain"]
+    validation = domain_profile.components["validation"]
     return [
         _component_row(
             component_id=components["experience"],
-            label="Experience Boundary",
-            kind="application",
-            path=f"src/{components['experience']}",
-            responsibility="Own the first operator-visible workflow, view or command entrypoint, visible states, and interaction proof.",
-            boundary="Owns entry, normal path, empty/degraded/error states, and human-facing behavior for the first workflow.",
-            dependencies=["Depends on the domain core contract and the verification harness for source-backed proof."],
-            interfaces=["User-facing route, command, CLI, or service entrypoint plus visible state contract."],
-            validation=["Behavior or browser proof for normal, empty, and degraded/error states."],
+            label=experience.label,
+            kind=experience.kind,
+            path=f"{experience.path_prefix}/{components['experience']}",
+            responsibility=experience.responsibility,
+            boundary=experience.boundary,
+            dependencies=list(experience.dependencies),
+            interfaces=list(experience.interfaces),
+            validation=list(experience.validation),
+            risks=list(experience.risks),
             diagrams=[diagrams["overview"], diagrams["slice"], diagrams["component_map"]],
         ),
         _component_row(
             component_id=components["domain"],
-            label="Domain Core",
-            kind="service",
-            path=f"src/{components['domain']}",
-            responsibility="Own the first domain state model, command or query contract, invariants, and integration handoff.",
-            boundary="Owns domain state and invariant enforcement; excludes presentation and release harness ownership.",
-            dependencies=[
-                "Depends on confirmed first-workflow semantics; no storage or external provider dependency is claimed before source planning."
-            ],
-            interfaces=["Initial command, query, event, or file contract consumed by the experience boundary."],
-            validation=["Contract tests for valid transition, invalid input rejection, and retry or idempotency behavior."],
+            label=domain.label,
+            kind=domain.kind,
+            path=f"{domain.path_prefix}/{components['domain']}",
+            responsibility=domain.responsibility,
+            boundary=domain.boundary,
+            dependencies=list(domain.dependencies),
+            interfaces=list(domain.interfaces),
+            validation=list(domain.validation),
+            risks=list(domain.risks),
             diagrams=[diagrams["overview"], diagrams["slice"], diagrams["component_map"], diagrams["domain_state"]],
         ),
         _component_row(
             component_id=components["validation"],
-            label="Verification Harness",
-            kind="tooling",
-            path=f"tests/{components['validation']}",
-            responsibility="Own deterministic first-release proof, fixtures, validation command documentation, and surface-refresh checks.",
-            boundary="Owns local proof fixtures and release-readiness checks; excludes product runtime behavior.",
-            dependencies=[
-                "Depends on WS-01 and WS-02 source proof and uses no production credentials or live external systems by default."
-            ],
-            interfaces=["Local smoke command, fixture inputs, report output, and Odylith surface refresh verification."],
-            validation=["Smoke, lint, typecheck, build, and dashboard refresh proof named by the first technical plan."],
+            label=validation.label,
+            kind=validation.kind,
+            path=f"{validation.path_prefix}/{components['validation']}",
+            responsibility=validation.responsibility,
+            boundary=validation.boundary,
+            dependencies=list(validation.dependencies),
+            interfaces=list(validation.interfaces),
+            validation=list(validation.validation),
+            risks=list(validation.risks),
             diagrams=[diagrams["overview"], diagrams["validation_release"]],
         ),
     ]
@@ -433,6 +474,7 @@ def _component_row(
     dependencies: list[str],
     interfaces: list[str],
     validation: list[str],
+    risks: list[str],
     diagrams: list[str],
 ) -> dict[str, Any]:
     return {
@@ -447,6 +489,7 @@ def _component_row(
         "dependencies": dependencies,
         "interfaces": interfaces,
         "validation": validation,
+        "risks": risks,
         "related_diagram_slugs": diagrams,
         "evidence_tier": "user_intent",
     }

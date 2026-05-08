@@ -50,3 +50,30 @@ def test_startup_output_needs_narrowing_when_required_flag_is_set() -> None:
     )
 
     assert host_startup_summary.startup_output_needs_narrowing(output) is True
+
+
+def test_startup_output_does_not_summarize_narrowing_when_file_targets_exist() -> None:
+    output = json.dumps(
+        {
+            "packet_kind": "bootstrap_session",
+            "narrowing_guidance": {
+                "required": False,
+                "reason": "Turn-visible file targets already bound startup; no additional narrowing required.",
+            },
+            "target_resolution": {
+                "candidate_targets": [
+                    {
+                        "path": "src/odylith/runtime/context_engine/odylith_context_engine_packet_session_runtime.py",
+                        "source": "path_scope",
+                    }
+                ],
+                "requires_more_consumer_context": False,
+            },
+            "context_packet": {
+                "packet_state": "gated_ambiguous",
+                "route": {"narrowing_required": True},
+            },
+        }
+    )
+
+    assert host_startup_summary.startup_output_needs_narrowing(output) is False

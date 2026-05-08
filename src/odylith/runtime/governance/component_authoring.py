@@ -7,7 +7,6 @@ under `components/<id>/`.
 from __future__ import annotations
 
 import argparse
-import datetime as dt
 import json
 import re
 from dataclasses import dataclass
@@ -15,6 +14,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.governance import artifact_tribunal
+from odylith.runtime.governance import component_spec_rendering
 from odylith.runtime.governance import owned_surface_refresh
 
 _REGISTRY_PATH_RELATIVE = Path("odylith/registry/source/component_registry.v1.json")
@@ -70,40 +70,10 @@ def _component_exists(registry: dict[str, Any], component_id: str) -> bool:
     )
 
 
-def _sentence_fragment(value: str) -> str:
-    text = " ".join(str(value or "").strip().split()).rstrip(".")
-    return text
-
-
-def _bullet_lines(values: Sequence[str]) -> str:
-    lines = [_sentence_fragment(str(item)) for item in values if str(item).strip()]
-    return "\n".join(f"- {line}." for line in lines)
-
-
 def _clean_sequence(values: Sequence[str] | str) -> tuple[str, ...]:
     if isinstance(values, str):
         return (values.strip(),) if values.strip() else ()
     return tuple(str(item).strip() for item in values if str(item).strip())
-
-
-def _handoff_text(handoff: Mapping[str, Any], key: str) -> str:
-    return " ".join(str(handoff.get(key, "") or "").split()).strip()
-
-
-def _handoff_list(handoff: Mapping[str, Any], key: str) -> tuple[str, ...]:
-    values = handoff.get(key)
-    if not isinstance(values, (list, tuple)):
-        return ()
-    return tuple(" ".join(str(item or "").split()).strip() for item in values if str(item or "").strip())
-
-
-def _command_bullet(value: str) -> str:
-    text = " ".join(str(value or "").split()).strip()
-    if not text:
-        return ""
-    if text.startswith("run "):
-        return f"- {text}"
-    return f"- `{text}`"
 
 
 def _build_registry_entry(
@@ -129,11 +99,11 @@ def _build_registry_entry(
         if "user_intent" in normalized_sources
         else "the initial evidence anchor"
     )
-    responsibility_text = _sentence_fragment(responsibility)
+    responsibility_text = component_spec_rendering.sentence_fragment(responsibility)
     what_it_is = (
         f"{label} is a `{kind}` component responsible for {responsibility_text}{anchor_phrase}."
         if responsibility_text
-        else f"Logical component registered through `odylith component register`{anchor_phrase}."
+        else f"{label} is a `{kind}` component awaiting a concrete responsibility summary{anchor_phrase}."
     )
     return {
         "component_id": component_id,
@@ -157,150 +127,6 @@ def _build_registry_entry(
         "subcomponents": [],
         "product_layer": product_layer,
     }
-
-
-def _build_spec_template(
-    *,
-    component_id: str,
-    label: str,
-    path: str,
-    kind: str,
-    status: str,
-    sources: Sequence[str],
-    workstreams: Sequence[str],
-    diagrams: Sequence[str] = (),
-    responsibility: str = "",
-    boundary: str = "",
-    dependencies: Sequence[str] = (),
-    interfaces: Sequence[str] = (),
-    validation: Sequence[str] = (),
-    risks: Sequence[str] = (),
-    qualification: str = "candidate",
-    implementation_handoff: Mapping[str, Any] | None = None,
-) -> str:
-    handoff = implementation_handoff or {}
-    normalized_sources = [str(item).strip() for item in sources if str(item).strip()]
-    if "user_intent" in normalized_sources:
-        overview_anchor = (
-            f"It is planned from user-stated intent with `{path}` as the intended first source path. "
-            "No source-backed claim is made yet."
-            if path
-            else "It is planned from user-stated intent and does not claim source evidence yet."
-        )
-    else:
-        overview_anchor = (
-            f"It is initially anchored by `{path}`."
-            if path
-            else "It is initially anchored by maintainer review."
-        )
-    history_date = dt.date.today().isoformat()
-    workstream_ids = [str(item).strip().upper() for item in workstreams if str(item).strip()]
-    first_workstream = _handoff_text(handoff, "workstream_id") or (workstream_ids[0] if workstream_ids else "")
-    first_workstream_title = _handoff_text(handoff, "workstream_title")
-    first_slice = _handoff_text(handoff, "first_slice")
-    wave_label = _handoff_text(handoff, "wave_label")
-    wave_status = _handoff_text(handoff, "wave_status")
-    release_selector = _handoff_text(handoff, "release_selector")
-    handoff_validation = _handoff_list(handoff, "validation_gates")
-    handoff_commands = _handoff_list(handoff, "verification_commands")
-    plan_route = (
-        f" (Plan: [{first_workstream}](odylith/radar/radar.html?view=plan&workstream={first_workstream}))"
-        if first_workstream
-        else ""
-    )
-    diagram_ids = [str(item).strip().upper() for item in diagrams if str(item).strip()]
-    responsibility_text = _sentence_fragment(responsibility)
-    boundary_text = _sentence_fragment(boundary) or responsibility_text
-    interface_lines = _bullet_lines(interfaces) or "- Candidate interfaces are not source-backed yet; the first technical plan must define runtime contracts."
-    dependency_lines = _bullet_lines(dependencies) or "- No upstream or downstream runtime dependency is source-backed yet."
-    validation_lines = _bullet_lines(validation) or "- First implementation must add focused contract or smoke proof before this candidate becomes active."
-    risk_lines = _bullet_lines(risks) or "- Candidate boundary may change once source evidence and implementation plans exist."
-    handoff_validation_lines = _bullet_lines(handoff_validation) or validation_lines
-    command_lines = "\n".join(_command_bullet(line) for line in handoff_commands) if handoff_commands else ""
-    command_lines = command_lines or "- Run the repo-native proof command selected by the first technical plan."
-    related_workstreams = ", ".join(workstream_ids) if workstream_ids else "none"
-    related_diagrams = ", ".join(diagram_ids) if diagram_ids else "none"
-    implementation_anchor = (
-        f"Start at `{path}` and keep the first source files inside that boundary until the plan proves a narrower ownership split."
-        if path
-        else "First technical plan must choose the source path before implementation begins."
-    )
-    if first_workstream and first_workstream_title:
-        first_plan = f"Use `{first_workstream}` ({first_workstream_title}) as the first implementation-plan anchor for this component."
-    elif first_workstream:
-        first_plan = f"Use `{first_workstream}` as the first implementation-plan anchor for this component."
-    else:
-        first_plan = "Create a Radar-linked implementation plan before source writes."
-    return f"""# {label}
-
-## Overview
-
-{label} is a `{kind}` component registered through `odylith component register`.
-{overview_anchor}
-{f"Planned responsibility: {responsibility_text}." if responsibility_text else ""}
-
-## Planned Ownership
-
-This is a candidate Registry spec, not a source-backed implementation claim. It exists so the first coding pass starts from a named boundary, a proof obligation, and explicit dependencies instead of a label-only ticket.
-
-- **Component ID**: `{component_id}`
-- **Kind**: {kind}
-- **Status**: {status}
-- **Qualification**: {qualification}
-- **Evidence tier**: {", ".join(normalized_sources) if normalized_sources else "manifest"}
-- **Evidence anchor**: `{path}`
-- **Related workstreams**: {related_workstreams}
-- **Related diagrams**: {related_diagrams}
-
-## Boundary
-
-- **Logical boundary**: {boundary_text or "TBD - define the runtime contract, public API, or ownership rule."}
-- **Owns**: {responsibility_text or "TBD - define the runtime contract, public API, or ownership boundary for this component."}
-- **Does not claim yet**: source-backed runtime behavior, storage ownership, or production readiness until implementation proof lands.
-
-## Feature History
-
-- {history_date}: Registered `{component_id}` through `odylith component register`.{plan_route}
-
-## Runtime Contract
-
-{responsibility_text or "TBD - define the runtime contract, public API, or ownership boundary for this component."}
-
-### Candidate Interfaces
-
-{interface_lines}
-
-## Dependencies
-
-{dependency_lines}
-
-## Test Coverage
-
-{validation_lines}
-
-## Security, Compliance, And Open Questions
-
-{risk_lines}
-
-## Implementation Kickoff
-
-- {implementation_anchor}
-- {first_plan}
-- {f"Wave: {wave_label} ({wave_status or 'status pending'})." if wave_label else "Wave: first execution wave once the program is applied."}
-- {f"Release target: {release_selector}." if release_selector else "Release target: confirm before promotion."}
-- {f"First coding slice: {first_slice}" if first_slice else "First coding slice: convert the related workstream's recommended first slice into a technical plan before source writes."}
-- Convert each Candidate Interface into a concrete API, module, route, schema, or event contract before adding dependent code.
-- Convert each Test Coverage bullet into a runnable unit, contract, browser, migration, or smoke proof before marking the component active.
-- Refresh Registry and Compass after the first source-backed slice lands so this candidate spec stops pretending proposal text is implementation evidence.
-
-### Definition Of Done For The First Slice
-
-{handoff_validation_lines}
-
-### Operator Verification Commands
-
-{command_lines}
-"""
 
 
 def register_component(
@@ -367,7 +193,7 @@ def register_component(
 
     spec_dir = components_root / component_id
     spec_path = spec_dir / "CURRENT_SPEC.md"
-    spec_text = _build_spec_template(
+    spec_text = component_spec_rendering.build_component_spec(
         component_id=component_id,
         label=label,
         path=path,

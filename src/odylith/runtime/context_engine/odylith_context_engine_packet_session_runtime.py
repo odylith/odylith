@@ -21,6 +21,25 @@ from odylith.runtime.context_engine import turn_context_runtime
 _hot_path_workstream_selection = odylith_context_engine_hot_path_packet_core_runtime._hot_path_workstream_selection
 
 
+def _turn_context_path_seed(
+    *,
+    intent: str,
+    generated_surfaces: Sequence[str],
+    visible_text: Sequence[str],
+    active_tab: str,
+) -> str:
+    return "\n".join(
+        str(token).strip()
+        for token in (
+            str(intent or "").strip(),
+            *[str(value).strip() for value in generated_surfaces if str(value).strip()],
+            *[str(value).strip() for value in visible_text if str(value).strip()],
+            str(active_tab or "").strip(),
+        )
+        if str(token).strip()
+    )
+
+
 def build_impact_report(**kwargs: Any) -> dict[str, Any]:
     """Defer impact-grounding lookup until call time to avoid import-cycle breakage."""
     return odylith_context_engine_grounding_runtime.build_impact_report(**kwargs)
@@ -71,6 +90,12 @@ def build_session_brief(
     stage_timings["guidance_catalog"] = context_engine_store._elapsed_stage_ms(stage_started)
     stage_started = time.perf_counter()
     effective_session_id = agent_runtime_contract.fallback_session_token(session_id)
+    path_seed_intent = _turn_context_path_seed(
+        intent=intent,
+        generated_surfaces=generated_surfaces,
+        visible_text=visible_text,
+        active_tab=active_tab,
+    )
     path_scope = context_engine_store._resolve_changed_path_scope_context(
         repo_root=root,
         explicit_paths=changed_paths,
@@ -78,7 +103,7 @@ def build_session_brief(
         working_tree_scope=working_tree_scope,
         session_id=effective_session_id,
         claimed_paths=claimed_paths,
-        intent=intent,
+        intent=path_seed_intent,
     )
     stage_timings["path_scope"] = context_engine_store._elapsed_stage_ms(stage_started)
     effective_paths = list(path_scope["analysis_paths"])
@@ -94,7 +119,7 @@ def build_session_brief(
         stage_started = time.perf_counter()
         impact_kwargs = {
             "repo_root": root,
-            "changed_paths": changed_paths,
+            "changed_paths": effective_paths,
             "use_working_tree": use_working_tree,
             "working_tree_scope": working_tree_scope,
             "session_id": effective_session_id,
@@ -122,7 +147,9 @@ def build_session_brief(
             impact = build_impact_report(**impact_kwargs)
         stage_timings["impact"] = context_engine_store._elapsed_stage_ms(stage_started)
     if isinstance(impact.get("changed_paths"), list):
-        effective_paths = [str(token) for token in impact.get("changed_paths", []) if str(token).strip()]
+        impact_paths = [str(token) for token in impact.get("changed_paths", []) if str(token).strip()]
+        if impact_paths:
+            effective_paths = impact_paths
     candidate_workstreams = (
         [dict(row) for row in impact.get("candidate_workstreams", []) if isinstance(row, Mapping)]
         if isinstance(impact.get("candidate_workstreams"), list)

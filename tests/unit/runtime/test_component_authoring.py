@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from odylith.runtime.governance import component_authoring
+from odylith.runtime.governance import component_spec_rendering
 
 
 def test_component_register_entry_can_record_user_intent_candidates() -> None:
@@ -29,7 +30,7 @@ def test_component_register_entry_can_record_user_intent_candidates() -> None:
 
 
 def test_component_spec_template_does_not_claim_source_for_user_intent() -> None:
-    text = component_authoring._build_spec_template(
+    text = component_spec_rendering.build_component_spec(
         component_id="research-solver",
         label="Solver Engine",
         path="src/solver",
@@ -39,14 +40,14 @@ def test_component_spec_template_does_not_claim_source_for_user_intent() -> None
         workstreams=("B-200",),
     )
 
-    assert "**Status**: planned" in text
-    assert "planned from user-stated intent" in text
+    assert "| Status | `planned` |" in text
+    assert "Planned from user-stated intent" in text
     assert "No source-backed claim is made yet" in text
-    assert "(Plan: [B-200](odylith/radar/radar.html?view=plan&workstream=B-200))" in text
+    assert "[B-200](odylith/radar/radar.html?view=plan&workstream=B-200)" in text
 
 
 def test_component_spec_template_uses_greenfield_responsibility_and_links() -> None:
-    text = component_authoring._build_spec_template(
+    text = component_spec_rendering.build_component_spec(
         component_id="shop-checkout",
         label="Checkout Boundary",
         path="src/checkout",
@@ -73,15 +74,15 @@ def test_component_spec_template_uses_greenfield_responsibility_and_links() -> N
         },
     )
 
-    assert "**Logical boundary**: Checkout owns payment handoff and order-draft recovery" in text
-    assert "**Related workstreams**: B-200, B-201" in text
-    assert "**Related diagrams**: D-200" in text
+    assert "Checkout owns payment handoff and order-draft recovery" in text
+    assert "| Workstreams | `B-200`, `B-201` |" in text
+    assert "| Diagrams | `D-200` |" in text
     assert "- Payment sandbox." in text
     assert "- Checkout request contract." in text
     assert "- Payment failure recovery proof." in text
     assert "- Provider-specific behavior may change the boundary." in text
-    assert "(Plan: [B-201](odylith/radar/radar.html?view=plan&workstream=B-201))" in text
-    assert "Use `B-201` (Checkout first slice) as the first implementation-plan anchor" in text
+    assert "[B-201](odylith/radar/radar.html?view=plan&workstream=B-201)" in text
+    assert "Use `B-201` (Checkout first slice) as the implementation-plan anchor" in text
     assert "- Wave: Checkout spine (active)." in text
     assert "- Release target: 0.0.1." in text
     assert "- First coding slice: Implement browse-to-checkout with payment sandbox failure recovery." in text

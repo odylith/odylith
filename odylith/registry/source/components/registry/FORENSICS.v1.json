@@ -37,10 +37,10 @@
     "empty_reasons": [],
     "explicit_event_count": 99,
     "mapped_workstream_evidence_count": 71,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 99
+    "timeline_event_count": 100
   },
   "name": "Registry",
   "path_prefixes": [
@@ -50,6 +50,22 @@
   ],
   "spec_ref": "odylith/registry/source/components/registry/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/component_registry.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 469,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/component_registry.v1.json",
+      "ts_iso": "2026-05-08T07:46:03-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",

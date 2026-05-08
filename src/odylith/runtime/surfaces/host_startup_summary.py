@@ -48,6 +48,23 @@ def _mapping_value(payload: Mapping[str, Any], key: str) -> Mapping[str, Any]:
     return value if isinstance(value, Mapping) else {}
 
 
+def _has_actionable_target_resolution(payload: Mapping[str, Any]) -> bool:
+    context_packet = _mapping_value(payload, "context_packet")
+    handshake = _mapping_value(context_packet, "execution_engine_handshake")
+    for target_resolution in (
+        _mapping_value(payload, "target_resolution"),
+        _mapping_value(handshake, "target_resolution"),
+    ):
+        if bool(target_resolution.get("requires_more_consumer_context")):
+            continue
+        rows = target_resolution.get("candidate_targets")
+        if not isinstance(rows, list):
+            continue
+        if any(isinstance(row, Mapping) and str(row.get("path", "") or row.get("ref", "")).strip() for row in rows):
+            return True
+    return False
+
+
 def startup_output_needs_narrowing(output: str) -> bool:
     """Return true when startup diagnostics should be summarized as narrowing.
 
@@ -63,6 +80,8 @@ def startup_output_needs_narrowing(output: str) -> bool:
         narrowing = _mapping_value(payload, "narrowing_guidance")
         if narrowing.get("required") is True:
             return True
+        if _has_actionable_target_resolution(payload):
+            return False
         context_packet = _mapping_value(payload, "context_packet")
         packet_state = str(
             context_packet.get("packet_state")

@@ -8482,8 +8482,27 @@ def test_non_route_ready_hot_path_payload_drops_duplicate_routing_handoff() -> N
         "p": "serial_guarded",
     }
     assert narrowing_guidance == {
-        "required": True,
-        "reason": "Need one code path.",
+        "reason": "Turn-visible file targets already bound…",
+        "next_best_anchors": [{"kind": "doc", "value": "odylith/agents-guidelines/SECURITY_AND_TRUST.md"}],
+    }
+    assert payload["target_resolution"] == {
+        "lane": "dev_maintainer",
+        "candidate_targets": [
+            {
+                "path": "AGENTS.md",
+                "source": "path_scope",
+                "reason": "Current turn already carries this path in scope.",
+                "writable": True,
+            },
+            {
+                "path": "odylith/AGENTS.md",
+                "source": "path_scope",
+                "reason": "Current turn already carries this path in scope.",
+                "writable": True,
+            },
+        ],
+        "has_writable_targets": True,
+        "requires_more_consumer_context": False,
     }
     assert runner._observed_packet_paths(payload) == [  # noqa: SLF001
         "AGENTS.md",

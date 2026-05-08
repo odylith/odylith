@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -825,6 +826,84 @@ def test_greenfield_cli_json_is_apply_ready_proposal(tmp_path, capsys) -> None:
     assert greenfield_proposals.run_greenfield_tribunal(payload, release_selector="0.0.1").passed
 
 
+def test_defi_greenfield_workstreams_capture_domain_intelligence(tmp_path) -> None:
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="DeFi risk sentinel app",
+    )["proposal_template"]
+
+    workflow = next(row for row in proposal["backlog"] if row["title"] == "Define first operator workflow")
+    intelligence = workflow["domain_intelligence"]
+    rendered = greenfield_proposals.render_domain_intelligence_section(intelligence)
+
+    assert intelligence["family"] == "defi_risk"
+    assert "Risk subject" in rendered
+    assert "Exposure snapshot" in rendered
+    assert "stale oracle" in rendered
+    assert "missing-indexer" in rendered
+    assert "No live RPC" in rendered
+    assert "financial advice" in rendered
+    assert "idempotent acknowledgement" in rendered
+    assert "source_of_truth_map" in intelligence
+    assert "validation_obligations" in intelligence
+    assert "conflict_model" in intelligence
+    assert "transfer_priors" in intelligence
+    assert "first operator-visible workflow" not in rendered.lower()
+    greenfield_proposals.validate_host_reasoned_proposal(proposal)
+
+
+def test_greenfield_apply_writes_domain_intelligence_into_radar_specs(tmp_path, monkeypatch) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="DeFi risk sentinel app",
+    )["proposal_template"]
+
+    result = greenfield_proposals.apply_greenfield_proposal(
+        repo_root=tmp_path,
+        proposal=proposal,
+        confirm=True,
+        release_selector="0.0.1",
+    )
+
+    child_specs = [
+        Path(row["idea_path"]).read_text(encoding="utf-8")
+        for row in result["backlog"]
+        if row["title"] != "Govern DeFi Risk Sentinel App"
+    ]
+    joined = "\n".join(child_specs)
+
+    assert "## Domain Intelligence" in joined
+    assert "### Domain Ontology" in joined
+    assert "### Allowed Operators" in joined
+    assert "### Source Of Truth Map" in joined
+    assert "### Evidence Model" in joined
+    assert "### Change And Invalidation Model" in joined
+    assert "Risk subject: wallet, protocol, pool, strategy" in joined
+    assert "No live RPC" in joined
+    assert "stale oracle" in joined
+    assert "liquidity shock" in joined
+    assert "financial advice" in joined
+    assert "title-only Radar items" in joined
+
+
+def test_greenfield_normalization_enriches_legacy_proposals_with_domain_intelligence() -> None:
+    proposal = greenfield_proposals.normalize_host_reasoned_proposal(_host_reasoned_ecommerce_proposal())
+    child = next(row for row in proposal["backlog"] if row["title"] == "Define Storefront boundary")
+    intelligence = child["domain_intelligence"]
+    rendered = greenfield_proposals.render_domain_intelligence_section(intelligence)
+
+    assert intelligence["family"] == "commerce"
+    assert "Shopper" in rendered
+    assert "Payment callback" in rendered
+    assert "idempotent" in rendered
+    assert "failed payment" in rendered
+    greenfield_proposals.validate_host_reasoned_proposal(proposal)
+
+
 def test_greenfield_normalization_enriches_transcript_dependency_gaps() -> None:
     proposal = _host_reasoned_crispr_without_parent()
     proposal["backlog"][0].pop("dependencies")
@@ -1125,8 +1204,8 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert storefront["workstreams"] == ["B-001", "B-002"]
     assert storefront["diagrams"] == ["D-001", "D-002"]
     assert "responsible for Browse, cart entry, checkout entry, and user-facing errors" in storefront["what_it_is"]
-    assert "Planned responsibility: Browse, cart entry, checkout entry, and user-facing errors." in storefront_spec
-    assert "**Related diagrams**: D-001, D-002" in storefront_spec
+    assert "Browse, cart entry, checkout entry, and user-facing errors" in storefront_spec
+    assert "| Diagrams | `D-001`, `D-002` |" in storefront_spec
     assert "Browser smoke proof for browse-to-cart and failed-checkout messaging" in storefront_spec
     assert result["memory"]["recorded"] is True
     assert result["memory"]["event"]["source"] == "domain-intelligence"
@@ -1203,28 +1282,76 @@ def test_greenfield_apply_synthesizes_parent_and_polishes_component_specs(tmp_pa
     assert result["next_steps"]["start_workstream_id"] == "B-002"
     assert result["next_steps"]["first_wave"] == "Foundations"
     assert "Treat `Identity, sessions, and COI-aware authorization` as the first coding scope" in result["next_steps"]["implementation_prompt"]
-    assert "## Planned Ownership" in spec
-    assert "## Implementation Kickoff" in spec
-    assert "Use `B-002` (Identity, sessions, and COI-aware authorization) as the first implementation-plan anchor" in spec
+    assert "## At A Glance" in spec
+    assert "## First Slice Runway" in spec
+    assert "Use `B-002` (Identity, sessions, and COI-aware authorization) as the implementation-plan anchor" in spec
     assert (
-        "Use `B-003` (Review workflow phase state machine) as the first implementation-plan anchor"
+        "Use `B-003` (Review workflow phase state machine) as the implementation-plan anchor"
         in workflow_spec
     )
     assert (
-        "Use `B-002` (Identity, sessions, and COI-aware authorization) as the first implementation-plan anchor"
+        "Use `B-002` (Identity, sessions, and COI-aware authorization) as the implementation-plan anchor"
         not in workflow_spec
     )
     assert "./.odylith/bin/odylith context --repo-root . B-003" in workflow_spec
     assert "First coding slice:" in spec
-    assert "Definition Of Done For The First Slice" in spec
-    assert "Operator Verification Commands" in spec
-    assert "Security, Compliance, And Open Questions" in spec
+    assert "Definition Of Done" in spec
+    assert "Operator Verification" in spec
+    assert "Runtime Failure Modes" in spec
     assert "NIH Guidelines for nucleic acid research" in spec
     assert "Authorization enforced at API read boundary, not UI" in spec
     assert "['" not in spec
     assert "']" not in spec
     assert "['" not in workflow_spec
     assert "']" not in workflow_spec
+
+
+def test_greenfield_apply_writes_bespoke_domain_component_specs(tmp_path, monkeypatch) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="DeFi risk sentinel app",
+    )["canonical_proposal"]
+
+    result = greenfield_proposals.apply_greenfield_proposal(
+        repo_root=tmp_path,
+        proposal=proposal,
+        confirm=True,
+        release_selector="0.0.1",
+    )
+
+    spec_root = tmp_path / "odylith/registry/source/components"
+    console_spec = (spec_root / "defi-risk-sentinel-app-risk-console/CURRENT_SPEC.md").read_text(encoding="utf-8")
+    engine_spec = (spec_root / "defi-risk-sentinel-app-risk-signal-engine/CURRENT_SPEC.md").read_text(
+        encoding="utf-8"
+    )
+    harness_spec = (spec_root / "defi-risk-sentinel-app-scenario-replay-harness/CURRENT_SPEC.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert result["tribunal"]["status"] == "passed"
+    assert [row["label"] for row in proposal["components"]] == [
+        "Risk Sentinel Console",
+        "Risk Signal Engine",
+        "Scenario Replay Harness",
+    ]
+    assert "wallet/protocol watchlist setup" in console_spec
+    assert "stale oracle" in console_spec
+    assert "Exposure snapshot query" in engine_spec
+    assert "liquidity" in engine_spec
+    assert "Scenario runner command" in harness_spec
+    assert "live chain calls" in harness_spec
+    for text in (console_spec, engine_spec, harness_spec):
+        assert "Experience Boundary" not in text
+        assert "registered through `odylith component register`" not in text
+        assert "first operator-visible workflow, view or command entrypoint" not in text
+        assert "R1." not in text
+        assert "odylith_assumption" not in text
+    assert console_spec != engine_spec
+    assert engine_spec != harness_spec
 
 
 def test_greenfield_apply_cli_prints_operator_handoff(tmp_path, monkeypatch, capsys) -> None:
@@ -1441,7 +1568,11 @@ def test_greenfield_apply_requires_confirmation(tmp_path) -> None:
 
 def test_greenfield_apply_json_output_is_machine_clean(tmp_path, monkeypatch, capsys) -> None:
     _seed_empty_governance_repo(tmp_path)
-    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    def noisy_refresh(**_kwargs: object) -> None:
+        print("refresh progress that must not contaminate JSON stdout", flush=True)
+        os.write(1, b"fd-level refresh progress must not contaminate JSON stdout\n")
+
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", noisy_refresh)
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     proposal_path = tmp_path / "proposal.json"
@@ -1468,3 +1599,28 @@ def test_greenfield_apply_json_output_is_machine_clean(tmp_path, monkeypatch, ca
     assert payload["tribunal"]["status"] == "passed"
     assert payload["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass"]
     assert payload["release_target"]["release_id"] == "release-commerce-launch-first"
+    assert payload["operator_output"] == [
+        "refresh progress that must not contaminate JSON stdout",
+        "fd-level refresh progress must not contaminate JSON stdout",
+    ]
+
+
+def test_greenfield_apply_json_error_is_machine_clean(tmp_path, capsys) -> None:
+    _seed_empty_governance_repo(tmp_path)
+
+    rc = greenfield_proposals.main(
+        [
+            "apply",
+            "--repo-root",
+            str(tmp_path),
+            "--proposal-json",
+            "{not-json",
+            "--confirm",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert rc == 2
+    assert payload["mode"] == "error"
+    assert "Expecting property name enclosed in double quotes" in payload["error"]

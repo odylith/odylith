@@ -142,6 +142,18 @@ def _has_governance_contract(
     )
 
 
+def _has_actionable_target_resolution(payload: Mapping[str, Any]) -> bool:
+    target_resolution = (
+        dict(payload.get("target_resolution", {}))
+        if isinstance(payload.get("target_resolution"), Mapping)
+        else {}
+    )
+    if bool(target_resolution.get("requires_more_consumer_context")):
+        return False
+    candidate_targets = _selected_mapping_rows(target_resolution.get("candidate_targets"))
+    return any(str(row.get("path", "") or row.get("ref", "")).strip() for row in candidate_targets)
+
+
 def _exact_path_execution_ready(
     *,
     required: bool,
@@ -251,6 +263,14 @@ def build_narrowing_guidance(
     ):
         required = False
         reason = "Exact-path retained evidence already bounds execution and closeout without broader narrowing."
+    elif (
+        required
+        and str(packet_kind or "").strip() == "bootstrap_session"
+        and retained_paths
+        and _has_actionable_target_resolution(payload)
+    ):
+        required = False
+        reason = "Turn-visible file targets already bound startup; no additional narrowing required."
 
     suppress_degraded_receipt = reason in {"working_tree_scope_degraded", "broad_shared_paths"} and bool(retained_paths)
     if suppress_degraded_receipt:

@@ -10,9 +10,15 @@ explicit confirmation.
 from __future__ import annotations
 
 import argparse
+from collections.abc import Callable
+import contextlib
 import datetime as dt
+import io
 import json
+import os
 import re
+import sys
+import tempfile
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -24,8 +30,12 @@ from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_cli_output import print_apply_result
 from odylith.runtime.domain_intelligence.greenfield_experience import proposal_posture_tuple
 from odylith.runtime.domain_intelligence.greenfield_experience import row_text_tuple
+from odylith.runtime.domain_intelligence.greenfield_text import join_sentence_text
+from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
+from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import SECTION_TITLE
+from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import render_domain_intelligence_section
 from odylith.runtime.domain_intelligence.proposal_contract import build_proposal_contract
 from odylith.runtime.domain_intelligence.proposal_memory import record_greenfield_acceptance
 from odylith.runtime.domain_intelligence.proposal_normalization import normalize_host_reasoned_proposal
@@ -327,6 +337,9 @@ def _backlog_section_overrides(proposal: Mapping[str, Any]) -> dict[str, dict[st
             "complexity": str(row.get("complexity", "Medium")).strip() or "Medium",
             "ordering_rationale": "Created from a confirmed Odylith greenfield proposal.",
         }
+        domain_intelligence = render_domain_intelligence_section(row.get("domain_intelligence"))
+        if domain_intelligence:
+            override["extra_sections"] = {SECTION_TITLE: domain_intelligence}
         overrides[title] = override
         overrides[slugify(title)] = override
     return overrides
@@ -369,14 +382,62 @@ def _release_assignment_note(*, selector: str) -> str:
 def _component_risk_lines(row: Mapping[str, Any], proposal: Mapping[str, Any]) -> tuple[str, ...]:
     local = unique_text(
         [
-            *row_text_tuple(row, "risks", "domain_risk", "risk_posture"),
-            *row_text_tuple(row, "security_posture", "security_compliance", "compliance_posture"),
-            *row_text_tuple(row, "dependency_expectations"),
+            *_posture_lines(row, "risks", "domain_risk", "risk_posture"),
+            *_posture_lines(row, "security_posture", "security_compliance", "compliance_posture"),
+            *_posture_lines(row, "dependency_expectations"),
         ]
     )
-    inherited = proposal_posture_tuple(proposal, "security_compliance", "risks")
+    inherited = unique_text(
+        [
+            *_posture_lines(proposal, "security_compliance"),
+            *_posture_lines(proposal, "risks"),
+        ]
+    )
     values = unique_text([*local, *inherited])
     return values or ("Candidate boundary may change once source evidence and implementation plans exist.",)
+
+
+def _posture_lines(row: Mapping[str, Any], *keys: str) -> tuple[str, ...]:
+    lines: list[str] = []
+    for key in keys:
+        lines.extend(_posture_value_lines(row.get(key)))
+    return unique_text(lines)
+
+
+def _posture_value_lines(value: Any) -> tuple[str, ...]:
+    if isinstance(value, Mapping):
+        if "statement" not in value and "mitigation" not in value:
+            ignored = {"id", "evidence_tier", "kind"}
+            return unique_text(
+                line
+                for nested_key, nested_value in value.items()
+                if str(nested_key) not in ignored
+                for line in _posture_value_lines(nested_value)
+            )
+        statement = join_sentence_text(
+            value.get("statement")
+            or value.get("risk")
+            or value.get("detail")
+            or value.get("domain")
+            or value.get("security")
+            or value.get("policy")
+            or value.get("compliance")
+        )
+        mitigation = join_sentence_text(value.get("mitigation"))
+        if statement and mitigation:
+            return (f"{statement} Mitigation: {mitigation}",)
+        if statement:
+            return (statement,)
+        ignored = {"id", "evidence_tier", "kind"}
+        return unique_text(
+            line
+            for nested_key, nested_value in value.items()
+            if str(nested_key) not in ignored
+            for line in _posture_value_lines(nested_value)
+        )
+    if isinstance(value, (list, tuple, set)):
+        return unique_text(line for nested in value for line in _posture_value_lines(nested))
+    return text_values(value)
 
 
 def _release_id_for_proposal(proposal: Mapping[str, Any], *, selector: str) -> str:
@@ -690,6 +751,56 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def _run_with_optional_stdout_capture(
+    *,
+    enabled: bool,
+    action: Callable[[], dict[str, Any]],
+) -> tuple[dict[str, Any], list[str]]:
+    if not enabled:
+        return action(), []
+    stdout_fd = 1
+    try:
+        probe_fd = os.dup(stdout_fd)
+    except OSError:
+        captured_output = io.StringIO()
+        with contextlib.redirect_stdout(captured_output):
+            result = action()
+        return result, _captured_lines(captured_output.getvalue())
+    else:
+        os.close(probe_fd)
+    with tempfile.TemporaryFile(mode="w+t", encoding="utf-8") as captured_output:
+        sys.stdout.flush()
+        saved_fd = os.dup(stdout_fd)
+        try:
+            os.dup2(captured_output.fileno(), stdout_fd)
+            with contextlib.redirect_stdout(captured_output):
+                result = action()
+                captured_output.flush()
+        finally:
+            os.dup2(saved_fd, stdout_fd)
+            os.close(saved_fd)
+        captured_output.seek(0)
+        return result, _captured_lines(captured_output.read())
+
+
+def _captured_lines(text: str) -> list[str]:
+    return [line.rstrip() for line in str(text or "").splitlines() if line.strip()]
+
+
+def _with_operator_output(result: Mapping[str, Any], captured: Sequence[str]) -> dict[str, Any]:
+    payload = dict(result)
+    if captured:
+        payload["operator_output"] = list(captured)
+    return payload
+
+
+def _print_greenfield_error(exc: Exception, *, as_json: bool) -> None:
+    if as_json:
+        print(json.dumps({"mode": "error", "error": str(exc)}, indent=2, sort_keys=True))
+        return
+    print(str(exc))
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
@@ -704,37 +815,44 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "apply":
         try:
             proposal = _load_proposal(args)
-            result = apply_greenfield_proposal(
-                repo_root=repo_root,
-                proposal=proposal,
-                confirm=bool(args.confirm),
-                release_selector=str(args.release),
+            result, captured = _run_with_optional_stdout_capture(
+                enabled=bool(args.as_json),
+                action=lambda: apply_greenfield_proposal(
+                    repo_root=repo_root,
+                    proposal=proposal,
+                    confirm=bool(args.confirm),
+                    release_selector=str(args.release),
+                ),
             )
         except (ValueError, RuntimeError, json.JSONDecodeError) as exc:
-            print(str(exc))
+            _print_greenfield_error(exc, as_json=bool(args.as_json))
             return 2
         if args.as_json:
+            result = _with_operator_output(result, captured)
             print(json.dumps(result, indent=2, sort_keys=True))
         else:
             print_apply_result(result, verb="apply")
         return 0
     if args.command == "create":
         try:
-            proposal = _build_apply_ready_greenfield_proposal(
-                repo_root=repo_root,
-                prompt=str(args.prompt),
-                release_selector=str(args.release),
-            )
-            result = apply_greenfield_proposal(
-                repo_root=repo_root,
-                proposal=proposal,
-                confirm=bool(args.confirm),
-                release_selector=str(args.release),
+            result, captured = _run_with_optional_stdout_capture(
+                enabled=bool(args.as_json),
+                action=lambda: apply_greenfield_proposal(
+                    repo_root=repo_root,
+                    proposal=_build_apply_ready_greenfield_proposal(
+                        repo_root=repo_root,
+                        prompt=str(args.prompt),
+                        release_selector=str(args.release),
+                    ),
+                    confirm=bool(args.confirm),
+                    release_selector=str(args.release),
+                ),
             )
         except (ValueError, RuntimeError, json.JSONDecodeError) as exc:
-            print(str(exc))
+            _print_greenfield_error(exc, as_json=bool(args.as_json))
             return 2
         if args.as_json:
+            result = _with_operator_output(result, captured)
             print(json.dumps(result, indent=2, sort_keys=True))
         else:
             print_apply_result(result, verb="create")

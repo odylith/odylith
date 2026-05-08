@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 28,
+    "explicit_event_count": 29,
     "mapped_workstream_evidence_count": 27,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 13,
+    "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 29
+    "timeline_event_count": 30
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,20 +21,44 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_traceability.py",
         "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+        "src/odylith/runtime/domain_intelligence/proposal_normalization.py",
+        "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
         "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
-        "src/odylith/runtime/domain_intelligence/robot_swarm_profile.py"
+        "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_profile.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_workstream_intelligence.py"
       ],
       "confidence": "high",
-      "event_index": 464,
+      "event_index": 466,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/proposal_contract.py +2 more",
-      "ts_iso": "2026-05-07T19:49:28-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_proposals.py +8 more",
+      "ts_iso": "2026-05-08T07:48:31-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 465,
+      "explicit_components": [
+        "domain-intelligence",
+        "radar"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "domain-intelligence",
+        "radar"
+      ],
+      "meaningful": false,
+      "summary": "CB-184 fixed: greenfield Radar workstreams now carry validated Domain Intelligence sections with ontology, operators, source-of-truth map, evidence model, validation obligations, change/conflict rules, and transfer priors.",
+      "ts_iso": "2026-05-08T07:41:43-07:00",
       "workstreams": []
     },
     {
@@ -1085,7 +1109,7 @@
     "runbooks": []
   },
   "version": "v1",
-  "what_it_is": "Provider-free domain-intelligence runtime that turns greenfield consumer intent into confirmation-gated governance proposals with backlog, program waves, release plan, planned Registry components, draft Atlas topology, assumptions, risks, validation obligations, deterministic Tribunal gating, and final surface refresh.",
+  "what_it_is": "Provider-free domain-intelligence runtime that turns greenfield consumer intent into confirmation-gated governance proposals with domain-intelligent Radar workstreams, program waves, release plan, planned Registry components, draft Atlas topology, assumptions, risks, validation obligations, deterministic Tribunal gating, parseable JSON output, and final surface refresh.",
   "why_tracked": "Owns the consumer-lane boundary between missing source evidence and useful greenfield guidance, so every supported host routes broad project intents through one low-latency Odylith runtime path instead of refusing or inventing source-backed truth.",
   "workstreams": [
     "B-141",

@@ -162,6 +162,10 @@ def _format_apply_ready_proposal_text(
     for row in proposal.get("backlog", []):
         if isinstance(row, Mapping):
             lines.append(f"- {row.get('title')}: {row.get('recommended_first_slice')}")
+    intelligence_lines = _domain_intelligence_preview(proposal.get("backlog", []))
+    if intelligence_lines:
+        lines.extend(["", "Workstream domain intelligence"])
+        lines.extend(intelligence_lines)
     program = proposal.get("program", {}) if isinstance(proposal.get("program"), Mapping) else {}
     blueprint = program.get("blueprint", {}) if isinstance(program.get("blueprint"), Mapping) else {}
     if blueprint:
@@ -271,3 +275,48 @@ def _render_evidence_item(item: Any, preferred_key: str) -> str:
         tier = str(item.get("evidence_tier", "")).strip()
         return f"{text} ({tier})" if text and tier else text
     return str(item).strip()
+
+
+def _domain_intelligence_preview(backlog: Any) -> list[str]:
+    lines: list[str] = []
+    rows = backlog if isinstance(backlog, list) else []
+    for row in rows[:4]:
+        if not isinstance(row, Mapping):
+            continue
+        intelligence = row.get("domain_intelligence")
+        if not isinstance(intelligence, Mapping):
+            continue
+        title = str(row.get("title", "")).strip()
+        ontology = _first_terms(intelligence.get("ontology"), limit=3)
+        operators = _first_terms(intelligence.get("operators"), limit=2)
+        validation = _first_terms(intelligence.get("validation_obligations"), limit=2)
+        parts = []
+        if ontology:
+            parts.append("terms: " + "; ".join(ontology))
+        if operators:
+            parts.append("operators: " + "; ".join(operators))
+        if validation:
+            parts.append("proof: " + "; ".join(validation))
+        if title and parts:
+            lines.append(f"- {title}: " + " | ".join(parts))
+    return lines
+
+
+def _first_terms(value: Any, *, limit: int) -> list[str]:
+    if isinstance(value, Mapping):
+        candidates = [str(item).strip() for item in value.values()]
+    elif isinstance(value, list):
+        candidates = [str(item).strip() for item in value]
+    else:
+        candidates = [str(value).strip()] if str(value or "").strip() else []
+    terms = []
+    for item in candidates:
+        if not item:
+            continue
+        head = item.split(".", 1)[0].strip()
+        if len(head) > 140:
+            head = head[:137].rstrip() + "..."
+        terms.append(head)
+        if len(terms) >= limit:
+            break
+    return terms

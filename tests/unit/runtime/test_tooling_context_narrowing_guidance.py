@@ -50,6 +50,39 @@ def test_narrowing_guidance_prefers_anchor_prompt_before_scan_fallback() -> None
     assert result["next_fallback_command"] == "./.odylith/bin/odylith context --repo-root . odylith-context-engine"
 
 
+def test_narrowing_guidance_accepts_turn_visible_file_targets() -> None:
+    result = guidance.build_narrowing_guidance(
+        packet_kind="bootstrap_session",
+        packet_state="gated_ambiguous",
+        full_scan_recommended=True,
+        full_scan_reason="selection_ambiguous",
+        workstream_selection={"reason": "selection_ambiguous"},
+        retrieval_plan={
+            "guidance_coverage": "direct",
+            "anchor_paths": ["src/odylith/runtime/context_engine/odylith_context_engine_packet_session_runtime.py"],
+        },
+        final_payload={
+            "changed_paths": ["src/odylith/runtime/context_engine/odylith_context_engine_packet_session_runtime.py"],
+            "target_resolution": {
+                "candidate_targets": [
+                    {
+                        "path": "src/odylith/runtime/context_engine/odylith_context_engine_packet_session_runtime.py",
+                        "source": "path_scope",
+                        "writable": True,
+                    }
+                ],
+                "has_writable_targets": True,
+                "requires_more_consumer_context": False,
+            },
+        },
+    )
+
+    assert result["required"] is False
+    assert result["reason"] == "Turn-visible file targets already bound startup; no additional narrowing required."
+    assert result["suggested_inputs"] == []
+    assert result["next_fallback_command"] == ""
+
+
 def test_narrowing_guidance_suppresses_noisy_degraded_receipt_commands() -> None:
     result = guidance.build_narrowing_guidance(
         packet_kind="impact",

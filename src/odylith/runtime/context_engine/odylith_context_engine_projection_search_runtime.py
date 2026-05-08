@@ -482,20 +482,34 @@ def _looks_like_repo_path(token: str) -> bool:
         return False
     return "/" in value or value.endswith((".py", ".md", ".json", ".jsonl", ".mmd", ".mk", ".yml", ".yaml", ".svg", ".png"))
 
+
+def _path_ref_candidate_tokens(token: str) -> list[str]:
+    value = str(token or "").strip()
+    if not value:
+        return []
+    compact = value.rstrip(".,;)]}\"'")
+    compact = context_engine_store.re.sub(r":\d+(?::\d+)?$", "", compact)
+    compact = compact.rstrip(":")
+    if compact and compact != value:
+        return [compact]
+    return [value]
+
+
+def _add_path_ref(refs: set[str], *, token: str, repo_root: Path) -> None:
+    for raw_candidate in _path_ref_candidate_tokens(token):
+        candidate = context_engine_store._normalize_repo_token(str(raw_candidate), repo_root=repo_root)
+        if candidate and _looks_like_repo_path(candidate):
+            refs.add(candidate)
+
+
 def _extract_path_refs(*, text: str, repo_root: Path) -> list[str]:
     refs: set[str] = set()
     for match in context_engine_store._MARKDOWN_CODE_REF_RE.findall(str(text or "")):
-        candidate = context_engine_store._normalize_repo_token(str(match), repo_root=repo_root)
-        if candidate and _looks_like_repo_path(candidate):
-            refs.add(candidate)
+        _add_path_ref(refs, token=str(match), repo_root=repo_root)
     for match in context_engine_store._RAW_PATH_TOKEN_RE.findall(str(text or "")):
-        candidate = context_engine_store._normalize_repo_token(str(match), repo_root=repo_root)
-        if candidate and _looks_like_repo_path(candidate):
-            refs.add(candidate)
+        _add_path_ref(refs, token=str(match), repo_root=repo_root)
     for match in context_engine_store._CONTRACT_REF_RE.findall(str(text or "")):
-        candidate = context_engine_store._normalize_repo_token(str(match), repo_root=repo_root)
-        if candidate:
-            refs.add(candidate)
+        _add_path_ref(refs, token=str(match), repo_root=repo_root)
     return sorted(refs)
 
 def _extract_workstream_refs(text: str) -> list[str]:

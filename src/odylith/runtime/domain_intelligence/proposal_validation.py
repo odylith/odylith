@@ -6,6 +6,8 @@ import re
 from collections.abc import Mapping
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import domain_intelligence_issues
+
 
 _ALLOWED_MERMAID_PREFIXES = (
     "flowchart ",
@@ -197,6 +199,9 @@ def _validate_backlog_row(row: Any, index: int) -> None:
     for metric_index, metric in enumerate(metrics, start=1):
         if _meaningful_word_count(metric) < 4:
             raise ValueError(f"backlog row {index} success_metrics[{metric_index}] is too shallow")
+    intelligence_issues = domain_intelligence_issues(row.get("domain_intelligence"), owner=f"backlog row {index}")
+    if intelligence_issues:
+        raise ValueError("; ".join(intelligence_issues))
     _validate_evidence_tier(row, owner=f"backlog row {index}")
 
 

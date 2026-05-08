@@ -8,6 +8,7 @@ from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import derivation_provenance
 from odylith.runtime.context_engine import odylith_context_engine_dossier_compaction_runtime as dossier_compaction_runtime
 from odylith.runtime.context_engine import odylith_context_engine_projection_compiler_runtime as projection_compiler_runtime
+from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as packet_session_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_runtime as hot_path_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_scope_runtime as hot_path_scope
 from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime as projection_search_runtime
@@ -317,6 +318,56 @@ def test_session_scope_uses_intent_anchor_paths_before_shared_only_fallback(tmp_
     assert payload["scope_rescue_mode"] == "intent_seed"
     assert payload["intent_anchor_paths"] == ["src/odylith/cli.py"]
     assert payload["analysis_paths"] == ["src/odylith/cli.py"]
+
+
+def test_session_scope_accepts_unquoted_src_anchor_paths(tmp_path: Path, monkeypatch) -> None:
+    store._PROCESS_PATH_SCOPE_CACHE.clear()  # noqa: SLF001
+    code_path = tmp_path / "src" / "odylith" / "runtime" / "governance" / "component_authoring.py"
+    code_path.parent.mkdir(parents=True, exist_ok=True)
+    code_path.write_text("print('ok')\n", encoding="utf-8")
+
+    monkeypatch.setattr(store.governance, "collect_meaningful_changed_paths", lambda **kwargs: [])  # noqa: ARG005
+    monkeypatch.setattr(store, "_load_session_state", lambda **kwargs: None)
+
+    payload = store._resolve_changed_path_scope_context(  # noqa: SLF001
+        repo_root=tmp_path,
+        explicit_paths=(),
+        use_working_tree=False,
+        working_tree_scope="session",
+        session_id="session-1",
+        intent="Fix src/odylith/runtime/governance/component_authoring.py: keep startup grounded.",
+    )
+
+    assert payload["intent_anchor_paths"] == ["src/odylith/runtime/governance/component_authoring.py"]
+    assert payload["analysis_paths"] == ["src/odylith/runtime/governance/component_authoring.py"]
+
+
+def test_path_ref_extraction_trims_src_line_and_colon_suffixes(tmp_path: Path) -> None:
+    refs = projection_search_runtime._extract_path_refs(  # noqa: SLF001
+        text=(
+            "Fix src/odylith/runtime/governance/component_authoring.py: and "
+            "src/odylith/runtime/context_engine/odylith_context_engine_store.py:472."
+        ),
+        repo_root=tmp_path,
+    )
+
+    assert refs == [
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
+        "src/odylith/runtime/governance/component_authoring.py",
+    ]
+
+
+def test_turn_context_path_seed_includes_surfaces_and_visible_text() -> None:
+    seed = packet_session_runtime._turn_context_path_seed(  # noqa: SLF001
+        intent="Fix startup target recognition.",
+        generated_surfaces=("src/odylith/runtime/context_engine/odylith_context_engine_store.py",),
+        visible_text=("Screenshot points at src/odylith/runtime/context_engine/odylith_context_engine_packet_session_runtime.py:",),
+        active_tab="odylith/index.html?tab=compass",
+    )
+
+    assert "src/odylith/runtime/context_engine/odylith_context_engine_store.py" in seed
+    assert "src/odylith/runtime/context_engine/odylith_context_engine_packet_session_runtime.py:" in seed
+    assert "odylith/index.html?tab=compass" in seed
 
 
 def test_prompt_payload_suppresses_working_tree_scope_degraded_receipts_when_paths_remain() -> None:
