@@ -243,6 +243,11 @@ def test_greenfield_guidance_uses_canonical_create_path_not_host_json_authoring(
         compact_text = " ".join(text.split())
         assert "greenfield create" in text, path
         assert (
+            "project-first" in compact_text
+            or "coding-readiness gates" in compact_text
+            or path.name == "SKILL.md"
+        ), path
+        assert (
             "hand-author proposal JSON" in compact_text
             or "hand-authoring proposal JSON" in compact_text
             or "hand-build `odylith-greenfield-proposal.json`" in compact_text

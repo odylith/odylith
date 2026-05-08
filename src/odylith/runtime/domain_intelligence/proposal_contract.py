@@ -5,6 +5,8 @@ from __future__ import annotations
 from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_programs
+from odylith.runtime.domain_intelligence.greenfield_domain_profile import infer_greenfield_domain_profile
+from odylith.runtime.domain_intelligence.greenfield_project_brief import build_project_brief
 
 DEFAULT_GREENFIELD_RELEASE_SELECTOR = greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR
 
@@ -85,6 +87,7 @@ def build_proposal_contract() -> dict[str, Any]:
             "risks",
             "security_compliance",
             "validation_strategy",
+            "project_brief",
             "program",
             "release_plan",
             "backlog",
@@ -117,9 +120,15 @@ def build_proposal_contract() -> dict[str, Any]:
                 "and flowcharts must use subtle diagram-internal colors plus wrapped labels"
             ),
             "program": "wave plan with goals, validation gates, component focus, and evidence tier",
+            "project_brief": (
+                "a project-first blueprint with customization options, pre-coding checkpoints, coding readiness gates, "
+                "and host-independent commands; it must make clear that greenfield apply creates project truth before "
+                "the first source-backed implementation plan starts"
+            ),
             "implementation_runway": (
-                "post-apply handoff that names the first child workstream, first wave, release target, proof gates, "
-                "repo-native validation expectations, and dashboard surfaces to inspect before advancing waves"
+                "post-apply handoff that names the project parent, first wave, release target, direction choices, "
+                "coding-readiness gates, eventual first child workstream, proof gates, repo-native validation "
+                "expectations, and dashboard surfaces to inspect before coding or advancing waves"
             ),
             "release_plan": (
                 "provisional release selector, first-target workstreams, stages, milestones, and promotion criteria; "
@@ -182,12 +191,18 @@ def build_proposal_contract() -> dict[str, Any]:
                 "release lane without pretending every child belongs to the first release."
             ),
             (
+                "Greenfield UX is project-first: do not push the operator straight into coding. The proposal must "
+                "offer direction choices, customization paths, architecture review checkpoints, and readiness gates "
+                "that work the same from CLI, Codex, and Claude Code."
+            ),
+            (
                 "Make the proposal easy to operate: name the program, waves, release selector, first target "
                 "workstreams, impacted components, diagrams, and proof gates in plain language."
             ),
             (
-                "Make the post-apply coding sequence explicit: which child workstream starts first, what proof "
-                "must pass before the next wave, and which surfaces the operator should open to verify the program."
+                "Make the post-apply sequence explicit: which project brief to review first, which choices can be "
+                "customized, when the eventual first child workstream may start, what proof must pass before the next "
+                "wave, and which surfaces the operator should open to verify the program."
             ),
             (
                 "Candidate Registry specs must carry an implementation runway: first child workstream, wave, release, "
@@ -214,6 +229,7 @@ def build_proposal_contract() -> dict[str, Any]:
 def build_proposal_template(*, intent_title: str, project_slug: str, source_posture: str) -> dict[str, Any]:
     component_id = f"{project_slug}-core"
     diagram_slug = f"{project_slug}-system-context"
+    domain_profile = infer_greenfield_domain_profile(prompt=intent_title, title=intent_title, slug=project_slug)
     return {
         "schema_version": "odylith.greenfield.host_reasoned.v1",
         "mode": "host_reasoned_greenfield_proposal",
@@ -261,6 +277,13 @@ def build_proposal_template(*, intent_title: str, project_slug: str, source_post
                 "obligation": "Replace with focused behavior proof.",
             },
         ],
+        "project_brief": build_project_brief(
+            prompt=intent_title,
+            title=intent_title,
+            slug=project_slug,
+            domain_profile=domain_profile,
+            release_selector=DEFAULT_GREENFIELD_RELEASE_SELECTOR,
+        ),
         "program": {
             "name": intent_title,
             "waves": [

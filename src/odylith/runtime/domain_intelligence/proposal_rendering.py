@@ -158,6 +158,11 @@ def _format_apply_ready_proposal_text(
                 f"- next: {ux.get('next_best_action', 'confirm or revise the proposed first wave')}",
             ]
         )
+    project_brief = proposal.get("project_brief", {}) if isinstance(proposal.get("project_brief"), Mapping) else {}
+    brief_lines = _project_brief_lines(project_brief)
+    if brief_lines:
+        lines.extend(["", "Project-first blueprint"])
+        lines.extend(brief_lines)
     lines.extend(["", "Backlog proposal"])
     for row in proposal.get("backlog", []):
         if isinstance(row, Mapping):
@@ -275,6 +280,81 @@ def _render_evidence_item(item: Any, preferred_key: str) -> str:
         tier = str(item.get("evidence_tier", "")).strip()
         return f"{text} ({tier})" if text and tier else text
     return str(item).strip()
+
+
+def _project_brief_lines(project_brief: Mapping[str, Any]) -> list[str]:
+    if not project_brief:
+        return []
+    lines: list[str] = []
+    principle = str(project_brief.get("operating_principle", "")).strip()
+    outcome = str(project_brief.get("project_outcome", "")).strip()
+    if outcome:
+        lines.append(f"- outcome: {outcome}")
+    if principle:
+        lines.append(f"- principle: {principle}")
+    option_lines = _project_option_lines(project_brief.get("customization_options"))
+    if option_lines:
+        lines.extend(["- choose before coding:"])
+        lines.extend(f"  - {line}" for line in option_lines[:6])
+    checkpoint_lines = _project_checkpoint_lines(project_brief.get("pre_coding_checkpoints"))
+    if checkpoint_lines:
+        lines.extend(["- checkpoints:"])
+        lines.extend(f"  - {line}" for line in checkpoint_lines[:5])
+    gates = [str(item).strip() for item in project_brief.get("coding_readiness_gates", []) if str(item).strip()] if isinstance(project_brief.get("coding_readiness_gates"), list) else []
+    if gates:
+        lines.extend(["- coding readiness gates:"])
+        lines.extend(f"  - {gate}" for gate in gates[:5])
+    paths = _project_path_lines(project_brief.get("host_independent_paths"))
+    if paths:
+        lines.extend(["- host-independent customization paths:"])
+        lines.extend(f"  - {line}" for line in paths[:3])
+    return lines
+
+
+def _project_option_lines(value: Any) -> list[str]:
+    rows = value if isinstance(value, list) else []
+    lines: list[str] = []
+    for row in rows:
+        if not isinstance(row, Mapping):
+            continue
+        decision = str(row.get("decision", "")).strip()
+        recommended = str(row.get("recommended", "")).strip()
+        choices = row.get("choices", [])
+        rendered_choices = ", ".join(str(item).strip() for item in choices if str(item).strip()) if isinstance(choices, list) else str(choices).strip()
+        impact = str(row.get("impact", "")).strip()
+        if decision and recommended:
+            suffix = f" Choices: {rendered_choices}." if rendered_choices else ""
+            impact_text = f" Impact: {impact}" if impact else ""
+            lines.append(f"{decision}: {recommended}{suffix}{impact_text}")
+    return lines
+
+
+def _project_checkpoint_lines(value: Any) -> list[str]:
+    rows = value if isinstance(value, list) else []
+    lines: list[str] = []
+    for row in rows:
+        if not isinstance(row, Mapping):
+            continue
+        checkpoint = str(row.get("checkpoint", "")).strip()
+        question = str(row.get("operator_question", "")).strip()
+        done_when = str(row.get("done_when", "")).strip()
+        if checkpoint and question:
+            lines.append(f"{checkpoint}: {question} Done when: {done_when}")
+    return lines
+
+
+def _project_path_lines(value: Any) -> list[str]:
+    rows = value if isinstance(value, list) else []
+    lines: list[str] = []
+    for row in rows:
+        if not isinstance(row, Mapping):
+            continue
+        path = str(row.get("path", "")).strip()
+        command = str(row.get("command", "")).strip()
+        works_in = str(row.get("works_in", "")).strip()
+        if path and command:
+            lines.append(f"{path}: `{command}` ({works_in})")
+    return lines
 
 
 def _domain_intelligence_preview(backlog: Any) -> list[str]:

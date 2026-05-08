@@ -206,7 +206,8 @@ def test_greenfield_propose_apply_smoke_runs_exact_release_journey(monkeypatch, 
                     "odylith greenfield apply wrote confirmed proposal\n"
                     "- tribunal: passed\n"
                     "- validation already run: proposal schema, proposal Tribunal, governed backlog Tribunal, Atlas scaffold, surface refresh\n"
-                    "- exact first coding workstream: B-002 First slice\n"
+                    "- project-first workstream: B-001 Govern Project\n"
+                    "- eventual first coding workstream: B-002 First slice\n"
                 )
             else:
                 stdout = "dashboard refresh completed\n- outcome: passed\n"
@@ -276,7 +277,8 @@ def test_greenfield_create_smoke_runs_show_create_and_checks_surfaces(monkeypatc
                     "odylith greenfield create wrote confirmed proposal\n"
                     "- tribunal: passed\n"
                     "- validation already run: proposal schema, proposal Tribunal, governed backlog Tribunal, Atlas scaffold, surface refresh\n"
-                    "- exact first coding workstream: B-002 First slice\n"
+                    "- project-first workstream: B-001 Govern Project\n"
+                    "- eventual first coding workstream: B-002 First slice\n"
                 )
             )
 
@@ -317,13 +319,13 @@ def test_release_smoke_requires_installed_greenfield_guidance_uses_create(tmp_pa
     repo_root.mkdir()
     _write_greenfield_guidance(
         repo_root,
-        "Use odylith greenfield create after confirmation. Do not hand-author proposal JSON.\n",
+        "Use odylith greenfield create after confirmation. Do not hand-author proposal JSON. Review the project-first direction options and coding-readiness gates before coding.\n",
     )
 
     module._require_greenfield_guidance_uses_create(repo_root=repo_root, label="unit")
 
     (repo_root / "AGENTS.md").write_text(
-        "Use odylith greenfield create after confirmation. Do not hand-author proposal JSON. host model drafts\n",
+        "Use odylith greenfield create after confirmation. Do not hand-author proposal JSON. Review the project-first direction options and coding-readiness gates before coding. host model drafts\n",
         encoding="utf-8",
     )
     try:

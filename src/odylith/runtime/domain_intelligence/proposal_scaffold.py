@@ -8,6 +8,7 @@ from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence.greenfield_domain_profile import GreenfieldDomainProfile
 from odylith.runtime.domain_intelligence.greenfield_domain_profile import infer_greenfield_domain_profile
+from odylith.runtime.domain_intelligence.greenfield_project_brief import build_project_brief
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import enrich_backlog_rows
 from odylith.runtime.domain_intelligence.proposal_rendering import build_apply_commands
 from odylith.runtime.domain_intelligence.robot_swarm_profile import apply_robot_swarm_logistics_profile
@@ -37,6 +38,13 @@ def build_apply_ready_proposal(
     risks = _base_risks()
     security_compliance = _base_security_compliance(title)
     validation_strategy = _base_validation_strategy()
+    project_brief = build_project_brief(
+        prompt=prompt,
+        title=title,
+        slug=slug,
+        domain_profile=domain_profile,
+        release_selector=selector,
+    )
     program = _program(title=title, components=components)
     release_plan = _release_plan(
         selector=selector,
@@ -75,6 +83,7 @@ def build_apply_ready_proposal(
         "risks": risks,
         "security_compliance": security_compliance,
         "validation_strategy": validation_strategy,
+        "project_brief": project_brief,
         "program": program,
         "release_plan": release_plan,
         "backlog": backlog_rows,

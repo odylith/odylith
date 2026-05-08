@@ -6,6 +6,7 @@ import re
 from collections.abc import Mapping
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_project_brief import project_brief_issues
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import domain_intelligence_issues
 
 
@@ -88,6 +89,10 @@ def collect_host_reasoned_proposal_issues(proposal: Mapping[str, Any]) -> list[s
     capture(lambda: _require_nonempty_sequence(proposal, "open_questions"))
     capture(lambda: _require_nonempty_sequence(proposal, "risks"))
     capture(lambda: _require_nonempty_sequence(proposal, "validation_strategy"))
+    project_brief = capture(lambda: _require_mapping(proposal, "project_brief"))
+    if isinstance(project_brief, Mapping):
+        for issue in project_brief_issues(project_brief):
+            issues.append(issue)
     program = capture(lambda: _require_mapping(proposal, "program"))
     if isinstance(program, Mapping):
         capture(lambda: _validate_program(program))

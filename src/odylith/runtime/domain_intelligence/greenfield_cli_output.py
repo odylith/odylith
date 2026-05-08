@@ -64,23 +64,41 @@ def _print_created_surfaces(result: Mapping[str, Any]) -> None:
 
 
 def _print_next_steps(next_steps: Mapping[str, Any]) -> None:
+    project_id = str(next_steps.get("project_workstream_id", "")).strip()
+    project_title = str(next_steps.get("project_workstream_title", "")).strip()
     start_id = str(next_steps.get("start_workstream_id", "")).strip()
     start_title = str(next_steps.get("start_workstream_title", "")).strip()
     first_wave = str(next_steps.get("first_wave", "")).strip()
     next_release = str(next_steps.get("release_selector", "")).strip()
+    project_prompt = str(next_steps.get("project_first_prompt", "")).strip()
+    if project_id:
+        print(f"- project-first workstream: {project_id} {project_title}".rstrip())
+        print(f"- Radar project brief: odylith/radar/radar.html?view=plan&workstream={project_id}")
+    if project_prompt:
+        print(f"- next project prompt: {project_prompt}")
     if start_id:
-        print(f"- exact first coding workstream: {start_id} {start_title}".rstrip())
-        print(f"- Radar deep link: odylith/radar/radar.html?view=plan&workstream={start_id}")
+        print(f"- eventual first coding workstream: {start_id} {start_title}".rstrip())
+        print(f"- Radar coding deep link: odylith/radar/radar.html?view=plan&workstream={start_id}")
     if first_wave or next_release:
         lane = " | ".join(
             item
             for item in (f"wave {first_wave}" if first_wave else "", f"release {next_release}" if next_release else "")
             if item
         )
-        print(f"- current implementation lane: {lane}")
+        print(f"- current project lane: {lane}")
+    choices = next_steps.get("customization_options", [])
+    if isinstance(choices, list) and choices:
+        print("- choose before coding:")
+        for choice in choices[:6]:
+            print(f"  - {choice}")
+    readiness_gates = next_steps.get("coding_readiness_gates", [])
+    if isinstance(readiness_gates, list) and readiness_gates:
+        print("- coding readiness gates:")
+        for gate in readiness_gates[:6]:
+            print(f"  - {gate}")
     prompt = str(next_steps.get("implementation_prompt", "")).strip()
     if prompt:
-        print(f"- next agent prompt: {prompt}")
+        print(f"- later coding prompt: {prompt}")
     sequence = next_steps.get("operator_sequence", [])
     if isinstance(sequence, list) and sequence:
         print("- operator handoff:")

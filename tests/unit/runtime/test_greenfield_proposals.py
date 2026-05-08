@@ -737,6 +737,7 @@ def test_greenfield_prompt_returns_host_reasoning_contract(tmp_path) -> None:
     assert "do not use canned domain buckets" in proposal["host_instruction"]
     assert "backlog" in proposal["reasoning_contract"]["required_top_level_keys"]
     assert "security_compliance" in proposal["reasoning_contract"]["required_top_level_keys"]
+    assert "project_brief" in proposal["reasoning_contract"]["required_top_level_keys"]
     activation_layers = [
         row["layer"]
         for row in proposal["reasoning_contract"]["engine_activation_layers"]
@@ -765,6 +766,7 @@ def test_greenfield_prompt_returns_host_reasoning_contract(tmp_path) -> None:
     assert "Tribunal gate" in quality_bar
     assert "Surface DAGs" in quality_bar
     assert "security, privacy, abuse, accessibility" in quality_bar
+    assert "project-first" in quality_bar
     assert "odylith greenfield propose" in proposal["apply_commands"][1]
     assert "--release 0.0.1" in proposal["apply_commands"][2]
     assert "Default the first greenfield release target to exactly 0.0.1" in " ".join(
@@ -773,6 +775,8 @@ def test_greenfield_prompt_returns_host_reasoning_contract(tmp_path) -> None:
     assert "do not add project names or descriptive words to release targets" in proposal["host_instruction"]
     assert proposal["proposal_template"]["mode"] == "host_reasoned_greenfield_proposal"
     assert proposal["proposal_template"]["release_plan"]["label"] == "0.0.1"
+    assert proposal["proposal_template"]["project_brief"]["customization_options"]
+    assert "Do not treat greenfield apply as permission to code immediately" in proposal["proposal_template"]["project_brief"]["operating_principle"]
     assert proposal["canonical_proposal_gate"]["status"] == "passed"
     greenfield_proposals.validate_host_reasoned_proposal(proposal["proposal_template"])
     assert greenfield_proposals.run_greenfield_tribunal(proposal["proposal_template"], release_selector="0.0.1").passed
@@ -800,6 +804,9 @@ def test_greenfield_text_keeps_host_reasoning_and_no_write_boundary_visible(tmp_
     assert "Canonical apply JSON shape" not in output
     assert "odylith greenfield create --repo-root ." in output
     assert "odylith greenfield propose --repo-root ." in output
+    assert "Project-first blueprint" in output
+    assert "choose before coding" in output
+    assert output.index("Project-first blueprint") < output.index("Backlog proposal")
     assert "proposal Tribunal must pass before any source-truth writes" in output
     assert "Radar, Registry, Atlas, and Compass visible after writes" in output
 
@@ -822,6 +829,8 @@ def test_greenfield_cli_json_is_apply_ready_proposal(tmp_path, capsys) -> None:
     assert payload["mode"] == "host_reasoned_greenfield_proposal"
     assert payload["provider_calls"] == 0
     assert payload["release_plan"]["selector"] == "0.0.1"
+    assert payload["project_brief"]["customization_options"]
+    assert payload["project_brief"]["coding_readiness_gates"]
     greenfield_proposals.validate_host_reasoned_proposal(payload)
     assert greenfield_proposals.run_greenfield_tribunal(payload, release_selector="0.0.1").passed
 
@@ -831,6 +840,7 @@ def test_defi_greenfield_workstreams_capture_domain_intelligence(tmp_path) -> No
         repo_root=tmp_path,
         prompt="DeFi risk sentinel app",
     )["proposal_template"]
+    brief = proposal["project_brief"]
 
     workflow = next(row for row in proposal["backlog"] if row["title"] == "Define first operator workflow")
     intelligence = workflow["domain_intelligence"]
@@ -848,6 +858,8 @@ def test_defi_greenfield_workstreams_capture_domain_intelligence(tmp_path) -> No
     assert "validation_obligations" in intelligence
     assert "conflict_model" in intelligence
     assert "transfer_priors" in intelligence
+    assert "non-custodial" in json.dumps(brief)
+    assert "first implementation plan" in " ".join(brief["coding_readiness_gates"]).casefold()
     assert "first operator-visible workflow" not in rendered.lower()
     greenfield_proposals.validate_host_reasoned_proposal(proposal)
 
@@ -895,12 +907,16 @@ def test_greenfield_normalization_enriches_legacy_proposals_with_domain_intellig
     child = next(row for row in proposal["backlog"] if row["title"] == "Define Storefront boundary")
     intelligence = child["domain_intelligence"]
     rendered = greenfield_proposals.render_domain_intelligence_section(intelligence)
+    brief = proposal["project_brief"]
 
     assert intelligence["family"] == "commerce"
     assert "Shopper" in rendered
     assert "Payment callback" in rendered
     assert "idempotent" in rendered
     assert "failed payment" in rendered
+    assert "Payment and order recovery model" in json.dumps(brief)
+    assert len(brief["customization_options"]) >= 6
+    assert len(brief["coding_readiness_gates"]) >= 4
     greenfield_proposals.validate_host_reasoned_proposal(proposal)
 
 
@@ -1053,6 +1069,34 @@ def test_greenfield_apply_reports_validation_issues_in_one_batch(tmp_path) -> No
     assert "component row 1 `responsibility` must contain at least 6 meaningful words" in message
     assert "auto-enrichment:" in message
     assert "needs operator/proposal input:" in message
+
+
+def test_greenfield_validation_rejects_missing_project_first_brief(tmp_path) -> None:
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="robot swarm logistics app",
+    )["proposal_template"]
+    proposal.pop("project_brief")
+
+    with pytest.raises(ValueError) as excinfo:
+        greenfield_proposals.validate_host_reasoned_proposal(proposal)
+
+    assert "proposal `project_brief` must be an object" in str(excinfo.value)
+
+
+def test_robot_swarm_project_brief_blocks_coding_rush(tmp_path) -> None:
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="robot swarm logistics app",
+    )["proposal_template"]
+    brief = proposal["project_brief"]
+    rendered = greenfield_proposals.format_proposal_text(proposal)
+
+    assert "Simulation and hardware boundary" in json.dumps(brief)
+    assert "safety envelope" in json.dumps(brief)
+    assert "Do not treat greenfield apply as permission to code immediately" in rendered
+    assert rendered.index("Project-first blueprint") < rendered.index("Backlog proposal")
+    assert "host-independent customization paths" in rendered
 
 
 def test_greenfield_apply_rejects_shallow_component_responsibility(tmp_path) -> None:
@@ -1279,8 +1323,13 @@ def test_greenfield_apply_synthesizes_parent_and_polishes_component_specs(tmp_pa
     assert execution_program["waves"][0]["exit_gate"]
     assert execution_program["waves"][0]["validation"]
     assert result["release_target"]["workstream_ids"] == ["B-001", "B-002"]
+    assert result["next_steps"]["project_workstream_id"] == "B-001"
     assert result["next_steps"]["start_workstream_id"] == "B-002"
     assert result["next_steps"]["first_wave"] == "Foundations"
+    assert "Deepen B-001" in result["next_steps"]["project_first_prompt"]
+    assert result["next_steps"]["customization_options"]
+    assert result["next_steps"]["coding_readiness_gates"]
+    assert "After project-first gates pass" in result["next_steps"]["implementation_prompt"]
     assert "Treat `Identity, sessions, and COI-aware authorization` as the first coding scope" in result["next_steps"]["implementation_prompt"]
     assert "## At A Glance" in spec
     assert "## First Slice Runway" in spec
@@ -1368,7 +1417,11 @@ def test_greenfield_apply_cli_prints_operator_handoff(tmp_path, monkeypatch, cap
 
     out = capsys.readouterr().out
     assert rc == 0
-    assert "- current implementation lane: wave Foundations | release 0.0.1" in out
+    assert "- project-first workstream: B-001 Govern CRISPR Ethics Review App" in out
+    assert "- current project lane: wave Foundations | release 0.0.1" in out
+    assert "- choose before coding:" in out
+    assert "- coding readiness gates:" in out
+    assert "- eventual first coding workstream: B-002 Identity, sessions, and COI-aware authorization" in out
     assert "- operator handoff:" in out
     assert "./.odylith/bin/odylith validate plan-workstream-binding --repo-root ." in out
 
@@ -1396,7 +1449,12 @@ def test_greenfield_create_cli_owns_apply_ready_path(tmp_path, monkeypatch, caps
     assert rc == 0
     assert "odylith greenfield create wrote confirmed proposal" in out
     assert "- tribunal: passed" in out
-    assert "- exact first coding workstream: B-002 Dispatch and observe one simulated logistics task" in out
+    assert "- project-first workstream: B-001 Govern Robot Swarm Logistics App" in out
+    assert "- next project prompt: Deepen B-001" in out
+    assert "- eventual first coding workstream: B-002 Dispatch and observe one simulated logistics task" in out
+    assert "- choose before coding:" in out
+    assert "- coding readiness gates:" in out
+    assert "Simulation and hardware boundary" in out
     assert "- validation already run:" in out
     assert "- created governance files:" in out
     assert "greenfield proposal validation failed" not in out

@@ -179,12 +179,13 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
             "source_posture": evidence.get("source_posture", "unknown"),
             "operator_sequence": [
                 "Odylith builds canonical apply-ready proposal JSON from prompt and repo evidence",
-                "operator reviews or deepens assumptions, boundaries, diagrams, waves, and release plan",
+                "operator reviews the project-first brief, direction options, assumptions, boundaries, diagrams, waves, and release plan",
                 "Odylith validates and applies the confirmed proposal only after explicit confirmation",
-                "or run the one-command create path when the built scaffold is enough",
+                "implementation planning starts only after the project-first coding readiness gates are accepted",
+                "or run the one-command create path when the built scaffold and readiness gates are enough",
             ],
             "write_guardrail": "This command does not write proposal records; the same validated canonical object is rendered for review and emitted by --format json.",
-            "next_best_action": f"Review or deepen the apply-ready scaffold for {intent_title}, then confirm create/apply.",
+            "next_best_action": f"Review or deepen the project-first scaffold for {intent_title}, choose direction options, then confirm create/apply.",
         },
         "reasoning_contract": build_proposal_contract(),
         "proposal_template": canonical_proposal,
@@ -202,7 +203,8 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
             "Draft a concrete proposal for the operator now. Be specific to the prompt; "
             "do not use canned domain buckets. Label observed_source, user_intent, "
             "and odylith_assumption separately. Ask only the questions that materially "
-            "change the first slice or correctness gates. For every child backlog item, "
+            "change the project direction, first slice, or correctness gates. Include project-first "
+            "customization options that work the same from CLI, Codex, and Claude Code. For every child backlog item, "
             "include topology hints such as component_focus and related_diagram_slugs, "
             "plus first-slice validation. For every component, include enough boundary, "
             "responsibility, dependencies, interfaces, and validation expectations to seed "

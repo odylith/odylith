@@ -189,6 +189,11 @@ _GREENFIELD_MANUAL_JSON_GUARDS = (
     "hand-authoring proposal JSON",
     "hand-build `odylith-greenfield-proposal.json`",
 )
+_GREENFIELD_PROJECT_FIRST_GUARDS = (
+    "project-first",
+    "coding-readiness gates",
+    "direction options",
+)
 
 
 def _require_no_greenfield_schema_loop(*, output: str, label: str) -> None:
@@ -219,6 +224,8 @@ def _require_greenfield_guidance_uses_create(*, repo_root: Path, label: str) -> 
             raise RuntimeError(f"{label} guidance omits one-command greenfield create path: {relative_path}")
         if not any(token in compact_text for token in _GREENFIELD_MANUAL_JSON_GUARDS):
             raise RuntimeError(f"{label} guidance omits manual proposal JSON guard: {relative_path}")
+        if not any(token in compact_text for token in _GREENFIELD_PROJECT_FIRST_GUARDS):
+            raise RuntimeError(f"{label} guidance omits project-first greenfield guard: {relative_path}")
         for token in _STALE_GREENFIELD_GUIDANCE_TOKENS:
             if token in text:
                 raise RuntimeError(f"{label} guidance still teaches stale greenfield schema-repair flow: {relative_path}: {token}")
@@ -381,7 +388,8 @@ def _greenfield_propose_apply_smoke(*, repo_root: Path, odylith: Path, env: dict
     ).stdout
     _require_output_contains(output=apply, expected="odylith greenfield apply wrote confirmed proposal", label="greenfield apply")
     _require_output_contains(output=apply, expected="- tribunal: passed", label="greenfield apply")
-    _require_output_contains(output=apply, expected="- exact first coding workstream: B-", label="greenfield apply")
+    _require_output_contains(output=apply, expected="- project-first workstream: B-", label="greenfield apply")
+    _require_output_contains(output=apply, expected="- eventual first coding workstream: B-", label="greenfield apply")
     _require_output_contains(output=apply, expected="- validation already run:", label="greenfield apply")
     _require_no_greenfield_schema_loop(output=apply, label="greenfield apply")
     refresh = _run(cwd=repo_root, env=env, command=[str(odylith), "dashboard", "refresh", "--repo-root", "."]).stdout
@@ -411,7 +419,8 @@ def _greenfield_create_smoke(*, repo_root: Path, odylith: Path, env: dict[str, s
     ).stdout
     _require_output_contains(output=create, expected="odylith greenfield create wrote confirmed proposal", label="greenfield create")
     _require_output_contains(output=create, expected="- tribunal: passed", label="greenfield create")
-    _require_output_contains(output=create, expected="- exact first coding workstream: B-", label="greenfield create")
+    _require_output_contains(output=create, expected="- project-first workstream: B-", label="greenfield create")
+    _require_output_contains(output=create, expected="- eventual first coding workstream: B-", label="greenfield create")
     _require_output_contains(output=create, expected="- validation already run:", label="greenfield create")
     _require_no_greenfield_schema_loop(output=create, label="greenfield create smoke")
     _require_greenfield_surfaces(repo_root=repo_root, label="greenfield create smoke")

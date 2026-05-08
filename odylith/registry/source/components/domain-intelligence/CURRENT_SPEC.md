@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-05-07
+Last updated: 2026-05-08
 
 
 ## Overview
@@ -59,6 +59,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-07: Aligned installed and bundled greenfield host guidance with the apply-ready contract: AGENTS, README, `odylith-greenfield-governance`, and `odylith-show-me` now route confirmation to `greenfield create --confirm`, forbid hand-authored proposal JSON, and are pinned by source plus release-smoke guidance tests. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-176`, `CB-181`)
 - 2026-05-08: Deepened greenfield Atlas architecture output so the provider-free default scaffold now emits five views (system overview, first-slice flow, component ownership, domain state, validation/release topology) and the robot-swarm logistics profile emits ten views by adding conflict, safety/e-stop, telemetry contract, deployment-boundary, and observability/audit diagrams. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-182`)
 - 2026-05-08: Deepened greenfield Radar workstreams from task labels into domain-intelligence control surfaces. Each applied workstream now carries structured intent, ontology, state, operators, constraints, source-of-truth hierarchy, evidence grammar, decisions, assumptions, topology, invariants, risks, validation obligations, artifact contracts, authority, execution memory, metrics, change rules, conflict rules, and transfer priors; proposal preview, normalization, validation, Radar writes, and traceability repair all share the same payload. `greenfield apply/create --json` now captures noisy internal refresh/scaffold output and emits one parseable JSON document. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-184`, `CB-185`)
+- 2026-05-08: Made greenfield project-first before implementation: canonical proposals now include a top-level `project_brief` with blueprint sections, customization options, pre-coding checkpoints, coding-readiness gates, and host-independent commands. Validation rejects missing briefs, legacy proposals normalize into the same shape, rendered proposals show the brief before backlog, and apply/create closeout leads with the project workstream before the eventual coding lane. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-186`)
 
 ## Contract
 
@@ -106,6 +107,12 @@ This section captures synchronized requirement and contract signals derived from
   topology, invariants, risks, validation obligations, execution memory,
   change/invalidation rules, conflict rules, and reusable priors. Normalization
   may enrich legacy proposals, but apply must reject rows that remain shallow.
+- Greenfield proposals must carry a top-level `project_brief` before validation
+  and apply. The brief owns the project-first UX contract: blueprint sections,
+  direction/customization options, pre-coding checkpoints, coding-readiness
+  gates, and host-independent commands that work the same from CLI, Codex, and
+  Claude Code. Apply creates governed project truth; it must not imply coding
+  should start until those gates are accepted or explicitly waived.
 - Radar workstream authoring must preserve the `Domain Intelligence` section in
   source workstream files, and traceability repair must reapply that section if
   later greenfield topology patching rewrites the same file.
@@ -132,10 +139,11 @@ This section captures synchronized requirement and contract signals derived from
   `WS-IDENTITY-ACCESS` when assigning execution waves, release targets, and
   traceability. The first child workstream must not become the program parent
   simply because the host omitted a `WS-00` umbrella row.
-- Apply output must hand off implementation, not just artifact counts: it names
-  the first child workstream to start, the active wave, the first validation
-  gates, and the verification commands/operators should run before moving to the
-  next wave.
+- Apply output must hand off the project first, not just artifact counts: it
+  names the program parent, project brief deep link, direction choices,
+  coding-readiness gates, active wave, release target, eventual first child
+  workstream, first validation gates, and verification commands the operator
+  should run before moving to code or the next wave.
 - Greenfield apply must generate an implementation runway, not a governance
   dead end. The runway includes a first child workstream, first active wave,
   release target, first coding slice, definition of done, operator sequence, and

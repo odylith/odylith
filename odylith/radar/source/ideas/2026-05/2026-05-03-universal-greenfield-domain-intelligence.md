@@ -118,8 +118,10 @@ External ecosystem checks argue against a small in-code taxonomy as the proposal
 Greenfield propose returns a low-latency, provider_calls=0 host-reasoning contract for any vague or precise greenfield prompt.
 The host-authored proposal includes backlog candidates, program waves, release plan, planned Registry components, draft Atlas Mermaid sources, assumptions, risks, validation strategy, open questions, and exact apply commands.
 Provider-free greenfield scaffolds include a multi-view Atlas suite with mutually traceable workstream/component links; the robot-swarm logistics path emits conflict, safety, telemetry, deployment-boundary, and observability/audit views in addition to baseline topology.
+Greenfield proposals carry a project-first brief before backlog: direction options, pre-coding checkpoints, coding-readiness gates, and host-independent commands must be visible in text and JSON before apply.
 Greenfield apply writes through owned Radar, Registry, Atlas, release-targeting, and Compass memory paths only after --confirm, preserving user_intent evidence and source-backed truth separation.
 Apply rejects missing Mermaid source, duplicated diagram source, incomplete proposal sections, and invalid evidence tiers before any governed write.
+Apply/create closeout leads with the project workstream and readiness gates, then names the eventual first coding workstream as a later lane rather than the immediate next action.
 Host prompt routing avoids noisy raw Observation chatter for normal greenfield intents while preserving earned intervention paths.
 Greenfield apply runs a deterministic proposal Tribunal before any governed write and refreshes Radar, Registry, Atlas, and Compass once after all accepted artifacts are written.
 Compass timeline audit filters zero-file prompt-intervention narration so routing notes do not render as fake implementation history.
@@ -160,6 +162,12 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   selective`; `odylith casebook validate`; `odylith release migration-gate
   --target-version 0.1.15 --json` (`blocked_manual_migrations=0`); `git diff
   --check`; `python -m py_compile` for the touched Domain Intelligence modules.
+- 2026-05-08 project-first greenfield UX hardening proved proposal text, JSON,
+  legacy normalization, validation rejection, robot-swarm customization options,
+  and apply/create closeout now prioritize project shaping before coding:
+  `PYTHONPATH=src pytest -q tests/unit/runtime/test_greenfield_proposals.py`
+  (`33 passed`). Casebook bug `CB-186` captures the fixed-pending-release UX
+  regression.
 - Deepening pass split science/math into targeted subdomains and added fixture
   proof for commerce, SaaS, dashboards, AI assistants, data ingestion, CLI
   libraries, physics simulation, differential-equation solvers, computational
@@ -278,6 +286,12 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   intentional: missing topology, shallow component ownership, or invisible
   release/program structure should fail before durable governance artifacts are
   created.
+- v0.1.15 project-first greenfield UX is additive for consumers. Existing
+  greenfield records remain readable, while new proposals add `project_brief`
+  direction options and coding-readiness gates before implementation handoff.
+  Managed guidance and browser surfaces converge through normal upgrade
+  adoption plus dashboard/sync refresh; no consumer source-truth migration is
+  required.
 - One-word `Customer` values are now valid backlog truth. The relaxation is intentionally scoped to Customer only; Problem, Opportunity, Product View, and Success Metrics keep the stronger detail threshold and placeholder rejection.
 - Generated refresh-guard caches are versioned to `v2` and include file bytes,
   not only filesystem size/mtime shape. Upgrades from older releases therefore
@@ -332,12 +346,17 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `migration-observer:0.1.15:browser-surfaces:0a085ecb8c35`,
   `migration-observer:0.1.15:install-managed-assets:c46b34c03c1d`,
   `migration-observer:0.1.15:browser-surfaces:32f36ad50bff`,
-  `migration-observer:0.1.15:install-managed-assets:e1ab4be0a00f`.
+  `migration-observer:0.1.15:install-managed-assets:e1ab4be0a00f`,
+  `migration-observer:0.1.15:guidance-and-skills:5ca274eb23df`,
+  `migration-observer:0.1.15:public-docs-and-release-guidance:83dd374589cf`,
+  `migration-observer:0.1.15:browser-surfaces:23db7fd0ca24`, and
+  `migration-observer:0.1.15:install-managed-assets:5291a3c4b08e`.
   These markers cover the deepened greenfield skill guidance, refreshed
   Domain Intelligence Atlas/Registry/Radar browser surfaces, updated managed
   security-and-trust guidance, updated public README/operator/release-note/security
   guidance, the v0.1.15 Compass/Radar/Registry/Casebook browser-surface refresh
-  from the deeper greenfield diagram-suite contract, and bundled
+  from the deeper greenfield diagram-suite contract, the project-first
+  direction-option/readiness-gate guidance refresh, and bundled
   install-managed dashboard copies. Existing consumer governance truth remains unchanged; upgrades
   refresh managed guidance/assets and keep proposal writes explicit through
   `odylith greenfield apply --confirm`.

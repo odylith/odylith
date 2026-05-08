@@ -43,6 +43,7 @@ def build_next_steps(
     created = _created_rows(backlog_result)
     by_id = _created_by_id(created)
     umbrella_id = _umbrella_id(program_result)
+    umbrella_row = by_id.get(umbrella_id, {})
     candidate_ids = _candidate_start_ids(
         first_release_workstreams=first_release_workstreams,
         program_result=program_result,
@@ -56,18 +57,37 @@ def build_next_steps(
     validation_items = _validation_items(row=proposal_row, wave=active_wave)
     first_slice = _first_slice_text(proposal_row)
     title = str(start_row.get("title", "")).strip()
+    project_title = str(umbrella_row.get("title", "")).strip() or str(
+        proposal.get("intent", {}).get("title", "the greenfield project")
+        if isinstance(proposal.get("intent"), Mapping)
+        else "the greenfield project"
+    ).strip()
+    project_brief = proposal.get("project_brief", {}) if isinstance(proposal.get("project_brief"), Mapping) else {}
+    customization_options = _customization_options(project_brief)
+    readiness_gates = _readiness_gates(project_brief)
     return {
+        "project_workstream_id": umbrella_id,
+        "project_workstream_title": project_title,
         "start_workstream_id": start_id,
         "start_workstream_title": title,
         "first_wave": wave_label,
         "release_selector": release_selector,
+        "project_first_prompt": _project_first_prompt(
+            project_id=umbrella_id,
+            project_title=project_title,
+            start_id=start_id,
+            start_title=title,
+        ),
         "implementation_prompt": _implementation_prompt(start_id=start_id, title=title, first_slice=first_slice),
+        "customization_options": customization_options,
+        "coding_readiness_gates": readiness_gates,
         "validation_gates": list(validation_items[:6]),
         "operator_sequence": [
-            f"Open Compass and start the active wave `{wave_label}`.",
-            f"Open Radar plan view for `{start_id}` and turn the recommended first slice into the first implementation task.",
-            "Write the source slice, then run the repo-native tests named by the workstream validation gates.",
-            "Refresh Odylith surfaces and verify Compass/Radar/Registry/Atlas still agree before moving to the next wave.",
+            f"Open Compass and review the active wave `{wave_label}` plus release `{release_selector or '0.0.1'}`.",
+            f"Open Radar program view for `{umbrella_id or start_id}` and review the project brief, decisions, non-goals, diagrams, and proof gates.",
+            "Answer or explicitly accept the direction choices that materially change runtime, data posture, architecture, or validation.",
+            f"Only after the coding-readiness gates are accepted, open `{start_id}` and author the first technical plan.",
+            "Write source after that plan names paths, proof commands, degraded/error coverage, and refresh expectations.",
         ],
         "verification_commands": verification_commands(start_id),
     }
@@ -304,11 +324,41 @@ def _wave_validation_items(wave: Mapping[str, Any]) -> tuple[str, ...]:
     return unique_text(items)
 
 
+def _customization_options(project_brief: Mapping[str, Any]) -> list[str]:
+    rows = project_brief.get("customization_options", []) if isinstance(project_brief, Mapping) else []
+    result: list[str] = []
+    for row in rows if isinstance(rows, list) else []:
+        if not isinstance(row, Mapping):
+            continue
+        decision = str(row.get("decision", "")).strip()
+        recommended = str(row.get("recommended", "")).strip()
+        if decision and recommended:
+            result.append(f"{decision}: {recommended}")
+    return result[:6]
+
+
+def _readiness_gates(project_brief: Mapping[str, Any]) -> list[str]:
+    gates = project_brief.get("coding_readiness_gates", []) if isinstance(project_brief, Mapping) else []
+    return [str(item).strip() for item in gates if str(item).strip()] if isinstance(gates, list) else []
+
+
+def _project_first_prompt(*, project_id: str, project_title: str, start_id: str, start_title: str) -> str:
+    target = project_id or start_id or "<program-workstream-id>"
+    next_lane = f"{start_id} {start_title}".strip() if start_id else "the first targeted child workstream"
+    return (
+        f"Deepen {target}: review `{project_title}`, choose or accept the project direction options, "
+        f"confirm coding-readiness gates, then plan {next_lane} only after the project shape is accepted."
+    )
+
+
 def _implementation_prompt(*, start_id: str, title: str, first_slice: str) -> str:
     if not start_id:
         return (
-            "Select the first targeted child workstream, write a technical plan, implement the smallest "
-            "source-backed slice, then run its listed validation gates."
+            "After the project-first gates pass, select the first targeted child workstream, write a technical "
+            "plan, implement the smallest source-backed slice, then run its listed validation gates."
         )
     title_text = title or "the first targeted workstream"
-    return f"Start {start_id}: {first_slice} Treat `{title_text}` as the first coding scope and do not advance waves until its validation gates pass."
+    return (
+        f"After project-first gates pass, start {start_id}: {first_slice} Treat `{title_text}` as the first "
+        "coding scope and do not advance waves until its validation gates pass."
+    )

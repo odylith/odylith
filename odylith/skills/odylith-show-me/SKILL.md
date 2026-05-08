@@ -31,11 +31,13 @@ spawn-policy note, or follow-up question.
    or after it. The scenario-aware output is already written as a trust-first action report with a short mental-model line and should be shown verbatim so the operator sees exactly what Odylith said.
 5. If the operator names a new project, architecture, research goal, or
    feature after an empty/thin show result, do not refuse because source is
-   absent. Run the proposal-first path instead:
+   absent. Run the project-first proposal path instead:
    `./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<their request>"`.
-   Present the canonical apply-ready proposal. On confirmation, use
+   Present the canonical apply-ready proposal, including direction options and
+   coding-readiness gates. On confirmation, use
    `./.odylith/bin/odylith greenfield create --repo-root . --prompt "<their request>" --release 0.0.1 --confirm`
-   instead of hand-authoring proposal JSON.
+   instead of hand-authoring proposal JSON or starting code before the
+   project-first gates are accepted.
 6. Do not create governance records unless the operator explicitly asks.
    The default posture is advisory — show what's possible and let the operator
    choose.

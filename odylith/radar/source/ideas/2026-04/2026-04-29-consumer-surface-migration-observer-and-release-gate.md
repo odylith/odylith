@@ -1288,3 +1288,14 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   existing greenfield records remain readable, while upgrade adoption and
   dashboard/sync refresh converge installed generated surfaces and managed
   assets to the richer diagram proposal contract.
+- The v0.1.15 greenfield project-first UX hardening pass is covered by
+  `migration-observer:0.1.15:guidance-and-skills:5ca274eb23df`,
+  `migration-observer:0.1.15:public-docs-and-release-guidance:83dd374589cf`,
+  `migration-observer:0.1.15:browser-surfaces:23db7fd0ca24`, and
+  `migration-observer:0.1.15:install-managed-assets:5291a3c4b08e`. The pass
+  adds a canonical `project_brief` with direction options and
+  coding-readiness gates, updates managed guidance/docs, refreshes the browser
+  surfaces and bundle mirrors, and keeps existing consumer governance truth
+  readable. Existing installs need no destructive migration; normal upgrade
+  adoption plus dashboard/sync refresh converges the new project-first
+  proposal and handoff UX.
