@@ -1326,10 +1326,6 @@ initSharedQuickTooltips();
       const copy = [...rows];
       copy.sort((a, b) => {
         if (a.section !== b.section) return (sectionOrder[a.section] ?? 99) - (sectionOrder[b.section] ?? 99);
-        if (a.section !== "finished") {
-          const rankDelta = scopeSignalRank(b) - scopeSignalRank(a);
-          if (rankDelta !== 0) return rankDelta;
-        }
         if (a.section === "execution") {
           const leftState = executionStateOrder[normalizeExecutionState(a.execution_state)] ?? 99;
           const rightState = executionStateOrder[normalizeExecutionState(b.execution_state)] ?? 99;
@@ -1337,11 +1333,6 @@ initSharedQuickTooltips();
           const left = executionStatusOrder[String(a.status || "").toLowerCase()] ?? 99;
           const right = executionStatusOrder[String(b.status || "").toLowerCase()] ?? 99;
           if (left !== right) return left - right;
-          if (b.ordering_score !== a.ordering_score) return b.ordering_score - a.ordering_score;
-          if (state.sort === "date") {
-            const dateCmp = String(b.date).localeCompare(String(a.date));
-            if (dateCmp !== 0) return dateCmp;
-          }
         }
         if (a.section === "finished") {
           const completedCmp = String(b.finished_sort_date || b.date).localeCompare(
@@ -1365,7 +1356,10 @@ initSharedQuickTooltips();
           const dateCmp = String(b.date).localeCompare(String(a.date));
           if (dateCmp !== 0) return dateCmp;
         }
-        if (a.section !== "finished" && (state.sort === "score" || a.section === "execution")) {
+        if (a.section !== "finished" && state.sort === "rank") {
+          const rankDelta = scopeSignalRank(b) - scopeSignalRank(a);
+          if (rankDelta !== 0) return rankDelta;
+        } else if (a.section !== "finished" && state.sort === "score") {
           if (b.ordering_score !== a.ordering_score) return b.ordering_score - a.ordering_score;
         } else if (a.section !== "finished" && state.sort === "date") {
           const dateCmp = String(b.date).localeCompare(String(a.date));

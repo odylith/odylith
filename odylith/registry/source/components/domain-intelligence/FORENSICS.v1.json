@@ -8,7 +8,7 @@
     "explicit_event_count": 27,
     "mapped_workstream_evidence_count": 26,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 10,
+    "spec_history_event_count": 12,
     "status": "forensic_coverage_present",
     "timeline_event_count": 28
   },
@@ -21,21 +21,25 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_programs.py",
         "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-        "src/odylith/runtime/domain_intelligence/proposal_contract.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_experience.py"
+        "src/odylith/runtime/domain_intelligence/proposal_normalization.py",
+        "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
+        "src/odylith/runtime/domain_intelligence/proposal_tribunal.py",
+        "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_cli_output.py",
+        "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
+        "src/odylith/runtime/domain_intelligence/robot_swarm_profile.py"
       ],
       "confidence": "high",
-      "event_index": 463,
+      "event_index": 465,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_programs.py +3 more",
-      "ts_iso": "2026-05-06T22:52:58-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_proposals.py +7 more",
+      "ts_iso": "2026-05-07T15:32:14-07:00",
       "workstreams": []
     },
     {

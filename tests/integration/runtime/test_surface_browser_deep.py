@@ -2072,7 +2072,7 @@ def test_compass_dropdown_excludes_unverified_governance_only_scope_and_scoped_t
                 context.close()
 
 
-def test_radar_default_order_prefers_high_scope_signal_without_hiding_low_signal_scope(
+def test_radar_sort_filter_switches_between_date_score_and_rank_without_hiding_scope(
     tmp_path,
 ) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
@@ -2104,7 +2104,10 @@ def test_radar_default_order_prefers_high_scope_signal_without_hiding_low_signal
         row["status"] = "finished"
 
     high_row["status"] = "implementation"
+    high_row["section"] = "execution"
+    high_row["execution_state"] = "implementation_no_live_signal"
     high_row["title"] = "Scope Ladder Fixture High"
+    high_row["date"] = "2026-01-01"
     high_row["ordering_score"] = "1"
     high_row["scope_signal_rank"] = 4
     high_row["scope_signal_promoted_default"] = True
@@ -2122,7 +2125,10 @@ def test_radar_default_order_prefers_high_scope_signal_without_hiding_low_signal
     }
 
     low_row["status"] = "implementation"
+    low_row["section"] = "execution"
+    low_row["execution_state"] = "implementation_no_live_signal"
     low_row["title"] = "Scope Ladder Fixture Low"
+    low_row["date"] = "2026-05-01"
     low_row["ordering_score"] = "999"
     low_row["scope_signal_rank"] = 1
     low_row["scope_signal_promoted_default"] = False
@@ -2156,6 +2162,21 @@ def test_radar_default_order_prefers_high_scope_signal_without_hiding_low_signal
                 radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
                 radar.locator("#query").fill("scope ladder fixture")
                 _wait_for_locator_count(page, "#frame-radar", "button[data-idea-id]", 2)
+                first_two_ids = radar.locator("button[data-idea-id]").evaluate_all(
+                    "(nodes) => nodes.slice(0, 2).map((node) => String(node.getAttribute('data-idea-id') || '').trim())"
+                )
+                assert first_two_ids == [low_id, high_id]
+                radar.locator("#sort").select_option("score")
+                first_two_ids = radar.locator("button[data-idea-id]").evaluate_all(
+                    "(nodes) => nodes.slice(0, 2).map((node) => String(node.getAttribute('data-idea-id') || '').trim())"
+                )
+                assert first_two_ids == [low_id, high_id]
+                radar.locator("#sort").select_option("date")
+                first_two_ids = radar.locator("button[data-idea-id]").evaluate_all(
+                    "(nodes) => nodes.slice(0, 2).map((node) => String(node.getAttribute('data-idea-id') || '').trim())"
+                )
+                assert first_two_ids == [low_id, high_id]
+                radar.locator("#sort").select_option("rank")
                 first_two_ids = radar.locator("button[data-idea-id]").evaluate_all(
                     "(nodes) => nodes.slice(0, 2).map((node) => String(node.getAttribute('data-idea-id') || '').trim())"
                 )

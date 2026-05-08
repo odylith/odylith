@@ -92,6 +92,7 @@ def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic(
     assert "function legacyDigestToBrief" not in shared_js
     assert 'return legacyDigestToBrief(legacyLines, payload && payload.generated_utc);' not in shared_js
     assert "function radarWorkstreamHref(workstreamId, options = {})" in shared_js
+    assert shared_js.count("function radarWorkstreamHref(") == 1
     assert 'const view = String(options && options.view ? options.view : "").trim().toLowerCase();' in shared_js
     assert 'if (WORKSTREAM_RE.test(token)) params.set("workstream", token);' in shared_js
     assert 'if (view) params.set("view", view);' in shared_js
@@ -116,6 +117,11 @@ def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic(
     assert "last known good cache" not in summary_js
     assert "Deterministic local brief" not in summary_js
     assert "No critical blended risks in current payload." not in summary_js
+    assert "function bugRequiresActiveRiskAttention(row)" in summary_js
+    assert 'ACTIVE_CRITICAL_RISK_STATUS_TOKENS.has(compactStatusToken(row.status))' in summary_js
+    assert 'displayRiskStatus(status)' in summary_js
+    assert 'Fixed pending release' in summary_js
+    assert '<strong>${escapeHtml(row.severity)}</strong> ${escapeHtml(row.title)} (${escapeHtml(row.status)})' not in summary_js
     assert "No validated AI-authored standup brief is available for this view." not in summary_js
     assert "No validated narrative bullets available for this section." not in summary_js
     assert "No standup brief available for this view." not in summary_js
@@ -163,10 +169,12 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert 'const sectionClassName = ["execution-wave-section", String(options.sectionClassName || "").trim()]' in shared_js
     assert '<details class="${escapeHtml(sectionClassName)}"' in shared_js
     assert 'execution-wave-card-shell execution-wave-card-shell-full-copy' in shared_js
-    assert 'const radarHref = radarWorkstreamHref(item.ideaId);' in workstreams_js
+    assert 'const radarHref = radarWorkstreamHref(item.ideaId, { view: "plan" });' in workstreams_js
     assert 'const idMarkup = rowsAreProgramCovered' in workstreams_js
     assert '<a class="ws-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-ws-id="${escapeHtml(item.ideaId)}"' in workstreams_js
     assert 'data-covered-ws-id' in workstreams_js
+    assert 'Open radar for ${item.ideaId}; also covered by program/release lanes' in workstreams_js
+    assert '<span class="chip execution-wave-chip-link" data-ws-id="${escapeHtml(item.ideaId)}"' not in workstreams_js
     assert 'workstreamTooltipAttrs(item.ideaId, workstreamTitles, `Open radar for ${item.ideaId}`)' in workstreams_js
     assert 'const componentHref = `../index.html?tab=registry&component=${encodeURIComponent(item.component_id)}`;' in workstreams_js
     assert '<strong>Registry components:</strong> ${registryComponentLinks}' in workstreams_js
@@ -179,6 +187,8 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert "compactCompassWorkstreamReleaseTargetLabel(row.version)" in workstreams_js
     assert "compactCompassWorkstreamReleaseTargetLabel(row.name)" in workstreams_js
     assert "function compassGovernanceRepresentedWorkstreamIds(payload)" in workstreams_js
+    assert 'event.target.closest("a, button, input, select, textarea, summary")' in workstreams_js
+    assert "if (interactive) return;" in workstreams_js
     assert "executionWavePrograms(payload).forEach((program) => {" in workstreams_js
     assert "addWorkstreamRefList(release && release.active_workstreams);" in workstreams_js
     assert "addWorkstreamRefList(release && release.completed_workstreams);" in workstreams_js
@@ -187,7 +197,9 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert 'scopedRows.filter((row) => !representedIds.has(String(row && row.idea_id ? row.idea_id : "").trim()))' in workstreams_js
     assert "const rows = scopedRows;" not in workstreams_js
     assert "const representedPreviewLimit = 6;" in workstreams_js
-    assert "Covered workstreams below are a compact detail preview" in workstreams_js
+    assert "represented-workstreams-note" in workstreams_js
+    assert "Program and release lanes already organize these active workstreams" in workstreams_js
+    assert "Covered workstreams below are a compact detail preview" not in workstreams_js
     assert "function numericProgressOrNull(value)" in workstreams_js
     assert '${item.releaseLabel ? `<span class="chip subtle">${escapeHtml(item.releaseLabel)}</span>` : ""}' in workstreams_js
     assert 'Release ${item.releaseLabel}' not in workstreams_js
@@ -270,7 +282,8 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert ".ws-table td.ws-col-progress" in base_template
     assert "font-variant-numeric: tabular-nums;" in base_template
     assert "No active workstreams yet. Create or open one from Radar, then Compass will summarize it here." in workstreams_js
-    assert "No additional current workstreams. Program and release lanes already cover the active work." in workstreams_js
+    assert "No additional current workstreams. Program and release lanes already cover the active work." not in workstreams_js
+    assert "Program and release lanes already organize these active workstreams" in workstreams_js
     assert "All current workstreams are already represented in Programs or Release Targets." not in workstreams_js
     assert "No active workstreams in this scope." in workstreams_js
     assert "`Open radar for ${token}`" in waves_js

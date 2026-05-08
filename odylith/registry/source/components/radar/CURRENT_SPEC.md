@@ -48,6 +48,10 @@ Odylith surfaces.
   controls across the product. When Atlas, Registry, Casebook, Compass, or the
   shell render a shared workstream button, the destination is Radar's
   workstream route rather than a surface-local approximation.
+- Radar's visible sort control is authoritative. Scope-signal rank may dominate
+  only when the operator selects Rank; Score and Date modes must order rows by
+  their own comparators after the fixed execution/parked/active/finished
+  section grouping.
 
 ## Runtime Contract
 ### Source truth
@@ -345,3 +349,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-08: Bound Radar workstream chips to the shared compact `B-###` button contract so backlog and release views stop drifting when generic identifier styling changes elsewhere. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-09: Excluded Radar workstream chips from generic chip styling and added live/bundle plus browser proof so shared chip changes cannot silently reopen workstream-button drift. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-080`)
 - 2026-04-09: Locked Radar summary stats and current-release cards to Dashboard's shared KPI/stat-card contract and added browser proof for labeled, non-`v`-prefixed current-release values. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-085`)
+- 2026-05-07: Fixed Radar sort mode precedence so Score and Date selections are not silently overridden by scope-signal rank, while Rank remains the explicit scope-signal ordering mode. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-178`)

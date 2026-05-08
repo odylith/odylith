@@ -33,8 +33,9 @@ spawn-policy note, or follow-up question.
    feature after an empty/thin show result, do not refuse because source is
    absent. Run the proposal-first path instead:
    `./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<their request>"`.
-   Render backlog, program waves, release plan, Registry, Atlas, assumptions,
-   risks, and validation; wait for confirmation before writes.
+   Present the canonical apply-ready proposal. On confirmation, use
+   `./.odylith/bin/odylith greenfield create --repo-root . --prompt "<their request>" --release 0.0.1 --confirm`
+   instead of hand-authoring proposal JSON.
 6. Do not create governance records unless the operator explicitly asks.
    The default posture is advisory — show what's possible and let the operator
    choose.

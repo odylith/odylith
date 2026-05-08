@@ -96,6 +96,16 @@ def current_workstream_ids(compass) -> list[str]:  # noqa: ANN001
     )
 
 
+def covered_workstream_ids(compass) -> list[str]:  # noqa: ANN001
+    return compass.locator("tr.ws-summary-row[data-covered-ws-id]").evaluate_all(
+        """nodes => Array.from(new Set(
+          nodes
+            .map((node) => String(node.getAttribute("data-covered-ws-id") || "").trim())
+            .filter((token) => /^B-\\d{3,}$/.test(token))
+        ))"""
+    )
+
+
 def wait_for_current_workstreams(compass) -> None:  # noqa: ANN001
     compass.locator("tr.ws-summary-row[data-ws-id]").first.wait_for(timeout=15000)
 
@@ -103,7 +113,9 @@ def wait_for_current_workstreams(compass) -> None:  # noqa: ANN001
 def wait_for_current_workstreams_or_empty(compass) -> None:  # noqa: ANN001
     current_section = compass.locator("#current-workstreams")
     current_section.wait_for(timeout=15000)
-    current_section.locator("tr.ws-summary-row[data-ws-id], .empty").first.wait_for(timeout=15000)
+    current_section.locator(
+        "tr.ws-summary-row[data-ws-id], tr.ws-summary-row[data-covered-ws-id], .empty"
+    ).first.wait_for(timeout=15000)
 
 
 def release_target_ids(compass) -> list[str]:  # noqa: ANN001

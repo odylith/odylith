@@ -14,6 +14,7 @@ from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence.greenfield_text import collect_text_values
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence import greenfield_programs
+from odylith.runtime.domain_intelligence.proposal_validation import format_proposal_issue_report
 
 _WORKSTREAM_REF_FIELDS = (
     "workstreams",
@@ -197,8 +198,7 @@ def run_greenfield_tribunal(
 def raise_for_failed_greenfield_tribunal(decision: GreenfieldTribunalDecision) -> None:
     if decision.passed:
         return
-    detail = "; ".join(decision.issues[:5])
-    raise ValueError(f"greenfield proposal Tribunal rejected: {detail}")
+    raise ValueError(format_proposal_issue_report("Tribunal", list(decision.issues)))
 
 
 def _check_release_plan(

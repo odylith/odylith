@@ -55,6 +55,41 @@ def test_sync_casebook_bug_index_rebuilds_from_markdown_source(tmp_path: Path) -
     assert "| CB-002 | 2026-03-25 | Example closed bug | P2 | dashboard | Closed | [2026-03-25-example-closed-bug.md](2026-03-25-example-closed-bug.md) |" in text
 
 
+def test_sync_casebook_bug_index_repairs_title_when_slug_is_truncated(tmp_path: Path) -> None:
+    bug_root = tmp_path / "odylith" / "casebook" / "bugs"
+    bug_root.mkdir(parents=True, exist_ok=True)
+    path = bug_root / "2026-05-06-greenfield-apply-drip-fails-loose-host-proposals-and-leaves-partial-governance-w.md"
+    path.write_text(
+        "\n".join(
+            [
+                "- Bug ID: CB-001",
+                "",
+                "- Status: FixedPendingRelease",
+                "",
+                "- Created: 2026-05-06",
+                "",
+                "- Severity: P1",
+                "",
+                "- Reproducibility: High",
+                "",
+                "- Type: OperatorUX",
+                "",
+                "- Components Affected: domain-intelligence-greenfield",
+                "",
+                "- Description: Greenfield apply drip-fails loose host proposals and leaves partial governance writes",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    index_path = sync_casebook_bug_index.sync_casebook_bug_index(repo_root=tmp_path)
+    text = index_path.read_text(encoding="utf-8")
+
+    assert "partial governance writes" in text
+    assert "partial governance w |" not in text
+
+
 def test_migrate_casebook_bug_ids_backfills_missing_bug_ids_after_existing_sequence(tmp_path: Path) -> None:
     bug_root = tmp_path / "odylith" / "casebook" / "bugs"
     bug_root.mkdir(parents=True, exist_ok=True)

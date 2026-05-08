@@ -165,6 +165,12 @@ Public docs should describe these commands, not direct module entrypoints.
   `odylith component register --help`, `odylith atlas scaffold --help`, and
   `odylith compass log --help` must expose backend help instead of shim-only
   parser surfaces.
+- Greenfield consumer-lane governance should also stay one direct CLI hop when
+  the operator wants Odylith to own the whole path. `odylith greenfield
+  create --prompt ... --release ... --confirm` must build the canonical
+  proposal, validate it, run the greenfield Tribunal, apply source truth,
+  refresh visible surfaces, and print the first coding handoff without asking
+  the host to hand-write proposal JSON.
 - Consumer-facing narration must keep `.agents/skills` lookup, missing-shim,
   and fallback-source-path details implicit unless they change the next
   user-visible action.
@@ -680,3 +686,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-14: Reframed the host guidance so the default lane stays shared across Codex and Claude Code, while Codex-only advice is limited to capability-gated project-asset optimizations such as `odylith codex compatibility`. (Plan: [B-088](odylith/radar/radar.html?view=plan&workstream=B-088))
 - 2026-04-29: Added `odylith github issue ...` as the draft-first public issue intake and release-closeout command lane, with Codex/Claude skills and guidance mirrors for Casebook-linked GitHub issue handling. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127); Casebook: CB-136)
 - 2026-04-30: Corrected `odylith uninstall` so consumer repos preserve `odylith/` governed source truth, remove only `.odylith/` runtime state, detach root guidance, and leave host config directories in place. (Plan: [B-140](odylith/radar/radar.html?view=plan&workstream=B-140); Casebook: CB-143)
+- 2026-05-07: Added the one-command `odylith greenfield create` path and made `greenfield propose` render from an internally validated canonical proposal object, so empty-repo greenfield setup no longer depends on host-side prose-to-JSON reconstruction or repeated schema repair loops. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-173`, `CB-176`, `CB-181`)

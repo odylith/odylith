@@ -2,6 +2,7 @@ import argparse
 import json
 import subprocess
 import sys
+import time
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -339,6 +340,18 @@ def test_greenfield_apply_help_forwards_backend_flags(capsys) -> None:
     assert "--release" in output
 
 
+def test_greenfield_create_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["greenfield", "create", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith greenfield create" in output
+    assert "--prompt" in output
+    assert "--confirm" in output
+    assert "--release" in output
+
+
 def test_greenfield_propose_command_is_provider_free(tmp_path: Path, capsys) -> None:
     rc = cli.main(
         [
@@ -356,10 +369,12 @@ def test_greenfield_propose_command_is_provider_free(tmp_path: Path, capsys) -> 
     payload = json.loads(capsys.readouterr().out)
     assert rc == 0
     assert payload["provider_calls"] == 0
-    assert payload["mode"] == "host_reasoned_proposal_request"
-    assert payload["intent"]["reasoning_mode"] == "host_model_required"
-    assert payload["classification"]["method"] == "open_world_host_reasoning"
-    assert "backlog" in payload["reasoning_contract"]["required_top_level_keys"]
+    assert payload["mode"] == "host_reasoned_greenfield_proposal"
+    assert payload["intent"]["reasoning_mode"] == "odylith_apply_ready_scaffold"
+    assert payload["release_plan"]["selector"] == "0.0.1"
+    assert payload["backlog"]
+    assert payload["components"]
+    assert payload["diagrams"]
 
 
 def test_component_register_help_forwards_backend_flags(capsys) -> None:
@@ -860,6 +875,18 @@ def test_hosted_first_install_uses_compact_progress_labels(monkeypatch, tmp_path
     assert "Created root guidance files" not in output
     assert "Repo-root AGENTS now activates" not in output
     assert "Full Odylith is installed by default" not in output
+
+
+def test_install_progress_bar_does_not_glue_child_output_to_elapsed_seconds(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(cli, "_install_progress_bar_enabled", lambda: True)
+
+    with cli._install_progress_bar("write", "Adding Odylith files."):  # noqa: SLF001
+        time.sleep(0.02)
+        print("mermaid catalog render passed")
+
+    output = capsys.readouterr().out
+    assert "smermaid catalog render passed" not in output
+    assert "mermaid catalog render passed" in output
 
 
 def test_compact_install_reports_failure_without_traceback(monkeypatch, tmp_path: Path, capsys) -> None:

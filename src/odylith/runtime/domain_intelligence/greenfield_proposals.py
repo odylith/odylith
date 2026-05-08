@@ -21,15 +21,16 @@ from odylith.runtime.analysis_engine.types import SourceSummary, slugify
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_traceability
+from odylith.runtime.domain_intelligence.greenfield_cli_output import print_apply_result
 from odylith.runtime.domain_intelligence.greenfield_experience import proposal_posture_tuple
 from odylith.runtime.domain_intelligence.greenfield_experience import row_text_tuple
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 from odylith.runtime.domain_intelligence.proposal_contract import build_proposal_contract
-from odylith.runtime.domain_intelligence.proposal_contract import build_proposal_template
 from odylith.runtime.domain_intelligence.proposal_memory import record_greenfield_acceptance
 from odylith.runtime.domain_intelligence.proposal_normalization import normalize_host_reasoned_proposal
 from odylith.runtime.domain_intelligence.proposal_rendering import format_proposal_text
+from odylith.runtime.domain_intelligence.proposal_scaffold import build_apply_ready_proposal
 from odylith.runtime.domain_intelligence.proposal_tribunal import raise_for_failed_greenfield_tribunal
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
@@ -129,12 +130,21 @@ def _source_evidence(repo_root: Path) -> dict[str, Any]:
 
 
 def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]:
-    """Return the host-reasoning contract for an open-world greenfield prompt."""
+    """Return the greenfield reasoning envelope with a validated canonical proposal."""
 
     root = Path(repo_root).expanduser().resolve()
     intent_title = _intent_title(prompt)
     project_slug = slugify(intent_title)
     evidence = _source_evidence(root)
+    canonical_proposal = _build_apply_ready_greenfield_proposal(
+        repo_root=root,
+        prompt=prompt,
+        release_selector=greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR,
+    )
+    canonical_tribunal = run_greenfield_tribunal(
+        canonical_proposal,
+        release_selector=greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR,
+    )
     proposal: dict[str, Any] = {
         "schema_version": "odylith.greenfield.reasoning_request.v1",
         "mode": "host_reasoned_proposal_request",
@@ -158,19 +168,18 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
             "mode": "consumer_greenfield_host_reasoned_proposal",
             "source_posture": evidence.get("source_posture", "unknown"),
             "operator_sequence": [
-                "host model drafts the concrete proposal from prompt and repo evidence",
-                "operator reviews or edits assumptions, boundaries, diagrams, waves, and release plan",
+                "Odylith builds canonical apply-ready proposal JSON from prompt and repo evidence",
+                "operator reviews or deepens assumptions, boundaries, diagrams, waves, and release plan",
                 "Odylith validates and applies the confirmed proposal only after explicit confirmation",
+                "or run the one-command create path when the built scaffold is enough",
             ],
-            "write_guardrail": "This command does not write proposal records; host reasoning produces the draft, apply validates and writes after confirmation.",
-            "next_best_action": f"Use host reasoning to draft backlog, Registry, Atlas, waves, release plan, validation, and open questions for {intent_title}.",
+            "write_guardrail": "This command does not write proposal records; the same validated canonical object is rendered for review and emitted by --format json.",
+            "next_best_action": f"Review or deepen the apply-ready scaffold for {intent_title}, then confirm create/apply.",
         },
         "reasoning_contract": build_proposal_contract(),
-        "proposal_template": build_proposal_template(
-            intent_title=intent_title,
-            project_slug=project_slug,
-            source_posture=str(evidence.get("source_posture", "unknown")),
-        ),
+        "proposal_template": canonical_proposal,
+        "canonical_proposal": canonical_proposal,
+        "canonical_proposal_gate": canonical_tribunal.to_dict(),
         "accepted_aliases": {
             "mode": ["greenfield", "host_reasoned_proposal"],
             "component_id": ["id", "name"],
@@ -198,11 +207,40 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
             "risk posture; keep it proportional, specific, and host-model agnostic."
         ),
         "apply_commands": [
-            "Save the host-reasoned proposal JSON to odylith-greenfield-proposal.json after operator review.",
+            "odylith greenfield create --repo-root . --prompt "
+            + json.dumps(_prompt_text(prompt))
+            + " --release 0.0.1 --confirm",
+            "odylith greenfield propose --repo-root . --prompt "
+            + json.dumps(_prompt_text(prompt))
+            + " --format json > odylith-greenfield-proposal.json",
             "odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm --release 0.0.1",
         ],
     }
     return proposal
+
+
+def _build_apply_ready_greenfield_proposal(
+    *,
+    repo_root: Path,
+    prompt: str,
+    release_selector: str = "",
+) -> dict[str, Any]:
+    root = Path(repo_root).expanduser().resolve()
+    raw = build_apply_ready_proposal(
+        prompt=_prompt_text(prompt),
+        intent_title=_intent_title(prompt),
+        project_slug=slugify(_intent_title(prompt)),
+        observed_source=_source_evidence(root),
+        release_selector=release_selector,
+    )
+    normalized = normalize_host_reasoned_proposal(raw)
+    validate_host_reasoned_proposal(normalized)
+    tribunal = run_greenfield_tribunal(
+        normalized,
+        release_selector=greenfield_programs.proposal_release_selector(normalized, release_selector),
+    )
+    raise_for_failed_greenfield_tribunal(tribunal)
+    return normalized
 
 
 def _load_proposal(args: argparse.Namespace) -> dict[str, Any]:
@@ -643,6 +681,12 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     apply.add_argument("--confirm", action="store_true")
     apply.add_argument("--release", default="")
     apply.add_argument("--json", action="store_true", dest="as_json")
+    create = subparsers.add_parser("create", help="Build and apply an Odylith-owned greenfield proposal in one confirmed command.")
+    create.add_argument("--repo-root", default=".")
+    create.add_argument("--prompt", required=True)
+    create.add_argument("--confirm", action="store_true")
+    create.add_argument("--release", default="")
+    create.add_argument("--json", action="store_true", dest="as_json")
     return parser.parse_args(argv)
 
 
@@ -652,7 +696,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "propose":
         proposal = build_greenfield_proposal(repo_root=repo_root, prompt=str(args.prompt))
         if args.output_format == "json":
-            print(json.dumps(proposal, indent=2, sort_keys=True))
+            canonical = proposal.get("canonical_proposal") if isinstance(proposal.get("canonical_proposal"), Mapping) else proposal
+            print(json.dumps(canonical, indent=2, sort_keys=True))
         else:
             print(format_proposal_text(proposal), end="")
         return 0
@@ -671,64 +716,28 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.as_json:
             print(json.dumps(result, indent=2, sort_keys=True))
         else:
-            print("odylith greenfield apply wrote confirmed proposal")
-            tribunal = result.get("tribunal", {})
-            if isinstance(tribunal, Mapping):
-                print(f"- tribunal: {tribunal.get('status', 'unknown')}")
-            print(f"- backlog: {len(result['backlog'])}")
-            print(f"- components: {len(result['components'])}")
-            print(f"- diagrams: {len(result['diagrams'])}")
-            program = result.get("program", {})
-            if isinstance(program, Mapping) and bool(program.get("created")):
-                print(f"- program: {program.get('umbrella_id')} ({len(program.get('waves', []))} waves)")
-            release_target = result.get("release_target", {})
-            if isinstance(release_target, Mapping) and str(release_target.get("release_id", "none")).strip() != "none":
-                workstreams = release_target.get("workstream_ids", [])
-                count = len(workstreams) if isinstance(workstreams, list) else 0
-                print(f"- release: {release_target.get('release_id')} ({count} targeted workstreams)")
-            next_steps = result.get("next_steps", {})
-            if isinstance(next_steps, Mapping):
-                start_id = str(next_steps.get("start_workstream_id", "")).strip()
-                start_title = str(next_steps.get("start_workstream_title", "")).strip()
-                first_wave = str(next_steps.get("first_wave", "")).strip()
-                next_release = str(next_steps.get("release_selector", "")).strip()
-                if start_id:
-                    print(f"- start coding: {start_id} {start_title}".rstrip())
-                if first_wave or next_release:
-                    print(
-                        "- first implementation lane: "
-                        + " | ".join(
-                            item
-                            for item in (
-                                f"wave {first_wave}" if first_wave else "",
-                                f"release {next_release}" if next_release else "",
-                            )
-                            if item
-                        )
-                    )
-                prompt = str(next_steps.get("implementation_prompt", "")).strip()
-                if prompt:
-                    print(f"- next agent prompt: {prompt}")
-                sequence = next_steps.get("operator_sequence", [])
-                if isinstance(sequence, list) and sequence:
-                    print("- operator handoff:")
-                    for index, step in enumerate(sequence[:5], start=1):
-                        print(f"  {index}. {step}")
-                gates = next_steps.get("validation_gates", [])
-                if isinstance(gates, list) and gates:
-                    print("- first validation gates:")
-                    for gate in gates[:6]:
-                        print(f"  - {gate}")
-                commands = next_steps.get("verification_commands", [])
-                if isinstance(commands, list) and commands:
-                    print("- verify before next wave:")
-                    for command in commands[:6]:
-                        print(f"  - {command}")
-            dashboard = result.get("dashboard_refresh", {})
-            if isinstance(dashboard, Mapping):
-                surfaces = ", ".join(str(item) for item in dashboard.get("surfaces", []))
-                print(f"- dashboard: refreshed {surfaces}")
-                print(f"- view: {dashboard.get('view')}")
+            print_apply_result(result, verb="apply")
+        return 0
+    if args.command == "create":
+        try:
+            proposal = _build_apply_ready_greenfield_proposal(
+                repo_root=repo_root,
+                prompt=str(args.prompt),
+                release_selector=str(args.release),
+            )
+            result = apply_greenfield_proposal(
+                repo_root=repo_root,
+                proposal=proposal,
+                confirm=bool(args.confirm),
+                release_selector=str(args.release),
+            )
+        except (ValueError, RuntimeError, json.JSONDecodeError) as exc:
+            print(str(exc))
+            return 2
+        if args.as_json:
+            print(json.dumps(result, indent=2, sort_keys=True))
+        else:
+            print_apply_result(result, verb="create")
         return 0
     return 2
 

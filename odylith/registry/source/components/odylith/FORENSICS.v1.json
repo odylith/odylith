@@ -47,10 +47,10 @@
     "empty_reasons": [],
     "explicit_event_count": 270,
     "mapped_workstream_evidence_count": 127,
-    "recent_path_match_count": 0,
-    "spec_history_event_count": 28,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 29,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 270
+    "timeline_event_count": 271
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -64,6 +64,24 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "AGENTS.md",
+        "odylith/README.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 466,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: AGENTS.md, odylith/README.md +1 more",
+      "ts_iso": "2026-05-07T16:39:05-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "low",

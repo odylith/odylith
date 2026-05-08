@@ -99,6 +99,25 @@ def test_atlas_sort_filter_orders_rows_and_preserves_selection(browser_context) 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
+def test_atlas_search_matches_partial_diagram_number(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=atlas", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    atlas = page.frame_locator("#frame-atlas")
+    atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
+    atlas.locator("#search").fill("003")
+    atlas.locator('button[data-diagram="D-003"]').wait_for(timeout=15000)
+
+    rows = _visible_atlas_rows(atlas)
+    assert rows
+    assert any(row["diagram_id"] == "D-003" for row in rows)
+    atlas.locator("#diagramId", has_text="D-003").wait_for(timeout=15000)
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
 def test_atlas_sort_and_workstream_filters_share_sidebar_row(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)

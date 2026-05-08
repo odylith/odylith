@@ -199,6 +199,58 @@ def test_claude_backlog_skill_shim_carries_exact_cli_enum_guard() -> None:
         assert "moderate" in text
 
 
+def test_greenfield_guidance_uses_canonical_create_path_not_host_json_authoring() -> None:
+    guidance_paths = (
+        REPO_ROOT / "AGENTS.md",
+        REPO_ROOT / "odylith" / "AGENTS.md",
+        REPO_ROOT / "odylith" / "README.md",
+        REPO_ROOT / "odylith" / "skills" / "odylith-greenfield-governance" / "SKILL.md",
+        REPO_ROOT / "odylith" / "skills" / "odylith-show-me" / "SKILL.md",
+        REPO_ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md",
+        REPO_ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "README.md",
+        REPO_ROOT
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "skills"
+        / "odylith-greenfield-governance"
+        / "SKILL.md",
+        REPO_ROOT
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "skills"
+        / "odylith-show-me"
+        / "SKILL.md",
+    )
+    source_paths = (
+        REPO_ROOT / "src" / "odylith" / "install" / "agents.py",
+        REPO_ROOT / "src" / "odylith" / "install" / "bootstrap_assets.py",
+    )
+    forbidden = (
+        "host drafts backlog",
+        "host model drafts",
+        "active host model authors the project-specific proposal in chat",
+        "greenfield apply --repo-root . --proposal-file <proposal.json>",
+    )
+
+    for path in (*guidance_paths, *source_paths):
+        text = path.read_text(encoding="utf-8")
+        compact_text = " ".join(text.split())
+        assert "greenfield create" in text, path
+        assert (
+            "hand-author proposal JSON" in compact_text
+            or "hand-authoring proposal JSON" in compact_text
+            or "hand-build `odylith-greenfield-proposal.json`" in compact_text
+        ), path
+        for token in forbidden:
+            assert token not in text, f"{path} still carries stale greenfield guidance: {token}"
+
+
 def test_claude_output_style_keeps_observation_rare_and_assist_concrete() -> None:
     paths = (
         LIVE_CLAUDE_ROOT / "output-styles" / "odylith-grounded.md",

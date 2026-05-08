@@ -18,6 +18,7 @@ import re
 import shutil
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common import casebook_metadata
 from odylith.runtime.governance import agent_governance_intelligence as governance
 from odylith.runtime.surfaces import compass_briefing_support
 from odylith.runtime.surfaces import compass_outcome_digest_runtime
@@ -673,7 +674,7 @@ def _build_bug_timeline_events(
         severity = str(row.get("Severity", "")).strip().upper()
         if severity not in {"P0", "P1", "P2", "P3"}:
             continue
-        status = str(row.get("Status", "")).strip()
+        status = casebook_metadata.canonical_casebook_status(str(row.get("Status", "")).strip())
         title = " ".join(str(row.get("Title", "")).split()).strip() or "Untitled bug"
 
         link_path = _resolve_index_link_to_repo_path(
@@ -697,11 +698,9 @@ def _build_bug_timeline_events(
         ws_ids = sorted({token for token in ws_ids if _WORKSTREAM_ID_RE.fullmatch(token)})
 
         files = [link_path] if link_path else []
-        status_lower = status.lower()
-        is_resolved = status_lower in {"fixed", "closed"}
-        is_critical = severity in {"P0", "P1"}
+        requires_attention = casebook_metadata.casebook_status_requires_active_attention(status)
 
-        if is_critical and not is_resolved:
+        if severity in {"P0", "P1"} and requires_attention:
             summary = f"Critical bug remains open ({severity}): {title}."
             events.append(
                 {
@@ -722,9 +721,10 @@ def _build_bug_timeline_events(
         if ts < cutoff:
             continue
 
-        if is_critical and is_resolved:
+        if severity in {"P0", "P1"} and not requires_attention:
             kind = "bug_resolved"
-            summary = f"Critical bug resolved ({severity}): {title}."
+            verb = "fixed pending release" if status == "FixedPendingRelease" else "resolved"
+            summary = f"Critical bug {verb} ({severity}): {title}."
         else:
             kind = "bug_update"
             summary = f"Bug status update ({severity}, {status or 'Unknown'}): {title}."

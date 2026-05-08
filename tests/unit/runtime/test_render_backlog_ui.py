@@ -588,8 +588,10 @@ def test_render_backlog_ui_sorts_default_sections_by_scope_signal_rank() -> None
     html = render_backlog_ui._render_html(payload={"entries": []})
 
     assert "function scopeSignalRank(row)" in html
+    assert 'if (a.section !== "finished" && state.sort === "rank") {' in html
     assert "const rankDelta = scopeSignalRank(b) - scopeSignalRank(a);" in html
-    assert "if (rankDelta !== 0) return rankDelta;" in html
+    assert 'state.sort === "score"' in html
+    assert 'state.sort === "date"' in html
 
 
 def test_render_backlog_ui_defaults_to_date_sort() -> None:

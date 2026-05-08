@@ -90,6 +90,10 @@ def _previous_release_is_published(*, version: str) -> bool:
         if exc.code == 404:
             return False
         raise
+    except ValueError as exc:
+        if "HTTP Error 404" in str(exc):
+            return False
+        raise
     return True
 
 
@@ -160,6 +164,64 @@ def _install_cwd(repo_root: Path) -> Path:
 def _require_output_contains(*, output: str, expected: str, label: str) -> None:
     if expected not in output:
         raise RuntimeError(f"{label} missing expected text: {expected!r}")
+
+
+_GREENFIELD_SCHEMA_LOOP_TOKENS = (
+    "must be non-empty",
+    "greenfield proposal validation failed",
+    "greenfield proposal Tribunal failed",
+    "host-side schema repair",
+)
+_GREENFIELD_GUIDANCE_FILES = (
+    "AGENTS.md",
+    "odylith/AGENTS.md",
+    "odylith/skills/odylith-greenfield-governance/SKILL.md",
+    "odylith/skills/odylith-show-me/SKILL.md",
+)
+_STALE_GREENFIELD_GUIDANCE_TOKENS = (
+    "host drafts backlog",
+    "host model drafts",
+    "active host model authors the project-specific proposal in chat",
+    "greenfield apply --repo-root . --proposal-file <proposal.json>",
+)
+_GREENFIELD_MANUAL_JSON_GUARDS = (
+    "hand-author proposal JSON",
+    "hand-authoring proposal JSON",
+    "hand-build `odylith-greenfield-proposal.json`",
+)
+
+
+def _require_no_greenfield_schema_loop(*, output: str, label: str) -> None:
+    for token in _GREENFIELD_SCHEMA_LOOP_TOKENS:
+        if token in output:
+            raise RuntimeError(f"{label} exposed a schema repair loop: {token}")
+
+
+def _require_greenfield_surfaces(*, repo_root: Path, label: str) -> None:
+    for relative_path in (
+        "odylith/radar/radar.html",
+        "odylith/registry/registry.html",
+        "odylith/atlas/atlas.html",
+        "odylith/compass/compass.html",
+    ):
+        if not (repo_root / relative_path).is_file():
+            raise RuntimeError(f"{label} did not render {relative_path}")
+
+
+def _require_greenfield_guidance_uses_create(*, repo_root: Path, label: str) -> None:
+    for relative_path in _GREENFIELD_GUIDANCE_FILES:
+        path = repo_root / relative_path
+        if not path.is_file():
+            raise RuntimeError(f"{label} did not install greenfield guidance file: {relative_path}")
+        text = path.read_text(encoding="utf-8")
+        compact_text = " ".join(text.split())
+        if "greenfield create" not in text:
+            raise RuntimeError(f"{label} guidance omits one-command greenfield create path: {relative_path}")
+        if not any(token in compact_text for token in _GREENFIELD_MANUAL_JSON_GUARDS):
+            raise RuntimeError(f"{label} guidance omits manual proposal JSON guard: {relative_path}")
+        for token in _STALE_GREENFIELD_GUIDANCE_TOKENS:
+            if token in text:
+                raise RuntimeError(f"{label} guidance still teaches stale greenfield schema-repair flow: {relative_path}: {token}")
 
 
 def _seed_legacy_compass_archive_fixture(*, repo_root: Path) -> None:
@@ -253,6 +315,7 @@ def _require_compass_history_layout(*, repo_root: Path) -> None:
 
 def _install_and_smoke(*, repo_root: Path, install_script: Path, env: dict[str, str]) -> None:
     _run(cwd=_install_cwd(repo_root), env=env, command=["bash", str(install_script)])
+    _require_greenfield_guidance_uses_create(repo_root=repo_root, label="fresh install")
     odylith = repo_root / ".odylith" / "bin" / "odylith"
     version = _run(cwd=repo_root, env=env, command=[str(odylith), "version", "--repo-root", "."]).stdout
     _require_output_contains(output=version, expected=f"Active: {env['ODYLITH_VERSION']}", label="odylith version")
@@ -260,8 +323,98 @@ def _install_and_smoke(*, repo_root: Path, install_script: Path, env: dict[str, 
     doctor = _run(cwd=repo_root, env=env, command=[str(odylith), "doctor", "--repo-root", "."]).stdout
     _require_output_contains(output=doctor, expected="Context engine mode: full_local_memory", label="odylith doctor")
     _require_output_contains(output=doctor, expected="Context engine pack: installed", label="odylith doctor")
-    _run(cwd=repo_root, env=env, command=[str(odylith), "dashboard", "refresh", "--repo-root", "."])
+    _greenfield_propose_apply_smoke(repo_root=repo_root, odylith=odylith, env=env)
     _run(cwd=repo_root, env=env, command=[str(odylith), "sync", "--repo-root", ".", "--force"])
+
+
+def _install_and_create_smoke(*, repo_root: Path, install_script: Path, env: dict[str, str]) -> None:
+    _run(cwd=_install_cwd(repo_root), env=env, command=["bash", str(install_script)])
+    _require_greenfield_guidance_uses_create(repo_root=repo_root, label="greenfield create install")
+    odylith = repo_root / ".odylith" / "bin" / "odylith"
+    _greenfield_create_smoke(repo_root=repo_root, odylith=odylith, env=env)
+
+
+def _greenfield_propose_apply_smoke(*, repo_root: Path, odylith: Path, env: dict[str, str]) -> None:
+    show = _run(cwd=repo_root, env=env, command=[str(odylith), "show", "--repo-root", "."]).stdout
+    _require_output_contains(output=show, expected="Odylith read this repo", label="odylith show")
+    proposal = _run(
+        cwd=repo_root,
+        env=env,
+        command=[
+            str(odylith),
+            "greenfield",
+            "propose",
+            "--repo-root",
+            ".",
+            "--prompt",
+            "robot swarm logistics app",
+            "--format",
+            "json",
+        ],
+    ).stdout
+    _require_output_contains(
+        output=proposal,
+        expected='"mode": "host_reasoned_greenfield_proposal"',
+        label="greenfield propose json",
+    )
+    _require_output_contains(output=proposal, expected='"backlog": [', label="greenfield propose json")
+    _require_output_contains(output=proposal, expected='"components": [', label="greenfield propose json")
+    _require_output_contains(output=proposal, expected='"diagrams": [', label="greenfield propose json")
+    _require_no_greenfield_schema_loop(output=proposal, label="greenfield propose json")
+    proposal_path = repo_root / "odylith-greenfield-proposal.json"
+    proposal_path.write_text(proposal, encoding="utf-8")
+    apply = _run(
+        cwd=repo_root,
+        env=env,
+        command=[
+            str(odylith),
+            "greenfield",
+            "apply",
+            "--repo-root",
+            ".",
+            "--proposal-file",
+            proposal_path.name,
+            "--release",
+            "0.0.1",
+            "--confirm",
+        ],
+    ).stdout
+    _require_output_contains(output=apply, expected="odylith greenfield apply wrote confirmed proposal", label="greenfield apply")
+    _require_output_contains(output=apply, expected="- tribunal: passed", label="greenfield apply")
+    _require_output_contains(output=apply, expected="- exact first coding workstream: B-", label="greenfield apply")
+    _require_output_contains(output=apply, expected="- validation already run:", label="greenfield apply")
+    _require_no_greenfield_schema_loop(output=apply, label="greenfield apply")
+    refresh = _run(cwd=repo_root, env=env, command=[str(odylith), "dashboard", "refresh", "--repo-root", "."]).stdout
+    _require_output_contains(output=refresh, expected="dashboard refresh completed", label="greenfield dashboard refresh")
+    _require_output_contains(output=refresh, expected="outcome: passed", label="greenfield dashboard refresh")
+    _require_greenfield_surfaces(repo_root=repo_root, label="greenfield propose/apply smoke")
+
+
+def _greenfield_create_smoke(*, repo_root: Path, odylith: Path, env: dict[str, str]) -> None:
+    show = _run(cwd=repo_root, env=env, command=[str(odylith), "show", "--repo-root", "."]).stdout
+    _require_output_contains(output=show, expected="Odylith read this repo", label="odylith show")
+    create = _run(
+        cwd=repo_root,
+        env=env,
+        command=[
+            str(odylith),
+            "greenfield",
+            "create",
+            "--repo-root",
+            ".",
+            "--prompt",
+            "robot swarm logistics app",
+            "--release",
+            "0.0.1",
+            "--confirm",
+        ],
+    ).stdout
+    _require_output_contains(output=create, expected="odylith greenfield create wrote confirmed proposal", label="greenfield create")
+    _require_output_contains(output=create, expected="- tribunal: passed", label="greenfield create")
+    _require_output_contains(output=create, expected="- exact first coding workstream: B-", label="greenfield create")
+    _require_output_contains(output=create, expected="- validation already run:", label="greenfield create")
+    _require_no_greenfield_schema_loop(output=create, label="greenfield create smoke")
+    _require_greenfield_surfaces(repo_root=repo_root, label="greenfield create smoke")
 
 
 def _install_previous_release(*, repo_root: Path, install_script: Path, previous_version: str) -> None:
@@ -396,6 +549,8 @@ def main(argv: list[str] | None = None) -> int:
         local_env = _local_release_env(base_url=base_url, version=args.version)
         fresh_repo = _repo_root(temp_root, "fresh-install")
         _install_and_smoke(repo_root=fresh_repo, install_script=install_script, env=local_env)
+        create_repo = _repo_root(temp_root, "greenfield-create")
+        _install_and_create_smoke(repo_root=create_repo, install_script=install_script, env=local_env)
 
         previous_versions = tuple(str(version).strip() for version in args.previous_version if str(version).strip())
         if not previous_versions:

@@ -60,26 +60,73 @@ def validated_mermaid_source(diagram: Mapping[str, Any]) -> str:
 def validate_host_reasoned_proposal(proposal: Mapping[str, Any]) -> None:
     """Fail before writes when a greenfield proposal is incomplete or generic."""
 
+    issues = collect_host_reasoned_proposal_issues(proposal)
+    if issues:
+        raise ValueError(format_proposal_issue_report("validation", issues))
+
+
+def collect_host_reasoned_proposal_issues(proposal: Mapping[str, Any]) -> list[str]:
+    """Return all proposal validation issues found in one pass."""
+
+    issues: list[str] = []
+
+    def capture(callback: Any) -> Any:
+        try:
+            return callback()
+        except ValueError as exc:
+            issues.append(str(exc))
+            return None
+
     mode = str(proposal.get("mode", "")).strip()
     if mode not in _VALID_PROPOSAL_MODES:
-        raise ValueError("greenfield apply requires a host-reasoned proposal, not a reasoning request or catalog output")
-    _require_mapping(proposal, "intent")
-    _require_mapping(proposal, "observed_source")
-    _require_nonempty_sequence(proposal, "assumptions")
-    _require_nonempty_sequence(proposal, "open_questions")
-    _require_nonempty_sequence(proposal, "risks")
-    _require_nonempty_sequence(proposal, "validation_strategy")
-    program = _require_mapping(proposal, "program")
-    _validate_program(program)
-    _require_mapping(proposal, "release_plan")
-    backlog = _require_nonempty_sequence(proposal, "backlog")
-    components = _require_nonempty_sequence(proposal, "components")
-    diagrams = _require_nonempty_sequence(proposal, "diagrams")
-    for index, row in enumerate(backlog, start=1):
-        _validate_backlog_row(row, index)
-    for index, row in enumerate(components, start=1):
-        _validate_component_row(row, index)
-    _validate_diagrams(diagrams)
+        issues.append("greenfield apply requires a host-reasoned proposal, not a reasoning request or catalog output")
+    capture(lambda: _require_mapping(proposal, "intent"))
+    capture(lambda: _require_mapping(proposal, "observed_source"))
+    capture(lambda: _require_nonempty_sequence(proposal, "assumptions"))
+    capture(lambda: _require_nonempty_sequence(proposal, "open_questions"))
+    capture(lambda: _require_nonempty_sequence(proposal, "risks"))
+    capture(lambda: _require_nonempty_sequence(proposal, "validation_strategy"))
+    program = capture(lambda: _require_mapping(proposal, "program"))
+    if isinstance(program, Mapping):
+        capture(lambda: _validate_program(program))
+    capture(lambda: _require_mapping(proposal, "release_plan"))
+    backlog = capture(lambda: _require_nonempty_sequence(proposal, "backlog"))
+    components = capture(lambda: _require_nonempty_sequence(proposal, "components"))
+    diagrams = capture(lambda: _require_nonempty_sequence(proposal, "diagrams"))
+    if isinstance(backlog, list):
+        for index, row in enumerate(backlog, start=1):
+            capture(lambda row=row, index=index: _validate_backlog_row(row, index))
+    if isinstance(components, list):
+        for index, row in enumerate(components, start=1):
+            capture(lambda row=row, index=index: _validate_component_row(row, index))
+    if isinstance(diagrams, list):
+        capture(lambda: _validate_diagrams(diagrams))
+    return _dedupe_issues(issues)
+
+
+def format_proposal_issue_report(label: str, issues: list[str] | tuple[str, ...]) -> str:
+    rows = _dedupe_issues(issues)
+    bullets = "\n".join(f"- {issue}" for issue in rows)
+    return (
+        f"greenfield proposal {label} failed with {len(rows)} issue(s):\n"
+        f"{bullets}\n"
+        "Remediation:\n"
+        "- auto-enrichment: Odylith already normalized aliases, list-shaped fields, safe dependency/interface defaults, "
+        "and default release fields before this check.\n"
+        "- needs operator/proposal input: every issue above still needs richer project-specific content before governed writes."
+    )
+
+
+def _dedupe_issues(issues: list[str] | tuple[str, ...]) -> list[str]:
+    result: list[str] = []
+    seen: set[str] = set()
+    for issue in issues:
+        token = str(issue or "").strip()
+        if not token or token in seen:
+            continue
+        seen.add(token)
+        result.append(token)
+    return result
 
 
 def _first_content_line(source: str) -> str:

@@ -1,5 +1,5 @@
 # Release
-Last updated: 2026-05-03
+Last updated: 2026-05-07
 
 
 Last updated (UTC): 2026-04-09
@@ -423,6 +423,25 @@ governed subsystem.
 - Local release smoke should prove the installer from a nested repo directory
   as well as the repo root so the zero-friction repo-root detection contract
   does not silently regress.
+- Local release smoke must also exercise both fresh greenfield journeys:
+  install into an empty repo, run `odylith show`, run
+  `odylith greenfield propose --format json`, apply that exact proposal file
+  with confirmation, require a passed Tribunal and first coding handoff, assert
+  Radar/Registry/Atlas/Compass surfaces exist, and reject host-side schema
+  repair loop strings. A second fresh repo must run confirmed
+  `odylith greenfield create` so the one-command shortcut cannot drift from the
+  explicit propose/apply path.
+- Local release smoke must inspect installed greenfield guidance files as part of
+  the same journey. Installed AGENTS, README, and skill guidance must mention the
+  `greenfield create` confirmation path, must forbid hand-authored proposal JSON,
+  and must fail on stale host-drafts-proposal instructions that would send agents
+  back into schema-repair loops.
+- Local release smoke must treat unavailable previous-release metadata as a
+  skipped upgrade rehearsal when the release lookup reports a 404, whether the
+  fetch layer exposes the 404 directly or wraps it in operator-facing context.
+- Installer progress output is part of release polish. Progress bars must leave
+  a clean terminal boundary before child renderer output so transcript lines
+  such as Mermaid render results never glue onto elapsed seconds.
 
 ## Validation Playbook
 ### Release
@@ -456,3 +475,5 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-08: Clarified that active current releases may keep finished completed members visible from release history until explicit ship or closeout, without restoring those workstreams to active targeting. (Plan: [B-066](odylith/radar/radar.html?view=plan&workstream=B-066))
 - 2026-04-09: Hardened `odylith release add` so maintainers can attach an already finished workstream to the active release as completed release history instead of reviving it as an active target. (Plan: [B-066](odylith/radar/radar.html?view=plan&workstream=B-066)) (Bug: [CB-082](odylith/casebook/casebook.html?bug=CB-082))
 - 2026-04-09: Codified release-target progress semantics so release-member badges use shared execution-progress truth, show tracked partial completion honestly, and never render active implementation with unchecked execution as fake `0% progress`. (Plan: [B-068](odylith/radar/radar.html?view=plan&workstream=B-068)) (Bug: [CB-087](odylith/casebook/casebook.html?bug=CB-087))
+- 2026-05-07: Added release-smoke coverage for both empty-repo greenfield paths: the explicit `show -> greenfield propose --format json -> greenfield apply --proposal-file --confirm -> surfaces` journey and the one-command `greenfield create --confirm` shortcut. The same slice tightened installer progress output so child renderer lines no longer collide with the elapsed progress row. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005); Bugs: `CB-180`, `CB-181`)
+- 2026-05-07: Extended release smoke from runtime behavior into installed guidance proof: fresh installed AGENTS/README/skill guidance must point confirmation at `greenfield create --confirm`, forbid hand-authored proposal JSON, and reject stale host-drafts-proposal instructions. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005); Bugs: `CB-176`, `CB-181`)

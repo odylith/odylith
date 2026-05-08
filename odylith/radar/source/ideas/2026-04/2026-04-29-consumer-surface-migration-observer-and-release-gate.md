@@ -1249,3 +1249,30 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   need no bespoke data migration: the spec text is maintainer-facing governance
   truth, and installed Registry/Casebook surfaces converge through normal
   managed asset adoption plus dashboard refresh.
+- The v0.1.15 brutal QA and greenfield-create release-path hardening pass is
+  covered by `migration-observer:0.1.15:guidance-and-skills:c721d0b90037`,
+  `migration-observer:0.1.15:operator-cli-contracts:259dfd9e1274`,
+  `migration-observer:0.1.15:public-docs-and-release-guidance:6507977368e3`,
+  `migration-observer:0.1.15:browser-surfaces:81b6e1ae22d0`, and
+  `migration-observer:0.1.15:install-managed-assets:e12331350655`. The pass
+  binds the final managed guidance, CLI contract, docs/release wording,
+  Compass/Radar/Atlas browser surfaces, install-managed bundle assets, and
+  hotfile cleanup to the exact changed source contents that shipped after the
+  end-to-end fresh-repo greenfield journey was hardened. Existing consumers
+  need no destructive data migration: upgrade adoption installs the managed
+  guidance/asset updates, future greenfield proposals use the apply-ready
+  runtime contract, and normal dashboard/sync refresh converges generated
+  browser surfaces.
+- The final browser-source hotfile cleanup for that same v0.1.15 QA pass is
+  covered by `migration-observer:0.1.15:browser-surfaces:6fb5ceb00199`. The
+  cleanup deduplicates Atlas workstream-list normalization and keeps Compass
+  critical-bug timeline status handling within the pinned hotfile budget without
+  changing installed data shape. Existing consumers need no migration beyond
+  normal upgrade adoption and dashboard/sync refresh.
+- The post-sync rendered-surface settlement for the same v0.1.15 QA pass is
+  covered by `migration-observer:0.1.15:browser-surfaces:5756d08f1176`. The
+  final fingerprint binds the refreshed Atlas, Casebook, Compass, Radar, and
+  Registry browser payload set plus the browser-source cleanup to a completed
+  consumer migration assessment. Existing consumers still need no bespoke data
+  migration; normal upgrade adoption and dashboard/sync refresh converge the
+  installed surfaces.

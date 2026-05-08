@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-05-06
+Last updated: 2026-05-07
 
 
 ## Overview
@@ -55,6 +55,8 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-05: Added the deterministic greenfield proposal Tribunal and collapsed apply-time visibility into one final batched Radar/Registry/Atlas/Compass refresh after all accepted artifacts and Compass memory are written. The gate is host-model agnostic: hosts author proposal content, while Odylith adjudicates topology, component ownership quality, release targeting, wave focus, and surface visibility before source truth changes. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-05-06: Hardened greenfield apply against loose host-authored proposal JSON and failed retry poison: common field shapes normalize before validation, generic diagram slugs are project-scoped, diagram traceability accepts workstream IDs as well as titles, sequence labels normalize parser-sensitive semicolons, and failed apply rolls back greenfield source truth instead of leaving duplicate Radar, Registry, Atlas, release, or Compass acceptance state. The proposal request contract now also requires domain-proportional security, privacy, compliance, abuse, accessibility, data-retention, and operational risk posture. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-173`)
 - 2026-05-07: Hardened the release-blocking greenfield path found in CRISPR Ethics manual testing: proposals that omit a true umbrella now synthesize `Govern <Project>` before validation, wave/release/traceability mapping resolves proposal-local `WS-*` IDs to created `B-*` IDs, nested security/compliance posture is flattened into readable bullets instead of raw list literals, component specs now include implementation kickoff guidance, and apply output names the first child workstream plus validation commands. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-176`)
+- 2026-05-07: Made provider-free greenfield proposals apply-ready by construction: `greenfield propose --format json` emits the canonical proposal object that `greenfield apply` consumes, `greenfield create --confirm` owns the one-command confirmed path, batch validation reports complete remediation issues, the human proposal renders from the same object, and the robot-swarm logistics specialization now lives in a focused profile owner instead of the generic scaffold assembler. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-173`, `CB-176`, `CB-181`)
+- 2026-05-07: Aligned installed and bundled greenfield host guidance with the apply-ready contract: AGENTS, README, `odylith-greenfield-governance`, and `odylith-show-me` now route confirmation to `greenfield create --confirm`, forbid hand-authored proposal JSON, and are pinned by source plus release-smoke guidance tests. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-176`, `CB-181`)
 
 ## Contract
 
@@ -73,6 +75,11 @@ This section captures synchronized requirement and contract signals derived from
   stale component dossiers, or release events from a rejected apply.
 - `proposal_rendering.py` owns operator-facing text and apply-command rendering
   so proposal compilation, planning, and presentation stay decoupled.
+- Installed greenfield guidance must not ask Codex or Claude hosts to hand-author
+  or reconstruct proposal JSON. Proposal review uses the canonical object from
+  `greenfield propose`; confirmation uses `greenfield create --confirm` unless an
+  explicit file workflow is needed, in which case the file comes from
+  `greenfield propose --format json`.
 - `proposal_validation.py` owns host-reasoned proposal validation, required
   Mermaid source checks, evidence-tier checks, and duplicate-topology rejection.
   Generic Atlas scaffold remains the low-level catalog/source writer; Domain

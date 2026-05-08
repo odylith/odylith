@@ -2155,6 +2155,24 @@ def _render_html(
       return "";
     }
 
+    function diagramSearchTokens(value) {
+      const canonical = canonicalizeDiagramId(value);
+      if (!canonical) return [];
+      const match = canonical.match(/^D-(\\d+)$/);
+      if (!match) return [canonical, canonical.replace("-", "")];
+      const numeric = match[1];
+      const unpadded = numeric.replace(/^0+/, "") || "0";
+      return [canonical, canonical.replace("-", ""), numeric, unpadded];
+    }
+
+    function diagramMatchesExactSearchToken(diagram, needle, normalizedNeedle) {
+      if (!needle && !normalizedNeedle) return false;
+      const tokens = diagramSearchTokens(diagram && diagram.diagram_id).map((token) => String(token || "").toLowerCase());
+      if (needle && tokens.includes(needle)) return true;
+      if (!normalizedNeedle) return false;
+      return tokens.map(normalizeSearchToken).includes(normalizedNeedle);
+    }
+
     function canonicalizeSortToken(value) {
       const token = String(value || "").trim().toLowerCase();
       return SORT_TOKENS.has(token) ? token : SORT_DEFAULT;
@@ -2194,12 +2212,9 @@ def _render_html(
       });
     }
 
-    function ownerWorkstreamsForDiagram(diagram) {
+    function normalizedWorkstreamList(rawValues) {
       const values = new Set();
-      const listed = Array.isArray(diagram && diagram.related_workstreams)
-        ? diagram.related_workstreams
-        : [];
-      listed.forEach((token) => {
+      (Array.isArray(rawValues) ? rawValues : []).forEach((token) => {
         const workstream = String(token || "").trim();
         if (WORKSTREAM_ID_RE.test(workstream)) {
           values.add(workstream);
@@ -2208,33 +2223,11 @@ def _render_html(
       return Array.from(values).sort();
     }
 
-    function activeWorkstreamsForDiagram(diagram) {
-      const values = new Set();
-      const listed = Array.isArray(diagram && diagram.active_workstreams)
-        ? diagram.active_workstreams
-        : [];
-      listed.forEach((token) => {
-        const workstream = String(token || "").trim();
-        if (WORKSTREAM_ID_RE.test(workstream)) {
-          values.add(workstream);
-        }
-      });
-      return Array.from(values).sort();
-    }
+    function ownerWorkstreamsForDiagram(diagram) { return normalizedWorkstreamList(diagram && diagram.related_workstreams); }
 
-    function historicalWorkstreamsForDiagram(diagram) {
-      const values = new Set();
-      const listed = Array.isArray(diagram && diagram.historical_workstreams)
-        ? diagram.historical_workstreams
-        : [];
-      listed.forEach((token) => {
-        const workstream = String(token || "").trim();
-        if (WORKSTREAM_ID_RE.test(workstream)) {
-          values.add(workstream);
-        }
-      });
-      return Array.from(values).sort();
-    }
+    function activeWorkstreamsForDiagram(diagram) { return normalizedWorkstreamList(diagram && diagram.active_workstreams); }
+
+    function historicalWorkstreamsForDiagram(diagram) { return normalizedWorkstreamList(diagram && diagram.historical_workstreams); }
 
     function relatedWorkstreamsForDiagram(diagram) {
       const values = new Set();
@@ -2798,6 +2791,7 @@ def _render_html(
         const textParts = [
           diagram.diagram_id,
           diagramToken,
+          ...diagramSearchTokens(diagram.diagram_id),
           diagram.title,
           diagram.summary,
           diagram.kind,
@@ -2833,10 +2827,13 @@ def _render_html(
         }
       }
 
+      const exactSearchIndex = needle
+        ? activeList.findIndex((diagram) => diagramMatchesExactSearchToken(diagram, needle, normalizedNeedle))
+        : -1;
       const selectedIndex = selectedToken
         ? activeList.findIndex((diagram) => canonicalizeDiagramId(diagram.diagram_id) === selectedToken)
         : -1;
-      activeIndex = selectedIndex >= 0 ? selectedIndex : 0;
+      activeIndex = selectedIndex >= 0 ? selectedIndex : (exactSearchIndex >= 0 ? exactSearchIndex : 0);
       updateStats(activeList);
       renderList();
     }

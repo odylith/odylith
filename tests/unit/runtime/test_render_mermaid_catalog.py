@@ -83,6 +83,11 @@ def test_render_mermaid_catalog_indexes_diagram_ids_for_short_search_tokens() ->
 
     assert "diagram.diagram_id," in html
     assert "diagramToken," in html
+    assert "function diagramSearchTokens(value)" in html
+    assert "function diagramMatchesExactSearchToken(diagram, needle, normalizedNeedle)" in html
+    assert "...diagramSearchTokens(diagram.diagram_id)," in html
+    assert "exactSearchIndex >= 0 ? exactSearchIndex : 0" in html
+    assert 'const unpadded = numeric.replace(/^0+/, "") || "0";' in html
 
 
 def test_render_mermaid_catalog_defaults_to_newest_diagram_sort_filter() -> None:

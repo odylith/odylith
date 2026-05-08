@@ -100,6 +100,10 @@ standup-level summary should be.
   those governance groupings, Compass must not duplicate it in the current
   table; explicit scoped selection is the exception and may still show the
   chosen workstream directly.
+- Every visible `B-###` identifier in `Current Workstreams`, including the
+  covered-preview branch used when programs or release targets already
+  represent the active work, must render as a keyboard-focusable Radar
+  deeplink button rather than an inert label.
 - In the default unscoped Compass view, `Release Targets` sections start
   collapsed. Do not auto-expand the current release, the next release, or a
   single visible release on initial render. Explicit scoped workstream
@@ -708,6 +712,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-08: Kept the current active release visible in Compass until an explicit `shipped` or `closed` transition, with a `No targeted workstreams.` empty state when the lane stays active but temporarily has no targeted members. (Plan: [B-065](odylith/radar/radar.html?view=plan&workstream=B-065))
 - 2026-04-08: Added a separate completed-members section for finished work closed in the active current release, so release closeout stays visible without reclassifying that work as active targeting. (Plan: [B-066](odylith/radar/radar.html?view=plan&workstream=B-066))
 - 2026-04-08: Bound Compass workstream buttons to the shared compact `B-###` button contract so release/member cards and current-workstream links stop drifting when broader identifier styling changes. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-05-07: Repaired the Current Workstreams covered-preview branch so its `B-###` ids use the same Radar deeplink button contract as ordinary current rows instead of rendering as passive labels. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-177`)
 - 2026-04-08: Elevated no-stock-framing Compass voice to a standing product invariant and required cache revalidation before warmed briefs can replay, so human standup tone survives refresh, reuse, and future narrator changes. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-09: Locked `Release Targets` back to the operator-approved stacked format and prohibited shared shell CSS from reintroducing side-by-side or auto-fit release boards without explicit operator authorization. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-09: Hardened workstream progress truth so Compass counts only execution-relevant checklist sections, shows checklist-only state for active implementation lanes with zero checked execution tasks, and stops narrating those rows as fake `0% progress`. (Plan: [B-068](odylith/radar/radar.html?view=plan&workstream=B-068); Bug: `CB-087`)

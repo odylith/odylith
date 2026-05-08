@@ -300,16 +300,36 @@
     }
     .risk {
       border-left: 3px solid var(--danger);
-      padding-left: 8px;
-      margin-bottom: 8px;
+      padding: 7px 0 7px 10px;
+      margin-bottom: 10px;
       color: #7f1d1d;
       font-size: 14px;
       line-height: 1.45;
       font-weight: 500;
+      display: grid;
+      gap: 4px;
     }
-    .risk strong {
+    .risk-line {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-width: 0;
+    }
+    .risk-severity {
       font-size: inherit;
       line-height: inherit;
+      white-space: nowrap;
+    }
+    .risk-title {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+    .risk-meta {
+      color: #991b1b;
+      font-size: 12px;
+      line-height: 1.3;
+      padding-left: 0;
     }
     .muted { color: var(--ink-muted); }
     .hidden { display: none; }

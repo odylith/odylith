@@ -1,17 +1,22 @@
 # Bug Index
 
-Last updated (UTC): 2026-05-07
+Last updated (UTC): 2026-05-08
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-181 | 2026-05-07 | Release smoke omitted exact greenfield propose/apply journey | P2 | release | FixedPendingRelease | [2026-05-07-release-smoke-omitted-greenfield-create-journey.md](2026-05-07-release-smoke-omitted-greenfield-create-journey.md) |
+| CB-178 | 2026-05-07 | Radar sort filter ignored selected score and date modes | P2 | radar | FixedPendingRelease | [2026-05-07-radar-sort-filter-ignored-selected-score-and-date-modes.md](2026-05-07-radar-sort-filter-ignored-selected-score-and-date-modes.md) |
+| CB-180 | 2026-05-07 | Installer progress bar glued child output to elapsed seconds | P3 | installer | FixedPendingRelease | [2026-05-07-installer-progress-bar-glued-child-output-to-elapsed-seconds.md](2026-05-07-installer-progress-bar-glued-child-output-to-elapsed-seconds.md) |
 | CB-176 | 2026-05-07 | Greenfield apply produced fake program parent and raw component specs | P1 | domain-intelligence | FixedPendingRelease | [2026-05-07-greenfield-apply-produced-fake-program-parent-and-raw-component-specs.md](2026-05-07-greenfield-apply-produced-fake-program-parent-and-raw-component-specs.md) |
+| CB-177 | 2026-05-07 | Compass current workstream ids rendered as labels in covered preview | P2 | compass | FixedPendingRelease | [2026-05-07-compass-current-workstream-ids-rendered-as-labels-in-covered-preview.md](2026-05-07-compass-current-workstream-ids-rendered-as-labels-in-covered-preview.md) |
+| CB-179 | 2026-05-07 | Atlas search missed partial numeric diagram ids | P2 | atlas | FixedPendingRelease | [2026-05-07-atlas-search-missed-partial-numeric-diagram-ids.md](2026-05-07-atlas-search-missed-partial-numeric-diagram-ids.md) |
 | CB-172 | 2026-05-06 | Structured sync action results can crash governed sync execution | P1 | sync | FixedPendingRelease | [2026-05-06-structured-sync-action-results-can-crash-governed-sync-execution.md](2026-05-06-structured-sync-action-results-can-crash-governed-sync-execution.md) |
-| CB-175 | 2026-05-06 | Single artifact governed writers lacked tribunal posture gates | P1 | governance authoring writers | Open | [2026-05-06-single-artifact-governed-writers-lacked-tribunal-posture-gates.md](2026-05-06-single-artifact-governed-writers-lacked-tribunal-posture-gates.md) |
+| CB-175 | 2026-05-06 | Single artifact governed writers lacked tribunal posture gates | P1 | governance authoring writers | FixedPendingRelease | [2026-05-06-single-artifact-governed-writers-lacked-tribunal-posture-gates.md](2026-05-06-single-artifact-governed-writers-lacked-tribunal-posture-gates.md) |
 | CB-170 | 2026-05-06 | Release retargeting can corrupt prior release workstream filters | P0 | release-planning | FixedPendingRelease | [2026-05-06-release-retargeting-can-corrupt-prior-release-workstream-filters.md](2026-05-06-release-retargeting-can-corrupt-prior-release-workstream-filters.md) |
 | CB-171 | 2026-05-06 | Radar refresh can render over stale traceability release projection | P1 | radar | FixedPendingRelease | [2026-05-06-radar-refresh-can-render-over-stale-traceability-release-projection.md](2026-05-06-radar-refresh-can-render-over-stale-traceability-release-projection.md) |
-| CB-173 | 2026-05-06 | Greenfield apply drip fails loose host proposals and leaves partial governance w | P1 | domain-intelligence-greenfield | Open | [2026-05-06-greenfield-apply-drip-fails-loose-host-proposals-and-leaves-partial-governance-w.md](2026-05-06-greenfield-apply-drip-fails-loose-host-proposals-and-leaves-partial-governance-w.md) |
+| CB-173 | 2026-05-06 | Greenfield apply drip-fails loose host proposals and leaves partial governance writes | P1 | domain-intelligence-greenfield | FixedPendingRelease | [2026-05-06-greenfield-apply-drip-fails-loose-host-proposals-and-leaves-partial-governance-w.md](2026-05-06-greenfield-apply-drip-fails-loose-host-proposals-and-leaves-partial-governance-w.md) |
 | CB-174 | 2026-05-06 | Context exact code paths lose registry owner in execution handshake | P2 | context-engine | Open | [2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md](2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md) |
 | CB-164 | 2026-05-04 | Non git project folders show noisy git missing notice on every refresh | P2 | dashboard | FixedPendingRelease | [2026-05-04-non-git-project-folders-show-noisy-git-missing-notice-on-every-refresh.md](2026-05-04-non-git-project-folders-show-noisy-git-missing-notice-on-every-refresh.md) |
 | CB-169 | 2026-05-04 | Hosted install fallback drops release spotlight after state cleanup | P1 | dashboard | FixedPendingRelease | [2026-05-04-hosted-install-fallback-drops-release-spotlight-after-state-cleanup.md](2026-05-04-hosted-install-fallback-drops-release-spotlight-after-state-cleanup.md) |

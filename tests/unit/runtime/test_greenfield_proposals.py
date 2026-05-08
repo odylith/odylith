@@ -764,13 +764,17 @@ def test_greenfield_prompt_returns_host_reasoning_contract(tmp_path) -> None:
     assert "Tribunal gate" in quality_bar
     assert "Surface DAGs" in quality_bar
     assert "security, privacy, abuse, accessibility" in quality_bar
-    assert "--release 0.0.1" in proposal["apply_commands"][1]
+    assert "odylith greenfield propose" in proposal["apply_commands"][1]
+    assert "--release 0.0.1" in proposal["apply_commands"][2]
     assert "Default the first greenfield release target to exactly 0.0.1" in " ".join(
         proposal["reasoning_contract"]["quality_bar"]
     )
     assert "do not add project names or descriptive words to release targets" in proposal["host_instruction"]
     assert proposal["proposal_template"]["mode"] == "host_reasoned_greenfield_proposal"
     assert proposal["proposal_template"]["release_plan"]["label"] == "0.0.1"
+    assert proposal["canonical_proposal_gate"]["status"] == "passed"
+    greenfield_proposals.validate_host_reasoned_proposal(proposal["proposal_template"])
+    assert greenfield_proposals.run_greenfield_tribunal(proposal["proposal_template"], release_selector="0.0.1").passed
     assert proposal["accepted_aliases"]["validation"] == ["proof_expectations", "test_strategy"]
 
 
@@ -787,19 +791,19 @@ def test_greenfield_text_keeps_host_reasoning_and_no_write_boundary_visible(tmp_
 
     assert rc == 0
     output = capsys.readouterr().out
-    assert "active host reasoning required" in output
-    assert "do not use canned domain buckets" in output
-    assert "Evidence rules" in output
+    assert "apply-ready JSON: built, normalized, validated, Tribunal passed" in output
+    assert "shared artifact: this text and `--format json` are rendered from the same canonical proposal" in output
     assert "No files changed." in output
-    assert "default_release_selector: 0.0.1" in output
-    assert "Canonical apply JSON shape" in output
     assert "mode: host_reasoned_greenfield_proposal" in output
-    assert "release_plan.label: 0.0.1" in output
-    assert "deterministic proposal Tribunal before writes" in output
-    assert "Radar, Registry, Atlas, and Compass refresh" in output
+    assert "active host reasoning required" not in output
+    assert "Canonical apply JSON shape" not in output
+    assert "odylith greenfield create --repo-root ." in output
+    assert "odylith greenfield propose --repo-root ." in output
+    assert "proposal Tribunal must pass before any source-truth writes" in output
+    assert "Radar, Registry, Atlas, and Compass visible after writes" in output
 
 
-def test_greenfield_cli_json_is_host_reasoning_contract(tmp_path, capsys) -> None:
+def test_greenfield_cli_json_is_apply_ready_proposal(tmp_path, capsys) -> None:
     rc = greenfield_proposals.main(
         [
             "propose",
@@ -814,11 +818,28 @@ def test_greenfield_cli_json_is_host_reasoning_contract(tmp_path, capsys) -> Non
 
     assert rc == 0
     payload = json.loads(capsys.readouterr().out)
-    assert payload["mode"] == "host_reasoned_proposal_request"
-    assert payload["classification"]["method"] == "open_world_host_reasoning"
+    assert payload["mode"] == "host_reasoned_greenfield_proposal"
     assert payload["provider_calls"] == 0
-    assert payload["proposal_template"]["mode"] == "host_reasoned_greenfield_proposal"
-    assert payload["proposal_template"]["release_plan"]["selector"] == "0.0.1"
+    assert payload["release_plan"]["selector"] == "0.0.1"
+    greenfield_proposals.validate_host_reasoned_proposal(payload)
+    assert greenfield_proposals.run_greenfield_tribunal(payload, release_selector="0.0.1").passed
+
+
+def test_greenfield_normalization_enriches_transcript_dependency_gaps() -> None:
+    proposal = _host_reasoned_crispr_without_parent()
+    proposal["backlog"][0].pop("dependencies")
+    proposal["backlog"][0].pop("interfaces")
+    proposal["components"][0]["dependencies"] = []
+
+    normalized = greenfield_proposals.normalize_host_reasoned_proposal(proposal)
+    identity = next(row for row in normalized["backlog"] if row.get("id") == "WS-IA")
+    component = next(row for row in normalized["components"] if row.get("component_id") == "identity-access")
+
+    assert identity["dependencies"]
+    assert identity["interfaces"]
+    assert "planned boundary" in identity["dependencies"][0]
+    assert component["dependencies"]
+    assert "No upstream component dependency is claimed" in component["dependencies"][0]
 
 
 def test_greenfield_normalization_compacts_verbose_release_plan_label_to_selector() -> None:
@@ -1046,6 +1067,30 @@ def test_greenfield_apply_rejects_shallow_child_backlog_metrics(tmp_path) -> Non
         )
 
 
+def test_greenfield_apply_reports_validation_issues_in_one_batch(tmp_path) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    proposal = _host_reasoned_ecommerce_proposal()
+    proposal["backlog"][1].pop("problem")
+    proposal["backlog"][2]["success_metrics"] = ["Too shallow."]
+    proposal["components"][0]["responsibility"] = "UI"
+
+    with pytest.raises(ValueError) as excinfo:
+        greenfield_proposals.apply_greenfield_proposal(
+            repo_root=tmp_path,
+            proposal=proposal,
+            confirm=True,
+            release_selector="0.0.1",
+        )
+
+    message = str(excinfo.value)
+    assert "greenfield proposal validation failed with" in message
+    assert "backlog row 2 `problem` must be non-empty" in message
+    assert "backlog row 3 must include at least two success_metrics" in message
+    assert "component row 1 `responsibility` must contain at least 6 meaningful words" in message
+    assert "auto-enrichment:" in message
+    assert "needs operator/proposal input:" in message
+
+
 def test_greenfield_apply_rejects_shallow_component_responsibility(tmp_path) -> None:
     _seed_empty_governance_repo(tmp_path)
     proposal = _host_reasoned_ecommerce_proposal()
@@ -1066,7 +1111,7 @@ def test_greenfield_apply_rejects_child_without_topology(tmp_path) -> None:
     proposal["backlog"][1].pop("component_focus")
     proposal["backlog"][1].pop("related_diagram_slugs")
 
-    with pytest.raises(ValueError, match="greenfield proposal Tribunal rejected"):
+    with pytest.raises(ValueError, match="greenfield proposal Tribunal failed"):
         greenfield_proposals.apply_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,
@@ -1354,9 +1399,63 @@ def test_greenfield_apply_cli_prints_operator_handoff(tmp_path, monkeypatch, cap
 
     out = capsys.readouterr().out
     assert rc == 0
-    assert "- first implementation lane: wave Foundations | release 0.0.1" in out
+    assert "- current implementation lane: wave Foundations | release 0.0.1" in out
     assert "- operator handoff:" in out
     assert "./.odylith/bin/odylith validate plan-workstream-binding --repo-root ." in out
+
+
+def test_greenfield_create_cli_owns_apply_ready_path(tmp_path, monkeypatch, capsys) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "robot swarm logistics app",
+            "--release",
+            "0.0.1",
+            "--confirm",
+        ]
+    )
+
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "odylith greenfield create wrote confirmed proposal" in out
+    assert "- tribunal: passed" in out
+    assert "- exact first coding workstream: B-002 Dispatch and observe one simulated logistics task" in out
+    assert "- validation already run:" in out
+    assert "- created governance files:" in out
+    assert "greenfield proposal validation failed" not in out
+    assert "greenfield proposal Tribunal failed" not in out
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
+
+
+def test_greenfield_create_cli_requires_confirmation_before_writes(tmp_path, capsys) -> None:
+    _seed_empty_governance_repo(tmp_path)
+
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "robot swarm logistics app",
+            "--release",
+            "0.0.1",
+        ]
+    )
+
+    out = capsys.readouterr().out
+    assert rc == 2
+    assert "--confirm is required before greenfield apply writes governance records" in out
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
+    assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
+    assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))
 
 
 def test_greenfield_apply_namespaces_partial_project_diagram_slugs_before_scaffold(tmp_path, monkeypatch) -> None:

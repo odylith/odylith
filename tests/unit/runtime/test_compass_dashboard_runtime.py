@@ -55,6 +55,36 @@ def test_default_traceability_warning_filter_rejects_maintainer_diagnostic() -> 
     )
 
 
+def test_fixed_pending_release_critical_bug_is_not_timeline_watch_item(tmp_path: Path) -> None:
+    events = runtime._build_bug_timeline_events(  # noqa: SLF001
+        repo_root=tmp_path,
+        now=dt.datetime(2026, 5, 7, 12, 0, tzinfo=dt.timezone.utc),
+        bugs_index_path=tmp_path / "odylith" / "casebook" / "bugs" / "INDEX.md",
+        bug_rows=[
+            {
+                "Severity": "P1",
+                "Status": "FixedPendingRelease",
+                "Title": "Release retargeting can corrupt prior release workstream filters",
+                "Date": "2026-05-06",
+                "Link": "",
+            }
+        ],
+        ws_path_index={},
+    )
+
+    assert [event["kind"] for event in events] == ["bug_resolved"]
+    assert "fixed pending release" in events[0]["summary"]
+    assert "remains open" not in events[0]["summary"]
+
+
+def test_compass_critical_risk_attention_excludes_fixed_pending_release() -> None:
+    assert compass_runtime_payload_runtime._bug_is_open_critical(severity="P1", status="Open")  # noqa: SLF001
+    assert not compass_runtime_payload_runtime._bug_is_open_critical(  # noqa: SLF001
+        severity="P1",
+        status="FixedPendingRelease",
+    )
+
+
 def test_workstream_window_activity_detects_recent_completion_without_git_activity() -> None:
     assert compass_runtime_payload_runtime._workstream_has_window_activity(  # noqa: SLF001
         ws_id="B-003",

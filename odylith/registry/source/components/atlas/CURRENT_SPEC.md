@@ -41,6 +41,10 @@ grounding.
   paths.
 - Context Engine architecture mode uses Atlas evidence for topology-sensitive
   packets, so catalog quality directly affects grounding quality.
+- Atlas search must index diagram ids in canonical, compact, padded numeric,
+  and unpadded numeric forms. A query such as `003` must find `D-003` and make
+  that exact diagram-id hit the active detail even when related workstream
+  text also matches the query.
 
 ## Runtime Contract
 ### Source truth
@@ -278,3 +282,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-09: Replaced Atlas watched-path freshness mtimes with stored content fingerprints, taught auto-update to distinguish review-only versus render-needed work before printing its plan, and repaired the persistent Mermaid worker bootstrap so real render jobs work again on the optimized path. Review-only Atlas refresh now updates freshness truth without regenerating unchanged SVG and PNG assets. (Plan: [B-080](odylith/radar/radar.html?view=plan&workstream=B-080); Bugs: `CB-097`, `CB-098`, `CB-099`, `CB-100`)
 - 2026-05-03: Added the v0.1.14 deterministic Atlas visual grammar: pure-white viewer stage, harmonious container and semantic node palettes, Soft Coral decision/gate node coloring instead of amber or warning-coded yellow, lighter wash tones for grouped lanes, semantic-label-first container coloring, managed render-color precedence over legacy Mermaid color tokens, render-style fingerprints, and migration-backed rerendering for stale SVG/PNG assets from 0.1.10/0.1.11/0.1.12/0.1.13 installs. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-162`)
 - 2026-05-04: Tightened the Atlas palette rule so container/subgraph fills use a near-white wash layer while inner node boxes keep the stronger semantic tone. The migration detector treats old full-strength container fills and container-inherited node fills as stale, forcing existing consumer diagrams to rerender during upgrade. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-162`)
+- 2026-05-07: Added short-token diagram-id search so `D-003`, `D003`, `003`, and `3` all resolve through Atlas search, with exact diagram-id token hits preferred for the active detail. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-179`)

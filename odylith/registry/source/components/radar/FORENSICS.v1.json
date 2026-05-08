@@ -40,10 +40,10 @@
     "empty_reasons": [],
     "explicit_event_count": 155,
     "mapped_workstream_evidence_count": 114,
-    "recent_path_match_count": 0,
-    "spec_history_event_count": 12,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 13,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 155
+    "timeline_event_count": 156
   },
   "name": "Radar",
   "path_prefixes": [
@@ -53,6 +53,23 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+        "odylith/registry/source/components/radar/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 468,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md, odylith/registry/source/components/radar/CURRENT_SPEC.md",
+      "ts_iso": "2026-05-07T17:34:56-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",

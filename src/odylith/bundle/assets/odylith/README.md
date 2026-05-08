@@ -104,15 +104,18 @@ greenfield proposal lane before source-backed governance exists:
 ./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<project intent>"
 ```
 
-The active host model authors the project-specific proposal in chat. Odylith
-owns the evidence contract, topology requirements, validation, confirmation
-gate, proposal Tribunal, and apply path. Accepted proposals can be applied only
-with explicit confirmation; apply refreshes Radar, Registry, Atlas, and Compass
-after all accepted artifacts are written:
+Odylith builds an apply-ready canonical proposal, validates it against the
+apply contract, runs the greenfield Tribunal, and renders the human proposal
+from that same object. Accepted proposals can be created only with explicit
+confirmation:
 
 ```bash
-./.odylith/bin/odylith greenfield apply --repo-root . --proposal-file <proposal.json> --confirm --release 0.0.1
+./.odylith/bin/odylith greenfield create --repo-root . --prompt "<project intent>" --release 0.0.1 --confirm
 ```
+
+If a workflow needs a proposal file, emit it with `greenfield propose --format
+json` and pass that canonical file to `greenfield apply`; do not hand-author
+proposal JSON.
 
 For the common governance authoring fast paths, use:
 

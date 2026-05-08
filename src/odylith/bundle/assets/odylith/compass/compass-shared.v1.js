@@ -536,18 +536,6 @@ initQuickTooltips();
       return unavailableStandupBrief("No structured standup brief is available for this view.");
     }
 
-    function radarWorkstreamHref(workstreamId, { view = "" } = {}) {
-      const code = String(workstreamId || "").trim();
-      if (!WORKSTREAM_RE.test(code)) return "";
-      const query = new URLSearchParams();
-      query.set("tab", "radar");
-      query.set("workstream", code);
-      if (String(view || "").trim()) {
-        query.set("view", String(view || "").trim());
-      }
-      return `../index.html?${query.toString()}`;
-    }
-
     function atlasDiagramHref(diagramId, state, preferredWorkstream = "") {
       const code = String(diagramId || "").trim();
       if (!DIAGRAM_RE.test(code)) return "";

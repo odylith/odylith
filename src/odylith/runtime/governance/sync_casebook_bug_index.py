@@ -19,6 +19,7 @@ _BUG_METADATA_LINE_RE = re.compile(r"^-?\s*([A-Za-z0-9/() _.-]+):\s*(.*)$")
 _BUG_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _SLUG_DATE_RE = re.compile(r"^(?P<date>\d{4}-\d{2}-\d{2})-(?P<title>.+)$")
 _EXPLICIT_CASEBOOK_BUG_ID_RE = re.compile(r"^CB-(?P<number>\d{3,})$")
+_TITLE_TOKEN_RE = re.compile(r"[A-Za-z0-9]+")
 @dataclass(frozen=True)
 class BugIndexRow:
     """One rendered row in the authoritative Casebook bug index."""
@@ -68,6 +69,46 @@ def _slug_to_title(slug: str) -> str:
         token = match.group("title")
     title = token.replace("-", " ").strip()
     return title[:1].upper() + title[1:] if title else "Untitled bug"
+
+
+def _compact_title_candidate(value: str | None) -> str:
+    """Return a one-line Casebook title candidate from a metadata field."""
+    lines = str(value or "").strip().splitlines()
+    first_line = lines[0].strip() if lines else ""
+    if not first_line:
+        return ""
+    return first_line.rstrip(".").strip()
+
+
+def _title_tokens(value: str) -> list[str]:
+    return [match.group(0).casefold() for match in _TITLE_TOKEN_RE.finditer(value)]
+
+
+def _slug_title_is_truncated_by_description(*, slug_title: str, description_title: str) -> bool:
+    slug_tokens = _title_tokens(slug_title)
+    description_tokens = _title_tokens(description_title)
+    if len(slug_tokens) < 2 or len(slug_tokens) > len(description_tokens):
+        return False
+    if slug_tokens[:-1] != description_tokens[: len(slug_tokens) - 1]:
+        return False
+    slug_tail = slug_tokens[-1]
+    description_tail = description_tokens[len(slug_tokens) - 1]
+    return bool(slug_tail and slug_tail != description_tail and description_tail.startswith(slug_tail))
+
+
+def _bug_title(*, fields: dict[str, str], path: Path) -> str:
+    """Choose a display title without leaking max-slug truncation into surfaces."""
+    explicit_title = _compact_title_candidate(fields.get("Title"))
+    if explicit_title:
+        return explicit_title
+    slug_title = _slug_to_title(path.name)
+    description_title = _compact_title_candidate(fields.get("Description"))
+    if description_title and _slug_title_is_truncated_by_description(
+        slug_title=slug_title,
+        description_title=description_title,
+    ):
+        return description_title
+    return slug_title
 
 
 def _parse_bug_fields(path: Path) -> dict[str, str]:
@@ -133,7 +174,7 @@ def _build_bug_row(*, bug_root: Path, path: Path) -> BugIndexRow:
             seed=rel,
         ),
         date=date,
-        title=_slug_to_title(path.name),
+        title=_bug_title(fields=fields, path=path),
         severity=str(fields.get("Severity", "")).strip() or "Unknown",
         components=(
             str(fields.get("Components Affected", "")).strip()

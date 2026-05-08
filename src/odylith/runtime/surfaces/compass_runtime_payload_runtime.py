@@ -6,6 +6,7 @@ import datetime as dt
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common import casebook_metadata
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import odylith_context_engine_delivery_surface_payload_runtime as delivery_surface_payload_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store
@@ -58,6 +59,12 @@ def _format_brief_source_counts(counts: Mapping[str, int]) -> str:
         if int(counts.get(source, 0) or 0) > 0
     ]
     return ", ".join(parts) if parts else "no scoped briefs"
+
+
+def _bug_is_open_critical(*, severity: str, status: str) -> bool:
+    if str(severity).strip().upper() not in {"P0", "P1"}:
+        return False
+    return casebook_metadata.casebook_status_requires_active_attention(status)
 
 
 def _reusable_brief_sections_for_fact_packet(
@@ -1087,8 +1094,7 @@ def _build_runtime_payload(
             index_path=bugs_index_path,
             markdown_link=str(row.get("Link", "")),
         )
-        is_open = status.lower() != "closed"
-        is_critical = severity in {"P0", "P1"} and is_open
+        is_critical = _bug_is_open_critical(severity=severity, status=status)
         if is_critical:
             open_critical += 1
         bug_workstreams = sorted(

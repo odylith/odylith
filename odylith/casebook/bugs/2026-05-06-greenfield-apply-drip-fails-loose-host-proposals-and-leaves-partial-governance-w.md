@@ -1,6 +1,6 @@
 - Bug ID: CB-173
 
-- Status: Open
+- Status: FixedPendingRelease
 
 - Created: 2026-05-06
 
@@ -44,6 +44,8 @@
 
 - Solution: Normalize common host-authored proposal shapes before validation; expose a canonical host-authored JSON template in `greenfield propose`; accept workstream IDs as diagram traceability aliases; namespace partially scoped generic diagram slugs before Atlas scaffold; normalize sequence message punctuation; wrap greenfield source-truth and generated dashboard writes in a rollback transaction; deepen proposal guidance for security, privacy, compliance, abuse, accessibility, retention, and operational risks.
 
+- Follow-up Solution: On 2026-05-07, the greenfield path was tightened again so `greenfield propose` validates an apply-ready canonical proposal before rendering human text, `greenfield create --prompt ... --release ... --confirm` owns the confirmed proposal/apply/refresh/summary path without host-written JSON, and validation plus Tribunal failures report complete remediation batches instead of drip-failing one missing field at a time.
+
 - Rollback/Forward Fix: Forward fix in domain_intelligence greenfield apply, Proposal Tribunal, proposal normalization, rollback guard, greenfield skill guidance, and regression tests.
 
 - Verification: PYTHONPATH=src python3.13 -m pytest -q tests/unit/test_cli.py::test_greenfield_propose_help_forwards_backend_flags tests/unit/test_cli.py::test_greenfield_apply_help_forwards_backend_flags tests/unit/test_cli.py::test_greenfield_propose_command_is_provider_free tests/unit/runtime/test_greenfield_proposals.py tests/unit/runtime/test_render_compass_dashboard.py tests/unit/runtime/test_compass_dashboard_shell.py tests/unit/runtime/test_render_backlog_ui.py tests/unit/runtime/test_surface_shell_contracts.py tests/unit/runtime/test_dashboard_ui_primitives.py tests/unit/runtime/test_render_registry_dashboard.py tests/unit/runtime/test_release_planning.py tests/unit/runtime/test_greenfield_host_routing.py tests/integration/runtime/test_surface_browser_smoke.py::test_compass_and_radar_target_release_cards_show_labeled_release_version; PYTHONPATH=src python3.13 -m compileall -q src/odylith/runtime/domain_intelligence/greenfield_proposals.py src/odylith/runtime/domain_intelligence/proposal_contract.py src/odylith/runtime/domain_intelligence/proposal_rendering.py src/odylith/runtime/domain_intelligence/proposal_normalization.py src/odylith/runtime/domain_intelligence/greenfield_transaction.py; git diff --check on touched files; greenfield propose brief includes canonical apply JSON shape, security/compliance, and parser-safe sequence guidance.
@@ -56,9 +58,13 @@
 
 - Regression Tests Added: tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_apply_normalizes_common_host_authored_recipe_shape, tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_apply_namespaces_partial_project_diagram_slugs_before_scaffold, tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_apply_rolls_back_partial_writes_when_late_step_fails, and tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_apply_rolls_back_generated_surfaces_when_refresh_fails.
 
+- Follow-up Regression Tests Added: tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_create_cli_owns_apply_ready_path, tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_apply_reports_validation_issues_in_one_batch, tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_normalization_enriches_transcript_dependency_gaps, and tests/unit/install/test_local_release_smoke.py::test_greenfield_create_smoke_runs_show_create_and_checks_surfaces.
+
 - Monitoring Updates: Watch greenfield support transcripts for duplicate active ideas, slug already exists, unknown workstream release events, and late Mermaid render failures after apply.
 
 - Version/Build: v0.1.15 maintainer branch 2026/freedom/v0.1.15
+
+- Fixed In: 0.1.15
 
 - Config/Flags: Default greenfield release selector 0.0.1; no feature flag.
 
@@ -66,7 +72,10 @@
 
 - Related Incidents/Bugs: Related: 2026-05-03-greenfield-consumer-intent-dead-ended-on-missing-source; 2026-05-04-greenfield-apply-target-release-can-stay-invisible-in-radar-and-compass; 2026-05-03-greenfield-atlas-drafts-reuse-generic-star-topology.
 
+- Related Follow-up Bugs: CB-176 and CB-181.
+
 - Code References: - src/odylith/runtime/domain_intelligence/greenfield_proposals.py
+- src/odylith/runtime/domain_intelligence/proposal_scaffold.py
 - src/odylith/runtime/domain_intelligence/proposal_normalization.py
 - src/odylith/runtime/domain_intelligence/greenfield_transaction.py
 - src/odylith/runtime/domain_intelligence/proposal_tribunal.py

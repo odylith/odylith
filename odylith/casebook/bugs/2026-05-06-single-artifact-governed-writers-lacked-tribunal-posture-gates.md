@@ -1,6 +1,6 @@
 - Bug ID: CB-175
 
-- Status: Open
+- Status: FixedPendingRelease
 
 - Created: 2026-05-06
 
@@ -49,6 +49,8 @@
 - Agent Guardrails: When creating governed truth, do not treat refresh success as adjudication; require posture fields and pre-write Tribunal pass before mutation.
 
 - Regression Tests Added: tests/unit/runtime/test_governed_artifact_tribunal.py plus focused greenfield, backlog, component/atlas authoring, and bug capture tests.
+
+- Fixed In: 0.1.15
 
 - Code References: - src/odylith/runtime/governance/artifact_tribunal.py
 - src/odylith/runtime/domain_intelligence/proposal_tribunal.py

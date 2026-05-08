@@ -666,7 +666,7 @@ def _install_progress_bar(label: str, message: str) -> Iterator[None]:
             bar = ("#" * fill) + ("." * (width - fill))
             print(
                 f"\r{normalized_label:<6} {normalized_message} [{bar}] {elapsed}s",
-                end="",
+                end="\r",
                 flush=True,
             )
             if stop.wait(1):
@@ -3300,6 +3300,7 @@ def build_parser() -> argparse.ArgumentParser:
     for command, help_text in (
         ("propose", "Draft a provider-free greenfield governance proposal."),
         ("apply", "Apply a confirmed greenfield governance proposal."),
+        ("create", "Build and apply a confirmed greenfield governance proposal in one command."),
     ):
         child_parser = greenfield_subparsers.add_parser(command, help=help_text)
         child_parser.add_argument("--repo-root", default=".", help="Consumer repository root.")
@@ -3643,7 +3644,7 @@ def main(argv: list[str] | None = None) -> int:
                 args = parser.parse_args(tokens)
                 return _cmd_show(args)
             return _cmd_show(argparse.Namespace(repo_root=repo_root, forwarded=forwarded))
-        if tokens[0] == "greenfield" and len(tokens) >= 2 and tokens[1] in {"propose", "apply"}:
+        if tokens[0] == "greenfield" and len(tokens) >= 2 and tokens[1] in {"propose", "apply", "create"}:
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             return _cmd_greenfield(
                 argparse.Namespace(repo_root=repo_root, greenfield_command=tokens[1], forwarded=forwarded)

@@ -119,6 +119,17 @@ def test_previous_release_is_published_treats_404_as_missing(monkeypatch) -> Non
     assert module._previous_release_is_published(version="0.1.5") is False
 
 
+def test_previous_release_is_published_treats_wrapped_404_as_missing(monkeypatch) -> None:
+    module = _module()
+
+    def fake_fetch_release(**kwargs):  # noqa: ANN001
+        raise ValueError("failed to fetch release metadata: HTTP Error 404: Not Found")
+
+    monkeypatch.setattr(module, "fetch_release", fake_fetch_release)
+
+    assert module._previous_release_is_published(version="0.0.0") is False
+
+
 def test_previous_release_is_published_returns_true_when_release_exists(monkeypatch) -> None:
     module = _module()
 
@@ -157,6 +168,202 @@ def test_run_reports_timeout_with_command_and_cwd(monkeypatch, tmp_path: Path) -
     assert "err" in message
 
 
+def test_greenfield_propose_apply_smoke_runs_exact_release_journey(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
+    module = _module()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    odylith = repo_root / ".odylith" / "bin" / "odylith"
+    commands: list[tuple[str, ...]] = []
+
+    for relative_path in (
+        "odylith/radar/radar.html",
+        "odylith/registry/registry.html",
+        "odylith/atlas/atlas.html",
+        "odylith/compass/compass.html",
+    ):
+        path = repo_root / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("ok\n", encoding="utf-8")
+
+    def fake_run(**kwargs):  # noqa: ANN001
+        command = tuple(str(part) for part in kwargs["command"])
+        commands.append(command)
+
+        class Result:
+            if "show" in command:
+                stdout = "Odylith read this repo: no application source was found.\n"
+            elif "propose" in command:
+                stdout = (
+                    '{\n'
+                    '  "mode": "host_reasoned_greenfield_proposal",\n'
+                    '  "backlog": [],\n'
+                    '  "components": [],\n'
+                    '  "diagrams": []\n'
+                    '}\n'
+                )
+            elif "apply" in command:
+                stdout = (
+                    "odylith greenfield apply wrote confirmed proposal\n"
+                    "- tribunal: passed\n"
+                    "- validation already run: proposal schema, proposal Tribunal, governed backlog Tribunal, Atlas scaffold, surface refresh\n"
+                    "- exact first coding workstream: B-002 First slice\n"
+                )
+            else:
+                stdout = "dashboard refresh completed\n- outcome: passed\n"
+
+        return Result()
+
+    monkeypatch.setattr(module, "_run", fake_run)
+
+    module._greenfield_propose_apply_smoke(repo_root=repo_root, odylith=odylith, env={"ODYLITH_VERSION": "0.1.15"})
+
+    assert commands == [
+        (str(odylith), "show", "--repo-root", "."),
+        (
+            str(odylith),
+            "greenfield",
+            "propose",
+            "--repo-root",
+            ".",
+            "--prompt",
+            "robot swarm logistics app",
+            "--format",
+            "json",
+        ),
+        (
+            str(odylith),
+            "greenfield",
+            "apply",
+            "--repo-root",
+            ".",
+            "--proposal-file",
+            "odylith-greenfield-proposal.json",
+            "--release",
+            "0.0.1",
+            "--confirm",
+        ),
+        (str(odylith), "dashboard", "refresh", "--repo-root", "."),
+    ]
+    assert (repo_root / "odylith-greenfield-proposal.json").is_file()
+
+
+def test_greenfield_create_smoke_runs_show_create_and_checks_surfaces(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
+    module = _module()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    odylith = repo_root / ".odylith" / "bin" / "odylith"
+    commands: list[tuple[str, ...]] = []
+
+    for relative_path in (
+        "odylith/radar/radar.html",
+        "odylith/registry/registry.html",
+        "odylith/atlas/atlas.html",
+        "odylith/compass/compass.html",
+    ):
+        path = repo_root / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("ok\n", encoding="utf-8")
+
+    def fake_run(**kwargs):  # noqa: ANN001
+        command = tuple(str(part) for part in kwargs["command"])
+        commands.append(command)
+
+        class Result:
+            stdout = (
+                "Odylith read this repo: no application source was found.\n"
+                if "show" in command
+                else (
+                    "odylith greenfield create wrote confirmed proposal\n"
+                    "- tribunal: passed\n"
+                    "- validation already run: proposal schema, proposal Tribunal, governed backlog Tribunal, Atlas scaffold, surface refresh\n"
+                    "- exact first coding workstream: B-002 First slice\n"
+                )
+            )
+
+        return Result()
+
+    monkeypatch.setattr(module, "_run", fake_run)
+
+    module._greenfield_create_smoke(repo_root=repo_root, odylith=odylith, env={"ODYLITH_VERSION": "0.1.15"})
+
+    assert commands == [
+        (str(odylith), "show", "--repo-root", "."),
+        (
+            str(odylith),
+            "greenfield",
+            "create",
+            "--repo-root",
+            ".",
+            "--prompt",
+            "robot swarm logistics app",
+            "--release",
+            "0.0.1",
+            "--confirm",
+        ),
+    ]
+
+
+def _write_greenfield_guidance(repo_root: Path, text: str) -> None:
+    module = _module()
+    for relative_path in module._GREENFIELD_GUIDANCE_FILES:
+        path = repo_root / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+
+
+def test_release_smoke_requires_installed_greenfield_guidance_uses_create(tmp_path: Path) -> None:
+    module = _module()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_greenfield_guidance(
+        repo_root,
+        "Use odylith greenfield create after confirmation. Do not hand-author proposal JSON.\n",
+    )
+
+    module._require_greenfield_guidance_uses_create(repo_root=repo_root, label="unit")
+
+    (repo_root / "AGENTS.md").write_text(
+        "Use odylith greenfield create after confirmation. Do not hand-author proposal JSON. host model drafts\n",
+        encoding="utf-8",
+    )
+    try:
+        module._require_greenfield_guidance_uses_create(repo_root=repo_root, label="unit")
+    except RuntimeError as exc:
+        assert "stale greenfield schema-repair flow" in str(exc)
+    else:  # pragma: no cover - assertion branch
+        raise AssertionError("stale installed guidance should fail release smoke")
+
+
+def test_install_and_create_smoke_installs_then_runs_one_command_path(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
+    module = _module()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    install_script = tmp_path / "install.sh"
+    install_script.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    events: list[str] = []
+
+    monkeypatch.setattr(module, "_install_cwd", lambda root: root / "workspace" / "nested")
+
+    def fake_run(**kwargs):  # noqa: ANN001
+        events.append("install")
+
+        class Result:
+            stdout = ""
+
+        return Result()
+
+    def fake_create(**kwargs):  # noqa: ANN001
+        events.append(f"create:{kwargs['odylith']}")
+
+    monkeypatch.setattr(module, "_run", fake_run)
+    monkeypatch.setattr(module, "_greenfield_create_smoke", fake_create)
+    monkeypatch.setattr(module, "_require_greenfield_guidance_uses_create", lambda **_kwargs: events.append("guidance"))
+
+    module._install_and_create_smoke(repo_root=repo_root, install_script=install_script, env={"ODYLITH_VERSION": "0.1.15"})
+
+    assert events == ["install", "guidance", f"create:{repo_root / '.odylith' / 'bin' / 'odylith'}"]
+
+
 def test_main_skips_upgrade_cycle_when_previous_release_missing(monkeypatch, tmp_path: Path) -> None:
     module = _module()
     dist_dir = tmp_path / "dist"
@@ -174,6 +381,7 @@ def test_main_skips_upgrade_cycle_when_previous_release_missing(monkeypatch, tmp
 
     monkeypatch.setattr(module, "_serve_directory", lambda directory: (_DummyServer(), "http://127.0.0.1:8123"))
     monkeypatch.setattr(module, "_install_and_smoke", lambda **kwargs: events.append("install"))
+    monkeypatch.setattr(module, "_install_and_create_smoke", lambda **kwargs: events.append("create-install"))
     monkeypatch.setattr(module, "_upgrade_cycle", lambda **kwargs: events.append("upgrade"))
     monkeypatch.setattr(module, "_stale_uninstall_residue_cycle", lambda **kwargs: events.append("stale-residue"))
     monkeypatch.setattr(module, "_previous_release_is_published", lambda **kwargs: False)
@@ -181,7 +389,7 @@ def test_main_skips_upgrade_cycle_when_previous_release_missing(monkeypatch, tmp
     rc = module.main(["--version", "0.1.6", "--dist-dir", str(dist_dir)])
 
     assert rc == 0
-    assert events == ["install", "shutdown", "server_close"]
+    assert events == ["install", "create-install", "shutdown", "server_close"]
 
 
 def test_main_runs_upgrade_cycle_when_previous_release_exists(monkeypatch, tmp_path: Path) -> None:
@@ -201,6 +409,7 @@ def test_main_runs_upgrade_cycle_when_previous_release_exists(monkeypatch, tmp_p
 
     monkeypatch.setattr(module, "_serve_directory", lambda directory: (_DummyServer(), "http://127.0.0.1:8123"))
     monkeypatch.setattr(module, "_install_and_smoke", lambda **kwargs: events.append("install"))
+    monkeypatch.setattr(module, "_install_and_create_smoke", lambda **kwargs: events.append("create-install"))
     monkeypatch.setattr(module, "_upgrade_cycle", lambda **kwargs: events.append("upgrade"))
     monkeypatch.setattr(module, "_stale_uninstall_residue_cycle", lambda **kwargs: events.append("stale-residue"))
     monkeypatch.setattr(module, "_previous_release_is_published", lambda **kwargs: True)
@@ -208,7 +417,7 @@ def test_main_runs_upgrade_cycle_when_previous_release_exists(monkeypatch, tmp_p
     rc = module.main(["--version", "0.1.6", "--dist-dir", str(dist_dir)])
 
     assert rc == 0
-    assert events == ["install", "upgrade", "stale-residue", "shutdown", "server_close"]
+    assert events == ["install", "create-install", "upgrade", "stale-residue", "shutdown", "server_close"]
 
 
 def test_main_runs_all_explicit_previous_versions(monkeypatch, tmp_path: Path) -> None:
@@ -228,6 +437,7 @@ def test_main_runs_all_explicit_previous_versions(monkeypatch, tmp_path: Path) -
 
     monkeypatch.setattr(module, "_serve_directory", lambda directory: (_DummyServer(), "http://127.0.0.1:8123"))
     monkeypatch.setattr(module, "_install_and_smoke", lambda **kwargs: events.append("install"))
+    monkeypatch.setattr(module, "_install_and_create_smoke", lambda **kwargs: events.append("create-install"))
     monkeypatch.setattr(module, "_upgrade_cycle", lambda **kwargs: events.append(f"upgrade:{kwargs['previous_version']}"))
     monkeypatch.setattr(
         module,
@@ -252,6 +462,7 @@ def test_main_runs_all_explicit_previous_versions(monkeypatch, tmp_path: Path) -
     assert rc == 0
     assert events == [
         "install",
+        "create-install",
         "upgrade:0.1.10",
         "stale-residue:0.1.10",
         "upgrade:0.1.14",

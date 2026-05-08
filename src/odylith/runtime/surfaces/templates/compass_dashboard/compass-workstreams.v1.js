@@ -413,10 +413,7 @@
         if (state.workstream) {
           return "No active workstreams in this scope.";
         }
-        if (!scopedRows.length) {
-          return "No active workstreams yet. Create or open one from Radar, then Compass will summarize it here.";
-        }
-        return "No additional current workstreams. Program and release lanes already cover the active work.";
+        return "No active workstreams yet. Create or open one from Radar, then Compass will summarize it here.";
       };
 
       if (!renderRows.length) {
@@ -753,9 +750,9 @@
 
       const rowHtml = records.map((item) => {
         const isSelected = item.ideaId === initiallyExpandedId;
-        const radarHref = radarWorkstreamHref(item.ideaId);
+        const radarHref = radarWorkstreamHref(item.ideaId, { view: "plan" });
         const idMarkup = rowsAreProgramCovered
-          ? `<span class="chip execution-wave-chip-link" data-ws-id="${escapeHtml(item.ideaId)}"${workstreamTooltipAttrs(item.ideaId, workstreamTitles, `Covered by program/release lanes: ${item.ideaId}`)}>${escapeHtml(item.ideaId)}</span>`
+          ? `<a class="ws-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-ws-id="${escapeHtml(item.ideaId)}"${workstreamTooltipAttrs(item.ideaId, workstreamTitles, `Open radar for ${item.ideaId}; also covered by program/release lanes`)}>${escapeHtml(item.ideaId)}</a>`
           : `<a class="ws-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-ws-id="${escapeHtml(item.ideaId)}"${workstreamTooltipAttrs(item.ideaId, workstreamTitles, `Open radar for ${item.ideaId}`)}>${escapeHtml(item.ideaId)}</a>`;
         return `
         <tr ${renderSummaryRowAttrs(item, "ws-row-title", isSelected)}>
@@ -778,8 +775,8 @@
 
       const representedPreviewNote = rowsAreProgramCovered
         ? `
-          <p class="empty">${escapeHtml(emptyWorkstreamCopy())}</p>
-          <p class="muted">Covered workstreams below are a compact detail preview; direct Radar links live in the Program and Release Target lanes above.</p>
+          <p class="muted represented-workstreams-note">Program and release lanes already organize these active workstreams; the table below keeps their status visible as a compact detail preview.</p>
+          <p class="muted">Direct Radar links live in the Program and Release Target lanes above.</p>
           ${scopedRows.length > renderRows.length ? `<p class="muted">Showing ${renderRows.length} of ${scopedRows.length} covered active workstreams.</p>` : ""}
         `
         : "";
@@ -849,7 +846,11 @@
 
       tableBody.querySelectorAll("tr.ws-summary-row").forEach((rowNode) => {
         const wsId = String(rowNode.getAttribute("data-ws-id") || rowNode.getAttribute("data-covered-ws-id") || "").trim();
-        rowNode.addEventListener("click", () => {
+        rowNode.addEventListener("click", (event) => {
+          const interactive = event.target && event.target.closest
+            ? event.target.closest("a, button, input, select, textarea, summary")
+            : null;
+          if (interactive) return;
           selectRow(wsId);
         });
         rowNode.addEventListener("keydown", (event) => {

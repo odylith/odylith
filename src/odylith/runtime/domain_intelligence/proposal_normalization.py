@@ -97,6 +97,8 @@ def normalize_host_reasoned_proposal(proposal: Mapping[str, Any]) -> dict[str, A
         security_compliance=normalized.get("security_compliance"),
     )
     normalized["components"] = _normalize_components(normalized.get("components"))
+    normalized["backlog"] = _enrich_backlog_expectations(normalized["backlog"], normalized["components"])
+    normalized["components"] = _enrich_component_expectations(normalized["components"])
     normalized["diagrams"] = _normalize_diagrams(
         normalized.get("diagrams"),
         components=normalized["components"],
@@ -529,6 +531,49 @@ def _normalize_components(value: Any) -> list[Any]:
         row.setdefault("evidence_tier", "user_intent")
         rows.append(row)
     return rows
+
+
+def _enrich_backlog_expectations(rows: Sequence[Any], components: Sequence[Any]) -> list[Any]:
+    component_ids = [
+        clean_text(row.get("component_id")) or clean_text(row.get("label"))
+        for row in components
+        if isinstance(row, Mapping)
+    ]
+    component_text = ", ".join(item for item in component_ids if item) or "planned Registry components"
+    enriched: list[Any] = []
+    for index, raw in enumerate(rows):
+        if not isinstance(raw, Mapping):
+            enriched.append(raw)
+            continue
+        row = dict(raw)
+        if index > 0 and not row.get("dependencies") and not row.get("depends_on") and not row.get("interfaces") and not row.get("interface_changes"):
+            focus_text = ", ".join(text_values(row.get("component_focus"))) or component_text
+            row["dependencies"] = [
+                f"Depends on confirming the planned boundary and release gate for {focus_text} before source implementation starts."
+            ]
+            row["interfaces"] = [
+                f"Defines the first-slice contract consumed or exposed by {focus_text}; exact API, CLI, UI, or file surface is confirmed in the technical plan."
+            ]
+        enriched.append(row)
+    return enriched
+
+
+def _enrich_component_expectations(rows: Sequence[Any]) -> list[Any]:
+    enriched: list[Any] = []
+    for raw in rows:
+        if not isinstance(raw, Mapping):
+            enriched.append(raw)
+            continue
+        row = dict(raw)
+        component_id = clean_text(row.get("component_id")) or clean_text(row.get("label")) or "component"
+        if not row.get("dependencies") and not row.get("depends_on"):
+            row["dependencies"] = [
+                f"No upstream component dependency is claimed for {component_id} until source evidence exists; first implementation planning must confirm runtime, storage, and provider boundaries."
+            ]
+        if not clean_text(row.get("boundary")) and clean_text(row.get("responsibility")):
+            row["boundary"] = f"Owns the planned responsibility: {clean_text(row.get('responsibility'))}"
+        enriched.append(row)
+    return enriched
 
 
 def _component_descriptions(components: Sequence[Any]) -> dict[str, str]:

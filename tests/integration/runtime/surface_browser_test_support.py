@@ -630,7 +630,12 @@ def _collect_sample_tokens(page, base_url: str) -> dict[str, str]:  # noqa: ANN0
 def _assert_radar_selection(page, workstream: str) -> None:  # noqa: ANN001
     assert page.locator("#tab-radar").get_attribute("aria-selected") == "true"
     radar = page.frame_locator("#frame-radar")
-    radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
+    try:
+        radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=5000)
+    except playwright_sync.TimeoutError:
+        radar.locator("a.back", has_text=re.compile(r"Back to Backlog .*Radar")).wait_for(timeout=15000)
+        radar.locator("p.id", has_text=workstream).wait_for(timeout=15000)
+        return
     radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=workstream).wait_for(timeout=15000)
 
 
@@ -758,6 +763,7 @@ def _assert_compass_live_state(compass, *, window_token: str) -> None:  # noqa: 
     assert "stale last known good" not in brief_notice
     assert _compass_kpi_value(compass, "Critical Risks") >= 0
     assert compass.locator("#risk-list .risk, #risk-list .empty").count() > 0
+    assert "FixedPendingRelease" not in compass.locator("#risk-list").inner_text().strip()
     assert compass.locator(
         "#timeline .tx-card, #timeline .empty, #timeline .timeline-day-title, #timeline .hour-empty"
     ).count() > 0

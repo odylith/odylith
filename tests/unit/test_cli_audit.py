@@ -222,6 +222,14 @@ _HANDLER_CASES = [
         and list(getattr(args, "forwarded", [])) == ["--proposal-file", "proposal.json"],
     },
     {
+        "path": ("greenfield", "create"),
+        "argv": lambda root: ["greenfield", "create", f"--repo-root={root}", "--prompt", "Build a lab notebook"],
+        "handler": "_cmd_greenfield",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "greenfield_command", "") == "create"
+        and list(getattr(args, "forwarded", [])) == ["--prompt", "Build a lab notebook"],
+    },
+    {
         "path": ("component", "register"),
         "argv": lambda root: ["component", "register", f"--repo-root={root}", "--id", "registry-refresh"],
         "handler": "_cmd_component",
