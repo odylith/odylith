@@ -267,7 +267,7 @@ def build_project_intelligence(
             "Project-depth metric: every required project-intelligence layer has concrete rows, not labels.",
             "Traceability metric: orphaned workstreams, components, diagrams, release refs, and proof gates remain zero.",
             "UX metric: proposal text shows direction choices, checkpoints, readiness gates, and host-independent commands before coding handoff.",
-            "Agent-quality metric: no host-side schema repair loop, no generic component specs, no title-only workstreams.",
+            "Agent-quality metric: no external JSON remediation loop, no generic component specs, no title-only workstreams.",
             "Latency metric: proposal/create stays provider-free and performs one batched refresh after confirmed apply.",
         ],
         "change_model": [
