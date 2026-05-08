@@ -1344,3 +1344,18 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   adoption supplies the corrected Radar renderer, already-owned Radar workstream
   truth remains unchanged, and normal dashboard/sync refresh regenerates the
   browser and installed bundle assets.
+- The v0.1.15 greenfield project-intelligence deepening pass is covered by
+  `migration-observer:0.1.15:guidance-and-skills:64364569b086`,
+  `migration-observer:0.1.15:browser-surfaces:f469b98318dc`, and
+  `migration-observer:0.1.15:install-managed-assets:765b855989ca`, with final
+  generated-surface settlement covered by
+  `migration-observer:0.1.15:browser-surfaces:2d3918fcc7c7` and
+  `migration-observer:0.1.15:install-managed-assets:79060c177fba`. The pass
+  adds the canonical `project_intelligence` proposal object, renders it before
+  the project brief and backlog, persists it into the parent Radar workstream,
+  and updates managed greenfield guidance plus bundle mirrors so Codex, Claude
+  Code, and direct CLI users review the same project-first control surface
+  before any child workstream technical plan or source edit. Existing consumer
+  repos need no destructive migration: historical greenfield records remain
+  readable, while future proposal/create runs and normal dashboard/sync refresh
+  converge installed surfaces to the deeper project-first UX.

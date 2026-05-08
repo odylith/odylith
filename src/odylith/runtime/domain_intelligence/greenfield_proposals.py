@@ -30,6 +30,8 @@ from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_cli_output import print_apply_result
 from odylith.runtime.domain_intelligence.greenfield_experience import proposal_posture_tuple
 from odylith.runtime.domain_intelligence.greenfield_experience import row_text_tuple
+from odylith.runtime.domain_intelligence.greenfield_project_intelligence import PROJECT_INTELLIGENCE_SECTION_TITLE
+from odylith.runtime.domain_intelligence.greenfield_project_intelligence import render_project_intelligence_section
 from odylith.runtime.domain_intelligence.greenfield_text import join_sentence_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -198,6 +200,7 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
             "validation": ["proof_expectations", "test_strategy"],
             "recommended_first_slice": ["first_slice_proof"],
             "release_plan": ["list of release rows", "default_release plus releases"],
+            "project_intelligence": ["project_control_surface", "project_domain_intelligence"],
         },
         "host_instruction": (
             "Draft a concrete proposal for the operator now. Be specific to the prompt; "
@@ -339,9 +342,16 @@ def _backlog_section_overrides(proposal: Mapping[str, Any]) -> dict[str, dict[st
             "complexity": str(row.get("complexity", "Medium")).strip() or "Medium",
             "ordering_rationale": "Created from a confirmed Odylith greenfield proposal.",
         }
+        extra_sections: dict[str, str] = {}
+        if title == parent_title:
+            project_intelligence = render_project_intelligence_section(proposal.get("project_intelligence"))
+            if project_intelligence:
+                extra_sections[PROJECT_INTELLIGENCE_SECTION_TITLE] = project_intelligence
         domain_intelligence = render_domain_intelligence_section(row.get("domain_intelligence"))
         if domain_intelligence:
-            override["extra_sections"] = {SECTION_TITLE: domain_intelligence}
+            extra_sections[SECTION_TITLE] = domain_intelligence
+        if extra_sections:
+            override["extra_sections"] = extra_sections
         overrides[title] = override
         overrides[slugify(title)] = override
     return overrides

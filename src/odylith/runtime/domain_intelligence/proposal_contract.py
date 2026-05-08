@@ -7,6 +7,7 @@ from typing import Any
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence.greenfield_domain_profile import infer_greenfield_domain_profile
 from odylith.runtime.domain_intelligence.greenfield_project_brief import build_project_brief
+from odylith.runtime.domain_intelligence.greenfield_project_intelligence import build_project_intelligence
 
 DEFAULT_GREENFIELD_RELEASE_SELECTOR = greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR
 
@@ -88,6 +89,7 @@ def build_proposal_contract() -> dict[str, Any]:
             "security_compliance",
             "validation_strategy",
             "project_brief",
+            "project_intelligence",
             "program",
             "release_plan",
             "backlog",
@@ -124,6 +126,11 @@ def build_proposal_contract() -> dict[str, Any]:
                 "a project-first blueprint with customization options, pre-coding checkpoints, coding readiness gates, "
                 "and host-independent commands; it must make clear that greenfield apply creates project truth before "
                 "the first source-backed implementation plan starts"
+            ),
+            "project_intelligence": (
+                "the deep project object that captures intent, scope, ontology, state, allowed operators, constraints, "
+                "truth map, evidence grammar, decisions, assumptions, topology, invariants, risks, validation obligations, "
+                "artifacts, owners, execution memory, metrics, change rules, conflict rules, and transfer priors before coding"
             ),
             "implementation_runway": (
                 "post-apply handoff that names the project parent, first wave, release target, direction choices, "
@@ -232,6 +239,41 @@ def build_proposal_template(*, intent_title: str, project_slug: str, source_post
     component_id = f"{project_slug}-core"
     diagram_slug = f"{project_slug}-system-context"
     domain_profile = infer_greenfield_domain_profile(prompt=intent_title, title=intent_title, slug=project_slug)
+    project_brief = build_project_brief(
+        prompt=intent_title,
+        title=intent_title,
+        slug=project_slug,
+        domain_profile=domain_profile,
+        release_selector=DEFAULT_GREENFIELD_RELEASE_SELECTOR,
+    )
+    components = [
+        {
+            "component_id": component_id,
+            "label": "Primary Component",
+            "kind": "service",
+            "intended_path": f"src/{component_id}",
+            "responsibility": "Replace with the component-specific responsibility.",
+            "boundary": "Replace with the component-specific boundary.",
+        }
+    ]
+    diagrams = [
+        {
+            "slug": diagram_slug,
+            "title": "System Context",
+            "kind": "flowchart",
+        }
+    ]
+    project_intelligence = build_project_intelligence(
+        prompt=intent_title,
+        title=intent_title,
+        slug=project_slug,
+        release_selector=DEFAULT_GREENFIELD_RELEASE_SELECTOR,
+        domain_profile=domain_profile,
+        project_brief=project_brief,
+        components=components,
+        diagrams=diagrams,
+        observed_source={"source_posture": source_posture},
+    )
     return {
         "schema_version": "odylith.greenfield.host_reasoned.v1",
         "mode": "host_reasoned_greenfield_proposal",
@@ -279,13 +321,8 @@ def build_proposal_template(*, intent_title: str, project_slug: str, source_post
                 "obligation": "Replace with focused behavior proof.",
             },
         ],
-        "project_brief": build_project_brief(
-            prompt=intent_title,
-            title=intent_title,
-            slug=project_slug,
-            domain_profile=domain_profile,
-            release_selector=DEFAULT_GREENFIELD_RELEASE_SELECTOR,
-        ),
+        "project_brief": project_brief,
+        "project_intelligence": project_intelligence,
         "program": {
             "name": intent_title,
             "waves": [

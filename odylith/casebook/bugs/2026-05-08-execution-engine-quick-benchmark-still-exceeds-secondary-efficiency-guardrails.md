@@ -16,7 +16,7 @@
 
 - Components Affected: benchmark
 
-- Environment(s): Product repo source-local on 2026/freedom/v0.1.15, PYTHONPATH=src python -m odylith.cli benchmark --repo-root . --profile quick --family execution_engine --no-write-report --json
+- Environment(s): Product repo source-local on 2026/freedom/v0.1.15, `odylith benchmark --repo-root . --profile quick --family execution_engine --no-write-report --json`
 
 - Detected By: Benchmark rerun during engine-integrity hardening
 
@@ -46,7 +46,7 @@
 
 - Rollback/Forward Fix: Forward-fix only; do not relax benchmark guardrails to manufacture a pass.
 
-- Verification: PYTHONPATH=src python -m odylith.cli benchmark --repo-root . --profile quick --family execution_engine --no-write-report --json must return status=provisional_pass with hard_quality_gate_cleared=true and secondary_guardrails_cleared=true.
+- Verification: `odylith benchmark --repo-root . --profile quick --family execution_engine --no-write-report --json` must return status=provisional_pass with hard_quality_gate_cleared=true and secondary_guardrails_cleared=true.
 
 - Prevention: Keep CB-188's local-only routing test and add packet-size regression coverage for execution_engine quick scenarios before closing this bug.
 

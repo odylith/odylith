@@ -169,6 +169,24 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   `PYTHONPATH=src pytest -q tests/unit/runtime/test_greenfield_proposals.py`
   (`33 passed`). Casebook bug `CB-186` captures the fixed-pending-release UX
   regression.
+- 2026-05-08 project-intelligence deepening added a canonical
+  `project_intelligence` object before the project brief and backlog, covering
+  intent, scope, ontology, state, operators, constraints, truth map, evidence,
+  decisions, assumptions, topology, invariants, risks, validation, artifacts,
+  owners, execution memory, metrics, change rules, conflict rules, and transfer
+  priors. The CLI text now renders that control surface first, JSON carries the
+  same object, apply persists it into the parent Radar workstream, and managed
+  greenfield guidance tells Codex, Claude Code, and direct CLI users not to
+  rush to `start B-***` before project acceptance and a child technical plan.
+  Proof: `PYTHONPATH=src python -m pytest -q
+  tests/unit/runtime/test_greenfield_proposals.py` (`34 passed`),
+  `PYTHONPATH=src python -m pytest -q
+  tests/unit/runtime/test_greenfield_proposals.py
+  tests/unit/runtime/test_greenfield_atlas_contract.py
+  tests/unit/runtime/test_greenfield_host_routing.py tests/unit/test_cli.py`
+  (`225 passed`), live `odylith greenfield propose` text inspection, and
+  `odylith release migration-gate --target-version 0.1.15 --json`
+  (`blocked_manual_migrations=0`).
 - 2026-05-08 component-spec bespoke hardening proved generated Registry specs
   no longer inherit project-wide risk/security/compliance narrative, render
   component-named boundaries/contracts/proof/failure/runway sections, extract
@@ -360,14 +378,20 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `migration-observer:0.1.15:public-docs-and-release-guidance:83dd374589cf`,
   `migration-observer:0.1.15:browser-surfaces:23db7fd0ca24`, and
   `migration-observer:0.1.15:install-managed-assets:5291a3c4b08e`, and
-  `migration-observer:0.1.15:operator-cli-contracts:a8504a4c60ea`.
+  `migration-observer:0.1.15:operator-cli-contracts:a8504a4c60ea`, and
+  `migration-observer:0.1.15:guidance-and-skills:64364569b086`,
+  `migration-observer:0.1.15:browser-surfaces:f469b98318dc`, and
+  `migration-observer:0.1.15:install-managed-assets:765b855989ca`,
+  `migration-observer:0.1.15:browser-surfaces:2d3918fcc7c7`, and
+  `migration-observer:0.1.15:install-managed-assets:79060c177fba`.
   These markers cover the deepened greenfield skill guidance, refreshed
   Domain Intelligence Atlas/Registry/Radar browser surfaces, updated managed
   security-and-trust guidance, updated public README/operator/release-note/security
   guidance, the v0.1.15 Compass/Radar/Registry/Casebook browser-surface refresh
   from the deeper greenfield diagram-suite contract, the project-first
   direction-option/readiness-gate guidance refresh, the engine-integrity
-  validator and expanded capability inventory, and bundled
+  validator and expanded capability inventory, the canonical project-intelligence
+  proposal object and parent Radar persistence, and bundled
   install-managed dashboard copies. Existing consumer governance truth remains unchanged; upgrades
   refresh managed guidance/assets and keep proposal writes explicit through
   `odylith greenfield apply --confirm`.

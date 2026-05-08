@@ -9,6 +9,7 @@ from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence.greenfield_domain_profile import GreenfieldDomainProfile
 from odylith.runtime.domain_intelligence.greenfield_domain_profile import infer_greenfield_domain_profile
 from odylith.runtime.domain_intelligence.greenfield_project_brief import build_project_brief
+from odylith.runtime.domain_intelligence.greenfield_project_intelligence import build_project_intelligence
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import enrich_backlog_rows
 from odylith.runtime.domain_intelligence.proposal_rendering import build_apply_commands
 from odylith.runtime.domain_intelligence.robot_swarm_profile import apply_robot_swarm_logistics_profile
@@ -54,6 +55,19 @@ def build_apply_ready_proposal(
     )
     component_rows = _components(components, diagrams=diagrams, domain_profile=domain_profile)
     diagram_rows = _diagrams(title=title, components=components, diagrams=diagrams)
+    project_intelligence = build_project_intelligence(
+        prompt=prompt,
+        title=title,
+        slug=slug,
+        release_selector=selector,
+        domain_profile=domain_profile,
+        project_brief=project_brief,
+        program=program,
+        release_plan=release_plan,
+        components=component_rows,
+        diagrams=diagram_rows,
+        observed_source=observed_source,
+    )
     backlog_rows = enrich_backlog_rows(
         _backlog(
             title=title,
@@ -84,6 +98,7 @@ def build_apply_ready_proposal(
         "security_compliance": security_compliance,
         "validation_strategy": validation_strategy,
         "project_brief": project_brief,
+        "project_intelligence": project_intelligence,
         "program": program,
         "release_plan": release_plan,
         "backlog": backlog_rows,

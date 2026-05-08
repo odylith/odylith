@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from odylith.runtime.domain_intelligence import greenfield_programs
+from odylith.runtime.domain_intelligence.greenfield_project_intelligence import render_project_intelligence_section
 
 DEFAULT_GREENFIELD_RELEASE_SELECTOR = greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR
 
@@ -159,6 +160,13 @@ def _format_apply_ready_proposal_text(
             ]
         )
     project_brief = proposal.get("project_brief", {}) if isinstance(proposal.get("project_brief"), Mapping) else {}
+    project_intelligence = (
+        proposal.get("project_intelligence", {}) if isinstance(proposal.get("project_intelligence"), Mapping) else {}
+    )
+    intelligence_text = render_project_intelligence_section(project_intelligence, preview=True)
+    if intelligence_text:
+        lines.extend(["", "Project intelligence control surface"])
+        lines.extend(_indent_markdown_preview(intelligence_text))
     brief_lines = _project_brief_lines(project_brief)
     if brief_lines:
         lines.extend(["", "Project-first blueprint"])
@@ -272,6 +280,21 @@ def _format_apply_ready_proposal_text(
         lines.append("  " + str(commands[0]))
         lines.append("  " + str(commands[1]))
     return "\n".join(lines).rstrip() + "\n"
+
+
+def _indent_markdown_preview(text: str) -> list[str]:
+    lines: list[str] = []
+    for raw in text.splitlines():
+        line = raw.rstrip()
+        if not line:
+            lines.append("")
+        elif line.startswith("### "):
+            lines.append(f"- {line[4:]}")
+        elif line.startswith("- "):
+            lines.append(f"  - {line[2:]}")
+        else:
+            lines.append(f"- {line}")
+    return lines
 
 
 def _render_evidence_item(item: Any, preferred_key: str) -> str:

@@ -84,7 +84,7 @@ def build_next_steps(
         "validation_gates": list(validation_items[:6]),
         "operator_sequence": [
             f"Open Compass and review the active wave `{wave_label}` plus release `{release_selector or '0.0.1'}`.",
-            f"Open Radar program view for `{umbrella_id or start_id}` and review the project brief, decisions, non-goals, diagrams, and proof gates.",
+            f"Open Radar program view for `{umbrella_id or start_id}` and review project intelligence, the project brief, decisions, non-goals, diagrams, and proof gates.",
             "Answer or explicitly accept the direction choices that materially change runtime, data posture, architecture, or validation.",
             f"Only after the coding-readiness gates are accepted, open `{start_id}` and author the first technical plan.",
             "Write source after that plan names paths, proof commands, degraded/error coverage, and refresh expectations.",

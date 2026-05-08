@@ -738,6 +738,7 @@ def test_greenfield_prompt_returns_host_reasoning_contract(tmp_path) -> None:
     assert "backlog" in proposal["reasoning_contract"]["required_top_level_keys"]
     assert "security_compliance" in proposal["reasoning_contract"]["required_top_level_keys"]
     assert "project_brief" in proposal["reasoning_contract"]["required_top_level_keys"]
+    assert "project_intelligence" in proposal["reasoning_contract"]["required_top_level_keys"]
     activation_layers = [
         row["layer"]
         for row in proposal["reasoning_contract"]["engine_activation_layers"]
@@ -776,11 +777,14 @@ def test_greenfield_prompt_returns_host_reasoning_contract(tmp_path) -> None:
     assert proposal["proposal_template"]["mode"] == "host_reasoned_greenfield_proposal"
     assert proposal["proposal_template"]["release_plan"]["label"] == "0.0.1"
     assert proposal["proposal_template"]["project_brief"]["customization_options"]
+    assert proposal["proposal_template"]["project_intelligence"]["control_surface_summary"]
+    assert "Do not start coding" in proposal["proposal_template"]["project_intelligence"]["coding_posture"]
     assert "Do not treat greenfield apply as permission to code immediately" in proposal["proposal_template"]["project_brief"]["operating_principle"]
     assert proposal["canonical_proposal_gate"]["status"] == "passed"
     greenfield_proposals.validate_host_reasoned_proposal(proposal["proposal_template"])
     assert greenfield_proposals.run_greenfield_tribunal(proposal["proposal_template"], release_selector="0.0.1").passed
     assert proposal["accepted_aliases"]["validation"] == ["proof_expectations", "test_strategy"]
+    assert "project_control_surface" in proposal["accepted_aliases"]["project_intelligence"]
 
 
 def test_greenfield_text_keeps_host_reasoning_and_no_write_boundary_visible(tmp_path, capsys) -> None:
@@ -804,8 +808,10 @@ def test_greenfield_text_keeps_host_reasoning_and_no_write_boundary_visible(tmp_
     assert "Canonical apply JSON shape" not in output
     assert "odylith greenfield create --repo-root ." in output
     assert "odylith greenfield propose --repo-root ." in output
+    assert "Project intelligence control surface" in output
     assert "Project-first blueprint" in output
     assert "choose before coding" in output
+    assert output.index("Project intelligence control surface") < output.index("Project-first blueprint")
     assert output.index("Project-first blueprint") < output.index("Backlog proposal")
     assert "proposal Tribunal must pass before any source-truth writes" in output
     assert "Radar, Registry, Atlas, and Compass visible after writes" in output
@@ -831,6 +837,9 @@ def test_greenfield_cli_json_is_apply_ready_proposal(tmp_path, capsys) -> None:
     assert payload["release_plan"]["selector"] == "0.0.1"
     assert payload["project_brief"]["customization_options"]
     assert payload["project_brief"]["coding_readiness_gates"]
+    assert payload["project_intelligence"]["operators"]
+    assert payload["project_intelligence"]["validation_obligations"]
+    assert payload["project_intelligence"]["transfer_priors"]
     greenfield_proposals.validate_host_reasoned_proposal(payload)
     assert greenfield_proposals.run_greenfield_tribunal(payload, release_selector="0.0.1").passed
 
@@ -845,7 +854,11 @@ def test_defi_greenfield_workstreams_capture_domain_intelligence(tmp_path) -> No
     workflow = next(row for row in proposal["backlog"] if row["title"] == "Define first operator workflow")
     intelligence = workflow["domain_intelligence"]
     rendered = greenfield_proposals.render_domain_intelligence_section(intelligence)
+    project_intelligence = proposal["project_intelligence"]
+    project_rendered = greenfield_proposals.render_project_intelligence_section(project_intelligence)
 
+    assert "non-custodial DeFi risk sentinel" in project_rendered
+    assert "No custody" in project_rendered
     assert intelligence["family"] == "defi_risk"
     assert "Risk subject" in rendered
     assert "Exposure snapshot" in rendered
@@ -900,6 +913,15 @@ def test_greenfield_apply_writes_domain_intelligence_into_radar_specs(tmp_path, 
     assert "liquidity shock" in joined
     assert "financial advice" in joined
     assert "title-only Radar items" in joined
+    parent_spec = next(
+        Path(row["idea_path"]).read_text(encoding="utf-8")
+        for row in result["backlog"]
+        if row["title"] == "Govern DeFi Risk Sentinel App"
+    )
+    assert "## Project Intelligence" in parent_spec
+    assert "### Operators" in parent_spec
+    assert "### Conflicts" in parent_spec
+    assert "Do not start coding from the proposal closeout" in parent_spec
 
 
 def test_greenfield_normalization_enriches_legacy_proposals_with_domain_intelligence() -> None:
@@ -908,6 +930,7 @@ def test_greenfield_normalization_enriches_legacy_proposals_with_domain_intellig
     intelligence = child["domain_intelligence"]
     rendered = greenfield_proposals.render_domain_intelligence_section(intelligence)
     brief = proposal["project_brief"]
+    project_intelligence = proposal["project_intelligence"]
 
     assert intelligence["family"] == "commerce"
     assert "Shopper" in rendered
@@ -917,6 +940,8 @@ def test_greenfield_normalization_enriches_legacy_proposals_with_domain_intellig
     assert "Payment and order recovery model" in json.dumps(brief)
     assert len(brief["customization_options"]) >= 6
     assert len(brief["coding_readiness_gates"]) >= 4
+    assert "Payment callback" in "\n".join(project_intelligence["ontology"])
+    assert len(project_intelligence["change_model"]) >= 2
     greenfield_proposals.validate_host_reasoned_proposal(proposal)
 
 
@@ -1084,6 +1109,19 @@ def test_greenfield_validation_rejects_missing_project_first_brief(tmp_path) -> 
     assert "proposal `project_brief` must be an object" in str(excinfo.value)
 
 
+def test_greenfield_validation_rejects_missing_project_intelligence(tmp_path) -> None:
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="robot swarm logistics app",
+    )["proposal_template"]
+    proposal.pop("project_intelligence")
+
+    with pytest.raises(ValueError) as excinfo:
+        greenfield_proposals.validate_host_reasoned_proposal(proposal)
+
+    assert "proposal `project_intelligence` must be an object" in str(excinfo.value)
+
+
 def test_robot_swarm_project_brief_blocks_coding_rush(tmp_path) -> None:
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
@@ -1094,7 +1132,9 @@ def test_robot_swarm_project_brief_blocks_coding_rush(tmp_path) -> None:
 
     assert "Simulation and hardware boundary" in json.dumps(brief)
     assert "safety envelope" in json.dumps(brief)
+    assert "Project intelligence control surface" in rendered
     assert "Do not treat greenfield apply as permission to code immediately" in rendered
+    assert rendered.index("Project intelligence control surface") < rendered.index("Project-first blueprint")
     assert rendered.index("Project-first blueprint") < rendered.index("Backlog proposal")
     assert "host-independent customization paths" in rendered
 

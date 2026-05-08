@@ -80,7 +80,7 @@
       "reviewed_watch_fingerprints": {
         "odylith/registry/source/component_registry.v1.json": "cccd494aaded4b8d11935747508a73fbf21f6f0d82cd5111fa3f1db896ca0875",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "d28d9e6d28b1bef25e67aabed18455faa208c2b714793d6568294a5c28ec9158",
-        "odylith/radar/source/INDEX.md": "13456d7cb885f0d8ca2b369ac0a19082885e2266cf8abb9aa645589f1c5d624f",
+        "odylith/radar/source/INDEX.md": "86c4fbea04cdc7836961f3aceac4d9070d187d8942f475aecb8a8d17f1bdf3aa",
         "odylith/technical-plans/INDEX.md": "ebcdbe1e0bf3069a12aa20af5b1c91b72b6941325bfedb12f5b608d2d1139d25"
       }
     },
@@ -3940,8 +3940,8 @@
         "src/odylith/runtime/surfaces/compass_transaction_runtime.py"
       ],
       "reviewed_watch_fingerprints": {
-        "src/odylith/runtime/domain_intelligence": "9445ba807da34de98f34e02dbe8a72e50269882d2a65e8c215a6eb76a5d48077",
-        "odylith/skills/odylith-greenfield-governance/SKILL.md": "3eaa66b6f391a29090a639f72d364484084ee87168cb2dcbcc4780b6d343ba15"
+        "src/odylith/runtime/domain_intelligence": "3bfc98da10bc1c5bcb7b5d386bd481d15c6f554a0c718cfa9bab12e73af14217",
+        "odylith/skills/odylith-greenfield-governance/SKILL.md": "b0166b01c417e1b5c7bdebdbe682e62379b3010175acb5563c662cfe7fc51814"
       },
       "render_source_fingerprint": "7a2c4b0fa9726536f5707dc844721f5a08ab651edfe0efdca68e9f3687ad342b"
     },
