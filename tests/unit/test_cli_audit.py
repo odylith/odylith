@@ -719,6 +719,13 @@ _DOWNSTREAM_ARGV_CASES = [
         "expected_argv": lambda root: ["--repo-root", str(root)],
     },
     {
+        "path": ("validate", "engine-integrity"),
+        "argv": lambda root: ["validate", "engine-integrity", f"--repo-root={root}"],
+        "target_obj": cli.engine_integrity,
+        "target_attr": "main",
+        "expected_argv": lambda root: ["--repo-root", str(root)],
+    },
+    {
         "path": ("validate", "plan-risk-mitigation"),
         "argv": lambda root: ["validate", "plan-risk-mitigation", f"--repo-root={root}"],
         "target_obj": cli.validate_plan_risk_mitigation_contract,

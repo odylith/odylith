@@ -18,6 +18,9 @@ class EngineArea:
     inventory_names: tuple[str, ...]
     required_commands: tuple[str, ...] = ()
     purpose: str = ""
+    requires_command_backing: bool = True
+    requires_anchor_backing: bool = True
+    requires_activation: bool = True
 
 
 @dataclass(frozen=True)
@@ -52,6 +55,54 @@ ENGINE_AREAS: tuple[EngineArea, ...] = (
         ("odylith greenfield propose", "odylith greenfield create"),
     ),
     EngineArea("Overall UX", ("Operator Experience",), ("odylith dashboard refresh",)),
+)
+
+KNOWN_TOP_LEVEL_COMMANDS = frozenset(
+    {
+        "architecture",
+        "atlas",
+        "backlog",
+        "benchmark",
+        "bug",
+        "capabilities",
+        "casebook",
+        "claude",
+        "codex",
+        "compass",
+        "component",
+        "context",
+        "context-engine",
+        "dashboard",
+        "discipline",
+        "doctor",
+        "governance",
+        "governance-slice",
+        "greenfield",
+        "install",
+        "migrate-legacy-install",
+        "on",
+        "off",
+        "plan",
+        "program",
+        "query",
+        "radar",
+        "registry",
+        "release",
+        "reinstall",
+        "rollback",
+        "session-brief",
+        "show",
+        "start",
+        "subagent-orchestrator",
+        "subagent-router",
+        "sync",
+        "turn-gate",
+        "uninstall",
+        "upgrade",
+        "validate",
+        "version",
+        "wave",
+    }
 )
 
 
@@ -97,6 +148,21 @@ def _string_tuple(value: Any) -> tuple[str, ...]:
     return tuple(str(item).strip() for item in value if str(item).strip())
 
 
+def _top_level_command(command: str) -> str:
+    parts = str(command or "").strip().split()
+    if len(parts) < 2 or parts[0] != "odylith":
+        return ""
+    return parts[1]
+
+
+def _unknown_top_level_commands(commands: Sequence[str]) -> list[str]:
+    return [
+        command
+        for command in commands
+        if (root := _top_level_command(command)) and root not in KNOWN_TOP_LEVEL_COMMANDS
+    ]
+
+
 def _anchor_status(repo_root: Path, anchors: Sequence[str]) -> tuple[list[str], list[str]]:
     existing: list[str] = []
     missing: list[str] = []
@@ -113,6 +179,7 @@ def _item_findings(*, repo_root: Path, area: EngineArea, item: Mapping[str, Any]
     findings: list[EngineFinding] = []
     name = str(item.get("name", "")).strip()
     owns = str(item.get("owns", "")).strip()
+    activation = str(item.get("activation", "")).strip()
     commands = _string_tuple(item.get("commands"))
     anchors = _string_tuple(item.get("anchors"))
     if len(owns) < 80:
@@ -131,6 +198,25 @@ def _item_findings(*, repo_root: Path, area: EngineArea, item: Mapping[str, Any]
                 area.area,
                 f"`{name}` is neither command-backed nor anchor-backed.",
                 "Add at least one operator command or canonical source anchor.",
+            )
+        )
+    unknown_commands = _unknown_top_level_commands(commands)
+    if unknown_commands:
+        findings.append(
+            EngineFinding(
+                "error",
+                area.area,
+                f"`{name}` references unknown top-level command(s): {', '.join(unknown_commands)}.",
+                "Fix the product-owned capability inventory before operators rely on the activation path.",
+            )
+        )
+    if area.requires_activation and len(activation) < 80:
+        findings.append(
+            EngineFinding(
+                "error",
+                area.area,
+                f"`{name}` is missing a concrete activation contract.",
+                "State how this engine is activated or wired on the low-latency path, not only what it owns.",
             )
         )
     for required in area.required_commands:
@@ -173,6 +259,7 @@ def evaluate_engine_integrity(repo_root: Path, *, strict: bool = False) -> dict[
     area_rows: list[dict[str, Any]] = []
     command_backed = 0
     anchor_backed = 0
+    activation_backed = 0
     for area in ENGINE_AREAS:
         missing = [name for name in area.inventory_names if name not in inventory]
         if missing:
@@ -187,10 +274,37 @@ def evaluate_engine_integrity(repo_root: Path, *, strict: bool = False) -> dict[
         present_items = [inventory[name] for name in area.inventory_names if name in inventory]
         item_commands = sorted({cmd for item in present_items for cmd in _string_tuple(item.get("commands"))})
         item_anchors = sorted({anchor for item in present_items for anchor in _string_tuple(item.get("anchors"))})
+        item_activations = sorted(
+            {
+                str(item.get("activation", "")).strip()
+                for item in present_items
+                if str(item.get("activation", "")).strip()
+            }
+        )
         if item_commands:
             command_backed += 1
         if item_anchors:
             anchor_backed += 1
+        if item_activations and len(item_activations) == len(present_items):
+            activation_backed += 1
+        if present_items and area.requires_command_backing and not item_commands:
+            findings.append(
+                EngineFinding(
+                    "error",
+                    area.area,
+                    "Requested engine area has no operator command backing.",
+                    "Expose the low-latency activation path in `odylith capabilities`.",
+                )
+            )
+        if present_items and area.requires_anchor_backing and not item_anchors:
+            findings.append(
+                EngineFinding(
+                    "error",
+                    area.area,
+                    "Requested engine area has no source anchor backing.",
+                    "Expose the canonical source owner in `odylith capabilities`.",
+                )
+            )
         for item in present_items:
             findings.extend(_item_findings(repo_root=root, area=area, item=item))
         area_rows.append(
@@ -200,8 +314,10 @@ def evaluate_engine_integrity(repo_root: Path, *, strict: bool = False) -> dict[
                 "present": not missing,
                 "command_backed": bool(item_commands),
                 "anchor_backed": bool(item_anchors),
+                "activation_backed": bool(item_activations) and len(item_activations) == len(present_items),
                 "commands": item_commands,
                 "anchors": item_anchors,
+                "activations": item_activations,
                 "purpose": area.purpose,
             }
         )
@@ -220,6 +336,7 @@ def evaluate_engine_integrity(repo_root: Path, *, strict: bool = False) -> dict[
         "areas_present": sum(1 for row in area_rows if row["present"]),
         "command_backed_areas": command_backed,
         "anchor_backed_areas": anchor_backed,
+        "activation_backed_areas": activation_backed,
         "findings": [asdict(finding) for finding in findings],
         "counts": counts,
         "areas": area_rows,
@@ -240,6 +357,7 @@ def _format_text(report: Mapping[str, Any]) -> str:
         f"- areas: {report.get('areas_present', 0)}/{report.get('areas_checked', 0)} present",
         f"- command_backed: {report.get('command_backed_areas', 0)}",
         f"- anchor_backed: {report.get('anchor_backed_areas', 0)}",
+        f"- activation_backed: {report.get('activation_backed_areas', 0)}",
         f"- findings: {int(counts.get('error', 0) or 0)} error(s), {int(counts.get('warning', 0) or 0)} warning(s)",
     ]
     findings = report.get("findings", [])

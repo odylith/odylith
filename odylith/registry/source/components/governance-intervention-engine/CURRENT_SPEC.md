@@ -15,7 +15,7 @@
   platform seamless" may rank voice or integration inspection affordances, but
   it must still stay silent when no hard law is violated and no immediate
   user-visible value is earned.
-Last updated: 2026-05-02
+Last updated: 2026-05-08
 
 
 Last updated (UTC): 2026-04-28
@@ -202,8 +202,10 @@ claiming ML calibration.
   It turns the compact alignment context into a JSON-friendly lane summary
   across Context Engine, Execution Engine, Tribunal, Intervention Engine,
   Governance, Subagent Orchestration, Discipline, Surface DAGs, Delivery,
-  Analysis, and Memory Substrate. Required lanes must be covered or
-  policy-deferred before a visibility-recovery beat can report `status=ready`,
+  Analysis, Memory Substrate, Topology, Taxonomies/FSMs, Greenfield Domain
+  Intelligence, and Overall UX. Required lanes must be covered or
+  policy-deferred before a visibility-recovery beat can report `status=ready`;
+  non-relevant lanes are explicitly policy-deferred instead of being omitted,
   and the proof object records that the host path used local summaries only,
   with no provider call or repo scan.
 - `src/odylith/runtime/intervention_engine/alignment_evidence.py`

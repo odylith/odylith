@@ -51,12 +51,11 @@ def event_bundle_id(row: Mapping[str, Any]) -> str:
     turn_phase = _normalize_token(row.get("turn_phase"))
     delivery_channel = _normalize_token(row.get("delivery_channel"))
     delivery_status = _normalize_token(row.get("delivery_status"))
-    ts_iso = _normalize_string(row.get("ts_iso"))
-    if session_id and ts_iso and visibility_contract.event_display_text(row):
+    if session_id and visibility_contract.event_display_text(row):
         return (
             "legacy:"
             f"{session_id}|{host_family}|{turn_phase}|{delivery_channel}|{delivery_status}|"
-            f"{render_surface}|{ts_iso}"
+            f"{render_surface}"
         )
     confirmation_key = visibility_contract.event_confirmation_key(row)
     if confirmation_key:

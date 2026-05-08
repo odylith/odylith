@@ -242,9 +242,12 @@ def _format_apply_ready_proposal_text(
         for item in risks:
             if isinstance(item, Mapping):
                 statement = str(item.get("statement") or item.get("title") or "").strip()
-                mitigation = str(item.get("mitigation", "")).strip()
+                details = _risk_detail_segments(item)
                 if statement:
-                    lines.append(f"- {statement}{f' Mitigation: {mitigation}' if mitigation else ''}")
+                    line = f"- {statement}"
+                    if details:
+                        line += " " + " ".join(details)
+                    lines.append(line)
             elif str(item).strip():
                 lines.append(f"- {item}")
     lines.extend(["", "Apply gates"])
@@ -303,6 +306,25 @@ def _render_evidence_item(item: Any, preferred_key: str) -> str:
         tier = str(item.get("evidence_tier", "")).strip()
         return f"{text} ({tier})" if text and tier else text
     return str(item).strip()
+
+
+def _risk_detail_segments(item: Mapping[str, Any]) -> list[str]:
+    segments: list[str] = []
+    for key, label in (
+        ("risk_class", "Class"),
+        ("severity", "Severity"),
+        ("probability", "Probability"),
+        ("blast_radius", "Blast radius"),
+        ("trigger", "Trigger"),
+        ("early_warning", "Early warning"),
+        ("owner", "Owner"),
+        ("evidence", "Evidence"),
+        ("mitigation", "Mitigation"),
+    ):
+        value = str(item.get(key, "") or "").strip()
+        if value:
+            segments.append(f"{label}: {value}")
+    return segments
 
 
 def _project_brief_lines(project_brief: Mapping[str, Any]) -> list[str]:

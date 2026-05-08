@@ -261,6 +261,7 @@ validate_discipline = _register_lazy_module(
     "odylith.runtime.governance.validate_discipline"
 )
 validate_guidance_portability = _register_lazy_module("odylith.runtime.governance.validate_guidance_portability")
+engine_integrity = _register_lazy_module("odylith.runtime.governance.engine_integrity")
 validate_plan_traceability_contract = _register_lazy_module("odylith.runtime.governance.validate_plan_traceability_contract")
 backlog_authoring = _register_lazy_module(_BACKLOG_AUTHORING_MODULE)
 release_planning_authoring = _register_lazy_module("odylith.runtime.governance.release_planning_authoring")

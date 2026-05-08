@@ -63,6 +63,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-08: Tightened greenfield Registry candidate specs so component dossiers stay component-owned rather than project-summary repeats. Apply now keeps proposal-wide security/compliance/risk posture in the project brief and Radar, writes component-local failure/security/policy guardrails, extracts boundary exclusions into `Outside Boundary`, and chooses the most specific child workstream as each component's implementation anchor. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-187`)
 - 2026-05-08: Hardened greenfield traceability writes so applied Radar sections preserve structured risk, question, dependency, rollout, and punctuation semantics instead of splitting governed prose into fragments. Source-local DeFi apply now writes B-001..B-004 with complete risk mitigations, intact open questions, intact dependencies, release-stage rollout lines, and no `R1.`/`Q1.`/split-prose sludge. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-05-08: Deepened the default greenfield Atlas UX so generated diagram rows carry review focus, operator question, and proof-gate guidance, proposal text explains how to read each Atlas view, and default Mermaid sources include evidence-boundary, code-gate, decision-lens, state-note, unresolved-risk, and surface-agreement annotations directly inside the diagrams. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
+- 2026-05-08: Hardened greenfield workstream and risk generation against the remaining applied-Radar sludge found in a fresh DeFi audit. Proposal-level risks are now domain-specific structured records, old generic risk boilerplate is rejected, workstream ontology labels must be unique, malformed `owns Own ...` generated prose is rejected, and parent workstreams keep program ontology separate from child implementation nouns. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-184`)
 
 ## Contract
 
@@ -110,6 +111,15 @@ This section captures synchronized requirement and contract signals derived from
   topology, invariants, risks, validation obligations, execution memory,
   change/invalidation rules, conflict rules, and reusable priors. Normalization
   may enrich legacy proposals, but apply must reject rows that remain shallow.
+- Greenfield workstream Domain Intelligence must remain bespoke and
+  non-repetitive. Ontology labels are unique inside each workstream; umbrella
+  workstreams use program/control-surface vocabulary rather than repeating child
+  implementation terms; generated ownership prose must not contain malformed
+  phrases such as `owns Own ...`.
+- Greenfield proposal risks must be domain-specific risk records, not copied
+  boilerplate. The accepted risk shape preserves risk class, severity, trigger,
+  early-warning signal, and mitigation through proposal text and applied Radar
+  source so future agents can act on the risk rather than reread generic prose.
 - Greenfield proposals must carry a top-level `project_brief` before validation
   and apply. The brief owns the project-first UX contract: blueprint sections,
   direction/customization options, pre-coding checkpoints, coding-readiness
@@ -200,6 +210,8 @@ confirmation gates, topology requirements, apply schema, and durable memory.
 
 - `tests/unit/runtime/test_greenfield_proposals.py`
 - `tests/unit/runtime/test_greenfield_host_routing.py`
+- `tests/unit/runtime/test_greenfield_intelligence_schema.py`
+- `tests/unit/runtime/test_greenfield_atlas_contract.py`
 - `tests/unit/runtime/test_tribunal_engine.py`
 - `tests/unit/test_cli.py`
 - `tests/unit/runtime/test_component_authoring.py`

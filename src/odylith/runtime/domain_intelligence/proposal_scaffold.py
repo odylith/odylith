@@ -36,8 +36,8 @@ def build_apply_ready_proposal(
     intent = _intent(prompt=prompt, title=title, slug=slug, robot_swarm_logistics=robot_swarm_logistics)
     assumptions = _base_assumptions()
     open_questions = _base_open_questions()
-    risks = _base_risks()
-    security_compliance = _base_security_compliance(title)
+    risks = _base_risks(title=title, domain_profile=domain_profile)
+    security_compliance = _base_security_compliance(title, domain_profile=domain_profile)
     validation_strategy = _base_validation_strategy()
     project_brief = build_project_brief(
         prompt=prompt,
@@ -198,39 +198,153 @@ def _base_open_questions() -> list[dict[str, str]]:
     ]
 
 
-def _base_risks() -> list[dict[str, str]]:
+def _base_risks(*, title: str, domain_profile: GreenfieldDomainProfile) -> list[dict[str, str]]:
+    if domain_profile.family == "defi_risk":
+        return [
+            {
+                "id": "R1",
+                "risk_class": "data_integrity",
+                "severity": "high",
+                "trigger": "watchlist, risk-signal, scenario-replay, release-gate, or no-live-chain boundaries diverge",
+                "early_warning": "risk cards show numeric confidence without freshness, oracle, liquidity, or fixture provenance",
+                "evidence_tier": "odylith_assumption",
+                "statement": (
+                    "DeFi risk sentinel implementation can create false confidence if exposure, oracle/indexer freshness, "
+                    "liquidity stress, and release proof are not bound before source edits."
+                ),
+                "mitigation": (
+                    "Keep the first wave fixture-backed and non-custodial; require freshness/confidence fields, "
+                    "deterministic replay proof, and refreshed Radar/Registry/Atlas/Compass before release promotion."
+                ),
+            },
+            {
+                "id": "R2",
+                "risk_class": "compliance_boundary",
+                "severity": "high",
+                "trigger": "custody, trading, advice, live RPC, private keys, or unaudited acknowledgement enters scope",
+                "early_warning": "component specs or workstreams describe provider integration without no-advice/no-custody proof gates",
+                "evidence_tier": "odylith_assumption",
+                "statement": (
+                    "Strict regulated posture can be weakened if custody, trade execution, financial advice, private-key, "
+                    "audit, or live-provider assumptions remain implicit."
+                ),
+                "mitigation": (
+                    "Make no-custody, no-trading, no-advice, no-private-key, no-live-RPC, data-classification, "
+                    "and audit obligations explicit before the first technical plan can open."
+                ),
+            },
+        ]
+    if domain_profile.family == "commerce":
+        return [
+            {
+                "id": "R1",
+                "risk_class": "payment_integrity",
+                "severity": "high",
+                "trigger": "checkout, order draft, payment callback, or retry ownership is unclear",
+                "early_warning": "happy-path checkout text appears before failed-payment or replay proof exists",
+                "evidence_tier": "odylith_assumption",
+                "statement": (
+                    "Commerce implementation can double-submit orders or hide failed payments if checkout, "
+                    "order draft, callback replay, and recovery states are not separated before source edits."
+                ),
+                "mitigation": (
+                    "Keep the first wave sandbox-only; require idempotency, failed-payment recovery, callback replay, "
+                    "and browser proof before any production payment or fulfillment claim."
+                ),
+            },
+            {
+                "id": "R2",
+                "risk_class": "customer_trust",
+                "severity": "medium",
+                "trigger": "catalog price, inventory, order, or payment state is inferred from UI labels",
+                "early_warning": "storefront success state appears without immutable price and inventory snapshot proof",
+                "evidence_tier": "odylith_assumption",
+                "statement": (
+                    "Shopper-visible success can outrun actual order/payment truth if price snapshots, inventory posture, "
+                    "provider failures, and retry semantics stay implicit."
+                ),
+                "mitigation": (
+                    "Bind storefront, checkout/order core, and proof harness workstreams to explicit sandbox fixtures, "
+                    "immutable snapshot rules, and recovery-state validation."
+                ),
+            },
+        ]
     return [
         {
             "id": "R1",
+            "risk_class": "project_spine",
+            "severity": "medium",
+            "trigger": "workflow, domain contract, proof harness, release gate, or component ownership is still unnamed",
+            "early_warning": "first implementation prompt names files before user, state, validation, and rollback choices are accepted",
             "evidence_tier": "odylith_assumption",
             "statement": (
-                "Starting implementation without a named product spine, component ownership, and proof gates can "
-                "create disconnected source slices."
+                f"{title} can fragment into disconnected source slices if the first workflow, domain contract, "
+                "component ownership, release gate, and proof harness are not accepted before implementation."
             ),
             "mitigation": (
-                "Apply this proposal only after the operator confirms the first wave, then bind each source change "
-                "to the created Radar workstream."
+                "Apply only after operator review, then bind every source change to a child workstream, component boundary, "
+                "proof command, and refreshed Odylith surface."
             ),
         },
         {
             "id": "R2",
+            "risk_class": "policy_and_operations",
+            "severity": "medium",
+            "trigger": "data, auth, audit, accessibility, recovery, or deployment choices are left to implicit defaults",
+            "early_warning": "readiness gates mention tests but not data sensitivity, abuse, fallback, or operator review",
             "evidence_tier": "odylith_assumption",
-            "statement": "Security, privacy, accessibility, and operational risks can be under-modeled in broad greenfield prompts.",
-            "mitigation": "Keep the first release scoped to explicit role, data, audit, abuse, and recovery checks before production claims.",
+            "statement": (
+                f"{title} can make unsafe product claims if data sensitivity, access control, auditability, fallback, "
+                "deployment, and recovery posture remain unresolved during the first release gate."
+            ),
+            "mitigation": (
+                "Require explicit operator answers for runtime, data boundary, compliance posture, degraded behavior, "
+                "and release proof before any production-readiness claim."
+            ),
         },
     ]
 
 
-def _base_security_compliance(title: str) -> dict[str, str]:
+def _base_security_compliance(title: str, *, domain_profile: GreenfieldDomainProfile) -> dict[str, str]:
+    if domain_profile.family == "defi_risk":
+        return {
+            "domain": (
+                f"{title} is a non-custodial DeFi risk-monitoring proposal with sensitive wallet, exposure, "
+                "oracle/indexer, liquidity, derived-risk, and acknowledgement data."
+            ),
+            "security": (
+                "Security posture covers operator identity, audit trails, fixture provenance, private-key exclusion, "
+                "no live RPC in the first release, and abuse-resistant acknowledgement semantics."
+            ),
+            "policy": (
+                "Strict regulated posture keeps no-custody, no-trading, no-financial-advice, data classification, "
+                "freshness/confidence disclosure, retention, and release approval explicit before source edits."
+            ),
+        }
+    if domain_profile.family == "commerce":
+        return {
+            "domain": (
+                f"{title} is a commerce checkout proposal with shopper, cart, price snapshot, order, payment sandbox, "
+                "retry, and recovery-state risk."
+            ),
+            "security": (
+                "Security posture covers session boundaries, payment handoff, idempotency keys, callback replay, "
+                "abuse controls, and secret-free sandbox fixtures."
+            ),
+            "policy": (
+                "Policy posture keeps PCI/provider boundaries, privacy, accessibility, failed-payment recovery, "
+                "retention, and production-payment approval explicit before release promotion."
+            ),
+        }
     return {
         "domain": f"{title} is at proposal stage with user-intent evidence only; domain and delivery risk stay explicit until source exists.",
         "security": (
-            "Security posture starts with authentication or operator access boundaries, least-privilege writes, "
-            "secret-free fixtures, abuse checks, and auditability for important actions."
+            f"{title} security posture must name the first actor, access boundary, least-privilege write path, "
+            "secret handling, abuse case, audit point, and degraded/recovery behavior before release promotion."
         ),
         "policy": (
-            "Policy posture tracks privacy, retention, accessibility, safety or regulatory review needs, and "
-            "operator-visible fallback behavior before release promotion."
+            f"{title} policy posture must track data sensitivity, privacy, retention, accessibility, safety or "
+            "regulatory review, operator approval, and production-readiness limits before source-backed claims."
         ),
     }
 

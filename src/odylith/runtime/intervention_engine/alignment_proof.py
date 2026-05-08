@@ -27,12 +27,19 @@ _BASE_REQUIRED_LANES = {
     "intervention_engine",
     "memory_substrate",
     "delivery",
+    "overall_ux",
 }
 _VISIBILITY_REQUIRED_LANES = {
     *_BASE_REQUIRED_LANES,
     "tribunal",
     "governance",
     "subagent_orchestration",
+    "discipline",
+    "surface_dags",
+    "analysis",
+    "topology",
+    "taxonomies_fsms",
+    "greenfield_domain_intelligence",
 }
 
 
@@ -106,6 +113,12 @@ def _status_from_presence(*, present: bool, required: bool) -> str:
     return "missing" if required else "quiet"
 
 
+def _status_or_policy_deferred(*, present: bool, required: bool) -> str:
+    if present:
+        return "covered"
+    return "policy_deferred" if required else "quiet"
+
+
 def _anchor_count(
     *,
     context_packet: Mapping[str, Any],
@@ -142,6 +155,14 @@ def _subagent_status(execution_summary: Mapping[str, Any], *, required: bool) ->
     if supports_native_spawn or hints:
         return "covered", hints or ["native_spawn_transport_available"]
     return ("missing" if required else "quiet"), []
+
+
+def _component_evidence(context_packet: Mapping[str, Any], components: Sequence[str]) -> list[str]:
+    return _normalize_string_list(components) + _normalize_string_list(context_packet.get("components"))
+
+
+def _workstream_evidence(context_packet: Mapping[str, Any], workstreams: Sequence[str]) -> list[str]:
+    return _normalize_string_list(workstreams) + _normalize_string_list(context_packet.get("workstreams"))
 
 
 def build_alignment_proof(
@@ -219,6 +240,27 @@ def build_alignment_proof(
     discipline_summary = _mapping(context.get("discipline_summary")) or _mapping(memory.get("discipline_summary"))
     guidance_summary = _mapping(context.get("guidance_behavior_summary")) or _mapping(
         memory.get("guidance_behavior_summary")
+    )
+    component_evidence = _component_evidence(context, components)
+    workstream_evidence = _workstream_evidence(context, workstreams)
+    anchor_diagrams = _normalize_string_list(_mapping(context.get("anchors")).get("diagrams"))
+    topology_present = bool(diagrams or anchor_diagrams or _mapping(context.get("topology_integrity")))
+    taxonomies_present = bool(
+        guidance_summary
+        or discipline_summary
+        or _mapping(context.get("validation_bundle"))
+        or _mapping(context.get("taxonomy_summary"))
+        or _mapping(context.get("fsm_summary"))
+    )
+    greenfield_present = bool(
+        "domain-intelligence" in component_evidence
+        or any(token == "B-142" for token in workstream_evidence)
+        or "greenfield" in _normalize_token(context.get("packet_kind"))
+    )
+    overall_ux_present = bool(
+        _normalize_token(host_family)
+        or _normalize_token(turn_phase)
+        or _normalize_string(visibility.get("chat_visible_proof"))
     )
 
     lanes = [
@@ -298,23 +340,31 @@ def build_alignment_proof(
             "discipline",
             "Discipline",
             "execution-engine",
-            "covered" if discipline_summary else "quiet",
+            _status_or_policy_deferred(
+                present=bool(discipline_summary),
+                required="discipline" in required_lanes,
+            ),
             [
                 f"status={discipline_summary.get('status')}",
                 f"validation_status={discipline_summary.get('validation_status')}",
             ],
-            required=False,
+            required="discipline" in required_lanes,
+            note="local deterministic discipline summaries stay quiet unless evidence or a visibility-recovery proof needs the lane",
         ),
         _lane(
             "surface_dags",
             "Surface DAGs",
             "odylith-projection-bundle",
-            "covered" if surface_status and surface_status != "unavailable" else "quiet",
+            _status_or_policy_deferred(
+                present=bool(surface_status and surface_status != "unavailable"),
+                required="surface_dags" in required_lanes,
+            ),
             [
                 f"surface_status={surface_status}",
                 f"latest_packet_state={runtime_surface.get('latest_packet_state')}",
             ],
-            required=False,
+            required="surface_dags" in required_lanes,
+            note="DAG proof is covered when cached runtime surface summary exists; otherwise visibility recovery defers rather than rescans",
         ),
         _lane(
             "delivery",
@@ -332,12 +382,16 @@ def build_alignment_proof(
             "analysis",
             "Analysis",
             "benchmark",
-            "covered" if tribunal_present or guidance_summary else "quiet",
+            _status_or_policy_deferred(
+                present=bool(tribunal_present or guidance_summary),
+                required="analysis" in required_lanes,
+            ),
             [
                 _normalize_string(_mapping(tribunal.get("systemic_brief")).get("headline")),
                 f"guidance_status={guidance_summary.get('status')}",
             ],
-            required=False,
+            required="analysis" in required_lanes,
+            note="analysis is represented by existing Tribunal or guidance summaries; the hot path must not start a fresh repo scan",
         ),
         _lane(
             "memory_substrate",
@@ -350,6 +404,69 @@ def build_alignment_proof(
                 f"visible_event_count={memory.get('visible_event_count')}",
             ],
             required="memory_substrate" in required_lanes,
+        ),
+        _lane(
+            "topology",
+            "Topology",
+            "atlas",
+            _status_or_policy_deferred(
+                present=topology_present,
+                required="topology" in required_lanes,
+            ),
+            [
+                f"diagram_count={len(diagrams)}",
+                f"anchor_diagram_count={len(anchor_diagrams)}",
+                f"topology_quality={_mapping(context.get('topology_integrity')).get('quality')}",
+            ],
+            required="topology" in required_lanes,
+            note="topology proof uses supplied diagram/topology summaries only; missing topology evidence is policy-deferred on the hot path",
+        ),
+        _lane(
+            "taxonomies_fsms",
+            "Taxonomies and FSMs",
+            "casebook",
+            _status_or_policy_deferred(
+                present=taxonomies_present,
+                required="taxonomies_fsms" in required_lanes,
+            ),
+            [
+                f"guidance_status={guidance_summary.get('status')}",
+                f"discipline_status={discipline_summary.get('status')}",
+                f"validation_bundle={bool(_mapping(context.get('validation_bundle')))}",
+            ],
+            required="taxonomies_fsms" in required_lanes,
+            note="controlled vocabulary/FSM evidence comes from compact validation summaries, not fresh source validation",
+        ),
+        _lane(
+            "greenfield_domain_intelligence",
+            "Greenfield proposals and domain intelligence",
+            "domain-intelligence",
+            _status_or_policy_deferred(
+                present=greenfield_present,
+                required="greenfield_domain_intelligence" in required_lanes,
+            ),
+            [
+                *[token for token in component_evidence if token == "domain-intelligence"],
+                *[token for token in workstream_evidence if token == "B-142"],
+                f"packet_kind={context.get('packet_kind')}",
+            ],
+            required="greenfield_domain_intelligence" in required_lanes,
+            note="greenfield is covered only for greenfield-domain evidence; unrelated visibility recovery defers the lane",
+        ),
+        _lane(
+            "overall_ux",
+            "Overall UX",
+            "governance-intervention-engine",
+            _status_from_presence(
+                present=overall_ux_present,
+                required="overall_ux" in required_lanes,
+            ),
+            [
+                f"host_family={host_family}",
+                f"turn_phase={turn_phase}",
+                f"chat_visible_proof={visibility.get('chat_visible_proof')}",
+            ],
+            required="overall_ux" in required_lanes,
         ),
     ]
     missing_required = [

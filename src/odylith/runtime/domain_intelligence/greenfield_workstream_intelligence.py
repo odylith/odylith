@@ -153,7 +153,10 @@ def build_domain_intelligence(
             f"Non-goals: {terms['non_goals']}",
         ],
         "scope": [
-            f"In scope: `{row_title}` owns {profile_focus.responsibility} and the first proof slice: {first_slice}",
+            (
+                f"In scope: `{row_title}` owns {_owned_responsibility_clause(profile_focus.responsibility)} "
+                f"and the first proof slice: {first_slice}"
+            ),
             f"Out of scope: {terms['non_goals']}",
             f"Boundary: keep `{row_title}` tied to {component_clause}, {diagram_clause}, {wave}, and release `{selector}` until a governed split changes that topology.",
             "Customization boundary: runtime, compliance, first actor, data source, and proof threshold may change only through proposal, plan, or human-decision updates, not implicit coding.",
@@ -319,6 +322,13 @@ def domain_intelligence_issues(value: Any, *, owner: str) -> list[str]:
         issues.append(f"{owner} domain_intelligence.operators must define at least three state-changing operations")
     if len(_list_values(value.get("validation_obligations"))) < 3:
         issues.append(f"{owner} domain_intelligence.validation_obligations must define at least three proof gates")
+    duplicate_terms = _duplicate_ontology_terms(value.get("ontology"))
+    if duplicate_terms:
+        issues.append(
+            f"{owner} domain_intelligence.ontology repeats operational term(s): {', '.join(duplicate_terms)}"
+        )
+    if _contains_malformed_ownership_phrase(value):
+        issues.append(f"{owner} domain_intelligence contains malformed ownership phrase")
     return issues
 
 
@@ -441,13 +451,20 @@ def _ontology(
             ],
         }
         rows = rows_by_kind.get(kind, rows_by_kind["domain"])
-        rows = [
-            *rows,
-            "Risk subject: wallet, protocol, pool, strategy, or position set being monitored; never a custody account.",
-            "Exposure snapshot: normalized holdings, debts, collateral, chain, protocol, timestamp, and confidence.",
-            "Alert: severity, trigger reason, threshold, confidence, state, and acknowledgement trail.",
-            "Scenario fixture: local replay input for price shock, liquidity drain, stale oracle, or missing indexer proof.",
-        ]
+        if kind == "program":
+            rows = [
+                *rows,
+                "Execution wave: governed delivery checkpoint with named DeFi child workstreams and release proof.",
+                "Evidence tier: user_intent, odylith_assumption, and later source_backed claims kept visibly separate.",
+            ]
+        else:
+            rows = [
+                *rows,
+                "Risk subject: wallet, protocol, pool, strategy, or position set being monitored; never a custody account.",
+                "Exposure snapshot: normalized holdings, debts, collateral, chain, protocol, timestamp, and confidence.",
+                "Alert: severity, trigger reason, threshold, confidence, state, and acknowledgement trail.",
+                "Scenario fixture: local replay input for price shock, liquidity drain, stale oracle, or missing indexer proof.",
+            ]
     elif domain_profile.family == "commerce":
         rows_by_kind = {
             "program": [
@@ -473,17 +490,27 @@ def _ontology(
             ],
         }
         rows = rows_by_kind.get(kind, rows_by_kind["domain"])
-        rows = [
-            *rows,
-            "Shopper: browser actor moving through browse, cart, checkout, payment handoff, and recovery states.",
-            "Payment callback: provider sandbox event that may arrive once, late, or repeatedly.",
-        ]
+        if kind == "program":
+            rows = [
+                *rows,
+                "Execution wave: governed checkout delivery checkpoint with named storefront, order, and proof workstreams.",
+                "Proof obligation: sandbox, browser, idempotency, and recovery evidence required before release movement.",
+            ]
+        else:
+            rows = [
+                *rows,
+                "Shopper: browser actor moving through browse, cart, checkout, payment handoff, and recovery states.",
+                "Payment callback: provider sandbox event that may arrive once, late, or repeatedly.",
+            ]
     else:
         compact = title.replace(" App", "").replace(" Platform", "").strip() or "product"
         rows_by_kind = {
             "program": [
                 f"Program parent: {compact} waves, release target, component owners, and proof topology.",
                 "Release gate: validation threshold that must pass before the first release advances.",
+                "Execution wave: ordered delivery checkpoint with named child workstreams, owners, and proof obligations.",
+                "Component owner: planned boundary accountable for interfaces, dependencies, validation, and later source evidence.",
+                "Proof obligation: test, fixture, render, review, or human decision required before a claim can advance.",
             ],
             "experience": [
                 f"Operator: first human or system actor using the {compact} workflow.",
@@ -506,7 +533,62 @@ def _ontology(
         rows.append("Program parent: umbrella workstream that owns waves, release target, topology, and cross-slice proof sequencing.")
     if components:
         rows.append("Component focus: " + ", ".join(f"`{component}`" for component in components[:4]) + ".")
-    return rows
+    return _dedupe_ontology_rows(rows)
+
+
+def _owned_responsibility_clause(value: str) -> str:
+    text = clean_text(value)
+    for prefix in ("Owns ", "Own "):
+        if text.startswith(prefix):
+            text = text[len(prefix) :]
+            break
+    if not text:
+        return "the component-specific boundary"
+    return text[:1].casefold() + text[1:]
+
+
+def _dedupe_ontology_rows(rows: Sequence[str]) -> list[str]:
+    seen: set[str] = set()
+    result: list[str] = []
+    for row in rows:
+        text = clean_text(row)
+        if not text:
+            continue
+        key = _ontology_term_key(text)
+        if key in seen:
+            continue
+        seen.add(key)
+        result.append(text)
+    return result
+
+
+def _duplicate_ontology_terms(value: Any) -> list[str]:
+    seen: dict[str, str] = {}
+    duplicates: list[str] = []
+    for row in _list_values(value):
+        label = clean_text(row.split(":", 1)[0] if ":" in row else row)
+        key = _ontology_term_key(row)
+        if not key:
+            continue
+        if key in seen and seen[key] not in duplicates:
+            duplicates.append(seen[key])
+        else:
+            seen[key] = label
+    return duplicates
+
+
+def _ontology_term_key(value: str) -> str:
+    text = clean_text(value)
+    label = text.split(":", 1)[0] if ":" in text else text
+    return label.casefold()
+
+
+def _contains_malformed_ownership_phrase(value: Any) -> bool:
+    for token in text_values(value):
+        lowered = token.casefold()
+        if " owns own " in f" {lowered} " or " owns owns " in f" {lowered} ":
+            return True
+    return False
 
 
 def _operators(*, domain_profile: GreenfieldDomainProfile, kind: str, selector: str) -> list[str]:

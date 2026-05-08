@@ -535,9 +535,9 @@ def test_render_backlog_ui_includes_release_filters_summary_cards_and_release_ch
     assert 'type: "all",' in html
     assert 'type: document.getElementById("type"),' in html
     assert 'if (state.type !== "all" && workstreamTypeInfo(row).type !== state.type) return false;' in html
-    assert 'if (state.type !== "all" && workstreamTypeInfo(row).type !== state.type) {' in html
     assert 'el.type.value = state.type;' in html
     assert 'bind(el.type, "type");' in html
+    assert "state.type = \"all\";" in html
     assert "grid-template-columns: minmax(220px, 1.8fr) repeat(7, minmax(0, 1fr));" in html
     assert ".controls input,\n    .controls select {\n      min-width: 0;\n    }" in html
     assert 'if (state.release !== "all" && workstreamActiveReleaseId(row) !== state.release) return false;' in html

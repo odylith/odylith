@@ -88,7 +88,9 @@ def collect_host_reasoned_proposal_issues(proposal: Mapping[str, Any]) -> list[s
     capture(lambda: _require_mapping(proposal, "observed_source"))
     capture(lambda: _require_nonempty_sequence(proposal, "assumptions"))
     capture(lambda: _require_nonempty_sequence(proposal, "open_questions"))
-    capture(lambda: _require_nonempty_sequence(proposal, "risks"))
+    risks = capture(lambda: _require_nonempty_sequence(proposal, "risks"))
+    if isinstance(risks, list):
+        issues.extend(_risk_quality_issues(risks))
     capture(lambda: _require_nonempty_sequence(proposal, "validation_strategy"))
     project_brief = capture(lambda: _require_mapping(proposal, "project_brief"))
     if isinstance(project_brief, Mapping):
@@ -139,6 +141,27 @@ def _dedupe_issues(issues: list[str] | tuple[str, ...]) -> list[str]:
         seen.add(token)
         result.append(token)
     return result
+
+
+def _risk_quality_issues(risks: list[Any]) -> list[str]:
+    boilerplate = (
+        "Starting implementation without a named product spine",
+        "Security, privacy, accessibility, and operational risks can be under-modeled in broad greenfield prompts",
+    )
+    issues: list[str] = []
+    for index, row in enumerate(risks, start=1):
+        text = _risk_text(row)
+        if any(phrase in text for phrase in boilerplate):
+            issues.append(
+                f"proposal risks[{index}] uses generic greenfield boilerplate instead of project-specific risk"
+            )
+    return issues
+
+
+def _risk_text(value: Any) -> str:
+    if isinstance(value, Mapping):
+        return " ".join(str(nested or "") for nested in value.values())
+    return str(value or "")
 
 
 def _first_content_line(source: str) -> str:

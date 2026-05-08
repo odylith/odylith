@@ -216,6 +216,9 @@ def test_capabilities_command_prints_host_agnostic_engine_inventory(capsys) -> N
     assert "Taxonomies and FSMs" in output
     assert "Operator Experience" in output
     assert "odylith greenfield create" in output
+    assert "Activation:" in output
+    assert "attach the normalized execution handshake" in output
+    assert "deterministic proposal Tribunal" in output
     assert "Codex and Claude Code are adapters" in output
     assert "Use `odylith --help` for command syntax." in output
 
@@ -250,6 +253,14 @@ def test_capabilities_command_json_exposes_product_inventory(capsys) -> None:
         "Codex Adapter",
         "Claude Code Adapter",
     } <= names
+    context_engine = next(
+        item
+        for group in payload["engine_groups"]
+        for item in group["items"]
+        if item["name"] == "Context Engine"
+    )
+    assert "activation" in context_engine
+    assert "execution handshakes" in context_engine["activation"]
 
 
 def test_validate_engine_integrity_command_is_exposed(capsys) -> None:

@@ -1425,3 +1425,31 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   only refreshes rendered governance dashboards and shipped HTML bundle copies
   from governed source truth; existing consumer Radar, Registry, Atlas,
   Casebook, and Compass source records are not rewritten by upgrade adoption.
+- The v0.1.15 greenfield anti-slop surface settlement is covered by
+  `migration-observer:0.1.15:browser-surfaces:5856f117145e` and
+  `migration-observer:0.1.15:install-managed-assets:81414558e1eb`. The pass
+  updates generated Radar/Registry/Casebook browser surfaces and managed HTML
+  bundle copies after B-142/CB-184/CB-187 source truth recorded structured
+  greenfield risk, ontology de-duplication, ownership-phrase validation, and
+  component-specific DeFi proof. Existing consumer governance source remains
+  unchanged; upgrades receive refreshed generated surfaces and future
+  greenfield proposal/create runs apply the stricter validation before writes.
+- The v0.1.15 engine activation contract hardening pass is covered by
+  `migration-observer:0.1.15:operator-cli-contracts:918eeb86f16b` and
+  `migration-observer:0.1.15:operator-cli-contracts:77d724bd9906` plus
+  `migration-observer:0.1.15:browser-surfaces:6faa5131670e`. The pass tightens
+  `odylith validate engine-integrity` from inventory presence into a fail-closed
+  activation contract: every requested engine area now needs a real operator
+  command path, canonical source anchor, and explicit low-latency activation
+  explanation, and capability entries with unknown top-level commands are
+  rejected. The CLI dispatch audit now also covers the `validate
+  engine-integrity` parser leaf directly, so already-installed repos gain the
+  stricter validator without any governed-truth migration or command-surface
+  ambiguity. The same pass expands Intervention Engine alignment proof to the
+  full 15-lane product set: Context Engine, Execution Engine, Tribunal,
+  Intervention Engine, Governance, Subagent Orchestration, Discipline, Surface
+  DAGs, Delivery, Analysis, Memory Substrate, Topology, Taxonomies/FSMs,
+  Greenfield Domain Intelligence, and Overall UX. Existing consumer governed
+  source remains unchanged; upgraded runtimes get the stricter validator and
+  clearer capability UX, while refreshed browser surfaces converge from normal
+  dashboard/sync rendering.

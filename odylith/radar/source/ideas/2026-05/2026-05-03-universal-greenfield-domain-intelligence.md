@@ -265,6 +265,24 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   tests/unit/runtime/test_component_authoring.py
   tests/unit/install/test_local_release_smoke.py -q` passed (`69 passed`) plus
   `python3 -m py_compile` for the touched proposal rendering/scaffold modules.
+- 2026-05-08 greenfield anti-slop hardening removed the residual applied-Radar
+  weak spots found by a fresh DeFi audit: proposal-level risks are now
+  domain-specific structured records with class, severity, trigger,
+  early-warning signal, and mitigation; old generic greenfield risk boilerplate
+  is rejected before apply; workstream ontology labels are deduplicated and
+  validated; malformed generated ownership prose such as `owns Own ...` is
+  rejected; parent workstreams use program-level ontology instead of repeating
+  child implementation nouns; proposal and applied Radar risk rendering preserve
+  the structured risk fields. Proof: `python3 -m pytest
+  tests/unit/runtime/test_greenfield_atlas_contract.py
+  tests/unit/runtime/test_greenfield_host_routing.py
+  tests/unit/runtime/test_greenfield_intelligence_schema.py
+  tests/unit/runtime/test_greenfield_proposals.py -q` passed (`49 passed`);
+  source-local `greenfield propose/create` for `DeFi risk sentinel app`
+  produced 4 workstreams, 3 components, 5 diagrams, 27 domain-intelligence
+  fields per workstream, unique ontology labels, project-gated closeout, no
+  old boilerplate, no malformed ownership phrase, and component specs with
+  Risk Console/Risk Signal Engine/Scenario Replay Harness-specific markers.
 - Deepening pass split science/math into targeted subdomains and added fixture
   proof for commerce, SaaS, dashboards, AI assistants, data ingestion, CLI
   libraries, physics simulation, differential-equation solvers, computational
@@ -461,7 +479,12 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `migration-observer:0.1.15:browser-surfaces:77f6752a8e62`, and
   `migration-observer:0.1.15:install-managed-assets:4590f557c3cd`,
   `migration-observer:0.1.15:operator-cli-contracts:dc5245ee5acc`, and
-  `migration-observer:0.1.15:browser-surfaces:7d4664249c0d`.
+  `migration-observer:0.1.15:browser-surfaces:7d4664249c0d`,
+  `migration-observer:0.1.15:browser-surfaces:5856f117145e`, and
+  `migration-observer:0.1.15:install-managed-assets:81414558e1eb`,
+  `migration-observer:0.1.15:operator-cli-contracts:918eeb86f16b`, and
+  `migration-observer:0.1.15:operator-cli-contracts:77d724bd9906`, and
+  `migration-observer:0.1.15:browser-surfaces:6faa5131670e`.
   These markers cover the deepened greenfield skill guidance, refreshed
   Domain Intelligence Atlas/Registry/Radar browser surfaces, updated managed
   security-and-trust guidance, updated public README/operator/release-note/security
@@ -471,7 +494,11 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   validator and expanded capability inventory, the canonical project-intelligence
   proposal object and parent Radar persistence, explicit project/workstream
   invalidation rules, first-class workstream scope and owners, component-local
-  Registry dossier topology, and bundled install-managed dashboard copies.
+  Registry dossier topology, the anti-slop structured-risk/ontology/ownership
+  hardening for applied greenfield Radar, the fail-closed 15-area engine
+  activation contract that keeps Greenfield Domain Intelligence command-backed,
+  source-anchored, and activation-described in the product capability map, and
+  bundled install-managed dashboard copies.
   Existing consumer governance truth remains unchanged; upgrades
   refresh managed guidance/assets and keep proposal writes explicit through
   `odylith greenfield apply --confirm`.

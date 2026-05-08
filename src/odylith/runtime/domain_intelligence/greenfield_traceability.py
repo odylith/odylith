@@ -417,9 +417,9 @@ def _risk_lines(value: Any) -> list[str]:
         for item in value:
             if isinstance(item, Mapping):
                 statement = _clean(item.get("statement")) or _clean(item.get("risk"))
-                mitigation = _clean(item.get("mitigation"))
-                if statement and mitigation:
-                    lines.append(f"{statement} Mitigation: {mitigation}")
+                details = _risk_detail_segments(item)
+                if statement and details:
+                    lines.append(f"{statement} {' '.join(details)}")
                 elif statement:
                     lines.append(statement)
                 else:
@@ -428,6 +428,25 @@ def _risk_lines(value: Any) -> list[str]:
                 lines.extend(_section_items(item))
         return _unique(lines)
     return _section_items(value)
+
+
+def _risk_detail_segments(row: Mapping[str, Any]) -> list[str]:
+    segments: list[str] = []
+    for key, label in (
+        ("risk_class", "Class"),
+        ("severity", "Severity"),
+        ("probability", "Probability"),
+        ("blast_radius", "Blast radius"),
+        ("trigger", "Trigger"),
+        ("early_warning", "Early warning"),
+        ("owner", "Owner"),
+        ("evidence", "Evidence"),
+        ("mitigation", "Mitigation"),
+    ):
+        value = _clean(row.get(key))
+        if value:
+            segments.append(f"{label}: {value}")
+    return segments
 
 
 def _question_lines(value: Any) -> list[str]:

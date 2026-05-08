@@ -46,7 +46,7 @@
 
 - Rollback/Forward Fix: Forward fix in renderer and greenfield handoff selection; no data migration required for existing repos beyond regeneration on the next greenfield apply.
 
-- Verification: PYTHONPATH=src pytest -q tests/unit/runtime/test_greenfield_proposals.py; source-local greenfield apply artifact inspection for DeFi Risk Sentinel component specs.
+- Verification: PYTHONPATH=src pytest -q tests/unit/runtime/test_greenfield_proposals.py; source-local greenfield apply artifact inspection for DeFi Risk Sentinel component specs. Follow-up proof: `python3 -m pytest tests/unit/runtime/test_greenfield_atlas_contract.py tests/unit/runtime/test_greenfield_host_routing.py tests/unit/runtime/test_greenfield_intelligence_schema.py tests/unit/runtime/test_greenfield_proposals.py -q` passed (`49 passed`); fresh source-local `greenfield propose/create` for `DeFi risk sentinel app` produced component-specific Registry dossiers with Risk Console, Risk Signal Engine, and Scenario Replay Harness markers and no old project-risk/security boilerplate.
 
 - Prevention: Regression tests assert component specs omit project-wide phrases, contain component-named sections, and select component-specific workstream anchors.
 

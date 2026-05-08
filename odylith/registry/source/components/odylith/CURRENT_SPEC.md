@@ -17,7 +17,7 @@
   are first-class host families, dev/dogfood/consumer are first-class lanes,
   and host model aliases resolve to adapter families without turning Odylith Discipline
   classification into a model-consuming path.
-Last updated: 2026-05-02
+Last updated: 2026-05-08
 
 
 Last updated (UTC): 2026-04-14
@@ -689,3 +689,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-07: Added the one-command `odylith greenfield create` path and made `greenfield propose` render from an internally validated canonical proposal object, so empty-repo greenfield setup no longer depends on host-side prose-to-JSON reconstruction or repeated schema repair loops. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-173`, `CB-176`, `CB-181`)
 - 2026-05-08: Tightened greenfield Registry component dossiers so apply keeps project-wide topology in Radar/Atlas while component specs render only the component's primary child workstream, non-project-level diagrams, component-authored proof matrix, and component-local security/policy posture required by Tribunal. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Casebook: CB-187)
 - 2026-05-08: Deepened the greenfield project-first UX so `greenfield propose` renders a fuller project intelligence board, design board, host-independent customization examples, and no-code-until-plan flow before backlog, while `greenfield apply/create` closeouts present the child lane as future implementation after gates rather than immediate coding. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
+- 2026-05-08: Hardened the product-owned engine activation contract so `odylith capabilities` names command paths, source anchors, and activation posture for every requested engine lane, and `odylith validate engine-integrity` now fails closed when an engine is command-only, source-only, activation-prose-only, or points at an unknown top-level command. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141))

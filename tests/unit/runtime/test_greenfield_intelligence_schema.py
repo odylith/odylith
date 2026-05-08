@@ -54,3 +54,22 @@ def test_workstream_intelligence_captures_scope_owners_and_invalidation_rules(tm
         broken,
         owner="workflow",
     )
+
+    duplicate = copy.deepcopy(intelligence)
+    duplicate["ontology"] = [
+        *duplicate["ontology"],
+        "Risk subject: repeated term label that would make the workstream read like a padded template.",
+    ]
+
+    assert "workflow domain_intelligence.ontology repeats operational term(s): Risk subject" in domain_intelligence_issues(
+        duplicate,
+        owner="workflow",
+    )
+
+    malformed = copy.deepcopy(intelligence)
+    malformed["scope"] = ["In scope: `Define first operator workflow` owns Own duplicated ownership text."]
+
+    assert "workflow domain_intelligence contains malformed ownership phrase" in domain_intelligence_issues(
+        malformed,
+        owner="workflow",
+    )

@@ -19,6 +19,17 @@ def _write(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def _ontology_term_labels(rows: object) -> list[str]:
+    values = rows if isinstance(rows, list) else []
+    labels: list[str] = []
+    for row in values:
+        text = str(row or "").strip()
+        if not text:
+            continue
+        labels.append(text.split(":", 1)[0].strip().casefold())
+    return labels
+
+
 def _seed_empty_governance_repo(repo_root: Path) -> None:
     empty_backlog_table = (
         "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
@@ -849,6 +860,20 @@ def test_greenfield_cli_json_is_apply_ready_proposal(tmp_path, capsys) -> None:
     assert greenfield_proposals.run_greenfield_tribunal(payload, release_selector="0.0.1").passed
 
 
+def test_greenfield_validation_rejects_old_generic_risk_boilerplate(tmp_path) -> None:
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="DeFi risk sentinel app",
+    )["proposal_template"]
+    proposal["risks"][0]["statement"] = (
+        "Starting implementation without a named product spine, component ownership, and proof gates can create "
+        "disconnected source slices."
+    )
+
+    with pytest.raises(ValueError, match="generic greenfield boilerplate"):
+        greenfield_proposals.validate_host_reasoned_proposal(proposal)
+
+
 def test_defi_greenfield_workstreams_capture_domain_intelligence(tmp_path) -> None:
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
@@ -882,6 +907,20 @@ def test_defi_greenfield_workstreams_capture_domain_intelligence(tmp_path) -> No
     assert all(prompt[:1].isupper() for prompt in brief["customization_prompts"])
     assert "first implementation plan" in " ".join(brief["coding_readiness_gates"]).casefold()
     assert "first operator-visible workflow" not in rendered.lower()
+    risk_text = json.dumps(proposal["risks"])
+    assert "Starting implementation without a named product spine" not in risk_text
+    assert "under-modeled in broad greenfield prompts" not in risk_text
+    assert "oracle/indexer freshness" in risk_text
+    assert "risk_class" in risk_text
+    assert "early_warning" in risk_text
+    proposal_text = greenfield_proposals.format_proposal_text(proposal)
+    assert "Trigger: watchlist, risk-signal, scenario-replay" in proposal_text
+    for row in proposal["backlog"]:
+        row_rendered = greenfield_proposals.render_domain_intelligence_section(row["domain_intelligence"])
+        labels = _ontology_term_labels(row["domain_intelligence"]["ontology"])
+        assert len(labels) == len(set(labels))
+        assert "owns Own" not in row_rendered
+        assert "owns owns" not in row_rendered.casefold()
     greenfield_proposals.validate_host_reasoned_proposal(proposal)
 
 
@@ -907,6 +946,11 @@ def test_greenfield_apply_writes_domain_intelligence_into_radar_specs(tmp_path, 
         for row in result["backlog"]
         if row["title"] != "Govern DeFi Risk Sentinel App"
     ]
+    child_specs_by_title = {
+        row["title"]: Path(row["idea_path"]).read_text(encoding="utf-8")
+        for row in result["backlog"]
+        if row["title"] != "Govern DeFi Risk Sentinel App"
+    }
     joined = "\n".join(child_specs)
 
     assert "## Domain Intelligence" in joined
@@ -932,10 +976,15 @@ def test_greenfield_apply_writes_domain_intelligence_into_radar_specs(tmp_path, 
     assert "### Operators" in parent_spec
     assert "### Conflicts" in parent_spec
     assert "Do not start coding from the proposal closeout" in parent_spec
-    assert (
-        "Starting implementation without a named product spine, component ownership, and proof gates can create "
-        "disconnected source slices. Mitigation:" in all_radar_text
-    )
+    assert "Starting implementation without a named product spine" not in all_radar_text
+    assert "under-modeled in broad greenfield prompts" not in all_radar_text
+    assert "DeFi risk sentinel implementation can create false confidence" in all_radar_text
+    assert "Class: data_integrity" in all_radar_text
+    assert "Early warning: risk cards show numeric confidence" in all_radar_text
+    assert "owns Own" not in all_radar_text
+    assert "owns owns" not in all_radar_text.casefold()
+    assert child_specs_by_title["Define domain contract and ownership"].count("Risk subject:") == 1
+    assert child_specs_by_title["Add release proof and operations harness"].count("Scenario fixture:") == 1
     assert "Which runtime, deployment target, and user role should constrain the first implementation slice?" in all_radar_text
     assert (
         "First governed slice: Product workflow, domain contract, Atlas render, Registry specs, Compass, and Radar "

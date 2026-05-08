@@ -20,9 +20,22 @@ def test_visibility_recovery_alignment_proof_covers_required_engine_lanes() -> N
             "packet_state": "visibility_recovery",
             "packet_kind": "governance_slice",
             "component_id": "governance-intervention-engine",
-            "components": ["governance-intervention-engine", "execution-engine"],
-            "workstreams": ["B-096"],
+            "components": ["governance-intervention-engine", "execution-engine", "domain-intelligence"],
+            "workstreams": ["B-096", "B-142"],
             "route": {"route_ready": True, "native_spawn_ready": False},
+            "runtime_surface_summary": {
+                "status": "ready",
+                "latest_packet_state": "visibility_recovery",
+            },
+            "discipline_summary": {
+                "status": "ready",
+                "validation_status": "passed",
+            },
+            "guidance_behavior_summary": {
+                "status": "ready",
+                "validation_status": "passed",
+            },
+            "topology_integrity": {"quality": "pass"},
         },
         execution_engine_summary={
             "execution_engine_present": True,
@@ -49,7 +62,7 @@ def test_visibility_recovery_alignment_proof_covers_required_engine_lanes() -> N
         visibility_summary={"chat_visible_proof": "unproven_this_session"},
         delivery_snapshot={"event_count": 0, "visible_event_count": 0},
         workstreams=["B-096"],
-        components=["governance-intervention-engine", "odylith-context-engine"],
+        components=["governance-intervention-engine", "odylith-context-engine", "domain-intelligence"],
         bugs=["CB-122"],
         diagrams=["D-038"],
     )
@@ -71,7 +84,31 @@ def test_visibility_recovery_alignment_proof_covers_required_engine_lanes() -> N
     assert lanes["memory_substrate"]["status"] == "covered"
     assert lanes["subagent_orchestration"]["status"] == "policy_deferred"
     assert lanes["subagent_orchestration"]["satisfied"] is True
-    assert lanes["discipline"]["status"] == "quiet"
+    assert lanes["discipline"]["status"] == "covered"
+    assert lanes["surface_dags"]["status"] == "covered"
+    assert lanes["analysis"]["status"] == "covered"
+    assert lanes["topology"]["status"] == "covered"
+    assert lanes["taxonomies_fsms"]["status"] == "covered"
+    assert lanes["greenfield_domain_intelligence"]["status"] == "covered"
+    assert lanes["overall_ux"]["status"] == "covered"
+    assert proof["lane_count"] == 15
+    assert set(lanes) == {
+        "context_engine",
+        "execution_engine",
+        "intervention_engine",
+        "tribunal",
+        "governance",
+        "subagent_orchestration",
+        "discipline",
+        "surface_dags",
+        "delivery",
+        "analysis",
+        "memory_substrate",
+        "topology",
+        "taxonomies_fsms",
+        "greenfield_domain_intelligence",
+        "overall_ux",
+    }
 
 
 def test_visibility_recovery_alignment_proof_degrades_when_required_lane_is_missing() -> None:
@@ -124,3 +161,7 @@ def test_quiet_alignment_proof_does_not_claim_optional_lanes_without_evidence() 
     assert lanes["subagent_orchestration"]["required"] is False
     assert lanes["surface_dags"]["status"] == "quiet"
     assert lanes["analysis"]["status"] == "quiet"
+    assert lanes["topology"]["status"] == "quiet"
+    assert lanes["taxonomies_fsms"]["status"] == "quiet"
+    assert lanes["greenfield_domain_intelligence"]["status"] == "quiet"
+    assert lanes["overall_ux"]["status"] == "covered"
