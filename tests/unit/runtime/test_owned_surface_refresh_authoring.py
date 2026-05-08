@@ -279,7 +279,7 @@ def test_component_register_refreshes_registry_surface(tmp_path: Path, monkeypat
         / "CURRENT_SPEC.md"
     )
     spec_text = spec_path.read_text(encoding="utf-8")
-    assert "## Runtime Boundary" in spec_text
+    assert "## Registry Refresh Runtime Boundary" in spec_text
     assert "Registry authoring boundary for this test component" in spec_text
     assert "| First source boundary | `src/odylith/runtime/governance` |" in spec_text
     assert (

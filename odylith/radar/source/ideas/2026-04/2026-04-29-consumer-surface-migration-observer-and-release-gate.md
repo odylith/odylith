@@ -1299,3 +1299,15 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   readable. Existing installs need no destructive migration; normal upgrade
   adoption plus dashboard/sync refresh converges the new project-first
   proposal and handoff UX.
+- The v0.1.15 greenfield component-spec bespoke hardening pass is covered by
+  `migration-observer:0.1.15:operator-cli-contracts:aed74c9a51d8`,
+  `migration-observer:0.1.15:browser-surfaces:7bed0ef171a8`, and
+  `migration-observer:0.1.15:install-managed-assets:c46b34c03c1d`. The pass
+  changes future greenfield Registry candidate-spec wording and component
+  handoff selection so component dossiers carry component-owned boundaries,
+  outside-boundary exclusions, collaborators, failure modes, proof, and the
+  most specific child workstream instead of copied project posture. Existing
+  consumer repos need no destructive migration: already-written component specs
+  remain repo-owned truth, future greenfield apply runs use the sharper
+  generator, and upgrade plus dashboard/sync refresh converges generated
+  Registry/Radar/Compass browser surfaces and bundle mirrors.

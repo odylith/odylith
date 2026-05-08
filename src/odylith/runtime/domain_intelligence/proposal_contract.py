@@ -169,7 +169,9 @@ def build_proposal_contract() -> dict[str, Any]:
             ),
             (
                 "Registry components must read like planned ownership specs, not labels; include boundary, "
-                "responsibility, interface, dependency, and proof expectations where the prompt supports them."
+                "responsibility, interface, dependency, and proof expectations where the prompt supports them. "
+                "Do not copy project-level risk, compliance, or product narrative into every component spec; "
+                "each component dossier must stay scoped to that component's own boundary, collaborators, failure modes, and proof."
             ),
             "Atlas diagrams and Radar workstreams must be mutually traceable through related workstream/component hints.",
             "For science and math, propose validation obligations and review gates; do not invent claims or results.",

@@ -223,7 +223,7 @@ def _base_security_compliance(title: str) -> dict[str, str]:
 def _base_validation_strategy() -> list[str]:
     return [
         "First-wave workstreams must define source-backed behavior proof before implementation starts.",
-        "Registry candidate specs must name interfaces, dependencies, first coding slice, definition of done, and verification commands.",
+        "Registry candidate specs must stay component-specific: interfaces, dependencies, failure modes, first coding slice, definition of done, and verification commands belong to the component, not copied project posture.",
         "Atlas diagrams must render after apply and remain traceable to Radar workstreams and Registry components.",
         "Compass and Radar must show the first release lane, active wave, start workstream, and proof gates after apply.",
     ]

@@ -119,6 +119,7 @@ Greenfield propose returns a low-latency, provider_calls=0 host-reasoning contra
 The host-authored proposal includes backlog candidates, program waves, release plan, planned Registry components, draft Atlas Mermaid sources, assumptions, risks, validation strategy, open questions, and exact apply commands.
 Provider-free greenfield scaffolds include a multi-view Atlas suite with mutually traceable workstream/component links; the robot-swarm logistics path emits conflict, safety, telemetry, deployment-boundary, and observability/audit views in addition to baseline topology.
 Greenfield proposals carry a project-first brief before backlog: direction options, pre-coding checkpoints, coding-readiness gates, and host-independent commands must be visible in text and JSON before apply.
+Greenfield Registry component specs stay component-owned: they must not copy project-level risk/security/compliance posture into every dossier, and each spec must name the component's own boundary, outside-boundary exclusions, collaborators, interfaces, failure modes, proof obligations, first source path, and most specific child workstream anchor.
 Greenfield apply writes through owned Radar, Registry, Atlas, release-targeting, and Compass memory paths only after --confirm, preserving user_intent evidence and source-backed truth separation.
 Apply rejects missing Mermaid source, duplicated diagram source, incomplete proposal sections, and invalid evidence tiers before any governed write.
 Apply/create closeout leads with the project workstream and readiness gates, then names the eventual first coding workstream as a later lane rather than the immediate next action.
@@ -168,6 +169,14 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   `PYTHONPATH=src pytest -q tests/unit/runtime/test_greenfield_proposals.py`
   (`33 passed`). Casebook bug `CB-186` captures the fixed-pending-release UX
   regression.
+- 2026-05-08 component-spec bespoke hardening proved generated Registry specs
+  no longer inherit project-wide risk/security/compliance narrative, render
+  component-named boundaries/contracts/proof/failure/runway sections, extract
+  outside-boundary exclusions, and anchor each component to its most specific
+  child workstream (`Risk Signal Engine` -> `B-003`, `Scenario Replay Harness`
+  -> `B-004`): `PYTHONPATH=src pytest -q
+  tests/unit/runtime/test_greenfield_proposals.py` (`33 passed`). Casebook bug
+  `CB-187` captures the fixed-pending-release UX regression.
 - Deepening pass split science/math into targeted subdomains and added fixture
   proof for commerce, SaaS, dashboards, AI assistants, data ingestion, CLI
   libraries, physics simulation, differential-equation solvers, computational

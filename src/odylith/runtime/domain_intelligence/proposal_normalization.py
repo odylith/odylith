@@ -478,7 +478,7 @@ def _synthesized_program_parent(
         "interfaces": [
             "Compass program view exposes the umbrella, active wave, child workstreams, progress, and exit gate.",
             "Radar child workstreams expose first-slice proof, dependencies, interface expectations, validation, and impacted components.",
-            "Registry candidate specs expose planned ownership, dependencies, interfaces, security posture, and implementation kickoff steps.",
+            "Registry candidate specs expose component-specific ownership, collaborators, interfaces, failure modes, proof, and implementation kickoff steps.",
         ],
         "validation": validation
         or [
@@ -488,7 +488,7 @@ def _synthesized_program_parent(
         "domain_risk": _domain_posture_text(security_compliance)
         or "Greenfield governance can mislead implementation if the program parent, release target, validation gates, or component boundaries are ambiguous.",
         "security_posture": _domain_posture_text(security_compliance)
-        or "Security and compliance posture must stay explicit on the child workstreams and candidate component specs until source-backed implementation proves the boundary.",
+        or "Security and compliance posture must stay explicit on the project brief and child workstreams, while each candidate component spec carries only that component's own boundary, collaborators, failure modes, and proof.",
         "priority": "P1",
         "sizing": "L",
         "complexity": "High",

@@ -122,8 +122,8 @@ def build_component_handoffs(
             if str(item).strip()
         ]
         child_ids = [item for item in component_workstreams if item != umbrella_id]
-        release_focused_ids = [item for item in first_release_ids if item in focused_child_ids]
-        release_child_ids = [item for item in first_release_ids if item in child_ids]
+        release_focused_ids = [item for item in focused_child_ids if item in first_release_ids]
+        release_child_ids = [item for item in child_ids if item in first_release_ids]
         start_id = (
             release_focused_ids
             or focused_child_ids
@@ -171,16 +171,37 @@ def _component_focused_child_ids(
     if not aliases:
         return []
     rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
-    result: list[str] = []
+    scored: list[tuple[int, int, str]] = []
     for index, row in enumerate(rows):
         if index >= len(created):
             break
         idea_id = str(created[index].get("idea_id", "")).strip().upper()
         if not idea_id or idea_id == umbrella_id:
             continue
-        if aliases & _focus_aliases(row):
-            result.append(idea_id)
-    return list(unique_text(result))
+        score = _component_focus_score(component_aliases=aliases, row=row)
+        if score > 0:
+            scored.append((score, -index, idea_id))
+    return list(unique_text(idea_id for _score, _neg_index, idea_id in sorted(scored, reverse=True)))
+
+
+def _component_focus_score(*, component_aliases: set[str], row: Mapping[str, Any]) -> int:
+    focus_aliases = _focus_aliases(row)
+    if not (component_aliases & focus_aliases):
+        return 0
+    score = 10
+    if len(focus_aliases) == 1:
+        score += 8
+    haystack_aliases = _slug_aliases(
+        [
+            row.get("title"),
+            row.get("problem"),
+            row.get("product_view"),
+            row.get("recommended_first_slice"),
+        ]
+    )
+    if component_aliases & haystack_aliases:
+        score += 4
+    return score
 
 
 def _component_aliases(row: Mapping[str, Any]) -> set[str]:

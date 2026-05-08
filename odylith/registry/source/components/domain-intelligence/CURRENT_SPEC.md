@@ -60,6 +60,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-08: Deepened greenfield Atlas architecture output so the provider-free default scaffold now emits five views (system overview, first-slice flow, component ownership, domain state, validation/release topology) and the robot-swarm logistics profile emits ten views by adding conflict, safety/e-stop, telemetry contract, deployment-boundary, and observability/audit diagrams. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-182`)
 - 2026-05-08: Deepened greenfield Radar workstreams from task labels into domain-intelligence control surfaces. Each applied workstream now carries structured intent, ontology, state, operators, constraints, source-of-truth hierarchy, evidence grammar, decisions, assumptions, topology, invariants, risks, validation obligations, artifact contracts, authority, execution memory, metrics, change rules, conflict rules, and transfer priors; proposal preview, normalization, validation, Radar writes, and traceability repair all share the same payload. `greenfield apply/create --json` now captures noisy internal refresh/scaffold output and emits one parseable JSON document. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-184`, `CB-185`)
 - 2026-05-08: Made greenfield project-first before implementation: canonical proposals now include a top-level `project_brief` with blueprint sections, customization options, pre-coding checkpoints, coding-readiness gates, and host-independent commands. Validation rejects missing briefs, legacy proposals normalize into the same shape, rendered proposals show the brief before backlog, and apply/create closeout leads with the project workstream before the eventual coding lane. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-186`)
+- 2026-05-08: Tightened greenfield Registry candidate specs so component dossiers stay component-owned rather than project-summary repeats. Apply now keeps proposal-wide security/compliance/risk posture in the project brief and Radar, writes component-local failure/security/policy guardrails, extracts boundary exclusions into `Outside Boundary`, and chooses the most specific child workstream as each component's implementation anchor. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-187`)
 
 ## Contract
 
@@ -152,10 +153,12 @@ This section captures synchronized requirement and contract signals derived from
 - Execution-wave source must preserve accepted proposal exit gates and
   validation text so Compass and Radar can render what closes a wave instead of
   only showing membership counts.
-- Candidate component specs created from greenfield proposals must read like
-  project-start runbooks: planned boundary, first source path, dependency
-  expectations, interface expectations, first coding slice, validation gates,
-  and commands to prove the first source-backed implementation pass.
+- Candidate component specs created from greenfield proposals are component
+  dossiers, not project summaries. Project-level posture belongs in the
+  project brief and Radar; each Registry spec must stay scoped to that
+  component's own boundary, outside-boundary exclusions, collaborators,
+  interfaces, failure modes, proof obligations, first source path, and most
+  specific child workstream anchor.
 - Apply must run the greenfield Tribunal before any governed write and must
   perform one final batched dashboard refresh for Radar, Registry, Atlas, and
   Compass after backlog, program, release, Atlas, Registry, and Compass memory

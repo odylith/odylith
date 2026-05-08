@@ -77,15 +77,18 @@ def test_component_spec_template_uses_greenfield_responsibility_and_links() -> N
     assert "Checkout owns payment handoff and order-draft recovery" in text
     assert "| Workstreams | `B-200`, `B-201` |" in text
     assert "| Diagrams | `D-200` |" in text
+    assert "## Checkout Boundary Runtime Boundary" in text
+    assert "## Checkout Boundary Runtime Contract" in text
+    assert "### Collaborators And Dependencies" in text
     assert "- Payment sandbox." in text
     assert "- Checkout request contract." in text
-    assert "- Payment failure recovery proof." in text
+    assert "| Payment failure recovery proof |" in text
     assert "- Provider-specific behavior may change the boundary." in text
     assert "[B-201](odylith/radar/radar.html?view=plan&workstream=B-201)" in text
     assert "Use `B-201` (Checkout first slice) as the implementation-plan anchor" in text
     assert "- Wave: Checkout spine (active)." in text
     assert "- Release target: 0.0.1." in text
     assert "- First coding slice: Implement browse-to-checkout with payment sandbox failure recovery." in text
-    assert "- Checkout smoke proof passes." in text
+    assert "- Promotion requires Happy-path checkout smoke proof and Payment failure recovery proof to pass against real source, not proposal text." in text
     assert "- `./.odylith/bin/odylith context --repo-root . B-201`" in text
     assert "- run npm test" in text

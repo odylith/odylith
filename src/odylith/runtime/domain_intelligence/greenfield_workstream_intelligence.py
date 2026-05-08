@@ -163,7 +163,7 @@ def build_domain_intelligence(
         ],
         "source_of_truth_map": [
             "Radar source file: canonical intent, scope, non-goals, dependencies, risks, and validation obligations.",
-            "Registry component specs: canonical component identity, ownership boundary, interfaces, and proof expectations.",
+            "Registry component specs: canonical component identity, component-scoped ownership boundary, collaborators, interfaces, failure modes, and proof expectations.",
             "Atlas source catalog and Mermaid files: canonical topology and cross-workstream traceability.",
             "Compass runtime state: derived live posture; refresh it after governed source or plan changes.",
             "Repo-native tests and fixtures: highest-strength implementation evidence once source exists.",

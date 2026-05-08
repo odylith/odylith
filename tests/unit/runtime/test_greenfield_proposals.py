@@ -1331,8 +1331,9 @@ def test_greenfield_apply_synthesizes_parent_and_polishes_component_specs(tmp_pa
     assert result["next_steps"]["coding_readiness_gates"]
     assert "After project-first gates pass" in result["next_steps"]["implementation_prompt"]
     assert "Treat `Identity, sessions, and COI-aware authorization` as the first coding scope" in result["next_steps"]["implementation_prompt"]
-    assert "## At A Glance" in spec
-    assert "## First Slice Runway" in spec
+    assert "## Component Snapshot" in spec
+    assert "## Identity Access Runtime Boundary" in spec
+    assert "## Identity Access First Runtime Slice" in spec
     assert "Use `B-002` (Identity, sessions, and COI-aware authorization) as the implementation-plan anchor" in spec
     assert (
         "Use `B-003` (Review workflow phase state machine) as the implementation-plan anchor"
@@ -1347,8 +1348,10 @@ def test_greenfield_apply_synthesizes_parent_and_polishes_component_specs(tmp_pa
     assert "Definition Of Done" in spec
     assert "Operator Verification" in spec
     assert "Runtime Failure Modes" in spec
-    assert "NIH Guidelines for nucleic acid research" in spec
     assert "Authorization enforced at API read boundary, not UI" in spec
+    assert "NIH Guidelines for nucleic acid research" not in spec
+    assert "USG DURC oversight policy" not in spec
+    assert "CRISPR Ethics Review App" not in spec
     assert "['" not in spec
     assert "']" not in spec
     assert "['" not in workflow_spec
@@ -1391,12 +1394,31 @@ def test_greenfield_apply_writes_bespoke_domain_component_specs(tmp_path, monkey
     assert "stale oracle" in console_spec
     assert "Exposure snapshot query" in engine_spec
     assert "liquidity" in engine_spec
+    assert "Use `B-003` (Define domain contract and ownership) as the implementation-plan anchor" in engine_spec
+    assert "Use `B-002` (Define first operator workflow) as the implementation-plan anchor" not in engine_spec
     assert "Scenario runner command" in harness_spec
     assert "live chain calls" in harness_spec
+    assert "Use `B-004` (Add release proof and operations harness) as the implementation-plan anchor" in harness_spec
+    assert "## Risk Sentinel Console Interaction Boundary" in console_spec
+    assert "## Risk Signal Engine Runtime Boundary" in engine_spec
+    assert "## Scenario Replay Harness Proof Harness Boundary" not in harness_spec
+    assert "## Scenario Replay Harness Proof Boundary" in harness_spec
+    assert "Risk scoring math" in console_spec
+    assert "Chain indexing" in console_spec
+    assert "Presentation" in engine_spec
+    assert "External notification delivery" in engine_spec
+    assert "Production keys" in harness_spec
+    assert "Real trade execution" in harness_spec
     for text in (console_spec, engine_spec, harness_spec):
         assert "Experience Boundary" not in text
         assert "registered through `odylith component register`" not in text
         assert "first operator-visible workflow, view or command entrypoint" not in text
+        assert "Source-backed runtime behavior until implementation proof lands" not in text
+        assert "Production readiness, storage ownership, or external-provider guarantees" not in text
+        assert "Starting implementation without a named product spine" not in text
+        assert "Security, privacy, accessibility, and operational risks can be under-modeled" not in text
+        assert "Security posture starts with authentication or operator access boundaries" not in text
+        assert "Policy posture tracks privacy, retention, accessibility" not in text
         assert "R1." not in text
         assert "odylith_assumption" not in text
     assert console_spec != engine_spec

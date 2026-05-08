@@ -381,7 +381,7 @@ def _release_assignment_note(*, selector: str) -> str:
     return f"Target confirmed first-wave greenfield workstream(s) from `odylith greenfield apply --release {selector}`."
 
 
-def _component_risk_lines(row: Mapping[str, Any], proposal: Mapping[str, Any]) -> tuple[str, ...]:
+def _component_risk_lines(row: Mapping[str, Any], _proposal: Mapping[str, Any]) -> tuple[str, ...]:
     local = unique_text(
         [
             *_posture_lines(row, "risks", "domain_risk", "risk_posture"),
@@ -389,14 +389,59 @@ def _component_risk_lines(row: Mapping[str, Any], proposal: Mapping[str, Any]) -
             *_posture_lines(row, "dependency_expectations"),
         ]
     )
-    inherited = unique_text(
-        [
-            *_posture_lines(proposal, "security_compliance"),
-            *_posture_lines(proposal, "risks"),
-        ]
+    label = str(row.get("label", "") or row.get("component_id", "") or "Component").strip()
+    values = list(local)
+    posture_text = " ".join(values).casefold()
+    if not _has_component_posture(posture_text, _COMPONENT_RISK_TOKENS):
+        values.append(_component_operational_risk(row=row, label=label))
+    posture_text = " ".join(values).casefold()
+    if not _has_component_posture(posture_text, _COMPONENT_SECURITY_TOKENS):
+        values.append(_component_security_posture(row=row, label=label))
+    posture_text = " ".join(values).casefold()
+    if not _has_component_posture(posture_text, _COMPONENT_POLICY_TOKENS):
+        values.append(_component_policy_posture(row=row, label=label))
+    return unique_text(values)
+
+
+def _has_component_posture(text: str, tokens: Sequence[str]) -> bool:
+    return any(token in text for token in tokens)
+
+
+def _component_operational_risk(*, row: Mapping[str, Any], label: str) -> str:
+    boundary = str(row.get("boundary", "") or row.get("responsibility", "")).strip()
+    boundary_hint = f" its stated boundary ({boundary})" if boundary else " its stated Registry boundary"
+    return f"Operational risk: {label} must not expand beyond{boundary_hint} without a refreshed component spec and source-backed proof."
+
+
+def _component_security_posture(*, row: Mapping[str, Any], label: str) -> str:
+    kind = str(row.get("kind", "")).strip().casefold()
+    if kind in {"tooling", "test", "harness"}:
+        return (
+            f"Security posture: {label} uses secret-free fixtures, rejects production credentials, "
+            "and keeps live network access outside its proof boundary."
+        )
+    if kind in {"application", "ui", "frontend", "web"}:
+        return (
+            f"Security posture: {label} gates operator access and audit identity at its own visible action boundary."
+        )
+    return (
+        f"Security posture: {label} keeps authorization, data access, and ownership checks at its API or module boundary."
     )
-    values = unique_text([*local, *inherited])
-    return values or ("Candidate boundary may change once source evidence and implementation plans exist.",)
+
+
+def _component_policy_posture(*, row: Mapping[str, Any], label: str) -> str:
+    kind = str(row.get("kind", "")).strip().casefold()
+    if kind in {"tooling", "test", "harness"}:
+        return (
+            f"Compliance policy: {label} records deterministic audit evidence and rejects private production data in fixtures."
+        )
+    if kind in {"application", "ui", "frontend", "web"}:
+        return (
+            f"Policy posture: {label} preserves accessibility, privacy, audit, and safety semantics for the visible states it owns."
+        )
+    return (
+        f"Compliance policy: {label} keeps audit, privacy, retention, and safety assumptions explicit in its contract tests."
+    )
 
 
 def _posture_lines(row: Mapping[str, Any], *keys: str) -> tuple[str, ...]:
@@ -481,6 +526,36 @@ def _ensure_release_target(*, repo_root: Path, proposal: Mapping[str, Any], sele
 
 
 _GREENFIELD_VISIBLE_SURFACES = ("radar", "registry", "atlas", "compass")
+_COMPONENT_RISK_TOKENS = ("risk", "failure", "fallback", "mitigation", "recovery", "degraded", "operational")
+_COMPONENT_SECURITY_TOKENS = (
+    "security",
+    "auth",
+    "authorization",
+    "credential",
+    "permission",
+    "session",
+    "secret",
+    "token",
+    "access",
+    "ownership",
+    "private",
+    "abuse",
+    "payment",
+    "pii",
+    "data risk",
+)
+_COMPONENT_POLICY_TOKENS = (
+    "compliance",
+    "policy",
+    "privacy",
+    "retention",
+    "audit",
+    "regulated",
+    "accessibility",
+    "public",
+    "private",
+    "safety",
+)
 
 
 def _refresh_greenfield_dashboard(*, repo_root: Path) -> dict[str, Any]:
