@@ -1330,6 +1330,15 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   migration: repo-owned greenfield records stay intact, upgraded runtimes emit
   the deeper UX for future proposals, and normal dashboard refresh converges
   generated Radar/Registry/Atlas/Compass surfaces.
+- The v0.1.15 greenfield applied-Radar semantics hardening pass is covered by
+  `migration-observer:0.1.15:browser-surfaces:0abf1a7c96b4`. The pass refreshes
+  generated Radar/Registry/Atlas/Compass/Casebook surfaces after traceability
+  writer changes that preserve structured risks, open questions, dependencies,
+  rollout stages, and punctuation in newly applied greenfield Radar records.
+  Existing consumer repos need no destructive migration: already-authored
+  governance source remains repo-owned truth, while future `greenfield apply`
+  runs write cleaner Radar records and normal dashboard/sync refresh converges
+  generated browser surfaces.
 - The v0.1.15 engine-integrity and execution-benchmark route hardening pass is
   covered by `migration-observer:0.1.15:operator-cli-contracts:a8504a4c60ea`,
   `migration-observer:0.1.15:browser-surfaces:bfc31956720b`, and

@@ -236,6 +236,20 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   tests/unit/install/test_local_release_smoke.py -q` (`58 passed`);
   `python3 -m py_compile` passed for the touched greenfield UX modules and
   release smoke script.
+- 2026-05-08 traceability writer hardening fixed the remaining applied-Radar
+  sludge discovered by fresh DeFi temp-repo proof: structured risks,
+  questions, dependencies, and release stages now render as complete governed
+  bullets instead of fragments like `R1.`, `Q1.`, `domain contract.`, or
+  `command.`; question punctuation is preserved; DeFi customization prompts no
+  longer split into lowercase fragments. Proof: source-local `greenfield
+  propose` produced 270-line project-first text with 24 project-intelligence
+  layers, source-local apply wrote all four DeFi Radar workstreams with no
+  shallow-fragment hits, `python3 -m pytest
+  tests/unit/runtime/test_greenfield_proposals.py
+  tests/unit/runtime/test_greenfield_intelligence_schema.py
+  tests/unit/runtime/test_component_authoring.py
+  tests/unit/install/test_local_release_smoke.py -q` passed (`58 passed`), and
+  `python3 -m py_compile` passed for the touched greenfield modules.
 - Deepening pass split science/math into targeted subdomains and added fixture
   proof for commerce, SaaS, dashboards, AI assistants, data ingestion, CLI
   libraries, physics simulation, differential-equation solvers, computational

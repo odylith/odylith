@@ -645,6 +645,15 @@ Related Bugs:
       tests/unit/install/test_local_release_smoke.py -q` (`58 passed`) plus
       `python3 -m py_compile` for touched greenfield UX modules and release
       smoke script.
+- [x] Applied-Radar sludge proof:
+      source-local `greenfield propose` for `DeFi risk sentinel app` rendered
+      270 lines with a project design board, no-code posture, three intact
+      customization prompts, and 24 project-intelligence layers; source-local
+      apply into a seeded temp repo wrote B-001..B-004 without shallow fragments
+      (`- R1.`, `- Q1.`, split `domain contract.`, split `command.`, or `?.`).
+      Regression coverage lives in
+      `tests/unit/runtime/test_greenfield_proposals.py`; the focused 58-test
+      greenfield/component/local-release smoke slice and `py_compile` passed.
 - [x] Activation validators passed after the engine-integrity slice:
       `validate engine-integrity`, `validate discipline`,
       `validate guidance-behavior`, `validate topology-integrity`,

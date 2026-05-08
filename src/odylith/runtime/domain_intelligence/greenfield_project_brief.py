@@ -352,7 +352,7 @@ def _customization_prompts(*, family: str) -> list[str]:
     if family == "defi_risk":
         return [
             "Use Python library plus FastAPI, strict regulated posture, fixture-only data, and audit-first proof.",
-            "Keep release 0.0.1 non-custodial and read-only; defer live RPC, trade execution, and advice language.",
+            "Keep release 0.0.1 non-custodial and read-only while deferring live RPC, trade execution, and advice language.",
             "Make stale oracle, missing indexer, unsupported chain, and confidence display mandatory first-wave states.",
         ]
     if family == "robot_swarm":

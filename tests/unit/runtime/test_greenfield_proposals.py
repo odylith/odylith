@@ -878,6 +878,8 @@ def test_defi_greenfield_workstreams_capture_domain_intelligence(tmp_path) -> No
     assert "transfer_priors" in intelligence
     assert "non-custodial" in json.dumps(brief)
     assert "strict regulated posture" in json.dumps(brief)
+    assert not any(prompt.startswith("defer ") for prompt in brief["customization_prompts"])
+    assert all(prompt[:1].isupper() for prompt in brief["customization_prompts"])
     assert "first implementation plan" in " ".join(brief["coding_readiness_gates"]).casefold()
     assert "first operator-visible workflow" not in rendered.lower()
     greenfield_proposals.validate_host_reasoned_proposal(proposal)
@@ -925,10 +927,26 @@ def test_greenfield_apply_writes_domain_intelligence_into_radar_specs(tmp_path, 
         for row in result["backlog"]
         if row["title"] == "Govern DeFi Risk Sentinel App"
     )
+    all_radar_text = parent_spec + "\n" + joined
     assert "## Project Intelligence" in parent_spec
     assert "### Operators" in parent_spec
     assert "### Conflicts" in parent_spec
     assert "Do not start coding from the proposal closeout" in parent_spec
+    assert (
+        "Starting implementation without a named product spine, component ownership, and proof gates can create "
+        "disconnected source slices. Mitigation:" in all_radar_text
+    )
+    assert "Which runtime, deployment target, and user role should constrain the first implementation slice?" in all_radar_text
+    assert (
+        "First governed slice: Product workflow, domain contract, Atlas render, Registry specs, Compass, and Radar "
+        "all agree." in all_radar_text
+    )
+    assert "- R1." not in all_radar_text
+    assert "- Q1." not in all_radar_text
+    assert "- domain contract.\n" not in all_radar_text
+    assert "- command.\n" not in all_radar_text
+    assert "release targeting.\n- and proof sequencing." not in all_radar_text
+    assert "?.\n" not in all_radar_text
 
 
 def test_greenfield_normalization_enriches_legacy_proposals_with_domain_intelligence() -> None:

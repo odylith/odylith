@@ -10,6 +10,7 @@ from typing import Any, Mapping, Sequence
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence.greenfield_text import collect_delimited_text_values
 from odylith.runtime.domain_intelligence.greenfield_text import delimited_text_values
+from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import SECTION_TITLE
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import render_domain_intelligence_section
 from odylith.runtime.governance import backlog_authoring
@@ -145,9 +146,9 @@ def apply_backlog_traceability(
     """Write proposal-derived topology and richer detail sections into new backlog specs."""
 
     touched: list[str] = []
-    risks = delimited_text_values(proposal.get("risks", []))
-    validation_strategy = delimited_text_values(proposal.get("validation_strategy", []))
-    open_questions = delimited_text_values(proposal.get("open_questions", []))
+    risks = _risk_lines(proposal.get("risks", []))
+    validation_strategy = _section_items(proposal.get("validation_strategy", []))
+    open_questions = _question_lines(proposal.get("open_questions", []))
     for workstream in plan.workstreams:
         metadata, sections = backlog_authoring._parse_metadata_and_sections(workstream.path)
         diagrams = plan.backlog_diagrams.get(workstream.idea_id, ())
@@ -308,32 +309,32 @@ def _patch_sections(
     sections["Scope"] = _bullets(
         [
             first_slice or str(row.get("scope", "")).strip(),
-            *delimited_text_values(row.get("scope_items", [])),
+            *_section_items(row.get("scope_items", [])),
             *component_lines[:6],
         ]
     )
     sections["Non-Goals"] = _bullets(
-        delimited_text_values(row.get("non_goals", []))
+        _section_items(row.get("non_goals", []))
         or [
             "Do not claim source-backed implementation ownership until code exists.",
             "Do not promote research or product claims without the listed validation gates.",
         ]
     )
-    sections["Risks"] = _bullets(delimited_text_values(row.get("risks", [])) or risks[:3])
+    sections["Risks"] = _bullets(_risk_lines(row.get("risks", [])) or risks[:3])
     sections["Dependencies"] = _bullets(
-        delimited_text_values(row.get("dependencies", []))
-        or delimited_text_values(row.get("depends_on", []))
+        _section_items(row.get("dependencies", []))
+        or _section_items(row.get("depends_on", []))
         or _topology_dependency_lines(metadata)
     )
     validation_items = (
-        delimited_text_values(row.get("validation", []))
-        or delimited_text_values(row.get("validation_gate", []))
-        or delimited_text_values(row.get("success_metrics", []))
+        _section_items(row.get("validation", []))
+        or _section_items(row.get("validation_gate", []))
+        or _section_items(row.get("success_metrics", []))
         or validation_strategy[:3]
     )
     sections["Validation"] = _bullets(validation_items)
     sections["Test Strategy"] = _bullets(
-        delimited_text_values(row.get("test_strategy", []))
+        _section_items(row.get("test_strategy", []))
         or [
             "Turn each success metric into a focused reproducibility, contract, or smoke proof before source implementation starts.",
         ]
@@ -345,24 +346,120 @@ def _patch_sections(
         ]
     )
     sections["Interface Changes"] = _bullets(
-        delimited_text_values(row.get("interfaces", []))
-        or delimited_text_values(row.get("interface_changes", []))
+        _section_items(row.get("interfaces", []))
+        or _section_items(row.get("interface_changes", []))
         or [
             "Candidate interfaces are proposal-level only until the first source-backed plan defines runtime contracts.",
         ]
     )
+    release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
     sections["Rollout"] = _bullets(
-        delimited_text_values(row.get("rollout", []))
-        or delimited_text_values((proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}).get("milestones", []))[:3]
+        _section_items(row.get("rollout", []))
+        or _milestone_lines(release_plan.get("release_stages") or release_plan.get("milestones"))[:3]
         or [
             "Keep the workstream queued until the first implementation plan binds scope, proof, and release gates.",
         ]
     )
     sections["Why Now"] = str(row.get("opportunity", "")).strip() or sections.get("Why Now", "")
-    sections["Open Questions"] = _bullets(delimited_text_values(row.get("open_questions", [])) or open_questions[:3])
+    sections["Open Questions"] = _bullets(_question_lines(row.get("open_questions", [])) or open_questions[:3])
     domain_intelligence = render_domain_intelligence_section(row.get("domain_intelligence"))
     if domain_intelligence:
         sections[SECTION_TITLE] = domain_intelligence
+
+
+def _section_items(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, Mapping):
+        return _mapping_line(value)
+    if isinstance(value, (list, tuple, set)):
+        rows: list[str] = []
+        for item in value:
+            if isinstance(item, Mapping):
+                rows.extend(_mapping_line(item))
+            else:
+                rows.extend(text_values(item, split_scalar=True, split_commas=False, strip_bullets=True))
+        return _unique(rows)
+    return list(text_values(value, split_scalar=True, split_commas=False, strip_bullets=True))
+
+
+def _clean(value: Any) -> str:
+    return " ".join(str(value or "").split()).strip()
+
+
+def _mapping_line(row: Mapping[str, Any]) -> list[str]:
+    for fields in (
+        ("statement", "mitigation"),
+        ("question", "impact"),
+        ("label", "exit_criteria"),
+        ("release", "exit_criteria"),
+        ("name", "description"),
+        ("title", "summary"),
+    ):
+        primary = _clean(row.get(fields[0]))
+        secondary = _clean(row.get(fields[1])) if len(fields) > 1 else ""
+        if primary and secondary:
+            if fields[0] in {"label", "release", "name", "title"}:
+                return [f"{primary}: {secondary}"]
+            suffix = fields[1].replace("_", " ").title()
+            return [f"{primary} {suffix}: {secondary}"]
+        if primary:
+            return [primary]
+    rendered = "; ".join(text_values(row))
+    return [rendered] if rendered else []
+
+
+def _risk_lines(value: Any) -> list[str]:
+    if isinstance(value, Mapping):
+        return _risk_lines([value])
+    if isinstance(value, (list, tuple, set)):
+        lines: list[str] = []
+        for item in value:
+            if isinstance(item, Mapping):
+                statement = _clean(item.get("statement")) or _clean(item.get("risk"))
+                mitigation = _clean(item.get("mitigation"))
+                if statement and mitigation:
+                    lines.append(f"{statement} Mitigation: {mitigation}")
+                elif statement:
+                    lines.append(statement)
+                else:
+                    lines.extend(_section_items(item))
+            else:
+                lines.extend(_section_items(item))
+        return _unique(lines)
+    return _section_items(value)
+
+
+def _question_lines(value: Any) -> list[str]:
+    if isinstance(value, Mapping):
+        return _question_lines([value])
+    if isinstance(value, (list, tuple, set)):
+        lines: list[str] = []
+        for item in value:
+            if isinstance(item, Mapping):
+                question = _clean(item.get("question")) or _clean(item.get("prompt"))
+                impact = _clean(item.get("impact"))
+                lines.append(f"{question} Impact: {impact}" if question and impact else question)
+            else:
+                lines.extend(_section_items(item))
+        return _unique([line for line in lines if line])
+    return _section_items(value)
+
+
+def _milestone_lines(value: Any) -> list[str]:
+    if isinstance(value, Mapping):
+        return _milestone_lines([value])
+    if not isinstance(value, (list, tuple, set)):
+        return _section_items(value)
+    lines: list[str] = []
+    for item in value:
+        if isinstance(item, Mapping):
+            label = _clean(item.get("label")) or _clean(item.get("release"))
+            exit_criteria = _clean(item.get("exit_criteria")) or _clean(item.get("criteria"))
+            lines.append(f"{label}: {exit_criteria}" if label and exit_criteria else label or exit_criteria)
+        else:
+            lines.extend(_section_items(item))
+    return _unique([line for line in lines if line])
 
 
 def _component_lines_for_workstream(
@@ -512,8 +609,15 @@ def _paragraph(values: Sequence[str]) -> str:
 
 
 def _bullets(values: Sequence[str]) -> str:
-    items = [str(value).strip().rstrip(".") for value in values if str(value).strip()]
-    return "\n".join(f"- {item}." for item in items) if items else "TBD."
+    items = [_sentence_bullet(str(value).strip()) for value in values if str(value).strip()]
+    return "\n".join(f"- {item}" for item in items) if items else "TBD."
+
+
+def _sentence_bullet(value: str) -> str:
+    item = value.strip()
+    if not item:
+        return item
+    return item if item[-1:] in {".", "?", "!"} else f"{item}."
 
 
 def _topology_dependency_lines(metadata: Mapping[str, str]) -> list[str]:
