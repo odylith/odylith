@@ -27,6 +27,20 @@ def test_greenfield_apply_ready_scaffold_has_multi_view_architecture_suite(tmp_p
     assert any(row["kind"] == "sequenceDiagram" for row in proposal["diagrams"])
     assert any(row["kind"] == "stateDiagram" for row in proposal["diagrams"])
     assert all(row["components"] for row in proposal["diagrams"])
+    assert all(row.get("review_focus") for row in proposal["diagrams"])
+    assert all(row.get("operator_question") for row in proposal["diagrams"])
+    assert all(row.get("proof_gate") for row in proposal["diagrams"])
+    sources = {row["slug"]: row["mermaid_source"] for row in proposal["diagrams"]}
+    assert "Evidence boundary<br/>intent not source-backed" in sources["a-statistics-notebook-repo-system-overview"]
+    assert "Code gate<br/>plan paths tests rollback" in sources["a-statistics-notebook-repo-system-overview"]
+    assert "Note over Operator,Surfaces: Project review and direction choices happen before source edits" in sources["a-statistics-notebook-repo-first-slice-flow"]
+    assert "Decision lens<br/>split by owner evidence risk gate" in sources["a-statistics-notebook-repo-component-ownership-map"]
+    assert "Proposal state, not source proof" in sources["a-statistics-notebook-repo-domain-state-model"]
+    assert "Blocked if risks<br/>or choices unresolved" in sources["a-statistics-notebook-repo-validation-release-topology"]
+    proposal_text = greenfield_proposals.format_proposal_text(proposal)
+    assert "review: Use this view to confirm the project spine" in proposal_text
+    assert "question: Does this show the right first user" in proposal_text
+    assert "gate: No source-backed claim until the first child plan" in proposal_text
     assert {
         "a-statistics-notebook-repo-component-ownership-map",
         "a-statistics-notebook-repo-domain-state-model",

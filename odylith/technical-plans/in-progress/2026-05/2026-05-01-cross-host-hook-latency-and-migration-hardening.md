@@ -654,6 +654,20 @@ Related Bugs:
       Regression coverage lives in
       `tests/unit/runtime/test_greenfield_proposals.py`; the focused 58-test
       greenfield/component/local-release smoke slice and `py_compile` passed.
+- [x] Atlas UX proof:
+      default greenfield Atlas rows now include `review_focus`,
+      `operator_question`, and `proof_gate`; the operator-facing proposal
+      renders per-diagram summary/review/question/gate guidance; default
+      Mermaid sources include evidence-boundary, code-gate, decision-lens,
+      proposal-state, unresolved-risk, and surface-agreement annotations inside
+      the diagrams. Source-local DeFi propose rendered 290 lines with those
+      diagram explanations. `python3 -m pytest
+      tests/unit/runtime/test_greenfield_atlas_contract.py
+      tests/unit/runtime/test_greenfield_proposals.py
+      tests/unit/runtime/test_greenfield_intelligence_schema.py
+      tests/unit/runtime/test_component_authoring.py
+      tests/unit/install/test_local_release_smoke.py -q` passed (`69 passed`)
+      plus `py_compile` for the touched proposal modules.
 - [x] Activation validators passed after the engine-integrity slice:
       `validate engine-integrity`, `validate discipline`,
       `validate guidance-behavior`, `validate topology-integrity`,

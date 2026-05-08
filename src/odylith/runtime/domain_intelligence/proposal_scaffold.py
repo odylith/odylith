@@ -525,7 +525,10 @@ def _diagrams(*, title: str, components: Mapping[str, str], diagrams: Mapping[st
             "slug": diagrams["overview"],
             "title": f"{title} System Overview",
             "kind": "flowchart",
-            "summary": "Top-level greenfield topology from operator intent through experience, domain core, verification harness, and Odylith surfaces.",
+            "summary": "Top-level project formation map: intent becomes governed project truth first, then candidate components, proof, surfaces, and operator review.",
+            "review_focus": "Use this view to confirm the project spine, evidence boundary, and no-code gate before any child plan is opened.",
+            "operator_question": "Does this show the right first user, project truth, component path, and review gate?",
+            "proof_gate": "No source-backed claim until the first child plan names paths, tests, degraded states, and rollback or recovery posture.",
             "link_state": "atlas_first_draft",
             "components": [
                 {"name": components["experience"], "description": "Owns the first operator-visible workflow and visible states."},
@@ -540,7 +543,10 @@ def _diagrams(*, title: str, components: Mapping[str, str], diagrams: Mapping[st
             "slug": diagrams["slice"],
             "title": f"{title} First Slice Flow",
             "kind": "sequenceDiagram",
-            "summary": "Sequence for the first operator workflow flowing through experience, domain core, proof harness, and governance refresh.",
+            "summary": "First-slice sequence showing where the operator action, domain decision, proof harness, refresh, and handoff happen.",
+            "review_focus": "Use this view to decide which interaction becomes B-002 and what normal, empty, degraded, and failure evidence must prove.",
+            "operator_question": "Is this the first workflow the project should prove before broader platform work?",
+            "proof_gate": "The technical plan must name behavior proof and contract proof before source edits start.",
             "link_state": "atlas_first_draft",
             "components": [
                 {"name": components["experience"], "description": "Starts the operator-visible first workflow."},
@@ -555,7 +561,10 @@ def _diagrams(*, title: str, components: Mapping[str, str], diagrams: Mapping[st
             "slug": diagrams["component_map"],
             "title": f"{title} Component Ownership Map",
             "kind": "flowchart",
-            "summary": "Ownership view showing which planned component owns experience, domain state, proof fixtures, and governance handoff.",
+            "summary": "Ownership review map: separates experience, domain contract, proof harness, governance surfaces, and the split rules between them.",
+            "review_focus": "Use this view to prevent broad project narrative from leaking into component specs.",
+            "operator_question": "Are the component boundaries specific enough that future agents know who owns each interface and proof obligation?",
+            "proof_gate": "Each candidate component stays planned until its own source path, tests, and refreshed Registry evidence exist.",
             "link_state": "atlas_first_draft",
             "components": [
                 {"name": components["experience"], "description": "Owns the human-facing first workflow boundary and fallback behavior."},
@@ -570,7 +579,10 @@ def _diagrams(*, title: str, components: Mapping[str, str], diagrams: Mapping[st
             "slug": diagrams["domain_state"],
             "title": f"{title} Domain State Model",
             "kind": "stateDiagram",
-            "summary": "State view for the first domain contract, including valid completion, rejection, retry, and degraded handling paths.",
+            "summary": "Domain-state review: shows allowed, blocked, degraded, retry, and completed states before implementation chooses code paths.",
+            "review_focus": "Use this view to catch fake progress and missing degraded/error states early.",
+            "operator_question": "Which state transition would be unsafe, misleading, or unsupported for release 0.0.1?",
+            "proof_gate": "Every promoted state transition needs a deterministic test, fixture, or review decision.",
             "link_state": "atlas_first_draft",
             "components": [
                 {"name": components["domain"], "description": "Owns the domain states and valid transitions for the first slice."},
@@ -585,7 +597,10 @@ def _diagrams(*, title: str, components: Mapping[str, str], diagrams: Mapping[st
             "slug": diagrams["validation_release"],
             "title": f"{title} Validation And Release Topology",
             "kind": "flowchart",
-            "summary": "Release-readiness view tying repo-native proof, Odylith surface refresh, Compass lane, and operator handoff together.",
+            "summary": "Release-readiness control map tying plan, behavior proof, contract proof, refresh, Compass, and operator handoff together.",
+            "review_focus": "Use this view to decide what must be proven before release 0.0.1 can advance.",
+            "operator_question": "Are the acceptance gates strong enough for the chosen runtime, data boundary, and compliance posture?",
+            "proof_gate": "Release movement is blocked until plan, proof, refreshed surfaces, and unresolved-risk review agree.",
             "link_state": "atlas_first_draft",
             "components": [
                 {"name": components["validation"], "description": "Owns the proof command, fixtures, and release-readiness evidence."},
@@ -602,17 +617,24 @@ def _diagrams(*, title: str, components: Mapping[str, str], diagrams: Mapping[st
 def _overview_mermaid() -> str:
     return (
         "flowchart LR\n"
-        "  Intent[Operator<br/>intent] --> Experience[Experience<br/>boundary]\n"
-        "  Experience --> Domain[Domain<br/>core]\n"
-        "  Domain --> Harness[Verification<br/>harness]\n"
-        "  Harness --> Surfaces[Odylith<br/>surfaces]\n"
-        "  Surfaces --> Review[Operator<br/>review]\n"
+        "  Intent[Operator<br/>intent]:::actor --> Choices[Direction choices<br/>user data runtime proof]:::decision\n"
+        "  Choices --> ProjectTruth[Project intelligence<br/>Radar parent]:::governance\n"
+        "  ProjectTruth --> Experience[Experience<br/>boundary]:::service\n"
+        "  ProjectTruth --> Domain[Domain<br/>core]:::service\n"
+        "  Experience --> Domain\n"
+        "  Domain --> Harness[Verification<br/>harness]:::proof\n"
+        "  Harness --> Surfaces[Odylith surfaces<br/>Radar Registry Atlas Compass]:::governance\n"
+        "  Surfaces --> Review[Operator review<br/>accept gates before code]:::actor\n"
+        "  Review --> CodeGate[Code gate<br/>plan paths tests rollback]:::gate\n"
+        "  Evidence[Evidence boundary<br/>intent not source-backed]:::note -. constrains .-> ProjectTruth\n"
+        "  Evidence -. constrains .-> CodeGate\n"
         "  classDef actor fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b;\n"
         "  classDef service fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
         "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
-        "  class Intent,Review actor;\n"
-        "  class Experience,Domain service;\n"
-        "  class Harness,Surfaces proof;\n"
+        "  classDef governance fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
+        "  classDef decision fill:#eef2ff,stroke:#818cf8,color:#1e1b4b;\n"
+        "  classDef gate fill:#fee2e2,stroke:#dc2626,color:#5f1212;\n"
+        "  classDef note fill:#f8fafc,stroke:#cbd5e1,color:#334155,stroke-dasharray: 3 3;\n"
     )
 
 
@@ -624,12 +646,15 @@ def _slice_mermaid() -> str:
         "  participant Domain as Domain Core\n"
         "  participant Harness as Verification Harness\n"
         "  participant Surfaces as Odylith Surfaces\n"
+        "  Note over Operator,Surfaces: Project review and direction choices happen before source edits\n"
         "  Operator->>Experience: start first workflow\n"
         "  Experience->>Domain: execute command or query\n"
         "  Domain-->>Experience: validated state result\n"
+        "  Note over Experience,Domain: Normal empty degraded and failure states must be explicit\n"
         "  Harness->>Experience: run behavior proof\n"
         "  Harness->>Domain: run contract proof\n"
         "  Harness->>Surfaces: refresh Radar Registry Atlas Compass\n"
+        "  Note over Harness,Surfaces: Proof is not accepted until governed surfaces agree\n"
         "  Surfaces-->>Operator: show first wave and release lane\n"
     )
 
@@ -637,6 +662,7 @@ def _slice_mermaid() -> str:
 def _component_map_mermaid() -> str:
     return (
         "flowchart TB\n"
+        "  Lens[Decision lens<br/>split by owner evidence risk gate]:::note\n"
         "  subgraph experience[Experience<br/>ownership]\n"
         "    Entry[First workflow<br/>entrypoint]:::ux\n"
         "    States[Visible normal empty<br/>and degraded states]:::ux\n"
@@ -653,10 +679,14 @@ def _component_map_mermaid() -> str:
         "  Fixtures --> Contract\n"
         "  Fixtures --> Entry\n"
         "  Report --> Surfaces[Compass Radar<br/>Registry Atlas]:::governance\n"
+        "  Lens -. review .-> experience\n"
+        "  Lens -. review .-> domain\n"
+        "  Lens -. review .-> proof\n"
         "  classDef ux fill:#fff7df,stroke:#d7a93d,color:#52390a;\n"
         "  classDef core fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
         "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
         "  classDef governance fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
+        "  classDef note fill:#f8fafc,stroke:#cbd5e1,color:#334155,stroke-dasharray: 3 3;\n"
     )
 
 
@@ -664,11 +694,17 @@ def _domain_state_mermaid() -> str:
     return (
         "stateDiagram-v2\n"
         "  [*] --> Draft\n"
+        "  note right of Draft\n"
+        "    Proposal state, not source proof\n"
+        "  end note\n"
         "  Draft --> Accepted: valid command\n"
         "  Draft --> Rejected: invalid input\n"
         "  Accepted --> InProgress: workflow starts\n"
         "  InProgress --> Completed: success proof\n"
         "  InProgress --> Degraded: dependency missing\n"
+        "  note right of Degraded\n"
+        "    Must be visible, testable, and safe\n"
+        "  end note\n"
         "  Degraded --> Retried: retry allowed\n"
         "  Retried --> Completed: recovery succeeds\n"
         "  Retried --> Rejected: retry exhausted\n"
@@ -682,14 +718,18 @@ def _validation_release_mermaid() -> str:
         "flowchart LR\n"
         "  Plan[Technical plan<br/>for first workstream]:::governance --> Behavior[Behavior proof<br/>normal empty degraded]:::proof\n"
         "  Plan --> Contract[Contract proof<br/>state and invariants]:::proof\n"
+        "  Choices[Accepted choices<br/>runtime data proof]:::gate --> Plan\n"
         "  Behavior --> Harness[Verification<br/>harness]:::proof\n"
         "  Contract --> Harness\n"
         "  Harness --> Refresh[Surface refresh<br/>Radar Registry Atlas Compass]:::governance\n"
         "  Refresh --> Lane[Compass lane<br/>release 0.0.1]:::release\n"
         "  Lane --> Handoff[Operator handoff<br/>next command and gates]:::release\n"
+        "  Blocked[Blocked if risks<br/>or choices unresolved]:::blocked -. prevents .-> Lane\n"
         "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
         "  classDef governance fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
         "  classDef release fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b;\n"
+        "  classDef gate fill:#eef2ff,stroke:#818cf8,color:#1e1b4b;\n"
+        "  classDef blocked fill:#fee2e2,stroke:#dc2626,color:#5f1212;\n"
     )
 
 

@@ -232,7 +232,7 @@ def _format_apply_ready_proposal_text(
     lines.extend(["", "Draft Atlas diagrams"])
     for row in proposal.get("diagrams", []):
         if isinstance(row, Mapping):
-            lines.append(f"- {row.get('slug')}: {row.get('title')} ({row.get('link_state')})")
+            lines.extend(_atlas_diagram_lines(row))
     lines.extend(["", "Validation focus"])
     for item in proposal.get("validation_strategy", []):
         lines.append(f"- {item}")
@@ -342,6 +342,24 @@ def _project_brief_lines(project_brief: Mapping[str, Any]) -> list[str]:
     if paths:
         lines.extend(["- host-independent customization paths:"])
         lines.extend(f"  - {line}" for line in paths[:3])
+    return lines
+
+
+def _atlas_diagram_lines(row: Mapping[str, Any]) -> list[str]:
+    slug = str(row.get("slug", "")).strip()
+    title = str(row.get("title", "")).strip()
+    state = str(row.get("link_state", "")).strip()
+    heading = f"- {slug}: {title} ({state})".strip()
+    lines = [heading]
+    for label, key in (
+        ("summary", "summary"),
+        ("review", "review_focus"),
+        ("question", "operator_question"),
+        ("gate", "proof_gate"),
+    ):
+        value = str(row.get(key, "")).strip()
+        if value:
+            lines.append(f"  - {label}: {value}")
     return lines
 
 

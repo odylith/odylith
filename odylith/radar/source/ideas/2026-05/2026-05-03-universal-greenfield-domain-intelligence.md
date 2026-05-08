@@ -250,6 +250,21 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   tests/unit/runtime/test_component_authoring.py
   tests/unit/install/test_local_release_smoke.py -q` passed (`58 passed`), and
   `python3 -m py_compile` passed for the touched greenfield modules.
+- 2026-05-08 Atlas UX deepening made the default greenfield diagram suite
+  act like an architecture review board instead of a box-and-arrow sketch.
+  Canonical diagram rows now carry `review_focus`, `operator_question`, and
+  `proof_gate`; proposal text renders those fields under `Draft Atlas diagrams`;
+  the generated Mermaid sources include evidence-boundary, code-gate,
+  decision-lens, state-note, unresolved-risk, and surface-agreement annotations
+  directly inside the diagrams. Proof: source-local `greenfield propose` for
+  `DeFi risk sentinel app` rendered 290 lines with per-diagram summary/review/
+  question/gate guidance, canonical JSON carried five annotated Atlas rows, and
+  `python3 -m pytest tests/unit/runtime/test_greenfield_atlas_contract.py
+  tests/unit/runtime/test_greenfield_proposals.py
+  tests/unit/runtime/test_greenfield_intelligence_schema.py
+  tests/unit/runtime/test_component_authoring.py
+  tests/unit/install/test_local_release_smoke.py -q` passed (`69 passed`) plus
+  `python3 -m py_compile` for the touched proposal rendering/scaffold modules.
 - Deepening pass split science/math into targeted subdomains and added fixture
   proof for commerce, SaaS, dashboards, AI assistants, data ingestion, CLI
   libraries, physics simulation, differential-equation solvers, computational
