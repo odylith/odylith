@@ -311,14 +311,25 @@ def _project_brief_lines(project_brief: Mapping[str, Any]) -> list[str]:
     lines: list[str] = []
     principle = str(project_brief.get("operating_principle", "")).strip()
     outcome = str(project_brief.get("project_outcome", "")).strip()
+    posture = str(project_brief.get("review_posture", "")).strip()
     if outcome:
         lines.append(f"- outcome: {outcome}")
     if principle:
         lines.append(f"- principle: {principle}")
+    if posture:
+        lines.append(f"- review posture: {posture}")
+    blueprint_lines = _blueprint_section_lines(project_brief.get("blueprint_sections"))
+    if blueprint_lines:
+        lines.extend(["- project design board:"])
+        lines.extend(f"  - {line}" for line in blueprint_lines[:7])
     option_lines = _project_option_lines(project_brief.get("customization_options"))
     if option_lines:
         lines.extend(["- choose before coding:"])
         lines.extend(f"  - {line}" for line in option_lines[:6])
+    prompt_lines = _customization_prompt_lines(project_brief.get("customization_prompts"))
+    if prompt_lines:
+        lines.extend(["- customize by saying:"])
+        lines.extend(f"  - {line}" for line in prompt_lines[:4])
     checkpoint_lines = _project_checkpoint_lines(project_brief.get("pre_coding_checkpoints"))
     if checkpoint_lines:
         lines.extend(["- checkpoints:"])
@@ -331,6 +342,21 @@ def _project_brief_lines(project_brief: Mapping[str, Any]) -> list[str]:
     if paths:
         lines.extend(["- host-independent customization paths:"])
         lines.extend(f"  - {line}" for line in paths[:3])
+    return lines
+
+
+def _blueprint_section_lines(value: Any) -> list[str]:
+    rows = value if isinstance(value, list) else []
+    lines: list[str] = []
+    for row in rows:
+        if not isinstance(row, Mapping):
+            continue
+        section = str(row.get("section", "")).strip()
+        must_capture = str(row.get("must_capture", "")).strip()
+        why = str(row.get("why_it_matters", "")).strip()
+        if section and must_capture:
+            suffix = f" Why: {why}" if why else ""
+            lines.append(f"{section}: {must_capture}{suffix}")
     return lines
 
 
@@ -350,6 +376,10 @@ def _project_option_lines(value: Any) -> list[str]:
             impact_text = f" Impact: {impact}" if impact else ""
             lines.append(f"{decision}: {recommended}{suffix}{impact_text}")
     return lines
+
+
+def _customization_prompt_lines(value: Any) -> list[str]:
+    return [str(item).strip() for item in value if str(item).strip()] if isinstance(value, list) else []
 
 
 def _project_checkpoint_lines(value: Any) -> list[str]:

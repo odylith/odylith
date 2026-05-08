@@ -74,11 +74,12 @@ def _print_next_steps(next_steps: Mapping[str, Any]) -> None:
     if project_id:
         print(f"- project-first workstream: {project_id} {project_title}".rstrip())
         print(f"- Radar project brief: odylith/radar/radar.html?view=plan&workstream={project_id}")
+        print("- project gate: review direction choices and readiness gates before opening a technical plan; do not edit source from this closeout")
     if project_prompt:
         print(f"- next project prompt: {project_prompt}")
     if start_id:
-        print(f"- eventual first coding workstream: {start_id} {start_title}".rstrip())
-        print(f"- Radar coding deep link: odylith/radar/radar.html?view=plan&workstream={start_id}")
+        print(f"- future first implementation lane after gates: {start_id} {start_title}".rstrip())
+        print(f"- Radar child lane: odylith/radar/radar.html?view=plan&workstream={start_id}")
     if first_wave or next_release:
         lane = " | ".join(
             item
@@ -98,7 +99,7 @@ def _print_next_steps(next_steps: Mapping[str, Any]) -> None:
             print(f"  - {gate}")
     prompt = str(next_steps.get("implementation_prompt", "")).strip()
     if prompt:
-        print(f"- later coding prompt: {prompt}")
+        print(f"- post-gate implementation prompt: {prompt}")
     sequence = next_steps.get("operator_sequence", [])
     if isinstance(sequence, list) and sequence:
         print("- operator handoff:")
@@ -106,11 +107,11 @@ def _print_next_steps(next_steps: Mapping[str, Any]) -> None:
             print(f"  {index}. {step}")
     gates = next_steps.get("validation_gates", [])
     if isinstance(gates, list) and gates:
-        print("- expected implementation proof:")
+        print("- proof to name in the child plan:")
         for gate in gates[:6]:
             print(f"  - {gate}")
     commands = next_steps.get("verification_commands", [])
     if isinstance(commands, list) and commands:
-        print("- verify before next wave:")
+        print("- after implementation, verify before next wave:")
         for command in commands[:6]:
             print(f"  - {command}")

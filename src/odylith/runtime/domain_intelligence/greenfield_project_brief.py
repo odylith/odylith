@@ -43,6 +43,7 @@ def build_project_brief(
         ),
         "blueprint_sections": _blueprint_sections(family=family),
         "customization_options": _customization_options(title=title, family=family),
+        "customization_prompts": _customization_prompts(family=family),
         "pre_coding_checkpoints": _pre_coding_checkpoints(family=family),
         "coding_readiness_gates": _coding_readiness_gates(title=title, release_selector=release_selector),
         "host_independent_paths": _host_independent_paths(prompt=prompt, release_selector=release_selector),
@@ -86,6 +87,9 @@ def normalize_project_brief(
         result.get("customization_options") or result.get("direction_options"),
         defaults=default["customization_options"],
         required_keys=("id", "decision", "recommended", "choices", "impact"),
+    )
+    result["customization_prompts"] = normalize_text_list(result.get("customization_prompts")) or list(
+        default["customization_prompts"]
     )
     result["pre_coding_checkpoints"] = _normalize_brief_rows(
         result.get("pre_coding_checkpoints") or result.get("checkpoints"),
@@ -133,6 +137,11 @@ def project_brief_issues(value: Any) -> list[str]:
         min_rows=4,
         required_keys=("checkpoint", "operator_question", "done_when"),
     )
+    prompts = normalize_text_list(value.get("customization_prompts"))
+    if len(prompts) < 3:
+        issues.append("proposal `project_brief.customization_prompts` must include at least three host-independent examples")
+    elif any(_word_count(prompt) < 6 for prompt in prompts):
+        issues.append("proposal `project_brief.customization_prompts` contains a shallow example")
     gates = normalize_text_list(value.get("coding_readiness_gates"))
     if len(gates) < 4:
         issues.append("proposal `project_brief.coding_readiness_gates` must include at least four gates")
@@ -337,6 +346,32 @@ def _option(identifier: str, decision: str, recommended: str, choices: Sequence[
         "impact": impact,
         "evidence_tier": "odylith_assumption",
     }
+
+
+def _customization_prompts(*, family: str) -> list[str]:
+    if family == "defi_risk":
+        return [
+            "Use Python library plus FastAPI, strict regulated posture, fixture-only data, and audit-first proof.",
+            "Keep release 0.0.1 non-custodial and read-only; defer live RPC, trade execution, and advice language.",
+            "Make stale oracle, missing indexer, unsupported chain, and confidence display mandatory first-wave states.",
+        ]
+    if family == "robot_swarm":
+        return [
+            "Use simulation-only release 0.0.1 with no hardware control, no live yard integration, and replayable safety proof.",
+            "Prioritize dispatcher, reservation/conflict model, telemetry freshness, operator override, and incident replay.",
+            "Defer hardware-in-loop and mixed-fleet autonomy until the safety envelope and scenario harness are source-backed.",
+        ]
+    if family == "commerce":
+        return [
+            "Use web app plus local checkout core, payment sandbox only, and browser proof for happy and failed payment paths.",
+            "Make idempotent order draft recovery and accessible error states part of release 0.0.1.",
+            "Defer production payment credentials, fulfillment automation, and live inventory sync until recovery proof passes.",
+        ]
+    return [
+        "Use a local deterministic first release with one primary user, one source boundary, and repo-native proof.",
+        "Make this a regulated or safety-sensitive project: require audit, data classification, abuse checks, and stronger gates.",
+        "Make this a research-grade project: require reproducibility fixtures, benchmark evidence, provenance, and peer-review checkpoints.",
+    ]
 
 
 def _pre_coding_checkpoints(*, family: str) -> list[dict[str, str]]:

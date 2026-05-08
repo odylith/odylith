@@ -306,6 +306,12 @@ Related Bugs:
       non-project-level diagrams, component-authored proof rows, and local
       security/policy posture while leaving broad system context and program
       topology in Radar/Atlas.
+- [x] Greenfield proposal/apply UX now keeps project shaping visibly ahead of
+      code. Proposal text renders a deeper project intelligence board,
+      project design board, host-independent customization examples, and the
+      full no-code-until-plan customization flow; apply/create closeouts now
+      label the child workstream as a future implementation lane after gates
+      instead of the next coding instruction.
 - [x] Engine-integrity checks need a dependency-light diagnostic lane. The
       diagnostic benchmark now defaults to cold cache so packet/prompt
       readiness can be proven in source-local posture without optional
@@ -632,6 +638,13 @@ Related Bugs:
       `python3 -m pytest tests/unit/runtime/test_greenfield_proposals.py
       tests/unit/runtime/test_component_authoring.py
       tests/unit/runtime/test_governed_artifact_tribunal.py -q` (`39 passed`).
+- [x] Project-first UX proof:
+      `python3 -m pytest tests/unit/runtime/test_greenfield_proposals.py
+      tests/unit/runtime/test_greenfield_intelligence_schema.py
+      tests/unit/runtime/test_component_authoring.py
+      tests/unit/install/test_local_release_smoke.py -q` (`58 passed`) plus
+      `python3 -m py_compile` for touched greenfield UX modules and release
+      smoke script.
 - [x] Activation validators passed after the engine-integrity slice:
       `validate engine-integrity`, `validate discipline`,
       `validate guidance-behavior`, `validate topology-integrity`,

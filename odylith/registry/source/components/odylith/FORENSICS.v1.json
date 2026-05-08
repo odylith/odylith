@@ -48,7 +48,7 @@
     "explicit_event_count": 271,
     "mapped_workstream_evidence_count": 128,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 30,
+    "spec_history_event_count": 31,
     "status": "forensic_coverage_present",
     "timeline_event_count": 272
   },
@@ -77,7 +77,7 @@
       ],
       "meaningful": true,
       "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/odylith/CURRENT_SPEC.md",
-      "ts_iso": "2026-05-08T11:35:21-07:00",
+      "ts_iso": "2026-05-08T11:46:55-07:00",
       "workstreams": []
     },
     {

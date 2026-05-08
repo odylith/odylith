@@ -83,11 +83,11 @@ def build_next_steps(
         "coding_readiness_gates": readiness_gates,
         "validation_gates": list(validation_items[:6]),
         "operator_sequence": [
-            f"Open Compass and review the active wave `{wave_label}` plus release `{release_selector or '0.0.1'}`.",
-            f"Open Radar program view for `{umbrella_id or start_id}` and review project intelligence, the project brief, decisions, non-goals, diagrams, and proof gates.",
-            "Answer or explicitly accept the direction choices that materially change runtime, data posture, architecture, or validation.",
-            f"Only after the coding-readiness gates are accepted, open `{start_id}` and author the first technical plan.",
-            "Write source after that plan names paths, proof commands, degraded/error coverage, and refresh expectations.",
+            "Do not start source edits from this closeout; treat the applied records as the project review board.",
+            f"Open Radar program view for `{umbrella_id or start_id}` and review project intelligence, direction choices, non-goals, diagrams, and proof gates.",
+            f"Open Compass and verify the active wave `{wave_label}` plus release `{release_selector or '0.0.1'}` match the accepted project shape.",
+            "Answer or explicitly accept the choices that materially change runtime, data posture, architecture, validation, release ambition, or first user.",
+            f"Only after the coding-readiness gates are accepted, open `{start_id}` and author the first technical plan before source writes.",
         ],
         "verification_commands": verification_commands(start_id),
     }

@@ -1321,6 +1321,15 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   Registry specs remain repo-owned truth, and future `odylith greenfield apply`
   plus normal Registry/Radar/Atlas/Compass refreshes converge the stricter
   component-local rendering contract.
+- The v0.1.15 greenfield project-first UX deepening pass is covered by
+  `migration-observer:0.1.15:browser-surfaces:1ad246b31c00`. The pass changes
+  generated proposal/apply browser-facing payloads and shell-rendered HTML so
+  future greenfield sessions show deeper project intelligence, design-board
+  sections, customization examples, and a no-source-edits-until-plan handoff
+  before implementation lanes. Existing consumer repos need no destructive
+  migration: repo-owned greenfield records stay intact, upgraded runtimes emit
+  the deeper UX for future proposals, and normal dashboard refresh converges
+  generated Radar/Registry/Atlas/Compass surfaces.
 - The v0.1.15 engine-integrity and execution-benchmark route hardening pass is
   covered by `migration-observer:0.1.15:operator-cli-contracts:a8504a4c60ea`,
   `migration-observer:0.1.15:browser-surfaces:bfc31956720b`, and

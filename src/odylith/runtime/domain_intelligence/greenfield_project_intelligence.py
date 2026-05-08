@@ -73,6 +73,31 @@ _LAYER_LABELS = {
     "transfer_priors": "Transfer",
 }
 
+_PREVIEW_LAYER_LIMITS = {
+    "intent": 6,
+    "scope": 4,
+    "ontology": 5,
+    "state": 5,
+    "operators": 5,
+    "constraints": 4,
+    "source_of_truth_map": 4,
+    "evidence": 4,
+    "decisions": 4,
+    "assumptions": 3,
+    "topology": 5,
+    "invariants": 4,
+    "risks": 4,
+    "validation_obligations": 4,
+    "artifacts": 4,
+    "owners": 4,
+    "execution_memory": 4,
+    "metrics": 4,
+    "change_model": 4,
+    "invalidation_rules": 4,
+    "conflict_model": 3,
+    "transfer_priors": 3,
+}
+
 
 def build_project_intelligence(
     *,
@@ -362,10 +387,14 @@ def render_project_intelligence_section(value: Any, *, preview: bool = False) ->
     if coding_posture:
         lines.extend(["", f"**Coding posture:** {coding_posture}"])
     _append_layer(lines, "Control Surface", value.get("control_surface_summary"), limit=5 if preview else 0)
-    _append_layer(lines, "Customization Flow", value.get("customization_flow"), limit=4 if preview else 0)
+    _append_layer(lines, "Customization Flow", value.get("customization_flow"), limit=5 if preview else 0)
     for key in PROJECT_INTELLIGENCE_LAYERS:
-        _append_layer(lines, _LAYER_LABELS[key], value.get(key), limit=1 if preview else 0)
+        _append_layer(lines, _LAYER_LABELS[key], value.get(key), limit=_preview_layer_limit(key) if preview else 0)
     return "\n".join(lines).strip()
+
+
+def _preview_layer_limit(key: str) -> int:
+    return _PREVIEW_LAYER_LIMITS.get(key, 2)
 
 
 def _append_layer(lines: list[str], label: str, value: Any, *, limit: int) -> None:

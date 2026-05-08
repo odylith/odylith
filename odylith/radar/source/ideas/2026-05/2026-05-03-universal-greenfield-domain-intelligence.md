@@ -223,6 +223,19 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   `python3 -m pytest tests/unit/runtime/test_greenfield_proposals.py
   tests/unit/runtime/test_component_authoring.py
   tests/unit/runtime/test_governed_artifact_tribunal.py -q` (`39 passed`).
+- 2026-05-08 project-first UX deepening made proposal text render a fuller
+  project intelligence board before backlog, including all control-surface
+  rows, complete customization flow through the no-code-until-plan step, deeper
+  per-layer project reality, project design board rows, host-independent
+  "customize by saying" examples, and apply/create closeouts that label the
+  child workstream as a future implementation lane after gates instead of an
+  immediate coding instruction. Proof: `python3 -m pytest
+  tests/unit/runtime/test_greenfield_proposals.py
+  tests/unit/runtime/test_greenfield_intelligence_schema.py
+  tests/unit/runtime/test_component_authoring.py
+  tests/unit/install/test_local_release_smoke.py -q` (`58 passed`);
+  `python3 -m py_compile` passed for the touched greenfield UX modules and
+  release smoke script.
 - Deepening pass split science/math into targeted subdomains and added fixture
   proof for commerce, SaaS, dashboards, AI assistants, data ingestion, CLI
   libraries, physics simulation, differential-equation solvers, computational

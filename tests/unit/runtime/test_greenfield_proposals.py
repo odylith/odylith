@@ -810,7 +810,11 @@ def test_greenfield_text_keeps_host_reasoning_and_no_write_boundary_visible(tmp_
     assert "odylith greenfield propose --repo-root ." in output
     assert "Project intelligence control surface" in output
     assert "Project-first blueprint" in output
+    assert "project design board" in output
     assert "choose before coding" in output
+    assert "customize by saying" in output
+    assert "What breaks if it fails" in output
+    assert "Code: edit source only after the plan names source paths" in output
     assert output.index("Project intelligence control surface") < output.index("Project-first blueprint")
     assert output.index("Project-first blueprint") < output.index("Backlog proposal")
     assert "proposal Tribunal must pass before any source-truth writes" in output
@@ -836,6 +840,7 @@ def test_greenfield_cli_json_is_apply_ready_proposal(tmp_path, capsys) -> None:
     assert payload["provider_calls"] == 0
     assert payload["release_plan"]["selector"] == "0.0.1"
     assert payload["project_brief"]["customization_options"]
+    assert payload["project_brief"]["customization_prompts"]
     assert payload["project_brief"]["coding_readiness_gates"]
     assert payload["project_intelligence"]["operators"]
     assert payload["project_intelligence"]["validation_obligations"]
@@ -872,6 +877,7 @@ def test_defi_greenfield_workstreams_capture_domain_intelligence(tmp_path) -> No
     assert "conflict_model" in intelligence
     assert "transfer_priors" in intelligence
     assert "non-custodial" in json.dumps(brief)
+    assert "strict regulated posture" in json.dumps(brief)
     assert "first implementation plan" in " ".join(brief["coding_readiness_gates"]).casefold()
     assert "first operator-visible workflow" not in rendered.lower()
     greenfield_proposals.validate_host_reasoned_proposal(proposal)
@@ -939,7 +945,9 @@ def test_greenfield_normalization_enriches_legacy_proposals_with_domain_intellig
     assert "idempotent" in rendered
     assert "failed payment" in rendered
     assert "Payment and order recovery model" in json.dumps(brief)
+    assert "payment sandbox only" in json.dumps(brief)
     assert len(brief["customization_options"]) >= 6
+    assert len(brief["customization_prompts"]) >= 3
     assert len(brief["coding_readiness_gates"]) >= 4
     assert "Payment callback" in "\n".join(project_intelligence["ontology"])
     assert len(project_intelligence["change_model"]) >= 2
@@ -1491,10 +1499,11 @@ def test_greenfield_apply_cli_prints_operator_handoff(tmp_path, monkeypatch, cap
     out = capsys.readouterr().out
     assert rc == 0
     assert "- project-first workstream: B-001 Govern CRISPR Ethics Review App" in out
+    assert "- project gate: review direction choices and readiness gates before opening a technical plan; do not edit source from this closeout" in out
     assert "- current project lane: wave Foundations | release 0.0.1" in out
     assert "- choose before coding:" in out
     assert "- coding readiness gates:" in out
-    assert "- eventual first coding workstream: B-002 Identity, sessions, and COI-aware authorization" in out
+    assert "- future first implementation lane after gates: B-002 Identity, sessions, and COI-aware authorization" in out
     assert "- operator handoff:" in out
     assert "./.odylith/bin/odylith validate plan-workstream-binding --repo-root ." in out
 
@@ -1524,7 +1533,7 @@ def test_greenfield_create_cli_owns_apply_ready_path(tmp_path, monkeypatch, caps
     assert "- tribunal: passed" in out
     assert "- project-first workstream: B-001 Govern Robot Swarm Logistics App" in out
     assert "- next project prompt: Deepen B-001" in out
-    assert "- eventual first coding workstream: B-002 Dispatch and observe one simulated logistics task" in out
+    assert "- future first implementation lane after gates: B-002 Dispatch and observe one simulated logistics task" in out
     assert "- choose before coding:" in out
     assert "- coding readiness gates:" in out
     assert "Simulation and hardware boundary" in out

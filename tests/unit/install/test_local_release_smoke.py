@@ -207,7 +207,7 @@ def test_greenfield_propose_apply_smoke_runs_exact_release_journey(monkeypatch, 
                     "- tribunal: passed\n"
                     "- validation already run: proposal schema, proposal Tribunal, governed backlog Tribunal, Atlas scaffold, surface refresh\n"
                     "- project-first workstream: B-001 Govern Project\n"
-                    "- eventual first coding workstream: B-002 First slice\n"
+                    "- future first implementation lane after gates: B-002 First slice\n"
                 )
             else:
                 stdout = "dashboard refresh completed\n- outcome: passed\n"
@@ -278,7 +278,7 @@ def test_greenfield_create_smoke_runs_show_create_and_checks_surfaces(monkeypatc
                     "- tribunal: passed\n"
                     "- validation already run: proposal schema, proposal Tribunal, governed backlog Tribunal, Atlas scaffold, surface refresh\n"
                     "- project-first workstream: B-001 Govern Project\n"
-                    "- eventual first coding workstream: B-002 First slice\n"
+                    "- future first implementation lane after gates: B-002 First slice\n"
                 )
             )
 
