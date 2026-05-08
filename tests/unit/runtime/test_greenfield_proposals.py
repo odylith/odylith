@@ -906,7 +906,8 @@ def test_greenfield_apply_writes_domain_intelligence_into_radar_specs(tmp_path, 
     assert "### Allowed Operators" in joined
     assert "### Source Of Truth Map" in joined
     assert "### Evidence Model" in joined
-    assert "### Change And Invalidation Model" in joined
+    assert "### Change Model" in joined
+    assert "### Invalidation Rules" in joined
     assert "Risk subject: wallet, protocol, pool, strategy" in joined
     assert "No live RPC" in joined
     assert "stale oracle" in joined

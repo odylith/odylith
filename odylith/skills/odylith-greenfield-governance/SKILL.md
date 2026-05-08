@@ -14,8 +14,8 @@ architect a new project before source code exists.
    `project_intelligence` object first: intent, scope, ontology, state,
    operators, constraints, source-of-truth map, evidence grammar, decisions,
    assumptions, topology, invariants, risks, validation obligations, artifacts,
-   owners, execution memory, metrics, change rules, conflict rules, and
-   transfer priors. Then review direction options, customization choices,
+   owners, execution memory, metrics, change rules, invalidation rules, conflict
+   rules, and transfer priors. Then review direction options, customization choices,
    architecture views, and coding-readiness gates before implementation
    planning starts.
    Do not hand-build `odylith-greenfield-proposal.json`, do not reconstruct JSON

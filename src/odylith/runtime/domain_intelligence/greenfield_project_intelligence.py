@@ -43,6 +43,7 @@ PROJECT_INTELLIGENCE_LAYERS: tuple[str, ...] = (
     "execution_memory",
     "metrics",
     "change_model",
+    "invalidation_rules",
     "conflict_model",
     "transfer_priors",
 )
@@ -67,6 +68,7 @@ _LAYER_LABELS = {
     "execution_memory": "Memory",
     "metrics": "Metrics",
     "change_model": "Change",
+    "invalidation_rules": "Invalidation Rules",
     "conflict_model": "Conflicts",
     "transfer_priors": "Transfer",
 }
@@ -248,6 +250,13 @@ def build_project_intelligence(
             "If runtime changes, recompute source paths, proof commands, component interfaces, and Atlas deployment views.",
             "If compliance posture changes, update risks, validation obligations, component failure modes, and release gate before implementation.",
             "If source proof lands, promote only the affected claims from user_intent or assumption to source_backed.",
+        ],
+        "invalidation_rules": [
+            *family["invalidation_rules"],
+            "If the operator changes primary user, runtime, data boundary, compliance posture, proof threshold, or release ambition, invalidate the affected wave order, component boundaries, diagrams, and release assumptions before coding.",
+            "If source-backed proof lands, changes, or disappears, reclassify only the claims tied to that proof and expire dependent Registry, Radar, Atlas, and Compass projections until refreshed.",
+            "If a technical plan contradicts the accepted project intelligence, stop implementation and require an explicit proposal revision, plan revision, or human decision record.",
+            "If a generated dashboard disagrees with governed source files, treat the dashboard as stale and repair source truth plus the Surface DAG before using it for direction.",
         ],
         "conflict_model": [
             "Source-backed tests outrank proposal prose; governed source files outrank generated dashboards; operator decisions outrank Odylith assumptions.",
@@ -482,6 +491,10 @@ def _family_terms(*, profile: GreenfieldDomainProfile, title: str) -> dict[str, 
                 "Compliance risk: risk language can become financial-advice language if confidence and data limits are hidden.",
                 "Data risk: stale oracle or missing indexer evidence can make exposure look safer than it is.",
             ],
+            "invalidation_rules": [
+                "If chain coverage, oracle provenance, indexer source, liquidity model, or live-RPC posture changes, invalidate risk confidence, stale/missing-state proof, data-flow diagrams, and release gates until replayed.",
+                "If non-custody or no-advice posture changes, block release promotion until authority, audit, security, and compliance decisions are rewritten.",
+            ],
             "transfer_priors": [
                 "DeFi risk products should treat stale, missing, and unsupported-chain states as first-class UX and test cases.",
                 "Non-custodial and no-advice boundaries belong in project truth before component work begins.",
@@ -512,6 +525,10 @@ def _family_terms(*, profile: GreenfieldDomainProfile, title: str) -> dict[str, 
                 "Transaction risk: duplicate or lost order state can silently corrupt checkout trust.",
                 "Compliance risk: payment/provider claims can outrun sandbox evidence.",
             ],
+            "invalidation_rules": [
+                "If payment provider, sandbox contract, price snapshot, inventory reservation, or callback semantics change, invalidate checkout idempotency proof and recovery diagrams.",
+                "If production payment or fulfillment moves into scope, block release promotion until provider compliance, recovery, and audit obligations are explicit.",
+            ],
             "transfer_priors": [
                 "Commerce projects need idempotency, payment failure recovery, and accessible error proof before scale features.",
                 "Keep storefront, checkout, catalog snapshot, and payment provider boundaries distinct until source proof narrows them.",
@@ -541,6 +558,10 @@ def _family_terms(*, profile: GreenfieldDomainProfile, title: str) -> dict[str, 
         "risks": [
             "Architecture risk: vague ownership can merge experience, domain, storage, and proof into one brittle surface.",
             "Proof risk: demo-like output can appear real while lacking tests, fixtures, or degraded-state behavior.",
+        ],
+        "invalidation_rules": [
+            "If first user, runtime, storage, deployment, data source, or proof surface changes, invalidate the affected source paths, component contracts, diagrams, and validation commands.",
+            "If a broad prompt narrows into a regulated, safety-sensitive, or external-provider domain, regenerate the security, privacy, compliance, and release-gate posture before implementation.",
         ],
         "transfer_priors": [
             "Generic projects need explicit user, domain, proof, and source-of-truth hierarchy before code.",

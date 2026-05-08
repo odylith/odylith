@@ -1359,3 +1359,20 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   repos need no destructive migration: historical greenfield records remain
   readable, while future proposal/create runs and normal dashboard/sync refresh
   converge installed surfaces to the deeper project-first UX.
+- The v0.1.15 explicit invalidation and ownership pass is covered by
+  `migration-observer:0.1.15:guidance-and-skills:0df65445f86d` and
+  `migration-observer:0.1.15:install-managed-assets:a18d34fb8a8f`. The pass is
+  additive: future greenfield proposal JSON and Radar workstream sections now
+  carry explicit invalidation rules, first-class scope, and ownership maps,
+  while existing consumer governance truth remains valid. Upgrade adoption only
+  refreshes managed guidance/bundle assets; proposal/create remains
+  confirmation-gated before new project truth is written.
+- Final v0.1.15 explicit-invalidation surface settlement is covered by
+  `migration-observer:0.1.15:browser-surfaces:b4d20ce668d5` and
+  `migration-observer:0.1.15:install-managed-assets:dea842f8c91c`, with the
+  final post-refresh fingerprints assessed under
+  `migration-observer:0.1.15:browser-surfaces:77f6752a8e62` and
+  `migration-observer:0.1.15:install-managed-assets:4590f557c3cd`. The pass
+  only refreshes rendered governance dashboards and shipped HTML bundle copies
+  from governed source truth; existing consumer Radar, Registry, Atlas,
+  Casebook, and Compass source records are not rewritten by upgrade adoption.

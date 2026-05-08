@@ -187,6 +187,25 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   (`225 passed`), live `odylith greenfield propose` text inspection, and
   `odylith release migration-gate --target-version 0.1.15 --json`
   (`blocked_manual_migrations=0`).
+- 2026-05-08 explicit invalidation and ownership hardening made
+  `invalidation_rules` a validated project-intelligence layer and made child
+  Radar workstream Domain Intelligence validate first-class `scope`, `owners`,
+  and `invalidation_rules` layers. The workstream term tables were split into
+  `greenfield_workstream_terms.py` so the generator stays under the source-size
+  soft limit instead of becoming a swollen payload builder. Proof:
+  `PYTHONPATH=src python -m pytest -q
+  tests/unit/runtime/test_greenfield_intelligence_schema.py
+  tests/unit/runtime/test_greenfield_proposals.py` (`36 passed`),
+  `PYTHONPATH=src python -m pytest -q
+  tests/unit/runtime/test_greenfield_intelligence_schema.py
+  tests/unit/runtime/test_greenfield_proposals.py
+  tests/unit/runtime/test_greenfield_atlas_contract.py
+  tests/unit/runtime/test_greenfield_host_routing.py tests/unit/test_cli.py`
+  (`227 passed`), and the bundle/hygiene mirror slice
+  (`tests/unit/runtime/test_source_bundle_mirror.py
+  tests/unit/install/test_codex_project_assets.py
+  tests/unit/install/test_agents.py tests/unit/runtime/test_hygiene.py`,
+  `101 passed`).
 - 2026-05-08 component-spec bespoke hardening proved generated Registry specs
   no longer inherit project-wide risk/security/compliance narrative, render
   component-named boundaries/contracts/proof/failure/runway sections, extract
@@ -383,7 +402,13 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `migration-observer:0.1.15:browser-surfaces:f469b98318dc`, and
   `migration-observer:0.1.15:install-managed-assets:765b855989ca`,
   `migration-observer:0.1.15:browser-surfaces:2d3918fcc7c7`, and
-  `migration-observer:0.1.15:install-managed-assets:79060c177fba`.
+  `migration-observer:0.1.15:install-managed-assets:79060c177fba`,
+  `migration-observer:0.1.15:guidance-and-skills:0df65445f86d`, and
+  `migration-observer:0.1.15:install-managed-assets:a18d34fb8a8f`,
+  `migration-observer:0.1.15:browser-surfaces:b4d20ce668d5`, and
+  `migration-observer:0.1.15:install-managed-assets:dea842f8c91c`,
+  `migration-observer:0.1.15:browser-surfaces:77f6752a8e62`, and
+  `migration-observer:0.1.15:install-managed-assets:4590f557c3cd`.
   These markers cover the deepened greenfield skill guidance, refreshed
   Domain Intelligence Atlas/Registry/Radar browser surfaces, updated managed
   security-and-trust guidance, updated public README/operator/release-note/security
@@ -391,7 +416,8 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   from the deeper greenfield diagram-suite contract, the project-first
   direction-option/readiness-gate guidance refresh, the engine-integrity
   validator and expanded capability inventory, the canonical project-intelligence
-  proposal object and parent Radar persistence, and bundled
+  proposal object and parent Radar persistence, explicit project/workstream
+  invalidation rules, first-class workstream scope and owners, and bundled
   install-managed dashboard copies. Existing consumer governance truth remains unchanged; upgrades
   refresh managed guidance/assets and keep proposal writes explicit through
   `odylith greenfield apply --confirm`.

@@ -10,11 +10,13 @@ from odylith.runtime.domain_intelligence.greenfield_domain_profile import Greenf
 from odylith.runtime.domain_intelligence.greenfield_domain_profile import infer_greenfield_domain_profile
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
+from odylith.runtime.domain_intelligence.greenfield_workstream_terms import workstream_family_terms
 
 SECTION_TITLE = "Domain Intelligence"
 
 _REQUIRED_LAYERS = (
     "intent",
+    "scope",
     "ontology",
     "state",
     "operators",
@@ -29,15 +31,18 @@ _REQUIRED_LAYERS = (
     "validation_obligations",
     "artifacts",
     "authority",
+    "owners",
     "execution_memory",
     "metrics",
     "change_model",
+    "invalidation_rules",
     "conflict_model",
     "transfer_priors",
 )
 
 _LAYER_LABELS = {
     "intent": "Intent And Outcome",
+    "scope": "Scope And Boundary",
     "ontology": "Domain Ontology",
     "state": "State Model",
     "operators": "Allowed Operators",
@@ -52,9 +57,11 @@ _LAYER_LABELS = {
     "validation_obligations": "Validation Obligations",
     "artifacts": "Work Products And Artifact Contracts",
     "authority": "Stakeholders And Authority",
+    "owners": "Ownership Map",
     "execution_memory": "Memory And Prior Executions",
     "metrics": "Metrics And Observables",
-    "change_model": "Change And Invalidation Model",
+    "change_model": "Change Model",
+    "invalidation_rules": "Invalidation Rules",
     "conflict_model": "Conflict Model",
     "transfer_priors": "Reuse And Transfer Priors",
 }
@@ -145,6 +152,12 @@ def build_domain_intelligence(
             f"Failure mode: {terms['failure_mode']}",
             f"Non-goals: {terms['non_goals']}",
         ],
+        "scope": [
+            f"In scope: `{row_title}` owns {profile_focus.responsibility} and the first proof slice: {first_slice}",
+            f"Out of scope: {terms['non_goals']}",
+            f"Boundary: keep `{row_title}` tied to {component_clause}, {diagram_clause}, {wave}, and release `{selector}` until a governed split changes that topology.",
+            "Customization boundary: runtime, compliance, first actor, data source, and proof threshold may change only through proposal, plan, or human-decision updates, not implicit coding.",
+        ],
         "ontology": _ontology(domain_profile=domain_profile, kind=kind, components=focus, title=title),
         "state": [
             f"Current state: user_intent evidence only; no source-backed runtime behavior is claimed for `{row_title}`.",
@@ -225,6 +238,13 @@ def build_domain_intelligence(
             "Odylith Tribunal owns pre-write topology validation and fail-closed proposal rejection.",
             "No agent may infer source-backed readiness from proposal text or generated dashboards alone.",
         ],
+        "owners": [
+            f"Radar owner: `{row_title}` owns intent, scope, dependencies, risks, assumptions, validation obligations, and execution memory.",
+            f"Registry owner: {component_clause} own component identity, boundaries, interfaces, collaborators, and component-specific proof.",
+            f"Atlas owner: {diagram_clause} own topology claims and must be refreshed when source paths, owners, states, or release gates change.",
+            "Operator owner: human direction owns primary user, runtime, compliance posture, release ambition, and any reversal of Odylith assumptions.",
+            "Implementation owner: the future technical plan owns source paths, rollback or recovery posture, repo-native tests, and proof attachment.",
+        ],
         "execution_memory": [
             "Prior regression to avoid: a host agent repaired shallow greenfield JSON by hand, then authored generic workstreams and templated specs.",
             "Reusable lesson: apply-ready proposal objects must already carry dependencies, interfaces, proof gates, domain vocabulary, and source-of-truth hierarchy.",
@@ -241,6 +261,13 @@ def build_domain_intelligence(
             "If a schema, fixture, or test is removed, downgrade evidence that depended on it until replacement proof exists.",
             "If release scope changes, recompute workstream dependencies, release assignment, and Compass wave posture.",
             "If a component owner changes, refresh Registry, Radar impacted components, and Atlas ownership views together.",
+        ],
+        "invalidation_rules": [
+            *terms["invalidation_rules"],
+            f"If `{row_title}` changes first slice, owner, runtime, data boundary, or release `{selector}` assignment, expire dependent assumptions, diagrams, Registry interfaces, and proof gates before implementation continues.",
+            "If a named test, fixture, browser proof, schema, or render disappears, downgrade every claim that depended on it from source_backed to assumption or blocked until replacement proof lands.",
+            "If the operator contradicts an Odylith assumption, the operator decision wins and this workstream must be rewritten before code uses the old assumption.",
+            "If Compass or dashboards disagree with Radar, Registry, Atlas, or repo-native tests, treat the projection as stale and repair source truth plus refresh before promotion.",
         ],
         "conflict_model": [
             "Conflict priority: source-backed tests beat generated dashboards; Registry beats inferred component ownership; Radar beats chat summaries for intent.",
@@ -375,11 +402,7 @@ def _wave_for_row(*, row: Mapping[str, Any], program: Mapping[str, Any]) -> str:
 
 
 def _family_terms(*, domain_profile: GreenfieldDomainProfile, title: str) -> dict[str, Any]:
-    if domain_profile.family == "defi_risk":
-        return _defi_terms()
-    if domain_profile.family == "commerce":
-        return _commerce_terms()
-    return _generic_terms(title=title)
+    return workstream_family_terms(domain_profile=domain_profile, title=title)
 
 
 def _ontology(
@@ -621,134 +644,6 @@ def _row_validation_obligations(*, domain_profile: GreenfieldDomainProfile, kind
         ],
     }
     return rows_by_kind.get(kind, rows_by_kind["domain"])
-
-
-def _defi_terms() -> dict[str, Any]:
-    return {
-        "domain_phrase": "DeFi risk sentinel",
-        "project_objective": "monitor wallet and protocol exposure, detect liquidation or liquidity risk, and surface trustworthy analyst actions.",
-        "stakeholder_outcome": "an analyst can triage one monitored subject, understand stale or missing data, and acknowledge alerts without custody or trade execution claims.",
-        "failure_mode": "analysts may trust incomplete oracle, indexer, liquidity, or protocol-health data as precise financial advice.",
-        "non_goals": "no custody, no trading, no production financial advice, no live-chain dependency, no private-key handling in the first release.",
-        "decision_pressure": "risk math needs deterministic fixtures before live providers or broad protocol coverage.",
-        "primary_validation_command": "scenario replay plus contract/browser proof over risk snapshots and alert states",
-        "topology_spine": "watchlist/console consumes the risk signal engine; the risk signal engine consumes fixture-backed oracle, liquidity, position, and protocol-health inputs; the replay harness validates both.",
-        "constraints": [
-            "No live RPC, wallet signing, custody, private keys, or production trade execution in the first release.",
-            "Wallet identifiers are pseudonymous; positions, holdings, and derived risk readouts are sensitive financial data.",
-            "Risk scores must carry freshness and confidence metadata so stale oracle or missing liquidity cannot look normal.",
-        ],
-        "evidence_counts": [
-            "DeFi evidence must include threshold-crossing, stale-oracle, missing-indexer, liquidity-shock, and idempotent acknowledgement fixtures.",
-        ],
-        "assumptions": [
-            "Assumption: first release monitors one subject with deterministic fixture data, not broad multi-chain indexing.",
-            "Assumption: analyst acknowledgement is audit-relevant even before production authentication exists.",
-        ],
-        "invariants": [
-            "A stale or missing price cannot produce a normal precision claim.",
-            "A risk alert cannot be acknowledged without preserving actor, subject, severity, and timestamp evidence.",
-            "Fixture replay must be deterministic for the same price, liquidity, oracle, and protocol-health inputs.",
-        ],
-        "risks": [
-            "Data risk: provider drift or stale oracle values can understate exposure or mask liquidation paths.",
-            "Compliance risk: the product can be misread as custody, trading, or financial advice unless boundaries stay explicit.",
-            "Abuse risk: alert spam or acknowledgement replay can hide a real risk transition.",
-        ],
-        "validation_obligations": [
-            "Claim: stale oracle data is degraded. Method: fixture where price age exceeds freshness threshold and numeric claims are suppressed.",
-            "Claim: liquidity shock changes severity. Method: replay fixture with deterministic before/after liquidity depth and alert threshold.",
-            "Claim: acknowledgements are idempotent. Method: repeated acknowledgement keeps one durable state transition with audit evidence.",
-        ],
-        "metrics": [
-            "Domain metric: stale or missing data detection rate across fixture scenarios.",
-            "Risk metric: false-normal fixture count for liquidation, liquidity, and protocol-health stress cases.",
-            "UX metric: analyst can distinguish fresh, stale, missing, and unsupported-chain states without hidden precision.",
-        ],
-        "transfer_priors": [
-            "Pattern: keep risk math pure and deterministic before adding live providers.",
-            "Pattern: treat freshness, confidence, and provenance as first-class fields in every derived financial readout.",
-        ],
-    }
-
-
-def _commerce_terms() -> dict[str, Any]:
-    return {
-        "domain_phrase": "commerce checkout",
-        "project_objective": "prove browse-to-checkout, order draft, payment handoff, and failed-payment recovery without production payment claims.",
-        "stakeholder_outcome": "a shopper can move through the first purchase path while operators can verify idempotent recovery behavior.",
-        "failure_mode": "orders can double-submit, payment failures can disappear, or shopper state can imply a purchase that never completed.",
-        "non_goals": "no live payment credentials, production fulfillment, tax/shipping complexity, or broad merchandising automation in the first release.",
-        "decision_pressure": "checkout correctness and recovery beat storefront breadth.",
-        "primary_validation_command": "browser proof plus checkout/order contract tests",
-        "topology_spine": "storefront consumes checkout/order core; checkout/order core consumes product and price snapshots; the proof harness replays payment success, failure, and callback duplication.",
-        "constraints": [
-            "Use sandbox payment fixtures only; never require live provider credentials for first-release proof.",
-            "Order creation must be idempotent under retry and replay.",
-            "Checkout reads immutable price and inventory snapshots rather than mutable merchandising state.",
-        ],
-        "evidence_counts": ["Commerce evidence must include happy path, empty cart, failed payment, and replayed callback proof."],
-        "assumptions": ["Assumption: first release proves one checkout path before account, catalog, or fulfillment breadth expands."],
-        "invariants": [
-            "A payment callback replay cannot create a second order draft.",
-            "A failed payment must remain visible and recoverable to the shopper.",
-            "Checkout cannot mutate catalog truth or treat live inventory as already reserved without a reservation contract.",
-        ],
-        "risks": [
-            "Payment risk: non-idempotent retries can double-create orders.",
-            "Trust risk: storefront success state can hide provider failure or late callback recovery.",
-        ],
-        "validation_obligations": [
-            "Claim: checkout is idempotent. Method: repeated checkout command and replayed callback produce one order draft.",
-            "Claim: failed payment is recoverable. Method: browser proof shows explicit failure and retry state.",
-            "Claim: price snapshot is stable. Method: contract test proves checkout uses immutable snapshot input.",
-        ],
-        "metrics": [
-            "Domain metric: duplicate order count under retry and callback replay.",
-            "UX metric: shopper-visible recovery states proven in browser.",
-        ],
-        "transfer_priors": ["Pattern: isolate payment handoff and order state before adding fulfillment breadth."],
-    }
-
-
-def _generic_terms(*, title: str) -> dict[str, Any]:
-    compact = title.replace(" App", "").replace(" Platform", "").strip() or "product"
-    lower = compact.lower()
-    return {
-        "domain_phrase": f"{lower} greenfield",
-        "project_objective": f"turn the {lower} prompt into a coherent first workflow, domain contract, and proof harness.",
-        "stakeholder_outcome": f"the operator can start one {lower} implementation slice without rediscovering purpose, boundaries, proof, and risks.",
-        "failure_mode": "agents may build plausible scaffolding that is disconnected from domain rules, users, state, and validation.",
-        "non_goals": "no broad platform, production readiness, external integration, or source-backed claim until the first slice proves it.",
-        "decision_pressure": "domain clarity and proof gates beat broad scaffold volume.",
-        "primary_validation_command": "repo-native tests for normal, empty, degraded, and failure states",
-        "topology_spine": "experience boundary consumes the domain core; validation harness proves both; Odylith surfaces expose the trace.",
-        "constraints": [
-            "Keep the first slice small enough to prove with local fixtures and repository-native tests.",
-            "Do not infer runtime, storage, or deployment ownership from project title alone.",
-            "Keep data, auth, audit, accessibility, and recovery assumptions explicit until the operator confirms them.",
-        ],
-        "evidence_counts": ["Generic greenfield evidence must include behavior proof, contract proof, rendered topology, and refreshed governance surfaces."],
-        "assumptions": [f"Assumption: {compact} starts with one operator-visible workflow and one domain object before wider architecture."],
-        "invariants": [
-            "Visible state must derive from domain contract outcomes, not UI-only assumptions.",
-            "Domain contract remains narrower than storage, transport, and deployment choices until implementation proof lands.",
-        ],
-        "risks": [
-            "Product risk: the first slice can become generic scaffolding instead of a meaningful domain workflow.",
-            "Architecture risk: UI, storage, and domain logic can couple before ownership boundaries are proven.",
-        ],
-        "validation_obligations": [
-            "Claim: first workflow is meaningful. Method: normal, empty, degraded, and failure state tests use real domain behavior.",
-            "Claim: domain ownership is clear. Method: Registry spec names owned state, interfaces, dependencies, and non-goals.",
-            "Claim: release gate is honest. Method: release target stays planning until proof and surface refresh pass.",
-        ],
-        "metrics": [
-            "Domain metric: first-slice states covered by tests.",
-            "Epistemic metric: unresolved assumptions count before source edits.",
-        ],
-        "transfer_priors": ["Pattern: convert broad prompts into one workflow, one domain contract, one proof harness, and one release gate."],
-    }
 
 
 def _security_posture_text(value: Any) -> str:

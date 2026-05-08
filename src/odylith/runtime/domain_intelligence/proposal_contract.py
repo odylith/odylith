@@ -107,9 +107,9 @@ def build_proposal_contract() -> dict[str, Any]:
                 "an explicit parent/umbrella program workstream plus child workstreams when the project has multiple meaningful boundaries; "
                 "every child should carry first-slice, validation, component_focus, and related_diagram_slugs "
                 "or enough specific language for Odylith to infer the topology; every row must carry structured "
-                "domain_intelligence covering intent, ontology, state, operators, constraints, source of truth, "
-                "evidence, assumptions, topology, invariants, risks, validation, artifacts, authority, memory, "
-                "metrics, change rules, conflict rules, and reusable priors"
+                "domain_intelligence covering intent, scope, ontology, state, operators, constraints, source of truth, "
+                "evidence, assumptions, topology, invariants, risks, validation, artifacts, authority, owners, memory, "
+                "metrics, change rules, invalidation rules, conflict rules, and reusable priors"
             ),
             "components": (
                 "candidate Registry components with component_id, label, intended_path, responsibility, "
@@ -130,7 +130,7 @@ def build_proposal_contract() -> dict[str, Any]:
             "project_intelligence": (
                 "the deep project object that captures intent, scope, ontology, state, allowed operators, constraints, "
                 "truth map, evidence grammar, decisions, assumptions, topology, invariants, risks, validation obligations, "
-                "artifacts, owners, execution memory, metrics, change rules, conflict rules, and transfer priors before coding"
+                "artifacts, owners, execution memory, metrics, change rules, invalidation rules, conflict rules, and transfer priors before coding"
             ),
             "implementation_runway": (
                 "post-apply handoff that names the project parent, first wave, release target, direction choices, "
@@ -171,7 +171,7 @@ def build_proposal_contract() -> dict[str, Any]:
             (
                 "Greenfield Radar workstreams must be domain-intelligent control surfaces, not task labels: "
                 "capture domain vocabulary, allowed operations, state transitions, constraints, source-of-truth "
-                "hierarchy, evidence grammar, risks, validation obligations, execution memory, change rules, "
+                "hierarchy, evidence grammar, risks, validation obligations, owners, execution memory, change rules, invalidation rules, "
                 "conflict rules, and transfer priors with project-specific terms."
             ),
             (
