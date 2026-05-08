@@ -170,6 +170,12 @@ def _project_outcome(*, title: str, family: str) -> str:
             "analyst workflow, risk signal boundaries, stale-data behavior, and non-custodial posture before "
             "any live-chain or trading integration is considered."
         )
+    if family == "defi_merchant_lending":
+        return (
+            f"{title} should become a merchant-capital product whose first release proves the SMB borrower journey, "
+            "Shopify merchant-data boundary, credit eligibility, stablecoin funding state, repayment state, "
+            "liquidity freshness, and compliance gates before live DeFi protocol or production lending claims."
+        )
     if family == "commerce":
         return (
             f"{title} should become a commerce product whose first release proves the shopper path, checkout "
@@ -218,6 +224,21 @@ def _blueprint_sections(*, family: str) -> list[dict[str, str]]:
                 "section": "Risk and data posture",
                 "must_capture": "Custody boundary, oracle/indexer freshness, exposure semantics, financial-advice disclaimer, audit, and no-live-RPC gate.",
                 "why_it_matters": "Prevents a risk product from sounding authoritative before data quality and regulatory posture are proven.",
+            },
+        )
+    elif family == "defi_merchant_lending":
+        sections.insert(
+            2,
+            {
+                "section": "Credit, liquidity, and compliance posture",
+                "must_capture": (
+                    "Merchant borrower identity, Shopify data freshness, underwriting inputs, facility lifecycle, "
+                    "stablecoin liquidity, disbursement, repayment, KYB/AML, no-custody, and no-live-protocol gates."
+                ),
+                "why_it_matters": (
+                    "Prevents a merchant lending product from collapsing into a consumer retail flow or implying approved credit, "
+                    "available funds, custody, or production lending before proof exists."
+                ),
             },
         )
     elif family == "robot_swarm":
@@ -297,6 +318,31 @@ def _customization_options(*, title: str, family: str) -> list[dict[str, Any]]:
                 "Changes degraded-state UX, replay fixtures, confidence scoring, and release blockers.",
             ),
         ]
+    if family == "defi_merchant_lending":
+        return [
+            _option(
+                "D0",
+                "Borrower and capital-ops boundary",
+                "Default to the Shopify SMB merchant as borrower and capital-ops as reviewer; do not model retail buyers as the primary actor.",
+                ["merchant borrower portal", "capital-ops review", "underwriter workflow", "embedded Shopify app"],
+                "Changes the first workflow, authorization model, data consent, visible funding states, and proof surface.",
+            ),
+            *common,
+            _option(
+                "D6",
+                "Stablecoin and DeFi liquidity posture",
+                "Default to fixture-backed stablecoin ledger and liquidity snapshots before live protocol access.",
+                ["fixture-only liquidity ledger", "sandbox vault adapter", "read-only protocol quote", "live protocol later"],
+                "Changes treasury risk, no-custody proof, replay fixtures, compliance gates, and release blockers.",
+            ),
+            _option(
+                "D7",
+                "Compliance and lending posture",
+                "Keep KYB, AML, sanctions, lending disclosures, audit, retention, and no-custody posture explicit before source edits.",
+                ["strict regulated posture", "sandbox compliance gate", "research prototype", "production compliance later"],
+                "Changes data classification, release approval, authority, evidence thresholds, and what funding claims are allowed.",
+            ),
+        ]
     if family == "robot_swarm":
         return [
             _option(
@@ -355,6 +401,12 @@ def _customization_prompts(*, family: str) -> list[str]:
             "Keep release 0.0.1 non-custodial and read-only while deferring live RPC, trade execution, and advice language.",
             "Make stale oracle, missing indexer, unsupported chain, and confidence display mandatory first-wave states.",
         ]
+    if family == "defi_merchant_lending":
+        return [
+            "Use Shopify merchant as borrower, fixture-backed Shopify sales data, sandbox stablecoin ledger, and no live DeFi protocol calls.",
+            "Make KYB, AML, sanctions, lending disclosures, no-custody, and idempotent disbursement and repayment mandatory first-wave gates.",
+            "Defer consumer retail flows, production lending decisions, live protocol deposits, custody keys, and real merchant data until release proof passes.",
+        ]
     if family == "robot_swarm":
         return [
             "Use simulation-only release 0.0.1 with no hardware control, no live yard integration, and replayable safety proof.",
@@ -403,6 +455,20 @@ def _pre_coding_checkpoints(*, family: str) -> list[dict[str, str]]:
                 "checkpoint": "Risk-data posture accepted",
                 "operator_question": "Which oracle, indexer, confidence, custody, and financial-advice boundaries are non-negotiable?",
                 "done_when": "Degraded states, no-live-RPC posture, non-custody posture, and audit requirements are visible before code.",
+            }
+        )
+    elif family == "defi_merchant_lending":
+        checkpoints.append(
+            {
+                "checkpoint": "Merchant-lending posture accepted",
+                "operator_question": (
+                    "Which borrower role, Shopify data boundary, underwriting inputs, liquidity source, stablecoin rail, "
+                    "repayment model, and compliance gates are non-negotiable?"
+                ),
+                "done_when": (
+                    "Radar, Registry, and Atlas show merchant borrower workflow, Shopify snapshot rules, no-custody posture, "
+                    "KYB/AML gates, liquidity/disbursement/repayment proof, and no consumer-purchase scope before code."
+                ),
             }
         )
     elif family == "robot_swarm":

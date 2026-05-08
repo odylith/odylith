@@ -1453,3 +1453,15 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   source remains unchanged; upgraded runtimes get the stricter validator and
   clearer capability UX, while refreshed browser surfaces converge from normal
   dashboard/sync rendering.
+- The v0.1.15 merchant-lending greenfield domain-family pass is covered by
+  `migration-observer:0.1.15:browser-surfaces:f0125fb7feb7` and
+  `migration-observer:0.1.15:install-managed-assets:352b7f58e4df`. The pass
+  records `CB-190`, adds a first-class `defi_merchant_lending` proposal family,
+  and refreshes generated Casebook/Radar/Compass browser surfaces plus managed
+  HTML bundle mirrors after the Shopify stablecoin lending transcript showed a
+  borrower-lending prompt being routed to shopper checkout. Existing consumer
+  governed source remains unchanged; upgraded runtimes route future merchant
+  lending proposals through merchant borrower, Shopify data, credit facility,
+  stablecoin liquidity, disbursement, repayment, KYB/AML, no-custody, and
+  no-live-protocol proof gates, while normal dashboard/sync refresh converges
+  generated browser surfaces and installed managed assets.

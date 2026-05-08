@@ -347,7 +347,7 @@ def _project_brief_lines(project_brief: Mapping[str, Any]) -> list[str]:
     option_lines = _project_option_lines(project_brief.get("customization_options"))
     if option_lines:
         lines.extend(["- choose before coding:"])
-        lines.extend(f"  - {line}" for line in option_lines[:6])
+        lines.extend(f"  - {line}" for line in option_lines[:8])
     prompt_lines = _customization_prompt_lines(project_brief.get("customization_prompts"))
     if prompt_lines:
         lines.extend(["- customize by saying:"])

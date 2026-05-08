@@ -355,7 +355,7 @@ def _customization_options(project_brief: Mapping[str, Any]) -> list[str]:
         recommended = str(row.get("recommended", "")).strip()
         if decision and recommended:
             result.append(f"{decision}: {recommended}")
-    return result[:6]
+    return result[:8]
 
 
 def _readiness_gates(project_brief: Mapping[str, Any]) -> list[str]:

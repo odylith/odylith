@@ -234,6 +234,41 @@ def _base_risks(*, title: str, domain_profile: GreenfieldDomainProfile) -> list[
                 ),
             },
         ]
+    if domain_profile.family == "defi_merchant_lending":
+        return [
+            {
+                "id": "R1",
+                "risk_class": "credit_liquidity_integrity",
+                "severity": "high",
+                "trigger": "merchant eligibility, underwriting inputs, liquidity, disbursement, repayment, or Shopify data boundaries are unclear",
+                "early_warning": "consumer cart, retail order, or card-payment language appears before merchant facility, liquidity, and repayment proof exists",
+                "evidence_tier": "odylith_assumption",
+                "statement": (
+                    "Merchant lending implementation can misstate approved capital, over-commit stablecoin liquidity, "
+                    "or duplicate disbursement/repayment events if credit, liquidity, and facility state are not separated before source edits."
+                ),
+                "mitigation": (
+                    "Keep the first wave fixture-backed; require Shopify merchant snapshots, eligibility gates, liquidity snapshots, "
+                    "idempotent disbursement/repayment replay, and refreshed Radar/Registry/Atlas/Compass before release promotion."
+                ),
+            },
+            {
+                "id": "R2",
+                "risk_class": "compliance_treasury_boundary",
+                "severity": "high",
+                "trigger": "KYB, AML, sanctions, lending disclosure, no-custody, private-key, stablecoin, or live-protocol posture is implicit",
+                "early_warning": "component specs describe DeFi funding or Shopify integration without regulated data, no-custody, and live-protocol proof gates",
+                "evidence_tier": "odylith_assumption",
+                "statement": (
+                    "Stablecoin merchant lending can imply production lending, custody, money movement, or financial advice before "
+                    "KYB/AML, lending, treasury, and protocol-risk decisions are explicit."
+                ),
+                "mitigation": (
+                    "Make KYB/AML/sanctions, lending disclosures, no-custody, no-private-key, no-live-protocol, data classification, "
+                    "audit, retention, and release approval obligations explicit before the first technical plan can open."
+                ),
+            },
+        ]
     if domain_profile.family == "commerce":
         return [
             {
@@ -319,6 +354,21 @@ def _base_security_compliance(title: str, *, domain_profile: GreenfieldDomainPro
             "policy": (
                 "Strict regulated posture keeps no-custody, no-trading, no-financial-advice, data classification, "
                 "freshness/confidence disclosure, retention, and release approval explicit before source edits."
+            ),
+        }
+    if domain_profile.family == "defi_merchant_lending":
+        return {
+            "domain": (
+                f"{title} is an SMB merchant lending proposal with sensitive Shopify merchant data, underwriting inputs, "
+                "credit facility state, stablecoin funding, DeFi liquidity, disbursement, repayment, treasury, and audit data."
+            ),
+            "security": (
+                "Security posture covers merchant identity and consent, Shopify app scopes, secret-free fixtures, audit trails, "
+                "idempotency keys, private-key exclusion, no custody, and no live protocol or production disbursement in the first release."
+            ),
+            "policy": (
+                "Strict regulated posture keeps KYB, AML, sanctions, lending disclosures, money-transmission or securities review, "
+                "data classification, retention, stablecoin/DeFi risk disclosure, and release approval explicit before source edits."
             ),
         }
     if domain_profile.family == "commerce":

@@ -10,6 +10,9 @@ from odylith.runtime.domain_intelligence.greenfield_domain_profile import Greenf
 from odylith.runtime.domain_intelligence.greenfield_domain_profile import infer_greenfield_domain_profile
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
+from odylith.runtime.domain_intelligence.greenfield_workstream_terms import merchant_lending_ontology_rows
+from odylith.runtime.domain_intelligence.greenfield_workstream_terms import merchant_lending_operator_rows
+from odylith.runtime.domain_intelligence.greenfield_workstream_terms import merchant_lending_validation_rows
 from odylith.runtime.domain_intelligence.greenfield_workstream_terms import workstream_family_terms
 
 SECTION_TITLE = "Domain Intelligence"
@@ -257,7 +260,7 @@ def build_domain_intelligence(
             *terms["metrics"],
             "Epistemic metric: number of claims backed by tests or validated source versus assumptions.",
             "Governance metric: orphaned component, diagram, release, or workstream links must stay at zero.",
-            "Agent behavior metric: no schema-repair loop, no title-only plan, no repeated generic component-spec structure.",
+            "Agent behavior metric: no visible canonical-object patching loop, no title-only plan, no repeated generic component-spec structure.",
         ],
         "change_model": [
             "If the runtime target changes, invalidate transport/interface assumptions and rerun component plus Atlas review.",
@@ -465,6 +468,8 @@ def _ontology(
                 "Alert: severity, trigger reason, threshold, confidence, state, and acknowledgement trail.",
                 "Scenario fixture: local replay input for price shock, liquidity drain, stale oracle, or missing indexer proof.",
             ]
+    elif domain_profile.family == "defi_merchant_lending":
+        rows = merchant_lending_ontology_rows(kind)
     elif domain_profile.family == "commerce":
         rows_by_kind = {
             "program": [
@@ -621,6 +626,8 @@ def _operators(*, domain_profile: GreenfieldDomainProfile, kind: str, selector: 
             ],
         }
         rows = rows_by_kind.get(kind, rows_by_kind["domain"])
+    elif domain_profile.family == "defi_merchant_lending":
+        rows = merchant_lending_operator_rows(kind)
     elif domain_profile.family == "commerce":
         rows_by_kind = {
             "program": [
@@ -695,6 +702,8 @@ def _row_validation_obligations(*, domain_profile: GreenfieldDomainProfile, kind
             ],
         }
         return rows_by_kind.get(kind, rows_by_kind["domain"])
+    if domain_profile.family == "defi_merchant_lending":
+        return merchant_lending_validation_rows(kind)
     if domain_profile.family == "commerce":
         rows_by_kind = {
             "program": [

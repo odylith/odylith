@@ -90,7 +90,7 @@ def _print_next_steps(next_steps: Mapping[str, Any]) -> None:
     choices = next_steps.get("customization_options", [])
     if isinstance(choices, list) and choices:
         print("- choose before coding:")
-        for choice in choices[:6]:
+        for choice in choices[:8]:
             print(f"  - {choice}")
     readiness_gates = next_steps.get("coding_readiness_gates", [])
     if isinstance(readiness_gates, list) and readiness_gates:

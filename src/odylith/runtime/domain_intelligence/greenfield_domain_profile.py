@@ -29,6 +29,8 @@ class GreenfieldDomainProfile:
 
 def infer_greenfield_domain_profile(*, prompt: str, title: str, slug: str) -> GreenfieldDomainProfile:
     text = f"{prompt} {title} {slug}".casefold()
+    if _is_defi_merchant_lending(text):
+        return _defi_merchant_lending_profile(slug)
     if _contains_any(text, ("defi", "de-fi", "crypto", "wallet", "protocol", "liquidity", "stablecoin")) and _contains_any(
         text,
         ("risk", "sentinel", "alert", "exposure", "liquidation", "monitor"),
@@ -37,6 +39,30 @@ def infer_greenfield_domain_profile(*, prompt: str, title: str, slug: str) -> Gr
     if _contains_any(text, ("commerce", "ecommerce", "checkout", "cart", "shop", "storefront", "payment")):
         return _commerce_profile(slug)
     return _default_profile(title=title, slug=slug)
+
+
+def _is_defi_merchant_lending(text: str) -> bool:
+    has_lending = _contains_any(
+        text,
+        (
+            "lending",
+            "loan",
+            "credit",
+            "borrow",
+            "borrower",
+            "underwriting",
+            "working capital",
+            "merchant cash advance",
+            "repayment",
+            "smb",
+        ),
+    )
+    has_merchant = _contains_any(text, ("merchant", "shopify", "seller", "smb", "business"))
+    has_defi_funding = _contains_any(
+        text,
+        ("defi", "de-fi", "stablecoin", "stable coin", "usdc", "liquidity", "protocol", "vault", "pool"),
+    )
+    return has_lending and has_merchant and has_defi_funding
 
 
 def _defi_risk_profile(slug: str) -> GreenfieldDomainProfile:
@@ -133,6 +159,106 @@ def _defi_risk_profile(slug: str) -> GreenfieldDomainProfile:
                 risks=(
                     "Weak fixtures can make risk claims look verified while missing realistic oracle or liquidity failures.",
                     "Any production credential or live-chain dependency in the first release invalidates deterministic proof.",
+                ),
+            ),
+        },
+    )
+
+
+def _defi_merchant_lending_profile(slug: str) -> GreenfieldDomainProfile:
+    return GreenfieldDomainProfile(
+        family="defi_merchant_lending",
+        components={
+            "experience": GreenfieldComponentProfile(
+                suffix="merchant-capital-portal",
+                label="Merchant Capital Portal",
+                kind="application",
+                path_prefix="src",
+                responsibility=(
+                    "Own Shopify merchant onboarding, capital application intake, offer review, "
+                    "stablecoin funding status, repayment visibility, and eligibility or liquidity degraded states."
+                ),
+                boundary=(
+                    "Owns borrower-facing merchant workflow and visible funding state; excludes underwriting math, "
+                    "treasury adapters, DeFi protocol execution, custody, private keys, and consumer retail flows."
+                ),
+                dependencies=(
+                    "Depends on the credit and liquidity core for eligibility, facility, disbursement, and repayment state.",
+                    "Depends on the lending proof harness for deterministic Shopify, liquidity, compliance, and repayment fixtures.",
+                ),
+                interfaces=(
+                    "Merchant application route or command with Shopify shop identifier, consent posture, and requested capital amount.",
+                    "Offer and funding-status read model containing eligibility, limit, terms, liquidity status, disbursement state, and repayment state.",
+                    "Degraded-state contract for stale Shopify data, missing KYB, insufficient liquidity, declined eligibility, and paused disbursement.",
+                ),
+                validation=(
+                    "Browser or API proof covers eligible merchant, declined merchant, stale Shopify data, liquidity shortfall, and repayment-visible states.",
+                    "Borrower-visible funding and repayment states are derived from the domain contract, not local presentation assumptions.",
+                ),
+                risks=(
+                    "Merchant workflow can imply approved credit or available funds before underwriting, liquidity, and compliance gates are proven.",
+                    "Shopify commerce data must not be treated as consumer retail-flow ownership or production lending evidence.",
+                ),
+            ),
+            "domain": GreenfieldComponentProfile(
+                suffix="credit-liquidity-core",
+                label="Credit And Liquidity Core",
+                kind="service",
+                path_prefix="src",
+                responsibility=(
+                    "Own merchant eligibility inputs, Shopify sales snapshot semantics, credit facility state, stablecoin allocation, "
+                    "idempotent disbursement, repayment lifecycle, and compliance-gated transitions."
+                ),
+                boundary=(
+                    "Owns credit, liquidity, disbursement, and repayment invariants; excludes portal presentation, live Shopify adapters, "
+                    "live DeFi protocol calls, custody, private keys, accounting ledger finality, and legal underwriting decisions."
+                ),
+                dependencies=(
+                    "Consumes fixture-backed Shopify merchant snapshots, DeFi liquidity snapshots, compliance decisions, and stablecoin ledger events.",
+                    "Feeds the merchant portal through stable application, offer, facility, disbursement, and repayment contracts.",
+                ),
+                interfaces=(
+                    "Merchant snapshot schema with shop identity, sales history, chargeback posture, currency, and data freshness.",
+                    "Credit facility command/query contract for eligibility, limit, terms, compliance status, and facility state.",
+                    "Idempotent stablecoin disbursement and repayment event contract with actor, amount, currency, timestamp, and replay key.",
+                ),
+                validation=(
+                    "Contract tests cover eligibility, declined application, stale Shopify snapshot, liquidity shortfall, duplicate disbursement, and repayment replay.",
+                    "Tests prove no live protocol, custody, private-key, or production Shopify dependency is required for first-release proof.",
+                ),
+                risks=(
+                    "Loose eligibility or liquidity semantics can overstate available credit, misprice a facility, or duplicate funding events.",
+                    "Regulated lending, KYB/AML, stablecoin, and DeFi boundaries must stay explicit before any production claim.",
+                ),
+            ),
+            "validation": GreenfieldComponentProfile(
+                suffix="lending-proof-harness",
+                label="Lending Proof Harness",
+                kind="tooling",
+                path_prefix="tests",
+                responsibility=(
+                    "Own deterministic merchant-lending fixtures, Shopify snapshot replay, liquidity and stablecoin ledger scenarios, "
+                    "compliance fault cases, and release proof for portal plus credit-liquidity behavior."
+                ),
+                boundary=(
+                    "Owns local fixtures and proof reports; excludes production merchant data, live DeFi credentials, "
+                    "custody keys, production disbursements, and real lending approval."
+                ),
+                dependencies=(
+                    "Depends on merchant portal visible-state contracts and credit-liquidity core domain contracts.",
+                    "Uses pinned local fixtures for Shopify sales snapshots, KYB/AML status, liquidity availability, disbursement replay, and repayment replay.",
+                ),
+                interfaces=(
+                    "Scenario runner command with merchant fixture, liquidity fixture, compliance state, expected facility state, and proof report.",
+                    "Fixture schema for Shopify merchant data freshness, stablecoin ledger events, liquidity source posture, and compliance gate outcomes.",
+                ),
+                validation=(
+                    "Proof covers eligible funding, declined application, stale Shopify data, liquidity shortfall, duplicate disbursement, and repayment replay.",
+                    "Harness fails closed on live Shopify access, live protocol access, production credentials, custody keys, or unpinned external data.",
+                ),
+                risks=(
+                    "Weak fixtures can make credit, liquidity, disbursement, or repayment claims look verified while missing regulated edge cases.",
+                    "Any production credential, private key, or live protocol dependency in release 0.0.1 invalidates deterministic proof.",
                 ),
             ),
         },

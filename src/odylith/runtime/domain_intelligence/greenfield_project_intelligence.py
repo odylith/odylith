@@ -142,7 +142,7 @@ def build_project_intelligence(
             "What may change: direction choices, runtime, first user, data boundary, proof bar, release ambition, and wave order.",
             "What must remain invariant: no source-backed claim without code paths, tests, component owner, and refreshed surfaces.",
             "What counts as proof: repo-native tests or fixtures, rendered Atlas diagrams, validated Registry/Radar records, and explicit human decisions.",
-            "What prior experience changes next action: avoid schema-repair loops, generic component specs, title-only workstreams, and premature coding handoff.",
+            "What prior experience changes next action: avoid manual proposal reconstruction, generic component specs, title-only workstreams, and premature coding handoff.",
         ],
         "customization_flow": _customization_flow(choice_refs=choice_refs, release=release),
         "intent": [
@@ -183,7 +183,7 @@ def build_project_intelligence(
         ],
         "constraints": [
             *family["constraints"],
-            "Keep greenfield proposal and apply provider-free inside Odylith; host reasoning may critique or customize but does not hand-author schema repairs.",
+            "Keep greenfield proposal and apply provider-free inside Odylith; host reasoning may critique or customize but does not reconstruct canonical proposal objects outside Odylith.",
             "Do not mark candidate components active until source paths and proof commands exist.",
             "Do not target every child workstream to release 0.0.1 unless the first wave truly owns them.",
             "Do not let dashboard projections outrank governed source files when conflicts appear.",
@@ -258,7 +258,7 @@ def build_project_intelligence(
             "Registry owns component identity; Atlas owns topology; Radar owns workstream intent; Compass reports derived state.",
         ],
         "execution_memory": [
-            "Prior failure: agents produced decent prose, then hand-built JSON, hit schema failures, patched fields, and exposed the repair loop to users.",
+            "Prior failure: agents produced decent prose, then manually reconstructed apply objects, hit validation failures, patched fields, and exposed implementation artifacts to users.",
             "Prior failure: component specs became templated and repeated project posture instead of component-specific boundaries.",
             "Prior failure: greenfield closeout pushed too quickly toward `start B-002` before deep project review.",
             "Reusable lesson: Odylith must own the canonical object, batch validation report, project options, and applied memory before implementation starts.",
@@ -267,7 +267,7 @@ def build_project_intelligence(
             "Project-depth metric: every required project-intelligence layer has concrete rows, not labels.",
             "Traceability metric: orphaned workstreams, components, diagrams, release refs, and proof gates remain zero.",
             "UX metric: proposal text shows direction choices, checkpoints, readiness gates, and host-independent commands before coding handoff.",
-            "Agent-quality metric: no external JSON remediation loop, no generic component specs, no title-only workstreams.",
+            "Agent-quality metric: no visible canonical-object patching loop, no generic component specs, no title-only workstreams.",
             "Latency metric: proposal/create stays provider-free and performs one batched refresh after confirmed apply.",
         ],
         "change_model": [
@@ -410,7 +410,7 @@ def _append_layer(lines: list[str], label: str, value: Any, *, limit: int) -> No
 
 
 def _customization_flow(*, choice_refs: Sequence[str], release: str) -> list[str]:
-    choices = ", ".join(choice_refs[:6]) or "primary user, runtime, data boundary, proof bar, first-release ambition"
+    choices = ", ".join(choice_refs[:8]) or "primary user, runtime, data boundary, proof bar, first-release ambition"
     return [
         f"Review: inspect project intelligence, project brief, workstreams, components, diagrams, waves, and release `{release}`.",
         f"Choose: adjust {choices} before apply if any default would misdirect architecture or proof.",
@@ -527,6 +527,60 @@ def _family_terms(*, profile: GreenfieldDomainProfile, title: str) -> dict[str, 
             "transfer_priors": [
                 "DeFi risk products should treat stale, missing, and unsupported-chain states as first-class UX and test cases.",
                 "Non-custodial and no-advice boundaries belong in project truth before component work begins.",
+            ],
+        }
+    if profile.family == "defi_merchant_lending":
+        return {
+            "project_objective": (
+                "govern an SMB merchant lending product where Shopify merchant data, credit eligibility, "
+                "stablecoin funding, DeFi liquidity, disbursement, repayment, and compliance gates stay explicit "
+                "before live protocol or production lending claims."
+            ),
+            "stakeholder_outcome": (
+                "an SMB merchant can understand application status, eligible capital, terms, funding state, and repayment obligations, "
+                "while operators can trace liquidity, compliance, and data freshness without treating the product as a consumer purchase flow."
+            ),
+            "failure_mode": (
+                "the product can become a generic retail-purchase scaffold, misstate credit availability, duplicate disbursements or repayments, "
+                "or imply custody, live DeFi execution, or production lending readiness before proof exists."
+            ),
+            "non_goals": (
+                "consumer purchase flow, production loan approval, live DeFi deposits or withdrawals, custody, private keys, "
+                "financial advice, real Shopify merchant data, and production stablecoin disbursement in the first release."
+            ),
+            "ontology": [
+                "Merchant borrower: SMB Shopify seller applying for working capital; not a retail consumer.",
+                "Shopify commerce snapshot: fixture-backed shop sales, order, refund, chargeback, and freshness data used for underwriting inputs.",
+                "Credit facility: eligibility, limit, terms, status, disbursement, and repayment state under compliance gates.",
+                "DeFi liquidity source: stablecoin pool, vault, or protocol posture used as funding availability evidence; not a custody account.",
+                "Stablecoin disbursement: idempotent funding event from an approved facility, replay-safe and blocked before compliance approval.",
+                "Repayment event: scheduled or received repayment state tied to facility balance, replay key, and audit evidence.",
+                "Compliance gate: KYB, AML, sanctions, lending disclosure, and no-custody checks that can block funding or release movement.",
+            ],
+            "constraints": [
+                "No consumer cart, retail order, or card-processing sandbox framing for merchant lending prompts.",
+                "First-release liquidity, Shopify, disbursement, and repayment proof stays fixture-backed or sandboxed unless the operator explicitly accepts live integration risk.",
+                "No custody, private keys, protocol transactions, or production stablecoin movement in release 0.0.1.",
+                "KYB/AML/sanctions, lending-disclosure, retention, audit, and data-classification posture must be visible before implementation planning.",
+            ],
+            "assumptions": [
+                "The first user is an SMB merchant borrower or capital-ops reviewer, not a retail buyer.",
+                "The first data path uses fixture-backed Shopify snapshots and stablecoin/liquidity ledgers, not live protocol or production merchant data.",
+            ],
+            "risks": [
+                "Credit risk: stale Shopify data, weak eligibility rules, or missing compliance checks can overstate approved capital.",
+                "Treasury risk: liquidity availability, disbursement, and repayment can drift without idempotent event proof.",
+                "Compliance risk: KYB/AML, lending, money-transmission, securities, no-custody, and stablecoin obligations can be hidden by generic commerce language.",
+            ],
+            "invalidation_rules": [
+                "If Shopify data scope, underwriting inputs, liquidity model, stablecoin ledger semantics, disbursement rail, or repayment rules change, invalidate facility-state proof, component interfaces, Atlas data-flow views, and release gates.",
+                "If KYB/AML, lending disclosure, custody, money-transmission, securities, or live-protocol posture changes, block release promotion until risks, authority, proof, and non-goals are rewritten.",
+                "If a proposal introduces consumer cart or retail-order semantics, treat it as a domain-family conflict and regenerate before coding.",
+            ],
+            "transfer_priors": [
+                "Merchant lending projects must keep borrower workflow, underwriting inputs, liquidity availability, compliance gates, disbursement, and repayment as separate domain objects.",
+                "Shopify in a lending prompt is usually merchant data and app-surface context, not proof that the product is a retail purchase product.",
+                "Stablecoin funding claims need closed-world liquidity and ledger replay before live DeFi integration or production disbursement.",
             ],
         }
     if profile.family == "commerce":
