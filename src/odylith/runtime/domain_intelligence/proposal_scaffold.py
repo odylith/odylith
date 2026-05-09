@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_domain_profile import infer_
 from odylith.runtime.domain_intelligence.greenfield_project_brief import build_project_brief
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import build_project_intelligence
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import enrich_backlog_rows
+from odylith.runtime.domain_intelligence.greenfield_workstream_rows import build_child_backlog_rows
 from odylith.runtime.domain_intelligence.proposal_rendering import build_apply_commands
 from odylith.runtime.domain_intelligence.robot_swarm_profile import apply_robot_swarm_logistics_profile
 from odylith.runtime.domain_intelligence.robot_swarm_profile import is_robot_swarm_logistics_prompt
@@ -74,6 +75,7 @@ def build_apply_ready_proposal(
             selector=selector,
             components=components,
             diagrams=diagrams,
+            domain_profile=domain_profile,
         ),
         intent=intent,
         program=program,
@@ -173,7 +175,7 @@ def _base_assumptions() -> list[dict[str, str]]:
         {
             "id": "A1",
             "evidence_tier": "odylith_assumption",
-            "statement": "The first release should prove a narrow operator-visible workflow before broad source architecture is claimed.",
+            "statement": "The first release should prove a narrow product workflow before broad source architecture is claimed.",
         },
         {
             "id": "A2",
@@ -241,7 +243,7 @@ def _base_risks(*, title: str, domain_profile: GreenfieldDomainProfile) -> list[
                 "risk_class": "credit_liquidity_integrity",
                 "severity": "high",
                 "trigger": "merchant eligibility, underwriting inputs, liquidity, disbursement, repayment, or Shopify data boundaries are unclear",
-                "early_warning": "consumer cart, retail order, or card-payment language appears before merchant facility, liquidity, and repayment proof exists",
+                "early_warning": "retail-buyer or card-processing language appears before merchant facility, liquidity, and repayment proof exists",
                 "evidence_tier": "odylith_assumption",
                 "statement": (
                     "Merchant lending implementation can misstate approved capital, over-commit stablecoin liquidity, "
@@ -468,12 +470,22 @@ def _release_plan(
     }
 
 
-def _backlog(*, title: str, selector: str, components: Mapping[str, str], diagrams: Mapping[str, str]) -> list[dict[str, Any]]:
+def _backlog(
+    *,
+    title: str,
+    selector: str,
+    components: Mapping[str, str],
+    diagrams: Mapping[str, str],
+    domain_profile: GreenfieldDomainProfile,
+) -> list[dict[str, Any]]:
     return [
         _umbrella_backlog_row(title=title, selector=selector, components=components, diagrams=diagrams),
-        _workflow_backlog_row(title=title, components=components, diagrams=diagrams),
-        _domain_backlog_row(title=title, components=components, diagrams=diagrams),
-        _verification_backlog_row(title=title, components=components, diagrams=diagrams),
+        *build_child_backlog_rows(
+            title=title,
+            components=components,
+            diagrams=diagrams,
+            domain_profile=domain_profile,
+        ),
     ]
 
 
@@ -523,80 +535,6 @@ def _umbrella_backlog_row(
         "evidence_tier": "user_intent",
     }
 
-
-def _workflow_backlog_row(*, title: str, components: Mapping[str, str], diagrams: Mapping[str, str]) -> dict[str, Any]:
-    return {
-        "id": "WS-01",
-        "title": "Define first operator workflow",
-        "problem": f"{title} needs one concrete operator-visible workflow before implementation can avoid generic scaffolding.",
-        "customer": "Primary users or operators of the proposed product and the engineers implementing the first slice.",
-        "opportunity": "Turn broad intent into a narrow behavior path that can be implemented, tested, and reviewed without claiming the whole system is done.",
-        "product_view": "The first workflow owns entry, happy path, empty or degraded state, and user-visible completion criteria.",
-        "recommended_first_slice": "Implement the smallest operator-visible path with normal, empty, and degraded/error state proof.",
-        "success_metrics": [
-            "The first workflow has a source-backed test or browser proof before the next wave starts.",
-            "The workflow boundary appears in component specs and architecture diagrams with linked workstream traceability.",
-        ],
-        "component_focus": [components["experience"], components["domain"]],
-        "related_diagram_slugs": [diagrams["overview"], diagrams["slice"], diagrams["component_map"]],
-        "dependencies": ["Depends on the domain contract workstream for the data and command boundary used by the first workflow."],
-        "interfaces": ["Defines the first user-facing route, command, CLI, or service entrypoint plus visible fallback states."],
-        "validation": ["Repository-native behavior proof covers the first workflow normal path and at least one degraded or empty state."],
-        "priority": "P1",
-        "sizing": "M",
-        "complexity": "Medium",
-        "evidence_tier": "user_intent",
-    }
-
-
-def _domain_backlog_row(*, title: str, components: Mapping[str, str], diagrams: Mapping[str, str]) -> dict[str, Any]:
-    return {
-        "id": "WS-02",
-        "title": "Define domain contract and ownership",
-        "problem": f"{title} cannot scale beyond the first workflow without a named domain contract for state, commands, ownership, and invariants.",
-        "customer": "Engineers implementing source boundaries and reviewers checking correctness of data and state transitions.",
-        "opportunity": "Make the domain core explicit before storage, API, worker, or UI choices harden into accidental architecture.",
-        "product_view": "A domain component owns the first state model, commands, invariants, and integration handoff used by the operator workflow.",
-        "recommended_first_slice": "Write the domain contract and minimal implementation that the first workflow consumes.",
-        "success_metrics": [
-            "Domain contract tests prove the first state transition and invalid input rejection.",
-            "Component records capture the domain component interfaces, dependencies, and verification commands.",
-        ],
-        "component_focus": [components["domain"]],
-        "related_diagram_slugs": [diagrams["component_map"], diagrams["domain_state"], diagrams["slice"]],
-        "dependencies": ["Depends on confirmed first-workflow semantics and defers storage selection until technical planning."],
-        "interfaces": ["Defines the initial command, query, event, or file contract consumed by the first workflow."],
-        "validation": ["Contract tests cover valid transition, invalid input, and idempotent or retry behavior where relevant."],
-        "priority": "P1",
-        "sizing": "M",
-        "complexity": "Medium",
-        "evidence_tier": "odylith_assumption",
-    }
-
-
-def _verification_backlog_row(*, title: str, components: Mapping[str, str], diagrams: Mapping[str, str]) -> dict[str, Any]:
-    return {
-        "id": "WS-03",
-        "title": "Add release proof and operations harness",
-        "problem": f"{title} needs repeatable proof, fallback checks, and release-readiness evidence before the first slice can be promoted.",
-        "customer": "Maintainers, reviewers, and future operators who need reproducible validation instead of a one-off manual demo.",
-        "opportunity": "Capture the first release verification commands, smoke fixtures, and dashboard refresh proof while the program is still small.",
-        "product_view": "A verification harness records the first release smoke, regression checks, accessibility or safety gates, and operational recovery expectations.",
-        "recommended_first_slice": "Create the first smoke or regression harness around the operator workflow and domain contract.",
-        "success_metrics": [
-            "Release proof runs locally with deterministic fixtures and no production credentials.",
-            "Governance records refresh after the proof and show the same first release lane.",
-        ],
-        "component_focus": [components["validation"]],
-        "related_diagram_slugs": [diagrams["validation_release"], diagrams["domain_state"]],
-        "dependencies": ["Depends on WS-01 and WS-02 behavior proof before hardening expands scope."],
-        "interfaces": ["Defines local smoke commands, fixture inputs, report output, and release-readiness checks."],
-        "validation": ["Smoke proof runs under the repo-native toolchain and fails closed on missing fixtures or stale surfaces."],
-        "priority": "P2",
-        "sizing": "M",
-        "complexity": "Medium",
-        "evidence_tier": "odylith_assumption",
-    }
 
 
 def _components(
@@ -695,7 +633,7 @@ def _diagrams(*, title: str, components: Mapping[str, str], diagrams: Mapping[st
             "proof_gate": "No source-backed claim until the first child plan names paths, tests, degraded states, and rollback or recovery posture.",
             "link_state": "atlas_first_draft",
             "components": [
-                {"name": components["experience"], "description": "Owns the first operator-visible workflow and visible states."},
+                {"name": components["experience"], "description": "Owns the first product workflow and visible states."},
                 {"name": components["domain"], "description": "Owns the first domain contract, state model, and invariants."},
                 {"name": components["validation"], "description": "Owns deterministic first-release proof and refresh checks."},
             ],
@@ -713,7 +651,7 @@ def _diagrams(*, title: str, components: Mapping[str, str], diagrams: Mapping[st
             "proof_gate": "The technical plan must name behavior proof and contract proof before source edits start.",
             "link_state": "atlas_first_draft",
             "components": [
-                {"name": components["experience"], "description": "Starts the operator-visible first workflow."},
+                {"name": components["experience"], "description": "Starts the first product workflow."},
                 {"name": components["domain"], "description": "Validates state and command semantics for the workflow."},
                 {"name": components["validation"], "description": "Runs proof and captures release-readiness evidence."},
             ],

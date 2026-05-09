@@ -558,7 +558,7 @@ def _family_terms(*, profile: GreenfieldDomainProfile, title: str) -> dict[str, 
                 "Compliance gate: KYB, AML, sanctions, lending disclosure, and no-custody checks that can block funding or release movement.",
             ],
             "constraints": [
-                "No consumer cart, retail order, or card-processing sandbox framing for merchant lending prompts.",
+                "No retail-buyer, retail-purchase, or card-processing sandbox framing for merchant lending prompts.",
                 "First-release liquidity, Shopify, disbursement, and repayment proof stays fixture-backed or sandboxed unless the operator explicitly accepts live integration risk.",
                 "No custody, private keys, protocol transactions, or production stablecoin movement in release 0.0.1.",
                 "KYB/AML/sanctions, lending-disclosure, retention, audit, and data-classification posture must be visible before implementation planning.",
@@ -575,7 +575,7 @@ def _family_terms(*, profile: GreenfieldDomainProfile, title: str) -> dict[str, 
             "invalidation_rules": [
                 "If Shopify data scope, underwriting inputs, liquidity model, stablecoin ledger semantics, disbursement rail, or repayment rules change, invalidate facility-state proof, component interfaces, architecture data-flow views, and release gates.",
                 "If KYB/AML, lending disclosure, custody, money-transmission, securities, or live-protocol posture changes, block release promotion until risks, authority, proof, and non-goals are rewritten.",
-                "If a proposal introduces consumer cart or retail-order semantics, treat it as a domain-family conflict and regenerate before coding.",
+                "If a proposal introduces retail-buyer, retail-purchase, or card-processing semantics, treat it as a domain-family conflict and regenerate before coding.",
             ],
             "transfer_priors": [
                 "Merchant lending projects must keep borrower workflow, underwriting inputs, liquidity availability, compliance gates, disbursement, and repayment as separate domain objects.",

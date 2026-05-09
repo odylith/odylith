@@ -6,6 +6,7 @@ Last updated (UTC): 2026-05-09
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-192 | 2026-05-09 | Greenfield child workstreams used generic shells for merchant lending | P1 | domain-intelligence | Open | [2026-05-09-greenfield-child-workstreams-used-generic-shells-for-merchant-lending.md](2026-05-09-greenfield-child-workstreams-used-generic-shells-for-merchant-lending.md) |
 | CB-191 | 2026-05-09 | Greenfield atlas diagrams modeled odylith surfaces as product topology | P1 | domain-intelligence-greenfield | Open | [2026-05-09-greenfield-atlas-diagrams-modeled-odylith-surfaces-as-product-topology.md](2026-05-09-greenfield-atlas-diagrams-modeled-odylith-surfaces-as-product-topology.md) |
 | CB-183 | 2026-05-08 | Startup target recognition rejected unquoted source paths | P2 | context-engine | FixedPendingRelease | [2026-05-08-startup-target-recognition-rejected-unquoted-source-paths.md](2026-05-08-startup-target-recognition-rejected-unquoted-source-paths.md) |
 | CB-190 | 2026-05-08 | Greenfield shopify merchant lending prompt routed to checkout | P1 | domain-intelligence | Open | [2026-05-08-greenfield-shopify-merchant-lending-prompt-routed-to-checkout.md](2026-05-08-greenfield-shopify-merchant-lending-prompt-routed-to-checkout.md) |

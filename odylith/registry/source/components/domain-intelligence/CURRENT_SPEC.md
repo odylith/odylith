@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-05-08
+Last updated: 2026-05-09
 
 
 ## Overview
@@ -64,6 +64,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-08: Hardened greenfield traceability writes so applied Radar sections preserve structured risk, question, dependency, rollout, and punctuation semantics instead of splitting governed prose into fragments. Source-local DeFi apply now writes B-001..B-004 with complete risk mitigations, intact open questions, intact dependencies, release-stage rollout lines, and no `R1.`/`Q1.`/split-prose sludge. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-05-08: Deepened the default greenfield Atlas UX so generated diagram rows carry review focus, operator question, and proof-gate guidance, proposal text explains how to read each Atlas view, and default Mermaid sources include evidence-boundary, code-gate, decision-lens, state-note, unresolved-risk, and surface-agreement annotations directly inside the diagrams. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-05-08: Hardened greenfield workstream and risk generation against the remaining applied-Radar sludge found in a fresh DeFi audit. Proposal-level risks are now domain-specific structured records, old generic risk boilerplate is rejected, workstream ontology labels must be unique, malformed `owns Own ...` generated prose is rejected, and parent workstreams keep program ontology separate from child implementation nouns. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-184`)
+- 2026-05-09: Hardened greenfield child backlog row generation so domain-profiled proposals produce product-requirement workstreams instead of generic B-002/B-003/B-004 shells. Merchant-lending prompts now create borrower application/funding-status, credit-liquidity-repayment contract, and regulated proof-harness workstreams; DeFi risk and commerce prompts also receive family-specific child workstream titles, problem statements, interfaces, and validation gates. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-192`)
 
 ## Contract
 
@@ -111,6 +112,12 @@ This section captures synchronized requirement and contract signals derived from
   topology, invariants, risks, validation obligations, execution memory,
   change/invalidation rules, conflict rules, and reusable priors. Normalization
   may enrich legacy proposals, but apply must reject rows that remain shallow.
+- Greenfield child backlog rows must be product-requirement rows derived from
+  the inferred domain profile before Domain Intelligence enrichment runs. A
+  merchant lending prompt must not produce checkout, shopper, cart, order, or
+  payment-sandbox workstreams; it must produce borrower workflow, credit and
+  liquidity contract, repayment, compliance, stablecoin, fixture, and regulated
+  proof obligations instead.
 - Greenfield workstream Domain Intelligence must remain bespoke and
   non-repetitive. Ontology labels are unique inside each workstream; umbrella
   workstreams use program/control-surface vocabulary rather than repeating child

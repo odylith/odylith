@@ -137,7 +137,7 @@ def _defi_merchant_lending_terms() -> dict[str, Any]:
             "or imply production lending and custody before proof exists."
         ),
         "non_goals": (
-            "no consumer purchase flow, production lending approval, live DeFi protocol transactions, custody, private keys, "
+            "no retail-buyer purchase flow, production lending approval, live DeFi protocol transactions, custody, private keys, "
             "financial advice, real Shopify merchant data, or production stablecoin movement in the first release."
         ),
         "decision_pressure": "credit integrity, liquidity proof, compliance posture, and no-custody boundaries beat app breadth.",
@@ -147,7 +147,7 @@ def _defi_merchant_lending_terms() -> dict[str, Any]:
             "compliance, stablecoin ledger, and liquidity snapshots; the lending proof harness validates both."
         ),
         "constraints": [
-            "Shopify is merchant data and app-surface context, not evidence for consumer retail-flow ownership.",
+            "Shopify is merchant data and app-surface context, not evidence for retail-buyer workflow ownership.",
             "No live Shopify access, live DeFi protocol calls, private keys, custody, or production stablecoin movement in release 0.0.1.",
             "Facility, disbursement, and repayment states must be idempotent under retry and replay.",
             "KYB/AML/sanctions, lending disclosure, audit, retention, and data classification gates must stay explicit.",
@@ -200,7 +200,7 @@ def merchant_lending_ontology_rows(kind: str) -> list[str]:
             "Program parent: merchant borrower journey, Shopify data posture, credit facility, stablecoin liquidity, repayment, compliance, and release gate.",
             "Merchant lending path: application -> Shopify snapshot -> eligibility -> compliance gate -> offer -> funding state -> repayment state.",
             "Release gate: no production lending, custody, live protocol execution, or real merchant data before closed-world proof.",
-            "Domain-family guard: Shopify merchant data does not imply consumer cart, retail order, or card-processing sandbox ownership.",
+            "Domain-family guard: Shopify merchant data does not imply retail-buyer, retail-purchase, or card-processing sandbox ownership.",
             "Execution wave: governed merchant-lending delivery checkpoint with portal, credit-liquidity, and proof-harness workstreams.",
             "Evidence tier: merchant intent, Odylith assumptions, and later source_backed claims kept visibly separate.",
         ],
@@ -307,7 +307,7 @@ def _generic_terms(*, title: str) -> dict[str, Any]:
             "Generic greenfield evidence must include behavior proof, contract proof, rendered topology, and refreshed governance records.",
         ],
         "assumptions": [
-            f"Assumption: {compact} starts with one operator-visible workflow and one domain object before wider architecture.",
+            f"Assumption: {compact} starts with one product workflow and one domain object before wider architecture.",
         ],
         "invariants": [
             "Visible state must derive from domain contract outcomes, not UI-only assumptions.",

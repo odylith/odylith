@@ -180,7 +180,7 @@ def _defi_merchant_lending_profile(slug: str) -> GreenfieldDomainProfile:
                 ),
                 boundary=(
                     "Owns borrower-facing merchant workflow and visible funding state; excludes underwriting math, "
-                    "treasury adapters, DeFi protocol execution, custody, private keys, and consumer retail flows."
+                    "treasury adapters, DeFi protocol execution, custody, private keys, and retail-buyer journeys."
                 ),
                 dependencies=(
                     "Depends on the credit and liquidity core for eligibility, facility, disbursement, and repayment state.",
@@ -197,7 +197,7 @@ def _defi_merchant_lending_profile(slug: str) -> GreenfieldDomainProfile:
                 ),
                 risks=(
                     "Merchant workflow can imply approved credit or available funds before underwriting, liquidity, and compliance gates are proven.",
-                    "Shopify commerce data must not be treated as consumer retail-flow ownership or production lending evidence.",
+                    "Shopify commerce data must not be treated as retail-buyer workflow ownership or production lending evidence.",
                 ),
             ),
             "domain": GreenfieldComponentProfile(

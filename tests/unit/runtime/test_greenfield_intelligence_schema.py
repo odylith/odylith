@@ -32,7 +32,7 @@ def test_workstream_intelligence_captures_scope_owners_and_invalidation_rules(tm
         repo_root=tmp_path,
         prompt="DeFi risk sentinel app",
     )["proposal_template"]
-    workflow = next(row for row in proposal["backlog"] if row["title"] == "Define first operator workflow")
+    workflow = next(row for row in proposal["backlog"] if row["title"] == "Prove analyst watchlist and alert triage workflow")
 
     intelligence = workflow["domain_intelligence"]
     rendered = greenfield_proposals.render_domain_intelligence_section(intelligence)
@@ -67,7 +67,7 @@ def test_workstream_intelligence_captures_scope_owners_and_invalidation_rules(tm
     )
 
     malformed = copy.deepcopy(intelligence)
-    malformed["scope"] = ["In scope: `Define first operator workflow` owns Own duplicated ownership text."]
+    malformed["scope"] = ["In scope: `Prove analyst watchlist and alert triage workflow` owns Own duplicated ownership text."]
 
     assert "workflow domain_intelligence contains malformed ownership phrase" in domain_intelligence_issues(
         malformed,

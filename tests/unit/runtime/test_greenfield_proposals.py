@@ -881,7 +881,7 @@ def test_defi_greenfield_workstreams_capture_domain_intelligence(tmp_path) -> No
     )["proposal_template"]
     brief = proposal["project_brief"]
 
-    workflow = next(row for row in proposal["backlog"] if row["title"] == "Define first operator workflow")
+    workflow = next(row for row in proposal["backlog"] if row["title"] == "Prove analyst watchlist and alert triage workflow")
     intelligence = workflow["domain_intelligence"]
     rendered = greenfield_proposals.render_domain_intelligence_section(intelligence)
     project_intelligence = proposal["project_intelligence"]
@@ -983,8 +983,8 @@ def test_greenfield_apply_writes_domain_intelligence_into_radar_specs(tmp_path, 
     assert "Early warning: risk cards show numeric confidence" in all_radar_text
     assert "owns Own" not in all_radar_text
     assert "owns owns" not in all_radar_text.casefold()
-    assert child_specs_by_title["Define domain contract and ownership"].count("Risk subject:") == 1
-    assert child_specs_by_title["Add release proof and operations harness"].count("Scenario fixture:") == 1
+    assert child_specs_by_title["Define exposure, freshness, and alert contract"].count("Risk subject:") == 1
+    assert child_specs_by_title["Prove scenario replay and risk release harness"].count("Scenario fixture:") == 1
     assert "Which runtime, deployment target, and user role should constrain the first implementation slice?" in all_radar_text
     assert (
         "First governed slice: Product workflow, domain contract, architecture diagrams, component specs, "
@@ -1515,13 +1515,13 @@ def test_greenfield_apply_writes_bespoke_domain_component_specs(tmp_path, monkey
     assert "liquidity" in engine_spec
     assert "| Workstreams | `B-003` |" in engine_spec
     assert "| Diagrams | `D-002`, `D-003`, `D-004` |" in engine_spec
-    assert "Use `B-003` (Define domain contract and ownership) as the implementation-plan anchor" in engine_spec
-    assert "Use `B-002` (Define first operator workflow) as the implementation-plan anchor" not in engine_spec
+    assert "Use `B-003` (Define exposure, freshness, and alert contract) as the implementation-plan anchor" in engine_spec
+    assert "Use `B-002` (Prove analyst watchlist and alert triage workflow) as the implementation-plan anchor" not in engine_spec
     assert "Scenario runner command" in harness_spec
     assert "live chain calls" in harness_spec
     assert "| Workstreams | `B-004` |" in harness_spec
     assert "| Diagrams | `D-005` |" in harness_spec
-    assert "Use `B-004` (Add release proof and operations harness) as the implementation-plan anchor" in harness_spec
+    assert "Use `B-004` (Prove scenario replay and risk release harness) as the implementation-plan anchor" in harness_spec
     assert "## Risk Sentinel Console Interaction Boundary" in console_spec
     assert "## Risk Signal Engine Runtime Boundary" in engine_spec
     assert "## Scenario Replay Harness Proof Harness Boundary" not in harness_spec
