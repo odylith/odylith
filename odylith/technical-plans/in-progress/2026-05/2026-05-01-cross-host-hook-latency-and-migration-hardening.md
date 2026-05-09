@@ -675,8 +675,8 @@ Related Bugs:
       plus `py_compile` for the touched proposal modules.
 - [x] Greenfield preview/write-gate proof:
       default `greenfield propose` now renders a compact product-first preview
-      instead of dumping the deep accepted record, and the Shopify stablecoin
-      merchant-lending prompt keeps `Merchants On Shopify` in the project title.
+      instead of dumping the deep accepted record, makes the next operator move
+      explicit, and preserves domain-bearing trailing title terms.
       The full JSON path still carries deep workstream, component, architecture,
       release, risk, validation, and memory records for confirmed apply. Proof
       started with the exact source-local merchant-lending repro, then covered

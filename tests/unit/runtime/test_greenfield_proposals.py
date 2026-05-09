@@ -816,9 +816,17 @@ def test_greenfield_text_is_compact_product_preview_before_confirmed_write(tmp_p
     assert "Gate 1 - Interpretation" in output
     assert "Gate 2 - Clarify Before Apply" in output
     assert "Gate 3 - Proposal Preview" in output
-    assert "Gate 4 - Confirmed Write" in output
+    assert "Gate 4 - Choose Next Action" in output
     assert "product records are written only after explicit confirmation" in output
-    assert "`greenfield propose` writes nothing" in output
+    assert "Recommended next step: say `Apply this proposal as-is`" in output
+    assert "Revise before apply: answer the Gate 2 choices" in output
+    assert "First write point: `greenfield create/apply --confirm`" in output
+    assert "Export full JSON before apply:" in output
+    assert "--format json > odylith-greenfield-proposal.json" in output
+    assert "Apply exported JSON after review:" in output
+    assert "odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm" in output
+    assert "дж" not in output
+    assert "soн" not in output
     assert "Product workstreams:" in output
     assert "Candidate product boundaries:" in output
     assert "Architecture review views:" in output

@@ -290,10 +290,10 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   The full `--format json` path still carries the deep project/workstream,
   component, architecture, wave, release, risk, validation, and memory record
   that `greenfield create/apply --confirm` validates before Tribunal-gated
-  writes. The exact Shopify stablecoin merchant-lending prompt now preserves
-  `Merchants On Shopify` in the title and default proposal text stays free of
-  provider/mode chatter, raw apply-ready metadata, and Radar/Registry/Atlas/
-  Compass-as-product phrasing. Proof: `CB-194` plus focused preview,
+  writes. Domain-bearing trailing title terms are preserved instead of clipping
+  prompts at dangling prepositions, and default proposal text stays free of
+  provider/mode chatter, raw apply-ready metadata, and governance-surface names
+  masquerading as product requirements. Proof: `CB-194` plus focused preview,
   merchant-lending, show, bundle, Atlas, legacy-repair, and release-migration
   tests; live source-local repro showed the compact gated preview and `release
   migration-gate --target-version 0.1.15 --json` reported no blockers.

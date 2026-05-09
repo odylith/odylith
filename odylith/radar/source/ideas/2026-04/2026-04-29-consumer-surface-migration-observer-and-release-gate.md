@@ -1458,7 +1458,7 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   `migration-observer:0.1.15:install-managed-assets:352b7f58e4df`. The pass
   records `CB-190`, adds a first-class `defi_merchant_lending` proposal family,
   and refreshes generated Casebook/Radar/Compass browser surfaces plus managed
-  HTML bundle mirrors after the Shopify stablecoin lending transcript showed a
+  HTML bundle mirrors after a merchant-lending transcript showed a
   borrower-lending prompt being routed to shopper checkout. Existing consumer
   governed source remains unchanged; upgraded runtimes route future merchant
   lending proposals through merchant borrower, Shopify data, credit facility,
@@ -1477,8 +1477,8 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
 - The v0.1.15 greenfield product-requirements and legacy merchant-lending repair
   pass is covered by `migration-observer:0.1.15:operator-cli-contracts:13e8531fb4af`.
   The pass removes remaining control-plane wording from generated proposal and
-  workstream text, keeps fresh Shopify stablecoin lending proposals focused on
-  merchant borrowers, credit facilities, liquidity, repayment, and compliance,
+  workstream text, keeps fresh merchant-lending proposals focused on borrower
+  workflows, commerce-data snapshots, liquidity, repayment, and compliance,
   and adds a backlog-normalization repair for already-applied consumer records
   that still carry retail-commerce semantics. Existing consumer source is only
   changed when that exact merchant-lending plus retail-commerce misclassification
@@ -1516,7 +1516,10 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   governed-record/browser refresh fingerprint
   `migration-observer:0.1.15:browser-surfaces:45780674160a` and the final
   post-browser-proof source-record fingerprint
-  `migration-observer:0.1.15:browser-surfaces:8667a99fa0c4`. The pass
+  `migration-observer:0.1.15:browser-surfaces:8667a99fa0c4`, plus the
+  explicit next-action closeout and prompt-transcript scrub fingerprints
+  `migration-observer:0.1.15:browser-surfaces:291b664422b7` and
+  `migration-observer:0.1.15:install-managed-assets:2d6b64f1ae76`. The pass
   changes installed guidance, bundle guidance, public docs, and greenfield CLI
   help so `greenfield propose` is the compact product-first review gate, while
   confirmed `greenfield create/apply --confirm` remains the first point where
@@ -1527,5 +1530,9 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   release, risk, validation, and memory record before Tribunal-gated writes.
   The consumer legacy repair is now also explicitly product-repo guarded, and
   standalone Registry rendering reads governed source manifest truth instead of
-  stale runtime snapshots; neither change requires a consumer source-truth
-  migration beyond normal upgrade adoption and dashboard refresh.
+  stale runtime snapshots. The final closeout copy now tells the operator to
+  apply as-is, revise Gate 2 choices, or export and apply JSON after review;
+  source records describe the failure class generically rather than echoing
+  the mockrepo prompt as product backlog truth. Neither change requires a
+  consumer source-truth migration beyond normal upgrade adoption and dashboard
+  refresh.

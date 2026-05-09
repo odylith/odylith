@@ -127,9 +127,11 @@ def _format_proposal_preview_text(
     commands = request_context.get("apply_commands", [])
     create_command = ""
     json_command = ""
+    apply_json_command = ""
     if isinstance(commands, list):
         create_command = next((str(item) for item in commands if str(item).startswith("odylith greenfield create")), "")
         json_command = next((str(item) for item in commands if " --format json" in str(item)), "")
+        apply_json_command = next((str(item) for item in commands if str(item).startswith("odylith greenfield apply")), "")
     if not create_command:
         create_command = (
             "odylith greenfield create --repo-root . --prompt "
@@ -141,6 +143,11 @@ def _format_proposal_preview_text(
             "odylith greenfield propose --repo-root . --prompt "
             + shell_quote(str(intent.get("prompt", "new project")))
             + " --format json > odylith-greenfield-proposal.json"
+        )
+    if not apply_json_command:
+        apply_json_command = (
+            "odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm"
+            + f" --release {shell_quote(release_selector)}"
         )
 
     lines = [
@@ -173,13 +180,17 @@ def _format_proposal_preview_text(
     if diagram_lines:
         lines.append("- Architecture review views:")
         lines.extend(f"  - {line}" for line in diagram_lines)
-    lines.extend(["", "Gate 4 - Confirmed Write"])
-    lines.append("- `greenfield propose` writes nothing and is the clarification/review gate.")
-    lines.append("- `greenfield create/apply --confirm` validates the full proposal, runs the write gate, then writes accepted project records and refreshes the readable views.")
+    lines.extend(["", "Gate 4 - Choose Next Action"])
+    lines.append("- Recommended next step: say `Apply this proposal as-is` if Gate 1 and Gate 2 look right.")
+    lines.append("- Revise before apply: answer the Gate 2 choices that are wrong, then rerun `greenfield propose` with the sharper intent.")
+    lines.append("- First write point: `greenfield create/apply --confirm`; no product records are written before that.")
+    lines.append("- Full-record review: export JSON first when a reviewer needs every workstream, component, diagram, wave, risk, and validation field.")
     lines.append("- Confirm as-is:")
     lines.append(f"  {create_command}")
-    lines.append("- Review the full JSON before apply:")
+    lines.append("- Export full JSON before apply:")
     lines.append(f"  {json_command}")
+    lines.append("- Apply exported JSON after review:")
+    lines.append(f"  {apply_json_command}")
     return "\n".join(lines).rstrip() + "\n"
 
 
