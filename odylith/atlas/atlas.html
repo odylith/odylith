@@ -619,10 +619,10 @@
       user-select: none;
     }
 
-    .details-grid {
+        .details-grid {
       display: grid;
       gap: 12px;
-      grid-template-columns: 1.2fr 0.8fr;
+      grid-template-columns: minmax(0, 1fr);
       min-width: 0;
     }
 
@@ -642,8 +642,30 @@
       margin: 0;
     }
 
+    .read-guide {
+      margin-top: 12px;
+      border: 1px solid rgba(3, 105, 161, 0.14);
+      border-radius: 12px;
+      background: rgba(248, 252, 255, 0.92);
+      padding: 10px 11px;
+      min-width: 0;
+    }
+
+    .read-guide .artifact-label {
+      margin-bottom: 5px;
+    }
+
+    .read-guide-body {
+      margin: 0;
+    }
+
+    .component-list-label {
+      margin-top: 13px;
+      margin-bottom: 7px;
+    }
+
     .component-list {
-      margin-top: 11px;
+      margin-top: 0;
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
       gap: 10px;
@@ -664,10 +686,17 @@
       display: block;
     }
 
+    .component-token {
+      display: block;
+      margin: -1px 0 6px;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
     .component-card p {
       margin: 0;
     }
-    .summary, .component-card p {
+    .summary, .read-guide-body, .component-card p {
   font-size: 15px;
   line-height: 1.55;
   color: #27445e;
@@ -699,6 +728,22 @@
   text-transform: uppercase;
 }
 
+    .engineering-context-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .linked-context-section .artifact-group {
+      margin-bottom: 0;
+      min-width: 0;
+      border: 1px solid rgba(3, 105, 161, 0.14);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.94);
+      padding: 10px 11px;
+    }
+
     .artifact-list {
       list-style: none;
       margin: 0;
@@ -708,6 +753,12 @@
       gap: 6px;
       min-width: 0;
       max-width: 100%;
+    }
+
+    .linked-context-section .artifact-list {
+      max-height: 210px;
+      overflow: auto;
+      padding-right: 2px;
     }
 
     .workstream-context-list {
@@ -739,12 +790,12 @@
     }
 
     .atlas-context-disclosure > summary::before {
-      content: "▸";
+      content: "\\25B8";
       color: #5d7389;
     }
 
     .atlas-context-disclosure[open] > summary::before {
-      content: "▾";
+      content: "\\25BE";
     }
 
     .atlas-context-disclosure[open] > summary {
@@ -892,6 +943,14 @@
   letter-spacing: 0em;
   font-weight: 700;
   text-transform: none;
+}
+
+.component-token {
+  color: #66788c;
+  font-size: 11px;
+  line-height: 1.25;
+  font-weight: 400;
+  letter-spacing: 0em;
 }
 
 .context-tag {
@@ -1126,38 +1185,45 @@
         </div>
       </section>
 
-      <section class="details-grid">
-        <article class="section">
-          <h3>What This Diagram Constitutes</h3>
+            <section class="details-grid">
+        <article class="section diagram-explanation-section">
+          <h3>What This Diagram Shows</h3>
           <p id="diagramSummary" class="summary"></p>
+          <div class="read-guide">
+            <p class="artifact-label">How To Read This View</p>
+            <p id="diagramReadGuide" class="read-guide-body"></p>
+          </div>
+          <p class="artifact-label component-list-label">Components In This Diagram</p>
           <div id="componentList" class="component-list"></div>
         </article>
 
-        <article class="section">
+        <article class="section linked-context-section">
           <h3>Linked Engineering Context</h3>
-          <div class="artifact-group">
-            <p class="artifact-label">Backlog</p>
-            <ul id="backlogLinks" class="artifact-list"></ul>
-          </div>
-          <div class="artifact-group">
-            <p class="artifact-label">Plans</p>
-            <ul id="planLinks" class="artifact-list"></ul>
-          </div>
-          <div class="artifact-group">
-            <p class="artifact-label">Developer Docs</p>
-            <ul id="docLinks" class="artifact-list"></ul>
-          </div>
-          <div class="artifact-group">
-            <p class="artifact-label">Implementation Code</p>
-            <ul id="codeLinks" class="artifact-list"></ul>
-          </div>
-          <div class="artifact-group">
-            <p class="artifact-label">Registry Components</p>
-            <ul id="registryLinks" class="artifact-list"></ul>
-          </div>
-          <div class="artifact-group">
-            <p class="artifact-label">Operator Surfaces</p>
-            <ul id="surfaceLinks" class="artifact-list"></ul>
+          <div class="engineering-context-grid">
+            <div class="artifact-group">
+              <p class="artifact-label">Backlog</p>
+              <ul id="backlogLinks" class="artifact-list"></ul>
+            </div>
+            <div class="artifact-group">
+              <p class="artifact-label">Plans</p>
+              <ul id="planLinks" class="artifact-list"></ul>
+            </div>
+            <div class="artifact-group">
+              <p class="artifact-label">Developer Docs</p>
+              <ul id="docLinks" class="artifact-list"></ul>
+            </div>
+            <div class="artifact-group">
+              <p class="artifact-label">Implementation Code</p>
+              <ul id="codeLinks" class="artifact-list"></ul>
+            </div>
+            <div class="artifact-group">
+              <p class="artifact-label">Registry Components</p>
+              <ul id="registryLinks" class="artifact-list"></ul>
+            </div>
+            <div class="artifact-group">
+              <p class="artifact-label">Operator Surfaces</p>
+              <ul id="surfaceLinks" class="artifact-list"></ul>
+            </div>
           </div>
         </article>
       </section>
@@ -1213,7 +1279,7 @@
   }
 })();
 </script>
-  <script id="catalogData" src="mermaid-payload.v1.js?v=bf847cc7bf39"></script>
-  <script src="mermaid-app.v1.js?v=bf847cc7bf39"></script>
+  <script id="catalogData" src="mermaid-payload.v1.js?v=48cfc8b7c444"></script>
+  <script src="mermaid-app.v1.js?v=48cfc8b7c444"></script>
 </body>
 </html>

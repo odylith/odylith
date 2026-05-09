@@ -2230,12 +2230,12 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
     <div class="execution-wave-board">
       <div class="execution-wave-focus">
         <div class="execution-wave-focus-grid">
+          ${contextChips.length ? `<div class="execution-wave-focus-stat-rail">${contextChips.join("")}</div>` : ""}
           <div class="execution-wave-focus-copy">
             ${showProgramFocusTitle ? `<div class="execution-wave-focus-title">${escapeHtml(programLabel)}</div>` : ""}
             <div class="execution-wave-focus-line">${escapeHtml(contextLine)}</div>
             ${summaryLine ? `<div class="execution-wave-focus-line execution-wave-focus-line-muted">${escapeHtml(summaryLine)}</div>` : ""}
           </div>
-          ${contextChips.length ? `<div class="execution-wave-focus-stat-rail">${contextChips.join("")}</div>` : ""}
         </div>
       </div>
       <div class="execution-wave-sequence">${cardsHtml}</div>

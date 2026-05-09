@@ -47,6 +47,21 @@ def test_execution_wave_component_css_matches_shared_contract() -> None:
         flags=re.S,
     )
     assert re.search(
+        r"\.execution-wave-focus-grid\s*\{[^}]*display:\s*block;[^}]*min-width:\s*0;",
+        css,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.execution-wave-focus-line\s*\{[^}]*max-width:\s*none;",
+        css,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.execution-wave-focus-stat-rail\s*\{[^}]*float:\s*right;[^}]*max-width:\s*min\(44%,\s*520px\);",
+        css,
+        flags=re.S,
+    )
+    assert re.search(
         r"\.execution-wave-card-shell-full-copy \.execution-wave-sub\s*\{[^}]*grid-area:\s*sub;[^}]*max-width:\s*none;",
         css,
         flags=re.S,
@@ -147,3 +162,4 @@ def test_execution_wave_runtime_helpers_expose_shared_renderer() -> None:
     assert "execution-wave-highlight-label\">Exit gate" in runtime
     assert "execution-wave-highlight-label\">Validation" in runtime
     assert "Selected workstream participates here." not in runtime
+    assert runtime.index("execution-wave-focus-stat-rail") < runtime.index("execution-wave-focus-copy")

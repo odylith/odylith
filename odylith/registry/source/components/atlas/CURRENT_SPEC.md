@@ -67,6 +67,9 @@ grounding.
 ### Owning modules
 - `src/odylith/runtime/surfaces/render_mermaid_catalog.py`
   Atlas renderer.
+- `src/odylith/runtime/surfaces/atlas_detail_layout.py`
+  Atlas detail-pane contract for diagram explanation, read guidance, component
+  cards, and linked engineering context layout.
 - `src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py`
   Watched-change re-renderer and freshness updater.
 - `src/odylith/runtime/surfaces/install_mermaid_autosync_hook.py`
@@ -105,6 +108,10 @@ enough to recover engineering intent.
 - produces the Atlas HTML surface and externalized JS bundle
 - presents diagrams on a plain white viewer stage with padded first-fit sizing
   so large SVG labels are not clipped or hidden on first paint
+- explains the selected diagram with a summary, a "how to read this view"
+  guide, human-readable component cards, and a bottom linked-context grid so
+  engineering links support the diagram instead of crowding the diagram
+  explanation rail
 - renders Mermaid assets through a shared Atlas theme config so unclassified
   diagrams still get polished typography, softer colors, and readable edges
 
@@ -273,6 +280,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-05-09: Reworked Atlas detail panes so diagrams explain what they show, how to read them, and which components they contain before presenting linked engineering context as bottom horizontal cards. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141))
 - 2026-03-26: Added the first Odylith-owned diagram catalog so product topology can be traced and reviewed inside the public repo rather than through a consumer-specific Atlas tree. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-04-02: Hardened Atlas Mermaid preflight so valid diagrams no longer false-fail strict refresh on the DOMPurify hook-drift path; Atlas now falls back to browser-backed scratch validation while keeping the fail-fast syntax gate for real source errors. (Plan: [B-022](odylith/radar/radar.html?view=plan&workstream=B-022); Bug: `CB-042`)
 - 2026-04-07: Refreshed the broad runtime maps to show the governed memory family, Tribunal-backed delivery flow, and conversation intelligence path, and added the dedicated memory-substrate diagram `D-025` so Registry can deep-link into projection bundle, snapshot, backend, remote retrieval, and memory-contract topology directly. (Plan: [B-059](odylith/radar/radar.html?view=plan&workstream=B-059))

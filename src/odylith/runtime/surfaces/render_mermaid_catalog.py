@@ -19,6 +19,7 @@ from typing import Any, Callable, Mapping, Sequence
 
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance.delivery import scope_signal_ladder
+from odylith.runtime.surfaces import atlas_detail_layout
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import dashboard_shell_links
 from odylith.runtime.surfaces import dashboard_ui_primitives
@@ -1054,6 +1055,7 @@ def _render_html(
     readable_copy_css = dashboard_ui_primitives.content_copy_css(
         selectors=(
             ".summary",
+            ".read-guide-body",
             ".component-card p",
         ),
     )
@@ -1141,6 +1143,12 @@ def _render_html(
                 line_height=1.35,
                 letter_spacing_em=0.0,
                 margin="0 0 4px 0",
+            ),
+            dashboard_ui_primitives.supporting_copy_typography_css(
+                selector=".component-token",
+                color="#66788c",
+                size_px=11,
+                line_height=1.25,
             ),
             dashboard_ui_primitives.section_heading_css(
                 selector=".context-tag",
@@ -1637,177 +1645,7 @@ def _render_html(
       user-select: none;
     }
 
-    .details-grid {
-      display: grid;
-      gap: 12px;
-      grid-template-columns: 1.2fr 0.8fr;
-      min-width: 0;
-    }
-
-    .section {
-      min-width: 0;
-      max-width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.88);
-      padding: 12px;
-    }
-
-    .section h3 {
-    }
-
-    .summary {
-      margin: 0;
-    }
-
-    .component-list {
-      margin-top: 11px;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-      gap: 10px;
-      min-width: 0;
-      max-width: 100%;
-    }
-
-    .component-card {
-      min-width: 0;
-      max-width: 100%;
-      border: 1px solid rgba(3, 105, 161, 0.17);
-      border-radius: 10px;
-      padding: 9px 10px;
-      background: rgba(255, 255, 255, 0.95);
-    }
-
-    .component-card strong {
-      display: block;
-    }
-
-    .component-card p {
-      margin: 0;
-    }
-    __ODYLITH_ATLAS_READABLE_COPY__
-
-    __ODYLITH_ATLAS_OPERATOR_READOUT_LAYOUT__
-    __ODYLITH_ATLAS_OPERATOR_READOUT_LABEL__
-    __ODYLITH_ATLAS_OPERATOR_READOUT_COPY__
-    __ODYLITH_ATLAS_OPERATOR_READOUT_META__
-
-    .artifact-group {
-      margin-bottom: 10px;
-    }
-
-    .artifact-group:last-child {
-      margin-bottom: 0;
-    }
-
-    .artifact-label {
-      margin: 0 0 6px 0;
-    }
-    __ODYLITH_ATLAS_ARTIFACT_LABEL_TYPOGRAPHY__
-
-    .artifact-list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      min-width: 0;
-      max-width: 100%;
-    }
-
-    .workstream-context-list {
-      flex-direction: row;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .atlas-context-disclosure {
-      border: 1px solid rgba(3, 105, 161, 0.16);
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.94);
-      overflow: hidden;
-    }
-
-    .atlas-context-disclosure > summary {
-      cursor: pointer;
-      list-style: none;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 10px;
-      background: rgba(255, 255, 255, 0.96);
-    }
-
-    .atlas-context-disclosure > summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .atlas-context-disclosure > summary::before {
-      content: "▸";
-      color: #5d7389;
-    }
-
-    .atlas-context-disclosure[open] > summary::before {
-      content: "▾";
-    }
-
-    .atlas-context-disclosure[open] > summary {
-      border-bottom: 1px solid rgba(3, 105, 161, 0.16);
-    }
-
-    .atlas-context-disclosure .artifact-list {
-      padding: 10px;
-    }
-
-    .context-link-item {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .context-tags {
-      display: inline-flex;
-      flex-wrap: wrap;
-      gap: 5px;
-    }
-
-    .context-tag {
-      display: inline-flex;
-      align-items: center;
-      --label-bg: rgba(255, 255, 255, 0.92);
-      border: 0;
-      background: var(--label-bg);
-      color: #36566f;
-      border-radius: 0;
-      padding: 2px 7px;
-    }
-
-    .artifact-list a {
-      text-decoration: none;
-      border-bottom: 1px dotted rgba(13, 68, 104, 0.38);
-      width: fit-content;
-      max-width: 100%;
-      overflow-wrap: anywhere;
-      word-break: break-word;
-    }
-
-    .artifact-list a:hover {
-      color: #0a8a84;
-      border-bottom-color: rgba(10, 138, 132, 0.62);
-    }
-
-    .artifact-list a.workstream-pill-link {
-      border-bottom: 0;
-      width: auto;
-    }
-    __ODYLITH_ATLAS_WORKSTREAM_PILL_TYPOGRAPHY__
-
-    .artifact-list a.workstream-pill-link:hover {
-      border-bottom: 0;
-    }
+    __ODYLITH_ATLAS_DETAIL_LAYOUT_CSS__
 
     __ODYLITH_ATLAS_SECONDARY_TYPOGRAPHY__
     __ODYLITH_ATLAS_TOOLTIP_SURFACE__
@@ -1989,41 +1827,7 @@ def _render_html(
         </div>
       </section>
 
-      <section class="details-grid">
-        <article class="section">
-          <h3>What This Diagram Constitutes</h3>
-          <p id="diagramSummary" class="summary"></p>
-          <div id="componentList" class="component-list"></div>
-        </article>
-
-        <article class="section">
-          <h3>Linked Engineering Context</h3>
-          <div class="artifact-group">
-            <p class="artifact-label">Backlog</p>
-            <ul id="backlogLinks" class="artifact-list"></ul>
-          </div>
-          <div class="artifact-group">
-            <p class="artifact-label">Plans</p>
-            <ul id="planLinks" class="artifact-list"></ul>
-          </div>
-          <div class="artifact-group">
-            <p class="artifact-label">Developer Docs</p>
-            <ul id="docLinks" class="artifact-list"></ul>
-          </div>
-          <div class="artifact-group">
-            <p class="artifact-label">Implementation Code</p>
-            <ul id="codeLinks" class="artifact-list"></ul>
-          </div>
-          <div class="artifact-group">
-            <p class="artifact-label">Registry Components</p>
-            <ul id="registryLinks" class="artifact-list"></ul>
-          </div>
-          <div class="artifact-group">
-            <p class="artifact-label">Operator Surfaces</p>
-            <ul id="surfaceLinks" class="artifact-list"></ul>
-          </div>
-        </article>
-      </section>
+      __ODYLITH_ATLAS_DETAIL_LAYOUT_HTML__
     </main>
   </div>
 
@@ -2049,6 +1853,7 @@ def _render_html(
 
     const workstreamTitleLookup = sanitizeLookupObject(tooltipLookup.workstream_titles);
     const diagramTitleLookup = sanitizeLookupObject(tooltipLookup.diagram_titles);
+    const componentTitleLookup = sanitizeLookupObject(tooltipLookup.component_titles);
 
     const searchEl = document.getElementById("search");
     const kindFiltersEl = document.getElementById("kindFilters");
@@ -2074,6 +1879,7 @@ def _render_html(
     const sidebarCloseEl = document.getElementById("sidebarClose");
     const staleAlertEl = document.getElementById("staleAlert");
     const summaryEl = document.getElementById("diagramSummary");
+    const readGuideEl = document.getElementById("diagramReadGuide");
     const componentListEl = document.getElementById("componentList");
 
     const backlogLinksEl = document.getElementById("backlogLinks");
@@ -2479,6 +2285,8 @@ def _render_html(
       return diagramId || "Diagram";
     }
 
+    __ODYLITH_ATLAS_DETAIL_RUNTIME_HELPERS__
+
     function normalizeWorkstreamId(value) {
       const token = String(value || "").trim();
       return WORKSTREAM_ID_RE.test(token) ? token : "";
@@ -2554,16 +2362,24 @@ def _render_html(
     function renderComponents(diagram) {
       clearNode(componentListEl);
       (diagram.components || []).forEach((component) => {
+        const rawName = String(component.name || "").trim();
+        const displayName = componentDisplayName(rawName);
         const card = document.createElement("article");
         card.className = "component-card";
 
         const heading = document.createElement("strong");
-        heading.textContent = component.name;
+        heading.textContent = displayName || rawName;
 
         const body = document.createElement("p");
         body.textContent = component.description;
 
         card.appendChild(heading);
+        if (rawName && displayName && rawName !== displayName) {
+          const token = document.createElement("span");
+          token.className = "component-token";
+          token.textContent = rawName;
+          card.appendChild(token);
+        }
         card.appendChild(body);
         componentListEl.appendChild(card);
       });
@@ -2590,6 +2406,7 @@ def _render_html(
       freshnessEl.textContent = "";
       freshnessCardEl?.classList.remove("ok", "warn");
       summaryEl.textContent = "";
+      readGuideEl.textContent = "";
       clearNode(sourceLinksEl);
       clearNode(componentListEl);
       clearNode(backlogLinksEl);
@@ -2623,6 +2440,7 @@ def _render_html(
       freshnessCardEl?.classList.toggle("ok", diagram.freshness !== "stale");
 
       summaryEl.textContent = diagram.summary;
+      readGuideEl.textContent = diagramReadGuide(diagram);
 
       imageEl.onload = () => applyInitialView(diagram);
       imageEl.onerror = () => {
@@ -3085,6 +2903,12 @@ def _render_html(
         .replace("__ODYLITH_ATLAS_LABEL_TYPOGRAPHY__", atlas_label_css)
         .replace("__ODYLITH_ATLAS_FACT_TYPOGRAPHY__", atlas_fact_typography_css)
         .replace("__ODYLITH_ATLAS_STAT_TYPOGRAPHY__", atlas_stat_typography_css)
+        .replace("__ODYLITH_ATLAS_DETAIL_LAYOUT_CSS__", atlas_detail_layout.DETAIL_LAYOUT_CSS.strip("\n"))
+        .replace("__ODYLITH_ATLAS_DETAIL_LAYOUT_HTML__", atlas_detail_layout.DETAIL_LAYOUT_HTML.strip("\n"))
+        .replace(
+            "__ODYLITH_ATLAS_DETAIL_RUNTIME_HELPERS__",
+            atlas_detail_layout.DETAIL_RUNTIME_HELPERS_JS.strip("\n"),
+        )
         .replace("__ODYLITH_ATLAS_ARTIFACT_LABEL_TYPOGRAPHY__", artifact_label_css)
         .replace("__ODYLITH_ATLAS_SECONDARY_TYPOGRAPHY__", atlas_secondary_typography_css)
         .replace("__ODYLITH_ATLAS_WORKSTREAM_PILL_TYPOGRAPHY__", workstream_pill_button_css)

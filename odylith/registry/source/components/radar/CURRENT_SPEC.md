@@ -185,6 +185,10 @@ Radar execution-wave summaries must preserve unknown progress. If a linked
 workstream has no explicit `plan.progress_ratio`, the backlog UI leaves the
 execution-wave progress chip blank instead of coercing that absence into
 synthetic `0%`.
+Radar execution-wave focus cards must not reserve an artificial second text
+column just to hold status chips. The focus copy owns the full readable width;
+chips may float at the top edge on desktop, but body copy must reclaim the
+space below them and collapse cleanly on narrow viewports.
 Radar-visible workstream progress is based on execution-relevant checklist
 sections only. `Learnings`, `Defer`, `Non-Goals`, `Impacted Areas`,
 `Traceability`, risk/mitigation checklists, and `Open Questions` must stay
@@ -337,6 +341,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-05-09: Removed the dead right-column constraint from Radar execution-wave focus cards so the narrative uses the full available width while status chips remain visible and responsive. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141))
 - 2026-05-04: Added CLI-owned reciprocal workstream adoption through `backlog create --parent/--umbrella`, `program adopt`, and `wave assign --adopt`; wave assignment errors now translate missing `workstream_parent` into an actionable adoption command instead of a hard-scope denial. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-167`)
 - 2026-05-03: Created `release-0-1-14`, moved active B-141/B-142 targeting to it, and tagged completed B-140 migration-observer proof against the same release so Radar, Compass, and release-planning read models show the v0.1.14 work in one target. (Plans: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141), [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-04-15: Hardened Radar detail and authoring so runtime backlog detail exposes renderer-ready workstream fields, summary payloads retain fail-closed fallback detail, `odylith backlog create` requires grounded core detail, backlog validation rejects placeholder or boilerplate Problem/Customer/Opportunity/Product View/Success Metrics sections, and stale finished-workstream plan bindings cannot mint accidental successor backlogs. (Plan: [B-098](odylith/radar/radar.html?view=plan&workstream=B-098))

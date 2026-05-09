@@ -68,6 +68,7 @@ const payload = window["__ODYLITH_MERMAID_DATA__"] || {};
 
     const workstreamTitleLookup = sanitizeLookupObject(tooltipLookup.workstream_titles);
     const diagramTitleLookup = sanitizeLookupObject(tooltipLookup.diagram_titles);
+    const componentTitleLookup = sanitizeLookupObject(tooltipLookup.component_titles);
 
     const searchEl = document.getElementById("search");
     const kindFiltersEl = document.getElementById("kindFilters");
@@ -93,6 +94,7 @@ const payload = window["__ODYLITH_MERMAID_DATA__"] || {};
     const sidebarCloseEl = document.getElementById("sidebarClose");
     const staleAlertEl = document.getElementById("staleAlert");
     const summaryEl = document.getElementById("diagramSummary");
+    const readGuideEl = document.getElementById("diagramReadGuide");
     const componentListEl = document.getElementById("componentList");
 
     const backlogLinksEl = document.getElementById("backlogLinks");
@@ -609,6 +611,37 @@ initSharedQuickTooltips();
       return diagramId || "Diagram";
     }
 
+        function componentLookupKey(value) {
+      return String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    }
+
+    function componentDisplayName(value) {
+      const token = String(value || "").trim();
+      if (!token) return "";
+      const exact = String(componentTitleLookup[token] || "").trim();
+      if (exact) return exact;
+      const normalized = componentLookupKey(token);
+      return String(componentTitleLookup[normalized] || "").trim() || token;
+    }
+
+    function diagramReadGuide(diagram) {
+      const kind = String(diagram && diagram.kind ? diagram.kind : "").trim().toLowerCase();
+      if (kind.includes("sequence")) {
+        return "Read from top to bottom. Each lane is an actor or component; arrows are calls, handoffs, or proof events; notes and failure branches show where the workflow can block or recover.";
+      }
+      if (kind.includes("state")) {
+        return "Read states as allowed product or system conditions. Arrows are the only allowed transitions; blocked or rejected states mark conditions that must not advance without proof.";
+      }
+      if (kind.includes("timeline")) {
+        return "Read left to right as release or execution order. Each segment is a phase, wave, or proof checkpoint that should line up with the linked workstreams below.";
+      }
+      return "Read from named entrypoints through the arrows. Boxes are components, states, decisions, or proof obligations; grouped regions show ownership boundaries; dashed or labeled edges usually mark review, dependency, or blocked movement.";
+    }
+
     function normalizeWorkstreamId(value) {
       const token = String(value || "").trim();
       return WORKSTREAM_ID_RE.test(token) ? token : "";
@@ -684,16 +717,24 @@ initSharedQuickTooltips();
     function renderComponents(diagram) {
       clearNode(componentListEl);
       (diagram.components || []).forEach((component) => {
+        const rawName = String(component.name || "").trim();
+        const displayName = componentDisplayName(rawName);
         const card = document.createElement("article");
         card.className = "component-card";
 
         const heading = document.createElement("strong");
-        heading.textContent = component.name;
+        heading.textContent = displayName || rawName;
 
         const body = document.createElement("p");
         body.textContent = component.description;
 
         card.appendChild(heading);
+        if (rawName && displayName && rawName !== displayName) {
+          const token = document.createElement("span");
+          token.className = "component-token";
+          token.textContent = rawName;
+          card.appendChild(token);
+        }
         card.appendChild(body);
         componentListEl.appendChild(card);
       });
@@ -720,6 +761,7 @@ initSharedQuickTooltips();
       freshnessEl.textContent = "";
       freshnessCardEl?.classList.remove("ok", "warn");
       summaryEl.textContent = "";
+      readGuideEl.textContent = "";
       clearNode(sourceLinksEl);
       clearNode(componentListEl);
       clearNode(backlogLinksEl);
@@ -753,6 +795,7 @@ initSharedQuickTooltips();
       freshnessCardEl?.classList.toggle("ok", diagram.freshness !== "stale");
 
       summaryEl.textContent = diagram.summary;
+      readGuideEl.textContent = diagramReadGuide(diagram);
 
       imageEl.onload = () => applyInitialView(diagram);
       imageEl.onerror = () => {

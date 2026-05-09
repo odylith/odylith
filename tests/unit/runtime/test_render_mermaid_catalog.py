@@ -193,6 +193,37 @@ def test_render_mermaid_catalog_uses_casebook_style_detail_fact_cards() -> None:
     assert html.index('data-fact="diagram-id"') < html.index('data-fact="status"')
 
 
+def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_grid() -> None:
+    html = renderer._render_html(  # noqa: SLF001
+        diagrams=[],
+        stats={"total": 0, "fresh": 0, "stale": 0},
+        max_review_age_days=21,
+        tooltip_lookup={"component_titles": {"credit-liquidity-core": "Credit And Liquidity Core"}},
+        generated_utc="2026-03-27T05:42:32Z",
+        brand_head_html="",
+        tooling_base_href="../index.html",
+    )
+
+    assert "What This Diagram Shows" in html
+    assert "How To Read This View" in html
+    assert 'id="diagramReadGuide"' in html
+    assert "function diagramReadGuide(diagram)" in html
+    assert "Read from named entrypoints through the arrows." in html
+    assert "Components In This Diagram" in html
+    assert "const componentTitleLookup = sanitizeLookupObject(tooltipLookup.component_titles);" in html
+    assert "function componentDisplayName(value)" in html
+    assert "component-token" in html
+    assert '<article class="section linked-context-section">' in html
+    assert '<div class="engineering-context-grid">' in html
+    assert ".details-grid {" in html
+    assert "grid-template-columns: minmax(0, 1fr);" in html
+    assert ".linked-context-section .artifact-group {" in html
+    assert "grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));" in html
+    assert html.index('<article class="section diagram-explanation-section">') < html.index(
+        '<article class="section linked-context-section">'
+    )
+
+
 def test_render_mermaid_catalog_sizes_image_box_from_diagram_dimensions() -> None:
     html = renderer._render_html(  # noqa: SLF001
         diagrams=[],

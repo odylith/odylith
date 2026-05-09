@@ -172,11 +172,14 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
 }
 
 .execution-wave-focus-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 16px;
-  align-items: start;
+  display: block;
   min-width: 0;
+}
+
+.execution-wave-focus-grid::after {
+  content: "";
+  display: block;
+  clear: both;
 }
 
 .execution-wave-focus-copy {
@@ -196,7 +199,7 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
 .execution-wave-focus-line {
   color: #27445e;
   line-height: 1.6;
-  max-width: 70ch;
+  max-width: none;
   overflow-wrap: anywhere;
   word-break: break-word;
 }
@@ -206,11 +209,14 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
 }
 
 .execution-wave-focus-stat-rail {
+  float: right;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   justify-content: flex-end;
   align-items: flex-start;
+  max-width: min(44%, 520px);
+  margin: 0 0 8px 16px;
 }
 
 .execution-wave-sequence {
@@ -530,9 +536,14 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
     padding-right: 14px;
   }
 
-  .execution-wave-focus-grid,
   .execution-wave-card-shell {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .execution-wave-focus-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
   }
 
   .execution-wave-card-shell-full-copy {
@@ -547,7 +558,13 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .execution-wave-focus-stat-rail,
+  .execution-wave-focus-stat-rail {
+    float: none;
+    margin: 0;
+    max-width: none;
+    justify-content: flex-start;
+  }
+
   .execution-wave-card-stat-rail,
   .execution-wave-section-meta {
     justify-content: flex-start;
@@ -1066,12 +1083,12 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
     <div class="execution-wave-board">
       <div class="execution-wave-focus">
         <div class="execution-wave-focus-grid">
+          ${contextChips.length ? `<div class="execution-wave-focus-stat-rail">${contextChips.join("")}</div>` : ""}
           <div class="execution-wave-focus-copy">
             ${showProgramFocusTitle ? `<div class="execution-wave-focus-title">${escapeHtml(programLabel)}</div>` : ""}
             <div class="execution-wave-focus-line">${escapeHtml(contextLine)}</div>
             ${summaryLine ? `<div class="execution-wave-focus-line execution-wave-focus-line-muted">${escapeHtml(summaryLine)}</div>` : ""}
           </div>
-          ${contextChips.length ? `<div class="execution-wave-focus-stat-rail">${contextChips.join("")}</div>` : ""}
         </div>
       </div>
       <div class="execution-wave-sequence">${cardsHtml}</div>
