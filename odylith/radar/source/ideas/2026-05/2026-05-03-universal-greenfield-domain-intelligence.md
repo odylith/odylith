@@ -485,14 +485,23 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `migration-observer:0.1.15:operator-cli-contracts:918eeb86f16b`, and
   `migration-observer:0.1.15:operator-cli-contracts:77d724bd9906`, and
   `migration-observer:0.1.15:browser-surfaces:6faa5131670e`, and
-  `migration-observer:0.1.15:operator-cli-contracts:13e8531fb4af`.
+  `migration-observer:0.1.15:operator-cli-contracts:13e8531fb4af`,
+  `migration-observer:0.1.15:guidance-and-skills:4e1cbbef93d2`,
+  `migration-observer:0.1.15:operator-cli-contracts:778c1bb05cdd`,
+  `migration-observer:0.1.15:operator-cli-contracts:d48cd7f8f9c7`,
+  `migration-observer:0.1.15:browser-surfaces:08249609bf09`, and
+  `migration-observer:0.1.15:install-managed-assets:a15f59f7ee85`.
   These markers cover the deepened greenfield skill guidance, refreshed
   Domain Intelligence Atlas/Registry/Radar browser surfaces, updated managed
   security-and-trust guidance, updated public README/operator/release-note/security
   guidance, the v0.1.15 Compass/Radar/Registry/Casebook browser-surface refresh
   from the deeper greenfield diagram-suite contract, the project-first
   product-requirements wording pass for proposal text, and the legacy
-  merchant-lending repair hook for already-applied checkout-shaped workstreams.
+  merchant-lending repair hook for already-applied checkout-shaped workstreams,
+  and the follow-up repair that rewrites already-poisoned component specs,
+  component registry records, Mermaid source diagrams, and architecture catalog
+  records to merchant borrower, credit-liquidity, compliance, disbursement, and
+  repayment requirements instead of internal surface or retail-checkout labels.
   direction-option/readiness-gate guidance refresh, the engine-integrity
   validator and expanded capability inventory, the canonical project-intelligence
   proposal object and parent Radar persistence, explicit project/workstream

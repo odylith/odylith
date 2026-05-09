@@ -1488,3 +1488,13 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   Radar, Casebook, Registry, Compass, shell, and bundle HTML refreshes are
   generated from product-requirements source truth plus `CB-193`; existing
   consumer source is not overwritten by those browser artifacts.
+- The mockrepo-derived merchant-lending hardening pass is covered by
+  `migration-observer:0.1.15:guidance-and-skills:4e1cbbef93d2`,
+  `migration-observer:0.1.15:operator-cli-contracts:778c1bb05cdd`,
+  `migration-observer:0.1.15:operator-cli-contracts:d48cd7f8f9c7`,
+  `migration-observer:0.1.15:browser-surfaces:08249609bf09`, and
+  `migration-observer:0.1.15:install-managed-assets:a15f59f7ee85`. The pass
+  verifies the already-applied bad consumer repo shape, rewrites poisoned
+  workstreams plus component and architecture source through a narrow legacy
+  repair, and keeps fresh proposals focused on merchant borrower, credit,
+  liquidity, compliance, disbursement, and repayment requirements.

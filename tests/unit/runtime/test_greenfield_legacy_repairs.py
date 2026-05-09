@@ -60,6 +60,50 @@ def test_backlog_normalization_repairs_applied_legacy_merchant_lending_records_a
     _assert_no_retail_checkout_leakage(text)
 
 
+def test_legacy_merchant_lending_repair_rewrites_registry_and_atlas_source(tmp_path: Path) -> None:
+    _write_legacy_idea(
+        tmp_path,
+        idea_id="B-001",
+        title="Govern SMB Lending Application Pulling Stable Coins From DeFi Protocols To",
+        body=(
+            "SMB Lending Application Pulling Stable Coins From DeFi Protocols To was applied as shopper "
+            "checkout with storefront, cart, checkout-order-core, and checkout proof harness."
+        ),
+    )
+    _write_legacy_registry(tmp_path)
+    _write_legacy_atlas(tmp_path)
+    _write_legacy_program(tmp_path)
+
+    result = repair_legacy_merchant_lending_checkout_workstreams(repo_root=tmp_path)
+
+    assert result.changed is True
+    manifest = (tmp_path / "odylith/registry/source/component_registry.v1.json").read_text(encoding="utf-8")
+    atlas = "\n".join(path.read_text(encoding="utf-8") for path in (tmp_path / "odylith/atlas/source").glob("*.mmd"))
+    catalog = (tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json").read_text(encoding="utf-8")
+    program = (tmp_path / "odylith/radar/source/programs/B-001.execution-waves.v1.json").read_text(encoding="utf-8")
+    all_repaired = "\n".join([manifest, atlas, catalog, program])
+    assert "merchant-capital-portal" in manifest
+    assert "credit-liquidity-core" in manifest
+    assert "lending-proof-harness" in manifest
+    assert not (
+        tmp_path
+        / "odylith/registry/source/components/smb-lending-application-pulling-stable-coins-from-defi-protocols-to-storefront"
+    ).exists()
+    assert "Merchant Capital Portal" in atlas
+    assert "Credit Liquidity Core" in atlas
+    assert "Shopify Snapshot Fixture" in atlas
+    assert "Stablecoin Liquidity Fixture" in atlas
+    assert "KYB AML sanctions" in atlas
+    assert "No live Shopify" in atlas
+    assert "merchant lending" in catalog.casefold()
+    assert "Merchant capital first slice" in program
+    assert "Radar/Registry/Atlas/Compass" not in program
+    assert not (tmp_path / "odylith/atlas/source/smb-lending-application-pulling-stable-coins-from-defi-protocols-to-system-overview.svg").exists()
+    _assert_no_retail_checkout_leakage(all_repaired)
+    for token in ("Radar", "Registry", "Atlas", "Compass", "Odylith Surfaces"):
+        assert token not in atlas
+
+
 def _write_legacy_idea(tmp_path: Path, *, idea_id: str, title: str, body: str) -> Path:
     idea_dir = tmp_path / "odylith/radar/source/ideas/2026-05"
     idea_dir.mkdir(parents=True, exist_ok=True)
@@ -191,6 +235,115 @@ Shopper checkout, cart, order draft, payment callback, and storefront ownership.
         encoding="utf-8",
     )
     return path
+
+
+def _write_legacy_registry(tmp_path: Path) -> None:
+    root = tmp_path / "odylith/registry/source"
+    component_root = root / "components"
+    component_root.mkdir(parents=True, exist_ok=True)
+    (root / "component_registry.v1.json").write_text(
+        """{
+  "components": [
+    {
+      "component_id": "smb-lending-application-pulling-stable-coins-from-defi-protocols-to-storefront",
+      "name": "Commerce Storefront",
+      "kind": "application",
+      "category": "application",
+      "qualification": "candidate",
+      "path_prefixes": ["src/smb-lending-application-pulling-stable-coins-from-defi-protocols-to-storefront"],
+      "workstreams": ["B-002"],
+      "diagrams": ["D-002", "D-003"],
+      "owner": "repo",
+      "status": "planned",
+      "what_it_is": "SMB Lending Application Pulling Stable Coins From DeFi Protocols To storefront owns shopper checkout cart state.",
+      "why_tracked": "Checkout proof harness for merchant lending on Shopify.",
+      "spec_ref": "odylith/registry/source/components/smb-lending-application-pulling-stable-coins-from-defi-protocols-to-storefront/CURRENT_SPEC.md",
+      "sources": ["user_intent"],
+      "subcomponents": [],
+      "product_layer": "application"
+    }
+  ],
+  "version": "v1"
+}
+""",
+        encoding="utf-8",
+    )
+    spec_dir = component_root / "smb-lending-application-pulling-stable-coins-from-defi-protocols-to-storefront"
+    spec_dir.mkdir(parents=True, exist_ok=True)
+    (spec_dir / "CURRENT_SPEC.md").write_text(
+        """# Commerce Storefront
+
+SMB Lending Application Pulling Stable Coins From DeFi Protocols To was registered as shopper checkout.
+Own browse, cart entry, checkout entry, order draft, payment callback, storefront, and checkout proof harness.
+""",
+        encoding="utf-8",
+    )
+
+
+def _write_legacy_atlas(tmp_path: Path) -> None:
+    root = tmp_path / "odylith/atlas/source"
+    (root / "catalog").mkdir(parents=True, exist_ok=True)
+    slug = "smb-lending-application-pulling-stable-coins-from-defi-protocols-to-system-overview"
+    (root / f"{slug}.mmd").write_text(
+        """flowchart LR
+  Intent[SMB Lending Application Pulling Stable Coins From DeFi Protocols To] --> Storefront[Commerce Storefront]
+  Storefront --> Checkout[Checkout order core]
+  Checkout --> Surfaces[Odylith surfaces<br/>Radar Registry Atlas Compass]
+  classDef note fill:#f8fafc,stroke:#cbd5e1,color:#334155;
+""",
+        encoding="utf-8",
+    )
+    (root / f"{slug}.svg").write_text(
+        "<svg><text>Odylith surfaces Radar Registry Atlas Compass checkout storefront</text></svg>\n",
+        encoding="utf-8",
+    )
+    (root / "catalog/diagrams.v1.json").write_text(
+        f"""{{
+  "version": "v1",
+  "diagrams": [
+    {{
+      "id": "D-001",
+      "slug": "{slug}",
+      "title": "SMB Lending Application Pulling Stable Coins From DeFi Protocols To System Overview",
+      "summary": "Shopper checkout storefront and Odylith surfaces for merchant lending.",
+      "source_mmd": "odylith/atlas/source/{slug}.mmd",
+      "components": [{{"name": "smb-lending-application-pulling-stable-coins-from-defi-protocols-to-storefront"}}]
+    }}
+  ]
+}}
+""",
+        encoding="utf-8",
+    )
+
+
+def _write_legacy_program(tmp_path: Path) -> None:
+    root = tmp_path / "odylith/radar/source/programs"
+    root.mkdir(parents=True, exist_ok=True)
+    (root / "B-001.execution-waves.v1.json").write_text(
+        """{
+  "umbrella_id": "B-001",
+  "version": "v1",
+  "waves": [
+    {
+      "wave_id": "W1",
+      "label": "First governed slice",
+      "status": "active",
+      "summary": "SMB Lending Application Pulling Stable Coins From DeFi Protocols To shopper checkout proof.",
+      "exit_gate": "The first workstream has a technical plan, behavior proof, refreshed Radar/Registry/Atlas/Compass surfaces, and release-target validation.",
+      "validation": [
+        "The first workstream has a technical plan, behavior proof, refreshed Radar/Registry/Atlas/Compass surfaces, and release-target validation."
+      ],
+      "depends_on": [],
+      "primary_workstreams": ["B-002", "B-003"],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": []
+    }
+  ]
+}
+""",
+        encoding="utf-8",
+    )
 
 
 def _write_legacy_index(tmp_path: Path) -> None:

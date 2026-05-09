@@ -8,9 +8,9 @@ architect a new project before source code exists.
 2. Run the canonical proposal path:
    `./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<operator request>"`.
 3. Treat the CLI proposal as apply-ready product output and a deep
-   project-first control surface. Odylith builds the canonical proposal object,
-   validates it against the apply contract, runs the greenfield Tribunal, and
-   renders the human proposal from that same object. Review the top-level
+   project-first requirements surface. The CLI builds the canonical proposal object,
+   validates it against the apply contract, and renders the human proposal from
+   that same object. Review the top-level
    `project_intelligence` object first: intent, scope, ontology, state,
    operators, constraints, source-of-truth map, evidence grammar, decisions,
    assumptions, topology, invariants, risks, validation obligations, artifacts,
@@ -28,8 +28,8 @@ architect a new project before source code exists.
    If a workflow explicitly needs a proposal file, obtain it from
    `greenfield propose --format json` and pass that canonical JSON to
    `greenfield apply`; never author the file by hand. `create` and `apply` run
-   deterministic validation, the greenfield Tribunal, governed writes, and the
-   batched Radar/Registry/Atlas/Compass refresh before printing the handoff.
+   deterministic validation, project-record writes, and the batched visibility
+   refresh before printing the handoff.
 5. Preserve the evidence boundary: observed source, user intent, and Odylith
    assumptions must stay distinct. For consumer apps, include proportional
    security, privacy, abuse, accessibility, data-retention, compliance, and
@@ -42,9 +42,9 @@ architect a new project before source code exists.
    workstream, child-boundary strategy, wave-to-workstream policy,
    provisional release selector, decisive assumptions, customization options,
    and coding-readiness gates before asking the operator to confirm or revise.
-   Do not rush to `start B-***`; greenfield apply creates the governed project
+   Do not rush to `start B-***`; greenfield apply creates accepted project
    truth, and coding begins only after the operator accepts the project
    intelligence and a child workstream has a technical plan.
 7. Keep latency low: rely on `greenfield create` or `greenfield apply` for the
-   final batched visibility refresh instead of running separate Radar, Registry,
-   Atlas, or Compass refresh commands after each artifact family.
+   final batched visibility refresh instead of running separate refresh commands
+   after each artifact family.

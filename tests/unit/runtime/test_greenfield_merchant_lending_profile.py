@@ -19,6 +19,8 @@ def test_shopify_stablecoin_merchant_lending_avoids_checkout_profile(tmp_path) -
     components = {row["label"]: row for row in proposal["components"]}
     backlog_titles = [row["title"] for row in proposal["backlog"]]
     assert set(components) == {"Merchant Capital Portal", "Credit And Liquidity Core", "Lending Proof Harness"}
+    assert "Shape SMB Lending Application Pulling Stable Coins From DeFi Protocols To merchant lending launch" in backlog_titles
+    assert not any(title.startswith("Govern ") for title in backlog_titles)
     assert "Define first operator workflow" not in backlog_titles
     assert "Define domain contract and ownership" not in backlog_titles
     assert "Add release proof and operations harness" not in backlog_titles
@@ -96,6 +98,21 @@ def test_shopify_stablecoin_merchant_lending_avoids_checkout_profile(tmp_path) -
         assert "stablecoin" in rendered
         assert "checkout" not in rendered.casefold()
         assert "payment sandbox" not in rendered.casefold()
+
+    diagram_text = "\n".join(str(row.get("mermaid_source", "")) for row in proposal["diagrams"])
+    assert "Merchant Capital Portal" in diagram_text
+    assert "Credit Liquidity Core" in diagram_text
+    assert "Shopify Snapshot Fixture" in diagram_text
+    assert "Stablecoin Liquidity Fixture" in diagram_text
+    assert "KYB AML sanctions" in diagram_text
+    assert "Disbursement repayment" in diagram_text
+    assert "Experience Boundary" not in diagram_text
+    assert "Domain Core" not in diagram_text
+    assert "Verification Harness" not in diagram_text
+    assert "Radar" not in diagram_text
+    assert "Registry" not in diagram_text
+    assert "Atlas" not in diagram_text
+    assert "Compass" not in diagram_text
 
     assert "Agent-quality metric: no visible canonical-object patching loop" in text
     assert "schema-repair" not in text.casefold()

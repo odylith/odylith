@@ -38,7 +38,7 @@ def build_apply_commands(proposal: Mapping[str, Any]) -> list[str]:
     if components:
         commands.append("# apply will register planned candidate component specs with user_intent evidence")
     if diagrams:
-        commands.append("# apply will scaffold draft architecture topology with atlas_first_draft link state")
+        commands.append("# apply will scaffold draft architecture topology with review-draft link state")
     commands.append("# apply will refresh project records after all artifacts are written")
     return commands
 

@@ -175,7 +175,7 @@ def _defi_merchant_lending_profile(slug: str) -> GreenfieldDomainProfile:
                 kind="application",
                 path_prefix="src",
                 responsibility=(
-                    "Own Shopify merchant onboarding, capital application intake, offer review, "
+                    "Shopify merchant onboarding, capital application intake, offer review, "
                     "stablecoin funding status, repayment visibility, and eligibility or liquidity degraded states."
                 ),
                 boundary=(
@@ -206,7 +206,7 @@ def _defi_merchant_lending_profile(slug: str) -> GreenfieldDomainProfile:
                 kind="service",
                 path_prefix="src",
                 responsibility=(
-                    "Own merchant eligibility inputs, Shopify sales snapshot semantics, credit facility state, stablecoin allocation, "
+                    "Merchant eligibility inputs, Shopify sales snapshot semantics, credit facility state, stablecoin allocation, "
                     "idempotent disbursement, repayment lifecycle, and compliance-gated transitions."
                 ),
                 boundary=(
@@ -237,7 +237,7 @@ def _defi_merchant_lending_profile(slug: str) -> GreenfieldDomainProfile:
                 kind="tooling",
                 path_prefix="tests",
                 responsibility=(
-                    "Own deterministic merchant-lending fixtures, Shopify snapshot replay, liquidity and stablecoin ledger scenarios, "
+                    "Deterministic merchant-lending fixtures, Shopify snapshot replay, liquidity and stablecoin ledger scenarios, "
                     "compliance fault cases, and release proof for portal plus credit-liquidity behavior."
                 ),
                 boundary=(
