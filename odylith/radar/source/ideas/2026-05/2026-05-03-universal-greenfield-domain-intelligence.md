@@ -484,12 +484,15 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `migration-observer:0.1.15:install-managed-assets:81414558e1eb`,
   `migration-observer:0.1.15:operator-cli-contracts:918eeb86f16b`, and
   `migration-observer:0.1.15:operator-cli-contracts:77d724bd9906`, and
-  `migration-observer:0.1.15:browser-surfaces:6faa5131670e`.
+  `migration-observer:0.1.15:browser-surfaces:6faa5131670e`, and
+  `migration-observer:0.1.15:operator-cli-contracts:13e8531fb4af`.
   These markers cover the deepened greenfield skill guidance, refreshed
   Domain Intelligence Atlas/Registry/Radar browser surfaces, updated managed
   security-and-trust guidance, updated public README/operator/release-note/security
   guidance, the v0.1.15 Compass/Radar/Registry/Casebook browser-surface refresh
   from the deeper greenfield diagram-suite contract, the project-first
+  product-requirements wording pass for proposal text, and the legacy
+  merchant-lending repair hook for already-applied checkout-shaped workstreams.
   direction-option/readiness-gate guidance refresh, the engine-integrity
   validator and expanded capability inventory, the canonical project-intelligence
   proposal object and parent Radar persistence, explicit project/workstream

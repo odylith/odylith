@@ -147,7 +147,7 @@ def _defi_merchant_lending_terms() -> dict[str, Any]:
             "compliance, stablecoin ledger, and liquidity snapshots; the lending proof harness validates both."
         ),
         "constraints": [
-            "Shopify is merchant data and app-surface context, not evidence for retail-buyer workflow ownership.",
+            "Shopify is merchant data and embedded-app context, not evidence for retail-buyer workflow ownership.",
             "No live Shopify access, live DeFi protocol calls, private keys, custody, or production stablecoin movement in release 0.0.1.",
             "Facility, disbursement, and repayment states must be idempotent under retry and replay.",
             "KYB/AML/sanctions, lending disclosure, audit, retention, and data classification gates must stay explicit.",
@@ -323,7 +323,7 @@ def _generic_terms(*, title: str) -> dict[str, Any]:
             "Claim: release gate is honest. Method: release target stays planning until proof and governance refresh pass.",
         ],
         "invalidation_rules": [
-            "If first user, runtime, storage, deployment, data source, or proof surface changes, invalidate affected component contracts, diagrams, validation commands, and release assumptions.",
+            "If first user, runtime, storage, deployment, data source, or proof target changes, invalidate affected component contracts, diagrams, validation commands, and release assumptions.",
             "If the prompt narrows into a regulated, safety-sensitive, or external-provider domain, regenerate security, privacy, compliance, and release-gate posture before source edits.",
         ],
         "metrics": [

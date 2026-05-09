@@ -142,7 +142,7 @@ def build_domain_intelligence(
         "family": domain_profile.family,
         "workstream_role": kind,
         "summary": (
-            f"{row_title} captures the {terms['domain_phrase']} slice as a governed control surface: "
+            f"{row_title} captures the {terms['domain_phrase']} slice as a product-requirements surface: "
             f"what exists, what may change, what must remain invariant, what counts as proof, "
             f"and what later agents should reuse before editing source."
         ),
@@ -161,17 +161,17 @@ def build_domain_intelligence(
                 f"and the first proof slice: {first_slice}"
             ),
             f"Out of scope: {terms['non_goals']}",
-            f"Boundary: keep `{row_title}` tied to {component_clause}, {diagram_clause}, {wave}, and release `{selector}` until a governed split changes that topology.",
+            f"Boundary: keep `{row_title}` tied to {component_clause}, {diagram_clause}, {wave}, and release `{selector}` until an explicit scope split changes that topology.",
             "Customization boundary: runtime, compliance, first actor, data source, and proof threshold may change only through proposal, plan, or human-decision updates, not implicit coding.",
         ],
         "ontology": _ontology(domain_profile=domain_profile, kind=kind, components=focus, title=title),
         "state": [
             f"Current state: user_intent evidence only; no source-backed runtime behavior is claimed for `{row_title}`.",
-            f"Desired state: {wave} has a plan, code slice, repository-native proof, and refreshed governance records.",
+            f"Desired state: {wave} has a plan, code slice, repository-native proof, and refreshed project records.",
             f"Intermediate states: proposed -> queued -> planning -> implementation -> source_backed -> release-gated.",
             f"Blocked states: missing component owner, missing validation fixture, unresolved security/compliance assumption, or stale workstream/architecture links.",
             f"Invalid states: active source claim without tests; release `{selector}` advanced while first-wave proof is missing.",
-            "Freshness owner: workstream records own intent; component specs own component identity; architecture diagrams own topology; progress views own live wave posture.",
+            "Freshness owner: workstream records own product intent; component specs own component identity; architecture diagrams own topology; release notes own promotion posture.",
         ],
         "operators": _operators(domain_profile=domain_profile, kind=kind, selector=selector),
         "constraints": [
@@ -184,15 +184,15 @@ def build_domain_intelligence(
             "Workstream source file: canonical intent, scope, non-goals, dependencies, risks, and validation obligations.",
             "Component specs: canonical component identity, component-scoped ownership boundary, collaborators, interfaces, failure modes, and proof expectations.",
             "Architecture diagram source and Mermaid files: canonical topology and cross-workstream traceability.",
-            "Progress runtime state: derived live posture; refresh it after governed source or plan changes.",
+            "Release and progress records: derived posture; refresh them after source, proof, or plan changes.",
             "Repo-native tests and fixtures: highest-strength implementation evidence once source exists.",
-            "Generated dashboards: readable projections, not the source of truth when they conflict with source files.",
+            "Generated views: readable projections, not the source of truth when they conflict with source files.",
         ],
         "evidence_model": [
             *terms["evidence_counts"],
             "Counts as evidence: passing repo-native tests, rendered architecture diagrams, component/workstream validation, project-record refresh, and explicit human decisions.",
             "Does not count as evidence: proposal prose alone, dashboard freshness without source change, unlabeled assumptions, or host-agent summaries.",
-            "Evidence strength order: source-backed tests > validated governed source > explicit human confirmation > user_intent proposal > odylith_assumption.",
+            "Evidence strength order: source-backed tests > validated project source > explicit human confirmation > user_intent proposal > labeled assumption.",
         ],
         "decisions": [
             f"Decision: start `{selector}` with {wave} instead of broad project scaffolding.",
@@ -203,19 +203,19 @@ def build_domain_intelligence(
         "assumptions": [
             *terms["assumptions"],
             f"Assumption: `{row_title}` stays candidate/user_intent until a technical plan and source proof land.",
-            f"Validation path: answer open questions, bind a plan, implement the first slice, run {terms['primary_validation_command']}, then refresh governance records.",
+            f"Validation path: answer open questions, bind a plan, implement the first slice, run {terms['primary_validation_command']}, then refresh project records.",
             "Expiration condition: source-backed implementation, changed compliance target, or changed first-wave release scope.",
         ],
         "topology": [
             f"`{row_title}` depends on {component_clause}; it must stay linked to {diagram_clause}.",
             f"{terms['topology_spine']}",
-            "Workstream -> technical plan -> code paths -> tests -> component specs -> architecture diagrams -> progress view is the required proof path.",
+            "Workstream -> technical plan -> code paths -> tests -> component specs -> architecture diagrams -> release evidence is the required proof path.",
             "A validation harness blocks release promotion if normal, empty, degraded, and failure fixtures are missing.",
         ],
         "invariants": [
             *terms["invariants"],
             "Every source-backed claim must name a file path, workstream, component owner, and runnable proof.",
-            "Generated artifacts must be reproducible from governed source and must not become hand-edited truth.",
+            "Generated artifacts must be reproducible from source records and must not become hand-edited truth.",
             "Every first-release workstream must map to a component boundary, architecture view, and release validation gate.",
         ],
         "risks": [
@@ -233,7 +233,7 @@ def build_domain_intelligence(
             "Failure condition: any proof relies on live production systems, unstated credentials, or unverifiable host-agent inference.",
         ],
         "artifacts": [
-            f"Workstream `{row_title}`: domain-intelligence control surface; update when scope, assumptions, or proof obligations change.",
+            f"Workstream `{row_title}`: product-requirements record; update when scope, assumptions, or proof obligations change.",
             f"Component specs for {component_clause}: planned ownership contracts until source-backed proof lands.",
             f"Architecture diagrams {diagram_clause}: topology and sequence/state/release views for the first slice.",
             f"Release target `{selector}`: first-wave promotion gate with explicit validation evidence.",
@@ -241,14 +241,14 @@ def build_domain_intelligence(
         "authority": [
             "Operator owns product intent, compliance posture, runtime target, and release-scope approval.",
             "Technical-plan author owns source path selection, implementation sequence, test commands, and rollback path.",
-            "Odylith Tribunal owns pre-write topology validation and fail-closed proposal rejection.",
-            "No agent may infer source-backed readiness from proposal text or generated dashboards alone.",
+            "Validation owns pre-write topology checks and fail-closed proposal rejection.",
+            "No agent may infer source-backed readiness from proposal text or generated views alone.",
         ],
         "owners": [
             f"Workstream owner: `{row_title}` owns intent, scope, dependencies, risks, assumptions, validation obligations, and execution memory.",
             f"Component owner: {component_clause} own component identity, boundaries, interfaces, collaborators, and component-specific proof.",
             f"Architecture owner: {diagram_clause} own topology claims and must be refreshed when source paths, owners, states, or release gates change.",
-            "Operator owner: human direction owns primary user, runtime, compliance posture, release ambition, and any reversal of Odylith assumptions.",
+            "Operator owner: human direction owns primary user, runtime, compliance posture, release ambition, and any reversal of default assumptions.",
             "Implementation owner: the future technical plan owns source paths, rollback or recovery posture, repo-native tests, and proof attachment.",
         ],
         "execution_memory": [
@@ -272,11 +272,11 @@ def build_domain_intelligence(
             *terms["invalidation_rules"],
             f"If `{row_title}` changes first slice, owner, runtime, data boundary, or release `{selector}` assignment, expire dependent assumptions, diagrams, component interfaces, and proof gates before implementation continues.",
             "If a named test, fixture, browser proof, schema, or render disappears, downgrade every claim that depended on it from source_backed to assumption or blocked until replacement proof lands.",
-            "If the operator contradicts an Odylith assumption, the operator decision wins and this workstream must be rewritten before code uses the old assumption.",
-            "If dashboards disagree with workstreams, component specs, architecture diagrams, or repo-native tests, treat the projection as stale and repair source truth plus refresh before promotion.",
+            "If the operator contradicts a default assumption, the operator decision wins and this workstream must be rewritten before code uses the old assumption.",
+            "If generated views disagree with workstreams, component specs, architecture diagrams, or repo-native tests, treat the projection as stale and repair source truth plus refresh before promotion.",
         ],
         "conflict_model": [
-            "Conflict priority: source-backed tests beat generated dashboards; component specs beat inferred ownership; workstream records beat chat summaries for intent.",
+            "Conflict priority: source-backed tests beat generated views; component specs beat inferred ownership; workstream records beat chat summaries for intent.",
             "If docs, diagrams, and component specs disagree, stop promotion and open a plan or Casebook repair before coding forward.",
             "If operator answers contradict assumptions, update this workstream before source changes that depend on the old assumption.",
         ],
@@ -450,14 +450,14 @@ def _ontology(
                 "Scenario fixture: pinned local input for price shock, liquidity drain, stale oracle, or missing indexer proof.",
                 "Replay report: deterministic evidence tying fixture inputs to alert state, severity, and confidence.",
                 "Fault case: stale oracle, missing indexer, unsupported chain, or credential/live-network attempt.",
-                "Proof artifact: repo-native test or smoke output plus refreshed governance records.",
+                "Proof artifact: repo-native test or smoke output plus refreshed project records.",
             ],
         }
         rows = rows_by_kind.get(kind, rows_by_kind["domain"])
         if kind == "program":
             rows = [
                 *rows,
-                "Execution wave: governed delivery checkpoint with named DeFi child workstreams and release proof.",
+                "Execution wave: delivery checkpoint with named DeFi child workstreams and release proof.",
                 "Evidence tier: user_intent, odylith_assumption, and later source_backed claims kept visibly separate.",
             ]
         else:
@@ -498,7 +498,7 @@ def _ontology(
         if kind == "program":
             rows = [
                 *rows,
-                "Execution wave: governed checkout delivery checkpoint with named storefront, order, and proof workstreams.",
+                "Execution wave: checkout delivery checkpoint with named storefront, order, and proof workstreams.",
                 "Proof obligation: sandbox, browser, idempotency, and recovery evidence required before release movement.",
             ]
         else:
@@ -523,7 +523,7 @@ def _ontology(
                 "Visible state: normal, empty, degraded, and failure states derived from the domain contract.",
             ],
             "domain": [
-                f"Domain object: first {compact.lower()} object whose state is governed by the domain core.",
+                f"Domain object: first {compact.lower()} object whose state is controlled by the domain core.",
                 "Command: state-changing intent accepted only after validation and ownership checks.",
                 "Invariant: domain state transition rule that remains true across transports and storage choices.",
             ],
@@ -599,7 +599,7 @@ def _contains_malformed_ownership_phrase(value: Any) -> bool:
 def _operators(*, domain_profile: GreenfieldDomainProfile, kind: str, selector: str) -> list[str]:
     common = [
         "Bind technical plan: precondition is confirmed scope and component focus; postcondition is a plan with source paths, rollback path, and proof commands.",
-        "Attach evidence: precondition is a real test, fixture, render, or human decision; postcondition is refreshed governance traceability.",
+        "Attach evidence: precondition is a real test, fixture, render, or human decision; postcondition is refreshed project traceability.",
         f"Promote release `{selector}`: precondition is source-backed first-wave proof; postcondition is release gate evidence with no unresolved blockers.",
     ]
     if domain_profile.family == "defi_risk":
@@ -622,7 +622,7 @@ def _operators(*, domain_profile: GreenfieldDomainProfile, kind: str, selector: 
             "validation": [
                 "Replay risk scenario: precondition is pinned local fixture; postcondition is deterministic report over price shock, liquidity drain, stale oracle, or missing indexer.",
                 "Assert no live network: precondition is first-release proof run; postcondition is failure on RPC, credentials, private key, or unpinned provider access.",
-                "Publish release proof: precondition is replay plus UI/contract proof; postcondition is refreshed governance records and release gate evidence.",
+                "Publish release proof: precondition is replay plus UI/contract proof; postcondition is refreshed project records and release gate evidence.",
             ],
         }
         rows = rows_by_kind.get(kind, rows_by_kind["domain"])
@@ -671,7 +671,7 @@ def _operators(*, domain_profile: GreenfieldDomainProfile, kind: str, selector: 
             ],
             "validation": [
                 "Run proof harness: precondition is deterministic fixture set; postcondition is repository-native evidence and stale-surface detection.",
-                "Refresh governance records: precondition is changed governance/source truth; postcondition is synchronized project truth and release posture.",
+                "Refresh project records: precondition is changed source or proof truth; postcondition is synchronized project truth and release posture.",
                 "Block release promotion: precondition is missing proof or stale topology; postcondition is failed validation gate.",
             ],
         }
@@ -731,7 +731,7 @@ def _row_validation_obligations(*, domain_profile: GreenfieldDomainProfile, kind
             "Claim: domain contract is executable. Method: tests cover valid transition, invalid input, and retry or idempotency semantics.",
         ],
         "validation": [
-            "Claim: proof harness is trustworthy. Method: fixtures fail closed on missing inputs, skipped assertions, and stale surfaces.",
+            "Claim: proof harness is trustworthy. Method: fixtures fail closed on missing inputs, skipped assertions, and stale generated views.",
         ],
     }
     return rows_by_kind.get(kind, rows_by_kind["domain"])

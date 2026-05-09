@@ -34,12 +34,12 @@ def build_apply_commands(proposal: Mapping[str, Any]) -> list[str]:
         + release_arg,
     ]
     if backlog:
-        commands.append("# apply will create project workstream records after validation and Tribunal review")
+        commands.append("# apply will create project workstream records after validation")
     if components:
         commands.append("# apply will register planned candidate component specs with user_intent evidence")
     if diagrams:
         commands.append("# apply will scaffold draft architecture topology with atlas_first_draft link state")
-    commands.append("# apply will refresh governance records after all artifacts are written")
+    commands.append("# apply will refresh project records after all artifacts are written")
     return commands
 
 
@@ -62,8 +62,8 @@ def format_proposal_text(proposal: Mapping[str, Any]) -> str:
             f"- provider_calls_by_odylith_cli: {proposal.get('provider_calls', 0)}",
             f"- default_release_selector: {DEFAULT_GREENFIELD_RELEASE_SELECTOR} unless the operator supplies another target",
             f"- canonical_proposal_gate: {proposal.get('canonical_proposal_gate', {}).get('status', 'unknown') if isinstance(proposal.get('canonical_proposal_gate'), Mapping) else 'unknown'}",
-            "- apply gate: deterministic proposal Tribunal before writes",
-            "- visibility: governance records refresh after accepted artifacts are written",
+            "- apply gate: deterministic proposal validation before writes",
+            "- visibility: project records refresh after accepted artifacts are written",
             "",
             "Host reasoning task",
             f"- {proposal.get('host_instruction', 'Draft a concrete proposal from prompt and repo evidence.')}",
@@ -94,7 +94,7 @@ def format_proposal_text(proposal: Mapping[str, Any]) -> str:
         for rule in contract.get("quality_bar", []) if isinstance(contract.get("quality_bar"), list) else []:
             lines.append(f"- {rule}")
         lines.extend(["", "Apply"])
-        lines.append("No files changed. To let Odylith own proposal, Tribunal, apply, refresh, and handoff in one path, run:")
+        lines.append("No files changed. To use the built proposal, validation, apply, refresh, and handoff path, run:")
         commands = proposal.get("apply_commands", [])
         if isinstance(commands, list) and commands:
             lines.append("  " + str(commands[0]))
@@ -123,7 +123,7 @@ def _format_apply_ready_proposal_text(
     lines = [
         f"Odylith greenfield proposal: {title}",
         f"- source evidence: {source_posture}; writes stay confirmation-gated",
-        f"- apply-ready JSON: built, normalized, validated, Tribunal {gate_status}",
+        f"- apply-ready JSON: built, normalized, validated, proposal gate {gate_status}",
         f"- mode: {proposal.get('mode', 'host_reasoned_greenfield_proposal')}",
         "- shared artifact: this text and `--format json` are rendered from the same canonical proposal",
         f"- provider_calls_by_odylith_cli: {proposal.get('provider_calls', 0)}",
@@ -155,7 +155,7 @@ def _format_apply_ready_proposal_text(
                 "",
                 "Greenfield UX",
                 f"- mode: {ux.get('mode', 'consumer_greenfield_proposal')}",
-                f"- guardrail: {ux.get('write_guardrail', 'confirm before governed writes')}",
+                f"- guardrail: {ux.get('write_guardrail', 'confirm before project-record writes')}",
                 f"- next: {ux.get('next_best_action', 'confirm or revise the proposed first wave')}",
             ]
         )
@@ -165,7 +165,7 @@ def _format_apply_ready_proposal_text(
     )
     intelligence_text = render_project_intelligence_section(project_intelligence, preview=True)
     if intelligence_text:
-        lines.extend(["", "Project intelligence control surface"])
+        lines.extend(["", "Project requirements"])
         lines.extend(_indent_markdown_preview(intelligence_text))
     brief_lines = _project_brief_lines(project_brief)
     if brief_lines:
@@ -251,8 +251,8 @@ def _format_apply_ready_proposal_text(
             elif str(item).strip():
                 lines.append(f"- {item}")
     lines.extend(["", "Apply gates"])
-    lines.append("- deterministic proposal Tribunal must pass before any source-truth writes")
-    lines.append("- final dashboard refresh publishes accepted governance records after writes")
+    lines.append("- deterministic proposal validation must pass before any source-truth writes")
+    lines.append("- final refresh publishes accepted project records after writes")
     lines.extend(["", "Assumptions"])
     for item in proposal.get("assumptions", []):
         rendered = _render_evidence_item(item, "statement")

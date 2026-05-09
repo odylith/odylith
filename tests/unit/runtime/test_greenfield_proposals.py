@@ -811,7 +811,7 @@ def test_greenfield_text_keeps_host_reasoning_and_no_write_boundary_visible(tmp_
 
     assert rc == 0
     output = capsys.readouterr().out
-    assert "apply-ready JSON: built, normalized, validated, Tribunal passed" in output
+    assert "apply-ready JSON: built, normalized, validated, proposal gate passed" in output
     assert "shared artifact: this text and `--format json` are rendered from the same canonical proposal" in output
     assert "No files changed." in output
     assert "mode: host_reasoned_greenfield_proposal" in output
@@ -819,17 +819,17 @@ def test_greenfield_text_keeps_host_reasoning_and_no_write_boundary_visible(tmp_
     assert "Canonical apply JSON shape" not in output
     assert "odylith greenfield create --repo-root ." in output
     assert "odylith greenfield propose --repo-root ." in output
-    assert "Project intelligence control surface" in output
+    assert "Project requirements" in output
     assert "Project-first blueprint" in output
     assert "project design board" in output
     assert "choose before coding" in output
     assert "customize by saying" in output
     assert "What breaks if it fails" in output
     assert "Code: edit source only after the plan names source paths" in output
-    assert output.index("Project intelligence control surface") < output.index("Project-first blueprint")
+    assert output.index("Project requirements") < output.index("Project-first blueprint")
     assert output.index("Project-first blueprint") < output.index("Backlog proposal")
-    assert "proposal Tribunal must pass before any source-truth writes" in output
-    assert "accepted governance records after writes" in output
+    assert "proposal validation must pass before any source-truth writes" in output
+    assert "accepted project records after writes" in output
 
 
 def test_greenfield_cli_json_is_apply_ready_proposal(tmp_path, capsys) -> None:
@@ -987,7 +987,7 @@ def test_greenfield_apply_writes_domain_intelligence_into_radar_specs(tmp_path, 
     assert child_specs_by_title["Prove scenario replay and risk release harness"].count("Scenario fixture:") == 1
     assert "Which runtime, deployment target, and user role should constrain the first implementation slice?" in all_radar_text
     assert (
-        "First governed slice: Product workflow, domain contract, architecture diagrams, component specs, "
+        "First product slice: Product workflow, domain contract, architecture diagrams, component specs, "
         "and release records all agree." in all_radar_text
     )
     assert "- R1." not in all_radar_text
@@ -1208,9 +1208,9 @@ def test_robot_swarm_project_brief_blocks_coding_rush(tmp_path) -> None:
 
     assert "Simulation and hardware boundary" in json.dumps(brief)
     assert "safety envelope" in json.dumps(brief)
-    assert "Project intelligence control surface" in rendered
+    assert "Project requirements" in rendered
     assert "Do not treat greenfield apply as permission to code immediately" in rendered
-    assert rendered.index("Project intelligence control surface") < rendered.index("Project-first blueprint")
+    assert rendered.index("Project requirements") < rendered.index("Project-first blueprint")
     assert rendered.index("Project-first blueprint") < rendered.index("Backlog proposal")
     assert "host-independent customization paths" in rendered
 

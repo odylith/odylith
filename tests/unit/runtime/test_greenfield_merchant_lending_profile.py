@@ -61,6 +61,22 @@ def test_shopify_stablecoin_merchant_lending_avoids_checkout_profile(tmp_path) -
     assert "cart" not in text.casefold()
     assert "checkout" not in text.casefold()
     assert "payment sandbox" not in text.casefold()
+    for control_plane_phrase in (
+        "governance records",
+        "governance surfaces",
+        "governed control surface",
+        "Odylith assumptions",
+        "Odylith owns",
+        "Tribunal",
+        "Control Surface",
+        "proof surface",
+        "app-surface",
+        "Radar",
+        "Registry",
+        "Atlas",
+        "Compass",
+    ):
+        assert control_plane_phrase not in text
 
     workflow = next(row for row in proposal["backlog"] if row["id"] == "WS-01")
     workflow_text = json.dumps(workflow, sort_keys=True).casefold()

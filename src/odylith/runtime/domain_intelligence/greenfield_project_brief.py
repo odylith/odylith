@@ -33,8 +33,8 @@ def build_project_brief(
             "implementation plan is started."
         ),
         "operating_principle": (
-            "Do not treat greenfield apply as permission to code immediately. Apply creates the governed "
-            "project control surface; implementation starts only after the project-first gates below are reviewed."
+            "Do not treat greenfield apply as permission to code immediately. Apply records the accepted "
+            "project requirements; implementation starts only after the project-first gates below are reviewed."
         ),
         "project_outcome": _project_outcome(title=title, family=family),
         "review_posture": (
@@ -183,7 +183,7 @@ def _project_outcome(*, title: str, family: str) -> str:
             "before production payment claims."
         )
     return (
-        f"{title} should become a governed product with a named user outcome, explicit domain model, component "
+        f"{title} should become a product with a named user outcome, explicit domain model, component "
         "ownership, proof strategy, release lane, and open questions resolved enough that agents can continue "
         "without rebuilding the project from scratch."
     )
@@ -269,7 +269,7 @@ def _customization_options(*, title: str, family: str) -> list[dict[str, Any]]:
             "Primary user or operator",
             "Name the first person who must succeed and the job they need done.",
             ["operator workflow", "end-user self-service", "admin/reviewer workflow"],
-            "Changes the first workflow, visible states, security roles, and proof surface.",
+            "Changes the first workflow, visible states, security roles, and proof target.",
         ),
         _option(
             "D2",
@@ -290,12 +290,12 @@ def _customization_options(*, title: str, family: str) -> list[dict[str, Any]]:
             "Proof bar",
             "Pick the minimum evidence that would convince a reviewer the project direction is real.",
             ["unit and contract proof", "browser matrix", "simulation replay", "migration and release smoke"],
-            "Changes validation obligations, release gates, and what the progress view should show as complete.",
+            "Changes validation obligations, release gates, and what release evidence should show as complete.",
         ),
         _option(
             "D5",
             "First release ambition",
-            "Keep release 0.0.1 as a thin governed slice unless the operator explicitly accepts more risk.",
+            "Keep release 0.0.1 as a thin product slice unless the operator explicitly accepts more risk.",
             ["one workflow", "one workflow plus audit", "workflow plus integration stub", "multi-component vertical slice"],
             "Changes wave scope, release targeting, backlog sizing, and time to trustworthy proof.",
         ),
@@ -325,7 +325,7 @@ def _customization_options(*, title: str, family: str) -> list[dict[str, Any]]:
                 "Borrower and capital-ops boundary",
                 "Default to the Shopify SMB merchant as borrower and capital-ops as reviewer; do not model retail buyers as the primary actor.",
                 ["merchant borrower portal", "capital-ops review", "underwriter workflow", "embedded Shopify app"],
-                "Changes the first workflow, authorization model, data consent, visible funding states, and proof surface.",
+                "Changes the first workflow, authorization model, data consent, visible funding states, and proof target.",
             ),
             *common,
             _option(
@@ -493,9 +493,9 @@ def _coding_readiness_gates(*, title: str, release_selector: str) -> list[str]:
     release = release_selector or "0.0.1"
     return [
         f"{title} has an accepted project spine: primary operator, outcome, non-goals, first release promise, and unresolved ambiguities.",
-        "Direction options that materially change architecture or validation are either answered or marked as accepted Odylith assumptions.",
-        "Workstreams, component specs, architecture diagrams, progress view, and release targeting all describe the same first wave and no orphaned governance objects exist.",
-        f"Release {release} has explicit promotion criteria and does not claim production readiness beyond the first governed slice.",
+        "Direction options that materially change architecture or validation are either answered or marked as accepted assumptions.",
+        "Workstreams, component specs, architecture diagrams, release evidence, and release targeting all describe the same first wave and no orphaned project objects exist.",
+        f"Release {release} has explicit promotion criteria and does not claim production readiness beyond the first product slice.",
         "The first implementation plan names source paths, validation commands, degraded/error proof, and rollback or recovery posture before code edits.",
     ]
 
@@ -520,7 +520,7 @@ def _host_independent_paths(*, prompt: str, release_selector: str) -> list[dict[
             "path": "Apply after confirmation",
             "command": f'odylith greenfield create --repo-root . --prompt "{prompt_text}" --release {release} --confirm',
             "works_in": "shell, Codex, Claude Code",
-            "use_when": "Use only after the operator accepts the project-first brief and wants governed records written.",
+            "use_when": "Use only after the operator accepts the project-first brief and wants project records written.",
         },
     ]
 

@@ -158,7 +158,7 @@ def _intent(*, prompt: str, title: str, slug: str, robot_swarm_logistics: bool) 
         "Govern a simulation-first robot swarm logistics platform with operator dispatch, fleet telemetry, "
         "coordination contracts, and safety proof before hardware or production claims."
         if robot_swarm_logistics
-        else f"Turn `{prompt}` into a governed greenfield program before source-backed implementation starts."
+        else f"Turn `{prompt}` into an accepted greenfield product program before source-backed implementation starts."
     )
     return {
         "prompt": prompt,
@@ -180,7 +180,7 @@ def _base_assumptions() -> list[dict[str, str]]:
         {
             "id": "A2",
             "evidence_tier": "odylith_assumption",
-            "statement": "Implementation starts with repository-native tests and one Odylith-governed technical plan per child workstream.",
+            "statement": "Implementation starts with repository-native tests and one technical plan per child workstream.",
         },
     ]
 
@@ -216,7 +216,7 @@ def _base_risks(*, title: str, domain_profile: GreenfieldDomainProfile) -> list[
                 ),
                 "mitigation": (
                     "Keep the first wave fixture-backed and non-custodial; require freshness/confidence fields, "
-                    "deterministic replay proof, and refreshed governance records before release promotion."
+                    "deterministic replay proof, and refreshed project records before release promotion."
                 ),
             },
             {
@@ -251,7 +251,7 @@ def _base_risks(*, title: str, domain_profile: GreenfieldDomainProfile) -> list[
                 ),
                 "mitigation": (
                     "Keep the first wave fixture-backed; require Shopify merchant snapshots, eligibility gates, liquidity snapshots, "
-                    "idempotent disbursement/repayment replay, and refreshed governance records before release promotion."
+                    "idempotent disbursement/repayment replay, and refreshed project records before release promotion."
                 ),
             },
             {
@@ -320,7 +320,7 @@ def _base_risks(*, title: str, domain_profile: GreenfieldDomainProfile) -> list[
             ),
             "mitigation": (
                 "Apply only after operator review, then bind every source change to a child workstream, component boundary, "
-                "proof command, and refreshed governance record."
+                "proof command, and refreshed project record."
             ),
         },
         {
@@ -416,10 +416,10 @@ def _program(*, title: str, components: Mapping[str, str]) -> dict[str, Any]:
         "waves": [
             {
                 "wave_id": "W1",
-                "label": "First governed slice",
+                "label": "First product slice",
                 "goal": "Prove the smallest coherent product workflow with source-backed validation.",
                 "validation_gate": (
-                    "The first workstream has a technical plan, behavior proof, refreshed governance records, "
+                    "The first workstream has a technical plan, behavior proof, refreshed project records, "
                     "and release-target validation."
                 ),
                 "workstreams": ["WS-01", "WS-02"],
@@ -452,12 +452,12 @@ def _release_plan(
         "selector": selector,
         "label": greenfield_programs.compact_release_target_label(selector),
         "provisional_release_id": f"release-{slug}-{slugify(selector)}",
-        "strategy": "Promote only after the first governed slice has source-backed tests and refreshed governance records.",
+        "strategy": "Promote only after the first product slice has source-backed tests and refreshed project records.",
         "target_workstreams": ["WS-01", "WS-02"],
         "release_stages": [
             {
                 "release": selector,
-                "label": "First governed slice",
+                "label": "First product slice",
                 "exit_criteria": "Product workflow, domain contract, architecture diagrams, component specs, and release records all agree.",
             }
         ],
@@ -501,7 +501,7 @@ def _umbrella_backlog_row(
         "title": f"Govern {title}",
         "workstream_type": "umbrella",
         "problem": (
-            f"{title} needs a governed execution spine before source exists, otherwise first-wave implementation "
+            f"{title} needs an accepted execution spine before source exists, otherwise first-wave implementation "
             "choices will not trace to product intent, components, diagrams, release gates, or validation proof."
         ),
         "customer": "The project operator, implementation agents, reviewers, and maintainers who need one trusted program view before code starts.",
@@ -509,10 +509,10 @@ def _umbrella_backlog_row(
             "Create one umbrella program that ties user intent, first wave, release target, workstreams, "
             "component candidates, topology drafts, and proof gates together."
         ),
-        "product_view": f"A proposal-first governed program for {title} with one active first wave, a {selector} release target, candidate components, and diagram traceability.",
-        "recommended_first_slice": "Confirm the first governed slice, then open the first child workstream and author the technical plan before editing source.",
+        "product_view": f"A proposal-first product program for {title} with one active first wave, a {selector} release target, candidate components, and diagram traceability.",
+        "recommended_first_slice": "Confirm the first product slice, then open the first child workstream and author the technical plan before editing source.",
         "success_metrics": [
-            "Governance records show the umbrella, first wave, and release target after apply.",
+            "Project records show the umbrella, first wave, and release target after apply.",
             "Workstreams, component candidates, and diagrams all link the first wave to the same boundaries.",
             "The start workstream includes validation gates and a first implementation prompt.",
         ],
@@ -526,8 +526,8 @@ def _umbrella_backlog_row(
         ],
         "dependencies": ["Child workstreams depend on this umbrella for wave membership, release targeting, and proof sequencing."],
         "interfaces": ["Accepted project records expose one shared greenfield program topology."],
-        "validation": ["Greenfield apply Tribunal passes and governed records refresh."],
-        "domain_risk": "Greenfield governance can mislead source implementation if the first wave, component ownership, release target, or proof gates are vague.",
+        "validation": ["Greenfield proposal validation passes and project records refresh."],
+        "domain_risk": "Greenfield planning can mislead source implementation if the first wave, component ownership, release target, or proof gates are vague.",
         "security_posture": "Security, privacy, accessibility, abuse, audit, and recovery posture stay explicit until source-backed implementation narrows them.",
         "priority": "P1",
         "sizing": "L",

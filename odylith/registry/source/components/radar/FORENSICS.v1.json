@@ -40,10 +40,10 @@
     "empty_reasons": [],
     "explicit_event_count": 157,
     "mapped_workstream_evidence_count": 115,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 13,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 157
+    "timeline_event_count": 158
   },
   "name": "Radar",
   "path_prefixes": [
@@ -53,6 +53,23 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md"
+      ],
+      "confidence": "high",
+      "event_index": 467,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md, odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
+      "ts_iso": "2026-05-08T18:11:42-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "high",

@@ -1474,3 +1474,17 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   metadata while future greenfield proposals describe the user's workstreams,
   component specs, architecture diagrams, evidence, progress view, and release
   gates without modeling Radar/Registry/Atlas/Compass as product components.
+- The v0.1.15 greenfield product-requirements and legacy merchant-lending repair
+  pass is covered by `migration-observer:0.1.15:operator-cli-contracts:13e8531fb4af`.
+  The pass removes remaining control-plane wording from generated proposal and
+  workstream text, keeps fresh Shopify stablecoin lending proposals focused on
+  merchant borrowers, credit facilities, liquidity, repayment, and compliance,
+  and adds a backlog-normalization repair for already-applied consumer records
+  that still carry retail-commerce semantics. Existing consumer source is only
+  changed when that exact merchant-lending plus retail-commerce misclassification
+  is present; unrelated workstreams and valid commerce projects are left alone.
+- The rendered-surface settlement for that pass is covered by
+  `migration-observer:0.1.15:browser-surfaces:2c1204385f3e`. The rendered
+  Radar, Casebook, Registry, Compass, shell, and bundle HTML refreshes are
+  generated from product-requirements source truth plus `CB-193`; existing
+  consumer source is not overwritten by those browser artifacts.

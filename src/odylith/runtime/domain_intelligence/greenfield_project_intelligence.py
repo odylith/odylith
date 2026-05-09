@@ -1,7 +1,7 @@
 """Project-level domain intelligence for greenfield proposals.
 
 Greenfield workstreams already carry detailed domain intelligence, but the
-project itself also needs a governed control surface before source work starts.
+project itself also needs a product-requirements surface before source work starts.
 This module builds that project object from the canonical proposal inputs so
 CLI text, JSON, and applied project records all share the same project-first
 truth.
@@ -123,26 +123,26 @@ def build_project_intelligence(
     release = clean_text(release_selector) or clean_text((release_plan or {}).get("selector")) or "0.0.1"
     source_posture = clean_text((observed_source or {}).get("source_posture")) or "unknown"
     choice_refs = _choice_refs(project_brief or {})
-    first_wave = wave_refs[0] if wave_refs else "first governed slice"
+    first_wave = wave_refs[0] if wave_refs else "first product slice"
     component_spine = ", ".join(component_refs[:4]) or "candidate components"
     diagram_spine = ", ".join(diagram_refs[:5]) or "architecture views"
 
     return {
         "schema_version": PROJECT_INTELLIGENCE_SCHEMA_VERSION,
         "purpose": (
-            f"Make {title} a governed project before implementation starts: the project object captures intent, "
+            f"Make {title} a concrete product program before implementation starts: the project object captures intent, "
             "domain language, allowed change, invariants, proof, memory, and customization choices in one place."
         ),
         "coding_posture": (
             "Do not start coding from the proposal closeout. First review direction options, accept or revise the "
-            "project shape, apply governed records, then author a technical plan for the chosen first child workstream."
+            "project shape, write accepted project records, then author a technical plan for the chosen first child workstream."
         ),
         "control_surface_summary": [
             f"What exists: {source_posture} repo evidence plus user-intent project truth for `{title}`.",
             "What may change: direction choices, runtime, first user, data boundary, proof bar, release ambition, and wave order.",
             "What must remain invariant: no source-backed claim without code paths, tests, component owner, and refreshed project records.",
             "What counts as proof: repo-native tests or fixtures, rendered architecture diagrams, validated component/workstream records, and explicit human decisions.",
-            "What prior experience changes next action: avoid manual proposal reconstruction, generic component specs, title-only workstreams, and premature coding handoff.",
+            "What prior experience changes next action: avoid generic component specs, title-only workstreams, and premature coding handoff.",
         ],
         "customization_flow": _customization_flow(choice_refs=choice_refs, release=release),
         "intent": [
@@ -156,7 +156,7 @@ def build_project_intelligence(
         "scope": [
             f"In scope before coding: project spine, domain ontology, candidate components, architecture diagrams, waves, release target, assumptions, risks, and proof gates.",
             "Out of scope before coding: source-backed runtime claims, production readiness, live integrations, and broad implementation plans not tied to a child workstream.",
-            f"First release boundary: release `{release}` targets the first governed wave only until proof promotes later work.",
+            f"First release boundary: release `{release}` targets the first product wave only until proof promotes later work.",
             "Customization boundary: the operator may change runtime, compliance posture, user role, data boundary, proof level, or first-release ambition before apply.",
         ],
         "ontology": [
@@ -168,7 +168,7 @@ def build_project_intelligence(
             "Readiness gate: condition that must pass before the next transformation is allowed.",
         ],
         "state": [
-            f"Current state: {source_posture}; project truth is user_intent plus Odylith assumptions, not implementation evidence.",
+            f"Current state: {source_posture}; project truth is user_intent plus labeled assumptions, not implementation evidence.",
             f"Desired state: accepted proposal with parent workstream, {first_wave}, release `{release}`, component specs, diagrams, and proof gates.",
             "Intermediate states: proposed -> customized -> confirmed -> applied -> planned -> source_backed -> release_gated.",
             "Blocked state: unresolved operator choice changes architecture, compliance, proof, data boundary, or first user.",
@@ -176,20 +176,20 @@ def build_project_intelligence(
         ],
         "operators": [
             "Customize direction: precondition is proposal review; postcondition is updated prompt or canonical JSON before any write.",
-            "Apply governed project: precondition is explicit confirmation and passing Tribunal; postcondition is accepted project, component, architecture, release, assumption, risk, and validation records written together.",
+            "Apply accepted project: precondition is explicit confirmation and passing validation; postcondition is accepted project, component, architecture, release, assumption, risk, and validation records written together.",
             "Open first plan: precondition is applied project truth and accepted readiness gates; postcondition is a child-workstream technical plan with source paths and proof commands.",
             "Promote source evidence: precondition is implementation plus repo-native tests; postcondition is project, component, architecture, and release records refreshed from source-backed proof.",
             "Split scope: precondition is different owner, evidence, risk, or release gate; postcondition is a new child workstream linked into topology.",
         ],
         "constraints": [
             *family["constraints"],
-            "Keep greenfield proposal and apply provider-free inside Odylith; host reasoning may critique or customize but does not reconstruct canonical proposal objects outside Odylith.",
+            "Keep proposal creation provider-free and deterministic; host reasoning may critique or customize but does not hand-reconstruct canonical proposal objects.",
             "Do not mark candidate components active until source paths and proof commands exist.",
             "Do not target every child workstream to release 0.0.1 unless the first wave truly owns them.",
-            "Do not let dashboard projections outrank governed source files when conflicts appear.",
+            "Do not let generated views outrank source files when conflicts appear.",
         ],
         "source_of_truth_map": [
-            "Project intelligence: canonical project-first control surface in proposal JSON and parent project workstream.",
+            "Project intelligence: canonical project-first requirements in proposal JSON and parent project workstream.",
             "Project brief: operator-facing choices, checkpoints, host-independent paths, and coding-readiness gates.",
             "Workstream source: canonical backlog intent, domain intelligence, dependencies, risks, and success metrics.",
             "Component specs: canonical component identity, ownership, interfaces, collaborators, failure modes, and proof.",
@@ -199,9 +199,9 @@ def build_project_intelligence(
         "evidence": [
             "Observed source evidence comes only from the repo inventory.",
             "User intent comes from the operator prompt and explicit follow-up choices.",
-            "Odylith assumptions are useful defaults that must remain labeled until confirmed or source-backed.",
+            "Default assumptions must remain labeled until confirmed or source-backed.",
             "Strong proof means repository-native tests, fixture replays, browser/API/simulation proof where relevant, and rendered architecture diagrams plus validation passes.",
-            "Weak proof means proposal prose, host summaries, generated dashboards, or unlabeled assumptions.",
+            "Weak proof means proposal prose, host summaries, generated views, or unlabeled assumptions.",
         ],
         "decisions": [
             f"Default decision: hold coding until {title} has an accepted project shape and readiness gates.",
@@ -220,7 +220,7 @@ def build_project_intelligence(
             f"Program topology: parent workstream -> {', '.join(wave_refs[:3]) or 'first wave'} -> child workstreams -> components -> diagrams -> validation.",
             f"Component topology: planned ownership currently spans {component_spine}; each component must keep its own boundary, dependencies, interfaces, and proof.",
             f"Diagram topology: architecture review currently spans {diagram_spine}; each view must remain traceable to workstreams and component owners.",
-            "Proof topology: prompt -> proposal JSON -> Tribunal -> governed writes -> technical plan -> source paths -> repo-native proof -> refreshed project records.",
+            "Proof topology: prompt -> proposal JSON -> validation -> accepted writes -> technical plan -> source paths -> repo-native proof -> refreshed project records.",
             "Release topology: release target points at first-wave workstreams and should not imply later-wave readiness.",
         ],
         "invariants": [
@@ -238,7 +238,7 @@ def build_project_intelligence(
         ],
         "validation_obligations": [
             "Proposal validation must reject missing project intelligence, shallow readiness gates, and empty customization flow.",
-            "Tribunal must pass before writes and reject disconnected workstream, component, architecture, wave, or release topology.",
+            "Proposal validation must pass before writes and reject disconnected workstream, component, architecture, wave, or release topology.",
             "After apply, the parent workstream must contain Project Intelligence and child workstreams must contain Domain Intelligence.",
             "Before coding, the first technical plan must name source paths, tests, fallback/degraded proof, rollback or recovery path, and refresh commands.",
             "Before release promotion, repo-native proof and generated project records must agree with the accepted project topology.",
@@ -246,22 +246,22 @@ def build_project_intelligence(
         "artifacts": [
             "Canonical proposal JSON: source object for project intelligence, project brief, workstreams, components, diagrams, waves, and release plan.",
             "Parent workstream: durable project intelligence and execution memory.",
-            "Child workstreams: domain-specific implementation control surfaces.",
+            "Child workstreams: domain-specific product requirements.",
             "Candidate component specs: component-specific planned ownership and proof contracts.",
             "Architecture diagram suite: multi-view product review surface before source exists.",
             "Release target and progress posture: navigation and first-wave progress surface.",
         ],
         "owners": [
             "Operator owns product direction, customization choices, compliance posture, runtime target, and release ambition.",
-            "Odylith owns schema, normalization, validation, Tribunal, apply, rollback, refresh, and memory recording.",
+            "Project tooling owns schema, normalization, validation, apply, rollback, refresh, and memory recording.",
             "Technical-plan author owns source paths, implementation sequence, proof commands, and rollback/recovery plan after apply.",
-            "Component specs own component identity; architecture diagrams own topology; workstreams own intent; progress views report derived state.",
+            "Component specs own component identity; architecture diagrams own topology; workstreams own intent; release records report derived state.",
         ],
         "execution_memory": [
             "Prior failure: agents produced decent prose, then manually reconstructed apply objects, hit validation failures, patched fields, and exposed implementation artifacts to users.",
             "Prior failure: component specs became templated and repeated project posture instead of component-specific boundaries.",
             "Prior failure: greenfield closeout pushed too quickly toward `start B-002` before deep project review.",
-            "Reusable lesson: Odylith must own the canonical object, batch validation report, project options, and applied memory before implementation starts.",
+            "Reusable lesson: the canonical proposal object, validation report, project options, and applied memory must exist before implementation starts.",
         ],
         "metrics": [
             "Project-depth metric: every required project-intelligence layer has concrete rows, not labels.",
@@ -281,17 +281,17 @@ def build_project_intelligence(
             "If the operator changes primary user, runtime, data boundary, compliance posture, proof threshold, or release ambition, invalidate the affected wave order, component boundaries, diagrams, and release assumptions before coding.",
             "If source-backed proof lands, changes, or disappears, reclassify only the claims tied to that proof and expire dependent component, workstream, architecture, and progress projections until refreshed.",
             "If a technical plan contradicts the accepted project intelligence, stop implementation and require an explicit proposal revision, plan revision, or human decision record.",
-            "If a generated dashboard disagrees with governed source files, treat the dashboard as stale and repair source truth plus the Surface DAG before using it for direction.",
+            "If a generated view disagrees with source files, treat the view as stale and repair source truth before using it for direction.",
         ],
         "conflict_model": [
-            "Source-backed tests outrank proposal prose; governed source files outrank generated dashboards; operator decisions outrank Odylith assumptions.",
+            "Source-backed tests outrank proposal prose; source files outrank generated views; operator decisions outrank default assumptions.",
             "When workstream, component, architecture, or progress records disagree, block promotion and repair source truth rather than coding forward.",
             "When host chat contradicts canonical proposal JSON, the JSON wins until the operator confirms a revised proposal.",
             "When component scope conflicts with project posture, keep the component spec narrow and move project-wide concerns to the parent workstream.",
         ],
         "transfer_priors": [
             *family["transfer_priors"],
-            "Reusable prior: first build the project control surface, then pick the first child implementation plan.",
+            "Reusable prior: first build the project requirements surface, then pick the first child implementation plan.",
             "Reusable prior: require normal, empty, degraded, and failure proof where the domain exposes user-visible states.",
             "Reusable prior: diagram suites should include topology, sequence, ownership, state/data, validation/release, and operational risk views when the project is complex.",
             "Reusable prior: a greenfield proposal should lower future agent context cost rather than create long prose that must be rediscovered.",
@@ -386,7 +386,7 @@ def render_project_intelligence_section(value: Any, *, preview: bool = False) ->
         lines.append(purpose)
     if coding_posture:
         lines.extend(["", f"**Coding posture:** {coding_posture}"])
-    _append_layer(lines, "Control Surface", value.get("control_surface_summary"), limit=5 if preview else 0)
+    _append_layer(lines, "Product Requirements", value.get("control_surface_summary"), limit=5 if preview else 0)
     _append_layer(lines, "Customization Flow", value.get("customization_flow"), limit=5 if preview else 0)
     for key in PROJECT_INTELLIGENCE_LAYERS:
         _append_layer(lines, _LAYER_LABELS[key], value.get(key), limit=_preview_layer_limit(key) if preview else 0)
@@ -415,7 +415,7 @@ def _customization_flow(*, choice_refs: Sequence[str], release: str) -> list[str
         f"Review: inspect project intelligence, project brief, workstreams, components, diagrams, waves, and release `{release}`.",
         f"Choose: adjust {choices} before apply if any default would misdirect architecture or proof.",
         "Confirm: run the one-command create path only after the operator accepts the direction and readiness gates.",
-        "Plan: open the first child workstream technical plan after applied governance records exist.",
+        "Plan: open the first child workstream technical plan after accepted project records exist.",
         "Code: edit source only after the plan names source paths, tests, failure states, and rollback or recovery posture.",
     ]
 
@@ -579,7 +579,7 @@ def _family_terms(*, profile: GreenfieldDomainProfile, title: str) -> dict[str, 
             ],
             "transfer_priors": [
                 "Merchant lending projects must keep borrower workflow, underwriting inputs, liquidity availability, compliance gates, disbursement, and repayment as separate domain objects.",
-                "Shopify in a lending prompt is usually merchant data and app-surface context, not proof that the product is a retail purchase product.",
+                "Shopify in a lending prompt is usually merchant data and embedded-app context, not proof that the product is a retail purchase product.",
                 "Stablecoin funding claims need closed-world liquidity and ledger replay before live DeFi integration or production disbursement.",
             ],
         }
@@ -601,7 +601,7 @@ def _family_terms(*, profile: GreenfieldDomainProfile, title: str) -> dict[str, 
                 "Browser proof must include empty, failed, retry, and completion states.",
             ],
             "assumptions": [
-                "The first user is a shopper and the first proof surface is browser-visible.",
+                "The first user is a shopper and the first proof target is browser-visible.",
                 "The first release uses sandbox or mock provider behavior, not production credentials.",
             ],
             "risks": [
@@ -625,7 +625,7 @@ def _family_terms(*, profile: GreenfieldDomainProfile, title: str) -> dict[str, 
         "non_goals": "production readiness, live external integration, broad platform scope, or source-backed ownership before the first plan and tests exist.",
         "ontology": [
             f"Operator: first person or system actor who must succeed with the {compact} workflow.",
-            "Domain object: first governed object whose state and transitions anchor the implementation.",
+            "Domain object: first product object whose state and transitions anchor the implementation.",
             "Command or query: first operation exposed by the product boundary and consumed by tests.",
             "Proof fixture: deterministic input used to demonstrate normal, empty, degraded, and failure behavior.",
         ],
@@ -643,7 +643,7 @@ def _family_terms(*, profile: GreenfieldDomainProfile, title: str) -> dict[str, 
             "Proof risk: demo-like output can appear real while lacking tests, fixtures, or degraded-state behavior.",
         ],
         "invalidation_rules": [
-            "If first user, runtime, storage, deployment, data source, or proof surface changes, invalidate the affected source paths, component contracts, diagrams, and validation commands.",
+            "If first user, runtime, storage, deployment, data source, or proof target changes, invalidate the affected source paths, component contracts, diagrams, and validation commands.",
             "If a broad prompt narrows into a regulated, safety-sensitive, or external-provider domain, regenerate the security, privacy, compliance, and release-gate posture before implementation.",
         ],
         "transfer_priors": [
