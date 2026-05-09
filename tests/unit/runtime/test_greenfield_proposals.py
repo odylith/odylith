@@ -130,7 +130,7 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
             "selector": "0.0.1",
             "label": "First governed commerce release",
             "provisional_release_id": "release-commerce-launch-first",
-            "strategy": "Promote only after checkout validation and refreshed governance records.",
+            "strategy": "Promote only after checkout validation and refreshed release evidence.",
             "release_stages": [
                 {"stage": "wave-1", "label": "Checkout spine", "release_gate": "Browser and recovery proof pass."},
             ],
@@ -149,7 +149,7 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                 "problem": "The operator wants to build an ecommerce site, but the repo has no confirmed plan, boundaries, topology, or validation spine.",
                 "customer": "Builders",
                 "opportunity": "Create a confirmed commerce launch plan with a checkout-first implementation spine and explicit recovery gates.",
-                "product_view": "Odylith should turn broad commerce intent into reviewable workstreams, components, topology, and release gates without claiming source exists.",
+                "product_view": "The product plan should turn broad commerce intent into reviewable workstreams, components, topology, and release gates without claiming source exists.",
                 "success_metrics": [
                     "The checkout spine has a parent workstream and first child boundary.",
                     "Candidate components are user_intent until source evidence exists.",
@@ -268,7 +268,7 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                 "slug": "commerce-launch-system-context",
                 "title": "Commerce Launch System Context",
                 "kind": "flowchart",
-                "summary": "Show shopper, storefront, checkout, order, payment, and governance boundaries.",
+                "summary": "Show shopper, storefront, checkout, order, payment, and release-evidence boundaries.",
                 "owner": "repo",
                 "status": "draft",
                 "link_state": "atlas_first_draft",
@@ -292,23 +292,23 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                     "      payment[\"Payment sandbox\"]\n"
                     "      order[\"Order ledger\"]\n"
                     "    end\n"
-                    "    subgraph governance_lane[\"Governance lane\"]\n"
-                    "      governance[\"Odylith<br/>governance spine\"]\n"
+                    "    subgraph evidence_lane[\"Evidence lane\"]\n"
+                    "      evidence[\"Release<br/>evidence spine\"]\n"
                     "    end\n"
                     "    shopper --> storefront --> checkout\n"
                     "    checkout --> payment\n"
                     "    checkout --> order\n"
-                    "    order --> governance\n"
+                    "    order --> evidence\n"
                     "    payment -. failure recovery .-> checkout\n"
                     "    classDef actor fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b,stroke-width:1px;\n"
                     "    classDef service fill:#eaf3ff,stroke:#77a9ef,color:#102f5f,stroke-width:1px;\n"
                     "    classDef evidence fill:#ffece7,stroke:#df8f7d,color:#5c2418,stroke-width:1px;\n"
                     "    class shopper,storefront actor;\n"
                     "    class checkout,payment,order service;\n"
-                    "    class governance evidence;\n"
+                    "    class evidence evidence;\n"
                     "    style experience_lane fill:#fafffe,stroke:#d8f2ed,stroke-width:1px,color:#062f2b\n"
                     "    style transaction_lane fill:#f9fcff,stroke:#dceaff,stroke-width:1px,color:#102f5f\n"
-                    "    style governance_lane fill:#fff9f8,stroke:#f6d8d0,stroke-width:1px,color:#5c2418\n"
+                    "    style evidence_lane fill:#fff9f8,stroke:#f6d8d0,stroke-width:1px,color:#5c2418\n"
                 ),
             },
             {
@@ -829,7 +829,7 @@ def test_greenfield_text_keeps_host_reasoning_and_no_write_boundary_visible(tmp_
     assert output.index("Project requirements") < output.index("Project-first blueprint")
     assert output.index("Project-first blueprint") < output.index("Backlog proposal")
     assert "proposal validation must pass before any source-truth writes" in output
-    assert "accepted project records after writes" in output
+    assert "accepted product records after writes" in output
 
 
 def test_greenfield_cli_json_is_apply_ready_proposal(tmp_path, capsys) -> None:
@@ -1630,7 +1630,7 @@ def test_greenfield_create_cli_requires_confirmation_before_writes(tmp_path, cap
 
     out = capsys.readouterr().out
     assert rc == 2
-    assert "--confirm is required before greenfield apply writes governance records" in out
+    assert "--confirm is required before greenfield apply writes accepted product records" in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
     assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
     assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))

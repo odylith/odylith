@@ -133,7 +133,7 @@ def _validation_strategy() -> list[str]:
         "Contract-test robot identity, capability metadata, telemetry envelopes, task assignment, and reservation semantics.",
         "Prove operator console normal, empty-fleet, degraded-telemetry, and rejected-override states with browser or UI tests.",
         "Audit every task assignment, override, simulated e-stop, and coordination conflict in test fixtures.",
-        "Refresh project records after apply and after the first source-backed implementation slice.",
+        "Refresh release evidence after apply and after the first source-backed implementation slice.",
     ]
 
 
@@ -184,7 +184,7 @@ def _release_plan_updates(*, title: str, selector: str) -> dict[str, Any]:
         ],
         "promotion_criteria": [
             "One simulated logistics task completes from operator dispatch through robot state update under CI proof.",
-            "Project records refresh cleanly and show the same robot swarm first-wave lane.",
+            "Release evidence refreshes cleanly and shows the same robot swarm first-wave lane.",
             "No live hardware, production credentials, or safety claim is made before the hardening wave.",
         ],
     }
@@ -292,7 +292,7 @@ def _simulation_backlog_row(title: str, *, diagram_slugs: Mapping[str, str]) -> 
         "success_metrics": [
             "Fixed seed replay produces byte-identical or semantically identical task/telemetry output across two runs.",
             "Smoke proof covers lost telemetry, two-robot conflict, rejected override, and audit output.",
-            "Project records refresh after proof and show the same first release lane.",
+            "Release evidence refreshes after proof and shows the same first release lane.",
         ],
         "dependencies": [
             "Depends on WS-01 console behavior and WS-02 robot task/telemetry contract before hardening expands scope.",

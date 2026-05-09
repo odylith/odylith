@@ -39,7 +39,7 @@ def build_apply_commands(proposal: Mapping[str, Any]) -> list[str]:
         commands.append("# apply will register planned candidate component specs with user_intent evidence")
     if diagrams:
         commands.append("# apply will scaffold draft architecture topology with review-draft link state")
-    commands.append("# apply will refresh project records after all artifacts are written")
+    commands.append("# apply will refresh accepted product records after all artifacts are written")
     return commands
 
 
@@ -63,7 +63,7 @@ def format_proposal_text(proposal: Mapping[str, Any]) -> str:
             f"- default_release_selector: {DEFAULT_GREENFIELD_RELEASE_SELECTOR} unless the operator supplies another target",
             f"- canonical_proposal_gate: {proposal.get('canonical_proposal_gate', {}).get('status', 'unknown') if isinstance(proposal.get('canonical_proposal_gate'), Mapping) else 'unknown'}",
             "- apply gate: deterministic proposal validation before writes",
-            "- visibility: project records refresh after accepted artifacts are written",
+            "- visibility: accepted product records refresh after accepted artifacts are written",
             "",
             "Host reasoning task",
             f"- {proposal.get('host_instruction', 'Draft a concrete proposal from prompt and repo evidence.')}",
@@ -155,7 +155,7 @@ def _format_apply_ready_proposal_text(
                 "",
                 "Greenfield UX",
                 f"- mode: {ux.get('mode', 'consumer_greenfield_proposal')}",
-                f"- guardrail: {ux.get('write_guardrail', 'confirm before project-record writes')}",
+                f"- guardrail: {ux.get('write_guardrail', 'confirm before accepted product writes')}",
                 f"- next: {ux.get('next_best_action', 'confirm or revise the proposed first wave')}",
             ]
         )
@@ -252,7 +252,7 @@ def _format_apply_ready_proposal_text(
                 lines.append(f"- {item}")
     lines.extend(["", "Apply gates"])
     lines.append("- deterministic proposal validation must pass before any source-truth writes")
-    lines.append("- final refresh publishes accepted project records after writes")
+    lines.append("- final refresh publishes accepted product records after writes")
     lines.extend(["", "Assumptions"])
     for item in proposal.get("assumptions", []):
         rendered = _render_evidence_item(item, "statement")

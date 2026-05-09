@@ -142,7 +142,7 @@ def build_domain_intelligence(
         "family": domain_profile.family,
         "workstream_role": kind,
         "summary": (
-            f"{row_title} captures the {terms['domain_phrase']} slice as a product-requirements surface: "
+            f"{row_title} captures the {terms['domain_phrase']} slice as a product-requirements record: "
             f"what exists, what may change, what must remain invariant, what counts as proof, "
             f"and what later agents should reuse before editing source."
         ),
@@ -167,7 +167,7 @@ def build_domain_intelligence(
         "ontology": _ontology(domain_profile=domain_profile, kind=kind, components=focus, title=title),
         "state": [
             f"Current state: user_intent evidence only; no source-backed runtime behavior is claimed for `{row_title}`.",
-            f"Desired state: {wave} has a plan, code slice, repository-native proof, and refreshed project records.",
+            f"Desired state: {wave} has a plan, code slice, repository-native proof, and refreshed release evidence.",
             f"Intermediate states: proposed -> queued -> planning -> implementation -> source_backed -> release-gated.",
             f"Blocked states: missing component owner, missing validation fixture, unresolved security/compliance assumption, or stale workstream/architecture links.",
             f"Invalid states: active source claim without tests; release `{selector}` advanced while first-wave proof is missing.",
@@ -190,7 +190,7 @@ def build_domain_intelligence(
         ],
         "evidence_model": [
             *terms["evidence_counts"],
-            "Counts as evidence: passing repo-native tests, rendered architecture diagrams, component/workstream validation, project-record refresh, and explicit human decisions.",
+            "Counts as evidence: passing repo-native tests, rendered architecture diagrams, component/workstream validation, release evidence refresh, and explicit human decisions.",
             "Does not count as evidence: proposal prose alone, dashboard freshness without source change, unlabeled assumptions, or host-agent summaries.",
             "Evidence strength order: source-backed tests > validated project source > explicit human confirmation > user_intent proposal > labeled assumption.",
         ],
@@ -203,7 +203,7 @@ def build_domain_intelligence(
         "assumptions": [
             *terms["assumptions"],
             f"Assumption: `{row_title}` stays candidate/user_intent until a technical plan and source proof land.",
-            f"Validation path: answer open questions, bind a plan, implement the first slice, run {terms['primary_validation_command']}, then refresh project records.",
+            f"Validation path: answer open questions, bind a plan, implement the first slice, run {terms['primary_validation_command']}, then refresh release evidence.",
             "Expiration condition: source-backed implementation, changed compliance target, or changed first-wave release scope.",
         ],
         "topology": [
@@ -450,7 +450,7 @@ def _ontology(
                 "Scenario fixture: pinned local input for price shock, liquidity drain, stale oracle, or missing indexer proof.",
                 "Replay report: deterministic evidence tying fixture inputs to alert state, severity, and confidence.",
                 "Fault case: stale oracle, missing indexer, unsupported chain, or credential/live-network attempt.",
-                "Proof artifact: repo-native test or smoke output plus refreshed project records.",
+                "Proof artifact: repo-native test or smoke output plus refreshed release evidence.",
             ],
         }
         rows = rows_by_kind.get(kind, rows_by_kind["domain"])
@@ -530,7 +530,7 @@ def _ontology(
             "validation": [
                 "Proof fixture: deterministic input that lets tests exercise normal, empty, degraded, and failure states.",
                 "Proof report: repo-native test, smoke, or browser artifact consumed by release review.",
-                "Stale surface: generated dashboard or diagram that no longer matches source truth.",
+                "Stale generated view: generated dashboard or diagram that no longer matches source truth.",
             ],
         }
         rows = rows_by_kind.get(kind, rows_by_kind["domain"])
@@ -599,7 +599,7 @@ def _contains_malformed_ownership_phrase(value: Any) -> bool:
 def _operators(*, domain_profile: GreenfieldDomainProfile, kind: str, selector: str) -> list[str]:
     common = [
         "Bind technical plan: precondition is confirmed scope and component focus; postcondition is a plan with source paths, rollback path, and proof commands.",
-        "Attach evidence: precondition is a real test, fixture, render, or human decision; postcondition is refreshed project traceability.",
+        "Attach evidence: precondition is a real test, fixture, render, or human decision; postcondition is updated project traceability.",
         f"Promote release `{selector}`: precondition is source-backed first-wave proof; postcondition is release gate evidence with no unresolved blockers.",
     ]
     if domain_profile.family == "defi_risk":
@@ -622,7 +622,7 @@ def _operators(*, domain_profile: GreenfieldDomainProfile, kind: str, selector: 
             "validation": [
                 "Replay risk scenario: precondition is pinned local fixture; postcondition is deterministic report over price shock, liquidity drain, stale oracle, or missing indexer.",
                 "Assert no live network: precondition is first-release proof run; postcondition is failure on RPC, credentials, private key, or unpinned provider access.",
-                "Publish release proof: precondition is replay plus UI/contract proof; postcondition is refreshed project records and release gate evidence.",
+                "Publish release proof: precondition is replay plus UI/contract proof; postcondition is refreshed release evidence.",
             ],
         }
         rows = rows_by_kind.get(kind, rows_by_kind["domain"])
@@ -662,7 +662,7 @@ def _operators(*, domain_profile: GreenfieldDomainProfile, kind: str, selector: 
             "experience": [
                 "Start first workflow: precondition is named operator role and input fixture; postcondition is visible normal, empty, degraded, or failure state.",
                 "Render fallback state: precondition is empty, degraded, or invalid domain result; postcondition is visible recovery guidance.",
-                "Capture interaction proof: precondition is route or command surface; postcondition is behavior evidence tied to the workstream record.",
+                "Capture interaction proof: precondition is route or command interface; postcondition is behavior evidence tied to the workstream record.",
             ],
             "domain": [
                 "Execute domain command: precondition is validated input and current state; postcondition is accepted, rejected, completed, or retryable domain result.",
@@ -670,8 +670,8 @@ def _operators(*, domain_profile: GreenfieldDomainProfile, kind: str, selector: 
                 "Publish contract: precondition is interface and schema choice; postcondition is tests consuming the same contract.",
             ],
             "validation": [
-                "Run proof harness: precondition is deterministic fixture set; postcondition is repository-native evidence and stale-surface detection.",
-                "Refresh project records: precondition is changed source or proof truth; postcondition is synchronized project truth and release posture.",
+                "Run proof harness: precondition is deterministic fixture set; postcondition is repository-native evidence and stale-view detection.",
+                "Refresh release evidence: precondition is changed source or proof truth; postcondition is synchronized project truth and release posture.",
                 "Block release promotion: precondition is missing proof or stale topology; postcondition is failed validation gate.",
             ],
         }

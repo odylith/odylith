@@ -304,7 +304,7 @@ def _generic_terms(*, title: str) -> dict[str, Any]:
             "Keep data, auth, audit, accessibility, and recovery assumptions explicit until the operator confirms them.",
         ],
         "evidence_counts": [
-            "Generic greenfield evidence must include behavior proof, contract proof, rendered topology, and refreshed project records.",
+            "Generic greenfield evidence must include behavior proof, contract proof, rendered topology, and refreshed release evidence.",
         ],
         "assumptions": [
             f"Assumption: {compact} starts with one product workflow and one domain object before wider architecture.",

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -196,9 +197,13 @@ assert not (heavy & set(sys.modules)), sorted(heavy & set(sys.modules))
 assert host_intervention_support.prompt_needs_live_bundle(prompt='Odylith, you there?') is False
 assert not (heavy & set(sys.modules)), sorted(heavy & set(sys.modules))
 """
+    repo_root = Path(__file__).resolve().parents[3]
+    env = dict(os.environ)
+    env["PYTHONPATH"] = f"{repo_root / 'src'}{os.pathsep}{env.get('PYTHONPATH', '')}".rstrip(os.pathsep)
     completed = subprocess.run(
         [sys.executable, "-c", script],
-        cwd=str(Path(__file__).resolve().parents[3]),
+        cwd=str(repo_root),
+        env=env,
         capture_output=True,
         text=True,
         check=False,

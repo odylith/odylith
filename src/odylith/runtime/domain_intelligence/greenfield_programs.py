@@ -109,7 +109,7 @@ def create_greenfield_program(
                 "label": "First release slice",
                 "status": "active",
                 "summary": "Initial greenfield release slice.",
-                "exit_gate": "First release slice exits only after the targeted child workstreams have source-backed proof and refreshed project records.",
+                "exit_gate": "First release slice exits only after the targeted child workstreams have source-backed proof and refreshed release evidence.",
                 "validation": [],
                 "depends_on": [],
                 "primary_workstreams": child_ids,

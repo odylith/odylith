@@ -64,6 +64,20 @@ def _prompt_text(prompt: str) -> str:
 def _intent_title(prompt: str) -> str:
     text = _prompt_text(prompt)
     lowered = text.casefold()
+    stripped_greenfield_request = False
+    for prefix in (
+        "draft a greenfield proposal for ",
+        "draft greenfield proposal for ",
+        "draft a proposal for ",
+        "draft proposal for ",
+        "greenfield proposal for ",
+        "proposal for ",
+    ):
+        if lowered.startswith(prefix):
+            text = text[len(prefix):].strip()
+            stripped_greenfield_request = True
+            break
+    lowered = text.casefold()
     for prefix in (
         "build ",
         "create ",
@@ -76,6 +90,8 @@ def _intent_title(prompt: str) -> str:
         if lowered.startswith(prefix):
             text = text[len(prefix):].strip()
             break
+    if stripped_greenfield_request:
+        text = re.sub(r"^(?:a|an)\s+", "", text, flags=re.IGNORECASE).strip()
     text = re.sub(r"\b(for me|please|with backlog.*|and diagrams.*|and atlas.*)$", "", text, flags=re.IGNORECASE).strip(" .")
     if not text or len(text) < 4:
         return "Greenfield Project"
@@ -217,7 +233,7 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
             "do not add project names or descriptive words to release targets, "
             "and identify the first-wave workstreams that should target that release."
             " The confirmed proposal will run through deterministic validation "
-            "before writes and will refresh project records after "
+            "before writes and will refresh accepted product records after "
             "the accepted artifacts are written. Include a domain-appropriate security, "
             "privacy, compliance, abuse, accessibility, data retention, and operational "
             "risk posture; keep it proportional, specific, and host-model agnostic."
@@ -604,7 +620,7 @@ def apply_greenfield_proposal(
     """Apply a confirmed proposal using owned governance authoring paths."""
 
     if not confirm:
-        raise ValueError("--confirm is required before greenfield apply writes governance records")
+        raise ValueError("--confirm is required before greenfield apply writes accepted product records")
     proposal = normalize_host_reasoned_proposal(proposal)
     validate_host_reasoned_proposal(proposal)
     root = Path(repo_root).expanduser().resolve()

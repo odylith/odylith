@@ -178,7 +178,7 @@ def run_greenfield_tribunal(
     _check_domain_security_posture(proposal=proposal, issues=issues)
     dimensions["domain_security"] = "explicit domain risk, security, compliance, policy, and abuse posture present"
 
-    dimensions["surfaces"] = "apply refreshes governance records after all writes"
+    dimensions["surfaces"] = "apply refreshes accepted product records after all writes"
     status = "failed" if issues else "passed"
     summary = (
         "Greenfield proposal is coherent enough to write governed source truth."

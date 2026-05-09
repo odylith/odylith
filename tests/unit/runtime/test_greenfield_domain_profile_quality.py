@@ -6,6 +6,7 @@ import re
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 
 
 CASES = [
@@ -77,6 +78,33 @@ SURFACE_TERMS = (
 
 GENERIC_COMPONENT_TERMS = ("Experience Boundary", "Domain Core", "Verification Harness")
 
+UNPROFILED_CASES = [
+    (
+        "quantum chemistry catalyst screening platform",
+        ("quantum", "chemistry", "catalyst", "screening"),
+    ),
+    (
+        "city zoning permit review app",
+        ("city", "zoning", "permit", "review"),
+    ),
+    (
+        "carbon credit MRV ledger for forestry projects",
+        ("carbon", "credit", "mrv", "forestry"),
+    ),
+    (
+        "teacher lesson plan co-pilot",
+        ("teacher", "lesson", "plan"),
+    ),
+    (
+        "wind farm predictive maintenance console",
+        ("wind", "farm", "predictive", "maintenance"),
+    ),
+    (
+        "food safety recall traceability system",
+        ("food", "safety", "recall", "traceability"),
+    ),
+]
+
 
 @pytest.mark.parametrize("case", CASES, ids=[case["name"] for case in CASES])
 def test_greenfield_profiles_capture_prompt_specific_domain_without_surface_leaks(tmp_path, case) -> None:
@@ -85,6 +113,7 @@ def test_greenfield_profiles_capture_prompt_specific_domain_without_surface_leak
         prompt=case["prompt"],
     )["proposal_template"]
 
+    assert "Greenfield Proposal For" not in proposal["intent"]["title"]
     greenfield_proposals.validate_host_reasoned_proposal(proposal)
     assert greenfield_proposals.run_greenfield_tribunal(proposal, release_selector="0.0.1").passed
 
@@ -136,6 +165,58 @@ def test_robot_swarm_greenfield_keeps_robot_domain_language_without_surface_leak
         assert token not in diagrams
     assert "atlas_first_draft" not in artifact
     assert len(proposal["diagrams"]) == 10
+
+
+@pytest.mark.parametrize(("prompt", "tokens"), UNPROFILED_CASES)
+def test_unprofiled_greenfield_prompts_still_get_project_specific_workstreams(tmp_path, prompt, tokens) -> None:
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=f"draft a greenfield proposal for a {prompt}",
+    )["proposal_template"]
+
+    assert greenfield_quality_issues(proposal) == []
+    greenfield_proposals.validate_host_reasoned_proposal(proposal)
+    assert greenfield_proposals.run_greenfield_tribunal(proposal, release_selector="0.0.1").passed
+
+    text = greenfield_proposals.format_proposal_text(proposal)
+    diagrams = "\n".join(str(row.get("mermaid_source", "")) for row in proposal["diagrams"])
+    combined = "\n".join((text, diagrams))
+
+    for token in tokens:
+        assert _has_token(combined, token), token
+    for row in proposal["backlog"][1:]:
+        assert row["title"] not in {
+            "Prove first product workflow",
+            "Define first domain contract",
+            "Prove release harness",
+            "Define first operator workflow",
+            "Define domain contract and ownership",
+            "Add release proof and operations harness",
+        }
+        assert any(_has_token(json.dumps(row, sort_keys=True), token) for token in tokens)
+    for component in proposal["components"]:
+        assert component["label"] not in {"Operator Workspace", "Product Model", "Evidence Harness"}
+        assert any(_has_token(json.dumps(component, sort_keys=True), token) for token in tokens)
+    for token in SURFACE_TERMS + GENERIC_COMPONENT_TERMS:
+        assert token not in text
+        assert token not in diagrams
+
+
+def test_greenfield_quality_gate_rejects_control_plane_and_generic_workstream_leaks(tmp_path) -> None:
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="draft a greenfield proposal for a city zoning permit review app",
+    )["proposal_template"]
+    proposal["backlog"][1]["title"] = "Define first operator workflow"
+    proposal["backlog"][1]["product_view"] = "Radar, Registry, Atlas, and Compass should drive the app workstream."
+    proposal["components"][0]["label"] = "Experience Boundary"
+    proposal["diagrams"][0]["mermaid_source"] += "  Leak[Odylith surfaces<br/>Radar Registry Atlas Compass]:::note\n"
+
+    issues = greenfield_quality_issues(proposal)
+
+    assert any("Radar" in issue for issue in issues)
+    assert any("Experience Boundary" in issue for issue in issues)
+    assert any("Define first operator workflow" in issue for issue in issues)
 
 
 def _has_token(text: str, token: str) -> bool:

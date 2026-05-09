@@ -173,7 +173,7 @@ def _normalize_validation_strategy(value: Any) -> list[Any]:
         return rows
     return [
         "Define focused behavior proof for each first-slice workstream before implementation starts.",
-        "Refresh project records after proposal acceptance.",
+        "Refresh accepted product records after proposal acceptance.",
     ]
 
 
@@ -473,13 +473,13 @@ def _synthesized_program_parent(
         "recommended_first_slice": (
             f"Start coding with the first active wave `{first_wave_label}`; pick the first targeted child workstream, "
             "write its technical plan, implement the smallest source-backed slice, then run the repository test suite "
-            "plus governance-record refresh and release-target validation before expanding to later waves."
+            "plus release-evidence refresh and release-target validation before expanding to later waves."
         ),
         "success_metrics": [
             "Program coherence: the progress view shows this umbrella as the program parent, and every child workstream belongs to an explicit wave rather than being mistaken for the program itself.",
             "Coding readiness: the first active wave names the implementation-start workstreams, component boundaries, dependencies, interfaces, and validation gates before source edits begin.",
             "Release traceability: workstreams, component specs, architecture diagrams, progress view, and the provisional release target all point at the same first-wave workstreams with no orphaned governance objects.",
-            "Verification clarity: the applied proposal names the behavior tests, component contract tests, project-record refresh, and release validation needed before claiming the first slice is complete.",
+            "Verification clarity: the applied proposal names the behavior tests, component contract tests, release-evidence refresh, and release validation needed before claiming the first slice is complete.",
         ],
         "component_focus": component_focus,
         "related_diagram_slugs": diagram_refs,
@@ -495,7 +495,7 @@ def _synthesized_program_parent(
         "validation": validation
         or [
             "Greenfield apply Tribunal passes before writes.",
-            "Project records refresh after confirmed writes.",
+            "Accepted product records refresh after confirmed writes.",
         ],
         "domain_risk": _domain_posture_text(security_compliance)
         or "Greenfield governance can mislead implementation if the program parent, release target, validation gates, or component boundaries are ambiguous.",

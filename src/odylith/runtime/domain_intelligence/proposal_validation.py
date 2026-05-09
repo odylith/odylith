@@ -8,6 +8,7 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_project_brief import project_brief_issues
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import project_intelligence_issues
+from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import domain_intelligence_issues
 
 
@@ -100,6 +101,7 @@ def collect_host_reasoned_proposal_issues(proposal: Mapping[str, Any]) -> list[s
     if isinstance(project_intelligence, Mapping):
         for issue in project_intelligence_issues(project_intelligence):
             issues.append(issue)
+    issues.extend(greenfield_quality_issues(proposal))
     program = capture(lambda: _require_mapping(proposal, "program"))
     if isinstance(program, Mapping):
         capture(lambda: _validate_program(program))

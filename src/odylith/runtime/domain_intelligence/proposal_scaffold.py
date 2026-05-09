@@ -219,7 +219,7 @@ def _base_risks(*, title: str, domain_profile: GreenfieldDomainProfile) -> list[
                 ),
                 "mitigation": (
                     "Keep the first wave fixture-backed and non-custodial; require freshness/confidence fields, "
-                    "deterministic replay proof, and refreshed project records before release promotion."
+                    "deterministic replay proof, and refreshed release evidence before release promotion."
                 ),
             },
             {
@@ -254,7 +254,7 @@ def _base_risks(*, title: str, domain_profile: GreenfieldDomainProfile) -> list[
                 ),
                 "mitigation": (
                     "Keep the first wave fixture-backed; require Shopify merchant snapshots, eligibility gates, liquidity snapshots, "
-                    "idempotent disbursement/repayment replay, and refreshed project records before release promotion."
+                    "idempotent disbursement/repayment replay, and refreshed release evidence before release promotion."
                 ),
             },
             {
@@ -323,7 +323,7 @@ def _base_risks(*, title: str, domain_profile: GreenfieldDomainProfile) -> list[
             ),
             "mitigation": (
                 "Apply only after operator review, then bind every source change to a child workstream, component boundary, "
-                "proof command, and refreshed project record."
+                "proof command, and refreshed release evidence."
             ),
         },
         {
@@ -409,7 +409,7 @@ def _base_validation_strategy() -> list[str]:
         "First-wave workstreams must define implementation-backed behavior proof before implementation starts.",
         "Candidate component specs must stay component-specific: interfaces, dependencies, failure modes, first coding slice, definition of done, and verification commands belong to the component, not copied project posture.",
         "Architecture diagrams must render after apply and remain traceable to workstreams and component candidates.",
-        "Project records must show the first release lane, active wave, start workstream, and proof gates after apply.",
+        "The accepted product brief and release evidence must show the first release lane, active wave, start workstream, and proof gates after apply.",
     ]
 
 
@@ -458,7 +458,7 @@ def _program(*, title: str, components: Mapping[str, str], domain_profile: Green
                 "label": "First product slice",
                 "goal": "Prove the smallest coherent product workflow with source-backed validation.",
                 "validation_gate": (
-                    "The first workstream has a technical plan, behavior proof, refreshed project records, "
+                    "The first workstream has a technical plan, behavior proof, refreshed release evidence, "
                     "and release-target validation."
                 ),
                 "workstreams": ["WS-01", "WS-02"],
@@ -519,7 +519,7 @@ def _release_plan(
         "selector": selector,
         "label": greenfield_programs.compact_release_target_label(selector),
         "provisional_release_id": f"release-{slug}-{slugify(selector)}",
-        "strategy": "Promote only after the first product slice has source-backed tests and refreshed project records.",
+        "strategy": "Promote only after the first product slice has source-backed tests and refreshed release evidence.",
         "target_workstreams": ["WS-01", "WS-02"],
         "release_stages": [
             {
@@ -530,7 +530,7 @@ def _release_plan(
         ],
         "promotion_criteria": [
             "First workstream has a technical plan and repository-native behavior proof.",
-            "Project records refresh cleanly after source changes.",
+            "Release evidence refreshes cleanly after source changes.",
         ],
         "component_focus": [experience_component, domain_component],
         "evidence_tier": "odylith_assumption",
@@ -647,7 +647,7 @@ def _umbrella_backlog_row(
         "product_view": f"A proposal-first product program for {title} with one active first wave, a {selector} release target, candidate components, and diagram traceability.",
         "recommended_first_slice": "Confirm the first product slice, then open the first child workstream and author the technical plan before editing source.",
         "success_metrics": [
-            "Project records show the umbrella, first wave, and release target after apply.",
+            "Accepted product records show the umbrella, first wave, and release target after apply.",
             "Workstreams, component candidates, and diagrams all link the first wave to the same boundaries.",
             "The start workstream includes validation gates and a first implementation prompt.",
         ],
@@ -660,8 +660,8 @@ def _umbrella_backlog_row(
             diagrams["validation_release"],
         ],
         "dependencies": ["Child workstreams depend on this umbrella for wave membership, release targeting, and proof sequencing."],
-        "interfaces": ["Accepted project records expose one shared greenfield program topology."],
-        "validation": ["Greenfield proposal validation passes and project records refresh."],
+        "interfaces": ["Accepted product records expose one shared greenfield program topology."],
+        "validation": ["Greenfield proposal validation passes and release evidence regenerates cleanly."],
         "domain_risk": "Greenfield planning can mislead source implementation if the first wave, component ownership, release target, or proof gates are vague.",
         "security_posture": "Security, privacy, accessibility, abuse, audit, and recovery posture stay explicit until source-backed implementation narrows them.",
         "priority": "P1",
@@ -966,14 +966,14 @@ def _overview_mermaid(domain_profile: GreenfieldDomainProfile) -> str:
     return (
         "flowchart LR\n"
         "  Intent[Operator<br/>intent]:::actor --> Choices[Direction choices<br/>user data runtime proof]:::decision\n"
-        "  Choices --> ProjectTruth[Project intelligence<br/>accepted brief]:::planning\n"
-        f"  ProjectTruth --> Experience[\"{experience}\"]:::service\n"
-        f"  ProjectTruth --> Domain[\"{domain}\"]:::service\n"
+        "  Choices --> AcceptedBrief[Accepted product<br/>brief]:::planning\n"
+        f"  AcceptedBrief --> Experience[\"{experience}\"]:::service\n"
+        f"  AcceptedBrief --> Domain[\"{domain}\"]:::service\n"
         "  Experience --> Domain\n"
         f"  Domain --> Harness[\"{validation}\"]:::proof\n"
         "  Harness --> Review[Operator review<br/>accept gates before code]:::actor\n"
         "  Review --> CodeGate[Code gate<br/>plan paths tests rollback]:::gate\n"
-        "  Evidence[Evidence boundary<br/>intent not source-backed]:::note -. constrains .-> ProjectTruth\n"
+        "  Evidence[Evidence boundary<br/>intent not source-backed]:::note -. constrains .-> AcceptedBrief\n"
         "  Evidence -. constrains .-> CodeGate\n"
         "  classDef actor fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b;\n"
         "  classDef service fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"

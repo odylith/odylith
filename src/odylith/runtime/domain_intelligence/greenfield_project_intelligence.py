@@ -135,12 +135,12 @@ def build_project_intelligence(
         ),
         "coding_posture": (
             "Do not start coding from the proposal closeout. First review direction options, accept or revise the "
-            "project shape, write accepted project records, then author a technical plan for the chosen first child workstream."
+            "project shape, write accepted product requirements, then author a technical plan for the chosen first child workstream."
         ),
         "control_surface_summary": [
             f"What exists: {source_posture} repo evidence plus user-intent project truth for `{title}`.",
             "What may change: direction choices, runtime, first user, data boundary, proof bar, release ambition, and wave order.",
-            "What must remain invariant: no source-backed claim without code paths, tests, component owner, and refreshed project records.",
+            "What must remain invariant: no source-backed claim without code paths, tests, component owner, and refreshed release evidence.",
             "What counts as proof: repo-native tests or fixtures, rendered architecture diagrams, validated component/workstream records, and explicit human decisions.",
             "What prior experience changes next action: avoid generic component specs, title-only workstreams, and premature coding handoff.",
         ],
@@ -189,7 +189,7 @@ def build_project_intelligence(
             "Do not let generated views outrank source files when conflicts appear.",
         ],
         "source_of_truth_map": [
-            "Project intelligence: canonical project-first requirements in proposal JSON and parent project workstream.",
+            "Project requirements: canonical project-first requirements in proposal JSON and parent project workstream.",
             "Project brief: operator-facing choices, checkpoints, host-independent paths, and coding-readiness gates.",
             "Workstream source: canonical backlog intent, domain intelligence, dependencies, risks, and success metrics.",
             "Component specs: canonical component identity, ownership, interfaces, collaborators, failure modes, and proof.",
@@ -220,7 +220,7 @@ def build_project_intelligence(
             f"Program topology: parent workstream -> {', '.join(wave_refs[:3]) or 'first wave'} -> child workstreams -> components -> diagrams -> validation.",
             f"Component topology: planned ownership currently spans {component_spine}; each component must keep its own boundary, dependencies, interfaces, and proof.",
             f"Diagram topology: architecture review currently spans {diagram_spine}; each view must remain traceable to workstreams and component owners.",
-            "Proof topology: prompt -> proposal JSON -> validation -> accepted writes -> technical plan -> source paths -> repo-native proof -> refreshed project records.",
+            "Proof topology: prompt -> proposal JSON -> validation -> accepted writes -> technical plan -> source paths -> repo-native proof -> refreshed release evidence.",
             "Release topology: release target points at first-wave workstreams and should not imply later-wave readiness.",
         ],
         "invariants": [
@@ -234,22 +234,22 @@ def build_project_intelligence(
             *family["risks"],
             "UX risk: a one-command create path can feel like permission to code unless the handoff makes project review and readiness gates explicit.",
             "Governance risk: deep project text can become sludge if it is repetitive, not tied to topology, or not enforced by validation.",
-            "Agent risk: future sessions can skip prior choices if project intelligence is not written into parent project truth.",
+            "Agent risk: future sessions can skip prior choices if accepted project requirements are not written into parent project truth.",
         ],
         "validation_obligations": [
-            "Proposal validation must reject missing project intelligence, shallow readiness gates, and empty customization flow.",
+            "Proposal validation must reject missing project requirements, shallow readiness gates, and empty customization flow.",
             "Proposal validation must pass before writes and reject disconnected workstream, component, architecture, wave, or release topology.",
             "After apply, the parent workstream must contain Project Intelligence and child workstreams must contain Domain Intelligence.",
             "Before coding, the first technical plan must name source paths, tests, fallback/degraded proof, rollback or recovery path, and refresh commands.",
-            "Before release promotion, repo-native proof and generated project records must agree with the accepted project topology.",
+            "Before release promotion, repo-native proof and release evidence must agree with the accepted project topology.",
         ],
         "artifacts": [
-            "Canonical proposal JSON: source object for project intelligence, project brief, workstreams, components, diagrams, waves, and release plan.",
-            "Parent workstream: durable project intelligence and execution memory.",
+            "Canonical proposal JSON: source object for project requirements, project brief, workstreams, components, diagrams, waves, and release plan.",
+            "Parent workstream: durable project requirements and execution memory.",
             "Child workstreams: domain-specific product requirements.",
             "Candidate component specs: component-specific planned ownership and proof contracts.",
-            "Architecture diagram suite: multi-view product review surface before source exists.",
-            "Release target and progress posture: navigation and first-wave progress surface.",
+            "Architecture diagram suite: multi-view product review artifact before source exists.",
+            "Release target and progress posture: navigation and first-wave progress view.",
         ],
         "owners": [
             "Operator owns product direction, customization choices, compliance posture, runtime target, and release ambition.",
@@ -280,7 +280,7 @@ def build_project_intelligence(
             *family["invalidation_rules"],
             "If the operator changes primary user, runtime, data boundary, compliance posture, proof threshold, or release ambition, invalidate the affected wave order, component boundaries, diagrams, and release assumptions before coding.",
             "If source-backed proof lands, changes, or disappears, reclassify only the claims tied to that proof and expire dependent component, workstream, architecture, and progress projections until refreshed.",
-            "If a technical plan contradicts the accepted project intelligence, stop implementation and require an explicit proposal revision, plan revision, or human decision record.",
+            "If a technical plan contradicts the accepted project requirements, stop implementation and require an explicit proposal revision, plan revision, or human decision record.",
             "If a generated view disagrees with source files, treat the view as stale and repair source truth before using it for direction.",
         ],
         "conflict_model": [
@@ -291,7 +291,7 @@ def build_project_intelligence(
         ],
         "transfer_priors": [
             *family["transfer_priors"],
-            "Reusable prior: first build the project requirements surface, then pick the first child implementation plan.",
+            "Reusable prior: first build the project requirements record, then pick the first child implementation plan.",
             "Reusable prior: require normal, empty, degraded, and failure proof where the domain exposes user-visible states.",
             "Reusable prior: diagram suites should include topology, sequence, ownership, state/data, validation/release, and operational risk views when the project is complex.",
             "Reusable prior: a greenfield proposal should lower future agent context cost rather than create long prose that must be rediscovered.",
@@ -412,10 +412,10 @@ def _append_layer(lines: list[str], label: str, value: Any, *, limit: int) -> No
 def _customization_flow(*, choice_refs: Sequence[str], release: str) -> list[str]:
     choices = ", ".join(choice_refs[:8]) or "primary user, runtime, data boundary, proof bar, first-release ambition"
     return [
-        f"Review: inspect project intelligence, project brief, workstreams, components, diagrams, waves, and release `{release}`.",
+        f"Review: inspect project requirements, project brief, workstreams, components, diagrams, waves, and release `{release}`.",
         f"Choose: adjust {choices} before apply if any default would misdirect architecture or proof.",
         "Confirm: run the one-command create path only after the operator accepts the direction and readiness gates.",
-        "Plan: open the first child workstream technical plan after accepted project records exist.",
+        "Plan: open the first child workstream technical plan after accepted product requirements exist.",
         "Code: edit source only after the plan names source paths, tests, failure states, and rollback or recovery posture.",
     ]
 

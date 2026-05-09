@@ -212,7 +212,7 @@ def _blueprint_sections(*, family: str) -> list[dict[str, str]]:
             "why_it_matters": "Defines what counts as evidence before implementation begins.",
         },
         {
-            "section": "Project records",
+            "section": "Accepted product records",
             "must_capture": "Workstreams, component candidates, architecture diagrams, waves, release target, assumptions, risks, and decisions.",
             "why_it_matters": "Keeps Codex, Claude Code, and direct CLI users on the same project truth without turning tool internals into the product model.",
         },
@@ -520,7 +520,7 @@ def _host_independent_paths(*, prompt: str, release_selector: str) -> list[dict[
             "path": "Apply after confirmation",
             "command": f'odylith greenfield create --repo-root . --prompt "{prompt_text}" --release {release} --confirm',
             "works_in": "shell, Codex, Claude Code",
-            "use_when": "Use only after the operator accepts the project-first brief and wants project records written.",
+            "use_when": "Use only after the operator accepts the project-first brief and wants accepted product requirements written.",
         },
     ]
 

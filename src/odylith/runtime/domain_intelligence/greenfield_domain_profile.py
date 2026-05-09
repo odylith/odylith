@@ -505,12 +505,12 @@ def _default_profile(*, title: str, slug: str) -> GreenfieldDomainProfile:
                 path_prefix="tests",
                 responsibility=(
                     f"Own deterministic {compact.lower()} fixtures, smoke/regression commands, proof reports, "
-                    "and project-record checks."
+                    "and release evidence checks."
                 ),
                 boundary=f"Owns first-release proof evidence; excludes product runtime behavior and production data.",
                 dependencies=(f"Depends on the {compact.lower()} operator workspace and product model contracts.",),
-                interfaces=("Local smoke command, fixture input, proof report, and evidence refresh check.",),
-                validation=("Proof command fails closed on missing fixtures, skipped assertions, or stale project records.",),
+                interfaces=("Local smoke command, fixture input, proof report, and release evidence check.",),
+                validation=("Proof command fails closed on missing fixtures, skipped assertions, or stale release evidence.",),
                 risks=("Weak proof can let proposal text outrun implementation evidence.",),
             ),
         },
