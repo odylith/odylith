@@ -266,7 +266,7 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
         "diagrams": [
             {
                 "slug": "commerce-launch-system-context",
-                "title": "Commerce Launch System Context",
+                "title": "System Context",
                 "kind": "flowchart",
                 "summary": "Show shopper, storefront, checkout, order, payment, and release-evidence boundaries.",
                 "owner": "repo",
@@ -313,7 +313,7 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
             },
             {
                 "slug": "commerce-launch-program-waves",
-                "title": "Commerce Launch Program Waves",
+                "title": "Program Waves",
                 "kind": "flowchart",
                 "summary": "Show checkout spine, catalog integrity, payment recovery, and hardening waves.",
                 "owner": "repo",
@@ -330,7 +330,7 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                 "evidence_tier": "user_intent",
                 "mermaid_source": (
                     "timeline\n"
-                    "    title Commerce Launch Program Waves\n"
+                    "    title Program Waves\n"
                     "    Checkout spine : Browse-to-cart proof : Payment failure recovery\n"
                     "    Catalog integrity : Price snapshot rules : Inventory review\n"
                     "    Order reliability : Idempotent creation : Webhook replay proof\n"
@@ -830,6 +830,9 @@ def test_greenfield_text_is_compact_product_preview_before_confirmed_write(tmp_p
     assert "Product workstreams:" in output
     assert "Candidate product boundaries:" in output
     assert "Architecture review views:" in output
+    assert "System Overview:" in output
+    assert "A Mathematics Research Workspace For Spectral Graph Theory System Overview" not in output
+    assert "A Mathematics Research Workspace For Spectral Graph Theory First Slice Flow" not in output
     assert "odylith greenfield create --repo-root ." in output
     assert "odylith greenfield propose --repo-root ." in output
     assert "What breaks if it fails" in output

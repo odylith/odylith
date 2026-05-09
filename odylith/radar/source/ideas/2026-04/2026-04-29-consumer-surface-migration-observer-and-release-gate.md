@@ -1519,7 +1519,9 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   `migration-observer:0.1.15:browser-surfaces:8667a99fa0c4`, plus the
   explicit next-action closeout and prompt-transcript scrub fingerprints
   `migration-observer:0.1.15:browser-surfaces:291b664422b7` and
-  `migration-observer:0.1.15:install-managed-assets:2d6b64f1ae76`. The pass
+  `migration-observer:0.1.15:install-managed-assets:2d6b64f1ae76`, and the
+  concise diagram-title rendered-surface fingerprint
+  `migration-observer:0.1.15:browser-surfaces:916ccb5607a8`. The pass
   changes installed guidance, bundle guidance, public docs, and greenfield CLI
   help so `greenfield propose` is the compact product-first review gate, while
   confirmed `greenfield create/apply --confirm` remains the first point where
@@ -1535,4 +1537,6 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   source records describe the failure class generically rather than echoing
   the mockrepo prompt as product backlog truth. Neither change requires a
   consumer source-truth migration beyond normal upgrade adoption and dashboard
-  refresh.
+  refresh. The diagram-title hardening only changes future generated titles and
+  regenerated rendered surfaces: existing slugs, source paths, and consumer
+  component/workstream identity remain stable.

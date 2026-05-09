@@ -695,6 +695,16 @@ Related Bugs:
       covered Radar, Registry, Atlas, Casebook, and Compass in desktop and
       mobile headless browser viewports with no console warnings/errors and no
       horizontal overflow.
+- [x] Greenfield architecture-title proof:
+      diagram titles now name the view instead of repeating the full project
+      prompt prefix. Generic, merchant-lending, and robot-swarm scaffolds keep
+      project identity in slugs, summaries, and context while rendering short
+      titles such as `System Overview`, `First Slice Flow`, and
+      `Telemetry Contract And Data Flow`. The Tribunal rejects confirmed
+      proposals whose diagram titles start with the project title. Proof:
+      `CB-195`, focused Atlas/profile tests, exact merchant-lending preview
+      repro, and source-local py_compile for the touched generator and
+      Tribunal modules.
 - [x] Activation validators passed after the engine-integrity slice:
       `validate engine-integrity`, `validate discipline`,
       `validate guidance-behavior`, `validate topology-integrity`,

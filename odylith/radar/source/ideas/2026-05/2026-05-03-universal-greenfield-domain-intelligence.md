@@ -304,11 +304,20 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   governed source manifest. Proof: a product-repo guard regression test,
   standalone Registry source-manifest precedence test, real `radar refresh`
   proving the source Registry stays at 30 product components with zero SMB mock
-  components, and a refreshed migration-observer pass for
-  `operator-cli-contracts` plus `browser-surfaces`; the regenerated Radar,
-  Registry, Atlas, Casebook, and Compass shell surfaces also passed the
-  desktop/mobile headless browser matrix with zero console warnings/errors and
-  zero horizontal overflow.
+  components, a refreshed migration-observer pass for `operator-cli-contracts`
+  plus `browser-surfaces`, and a regenerated Radar, Registry, Atlas, Casebook,
+  and Compass shell surface matrix across desktop/mobile headless browser
+  viewports with zero console warnings/errors and zero horizontal overflow.
+- 2026-05-09 architecture-view title hardening fixed greenfield diagrams that
+  repeated the full prompt-derived project title before every view name. The
+  scaffold now keeps project identity in intent, slug, summary, and context,
+  while diagram titles stay concise and scannable (`System Overview`,
+  `First Slice Flow`, `Component Ownership Map`, `Domain State Model`,
+  `Validation And Release Topology`, plus robot-specific view names). The
+  Tribunal rejects project-title-prefixed diagram titles before confirmed
+  writes. Proof: `CB-195`, focused generic/merchant-lending/robot Atlas tests,
+  exact merchant-lending preview repro, and source-local Tribunal rejection
+  test for prefixed host-authored titles.
 - Deepening pass split science/math into targeted subdomains and added fixture
   proof for commerce, SaaS, dashboards, AI assistants, data ingestion, CLI
   libraries, physics simulation, differential-equation solvers, computational

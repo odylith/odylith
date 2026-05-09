@@ -39,7 +39,6 @@ def apply_robot_swarm_logistics_profile(
     _apply_components(proposal["components"], diagram_slugs=diagram_slugs)
     _apply_diagrams(
         proposal["diagrams"],
-        title=title,
         experience_component=experience_component,
         domain_component=domain_component,
         validation_component=validation_component,
@@ -373,7 +372,6 @@ def _apply_components(components: list[dict[str, Any]], *, diagram_slugs: Mappin
 def _apply_diagrams(
     diagrams: list[dict[str, Any]],
     *,
-    title: str,
     experience_component: str,
     domain_component: str,
     validation_component: str,
@@ -386,35 +384,35 @@ def _apply_diagrams(
     )
     updates = [
         {
-            "title": f"{title} Simulation-First Architecture Overview",
+            "title": "Simulation-First Architecture Overview",
             "summary": "Topology connecting operator console, robot coordination core, deterministic simulation harness, audit proof, and release-readiness evidence.",
             "components": common_components,
             "related_workstreams": ["WS-00", "WS-01", "WS-02", "WS-03"],
             "mermaid_source": _overview_mermaid(),
         },
         {
-            "title": f"{title} Dispatch And Telemetry Flow",
+            "title": "Dispatch And Telemetry Flow",
             "summary": "Sequence for one simulated logistics task moving from operator dispatch through coordination contract, simulator telemetry, audit, and proof report.",
             "components": common_components,
             "related_workstreams": ["WS-01", "WS-02", "WS-03"],
             "mermaid_source": _slice_mermaid(),
         },
         {
-            "title": f"{title} Component Responsibility Map",
+            "title": "Component Responsibility Map",
             "summary": "Ownership map separating operator UX, robot coordination contracts, simulation proof, safety audit, and release-readiness evidence.",
             "components": common_components,
             "related_workstreams": ["WS-00", "WS-01", "WS-02", "WS-03"],
             "mermaid_source": _component_map_mermaid(),
         },
         {
-            "title": f"{title} Robot Task State Machine",
+            "title": "Robot Task State Machine",
             "summary": "State model for a robot task, including assignment, execution, telemetry loss, fault, recovery, audit, and completion paths.",
             "components": common_components,
             "related_workstreams": ["WS-01", "WS-02", "WS-03"],
             "mermaid_source": _robot_state_mermaid(),
         },
         {
-            "title": f"{title} Release Proof Topology",
+            "title": "Release Proof Topology",
             "summary": "Validation topology for simulator replay, browser proofs, contract tests, audit assertions, release evidence, and release promotion.",
             "components": common_components,
             "related_workstreams": ["WS-00", "WS-03"],
@@ -425,7 +423,6 @@ def _apply_diagrams(
         row.update(update)
     diagrams.extend(
         _robot_extra_diagrams(
-            title=title,
             diagram_slugs=diagram_slugs,
             components=common_components,
         )
@@ -473,14 +470,13 @@ def _robot_diagram_values(diagram_slugs: Mapping[str, str]) -> list[str]:
 
 def _robot_extra_diagrams(
     *,
-    title: str,
     diagram_slugs: Mapping[str, str],
     components: list[dict[str, str]],
 ) -> list[dict[str, Any]]:
     return [
         _robot_diagram_row(
             slug=_robot_diagram_slug(diagram_slugs, "multi-robot-conflict"),
-            title=f"{title} Multi-Robot Conflict Resolution",
+            title="Multi-Robot Conflict Resolution",
             kind="sequenceDiagram",
             summary="Two-robot slot contention sequence showing reservation, bounded wait, release, replay proof, and audit evidence.",
             components=components,
@@ -489,7 +485,7 @@ def _robot_extra_diagrams(
         ),
         _robot_diagram_row(
             slug=_robot_diagram_slug(diagram_slugs, "safety-envelope"),
-            title=f"{title} Safety Envelope And E-Stop Flow",
+            title="Safety Envelope And E-Stop Flow",
             kind="flowchart",
             summary="Safety view for geofence breach, e-stop fan-out, operator confirmation, simulator proof, and incident audit.",
             components=components,
@@ -498,7 +494,7 @@ def _robot_extra_diagrams(
         ),
         _robot_diagram_row(
             slug=_robot_diagram_slug(diagram_slugs, "telemetry-contract"),
-            title=f"{title} Telemetry Contract And Data Flow",
+            title="Telemetry Contract And Data Flow",
             kind="flowchart",
             summary="Data-contract view from simulator and future robots through canonical telemetry, identity, task state, console read model, and audit.",
             components=components,
@@ -507,7 +503,7 @@ def _robot_extra_diagrams(
         ),
         _robot_diagram_row(
             slug=_robot_diagram_slug(diagram_slugs, "deployment-boundaries"),
-            title=f"{title} Cloud Edge Simulation Boundaries",
+            title="Cloud Edge Simulation Boundaries",
             kind="flowchart",
             summary="Deployment-boundary view separating operator UI, control-plane contracts, simulator-only proof, future edge agent, and blocked live hardware paths.",
             components=components,
@@ -516,7 +512,7 @@ def _robot_extra_diagrams(
         ),
         _robot_diagram_row(
             slug=_robot_diagram_slug(diagram_slugs, "observability-audit-loop"),
-            title=f"{title} Observability And Audit Loop",
+            title="Observability And Audit Loop",
             kind="flowchart",
             summary="Operational evidence view tying telemetry health, operator action logs, simulator replay artifacts, audit assertions, and release handoff.",
             components=components,

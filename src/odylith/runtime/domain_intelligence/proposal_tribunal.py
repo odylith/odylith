@@ -168,6 +168,7 @@ def run_greenfield_tribunal(
     dimensions["registry"] = "candidate components carry planned ownership, interfaces, dependencies, and proof"
 
     _check_diagram_traceability(
+        proposal=proposal,
         diagrams=diagrams,
         backlog=backlog,
         components=components,
@@ -305,6 +306,7 @@ def _check_component_specs(
 
 def _check_diagram_traceability(
     *,
+    proposal: Mapping[str, Any],
     diagrams: Sequence[Mapping[str, Any]],
     backlog: Sequence[Mapping[str, Any]],
     components: Sequence[Mapping[str, Any]],
@@ -312,8 +314,18 @@ def _check_diagram_traceability(
 ) -> None:
     backlog_aliases = _backlog_aliases(backlog)
     component_aliases = _component_aliases(components)
+    project_title_slugs = _project_title_slugs(proposal)
     for index, row in enumerate(diagrams, start=1):
         slug = str(row.get("slug", f"diagram {index}")).strip() or f"diagram {index}"
+        title = str(row.get("title", "")).strip()
+        title_slug = slugify(title)
+        if title_slug and any(
+            title_slug == project_slug or title_slug.startswith(f"{project_slug}-")
+            for project_slug in project_title_slugs
+        ):
+            issues.append(
+                f"diagram `{slug}` title must name the architecture view, not repeat the project title"
+            )
         refs = _slug_values(collect_text_values(row, _WORKSTREAM_REF_FIELDS))
         if not refs:
             issues.append(f"diagram `{slug}` must name related workstream or backlog focus")
@@ -340,6 +352,15 @@ def _check_domain_security_posture(*, proposal: Mapping[str, Any], issues: list[
 
 def _mapping_rows(value: Any) -> list[Mapping[str, Any]]:
     return [row for row in value if isinstance(row, Mapping)] if isinstance(value, list) else []
+
+
+def _project_title_slugs(proposal: Mapping[str, Any]) -> set[str]:
+    intent = proposal.get("intent", {}) if isinstance(proposal.get("intent"), Mapping) else {}
+    candidates = {
+        slugify(str(intent.get("title", ""))),
+        slugify(str(intent.get("project_slug", ""))),
+    }
+    return {candidate for candidate in candidates if candidate}
 
 
 def _has_text(row: Mapping[str, Any], key: str) -> bool:

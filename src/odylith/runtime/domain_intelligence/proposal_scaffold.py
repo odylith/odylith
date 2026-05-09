@@ -58,7 +58,7 @@ def build_apply_ready_proposal(
         domain_profile=domain_profile,
     )
     component_rows = _components(components, diagrams=diagrams, domain_profile=domain_profile)
-    diagram_rows = _diagrams(title=title, components=components, diagrams=diagrams, domain_profile=domain_profile)
+    diagram_rows = _diagrams(components=components, diagrams=diagrams, domain_profile=domain_profile)
     project_intelligence = build_project_intelligence(
         prompt=prompt,
         title=title,
@@ -758,17 +758,16 @@ def _component_row(
 
 def _diagrams(
     *,
-    title: str,
     components: Mapping[str, str],
     diagrams: Mapping[str, str],
     domain_profile: GreenfieldDomainProfile,
 ) -> list[dict[str, Any]]:
     if domain_profile.family == "defi_merchant_lending":
-        return _merchant_lending_diagrams(title=title, components=components, diagrams=diagrams)
+        return _merchant_lending_diagrams(components=components, diagrams=diagrams)
     return [
         {
             "slug": diagrams["overview"],
-            "title": f"{title} System Overview",
+            "title": "System Overview",
             "kind": "flowchart",
             "summary": "Top-level project formation map: intent becomes accepted project truth first, then candidate components, proof, and operator review.",
             "review_focus": "Use this view to confirm the project spine, evidence boundary, and no-code gate before any child plan is opened.",
@@ -786,7 +785,7 @@ def _diagrams(
         },
         {
             "slug": diagrams["slice"],
-            "title": f"{title} First Slice Flow",
+            "title": "First Slice Flow",
             "kind": "sequenceDiagram",
             "summary": "First-slice sequence showing where the operator action, domain decision, proof harness, and handoff happen.",
             "review_focus": "Use this view to decide which interaction becomes B-002 and what normal, empty, degraded, and failure evidence must prove.",
@@ -804,7 +803,7 @@ def _diagrams(
         },
         {
             "slug": diagrams["component_map"],
-            "title": f"{title} Component Ownership Map",
+            "title": "Component Ownership Map",
             "kind": "flowchart",
             "summary": "Ownership review map: separates experience, domain contract, proof harness, and the split rules between them.",
             "review_focus": "Use this view to prevent broad project narrative from leaking into component specs.",
@@ -822,7 +821,7 @@ def _diagrams(
         },
         {
             "slug": diagrams["domain_state"],
-            "title": f"{title} Domain State Model",
+            "title": "Domain State Model",
             "kind": "stateDiagram",
             "summary": "Domain-state review: shows allowed, blocked, degraded, retry, and completed states before implementation chooses code paths.",
             "review_focus": "Use this view to catch fake progress and missing degraded/error states early.",
@@ -840,7 +839,7 @@ def _diagrams(
         },
         {
             "slug": diagrams["validation_release"],
-            "title": f"{title} Validation And Release Topology",
+            "title": "Validation And Release Topology",
             "kind": "flowchart",
             "summary": "Release-readiness control map tying plan, behavior proof, contract proof, evidence bundle, release decision, and operator handoff together.",
             "review_focus": "Use this view to decide what must be proven before release 0.0.1 can advance.",
@@ -861,14 +860,13 @@ def _diagrams(
 
 def _merchant_lending_diagrams(
     *,
-    title: str,
     components: Mapping[str, str],
     diagrams: Mapping[str, str],
 ) -> list[dict[str, Any]]:
     return [
         {
             "slug": diagrams["overview"],
-            "title": f"{title} System Overview",
+            "title": "System Overview",
             "kind": "flowchart",
             "summary": "Merchant-capital map: Shopify merchant intent becomes borrower workflow, credit-liquidity state, fixture proof, and release review.",
             "review_focus": "Use this view to confirm borrower role, Shopify data boundary, stablecoin-liquidity posture, and no-custody gate.",
@@ -886,7 +884,7 @@ def _merchant_lending_diagrams(
         },
         {
             "slug": diagrams["slice"],
-            "title": f"{title} First Slice Flow",
+            "title": "First Slice Flow",
             "kind": "sequenceDiagram",
             "summary": "First borrower slice: merchant application, Shopify snapshot, compliance gate, liquidity check, offer or blocked state, and proof replay.",
             "review_focus": "Use this view to decide which borrower-visible application and funding states release 0.0.1 must prove.",
@@ -904,7 +902,7 @@ def _merchant_lending_diagrams(
         },
         {
             "slug": diagrams["component_map"],
-            "title": f"{title} Component Ownership Map",
+            "title": "Component Ownership Map",
             "kind": "flowchart",
             "summary": "Ownership map separating merchant portal, credit-liquidity core, proof harness, and the regulated split rules between them.",
             "review_focus": "Use this view to keep borrower UX, credit decisions, liquidity, compliance, and proof ownership distinct.",
@@ -922,7 +920,7 @@ def _merchant_lending_diagrams(
         },
         {
             "slug": diagrams["domain_state"],
-            "title": f"{title} Domain State Model",
+            "title": "Domain State Model",
             "kind": "stateDiagram",
             "summary": "Merchant facility state model covering draft, stale data, declined, compliance block, liquidity block, offer, funded, repayment due, and repaid.",
             "review_focus": "Use this view to catch unsafe transitions before source code chooses the state machine.",
@@ -940,7 +938,7 @@ def _merchant_lending_diagrams(
         },
         {
             "slug": diagrams["validation_release"],
-            "title": f"{title} Validation And Release Topology",
+            "title": "Validation And Release Topology",
             "kind": "flowchart",
             "summary": "Release-readiness map tying Shopify, compliance, liquidity, disbursement, repayment, negative live-access proof, and release decision together.",
             "review_focus": "Use this view to decide what must be proven before release 0.0.1 can claim merchant lending progress.",

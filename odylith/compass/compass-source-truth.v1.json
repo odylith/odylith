@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-05-09T16:11:12Z",
+  "generated_utc": "2026-05-09T16:27:52Z",
   "release_summary": {
     "catalog": [
       {
@@ -296,17 +296,17 @@
         "plan": {
           "created": "2026-05-01",
           "updated": "2026-05-03",
-          "all_total_tasks": 202,
-          "all_done_tasks": 198,
-          "total_tasks": 141,
-          "done_tasks": 139,
-          "progress_ratio": 0.9858,
+          "all_total_tasks": 203,
+          "all_done_tasks": 199,
+          "total_tasks": 142,
+          "done_tasks": 140,
+          "progress_ratio": 0.9859,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": 0.9858,
+          "display_progress_ratio": 0.9859,
           "display_progress_label": "99% progress",
           "display_progress_state": "percent",
           "progress_classification": "tracked",
-          "checklist_label": "Checklist 139/141",
+          "checklist_label": "Checklist 140/142",
           "next_tasks": [
             "Convert the host hook daemon proposal into a separate design slice with",
             "Add a repeatable cross-host SDK benchmark harness for release evidence"
@@ -314,19 +314,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 18,
-            "local_change_count": 3,
+            "commit_count": 19,
+            "local_change_count": 5,
             "file_touch_count": 137
           },
           "48h": {
-            "commit_count": 24,
-            "local_change_count": 3,
+            "commit_count": 25,
+            "local_change_count": 5,
             "file_touch_count": 220
           }
         },
         "timeline": {
           "start_date": "2026-05-01",
-          "last_activity_iso": "2026-05-09T09:08:27-07:00",
+          "last_activity_iso": "2026-05-09T09:24:49-07:00",
           "age_days": 8,
           "eta_days": 1,
           "eta_confidence": "high"
@@ -374,7 +374,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 172,
+            "meaningful_change_count": 173,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -525,17 +525,17 @@
         "plan": {
           "created": "2026-05-01",
           "updated": "2026-05-03",
-          "all_total_tasks": 202,
-          "all_done_tasks": 198,
-          "total_tasks": 141,
-          "done_tasks": 139,
-          "progress_ratio": 0.9858,
+          "all_total_tasks": 203,
+          "all_done_tasks": 199,
+          "total_tasks": 142,
+          "done_tasks": 140,
+          "progress_ratio": 0.9859,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": 0.9858,
+          "display_progress_ratio": 0.9859,
           "display_progress_label": "99% progress",
           "display_progress_state": "percent",
           "progress_classification": "tracked",
-          "checklist_label": "Checklist 139/141",
+          "checklist_label": "Checklist 140/142",
           "next_tasks": [
             "Convert the host hook daemon proposal into a separate design slice with",
             "Add a repeatable cross-host SDK benchmark harness for release evidence"
@@ -543,19 +543,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 7,
+            "commit_count": 8,
             "local_change_count": 1,
             "file_touch_count": 107
           },
           "48h": {
-            "commit_count": 7,
+            "commit_count": 8,
             "local_change_count": 1,
             "file_touch_count": 136
           }
         },
         "timeline": {
           "start_date": "2026-05-01",
-          "last_activity_iso": "2026-05-09T09:08:27-07:00",
+          "last_activity_iso": "2026-05-09T09:24:49-07:00",
           "age_days": 8,
           "eta_days": 1,
           "eta_confidence": "high"
@@ -606,7 +606,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 177,
+            "meaningful_change_count": 178,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -697,19 +697,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 14,
+            "commit_count": 15,
             "local_change_count": 1,
             "file_touch_count": 132
           },
           "48h": {
-            "commit_count": 19,
+            "commit_count": 20,
             "local_change_count": 1,
             "file_touch_count": 196
           }
         },
         "timeline": {
           "start_date": "2026-04-29",
-          "last_activity_iso": "2026-05-09T09:10:57-07:00",
+          "last_activity_iso": "2026-05-09T09:27:37-07:00",
           "age_days": 10,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -744,7 +744,7 @@
             "docs"
           ],
           "deployment_truth": {
-            "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+            "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -8499,7 +8499,7 @@
           ],
           "linked_bug_id": "CB-077",
           "deployment_truth": {
-            "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+            "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -11539,7 +11539,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+            "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24078,7 +24078,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+            "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24303,7 +24303,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+            "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24528,7 +24528,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+            "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24753,7 +24753,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+            "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24978,7 +24978,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+            "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -29295,17 +29295,17 @@
         "plan": {
           "created": "2026-05-01",
           "updated": "2026-05-03",
-          "all_total_tasks": 202,
-          "all_done_tasks": 198,
-          "total_tasks": 141,
-          "done_tasks": 139,
-          "progress_ratio": 0.9858,
+          "all_total_tasks": 203,
+          "all_done_tasks": 199,
+          "total_tasks": 142,
+          "done_tasks": 140,
+          "progress_ratio": 0.9859,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": 0.9858,
+          "display_progress_ratio": 0.9859,
           "display_progress_label": "99% progress",
           "display_progress_state": "percent",
           "progress_classification": "tracked",
-          "checklist_label": "Checklist 139/141",
+          "checklist_label": "Checklist 140/142",
           "next_tasks": [
             "Convert the host hook daemon proposal into a separate design slice with",
             "Add a repeatable cross-host SDK benchmark harness for release evidence"
@@ -29313,19 +29313,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 18,
-            "local_change_count": 3,
+            "commit_count": 19,
+            "local_change_count": 5,
             "file_touch_count": 137
           },
           "48h": {
-            "commit_count": 24,
-            "local_change_count": 3,
+            "commit_count": 25,
+            "local_change_count": 5,
             "file_touch_count": 220
           }
         },
         "timeline": {
           "start_date": "2026-05-01",
-          "last_activity_iso": "2026-05-09T09:08:27-07:00",
+          "last_activity_iso": "2026-05-09T09:24:49-07:00",
           "age_days": 8,
           "eta_days": 1,
           "eta_confidence": "high"
@@ -29373,7 +29373,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 172,
+            "meaningful_change_count": 173,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -29524,17 +29524,17 @@
         "plan": {
           "created": "2026-05-01",
           "updated": "2026-05-03",
-          "all_total_tasks": 202,
-          "all_done_tasks": 198,
-          "total_tasks": 141,
-          "done_tasks": 139,
-          "progress_ratio": 0.9858,
+          "all_total_tasks": 203,
+          "all_done_tasks": 199,
+          "total_tasks": 142,
+          "done_tasks": 140,
+          "progress_ratio": 0.9859,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": 0.9858,
+          "display_progress_ratio": 0.9859,
           "display_progress_label": "99% progress",
           "display_progress_state": "percent",
           "progress_classification": "tracked",
-          "checklist_label": "Checklist 139/141",
+          "checklist_label": "Checklist 140/142",
           "next_tasks": [
             "Convert the host hook daemon proposal into a separate design slice with",
             "Add a repeatable cross-host SDK benchmark harness for release evidence"
@@ -29542,19 +29542,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 7,
+            "commit_count": 8,
             "local_change_count": 1,
             "file_touch_count": 107
           },
           "48h": {
-            "commit_count": 7,
+            "commit_count": 8,
             "local_change_count": 1,
             "file_touch_count": 136
           }
         },
         "timeline": {
           "start_date": "2026-05-01",
-          "last_activity_iso": "2026-05-09T09:08:27-07:00",
+          "last_activity_iso": "2026-05-09T09:24:49-07:00",
           "age_days": 8,
           "eta_days": 1,
           "eta_confidence": "high"
@@ -29605,7 +29605,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 177,
+            "meaningful_change_count": 178,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -29696,19 +29696,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 14,
+            "commit_count": 15,
             "local_change_count": 1,
             "file_touch_count": 132
           },
           "48h": {
-            "commit_count": 19,
+            "commit_count": 20,
             "local_change_count": 1,
             "file_touch_count": 196
           }
         },
         "timeline": {
           "start_date": "2026-04-29",
-          "last_activity_iso": "2026-05-09T09:10:57-07:00",
+          "last_activity_iso": "2026-05-09T09:27:37-07:00",
           "age_days": 10,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -29743,7 +29743,7 @@
             "docs"
           ],
           "deployment_truth": {
-            "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+            "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -35598,7 +35598,7 @@
           ],
           "linked_bug_id": "CB-077",
           "deployment_truth": {
-            "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+            "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -42703,7 +42703,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+            "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -55242,7 +55242,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+            "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -55467,7 +55467,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+            "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -55692,7 +55692,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+            "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -55917,7 +55917,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+            "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -56142,7 +56142,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+            "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -58295,17 +58295,17 @@
       "plan": {
         "created": "2026-05-01",
         "updated": "2026-05-03",
-        "all_total_tasks": 202,
-        "all_done_tasks": 198,
-        "total_tasks": 141,
-        "done_tasks": 139,
-        "progress_ratio": 0.9858,
+        "all_total_tasks": 203,
+        "all_done_tasks": 199,
+        "total_tasks": 142,
+        "done_tasks": 140,
+        "progress_ratio": 0.9859,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": 0.9858,
+        "display_progress_ratio": 0.9859,
         "display_progress_label": "99% progress",
         "display_progress_state": "percent",
         "progress_classification": "tracked",
-        "checklist_label": "Checklist 139/141",
+        "checklist_label": "Checklist 140/142",
         "next_tasks": [
           "Convert the host hook daemon proposal into a separate design slice with",
           "Add a repeatable cross-host SDK benchmark harness for release evidence"
@@ -58313,19 +58313,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 18,
-          "local_change_count": 3,
+          "commit_count": 19,
+          "local_change_count": 5,
           "file_touch_count": 137
         },
         "48h": {
-          "commit_count": 24,
-          "local_change_count": 3,
+          "commit_count": 25,
+          "local_change_count": 5,
           "file_touch_count": 220
         }
       },
       "timeline": {
         "start_date": "2026-05-01",
-        "last_activity_iso": "2026-05-09T09:08:27-07:00",
+        "last_activity_iso": "2026-05-09T09:24:49-07:00",
         "age_days": 8,
         "eta_days": 1,
         "eta_confidence": "high"
@@ -58373,7 +58373,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 172,
+          "meaningful_change_count": 173,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -58524,17 +58524,17 @@
       "plan": {
         "created": "2026-05-01",
         "updated": "2026-05-03",
-        "all_total_tasks": 202,
-        "all_done_tasks": 198,
-        "total_tasks": 141,
-        "done_tasks": 139,
-        "progress_ratio": 0.9858,
+        "all_total_tasks": 203,
+        "all_done_tasks": 199,
+        "total_tasks": 142,
+        "done_tasks": 140,
+        "progress_ratio": 0.9859,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": 0.9858,
+        "display_progress_ratio": 0.9859,
         "display_progress_label": "99% progress",
         "display_progress_state": "percent",
         "progress_classification": "tracked",
-        "checklist_label": "Checklist 139/141",
+        "checklist_label": "Checklist 140/142",
         "next_tasks": [
           "Convert the host hook daemon proposal into a separate design slice with",
           "Add a repeatable cross-host SDK benchmark harness for release evidence"
@@ -58542,19 +58542,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 7,
+          "commit_count": 8,
           "local_change_count": 1,
           "file_touch_count": 107
         },
         "48h": {
-          "commit_count": 7,
+          "commit_count": 8,
           "local_change_count": 1,
           "file_touch_count": 136
         }
       },
       "timeline": {
         "start_date": "2026-05-01",
-        "last_activity_iso": "2026-05-09T09:08:27-07:00",
+        "last_activity_iso": "2026-05-09T09:24:49-07:00",
         "age_days": 8,
         "eta_days": 1,
         "eta_confidence": "high"
@@ -58605,7 +58605,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 177,
+          "meaningful_change_count": 178,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -58696,19 +58696,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 14,
+          "commit_count": 15,
           "local_change_count": 1,
           "file_touch_count": 132
         },
         "48h": {
-          "commit_count": 19,
+          "commit_count": 20,
           "local_change_count": 1,
           "file_touch_count": 196
         }
       },
       "timeline": {
         "start_date": "2026-04-29",
-        "last_activity_iso": "2026-05-09T09:10:57-07:00",
+        "last_activity_iso": "2026-05-09T09:27:37-07:00",
         "age_days": 10,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -58743,7 +58743,7 @@
           "docs"
         ],
         "deployment_truth": {
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -64598,7 +64598,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -71703,7 +71703,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -84242,7 +84242,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -84467,7 +84467,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -84692,7 +84692,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -84917,7 +84917,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -85142,7 +85142,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -89533,7 +89533,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -91774,17 +91774,17 @@
       "plan": {
         "created": "2026-05-01",
         "updated": "2026-05-03",
-        "all_total_tasks": 202,
-        "all_done_tasks": 198,
-        "total_tasks": 141,
-        "done_tasks": 139,
-        "progress_ratio": 0.9858,
+        "all_total_tasks": 203,
+        "all_done_tasks": 199,
+        "total_tasks": 142,
+        "done_tasks": 140,
+        "progress_ratio": 0.9859,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": 0.9858,
+        "display_progress_ratio": 0.9859,
         "display_progress_label": "99% progress",
         "display_progress_state": "percent",
         "progress_classification": "tracked",
-        "checklist_label": "Checklist 139/141",
+        "checklist_label": "Checklist 140/142",
         "next_tasks": [
           "Convert the host hook daemon proposal into a separate design slice with",
           "Add a repeatable cross-host SDK benchmark harness for release evidence"
@@ -91792,19 +91792,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 7,
+          "commit_count": 8,
           "local_change_count": 1,
           "file_touch_count": 107
         },
         "48h": {
-          "commit_count": 7,
+          "commit_count": 8,
           "local_change_count": 1,
           "file_touch_count": 136
         }
       },
       "timeline": {
         "start_date": "2026-05-01",
-        "last_activity_iso": "2026-05-09T09:08:27-07:00",
+        "last_activity_iso": "2026-05-09T09:24:49-07:00",
         "age_days": 8,
         "eta_days": 1,
         "eta_confidence": "high"
@@ -91855,7 +91855,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 177,
+          "meaningful_change_count": 178,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -91982,17 +91982,17 @@
       "plan": {
         "created": "2026-05-01",
         "updated": "2026-05-03",
-        "all_total_tasks": 202,
-        "all_done_tasks": 198,
-        "total_tasks": 141,
-        "done_tasks": 139,
-        "progress_ratio": 0.9858,
+        "all_total_tasks": 203,
+        "all_done_tasks": 199,
+        "total_tasks": 142,
+        "done_tasks": 140,
+        "progress_ratio": 0.9859,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": 0.9858,
+        "display_progress_ratio": 0.9859,
         "display_progress_label": "99% progress",
         "display_progress_state": "percent",
         "progress_classification": "tracked",
-        "checklist_label": "Checklist 139/141",
+        "checklist_label": "Checklist 140/142",
         "next_tasks": [
           "Convert the host hook daemon proposal into a separate design slice with",
           "Add a repeatable cross-host SDK benchmark harness for release evidence"
@@ -92000,19 +92000,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 18,
-          "local_change_count": 3,
+          "commit_count": 19,
+          "local_change_count": 5,
           "file_touch_count": 137
         },
         "48h": {
-          "commit_count": 24,
-          "local_change_count": 3,
+          "commit_count": 25,
+          "local_change_count": 5,
           "file_touch_count": 220
         }
       },
       "timeline": {
         "start_date": "2026-05-01",
-        "last_activity_iso": "2026-05-09T09:08:27-07:00",
+        "last_activity_iso": "2026-05-09T09:24:49-07:00",
         "age_days": 8,
         "eta_days": 1,
         "eta_confidence": "high"
@@ -92060,7 +92060,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 172,
+          "meaningful_change_count": 173,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -100811,7 +100811,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -110516,7 +110516,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -110741,7 +110741,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -110966,7 +110966,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -111191,7 +111191,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -111603,7 +111603,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -116069,19 +116069,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 14,
+          "commit_count": 15,
           "local_change_count": 1,
           "file_touch_count": 132
         },
         "48h": {
-          "commit_count": 19,
+          "commit_count": 20,
           "local_change_count": 1,
           "file_touch_count": 196
         }
       },
       "timeline": {
         "start_date": "2026-04-29",
-        "last_activity_iso": "2026-05-09T09:10:57-07:00",
+        "last_activity_iso": "2026-05-09T09:27:37-07:00",
         "age_days": 10,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -116116,7 +116116,7 @@
           "docs"
         ],
         "deployment_truth": {
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",

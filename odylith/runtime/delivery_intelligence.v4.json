@@ -2,7 +2,7 @@
   "case_queue": [
     {
       "action_label": "Review proposed fix",
-      "brief": "v0.1.8 Migration Recovery, Runtime Trust Robustness, and Sync Unblock looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if 2026-04-29-consumer-surface-migration-observer-and-release-gate.md already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind 2026-04-29-consumer-surface-migration-observer-and-release-gate.md before treating v0.1.8 Migration Recovery, Runtime Trust Robustness, and Sync Unblock as authoritative across Registry, Radar, Compass, and Atlas.",
+      "brief": "v0.1.8 Migration Recovery, Runtime Trust Robustness, and Sync Unblock looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if 2026-05-03-universal-greenfield-domain-intelligence.md already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind 2026-05-03-universal-greenfield-domain-intelligence.md before treating v0.1.8 Migration Recovery, Runtime Trust Robustness, and Sync Unblock as authoritative across Registry, Radar, Compass, and Atlas.",
       "claim_guard": {},
       "confidence": 0.68,
       "confidence_factors": {
@@ -89,7 +89,7 @@
     },
     {
       "action_label": "Review proposed fix",
-      "brief": "Radar Workstream Title Prefix Normalization looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if 2026-04-29-consumer-surface-migration-observer-and-release-gate.md already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind 2026-04-29-consumer-surface-migration-observer-and-release-gate.md before treating Radar Workstream Title Prefix Normalization as authoritative across Registry, Radar, Compass, and Atlas.",
+      "brief": "Radar Workstream Title Prefix Normalization looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if 2026-05-03-universal-greenfield-domain-intelligence.md already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind 2026-05-03-universal-greenfield-domain-intelligence.md before treating Radar Workstream Title Prefix Normalization as authoritative across Registry, Radar, Compass, and Atlas.",
       "claim_guard": {},
       "confidence": 0.68,
       "confidence_factors": {
@@ -176,7 +176,7 @@
     },
     {
       "action_label": "Review proposed fix",
-      "brief": "Scope Signal Ladder, Cross-Surface Focus Gating, and Low-Signal Suppression looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if 2026-04-29-consumer-surface-migration-observer-and-release-gate.md already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind 2026-04-29-consumer-surface-migration-observer-and-release-gate.md before treating Scope Signal Ladder, Cross-Surface Focus Gating, and Low-Signal Suppression as authoritative across Registry, Radar, Compass, and Atlas.",
+      "brief": "Scope Signal Ladder, Cross-Surface Focus Gating, and Low-Signal Suppression looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if 2026-05-03-universal-greenfield-domain-intelligence.md already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind 2026-05-03-universal-greenfield-domain-intelligence.md before treating Scope Signal Ladder, Cross-Surface Focus Gating, and Low-Signal Suppression as authoritative across Registry, Radar, Compass, and Atlas.",
       "claim_guard": {},
       "confidence": 0.68,
       "confidence_factors": {
@@ -263,7 +263,7 @@
     },
     {
       "action_label": "Review proposed fix",
-      "brief": "Sub-Second Governed Sync via Shared Read Models, Incremental Derivation, and Content-Addressed Surface Writes looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if 2026-04-29-consumer-surface-migration-observer-and-release-gate.md already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind 2026-04-29-consumer-surface-migration-observer-and-release-gate.md before treating Sub-Second Governed Sync via Shared Read Models, Incremental Derivation, and Content-Addressed Surface Writes as authoritative across Registry, Radar, Compass, and Atlas.",
+      "brief": "Sub-Second Governed Sync via Shared Read Models, Incremental Derivation, and Content-Addressed Surface Writes looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if 2026-05-03-universal-greenfield-domain-intelligence.md already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind 2026-05-03-universal-greenfield-domain-intelligence.md before treating Sub-Second Governed Sync via Shared Read Models, Incremental Derivation, and Content-Addressed Surface Writes as authoritative across Registry, Radar, Compass, and Atlas.",
       "claim_guard": {},
       "confidence": 0.68,
       "confidence_factors": {
@@ -350,7 +350,7 @@
     },
     {
       "action_label": "Review proposed fix",
-      "brief": "Cross-host hook latency budget and fast-path startup looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if CURRENT_SPEC.md already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind CURRENT_SPEC.md before treating Cross-host hook latency budget and fast-path startup as authoritative across Registry, Radar, Compass, and Atlas.",
+      "brief": "Cross-host hook latency budget and fast-path startup looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if 2026-05-03-universal-greenfield-domain-intelligence.md already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind 2026-05-03-universal-greenfield-domain-intelligence.md before treating Cross-host hook latency budget and fast-path startup as authoritative across Registry, Radar, Compass, and Atlas.",
       "claim_guard": {},
       "confidence": 0.68,
       "confidence_factors": {
@@ -440,7 +440,7 @@
     },
     {
       "action_label": "Review proposed fix",
-      "brief": "Universal greenfield domain intelligence looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if CURRENT_SPEC.md already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind CURRENT_SPEC.md before treating Universal greenfield domain intelligence as authoritative across Registry, Radar, Compass, and Atlas.",
+      "brief": "Universal greenfield domain intelligence looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if 2026-05-03-universal-greenfield-domain-intelligence.md already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind 2026-05-03-universal-greenfield-domain-intelligence.md before treating Universal greenfield domain intelligence as authoritative across Registry, Radar, Compass, and Atlas.",
       "claim_guard": {},
       "confidence": 0.68,
       "confidence_factors": {
@@ -1771,7 +1771,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -2725,7 +2725,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -2845,7 +2845,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -2965,7 +2965,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3267,7 +3267,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3387,7 +3387,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3507,7 +3507,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4165,7 +4165,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4463,7 +4463,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4755,7 +4755,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -7248,7 +7248,7 @@
       ]
     }
   ],
-  "generated_utc": "2026-05-09 16:08:39Z",
+  "generated_utc": "2026-05-09 16:25:33Z",
   "indexes": {
     "cases": {
       "case-component-atlas": "component:atlas",
@@ -7573,8 +7573,8 @@
         "policy": 0,
         "renderer": 3782,
         "runbook": 0,
-        "runtime": 48585,
-        "spec": 48422
+        "runtime": 48594,
+        "spec": 48370
       },
       "claim_guard": {
         "blocked_terms": [],
@@ -8057,7 +8057,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -8562,7 +8562,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -8675,8 +8675,8 @@
         "policy": 0,
         "renderer": 1820,
         "runbook": 0,
-        "runtime": 23400,
-        "spec": 23629
+        "runtime": 23404,
+        "spec": 23603
       },
       "claim_guard": {
         "blocked_terms": [],
@@ -9296,7 +9296,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -9409,8 +9409,8 @@
         "policy": 0,
         "renderer": 1820,
         "runbook": 0,
-        "runtime": 23400,
-        "spec": 23629
+        "runtime": 23404,
+        "spec": 23603
       },
       "claim_guard": {
         "blocked_terms": [],
@@ -10030,7 +10030,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -10143,7 +10143,7 @@
         "policy": 0,
         "renderer": 34,
         "runbook": 0,
-        "runtime": 1083,
+        "runtime": 1084,
         "spec": 551
       },
       "claim_guard": {
@@ -10652,7 +10652,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -11084,7 +11084,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 186,
-        "spec": 181
+        "spec": 180
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -11113,7 +11113,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -11128,7 +11127,8 @@
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
-          "src/odylith/install/runtime.py"
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
         ],
         "code_references": [
           "src/odylith/cli.py",
@@ -11200,7 +11200,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -11240,6 +11239,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -11388,7 +11388,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -11654,7 +11654,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 183,
-        "spec": 181
+        "spec": 180
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -11683,7 +11683,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -11698,7 +11697,8 @@
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
-          "src/odylith/install/runtime.py"
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -11766,7 +11766,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -11806,6 +11805,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -11949,7 +11949,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -13817,7 +13817,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 169,
-        "spec": 181
+        "spec": 180
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -13846,7 +13846,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -13861,7 +13860,8 @@
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
-          "src/odylith/install/runtime.py"
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -13929,7 +13929,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -13969,6 +13968,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -14106,7 +14106,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -17490,7 +17490,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 179,
-        "spec": 181
+        "spec": 180
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -17519,7 +17519,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -17534,7 +17533,8 @@
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
-          "src/odylith/install/runtime.py"
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -17602,7 +17602,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -17642,6 +17641,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -17784,7 +17784,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -19613,7 +19613,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 165,
-        "spec": 181
+        "spec": 180
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -19642,7 +19642,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -19657,7 +19656,8 @@
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
-          "src/odylith/install/runtime.py"
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -19725,7 +19725,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -19765,6 +19764,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -19901,7 +19901,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -20162,7 +20162,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 165,
-        "spec": 181
+        "spec": 180
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -20191,7 +20191,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -20206,7 +20205,8 @@
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
-          "src/odylith/install/runtime.py"
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -20274,7 +20274,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -20314,6 +20313,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -20450,7 +20450,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -23188,7 +23188,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 183,
-        "spec": 181
+        "spec": 180
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -23217,7 +23217,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -23232,7 +23231,8 @@
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
-          "src/odylith/install/runtime.py"
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -23300,7 +23300,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -23340,6 +23339,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -23483,7 +23483,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -32972,7 +32972,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 178,
-        "spec": 180
+        "spec": 179
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -33001,7 +33001,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -33016,7 +33015,8 @@
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
-          "src/odylith/install/runtime.py"
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -33084,7 +33084,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -33124,6 +33123,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -33264,7 +33264,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -34863,7 +34863,7 @@
         "renderer": 18,
         "runbook": 0,
         "runtime": 163,
-        "spec": 179
+        "spec": 178
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -34892,7 +34892,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -34907,7 +34906,8 @@
           "src/odylith/install/runtime.py",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+          "src/odylith/runtime/domain_intelligence/proposal_validation.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -34975,7 +34975,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -35012,6 +35011,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -35147,7 +35147,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -35364,7 +35364,7 @@
         "renderer": 18,
         "runbook": 0,
         "runtime": 160,
-        "spec": 172
+        "spec": 171
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -35393,7 +35393,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -35408,7 +35407,8 @@
           "src/odylith/install/runtime.py",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+          "src/odylith/runtime/domain_intelligence/proposal_validation.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -35476,7 +35476,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -35513,6 +35512,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -35646,7 +35646,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -37243,7 +37243,7 @@
         "renderer": 18,
         "runbook": 0,
         "runtime": 160,
-        "spec": 172
+        "spec": 171
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -37272,7 +37272,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -37287,7 +37286,8 @@
           "src/odylith/install/runtime.py",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+          "src/odylith/runtime/domain_intelligence/proposal_validation.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -37345,7 +37345,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -37382,6 +37381,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -37515,7 +37515,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -37705,7 +37705,7 @@
         "renderer": 18,
         "runbook": 0,
         "runtime": 160,
-        "spec": 172
+        "spec": 171
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -37734,7 +37734,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -37749,7 +37748,8 @@
           "src/odylith/install/runtime.py",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+          "src/odylith/runtime/domain_intelligence/proposal_validation.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -37807,7 +37807,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -37844,6 +37843,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -37977,7 +37977,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -38167,7 +38167,7 @@
         "renderer": 18,
         "runbook": 0,
         "runtime": 160,
-        "spec": 172
+        "spec": 171
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -38196,7 +38196,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -38211,7 +38210,8 @@
           "src/odylith/install/runtime.py",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+          "src/odylith/runtime/domain_intelligence/proposal_validation.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -38269,7 +38269,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -38306,6 +38305,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -38439,7 +38439,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -40529,7 +40529,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 183,
-        "spec": 181
+        "spec": 180
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -40558,7 +40558,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -40573,7 +40572,8 @@
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
-          "src/odylith/install/runtime.py"
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -40641,7 +40641,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -40681,6 +40680,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -40824,7 +40824,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -42548,7 +42548,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -42660,7 +42660,7 @@
         "renderer": 18,
         "runbook": 0,
         "runtime": 183,
-        "spec": 180
+        "spec": 179
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -42689,7 +42689,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -42704,7 +42703,8 @@
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
-          "src/odylith/install/runtime.py"
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -42772,7 +42772,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -42812,6 +42811,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -42954,7 +42954,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -43164,7 +43164,7 @@
         "renderer": 18,
         "runbook": 0,
         "runtime": 163,
-        "spec": 179
+        "spec": 178
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -43193,7 +43193,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -43208,7 +43207,8 @@
           "src/odylith/install/runtime.py",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+          "src/odylith/runtime/domain_intelligence/proposal_validation.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -43276,7 +43276,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -43313,6 +43312,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -43448,7 +43448,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -44199,7 +44199,7 @@
         "renderer": 18,
         "runbook": 0,
         "runtime": 167,
-        "spec": 179
+        "spec": 178
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -44228,7 +44228,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -44243,7 +44242,8 @@
           "src/odylith/install/runtime.py",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+          "src/odylith/runtime/domain_intelligence/proposal_validation.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -44311,7 +44311,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -44348,6 +44347,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -44484,7 +44484,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -46607,7 +46607,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 165,
-        "spec": 181
+        "spec": 180
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -46636,7 +46636,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -46651,7 +46650,8 @@
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
-          "src/odylith/install/runtime.py"
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -46719,7 +46719,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -46759,6 +46758,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -46895,7 +46895,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -47114,7 +47114,7 @@
         "renderer": 18,
         "runbook": 0,
         "runtime": 183,
-        "spec": 180
+        "spec": 179
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -47143,7 +47143,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -47158,7 +47157,8 @@
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
-          "src/odylith/install/runtime.py"
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -47226,7 +47226,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -47266,6 +47265,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -47408,7 +47408,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -50303,7 +50303,7 @@
         "renderer": 18,
         "runbook": 0,
         "runtime": 120,
-        "spec": 135
+        "spec": 134
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -50332,7 +50332,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -50347,7 +50346,8 @@
           "src/odylith/install/manager.py",
           "src/odylith/install/runtime.py",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
-          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
+          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -50400,7 +50400,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -50438,6 +50437,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -50569,7 +50569,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -53118,7 +53118,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -56288,7 +56288,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 168,
-        "spec": 180
+        "spec": 179
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -56317,7 +56317,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -56332,7 +56331,8 @@
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
-          "src/odylith/install/runtime.py"
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -56400,7 +56400,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -56440,6 +56439,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -56575,7 +56575,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -63209,7 +63209,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 165,
-        "spec": 181
+        "spec": 180
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -63238,7 +63238,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -63253,7 +63252,8 @@
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
-          "src/odylith/install/runtime.py"
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -63321,7 +63321,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -63361,6 +63360,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -63497,7 +63497,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -65115,7 +65115,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 179,
-        "spec": 181
+        "spec": 180
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -65144,7 +65144,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -65159,7 +65158,8 @@
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
-          "src/odylith/install/runtime.py"
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -65227,7 +65227,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -65267,6 +65266,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -65409,7 +65409,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -65628,7 +65628,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 183,
-        "spec": 181
+        "spec": 180
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -65657,7 +65657,6 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -65672,7 +65671,8 @@
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
-          "src/odylith/install/runtime.py"
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -65740,7 +65740,6 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
@@ -65780,6 +65779,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -65923,7 +65923,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-04-17T20:20:18-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -66594,7 +66594,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -67144,7 +67144,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -67694,7 +67694,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -68244,7 +68244,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -69236,7 +69236,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -80791,7 +80791,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -80903,8 +80903,8 @@
         "policy": 0,
         "renderer": 18,
         "runbook": 0,
-        "runtime": 184,
-        "spec": 181
+        "runtime": 186,
+        "spec": 180
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -80933,13 +80933,12 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
-          "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
+          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
+          "src/odylith/runtime/domain_intelligence/proposal_tribunal.py",
           "src/odylith/runtime/domain_intelligence/robot_swarm_profile.py",
+          "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "tests/unit/runtime/test_greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
@@ -80948,7 +80947,8 @@
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
-          "src/odylith/cli.py"
+          "src/odylith/cli.py",
+          "src/odylith/install/manager.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -81016,13 +81016,12 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
-          "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
+          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
+          "src/odylith/runtime/domain_intelligence/proposal_tribunal.py",
           "src/odylith/runtime/domain_intelligence/robot_swarm_profile.py",
+          "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "tests/unit/runtime/test_greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
@@ -81039,6 +81038,7 @@
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
+          "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
           "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
           "src/odylith/runtime/intervention_engine/prompt_signal_runtime.py",
           "odylith/AGENTS.md",
@@ -81056,6 +81056,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -81198,7 +81199,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-05-03T10:46:04-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:08:23-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -81365,7 +81366,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 177,
+          "meaningful_change_count": 178,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -81433,8 +81434,8 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 170,
-        "spec": 182
+        "runtime": 172,
+        "spec": 181
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -81463,13 +81464,12 @@
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
-          "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
+          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
+          "src/odylith/runtime/domain_intelligence/proposal_tribunal.py",
           "src/odylith/runtime/domain_intelligence/robot_swarm_profile.py",
+          "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "tests/unit/runtime/test_greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
@@ -81478,7 +81478,8 @@
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
-          "src/odylith/cli.py"
+          "src/odylith/cli.py",
+          "src/odylith/install/manager.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -81546,13 +81547,12 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
-          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
-          "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
+          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
+          "src/odylith/runtime/domain_intelligence/proposal_tribunal.py",
           "src/odylith/runtime/domain_intelligence/robot_swarm_profile.py",
+          "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "tests/unit/runtime/test_greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
@@ -81569,6 +81569,7 @@
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
+          "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
           "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
           "src/odylith/runtime/intervention_engine/prompt_signal_runtime.py",
           "odylith/AGENTS.md",
@@ -81586,6 +81587,7 @@
           "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
           "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
           "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
           "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
           "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
           "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
@@ -81723,7 +81725,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-05-07T19:49:17-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-09T09:08:23-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -81860,7 +81862,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 172,
+          "meaningful_change_count": 173,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -83224,7 +83226,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -83686,7 +83688,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -84152,7 +84154,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -84533,7 +84535,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -84646,7 +84648,7 @@
         "policy": 0,
         "renderer": 0,
         "runbook": 0,
-        "runtime": 31,
+        "runtime": 32,
         "spec": 16
       },
       "confidence": "Medium",
@@ -84718,7 +84720,7 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-05-09T09:08:23-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:17-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -86745,7 +86747,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -87125,7 +87127,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -87603,7 +87605,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -89447,7 +89449,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -89648,7 +89650,7 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-05-08T07:41:43-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -92267,7 +92269,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -92468,7 +92470,7 @@
         "basis": "mixed",
         "blast_radius_class": "contract-level",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-03-01T21:38:40-08:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -93379,7 +93381,7 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-03-01T21:38:40-08:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -99690,7 +99692,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "a3b9650eec9bddc373f32239ada16844bc89bdcb",
+          "local_head": "67e8f4f60e3dd5ca204ec6d5d88950e17b5b5e74",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -102373,7 +102375,7 @@
         "basis": "mixed",
         "blast_radius_class": "local",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-03-03T13:56:10-08:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -104338,7 +104340,7 @@
         "basis": "mixed",
         "blast_radius_class": "local",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-05-09T09:08:23-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-03-01T21:38:40-08:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -104632,7 +104634,7 @@
         "basis": "mixed",
         "blast_radius_class": "local",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-05-09T09:03:18-07:00",
+        "latest_event_ts_iso": "2026-05-09T09:24:41-07:00",
         "latest_explicit_ts_iso": "2026-03-03T13:56:10-08:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -104865,7 +104867,7 @@
     "queue_size": 77,
     "top_queue_item": {
       "action_label": "Review proposed fix",
-      "brief": "v0.1.8 Migration Recovery, Runtime Trust Robustness, and Sync Unblock looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if 2026-04-29-consumer-surface-migration-observer-and-release-gate.md already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind 2026-04-29-consumer-surface-migration-observer-and-release-gate.md before treating v0.1.8 Migration Recovery, Runtime Trust Robustness, and Sync Unblock as authoritative across Registry, Radar, Compass, and Atlas.",
+      "brief": "v0.1.8 Migration Recovery, Runtime Trust Robustness, and Sync Unblock looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if 2026-05-03-universal-greenfield-domain-intelligence.md already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind 2026-05-03-universal-greenfield-domain-intelligence.md before treating v0.1.8 Migration Recovery, Runtime Trust Robustness, and Sync Unblock as authoritative across Registry, Radar, Compass, and Atlas.",
       "claim_guard": {},
       "confidence": 0.68,
       "confidence_factors": {

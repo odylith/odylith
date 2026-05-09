@@ -44,6 +44,15 @@ def test_shopify_stablecoin_merchant_lending_avoids_checkout_profile(tmp_path) -
     assert "defi_merchant_lending" in combined
     assert "Stablecoin and DeFi liquidity posture" in text
     assert "Compliance and lending posture" in text
+    assert [row["title"] for row in proposal["diagrams"]] == [
+        "System Overview",
+        "First Slice Flow",
+        "Component Ownership Map",
+        "Domain State Model",
+        "Validation And Release Topology",
+    ]
+    for row in proposal["diagrams"]:
+        assert not row["title"].startswith(proposal["intent"]["title"])
 
     forbidden_positive_checkout = [
         "commerce product whose first release proves the shopper path",

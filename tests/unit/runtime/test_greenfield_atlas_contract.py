@@ -30,6 +30,14 @@ def test_greenfield_apply_ready_scaffold_has_multi_view_architecture_suite(tmp_p
     assert all(row.get("review_focus") for row in proposal["diagrams"])
     assert all(row.get("operator_question") for row in proposal["diagrams"])
     assert all(row.get("proof_gate") for row in proposal["diagrams"])
+    assert [row["title"] for row in proposal["diagrams"]] == [
+        "System Overview",
+        "First Slice Flow",
+        "Component Ownership Map",
+        "Domain State Model",
+        "Validation And Release Topology",
+    ]
+    _assert_greenfield_diagram_titles_are_view_names(proposal)
     sources = {row["slug"]: row["mermaid_source"] for row in proposal["diagrams"]}
     assert "Evidence boundary<br/>intent not source-backed" in sources["a-statistics-notebook-repo-system-overview"]
     assert "Code gate<br/>plan paths tests rollback" in sources["a-statistics-notebook-repo-system-overview"]
@@ -73,6 +81,22 @@ def test_robot_swarm_greenfield_scaffold_expands_domain_specific_atlas_suite(tmp
         "robot-swarm-logistics-app-observability-audit-loop",
     } == diagram_slugs
     sources = {row["slug"]: row["mermaid_source"] for row in proposal["diagrams"]}
+    assert {
+        row["title"]
+        for row in proposal["diagrams"]
+    } == {
+        "Simulation-First Architecture Overview",
+        "Dispatch And Telemetry Flow",
+        "Component Responsibility Map",
+        "Robot Task State Machine",
+        "Release Proof Topology",
+        "Multi-Robot Conflict Resolution",
+        "Safety Envelope And E-Stop Flow",
+        "Telemetry Contract And Data Flow",
+        "Cloud Edge Simulation Boundaries",
+        "Observability And Audit Loop",
+    }
+    _assert_greenfield_diagram_titles_are_view_names(proposal)
     assert "bounded wait queued" in sources["robot-swarm-logistics-app-multi-robot-conflict"]
     assert "Hardware -. blocked until HIL proof .-> Agent" in sources["robot-swarm-logistics-app-deployment-boundaries"]
     assert "Release evidence<br/>normal degraded blocked" in sources["robot-swarm-logistics-app-observability-audit-loop"]
@@ -97,6 +121,14 @@ def _assert_greenfield_diagram_sources_do_not_model_odylith_surfaces(proposal: d
         source = str(row["mermaid_source"])
         for token in forbidden_tokens:
             assert token not in source, f"{row['slug']} leaked {token!r} into project topology"
+
+
+def _assert_greenfield_diagram_titles_are_view_names(proposal: dict[str, object]) -> None:
+    project_title = str(proposal["intent"]["title"])
+    for row in proposal["diagrams"]:
+        title = str(row["title"])
+        assert not title.startswith(project_title), f"{row['slug']} repeated the project title"
+        assert len(title.split()) <= 6, f"{row['slug']} title is not a concise architecture view name"
 
 
 def _assert_greenfield_text_does_not_leak_odylith_surfaces(text: str) -> None:
@@ -130,6 +162,16 @@ def test_greenfield_atlas_sources_differ_by_host_reasoned_diagram_purpose() -> N
     assert waves.startswith("timeline")
     assert "Order reliability" in waves
     assert context != waves
+
+
+def test_greenfield_tribunal_rejects_project_title_prefixed_diagram_titles() -> None:
+    proposal = _host_reasoned_ecommerce_proposal()
+    proposal["diagrams"][0]["title"] = f"{proposal['intent']['title']} System Context"
+
+    decision = greenfield_proposals.run_greenfield_tribunal(proposal, release_selector="0.0.1")
+
+    assert not decision.passed
+    assert any("title must name the architecture view" in issue for issue in decision.issues)
 
 
 def test_greenfield_apply_rejects_unstyled_flowchart_diagram_sources(tmp_path) -> None:
