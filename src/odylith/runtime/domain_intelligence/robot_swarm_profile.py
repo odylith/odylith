@@ -133,7 +133,7 @@ def _validation_strategy() -> list[str]:
         "Contract-test robot identity, capability metadata, telemetry envelopes, task assignment, and reservation semantics.",
         "Prove operator console normal, empty-fleet, degraded-telemetry, and rejected-override states with browser or UI tests.",
         "Audit every task assignment, override, simulated e-stop, and coordination conflict in test fixtures.",
-        "Refresh governance records after apply and after the first source-backed implementation slice.",
+        "Refresh project records after apply and after the first source-backed implementation slice.",
     ]
 
 
@@ -184,7 +184,7 @@ def _release_plan_updates(*, title: str, selector: str) -> dict[str, Any]:
         ],
         "promotion_criteria": [
             "One simulated logistics task completes from operator dispatch through robot state update under CI proof.",
-            "Governance records refresh cleanly and show the same robot swarm first-wave lane.",
+            "Project records refresh cleanly and show the same robot swarm first-wave lane.",
             "No live hardware, production credentials, or safety claim is made before the hardening wave.",
         ],
     }
@@ -255,7 +255,7 @@ def _contract_backlog_row(title: str, *, diagram_slugs: Mapping[str, str]) -> di
         "success_metrics": [
             "Contract tests prove valid assignment, invalid capability rejection, lost telemetry, and idempotent retry behavior.",
             "Component records capture the domain dependencies, interfaces, and verification commands.",
-            "Architecture diagrams show how console, domain core, and simulator exchange task and telemetry state.",
+            "Architecture diagrams show how console, coordination core, and simulator exchange task and telemetry state.",
         ],
         "dependencies": [
             "Depends on the first operator workflow semantics and defers vendor-specific robot SDK choices until planning.",
@@ -292,7 +292,7 @@ def _simulation_backlog_row(title: str, *, diagram_slugs: Mapping[str, str]) -> 
         "success_metrics": [
             "Fixed seed replay produces byte-identical or semantically identical task/telemetry output across two runs.",
             "Smoke proof covers lost telemetry, two-robot conflict, rejected override, and audit output.",
-            "Governance records refresh after proof and show the same first release lane.",
+            "Project records refresh after proof and show the same first release lane.",
         ],
         "dependencies": [
             "Depends on WS-01 console behavior and WS-02 robot task/telemetry contract before hardening expands scope.",
@@ -541,7 +541,7 @@ def _robot_diagram_row(
         "title": title,
         "kind": kind,
         "summary": summary,
-        "link_state": "atlas_first_draft",
+        "link_state": "architecture_first_draft",
         "components": components,
         "related_workstreams": related_workstreams,
         "evidence_tier": "user_intent",

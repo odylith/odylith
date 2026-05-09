@@ -371,7 +371,7 @@ def _atlas_diagram_lines(row: Mapping[str, Any]) -> list[str]:
     slug = str(row.get("slug", "")).strip()
     title = str(row.get("title", "")).strip()
     state = str(row.get("link_state", "")).strip()
-    state_label = "first draft" if state == "atlas_first_draft" else state
+    state_label = "first draft" if state in {"atlas_first_draft", "architecture_first_draft"} else state
     heading = f"- {slug}: {title} ({state_label})".strip()
     lines = [heading]
     for label, key in (

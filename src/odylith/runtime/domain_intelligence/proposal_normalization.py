@@ -173,7 +173,7 @@ def _normalize_validation_strategy(value: Any) -> list[Any]:
         return rows
     return [
         "Define focused behavior proof for each first-slice workstream before implementation starts.",
-        "Refresh governance records after proposal acceptance.",
+        "Refresh project records after proposal acceptance.",
     ]
 
 
@@ -495,7 +495,7 @@ def _synthesized_program_parent(
         "validation": validation
         or [
             "Greenfield apply Tribunal passes before writes.",
-            "Governance records refresh after confirmed writes.",
+            "Project records refresh after confirmed writes.",
         ],
         "domain_risk": _domain_posture_text(security_compliance)
         or "Greenfield governance can mislead implementation if the program parent, release target, validation gates, or component boundaries are ambiguous.",
@@ -637,7 +637,7 @@ def _normalize_diagrams(
         source = row.get("mermaid_source") or row.get("source")
         if clean_text(source):
             row["mermaid_source"] = _normalize_mermaid_source(str(source))
-        row.setdefault("link_state", clean_text(row.get("status")) or "atlas_first_draft")
+        row.setdefault("link_state", clean_text(row.get("status")) or "architecture_first_draft")
         row.setdefault("evidence_tier", "user_intent")
         related = row.get("related_components")
         if "components" not in row and related:

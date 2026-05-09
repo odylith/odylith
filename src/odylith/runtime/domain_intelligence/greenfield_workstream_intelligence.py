@@ -210,7 +210,7 @@ def build_domain_intelligence(
             f"`{row_title}` depends on {component_clause}; it must stay linked to {diagram_clause}.",
             f"{terms['topology_spine']}",
             "Workstream -> technical plan -> code paths -> tests -> component specs -> architecture diagrams -> release evidence is the required proof path.",
-            "A validation harness blocks release promotion if normal, empty, degraded, and failure fixtures are missing.",
+            "An evidence harness blocks release promotion if normal, empty, degraded, and failure fixtures are missing.",
         ],
         "invariants": [
             *terms["invariants"],
@@ -523,7 +523,7 @@ def _ontology(
                 "Visible state: normal, empty, degraded, and failure states derived from the domain contract.",
             ],
             "domain": [
-                f"Domain object: first {compact.lower()} object whose state is controlled by the domain core.",
+                f"Domain object: first {compact.lower()} object whose state is controlled by the product model.",
                 "Command: state-changing intent accepted only after validation and ownership checks.",
                 "Invariant: domain state transition rule that remains true across transports and storage choices.",
             ],

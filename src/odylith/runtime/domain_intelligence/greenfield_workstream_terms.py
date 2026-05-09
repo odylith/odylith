@@ -291,20 +291,20 @@ def _generic_terms(*, title: str) -> dict[str, Any]:
     lower = compact.lower()
     return {
         "domain_phrase": f"{lower} greenfield",
-        "project_objective": f"turn the {lower} prompt into a coherent first workflow, domain contract, and proof harness.",
+        "project_objective": f"turn the {lower} prompt into a coherent first workflow, product model, and evidence harness.",
         "stakeholder_outcome": f"the operator can start one {lower} implementation slice without rediscovering purpose, boundaries, proof, and risks.",
         "failure_mode": "agents may build plausible scaffolding that is disconnected from domain rules, users, state, and validation.",
         "non_goals": "no broad platform, production readiness, external integration, or source-backed claim until the first slice proves it.",
         "decision_pressure": "domain clarity and proof gates beat broad scaffold volume.",
         "primary_validation_command": "repo-native tests for normal, empty, degraded, and failure states",
-        "topology_spine": "experience boundary consumes the domain core; validation harness proves both; release evidence preserves the trace.",
+        "topology_spine": "operator workspace consumes the product model; evidence harness proves both; release evidence preserves the trace.",
         "constraints": [
             "Keep the first slice small enough to prove with local fixtures and repository-native tests.",
             "Do not infer runtime, storage, or deployment ownership from project title alone.",
             "Keep data, auth, audit, accessibility, and recovery assumptions explicit until the operator confirms them.",
         ],
         "evidence_counts": [
-            "Generic greenfield evidence must include behavior proof, contract proof, rendered topology, and refreshed governance records.",
+            "Generic greenfield evidence must include behavior proof, contract proof, rendered topology, and refreshed project records.",
         ],
         "assumptions": [
             f"Assumption: {compact} starts with one product workflow and one domain object before wider architecture.",

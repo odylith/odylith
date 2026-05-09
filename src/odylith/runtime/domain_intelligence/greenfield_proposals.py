@@ -689,6 +689,37 @@ def _scaffold_proposal_diagram(
     if rc != 0:
         detail = f": {log_text}" if log_text else ""
         raise RuntimeError(f"atlas scaffold failed for {row.get('slug')}{detail}")
+    _update_scaffolded_diagram_link_state(
+        root=root,
+        slug=str(row.get("slug", "")).strip(),
+        link_state=str(row.get("link_state", "")).strip(),
+    )
+
+
+def _update_scaffolded_diagram_link_state(*, root: Path, slug: str, link_state: str) -> None:
+    if not slug or not link_state:
+        return
+    catalog_path = root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    if not catalog_path.is_file():
+        return
+    try:
+        payload = json.loads(catalog_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return
+    diagrams = payload.get("diagrams") if isinstance(payload, Mapping) else None
+    if not isinstance(diagrams, list):
+        return
+    changed = False
+    for item in diagrams:
+        if not isinstance(item, dict):
+            continue
+        if str(item.get("slug", "")).strip() != slug:
+            continue
+        if str(item.get("link_state", "")).strip() != link_state:
+            item["link_state"] = link_state
+            changed = True
+    if changed:
+        catalog_path.write_text(f"{json.dumps(payload, indent=2)}\n", encoding="utf-8")
 
 
 def _write_greenfield_proposal(

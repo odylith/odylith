@@ -16,6 +16,8 @@ from odylith.runtime.domain_intelligence.proposal_rendering import build_apply_c
 from odylith.runtime.domain_intelligence.robot_swarm_profile import apply_robot_swarm_logistics_profile
 from odylith.runtime.domain_intelligence.robot_swarm_profile import is_robot_swarm_logistics_prompt
 
+_GREENFIELD_FIRST_DRAFT_LINK_STATE = "architecture_first_draft"
+
 
 def build_apply_ready_proposal(
     *,
@@ -772,7 +774,7 @@ def _diagrams(
             "review_focus": "Use this view to confirm the project spine, evidence boundary, and no-code gate before any child plan is opened.",
             "operator_question": "Does this show the right first user, project truth, component path, and review gate?",
             "proof_gate": "No source-backed claim until the first child plan names paths, tests, degraded states, and rollback or recovery posture.",
-            "link_state": "atlas_first_draft",
+            "link_state": _GREENFIELD_FIRST_DRAFT_LINK_STATE,
             "components": [
                 {"name": components["experience"], "description": "Owns the first product workflow and visible states."},
                 {"name": components["domain"], "description": "Owns the first domain contract, state model, and invariants."},
@@ -780,7 +782,7 @@ def _diagrams(
             ],
             "related_workstreams": ["WS-00", "WS-01", "WS-02", "WS-03"],
             "evidence_tier": "user_intent",
-            "mermaid_source": _overview_mermaid(),
+            "mermaid_source": _overview_mermaid(domain_profile),
         },
         {
             "slug": diagrams["slice"],
@@ -790,7 +792,7 @@ def _diagrams(
             "review_focus": "Use this view to decide which interaction becomes B-002 and what normal, empty, degraded, and failure evidence must prove.",
             "operator_question": "Is this the first workflow the project should prove before broader platform work?",
             "proof_gate": "The technical plan must name behavior proof and contract proof before source edits start.",
-            "link_state": "atlas_first_draft",
+            "link_state": _GREENFIELD_FIRST_DRAFT_LINK_STATE,
             "components": [
                 {"name": components["experience"], "description": "Starts the first product workflow."},
                 {"name": components["domain"], "description": "Validates state and command semantics for the workflow."},
@@ -798,7 +800,7 @@ def _diagrams(
             ],
             "related_workstreams": ["WS-01", "WS-02", "WS-03"],
             "evidence_tier": "user_intent",
-            "mermaid_source": _slice_mermaid(),
+            "mermaid_source": _slice_mermaid(domain_profile),
         },
         {
             "slug": diagrams["component_map"],
@@ -808,7 +810,7 @@ def _diagrams(
             "review_focus": "Use this view to prevent broad project narrative from leaking into component specs.",
             "operator_question": "Are the component boundaries specific enough that future agents know who owns each interface and proof obligation?",
             "proof_gate": "Each candidate component stays planned until its own source path, tests, and refreshed component evidence exist.",
-            "link_state": "atlas_first_draft",
+            "link_state": _GREENFIELD_FIRST_DRAFT_LINK_STATE,
             "components": [
                 {"name": components["experience"], "description": "Owns the human-facing first workflow boundary and fallback behavior."},
                 {"name": components["domain"], "description": "Owns domain state, command semantics, and invariant enforcement."},
@@ -816,7 +818,7 @@ def _diagrams(
             ],
             "related_workstreams": ["WS-00", "WS-01", "WS-02", "WS-03"],
             "evidence_tier": "user_intent",
-            "mermaid_source": _component_map_mermaid(),
+            "mermaid_source": _component_map_mermaid(domain_profile),
         },
         {
             "slug": diagrams["domain_state"],
@@ -826,7 +828,7 @@ def _diagrams(
             "review_focus": "Use this view to catch fake progress and missing degraded/error states early.",
             "operator_question": "Which state transition would be unsafe, misleading, or unsupported for release 0.0.1?",
             "proof_gate": "Every promoted state transition needs a deterministic test, fixture, or review decision.",
-            "link_state": "atlas_first_draft",
+            "link_state": _GREENFIELD_FIRST_DRAFT_LINK_STATE,
             "components": [
                 {"name": components["domain"], "description": "Owns the domain states and valid transitions for the first slice."},
                 {"name": components["experience"], "description": "Renders accepted, rejected, completed, and degraded states to the operator."},
@@ -834,7 +836,7 @@ def _diagrams(
             ],
             "related_workstreams": ["WS-01", "WS-02", "WS-03"],
             "evidence_tier": "user_intent",
-            "mermaid_source": _domain_state_mermaid(),
+            "mermaid_source": _domain_state_mermaid(domain_profile),
         },
         {
             "slug": diagrams["validation_release"],
@@ -844,7 +846,7 @@ def _diagrams(
             "review_focus": "Use this view to decide what must be proven before release 0.0.1 can advance.",
             "operator_question": "Are the acceptance gates strong enough for the chosen runtime, data boundary, and compliance posture?",
             "proof_gate": "Release movement is blocked until plan, proof, evidence, and unresolved-risk review agree.",
-            "link_state": "atlas_first_draft",
+            "link_state": _GREENFIELD_FIRST_DRAFT_LINK_STATE,
             "components": [
                 {"name": components["validation"], "description": "Owns the proof command, fixtures, and release-readiness evidence."},
                 {"name": components["experience"], "description": "Supplies behavior proof for normal, empty, and degraded states."},
@@ -852,7 +854,7 @@ def _diagrams(
             ],
             "related_workstreams": ["WS-00", "WS-03"],
             "evidence_tier": "user_intent",
-            "mermaid_source": _validation_release_mermaid(),
+            "mermaid_source": _validation_release_mermaid(domain_profile),
         },
     ]
 
@@ -872,7 +874,7 @@ def _merchant_lending_diagrams(
             "review_focus": "Use this view to confirm borrower role, Shopify data boundary, stablecoin-liquidity posture, and no-custody gate.",
             "operator_question": "Does this show the merchant borrower and funding-state path instead of a retail purchase path?",
             "proof_gate": "No production lending, custody, live protocol, or real merchant-data claim before fixture proof exists.",
-            "link_state": "atlas_first_draft",
+            "link_state": _GREENFIELD_FIRST_DRAFT_LINK_STATE,
             "components": [
                 {"name": components["experience"], "description": "Owns merchant application intake and visible funding states."},
                 {"name": components["domain"], "description": "Owns credit, liquidity, compliance, disbursement, and repayment invariants."},
@@ -890,7 +892,7 @@ def _merchant_lending_diagrams(
             "review_focus": "Use this view to decide which borrower-visible application and funding states release 0.0.1 must prove.",
             "operator_question": "Are the eligible, declined, stale-data, compliance-blocked, liquidity-blocked, funded, and repayment states right?",
             "proof_gate": "The technical plan must name fixture schemas and replay proof before source edits start.",
-            "link_state": "atlas_first_draft",
+            "link_state": _GREENFIELD_FIRST_DRAFT_LINK_STATE,
             "components": [
                 {"name": components["experience"], "description": "Starts the merchant borrower application and renders funding state."},
                 {"name": components["domain"], "description": "Evaluates eligibility, compliance, liquidity, disbursement, and repayment state."},
@@ -908,7 +910,7 @@ def _merchant_lending_diagrams(
             "review_focus": "Use this view to keep borrower UX, credit decisions, liquidity, compliance, and proof ownership distinct.",
             "operator_question": "Are the component boundaries specific enough for implementation without re-learning the product?",
             "proof_gate": "Each candidate component stays planned until its own source path and merchant-lending proof exists.",
-            "link_state": "atlas_first_draft",
+            "link_state": _GREENFIELD_FIRST_DRAFT_LINK_STATE,
             "components": [
                 {"name": components["experience"], "description": "Owns borrower workflow, application status, offer review, funding and repayment visibility."},
                 {"name": components["domain"], "description": "Owns credit facility, liquidity allocation, compliance gates, disbursement, and repayment."},
@@ -926,7 +928,7 @@ def _merchant_lending_diagrams(
             "review_focus": "Use this view to catch unsafe transitions before source code chooses the state machine.",
             "operator_question": "Which facility state would be misleading without fixture or compliance proof?",
             "proof_gate": "Every promoted facility transition needs deterministic fixture proof.",
-            "link_state": "atlas_first_draft",
+            "link_state": _GREENFIELD_FIRST_DRAFT_LINK_STATE,
             "components": [
                 {"name": components["domain"], "description": "Owns facility states and valid transitions."},
                 {"name": components["experience"], "description": "Renders application, blocked, funded, and repayment states to the merchant."},
@@ -944,7 +946,7 @@ def _merchant_lending_diagrams(
             "review_focus": "Use this view to decide what must be proven before release 0.0.1 can claim merchant lending progress.",
             "operator_question": "Are the regulated acceptance gates strong enough for merchant lending and stablecoin funding?",
             "proof_gate": "Release movement is blocked until fixture proof, no-live-access guards, and unresolved-risk review agree.",
-            "link_state": "atlas_first_draft",
+            "link_state": _GREENFIELD_FIRST_DRAFT_LINK_STATE,
             "components": [
                 {"name": components["validation"], "description": "Owns fixture replay, negative live-access guards, and release evidence."},
                 {"name": components["experience"], "description": "Supplies borrower-visible state proof."},
@@ -957,15 +959,18 @@ def _merchant_lending_diagrams(
     ]
 
 
-def _overview_mermaid() -> str:
+def _overview_mermaid(domain_profile: GreenfieldDomainProfile) -> str:
+    experience = _profile_label(domain_profile, "experience", fallback="Workflow Boundary")
+    domain = _profile_label(domain_profile, "domain", fallback="State Contract")
+    validation = _profile_label(domain_profile, "validation", fallback="Proof Harness")
     return (
         "flowchart LR\n"
         "  Intent[Operator<br/>intent]:::actor --> Choices[Direction choices<br/>user data runtime proof]:::decision\n"
         "  Choices --> ProjectTruth[Project intelligence<br/>accepted brief]:::planning\n"
-        "  ProjectTruth --> Experience[Experience<br/>boundary]:::service\n"
-        "  ProjectTruth --> Domain[Domain<br/>core]:::service\n"
+        f"  ProjectTruth --> Experience[\"{experience}\"]:::service\n"
+        f"  ProjectTruth --> Domain[\"{domain}\"]:::service\n"
         "  Experience --> Domain\n"
-        "  Domain --> Harness[Verification<br/>harness]:::proof\n"
+        f"  Domain --> Harness[\"{validation}\"]:::proof\n"
         "  Harness --> Review[Operator review<br/>accept gates before code]:::actor\n"
         "  Review --> CodeGate[Code gate<br/>plan paths tests rollback]:::gate\n"
         "  Evidence[Evidence boundary<br/>intent not source-backed]:::note -. constrains .-> ProjectTruth\n"
@@ -1005,13 +1010,16 @@ def _merchant_lending_overview_mermaid() -> str:
     )
 
 
-def _slice_mermaid() -> str:
+def _slice_mermaid(domain_profile: GreenfieldDomainProfile) -> str:
+    experience = _profile_label(domain_profile, "experience", fallback="Workflow")
+    domain = _profile_label(domain_profile, "domain", fallback="State Contract")
+    validation = _profile_label(domain_profile, "validation", fallback="Proof Harness")
     return (
         "sequenceDiagram\n"
         "  participant Operator as Operator\n"
-        "  participant Experience as Experience Boundary\n"
-        "  participant Domain as Domain Core\n"
-        "  participant Harness as Verification Harness\n"
+        f"  participant Experience as {experience.replace('<br/>', ' ')}\n"
+        f"  participant Domain as {domain.replace('<br/>', ' ')}\n"
+        f"  participant Harness as {validation.replace('<br/>', ' ')}\n"
         "  Note over Operator,Harness: Project review and direction choices happen before source edits\n"
         "  Operator->>Experience: start first workflow\n"
         "  Experience->>Domain: execute command or query\n"
@@ -1046,19 +1054,22 @@ def _merchant_lending_slice_mermaid() -> str:
     )
 
 
-def _component_map_mermaid() -> str:
+def _component_map_mermaid(domain_profile: GreenfieldDomainProfile) -> str:
+    experience = _profile_label(domain_profile, "experience", fallback="Workflow Boundary")
+    domain = _profile_label(domain_profile, "domain", fallback="State Contract")
+    validation = _profile_label(domain_profile, "validation", fallback="Proof Harness")
     return (
         "flowchart TB\n"
         "  Lens[Decision lens<br/>split by owner evidence risk gate]:::note\n"
-        "  subgraph experience[Experience<br/>ownership]\n"
+        f"  subgraph experience[\"{experience}<br/>ownership\"]\n"
         "    Entry[First workflow<br/>entrypoint]:::ux\n"
         "    States[Visible normal empty<br/>and degraded states]:::ux\n"
         "  end\n"
-        "  subgraph domain[Domain<br/>ownership]\n"
+        f"  subgraph domain[\"{domain}<br/>ownership\"]\n"
         "    Contract[Command query<br/>and event contract]:::core\n"
         "    Invariants[State invariants<br/>and rejection rules]:::core\n"
         "  end\n"
-        "  subgraph proof[Proof<br/>ownership]\n"
+        f"  subgraph proof[\"{validation}<br/>ownership\"]\n"
         "    Fixtures[Deterministic<br/>fixtures]:::proof\n"
         "    Report[Release readiness<br/>report]:::proof\n"
         "  end\n"
@@ -1105,12 +1116,14 @@ def _merchant_lending_component_map_mermaid() -> str:
     )
 
 
-def _domain_state_mermaid() -> str:
+def _domain_state_mermaid(domain_profile: GreenfieldDomainProfile) -> str:
+    domain = _profile_label(domain_profile, "domain", fallback="Domain")
     return (
         "stateDiagram-v2\n"
         "  [*] --> Draft\n"
         "  note right of Draft\n"
         "    Proposal state, not source proof\n"
+        f"    {domain.replace('<br/>', ' ')} contract still needs implementation evidence\n"
         "  end note\n"
         "  Draft --> Accepted: valid command\n"
         "  Draft --> Rejected: invalid input\n"
@@ -1151,13 +1164,14 @@ def _merchant_lending_state_mermaid() -> str:
     )
 
 
-def _validation_release_mermaid() -> str:
+def _validation_release_mermaid(domain_profile: GreenfieldDomainProfile) -> str:
+    validation = _profile_label(domain_profile, "validation", fallback="Proof Harness")
     return (
         "flowchart LR\n"
         "  Plan[Technical plan<br/>for first workstream]:::planning --> Behavior[Behavior proof<br/>normal empty degraded]:::proof\n"
         "  Plan --> Contract[Contract proof<br/>state and invariants]:::proof\n"
         "  Choices[Accepted choices<br/>runtime data proof]:::gate --> Plan\n"
-        "  Behavior --> Harness[Verification<br/>harness]:::proof\n"
+        f"  Behavior --> Harness[\"{validation}\"]:::proof\n"
         "  Contract --> Harness\n"
         "  Harness --> Evidence[Evidence bundle<br/>fixtures reports traces]:::proof\n"
         "  Evidence --> Decision[Release decision<br/>0.0.1 scope]:::release\n"
@@ -1169,6 +1183,16 @@ def _validation_release_mermaid() -> str:
         "  classDef gate fill:#eef2ff,stroke:#818cf8,color:#1e1b4b;\n"
         "  classDef blocked fill:#fee2e2,stroke:#dc2626,color:#5f1212;\n"
     )
+
+
+def _profile_label(domain_profile: GreenfieldDomainProfile, role: str, *, fallback: str) -> str:
+    profile = domain_profile.components.get(role)
+    label = str(profile.label if profile else fallback).strip() or fallback
+    words = label.replace("&", "and").replace("/", " ").split()
+    if len(words) <= 3:
+        return " ".join(words)
+    midpoint = max(2, min(4, (len(words) + 1) // 2))
+    return " ".join(words[:midpoint]) + "<br/>" + " ".join(words[midpoint:])
 
 
 def _merchant_lending_validation_mermaid() -> str:

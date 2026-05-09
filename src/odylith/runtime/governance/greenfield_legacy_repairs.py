@@ -634,7 +634,7 @@ def _merchant_lending_catalog(*, proposal: Mapping[str, Any]) -> dict[str, Any]:
                 "review_focus": str(row.get("review_focus") or "").strip(),
                 "operator_question": str(row.get("operator_question") or "").strip(),
                 "proof_gate": str(row.get("proof_gate") or "").strip(),
-                "link_state": str(row.get("link_state") or "atlas_first_draft").strip(),
+                "link_state": str(row.get("link_state") or "architecture_first_draft").strip(),
                 "source_mmd": f"odylith/atlas/source/{slug}.mmd",
                 "source_svg": f"odylith/atlas/source/{slug}.svg",
                 "source_png": f"odylith/atlas/source/{slug}.png",

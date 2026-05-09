@@ -36,6 +36,12 @@ def infer_greenfield_domain_profile(*, prompt: str, title: str, slug: str) -> Gr
         ("risk", "sentinel", "alert", "exposure", "liquidation", "monitor"),
     ):
         return _defi_risk_profile(slug)
+    if _contains_any(text, ("clinical trial", "patient matching", "oncology", "consent", "eligibility review")):
+        return _clinical_trial_profile(slug)
+    if _contains_any(text, ("legal intake", "immigration", "attorney review", "case triage", "document collection")):
+        return _legal_intake_profile(slug)
+    if _contains_any(text, ("bioinformatics", "variant", "sequencing", "vcf", "fastq", "genome", "sample qc")):
+        return _bioinformatics_profile(slug)
     if _contains_any(text, ("commerce", "ecommerce", "checkout", "cart", "shop", "storefront", "payment")):
         return _commerce_profile(slug)
     return _default_profile(title=title, slug=slug)
@@ -309,6 +315,138 @@ def _commerce_profile(slug: str) -> GreenfieldDomainProfile:
     )
 
 
+def _clinical_trial_profile(slug: str) -> GreenfieldDomainProfile:
+    return GreenfieldDomainProfile(
+        family="clinical_trial_matching",
+        components={
+            "experience": GreenfieldComponentProfile(
+                suffix="patient-match-review",
+                label="Patient Match Review Workbench",
+                kind="application",
+                path_prefix="src",
+                responsibility="Patient intake review, consent status, trial match explanation, eligibility gaps, and coordinator-visible next steps.",
+                boundary="Owns coordinator-facing review workflow; excludes protocol-authoring, medical judgment, EHR integration, and patient outreach automation.",
+                dependencies=("Depends on the eligibility protocol engine for inclusion, exclusion, consent, and confidence state.",),
+                interfaces=("Patient intake route or command with diagnosis, biomarkers, consent posture, and candidate trial filters.",),
+                validation=("UI or API proof covers eligible, ineligible, missing-consent, missing-data, and manual-review states.",),
+                risks=("A weak workflow can imply clinical eligibility or consent where protocol evidence is incomplete.",),
+            ),
+            "domain": GreenfieldComponentProfile(
+                suffix="eligibility-protocol-engine",
+                label="Eligibility Protocol Engine",
+                kind="service",
+                path_prefix="src",
+                responsibility="Patient attributes, oncology protocol criteria, consent gates, inclusion/exclusion rules, match scoring, and review state transitions.",
+                boundary="Owns deterministic eligibility semantics; excludes care decisions, live EHR access, recruitment messaging, and protocol authoring.",
+                dependencies=("Consumes fixture-backed patient summaries, protocol criteria, consent state, and trial availability snapshots.",),
+                interfaces=("Eligibility query with patient profile, protocol criteria, consent state, exclusion reasons, confidence, and review disposition.",),
+                validation=("Contract tests cover inclusion match, exclusion rejection, missing consent, missing biomarker, stale protocol, and manual review.",),
+                risks=("Loose protocol semantics can create unsafe or misleading trial recommendations.",),
+            ),
+            "validation": GreenfieldComponentProfile(
+                suffix="matching-proof-harness",
+                label="Trial Matching Proof Harness",
+                kind="tooling",
+                path_prefix="tests",
+                responsibility="Deterministic patient, protocol, consent, biomarker, exclusion, and manual-review fixtures plus proof reports.",
+                boundary="Owns local evidence only; excludes production patient data, EHR credentials, recruitment outreach, and clinical approval.",
+                dependencies=("Depends on patient review workflow and eligibility protocol contract.",),
+                interfaces=("Scenario runner with patient fixture, protocol fixture, consent state, expected disposition, and proof report.",),
+                validation=("Proof covers eligible, excluded, missing-consent, missing-data, stale-protocol, and manual-review scenarios.",),
+                risks=("Fixture gaps can make unsafe clinical matching claims look verified.",),
+            ),
+        },
+    )
+
+
+def _legal_intake_profile(slug: str) -> GreenfieldDomainProfile:
+    return GreenfieldDomainProfile(
+        family="legal_intake",
+        components={
+            "experience": GreenfieldComponentProfile(
+                suffix="client-intake-workspace",
+                label="Client Intake Workspace",
+                kind="application",
+                path_prefix="src",
+                responsibility="Immigration client intake, document checklist, eligibility summary, risk flags, and attorney-review handoff.",
+                boundary="Owns client/operator intake workflow; excludes legal advice, filing submission, payment, and attorney decision authority.",
+                dependencies=("Depends on the case eligibility and document core for intake state, required documents, and review disposition.",),
+                interfaces=("Intake route or command with client profile, case type, document inventory, urgency, and consent posture.",),
+                validation=("UI or API proof covers complete intake, missing documents, urgent risk, blocked consent, and attorney-review states.",),
+                risks=("A weak workflow can imply legal advice or filing readiness before attorney review.",),
+            ),
+            "domain": GreenfieldComponentProfile(
+                suffix="case-document-core",
+                label="Case Eligibility And Document Core",
+                kind="service",
+                path_prefix="src",
+                responsibility="Immigration case type, document requirements, eligibility signals, risk flags, confidentiality state, and attorney-review routing.",
+                boundary="Owns intake classification and document completeness semantics; excludes legal advice, live filing systems, and final representation decisions.",
+                dependencies=("Consumes fixture-backed client facts, document inventory, consent state, and case-type rules.",),
+                interfaces=("Case triage query with client facts, case type, required documents, missing items, risk flags, and review disposition.",),
+                validation=("Contract tests cover complete intake, missing document, urgent deadline, consent block, conflict flag, and attorney review.",),
+                risks=("Unclear eligibility semantics can create unauthorized-practice or confidentiality risk.",),
+            ),
+            "validation": GreenfieldComponentProfile(
+                suffix="confidential-intake-harness",
+                label="Confidential Intake Proof Harness",
+                kind="tooling",
+                path_prefix="tests",
+                responsibility="Deterministic client, document, consent, deadline, conflict, and attorney-review fixtures plus privacy proof reports.",
+                boundary="Owns local proof; excludes production client data, filing credentials, legal advice, and external case systems.",
+                dependencies=("Depends on intake workspace visible-state contract and case-document core contract.",),
+                interfaces=("Scenario runner with client fixture, document fixture, consent state, expected disposition, and confidentiality report.",),
+                validation=("Proof covers complete intake, missing documents, urgent deadline, consent block, conflict flag, and attorney review.",),
+                risks=("Weak privacy fixtures can hide PII handling, consent, or unauthorized-advice failures.",),
+            ),
+        },
+    )
+
+
+def _bioinformatics_profile(slug: str) -> GreenfieldDomainProfile:
+    return GreenfieldDomainProfile(
+        family="bioinformatics_variant_pipeline",
+        components={
+            "experience": GreenfieldComponentProfile(
+                suffix="variant-review-workbench",
+                label="Variant Review Workbench",
+                kind="application",
+                path_prefix="src",
+                responsibility="Sample run intake, QC status, variant review, VCF report access, failure explanation, and analyst handoff.",
+                boundary="Owns analyst-facing review workflow; excludes sequencing execution, clinical interpretation, LIMS integration, and production storage.",
+                dependencies=("Depends on the sequencing analysis core for sample, QC, variant, annotation, and report state.",),
+                interfaces=("Run review route or command with sample id, sequencing fixture, QC state, VCF reference, and analyst notes.",),
+                validation=("UI or API proof covers passing sample, failed QC, empty variants, malformed VCF, and review-ready states.",),
+                risks=("A weak review workflow can imply valid biological interpretation before QC and reproducibility proof exist.",),
+            ),
+            "domain": GreenfieldComponentProfile(
+                suffix="sequencing-analysis-core",
+                label="Sequencing Analysis Core",
+                kind="service",
+                path_prefix="src",
+                responsibility="Sample metadata, FASTQ/BAM/VCF fixture semantics, QC thresholds, variant normalization, annotation state, and reproducible run outputs.",
+                boundary="Owns deterministic pipeline state and file-contract semantics; excludes sequencer control, clinical interpretation, and live data lake access.",
+                dependencies=("Consumes pinned sample, QC, reference, VCF, annotation, and expected-output fixtures.",),
+                interfaces=("Pipeline query with sample metadata, QC metrics, variant list, VCF output, provenance, and review disposition.",),
+                validation=("Contract tests cover passing QC, failed QC, empty variant set, malformed VCF, reference mismatch, and reproducible rerun.",),
+                risks=("Unpinned references or loose QC can make variant claims unreproducible.",),
+            ),
+            "validation": GreenfieldComponentProfile(
+                suffix="pipeline-reproducibility-harness",
+                label="Pipeline Reproducibility Harness",
+                kind="tooling",
+                path_prefix="tests",
+                responsibility="Pinned sample, QC, reference, VCF, annotation, malformed-input, and reproducibility fixtures plus proof reports.",
+                boundary="Owns local proof; excludes production samples, external compute clusters, clinical sign-out, and live lab systems.",
+                dependencies=("Depends on variant review workflow and sequencing analysis contract.",),
+                interfaces=("Scenario runner with sample fixture, reference fixture, expected VCF/QC output, provenance, and reproducibility report.",),
+                validation=("Proof covers passing sample, failed QC, empty variants, malformed VCF, reference mismatch, and deterministic rerun.",),
+                risks=("Weak reproducibility proof can hide reference drift, sample mix-ups, or invalid VCF output.",),
+            ),
+        },
+    )
+
+
 def _default_profile(*, title: str, slug: str) -> GreenfieldDomainProfile:
     domain_name = _domain_label(title, slug=slug)
     compact = domain_name.replace(" App", "").replace(" Platform", "").strip() or "Product"
@@ -316,8 +454,8 @@ def _default_profile(*, title: str, slug: str) -> GreenfieldDomainProfile:
         family="generic",
         components={
             "experience": GreenfieldComponentProfile(
-                suffix="workbench",
-                label=f"{compact} Workbench",
+                suffix="operator-workspace",
+                label=f"{compact} Operator Workspace",
                 kind="application",
                 path_prefix="src",
                 responsibility=(
@@ -329,8 +467,8 @@ def _default_profile(*, title: str, slug: str) -> GreenfieldDomainProfile:
                     "storage decisions, external integrations, and release proof ownership."
                 ),
                 dependencies=(
-                    f"Depends on the {compact.lower()} domain core for state, commands, and invariant outcomes.",
-                    "Depends on the verification harness for normal, empty, and degraded-state fixtures.",
+                    f"Depends on the {compact.lower()} product model for state, commands, and invariant outcomes.",
+                    "Depends on the evidence harness for normal, empty, and degraded-state fixtures.",
                 ),
                 interfaces=(
                     f"{compact} workflow route or command plus visible normal, empty, degraded, and error state contract.",
@@ -343,8 +481,8 @@ def _default_profile(*, title: str, slug: str) -> GreenfieldDomainProfile:
                 risks=(f"A generic {compact.lower()} screen can make unproven source behavior look complete.",),
             ),
             "domain": GreenfieldComponentProfile(
-                suffix="domain-core",
-                label=f"{compact} Domain Core",
+                suffix="product-model",
+                label=f"{compact} Product Model",
                 kind="service",
                 path_prefix="src",
                 responsibility=(
@@ -361,18 +499,18 @@ def _default_profile(*, title: str, slug: str) -> GreenfieldDomainProfile:
                 risks=(f"A loose {compact.lower()} domain contract can couple UI, storage, and integration choices too early.",),
             ),
             "validation": GreenfieldComponentProfile(
-                suffix="verification-harness",
-                label=f"{compact} Verification Harness",
+                suffix="evidence-harness",
+                label=f"{compact} Evidence Harness",
                 kind="tooling",
                 path_prefix="tests",
                 responsibility=(
                     f"Own deterministic {compact.lower()} fixtures, smoke/regression commands, proof reports, "
-                    "and governance-refresh checks."
+                    "and project-record checks."
                 ),
                 boundary=f"Owns first-release proof evidence; excludes product runtime behavior and production data.",
-                dependencies=(f"Depends on the {compact.lower()} workbench and domain core contracts.",),
-                interfaces=("Local smoke command, fixture input, proof report, and governance refresh check.",),
-                validation=("Proof command fails closed on missing fixtures, skipped assertions, or stale governance records.",),
+                dependencies=(f"Depends on the {compact.lower()} operator workspace and product model contracts.",),
+                interfaces=("Local smoke command, fixture input, proof report, and evidence refresh check.",),
+                validation=("Proof command fails closed on missing fixtures, skipped assertions, or stale project records.",),
                 risks=("Weak proof can let proposal text outrun implementation evidence.",),
             ),
         },

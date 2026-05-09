@@ -1500,6 +1500,7 @@ def test_greenfield_apply_writes_bespoke_domain_component_specs(tmp_path, monkey
     harness_spec = (spec_root / "defi-risk-sentinel-app-scenario-replay-harness/CURRENT_SPEC.md").read_text(
         encoding="utf-8"
     )
+    atlas_catalog = json.loads((tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json").read_text(encoding="utf-8"))
 
     assert result["tribunal"]["status"] == "passed"
     assert [row["label"] for row in proposal["components"]] == [
@@ -1549,6 +1550,7 @@ def test_greenfield_apply_writes_bespoke_domain_component_specs(tmp_path, monkey
         assert "odylith_assumption" not in text
     assert console_spec != engine_spec
     assert engine_spec != harness_spec
+    assert {row["link_state"] for row in atlas_catalog["diagrams"]} == {"architecture_first_draft"}
 
 
 def test_greenfield_apply_cli_prints_operator_handoff(tmp_path, monkeypatch, capsys) -> None:

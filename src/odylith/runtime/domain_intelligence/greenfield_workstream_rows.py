@@ -23,6 +23,48 @@ def build_child_backlog_rows(
         return _defi_risk_rows(title=title, components=components, diagrams=diagrams)
     if family == "commerce":
         return _commerce_rows(title=title, components=components, diagrams=diagrams)
+    if family == "clinical_trial_matching":
+        return _profiled_rows(
+            title=title,
+            components=components,
+            diagrams=diagrams,
+            workflow_title="Prove patient-to-trial eligibility review workflow",
+            contract_title="Define patient, protocol, consent, and eligibility contract",
+            proof_title="Prove clinical matching fixtures and review harness",
+            actor="patient coordinator",
+            workflow_focus="patient intake, oncology protocol criteria, consent state, eligibility explanation, and manual review",
+            domain_focus="patient profile, protocol criteria, inclusion/exclusion rules, consent gate, match confidence, and review disposition",
+            proof_focus="eligible, excluded, missing-consent, missing-biomarker, stale-protocol, and manual-review scenarios",
+            risk="clinical trial matching can imply eligibility or consent without protocol-backed evidence",
+        )
+    if family == "legal_intake":
+        return _profiled_rows(
+            title=title,
+            components=components,
+            diagrams=diagrams,
+            workflow_title="Prove immigration client intake and attorney triage workflow",
+            contract_title="Define case, document, consent, and review contract",
+            proof_title="Prove confidential intake fixtures and privacy harness",
+            actor="intake operator",
+            workflow_focus="client intake, document collection, eligibility summary, urgency flags, consent, and attorney handoff",
+            domain_focus="case type, document requirements, missing evidence, confidentiality state, risk flags, and attorney-review disposition",
+            proof_focus="complete intake, missing documents, urgent deadline, consent block, conflict flag, and attorney-review scenarios",
+            risk="legal intake can imply advice, filing readiness, or representation before attorney review",
+        )
+    if family == "bioinformatics_variant_pipeline":
+        return _profiled_rows(
+            title=title,
+            components=components,
+            diagrams=diagrams,
+            workflow_title="Prove sample-to-variant review workflow",
+            contract_title="Define sample, QC, variant, and VCF output contract",
+            proof_title="Prove sequencing pipeline reproducibility harness",
+            actor="bioinformatics analyst",
+            workflow_focus="sample intake, sequencing run review, QC status, variant review, VCF output, and analyst handoff",
+            domain_focus="sample metadata, QC thresholds, FASTQ/BAM/VCF fixture semantics, variant normalization, provenance, and reproducible output",
+            proof_focus="passing sample, failed QC, empty variant set, malformed VCF, reference mismatch, and deterministic rerun scenarios",
+            risk="variant analysis can imply reproducible biological findings before QC, reference, and VCF proof exists",
+        )
     return _generic_rows(title=title, components=components, diagrams=diagrams)
 
 
@@ -332,6 +374,82 @@ def _commerce_rows(
     ]
 
 
+def _profiled_rows(
+    *,
+    title: str,
+    components: Mapping[str, str],
+    diagrams: Mapping[str, str],
+    workflow_title: str,
+    contract_title: str,
+    proof_title: str,
+    actor: str,
+    workflow_focus: str,
+    domain_focus: str,
+    proof_focus: str,
+    risk: str,
+) -> list[dict[str, Any]]:
+    return [
+        _row(
+            row_id="WS-01",
+            title=workflow_title,
+            problem=f"{title} needs a concrete {actor} workflow before implementation can avoid generic scaffolding.",
+            customer=f"{actor.title()}s, reviewers, and engineers implementing the first product slice.",
+            opportunity=f"Turn broad intent into a narrow workflow around {workflow_focus}.",
+            product_view=f"The first workflow owns {workflow_focus}.",
+            first_slice=f"Prove {workflow_focus} with normal, missing-data, blocked, degraded, and review-ready states.",
+            success_metrics=[
+                f"The {actor} workflow has implementation-backed proof for {workflow_focus}.",
+                "Visible states are derived from the domain contract, not presentation-only labels.",
+                f"Release proof explicitly guards against the core risk: {risk}.",
+            ],
+            component_focus=[components["experience"], components["domain"]],
+            related_diagram_slugs=[diagrams["overview"], diagrams["slice"], diagrams["component_map"]],
+            dependencies=[f"Depends on the domain contract for {domain_focus}."],
+            interfaces=[f"Defines the first route or command for {workflow_focus}."],
+            validation=[f"Behavior proof covers {proof_focus}."],
+        ),
+        _row(
+            row_id="WS-02",
+            title=contract_title,
+            problem=f"{title} cannot make trustworthy product claims without a named contract for {domain_focus}.",
+            customer="Engineers implementing source boundaries and reviewers checking correctness, safety, and evidence quality.",
+            opportunity=f"Make {domain_focus} explicit before storage, provider, UI, or deployment choices harden into accidental architecture.",
+            product_view=f"The domain component owns {domain_focus}.",
+            first_slice=f"Write the domain contract and minimal implementation for {domain_focus}.",
+            success_metrics=[
+                f"Contract tests prove {proof_focus}.",
+                "Invalid, stale, missing, or blocked inputs cannot produce a normal success claim.",
+            ],
+            component_focus=[components["domain"]],
+            related_diagram_slugs=[diagrams["component_map"], diagrams["domain_state"], diagrams["slice"]],
+            dependencies=[f"Depends on confirmed {actor} workflow semantics and deterministic fixtures."],
+            interfaces=[f"Defines command, query, schema, event, or module contracts for {domain_focus}."],
+            validation=[f"Contract proof covers {proof_focus}."],
+            evidence_tier="odylith_assumption",
+        ),
+        _row(
+            row_id="WS-03",
+            title=proof_title,
+            problem=f"{title} needs deterministic proof before release movement can claim the first slice is real.",
+            customer="Reviewers, maintainers, and future operators who need reproducible evidence instead of a one-off demo.",
+            opportunity=f"Capture fixture, replay, report, and release-readiness evidence for {proof_focus}.",
+            product_view=f"The proof harness owns deterministic scenarios for {proof_focus}.",
+            first_slice=f"Create the first proof harness for {proof_focus}.",
+            success_metrics=[
+                "Proof runs locally with deterministic fixtures and no production data or credentials.",
+                "Proof fails closed on missing fixtures, skipped assertions, or unpinned external data.",
+            ],
+            component_focus=[components["validation"]],
+            related_diagram_slugs=[diagrams["validation_release"], diagrams["domain_state"]],
+            dependencies=["Depends on WS-01 behavior proof and WS-02 contract proof before hardening expands scope."],
+            interfaces=["Defines scenario runner inputs, fixture schema, expected states, and proof report output."],
+            validation=[f"Replay proof covers {proof_focus}."],
+            priority="P2",
+            evidence_tier="odylith_assumption",
+        ),
+    ]
+
+
 def _generic_rows(
     *,
     title: str,
@@ -362,7 +480,7 @@ def _generic_rows(
             title="Define first domain contract",
             problem=f"{title} cannot scale beyond the first workflow without a named domain contract for state, commands, ownership, and invariants.",
             customer="Engineers implementing source boundaries and reviewers checking correctness of data and state transitions.",
-            opportunity="Make the domain core explicit before storage, API, worker, or UI choices harden into accidental architecture.",
+            opportunity="Make the product state model explicit before storage, API, worker, or UI choices harden into accidental architecture.",
             product_view="A domain component owns the first state model, commands, invariants, and integration handoff used by the first workflow.",
             first_slice="Write the domain contract and minimal implementation that the first workflow consumes.",
             success_metrics=[
@@ -381,12 +499,12 @@ def _generic_rows(
             title="Prove release harness",
             problem=f"{title} needs repeatable proof, fallback checks, and release-readiness evidence before the first slice can be promoted.",
             customer="Maintainers, reviewers, and future operators who need reproducible validation instead of a one-off manual demo.",
-            opportunity="Capture the first release verification commands, smoke fixtures, and dashboard refresh proof while the program is still small.",
-            product_view="A verification harness records the first release smoke, regression checks, accessibility or safety gates, and operational recovery expectations.",
+            opportunity="Capture the first release verification commands, smoke fixtures, and project-record proof while the program is still small.",
+            product_view="An evidence harness records the first release smoke, regression checks, accessibility or safety gates, and operational recovery expectations.",
             first_slice="Create the first smoke or regression harness around the first workflow and domain contract.",
             success_metrics=[
                 "Release proof runs locally with deterministic fixtures and no production credentials.",
-                "Governance records refresh after the proof and show the same first release lane.",
+                "Project records refresh after the proof and show the same first release lane.",
             ],
             component_focus=[components["validation"]],
             related_diagram_slugs=[diagrams["validation_release"], diagrams["domain_state"]],
