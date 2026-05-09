@@ -283,6 +283,32 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   fields per workstream, unique ontology labels, project-gated closeout, no
   old boilerplate, no malformed ownership phrase, and component specs with
   Risk Console/Risk Signal Engine/Scenario Replay Harness-specific markers.
+- 2026-05-09 preview/write-gate hardening split the default greenfield text
+  from the deep accepted record. `greenfield propose` now shows four review
+  gates: product interpretation, clarify-before-apply choices, a compact
+  workstream/component/architecture preview, and the confirmed-write point.
+  The full `--format json` path still carries the deep project/workstream,
+  component, architecture, wave, release, risk, validation, and memory record
+  that `greenfield create/apply --confirm` validates before Tribunal-gated
+  writes. The exact Shopify stablecoin merchant-lending prompt now preserves
+  `Merchants On Shopify` in the title and default proposal text stays free of
+  provider/mode chatter, raw apply-ready metadata, and Radar/Registry/Atlas/
+  Compass-as-product phrasing. Proof: `CB-194` plus focused preview,
+  merchant-lending, show, bundle, Atlas, legacy-repair, and release-migration
+  tests; live source-local repro showed the compact gated preview and `release
+  migration-gate --target-version 0.1.15 --json` reported no blockers.
+- 2026-05-09 final greenfield guardrail hardening closed two migration-proof
+  gaps found while rerunning the product surfaces: the consumer merchant-lending
+  legacy repair now no-ops in the Odylith product repo, and standalone Registry
+  rendering ignores stale runtime snapshots so the browser payload reflects the
+  governed source manifest. Proof: a product-repo guard regression test,
+  standalone Registry source-manifest precedence test, real `radar refresh`
+  proving the source Registry stays at 30 product components with zero SMB mock
+  components, and a refreshed migration-observer pass for
+  `operator-cli-contracts` plus `browser-surfaces`; the regenerated Radar,
+  Registry, Atlas, Casebook, and Compass shell surfaces also passed the
+  desktop/mobile headless browser matrix with zero console warnings/errors and
+  zero horizontal overflow.
 - Deepening pass split science/math into targeted subdomains and added fixture
   proof for commerce, SaaS, dashboards, AI assistants, data ingestion, CLI
   libraries, physics simulation, differential-equation solvers, computational

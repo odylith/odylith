@@ -499,6 +499,34 @@ def test_render_registry_dashboard_reuses_compass_runtime_summary(
     assert payload["odylith_runtime"] == {"advisory_depth": "cached", "yield_state": "ready"}
 
 
+def test_render_registry_dashboard_standalone_uses_source_manifest_not_runtime_snapshot(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    _seed_repo(tmp_path)
+
+    def _boom(**_kwargs):  # noqa: ANN202
+        raise AssertionError("standalone registry render must not load a stale runtime snapshot")
+
+    monkeypatch.setattr(renderer.odylith_context_engine_store, "load_component_registry_snapshot", _boom)
+
+    rc = renderer.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--output",
+            "odylith/registry/registry.html",
+            "--runtime-mode",
+            "standalone",
+        ]
+    )
+
+    assert rc == 0
+    payload = _load_registry_payload(tmp_path)
+    component_ids = {str(row.get("component_id", "")) for row in payload["components"]}
+    assert {"odylith", "radar"}.issubset(component_ids)
+
+
 def test_render_registry_dashboard_forensic_evidence_uses_digest_first_contract(tmp_path: Path) -> None:
     _seed_repo(tmp_path)
     stream_path = tmp_path / "odylith" / "compass" / "runtime" / "agent-stream.v1.jsonl"

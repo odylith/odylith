@@ -9,6 +9,7 @@ import re
 import shutil
 from typing import Any, Mapping
 
+from odylith.runtime.common.repo_shape import is_product_repo_shape
 from odylith.install.fs import atomic_write_text
 from odylith.runtime.common.consumer_profile import truth_root_path
 from odylith.runtime.governance import backlog_authoring
@@ -28,11 +29,33 @@ _CONTROL_PLANE_LEAK_RE = re.compile(
     r"\bOdylith surfaces\b|Radar/Registry/Atlas/Compass|Compass Radar Registry Atlas",
     re.IGNORECASE,
 )
-_MERCHANT_LENDING_RE = re.compile(
-    r"(?=.*\b(smb|merchant|shopify|seller|business)\b)"
-    r"(?=.*\b(lending|loan|credit|borrower|underwriting|repayment|capital)\b)"
-    r"(?=.*\b(defi|stable\s*coins?|stablecoin|usdc|liquidity|protocol|vault|pool)\b)",
-    re.IGNORECASE | re.DOTALL,
+_MERCHANT_ACTOR_TOKENS = (
+    "smb",
+    "merchant",
+    "shopify",
+    "seller",
+    "business",
+)
+_MERCHANT_LENDING_TOKENS = (
+    "lending",
+    "loan",
+    "credit",
+    "borrower",
+    "underwriting",
+    "repayment",
+    "capital",
+)
+_MERCHANT_LIQUIDITY_TOKENS = (
+    "defi",
+    "stable coin",
+    "stable coins",
+    "stablecoin",
+    "stablecoins",
+    "usdc",
+    "liquidity",
+    "protocol",
+    "vault",
+    "pool",
 )
 
 
@@ -46,6 +69,9 @@ def repair_legacy_merchant_lending_checkout_workstreams(*, repo_root: str | Path
     """
 
     root = Path(repo_root).expanduser().resolve()
+    if is_product_repo_shape(repo_root=root):
+        return LegacyGreenfieldRepairResult(changed=False)
+
     idea_root = truth_root_path(repo_root=root, key="radar_source") / "ideas"
     if not idea_root.is_dir():
         return LegacyGreenfieldRepairResult(changed=False)
@@ -107,7 +133,19 @@ def _legacy_candidates(idea_root: Path) -> list[tuple[Path, str]]:
 
 
 def _is_poisoned_merchant_lending_record(text: str) -> bool:
-    return bool(_MERCHANT_LENDING_RE.search(text) and (_CHECKOUT_LEAK_RE.search(text) or _CONTROL_PLANE_LEAK_RE.search(text)))
+    lowered = str(text or "").casefold()
+    merchant_lending = (
+        _contains_any(lowered, _MERCHANT_ACTOR_TOKENS)
+        and _contains_any(lowered, _MERCHANT_LENDING_TOKENS)
+        and _contains_any(lowered, _MERCHANT_LIQUIDITY_TOKENS)
+    )
+    if not merchant_lending:
+        return False
+    return bool(_CHECKOUT_LEAK_RE.search(text) or _CONTROL_PLANE_LEAK_RE.search(text))
+
+
+def _contains_any(text: str, tokens: tuple[str, ...]) -> bool:
+    return any(token in text for token in tokens)
 
 
 def _poisoned_project_surface_paths(root: Path) -> list[Path]:
@@ -187,13 +225,20 @@ def _prompt_from_candidates(*, candidates: list[tuple[Path, str]], poisoned_surf
     if project_match:
         prompt = project_match.group(0).strip()
         if "shopify" not in prompt.casefold():
-            prompt = f"{prompt} for Shopify merchants"
+            prompt = _append_shopify_merchant_target(prompt)
         return prompt
     title_match = re.search(r"(?m)^title:\s*(.+?)\s*$", text)
     title = title_match.group(1).strip() if title_match else "SMB lending application pulling stable coins from DeFi protocols to merchants on Shopify"
     if "shopify" not in title.casefold():
-        title = f"{title} for Shopify merchants"
+        title = _append_shopify_merchant_target(title)
     return title
+
+
+def _append_shopify_merchant_target(value: str) -> str:
+    text = str(value or "").strip()
+    if text.casefold().endswith(" to"):
+        return f"{text} merchants on Shopify"
+    return f"{text} to merchants on Shopify"
 
 
 def _proposal_rows_by_kind(proposal: Mapping[str, Any]) -> dict[str, Mapping[str, Any]]:
@@ -371,6 +416,15 @@ def _repair_merchant_lending_atlas(
         return []
 
     repaired: list[str] = []
+    current_slugs = set(diagrams)
+    for stale_path in sorted(atlas_root.glob("smb-lending-application-pulling-stable-coins-from-defi-protocols-to*.*")):
+        if stale_path.suffix not in {".mmd", ".svg"}:
+            continue
+        if stale_path.stem in current_slugs:
+            continue
+        if _looks_like_legacy_merchant_lending_atlas_slug(stale_path.stem):
+            stale_path.unlink()
+            repaired.append(str(stale_path))
     for slug, row in diagrams.items():
         source = str(row.get("mermaid_source") or row.get("source") or "").strip() + "\n"
         if not source.strip():
@@ -391,6 +445,15 @@ def _repair_merchant_lending_atlas(
         atomic_write_text(catalog_path, rendered_catalog, encoding="utf-8")
         repaired.append(str(catalog_path))
     return repaired
+
+
+def _looks_like_legacy_merchant_lending_atlas_slug(stem: str) -> bool:
+    lowered = str(stem or "").casefold()
+    return (
+        lowered.startswith("smb-lending-application-pulling-stable-coins-from-defi-protocols-to")
+        and "merchant" not in lowered
+        and "shopify" not in lowered
+    )
 
 
 def _repair_merchant_lending_programs(

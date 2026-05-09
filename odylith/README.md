@@ -107,19 +107,19 @@ greenfield proposal lane before source-backed governance exists:
 ./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<project intent>"
 ```
 
-Odylith builds an apply-ready canonical proposal with a project-first brief,
-direction options, architecture views, and coding-readiness gates. It validates
-that object against the apply contract, runs the greenfield Tribunal, and
-renders the human proposal from the same object. Accepted proposals can be
-created only with explicit confirmation:
+Odylith shows a compact product-first preview with the interpreted product,
+direction choices, non-goals, first release ambition, candidate boundaries, and
+proof gates. The full proposal object is still available with `--format json`;
+confirmed create/apply validates that full object, runs the Tribunal write gate,
+and writes records only with explicit confirmation:
 
 ```bash
 ./.odylith/bin/odylith greenfield create --repo-root . --prompt "<project intent>" --release 0.0.1 --confirm
 ```
 
 If a workflow needs a proposal file, emit it with `greenfield propose --format
-json` and pass that canonical file to `greenfield apply`; do not hand-author
-proposal JSON. Do not start coding until the project-first gates are accepted.
+json` and pass that file to `greenfield apply`; do not hand-author proposal
+JSON. Do not start coding until the product gates are accepted.
 
 For the common governance authoring fast paths, use:
 

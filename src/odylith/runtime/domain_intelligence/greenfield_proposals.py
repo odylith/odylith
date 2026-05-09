@@ -96,7 +96,10 @@ def _intent_title(prompt: str) -> str:
     if not text or len(text) < 4:
         return "Greenfield Project"
     words = [_title_token(word) for word in text.split()]
-    return " ".join(words[:10])
+    clipped = words[:16]
+    while clipped and clipped[-1].casefold() in {"and", "for", "from", "in", "of", "on", "or", "to", "with"}:
+        clipped.pop()
+    return " ".join(clipped or words[:1])
 
 
 _TITLE_ACRONYMS = {
@@ -197,14 +200,14 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
             "mode": "consumer_greenfield_host_reasoned_proposal",
             "source_posture": evidence.get("source_posture", "unknown"),
             "operator_sequence": [
-                "Odylith builds canonical apply-ready proposal JSON from prompt and repo evidence",
-                "operator reviews the project-first brief, direction options, assumptions, boundaries, diagrams, waves, and release plan",
-                "Odylith validates and applies the confirmed proposal only after explicit confirmation",
-                "implementation planning starts only after the project-first coding readiness gates are accepted",
-                "or run the one-command create path when the built scaffold and readiness gates are enough",
+                "Odylith interprets the prompt and shows a compact product-first preview before any records are written",
+                "the operator reviews domain fit, direction choices, non-goals, first release ambition, and proof threshold",
+                "confirmed create/apply validates the accepted proposal and writes project records only after explicit confirmation",
+                "implementation planning starts only after the accepted records name the first slice, boundaries, states, and proof gates",
+                "use --format json when a reviewer needs the full proposal object before apply",
             ],
-            "write_guardrail": "This command does not write proposal records; the same validated canonical object is rendered for review and emitted by --format json.",
-            "next_best_action": f"Review or deepen the project-first scaffold for {intent_title}, choose direction options, then confirm create/apply.",
+            "write_guardrail": "This preview writes nothing. Confirmed create/apply is the first point where project records are written.",
+            "next_best_action": f"Review the interpretation and direction choices for {intent_title}; revise them before create/apply if they would change architecture or proof.",
         },
         "reasoning_contract": build_proposal_contract(),
         "proposal_template": canonical_proposal,
@@ -220,7 +223,7 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
             "project_intelligence": ["project_control_surface", "project_domain_intelligence"],
         },
         "host_instruction": (
-            "Draft a concrete proposal for the operator now. Be specific to the prompt; "
+            "Draft a concrete product proposal for the operator now. Be specific to the prompt; "
             "do not use canned domain buckets. Label observed_source, user_intent, "
             "and odylith_assumption separately. Ask only the questions that materially "
             "change the project direction, first slice, or correctness gates. Include project-first "
@@ -234,7 +237,8 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
             "and identify the first-wave workstreams that should target that release."
             " The confirmed proposal will run through deterministic validation "
             "before writes and will refresh accepted product records after "
-            "the accepted artifacts are written. Include a domain-appropriate security, "
+            "the accepted artifacts are written. The preview must stay compact and product-first; "
+            "the full JSON can carry the deeper record details. Include a domain-appropriate security, "
             "privacy, compliance, abuse, accessibility, data retention, and operational "
             "risk posture; keep it proportional, specific, and host-model agnostic."
         ),
@@ -357,7 +361,7 @@ def _backlog_section_overrides(proposal: Mapping[str, Any]) -> dict[str, dict[st
             "priority": str(row.get("priority", "P1")).strip() or "P1",
             "sizing": str(row.get("sizing", "M")).strip() or "M",
             "complexity": str(row.get("complexity", "Medium")).strip() or "Medium",
-            "ordering_rationale": "Created from a confirmed Odylith greenfield proposal.",
+            "ordering_rationale": "Created from a confirmed greenfield product proposal.",
         }
         extra_sections: dict[str, str] = {}
         if title == parent_title:
@@ -394,7 +398,7 @@ def _backlog_apply_args(proposal: Mapping[str, Any], *, release_selector: str) -
         sizing=str(first.get("sizing", "M")).strip() or "M",
         complexity=str(first.get("complexity", "Medium")).strip() or "Medium",
         ordering_score=None,
-        ordering_rationale="Created from a confirmed Odylith greenfield proposal.",
+        ordering_rationale="Created from a confirmed greenfield product proposal.",
         confidence="medium",
         founder_override=False,
         override_note="",
@@ -888,20 +892,20 @@ def _write_greenfield_proposal(
 
 
 def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(prog="odylith greenfield", description="Draft and apply greenfield governance proposals.")
+    parser = argparse.ArgumentParser(prog="odylith greenfield", description="Preview and apply confirmation-gated greenfield product records.")
     subparsers = parser.add_subparsers(dest="command", required=True)
-    propose = subparsers.add_parser("propose", help="Draft a confirmation-gated greenfield proposal.")
+    propose = subparsers.add_parser("propose", help="Preview a confirmation-gated greenfield product proposal.")
     propose.add_argument("--repo-root", default=".")
     propose.add_argument("--prompt", required=True)
     propose.add_argument("--format", choices=("text", "json"), default="text", dest="output_format")
-    apply = subparsers.add_parser("apply", help="Apply a confirmed greenfield proposal.")
+    apply = subparsers.add_parser("apply", help="Apply a confirmed greenfield product proposal.")
     apply.add_argument("--repo-root", default=".")
     apply.add_argument("--proposal-file", default="")
     apply.add_argument("--proposal-json", default="")
     apply.add_argument("--confirm", action="store_true")
     apply.add_argument("--release", default="")
     apply.add_argument("--json", action="store_true", dest="as_json")
-    create = subparsers.add_parser("create", help="Build and apply an Odylith-owned greenfield proposal in one confirmed command.")
+    create = subparsers.add_parser("create", help="Build and apply a validated greenfield product proposal in one confirmed command.")
     create.add_argument("--repo-root", default=".")
     create.add_argument("--prompt", required=True)
     create.add_argument("--confirm", action="store_true")

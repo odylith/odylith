@@ -51,7 +51,7 @@ def format_proposal_text(proposal: Mapping[str, Any]) -> str:
     if proposal.get("mode") == "host_reasoned_proposal_request":
         canonical = proposal.get("canonical_proposal")
         if isinstance(canonical, Mapping):
-            return _format_apply_ready_proposal_text(canonical, request_context=proposal)
+            return _format_proposal_preview_text(canonical, request_context=proposal)
         source = proposal.get("observed_source", {}) if isinstance(proposal.get("observed_source"), Mapping) else {}
         ux = proposal.get("greenfield_ux", {}) if isinstance(proposal.get("greenfield_ux"), Mapping) else {}
         contract = proposal.get("reasoning_contract", {}) if isinstance(proposal.get("reasoning_contract"), Mapping) else {}
@@ -104,6 +104,188 @@ def format_proposal_text(proposal: Mapping[str, Any]) -> str:
         return "\n".join(lines).rstrip() + "\n"
 
     return _format_apply_ready_proposal_text(proposal)
+
+
+def _format_proposal_preview_text(
+    proposal: Mapping[str, Any],
+    *,
+    request_context: Mapping[str, Any],
+) -> str:
+    """Render the default greenfield review gate without dumping the full record."""
+
+    intent = proposal.get("intent", {}) if isinstance(proposal.get("intent"), Mapping) else {}
+    title = str(intent.get("title", "Greenfield Project")).strip()
+    source = proposal.get("observed_source", {}) if isinstance(proposal.get("observed_source"), Mapping) else {}
+    source_posture = str(source.get("source_posture", "unknown")).strip()
+    release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
+    release_selector = _release_selector(release_plan)
+    release_display = greenfield_programs.compact_release_target_label(release_selector)
+    project_intelligence = (
+        proposal.get("project_intelligence", {}) if isinstance(proposal.get("project_intelligence"), Mapping) else {}
+    )
+    project_brief = proposal.get("project_brief", {}) if isinstance(proposal.get("project_brief"), Mapping) else {}
+    commands = request_context.get("apply_commands", [])
+    create_command = ""
+    json_command = ""
+    if isinstance(commands, list):
+        create_command = next((str(item) for item in commands if str(item).startswith("odylith greenfield create")), "")
+        json_command = next((str(item) for item in commands if " --format json" in str(item)), "")
+    if not create_command:
+        create_command = (
+            "odylith greenfield create --repo-root . --prompt "
+            + shell_quote(str(intent.get("prompt", "new project")))
+            + f" --release {shell_quote(release_selector)} --confirm"
+        )
+    if not json_command:
+        json_command = (
+            "odylith greenfield propose --repo-root . --prompt "
+            + shell_quote(str(intent.get("prompt", "new project")))
+            + " --format json > odylith-greenfield-proposal.json"
+        )
+
+    lines = [
+        f"Greenfield proposal preview: {title}",
+        f"- source evidence: {source_posture}; No files changed.",
+        "- gate: preview only; product records are written only after explicit confirmation",
+        "- full record: use --format json when a reviewer needs every workstream, component, diagram, wave, risk, and validation field",
+        "",
+        "Gate 1 - Interpretation",
+    ]
+    lines.extend(_preview_project_intent_lines(project_intelligence))
+    lines.extend(["", "Gate 2 - Clarify Before Apply"])
+    lines.extend(_preview_option_lines(project_brief.get("customization_options"), limit=6))
+    question_lines = _preview_question_lines(proposal.get("open_questions"), limit=3)
+    if question_lines:
+        lines.extend(["- Open questions that can change the proposal:"])
+        lines.extend(f"  - {line}" for line in question_lines)
+    lines.extend(["", "Gate 3 - Proposal Preview"])
+    release_strategy = str(release_plan.get("strategy", "")).strip()
+    lines.append(f"- First release: {release_display}" + (f" - {release_strategy}" if release_strategy else ""))
+    workstream_lines = _preview_workstream_lines(proposal.get("backlog"), limit=4)
+    if workstream_lines:
+        lines.append("- Product workstreams:")
+        lines.extend(f"  - {line}" for line in workstream_lines)
+    component_lines = _preview_component_lines(proposal.get("components"), limit=3)
+    if component_lines:
+        lines.append("- Candidate product boundaries:")
+        lines.extend(f"  - {line}" for line in component_lines)
+    diagram_lines = _preview_architecture_lines(proposal.get("diagrams"), limit=5)
+    if diagram_lines:
+        lines.append("- Architecture review views:")
+        lines.extend(f"  - {line}" for line in diagram_lines)
+    lines.extend(["", "Gate 4 - Confirmed Write"])
+    lines.append("- `greenfield propose` writes nothing and is the clarification/review gate.")
+    lines.append("- `greenfield create/apply --confirm` validates the full proposal, runs the write gate, then writes accepted project records and refreshes the readable views.")
+    lines.append("- Confirm as-is:")
+    lines.append(f"  {create_command}")
+    lines.append("- Review the full JSON before apply:")
+    lines.append(f"  {json_command}")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def _preview_project_intent_lines(project_intelligence: Mapping[str, Any]) -> list[str]:
+    intent_rows = project_intelligence.get("intent", [])
+    rows = [str(item).strip() for item in intent_rows if str(item).strip()] if isinstance(intent_rows, list) else []
+    preferred = (
+        "Project objective:",
+        "User or stakeholder outcome:",
+        "Success condition:",
+        "What breaks if it fails:",
+        "Non-goals:",
+    )
+    rendered: list[str] = []
+    for prefix in preferred:
+        value = next((row for row in rows if row.startswith(prefix)), "")
+        if value:
+            rendered.append(f"- {_compact_text(value)}")
+    if rendered:
+        return rendered
+    purpose = str(project_intelligence.get("purpose", "")).strip()
+    return [f"- {_compact_text(purpose)}"] if purpose else ["- Review the inferred product objective, primary user, non-goals, and first proof target."]
+
+
+def _preview_option_lines(value: Any, *, limit: int) -> list[str]:
+    rows = value if isinstance(value, list) else []
+    lines: list[str] = []
+    for row in rows[:limit]:
+        if not isinstance(row, Mapping):
+            continue
+        decision = str(row.get("decision", "")).strip()
+        recommended = str(row.get("recommended", "")).strip()
+        impact = str(row.get("impact", "")).strip()
+        if decision and recommended:
+            line = f"- {decision}: {_compact_text(recommended, max_chars=170)}"
+            if impact:
+                line += f" Impact: {_compact_text(impact, max_chars=140)}"
+            lines.append(line)
+    if lines:
+        return lines
+    return ["- Confirm primary user, runtime, data boundary, first release ambition, and proof threshold before apply."]
+
+
+def _preview_question_lines(value: Any, *, limit: int) -> list[str]:
+    rows = value if isinstance(value, list) else []
+    questions: list[str] = []
+    for row in rows[:limit]:
+        if isinstance(row, Mapping):
+            question = str(row.get("question", "")).strip()
+        else:
+            question = str(row).strip()
+        if question:
+            questions.append(_compact_text(question, max_chars=180))
+    return questions
+
+
+def _preview_workstream_lines(value: Any, *, limit: int) -> list[str]:
+    rows = value if isinstance(value, list) else []
+    lines: list[str] = []
+    for row in rows[:limit]:
+        if not isinstance(row, Mapping):
+            continue
+        title = str(row.get("title", "")).strip()
+        first_slice = str(row.get("recommended_first_slice", "")).strip()
+        if title and first_slice:
+            lines.append(f"{title}: {_compact_text(first_slice)}")
+        elif title:
+            lines.append(title)
+    return lines
+
+
+def _preview_component_lines(value: Any, *, limit: int) -> list[str]:
+    rows = value if isinstance(value, list) else []
+    lines: list[str] = []
+    for row in rows[:limit]:
+        if not isinstance(row, Mapping):
+            continue
+        label = str(row.get("label", "") or row.get("component_id", "")).strip()
+        boundary = str(row.get("boundary", "")).strip()
+        if label and boundary:
+            lines.append(f"{label}: {_compact_text(boundary)}")
+        elif label:
+            lines.append(label)
+    return lines
+
+
+def _preview_architecture_lines(value: Any, *, limit: int) -> list[str]:
+    rows = value if isinstance(value, list) else []
+    lines: list[str] = []
+    for row in rows[:limit]:
+        if not isinstance(row, Mapping):
+            continue
+        title = str(row.get("title", "")).strip()
+        question = str(row.get("operator_question", "")).strip()
+        if title and question:
+            lines.append(f"{title}: {_compact_text(question, max_chars=180)}")
+        elif title:
+            lines.append(title)
+    return lines
+
+
+def _compact_text(value: str, *, max_chars: int = 220) -> str:
+    text = " ".join(str(value or "").split()).strip()
+    if len(text) <= max_chars:
+        return text
+    return text[: max_chars - 3].rstrip() + "..."
 
 
 def _format_apply_ready_proposal_text(

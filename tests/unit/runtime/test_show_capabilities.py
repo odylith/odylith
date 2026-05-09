@@ -260,7 +260,7 @@ def test_show_minimal_source_copy_does_not_emit_this_codebase_grammar_glitch(tmp
 
     assert "the this codebase" not in text
     assert "2 app source files found, but not enough stable structure" in text
-    assert "Draft a greenfield Odylith proposal for <project, architecture, or research goal>" in text
+    assert "Draft a product-first greenfield proposal for <project, architecture, or research goal>" in text
     assert "add source files" not in text
 
 
@@ -281,7 +281,7 @@ def test_show_empty_consumer_repo_does_not_suggest_odylith_managed_tree(tmp_path
     assert result.workstreams == []
     assert result.diagrams == []
     assert "only Odylith-managed install/governance files were found" in text
-    assert "Draft a greenfield Odylith proposal for <project, architecture, or research goal>" in text
+    assert "Draft a product-first greenfield proposal for <project, architecture, or research goal>" in text
     assert "Run `odylith show` again after adding source files." not in text
     assert "Core Engine" not in text
     assert "Document the mockrepo" not in text
@@ -343,7 +343,7 @@ def test_show_empty_readme_manifest_tests_infra_and_thin_app_scenarios_are_quiet
         assert teaching[name] in text
         if name != "empty":
             assert "For more examples, open `odylith/index.html` and use the Cheatsheet." in text
-        assert "Draft a greenfield Odylith proposal for <project, architecture, or research goal>" in text
+        assert "Draft a product-first greenfield proposal for <project, architecture, or research goal>" in text
         assert "No files changed." in text
         assert result.components == []
         assert result.workstreams == []

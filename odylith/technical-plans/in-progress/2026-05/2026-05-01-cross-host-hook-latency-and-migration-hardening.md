@@ -673,6 +673,28 @@ Related Bugs:
       tests/unit/runtime/test_component_authoring.py
       tests/unit/install/test_local_release_smoke.py -q` passed (`69 passed`)
       plus `py_compile` for the touched proposal modules.
+- [x] Greenfield preview/write-gate proof:
+      default `greenfield propose` now renders a compact product-first preview
+      instead of dumping the deep accepted record, and the Shopify stablecoin
+      merchant-lending prompt keeps `Merchants On Shopify` in the project title.
+      The full JSON path still carries deep workstream, component, architecture,
+      release, risk, validation, and memory records for confirmed apply. Proof
+      started with the exact source-local merchant-lending repro, then covered
+      compact preview assertions, show/bundle guidance, merchant-lending profile
+      checks, Atlas contract checks, legacy repair cleanup, `CB-194`, and a
+      green `release migration-gate --target-version 0.1.15 --json`.
+- [x] Greenfield product-repo guard proof:
+      the merchant-lending legacy repair is consumer-lane only and must not
+      rewrite Odylith product governance source during product-repo refreshes.
+      Standalone Registry rendering now reads the source manifest rather than a
+      stale runtime snapshot. Proof: product-repo guard regression test,
+      standalone Registry source-manifest precedence test, and live
+      `radar refresh --runtime-mode standalone` leaving
+      `odylith/registry/source/component_registry.v1.json` at 30 source
+      components with zero SMB mock components. Rendered surface proof then
+      covered Radar, Registry, Atlas, Casebook, and Compass in desktop and
+      mobile headless browser viewports with no console warnings/errors and no
+      horizontal overflow.
 - [x] Activation validators passed after the engine-integrity slice:
       `validate engine-integrity`, `validate discipline`,
       `validate guidance-behavior`, `validate topology-integrity`,

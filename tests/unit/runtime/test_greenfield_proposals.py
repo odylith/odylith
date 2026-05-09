@@ -798,7 +798,7 @@ def test_greenfield_prompt_returns_host_reasoning_contract(tmp_path) -> None:
     assert "project_control_surface" in proposal["accepted_aliases"]["project_intelligence"]
 
 
-def test_greenfield_text_keeps_host_reasoning_and_no_write_boundary_visible(tmp_path, capsys) -> None:
+def test_greenfield_text_is_compact_product_preview_before_confirmed_write(tmp_path, capsys) -> None:
     rc = greenfield_proposals.main(
         [
             "propose",
@@ -811,25 +811,39 @@ def test_greenfield_text_keeps_host_reasoning_and_no_write_boundary_visible(tmp_
 
     assert rc == 0
     output = capsys.readouterr().out
-    assert "apply-ready JSON: built, normalized, validated, proposal gate passed" in output
-    assert "shared artifact: this text and `--format json` are rendered from the same canonical proposal" in output
+    assert "Greenfield proposal preview: A Mathematics Research Workspace For Spectral Graph Theory" in output
     assert "No files changed." in output
-    assert "mode: host_reasoned_greenfield_proposal" in output
-    assert "active host reasoning required" not in output
-    assert "Canonical apply JSON shape" not in output
+    assert "Gate 1 - Interpretation" in output
+    assert "Gate 2 - Clarify Before Apply" in output
+    assert "Gate 3 - Proposal Preview" in output
+    assert "Gate 4 - Confirmed Write" in output
+    assert "product records are written only after explicit confirmation" in output
+    assert "`greenfield propose` writes nothing" in output
+    assert "Product workstreams:" in output
+    assert "Candidate product boundaries:" in output
+    assert "Architecture review views:" in output
     assert "odylith greenfield create --repo-root ." in output
     assert "odylith greenfield propose --repo-root ." in output
-    assert "Project requirements" in output
-    assert "Project-first blueprint" in output
-    assert "project design board" in output
-    assert "choose before coding" in output
-    assert "customize by saying" in output
     assert "What breaks if it fails" in output
-    assert "Code: edit source only after the plan names source paths" in output
-    assert output.index("Project requirements") < output.index("Project-first blueprint")
-    assert output.index("Project-first blueprint") < output.index("Backlog proposal")
-    assert "proposal validation must pass before any source-truth writes" in output
-    assert "accepted product records after writes" in output
+    assert "apply-ready JSON" not in output
+    assert "provider_calls_by_odylith_cli" not in output
+    assert "mode: host_reasoned_greenfield_proposal" not in output
+    assert "shared artifact:" not in output
+    assert "Project-first blueprint" not in output
+    assert "Workstream domain intelligence" not in output
+    assert len(output.splitlines()) <= 80
+
+
+def test_greenfield_title_preserves_meaningful_trailing_domain_terms(tmp_path) -> None:
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="SMB lending application pulling stable coins from DeFi protocols to merchants on Shopify",
+    )["proposal_template"]
+
+    assert proposal["intent"]["title"] == (
+        "SMB Lending Application Pulling Stable Coins From DeFi Protocols To Merchants On Shopify"
+    )
+    assert not proposal["intent"]["title"].endswith(" To")
 
 
 def test_greenfield_cli_json_is_apply_ready_proposal(tmp_path, capsys) -> None:

@@ -65,6 +65,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-08: Deepened the default greenfield Atlas UX so generated diagram rows carry review focus, operator question, and proof-gate guidance, proposal text explains how to read each Atlas view, and default Mermaid sources include evidence-boundary, code-gate, decision-lens, state-note, unresolved-risk, and surface-agreement annotations directly inside the diagrams. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-05-08: Hardened greenfield workstream and risk generation against the remaining applied-Radar sludge found in a fresh DeFi audit. Proposal-level risks are now domain-specific structured records, old generic risk boilerplate is rejected, workstream ontology labels must be unique, malformed `owns Own ...` generated prose is rejected, and parent workstreams keep program ontology separate from child implementation nouns. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-184`)
 - 2026-05-09: Hardened greenfield child backlog row generation so domain-profiled proposals produce product-requirement workstreams instead of generic B-002/B-003/B-004 shells. Merchant-lending prompts now create borrower application/funding-status, credit-liquidity-repayment contract, and regulated proof-harness workstreams; DeFi risk and commerce prompts also receive family-specific child workstream titles, problem statements, interfaces, and validation gates. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-192`)
+- 2026-05-09: Split the default greenfield proposal UX into staged review gates instead of dumping the deep accepted record. `greenfield propose` now renders interpretation, clarify-before-apply choices, a compact product preview, and the confirmed-write point; `--format json` and `greenfield create/apply --confirm` retain the deep project, workstream, component, architecture, release, risk, validation, memory, and Tribunal-gated apply contract. The same pass preserved meaningful prompt title tails such as `Merchants On Shopify`, removed surface-first show/guidance wording, product-repo-guarded the consumer merchant-lending legacy repair, and made standalone Registry rendering prefer source manifest truth over stale runtime snapshots. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-194`)
 
 ## Contract
 
@@ -83,6 +84,12 @@ This section captures synchronized requirement and contract signals derived from
   stale component dossiers, or release events from a rejected apply.
 - `proposal_rendering.py` owns operator-facing text and apply-command rendering
   so proposal compilation, planning, and presentation stay decoupled.
+- Default `greenfield propose` text is a no-write review gate, not the durable
+  record dump. It must show the product interpretation, material clarification
+  choices, compact first-release/workstream/component/architecture preview, and
+  the exact confirmed write command. The deep record remains available through
+  `--format json` and is the object confirmed create/apply validates before
+  Tribunal-gated writes.
 - Installed greenfield guidance must not ask Codex or Claude hosts to hand-author
   or reconstruct proposal JSON. Proposal review uses the canonical object from
   `greenfield propose`; confirmation uses `greenfield create --confirm` unless an
@@ -118,6 +125,10 @@ This section captures synchronized requirement and contract signals derived from
   payment-sandbox workstreams; it must produce borrower workflow, credit and
   liquidity contract, repayment, compliance, stablecoin, fixture, and regulated
   proof obligations instead.
+- Consumer legacy repair for misclassified merchant-lending records is
+  consumer-lane only. It must no-op in the Odylith product repo even when the
+  product repo contains historical bug, plan, or test fixtures with the same
+  poison tokens.
 - Greenfield workstream Domain Intelligence must remain bespoke and
   non-repetitive. Ontology labels are unique inside each workstream; umbrella
   workstreams use program/control-surface vocabulary rather than repeating child

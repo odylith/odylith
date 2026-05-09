@@ -1498,3 +1498,34 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   workstreams plus component and architecture source through a narrow legacy
   repair, and keeps fresh proposals focused on merchant borrower, credit,
   liquidity, compliance, disbursement, and repayment requirements.
+- The greenfield preview/write-gate UX pass is covered by
+  `migration-observer:0.1.15:browser-surfaces:1d0c3772feb7`,
+  `migration-observer:0.1.15:browser-surfaces:372c48aeebd3`,
+  `migration-observer:0.1.15:browser-surfaces:4a1e6c059a79`,
+  `migration-observer:0.1.15:guidance-and-skills:157494e7cc67`,
+  `migration-observer:0.1.15:operator-cli-contracts:76d83fbcf26b`,
+  `migration-observer:0.1.15:operator-cli-contracts:3abf3b8a105d`,
+  `migration-observer:0.1.15:public-docs-and-release-guidance:cb38ceb9e3e8`,
+  `migration-observer:0.1.15:public-docs-and-release-guidance:13ec032b010b`,
+  `migration-observer:0.1.15:install-managed-assets:3158c8631405`,
+  `migration-observer:0.1.15:install-managed-assets:c41336911241`, and
+  `migration-observer:0.1.15:install-managed-assets:33997bea7097`, with the
+  final product-repo repair guard and rendered-surface settlement assessed under
+  `migration-observer:0.1.15:operator-cli-contracts:41231f49a310` and
+  `migration-observer:0.1.15:browser-surfaces:a6f084ac4ff5`, plus the final
+  governed-record/browser refresh fingerprint
+  `migration-observer:0.1.15:browser-surfaces:45780674160a` and the final
+  post-browser-proof source-record fingerprint
+  `migration-observer:0.1.15:browser-surfaces:8667a99fa0c4`. The pass
+  changes installed guidance, bundle guidance, public docs, and greenfield CLI
+  help so `greenfield propose` is the compact product-first review gate, while
+  confirmed `greenfield create/apply --confirm` remains the first point where
+  validated project records are written. Existing consumer governance source is
+  not rewritten by upgrade adoption; the changed managed assets only affect
+  future guidance, CLI output, and regenerated browser views, and the full
+  JSON/apply path still carries the deep workstream, component, architecture,
+  release, risk, validation, and memory record before Tribunal-gated writes.
+  The consumer legacy repair is now also explicitly product-repo guarded, and
+  standalone Registry rendering reads governed source manifest truth instead of
+  stale runtime snapshots; neither change requires a consumer source-truth
+  migration beyond normal upgrade adoption and dashboard refresh.

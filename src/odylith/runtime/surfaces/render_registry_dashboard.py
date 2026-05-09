@@ -174,9 +174,14 @@ def _build_payload(
             diagrams=catalog_payload.get("diagrams", []) if isinstance(catalog_payload, dict) else [],
         )
 
-    runtime_snapshot = odylith_context_engine_store.load_component_registry_snapshot(
-        repo_root=repo_root,
-        runtime_mode=runtime_mode,
+    normalized_runtime_mode = str(runtime_mode or "").strip().lower()
+    runtime_snapshot = (
+        {}
+        if normalized_runtime_mode == "standalone"
+        else odylith_context_engine_store.load_component_registry_snapshot(
+            repo_root=repo_root,
+            runtime_mode=runtime_mode,
+        )
     )
     report = runtime_snapshot.get("report") if isinstance(runtime_snapshot, dict) else None
     if not isinstance(report, registry.ComponentRegistryReport):

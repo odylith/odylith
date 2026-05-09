@@ -1,8 +1,12 @@
 from __future__ import annotations
 
 from pathlib import Path
+import time
 
-from odylith.runtime.governance.greenfield_legacy_repairs import repair_legacy_merchant_lending_checkout_workstreams
+from odylith.runtime.governance.greenfield_legacy_repairs import (
+    _is_poisoned_merchant_lending_record,
+    repair_legacy_merchant_lending_checkout_workstreams,
+)
 from odylith.runtime.governance.legacy_backlog_normalization import normalize_legacy_backlog_index
 
 
@@ -104,6 +108,40 @@ def test_legacy_merchant_lending_repair_rewrites_registry_and_atlas_source(tmp_p
         assert token not in atlas
 
 
+def test_legacy_merchant_lending_poison_check_stays_linear_for_large_records() -> None:
+    record = (
+        "SMB merchant Shopify lending stable coins DeFi liquidity capital. "
+        "This record has domain language but no retail-payment leakage. "
+        + ("ordinary governance prose without poison tokens " * 4000)
+    )
+
+    started = time.perf_counter()
+    for _ in range(100):
+        assert _is_poisoned_merchant_lending_record(record) is False
+    elapsed = time.perf_counter() - started
+
+    assert elapsed < 1.0
+
+
+def test_legacy_merchant_lending_repair_skips_odylith_product_repo(tmp_path: Path) -> None:
+    _write_product_repo_shape(tmp_path)
+    idea = _write_legacy_idea(
+        tmp_path,
+        idea_id="B-142",
+        title="Universal greenfield domain intelligence",
+        body=(
+            "SMB merchant Shopify lending stable coins DeFi liquidity capital appeared beside "
+            "legacy shopper checkout, cart, order draft, payment callback, and Odylith surfaces text."
+        ),
+    )
+    before = idea.read_text(encoding="utf-8")
+
+    result = repair_legacy_merchant_lending_checkout_workstreams(repo_root=tmp_path)
+
+    assert result.changed is False
+    assert idea.read_text(encoding="utf-8") == before
+
+
 def _write_legacy_idea(tmp_path: Path, *, idea_id: str, title: str, body: str) -> Path:
     idea_dir = tmp_path / "odylith/radar/source/ideas/2026-05"
     idea_dir.mkdir(parents=True, exist_ok=True)
@@ -133,7 +171,7 @@ complexity: Medium
 
 ordering_score: 100
 
-ordering_rationale: Created from a confirmed Odylith greenfield proposal.
+ordering_rationale: Created from a confirmed greenfield product proposal.
 
 confidence: medium
 
@@ -235,6 +273,22 @@ Shopper checkout, cart, order draft, payment callback, and storefront ownership.
         encoding="utf-8",
     )
     return path
+
+
+def _write_product_repo_shape(tmp_path: Path) -> None:
+    (tmp_path / "pyproject.toml").write_text(
+        """[project]
+name = "odylith"
+""",
+        encoding="utf-8",
+    )
+    (tmp_path / "src/odylith").mkdir(parents=True, exist_ok=True)
+    radar_index = tmp_path / "odylith/radar/source/INDEX.md"
+    radar_index.parent.mkdir(parents=True, exist_ok=True)
+    radar_index.write_text("# Radar Source Index\n", encoding="utf-8")
+    registry_manifest = tmp_path / "odylith/registry/source/component_registry.v1.json"
+    registry_manifest.parent.mkdir(parents=True, exist_ok=True)
+    registry_manifest.write_text('{"version":"v1","components":[]}\n', encoding="utf-8")
 
 
 def _write_legacy_registry(tmp_path: Path) -> None:

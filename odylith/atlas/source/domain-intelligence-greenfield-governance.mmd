@@ -11,13 +11,17 @@ flowchart LR
       direction TB
       compiler["Greenfield proposal compiler<br/>greenfield_proposals.py"]
       planning["Program/release/UX planner<br/>proposal_planning.py"]
-      rendering["Proposal rendering<br/>operator text + apply commands"]
-      proposal["Proposal payload<br/>classification, backlog, waves,<br/>release plan, components,<br/>diagrams, risks, validation"]
+      rendering["Proposal rendering<br/>preview gate + apply commands"]
+      preview["Compact product preview<br/>interpretation, choices,<br/>first release, proof gate"]
+      fulljson["Full proposal JSON<br/>deep records for review/apply"]
+      proposal["Accepted proposal payload<br/>workstreams, waves, release,<br/>components, diagrams, risks, validation"]
     end
 
     subgraph confirmation_lane["Confirmation-gated apply"]
       direction TB
-      confirm{"Operator confirms?"}
+      confirm{"Operator confirms<br/>after preview?"}
+      tribunal["Validation + Tribunal<br/>pre-write gate"]
+      lane_guard["Consumer repair guard<br/>product repo no-op"]
       radar["Radar apply<br/>owned backlog authoring"]
       registry["Registry apply<br/>planned user_intent components"]
       atlas["Atlas apply<br/>draft topology diagrams"]
@@ -35,14 +39,19 @@ flowchart LR
     source --> compiler
     catalog --> compiler
     compiler --> planning --> proposal
-    compiler --> rendering --> proposal
+    compiler --> rendering
+    rendering --> preview
+    rendering --> fulljson
+    fulljson --> proposal
+    preview --> confirm
     proposal --> intervention
-    proposal --> confirm
-    confirm -- "no" --> proposal
-    confirm -- "yes" --> radar
-    confirm -- "yes" --> registry
-    confirm -- "yes" --> atlas
-    confirm -- "yes" --> release
+    confirm -- "revise" --> preview
+    confirm -- "apply" --> tribunal
+    tribunal --> lane_guard
+    lane_guard --> radar
+    lane_guard --> registry
+    tribunal --> atlas
+    tribunal --> release
     radar --> compass
     registry --> compass
     atlas --> compass
@@ -55,9 +64,9 @@ flowchart LR
     classDef apply fill:#f4ebff,stroke:#ad8ae6,color:#31135f,stroke-width:1.2px;
     classDef memory fill:#ebf9e8,stroke:#7ec373,color:#0f3a24,stroke-width:1.2px;
     class prompt,host,source,catalog input;
-    class compiler,planning,rendering,proposal intelligence;
-    class confirm decision;
-    class radar,registry,atlas,release apply;
+    class compiler,planning,rendering,preview,fulljson,proposal intelligence;
+    class confirm,tribunal decision;
+    class lane_guard,radar,registry,atlas,release apply;
     class intervention,compass memory;
 
     style intent_lane fill:#effcf9,stroke:#9bd8cf,stroke-width:1px,color:#062f2b
