@@ -301,8 +301,8 @@ def _commerce_profile(slug: str) -> GreenfieldDomainProfile:
                 responsibility="Own checkout fixtures, payment sandbox replay, browser smoke proof, and release-readiness report.",
                 boundary="Owns local proof fixtures and reports; excludes live payment credentials and production order data.",
                 dependencies=("Depends on storefront and checkout/order core contracts.",),
-                interfaces=("Smoke command, payment sandbox fixture input, browser proof report, and surface refresh check.",),
-                validation=("Proof covers happy path, failed payment, replayed callback, and stale surface refresh.",),
+                interfaces=("Smoke command, payment sandbox fixture input, browser proof report, and release-readiness check.",),
+                validation=("Proof covers happy path, failed payment, replayed callback, and stale release evidence.",),
                 risks=("A weak sandbox fixture can hide failed payment recovery or replay bugs.",),
             ),
         },
@@ -367,12 +367,12 @@ def _default_profile(*, title: str, slug: str) -> GreenfieldDomainProfile:
                 path_prefix="tests",
                 responsibility=(
                     f"Own deterministic {compact.lower()} fixtures, smoke/regression commands, proof reports, "
-                    "and Odylith surface-refresh checks."
+                    "and governance-refresh checks."
                 ),
                 boundary=f"Owns first-release proof evidence; excludes product runtime behavior and production data.",
                 dependencies=(f"Depends on the {compact.lower()} workbench and domain core contracts.",),
-                interfaces=("Local smoke command, fixture input, proof report, and Radar/Registry/Atlas/Compass refresh check.",),
-                validation=("Proof command fails closed on missing fixtures, skipped assertions, or stale governance surfaces.",),
+                interfaces=("Local smoke command, fixture input, proof report, and governance refresh check.",),
+                validation=("Proof command fails closed on missing fixtures, skipped assertions, or stale governance records.",),
                 risks=("Weak proof can let proposal text outrun implementation evidence.",),
             ),
         },

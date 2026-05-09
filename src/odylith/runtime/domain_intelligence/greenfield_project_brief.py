@@ -212,9 +212,9 @@ def _blueprint_sections(*, family: str) -> list[dict[str, str]]:
             "why_it_matters": "Defines what counts as evidence before implementation begins.",
         },
         {
-            "section": "Governance control surface",
-            "must_capture": "Radar workstreams, Registry candidates, Atlas diagrams, Compass waves, release target, assumptions, risks, and decisions.",
-            "why_it_matters": "Keeps Codex, Claude Code, and direct CLI users on the same project truth.",
+            "section": "Project records",
+            "must_capture": "Workstreams, component candidates, architecture diagrams, waves, release target, assumptions, risks, and decisions.",
+            "why_it_matters": "Keeps Codex, Claude Code, and direct CLI users on the same project truth without turning tool internals into the product model.",
         },
     ]
     if family == "defi_risk":
@@ -290,7 +290,7 @@ def _customization_options(*, title: str, family: str) -> list[dict[str, Any]]:
             "Proof bar",
             "Pick the minimum evidence that would convince a reviewer the project direction is real.",
             ["unit and contract proof", "browser matrix", "simulation replay", "migration and release smoke"],
-            "Changes validation obligations, release gates, and what Compass should show as complete.",
+            "Changes validation obligations, release gates, and what the progress view should show as complete.",
         ),
         _option(
             "D5",
@@ -350,7 +350,7 @@ def _customization_options(*, title: str, family: str) -> list[dict[str, Any]]:
                 "Simulation and hardware boundary",
                 "Default to simulation-first with no hardware or production-yard control in release 0.0.1.",
                 ["simulation-only", "hardware-in-loop later", "single demo robot", "mixed fleet explicitly deferred"],
-                "Changes safety gates, telemetry fixtures, Atlas deployment views, and what autonomy claims are allowed.",
+                "Changes safety gates, telemetry fixtures, deployment architecture views, and what autonomy claims are allowed.",
             ),
             *common,
             _option(
@@ -435,12 +435,12 @@ def _pre_coding_checkpoints(*, family: str) -> list[dict[str, str]]:
         },
         {
             "checkpoint": "Non-goals explicit",
-            "operator_question": "What should Odylith forbid in the first release even if the domain suggests it?",
-            "done_when": "Radar and Registry records name the excluded behaviors, integrations, and production claims.",
+            "operator_question": "What should the first release explicitly forbid even if the domain suggests it?",
+            "done_when": "Workstream and component records name the excluded behaviors, integrations, and production claims.",
         },
         {
             "checkpoint": "Architecture diagrams reviewed",
-            "operator_question": "Do the Atlas views show the project shape well enough to catch the first architectural disagreement?",
+            "operator_question": "Do the architecture views show the project shape well enough to catch the first architectural disagreement?",
             "done_when": "Topology, sequence, ownership, state/data, validation, and operational risk views are accepted or revised.",
         },
         {
@@ -466,7 +466,7 @@ def _pre_coding_checkpoints(*, family: str) -> list[dict[str, str]]:
                     "repayment model, and compliance gates are non-negotiable?"
                 ),
                 "done_when": (
-                    "Radar, Registry, and Atlas show merchant borrower workflow, Shopify snapshot rules, no-custody posture, "
+                    "Workstream, component, and architecture records show merchant borrower workflow, Shopify snapshot rules, no-custody posture, "
                     "KYB/AML gates, liquidity/disbursement/repayment proof, and no consumer-purchase scope before code."
                 ),
             }
@@ -476,7 +476,7 @@ def _pre_coding_checkpoints(*, family: str) -> list[dict[str, str]]:
             {
                 "checkpoint": "Safety posture accepted",
                 "operator_question": "Which simulation, fleet-scale, telemetry, e-stop, and hardware-in-loop boundaries are non-negotiable?",
-                "done_when": "Atlas and Radar show safety envelope, telemetry freshness, no-hardware-control posture, and first conflict scenario before code.",
+                "done_when": "Architecture and workstream records show safety envelope, telemetry freshness, no-hardware-control posture, and first conflict scenario before code.",
             }
         )
     return checkpoints
@@ -494,7 +494,7 @@ def _coding_readiness_gates(*, title: str, release_selector: str) -> list[str]:
     return [
         f"{title} has an accepted project spine: primary operator, outcome, non-goals, first release promise, and unresolved ambiguities.",
         "Direction options that materially change architecture or validation are either answered or marked as accepted Odylith assumptions.",
-        "Radar, Registry, Atlas, Compass, and release targeting all describe the same first wave and no orphaned governance objects exist.",
+        "Workstreams, component specs, architecture diagrams, progress view, and release targeting all describe the same first wave and no orphaned governance objects exist.",
         f"Release {release} has explicit promotion criteria and does not claim production readiness beyond the first governed slice.",
         "The first implementation plan names source paths, validation commands, degraded/error proof, and rollback or recovery posture before code edits.",
     ]

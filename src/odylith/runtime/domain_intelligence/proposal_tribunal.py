@@ -2,7 +2,7 @@
 
 The host model authors open-world project reasoning. Odylith's job is to keep
 the write path governed: fail before source-truth writes when the proposal does
-not form a coherent Radar/Registry/Atlas/program/release topology.
+not form a coherent workstream/component/diagram/program/release topology.
 """
 
 from __future__ import annotations
@@ -178,7 +178,7 @@ def run_greenfield_tribunal(
     _check_domain_security_posture(proposal=proposal, issues=issues)
     dimensions["domain_security"] = "explicit domain risk, security, compliance, policy, and abuse posture present"
 
-    dimensions["surfaces"] = "apply refreshes Radar, Registry, Atlas, and Compass after all writes"
+    dimensions["surfaces"] = "apply refreshes governance records after all writes"
     status = "failed" if issues else "passed"
     summary = (
         "Greenfield proposal is coherent enough to write governed source truth."
@@ -264,11 +264,11 @@ def _check_backlog_topology(
         if not component_refs:
             issues.append(f"child backlog `{title}` must name component_focus or related_components")
         elif component_aliases and not (component_refs & component_aliases):
-            issues.append(f"child backlog `{title}` component_focus does not match a planned Registry component")
+            issues.append(f"child backlog `{title}` component_focus does not match a planned component")
         if not diagram_refs:
             issues.append(f"child backlog `{title}` must name related_diagram_slugs or related_diagrams")
         elif diagram_slugs and not (diagram_refs & diagram_slugs):
-            issues.append(f"child backlog `{title}` diagram reference does not match a planned Atlas diagram")
+            issues.append(f"child backlog `{title}` diagram reference does not match a planned architecture diagram")
         if not _has_any_text(row, ("dependencies", "depends_on", "interfaces", "interface_changes")):
             issues.append(f"child backlog `{title}` must carry dependency or interface expectations")
         if not _has_any_text(row, ("validation", "validation_gate", "test_strategy", "success_metrics")):
@@ -300,7 +300,7 @@ def _check_component_specs(
             )
         )
         if diagram_component_aliases and not (aliases & diagram_component_aliases):
-            issues.append(f"component `{label}` must appear in at least one planned Atlas diagram")
+            issues.append(f"component `{label}` must appear in at least one planned architecture diagram")
 
 
 def _check_diagram_traceability(
@@ -321,7 +321,7 @@ def _check_diagram_traceability(
             issues.append(f"diagram `{slug}` workstream focus does not match proposed backlog ids or titles")
         aliases = _diagram_component_aliases((row,))
         if component_aliases and not (aliases & component_aliases):
-            issues.append(f"diagram `{slug}` components do not match planned Registry components")
+            issues.append(f"diagram `{slug}` components do not match planned components")
 
 
 def _check_domain_security_posture(*, proposal: Mapping[str, Any], issues: list[str]) -> None:

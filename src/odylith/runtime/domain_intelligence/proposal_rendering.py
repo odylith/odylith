@@ -34,12 +34,12 @@ def build_apply_commands(proposal: Mapping[str, Any]) -> list[str]:
         + release_arg,
     ]
     if backlog:
-        commands.append("# apply will create Radar backlog records after validation and Tribunal review")
+        commands.append("# apply will create project workstream records after validation and Tribunal review")
     if components:
-        commands.append("# apply will register planned candidate Registry components with user_intent evidence")
+        commands.append("# apply will register planned candidate component specs with user_intent evidence")
     if diagrams:
-        commands.append("# apply will scaffold draft Atlas topology with atlas_first_draft link state")
-    commands.append("# apply will refresh Radar, Registry, Atlas, and Compass after all artifacts are written")
+        commands.append("# apply will scaffold draft architecture topology with atlas_first_draft link state")
+    commands.append("# apply will refresh governance records after all artifacts are written")
     return commands
 
 
@@ -63,7 +63,7 @@ def format_proposal_text(proposal: Mapping[str, Any]) -> str:
             f"- default_release_selector: {DEFAULT_GREENFIELD_RELEASE_SELECTOR} unless the operator supplies another target",
             f"- canonical_proposal_gate: {proposal.get('canonical_proposal_gate', {}).get('status', 'unknown') if isinstance(proposal.get('canonical_proposal_gate'), Mapping) else 'unknown'}",
             "- apply gate: deterministic proposal Tribunal before writes",
-            "- visibility: Radar, Registry, Atlas, and Compass refresh after accepted artifacts are written",
+            "- visibility: governance records refresh after accepted artifacts are written",
             "",
             "Host reasoning task",
             f"- {proposal.get('host_instruction', 'Draft a concrete proposal from prompt and repo evidence.')}",
@@ -222,14 +222,14 @@ def _format_apply_ready_proposal_text(
     for row in release_plan.get("milestones", []) if isinstance(release_plan.get("milestones"), list) else []:
         if isinstance(row, Mapping):
             lines.append(f"- {row.get('name')}: {row.get('exit_criteria')}")
-    lines.extend(["", "Planned Registry components"])
+    lines.extend(["", "Planned components"])
     for row in proposal.get("components", []):
         if isinstance(row, Mapping):
             lines.append(
                 f"- {row.get('component_id')}: {row.get('label')} -> {row.get('intended_path')} "
                 f"({row.get('evidence_tier')}) Boundary: {row.get('boundary')}"
             )
-    lines.extend(["", "Draft Atlas diagrams"])
+    lines.extend(["", "Draft architecture diagrams"])
     for row in proposal.get("diagrams", []):
         if isinstance(row, Mapping):
             lines.extend(_atlas_diagram_lines(row))
@@ -252,7 +252,7 @@ def _format_apply_ready_proposal_text(
                 lines.append(f"- {item}")
     lines.extend(["", "Apply gates"])
     lines.append("- deterministic proposal Tribunal must pass before any source-truth writes")
-    lines.append("- final dashboard refresh makes Radar, Registry, Atlas, and Compass visible after writes")
+    lines.append("- final dashboard refresh publishes accepted governance records after writes")
     lines.extend(["", "Assumptions"])
     for item in proposal.get("assumptions", []):
         rendered = _render_evidence_item(item, "statement")
@@ -371,7 +371,8 @@ def _atlas_diagram_lines(row: Mapping[str, Any]) -> list[str]:
     slug = str(row.get("slug", "")).strip()
     title = str(row.get("title", "")).strip()
     state = str(row.get("link_state", "")).strip()
-    heading = f"- {slug}: {title} ({state})".strip()
+    state_label = "first draft" if state == "atlas_first_draft" else state
+    heading = f"- {slug}: {title} ({state_label})".strip()
     lines = [heading]
     for label, key in (
         ("summary", "summary"),

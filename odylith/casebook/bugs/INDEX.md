@@ -1,11 +1,12 @@
 # Bug Index
 
-Last updated (UTC): 2026-05-08
+Last updated (UTC): 2026-05-09
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-191 | 2026-05-09 | Greenfield atlas diagrams modeled odylith surfaces as product topology | P1 | domain-intelligence-greenfield | Open | [2026-05-09-greenfield-atlas-diagrams-modeled-odylith-surfaces-as-product-topology.md](2026-05-09-greenfield-atlas-diagrams-modeled-odylith-surfaces-as-product-topology.md) |
 | CB-183 | 2026-05-08 | Startup target recognition rejected unquoted source paths | P2 | context-engine | FixedPendingRelease | [2026-05-08-startup-target-recognition-rejected-unquoted-source-paths.md](2026-05-08-startup-target-recognition-rejected-unquoted-source-paths.md) |
 | CB-190 | 2026-05-08 | Greenfield shopify merchant lending prompt routed to checkout | P1 | domain-intelligence | Open | [2026-05-08-greenfield-shopify-merchant-lending-prompt-routed-to-checkout.md](2026-05-08-greenfield-shopify-merchant-lending-prompt-routed-to-checkout.md) |
 | CB-187 | 2026-05-08 | Greenfield registry specs repeated project posture instead of component specific | P1 | domain-intelligence | FixedPendingRelease | [2026-05-08-greenfield-registry-specs-repeated-project-posture-instead-of-component-specific.md](2026-05-08-greenfield-registry-specs-repeated-project-posture-instead-of-component-specific.md) |

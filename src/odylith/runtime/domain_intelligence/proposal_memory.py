@@ -2,7 +2,7 @@
 
 Greenfield proposal application is confirmation gated. Once an operator accepts
 a host-reasoned proposal, the project shape must stop being one chat response
-and become durable Compass evidence that later context and memory paths can
+and become durable acceptance evidence that later context and memory paths can
 retrieve without re-asking the same scope questions.
 """
 
@@ -64,7 +64,7 @@ def _event_summary(
     return (
         f"Accepted greenfield proposal for {title}: "
         f"{len(backlog_items)} workstreams, {len(component_items)} planned components, "
-        f"{len(diagram_ids)} Atlas drafts, release {_release_label(release_selector=release_selector, release_id=release_id)}."
+        f"{len(diagram_ids)} architecture drafts, release {_release_label(release_selector=release_selector, release_id=release_id)}."
     )
 
 
@@ -95,10 +95,10 @@ def record_greenfield_acceptance(
     release_selector: str = "",
     release_id: str = "",
 ) -> dict[str, Any]:
-    """Append the accepted proposal shape to Compass memory.
+    """Append the accepted proposal shape to greenfield memory.
 
-    The event is intentionally concise but richly linked: Compass can show it as
-    an acceptance decision, Registry can map it back to planned components, and
+    The event is intentionally concise but richly linked: the progress view can show it as
+    an acceptance decision, component records can map it back to planned components, and
     future Context Engine packets can retrieve the accepted intent, assumptions,
     and open questions from the agent-stream ledger.
     """

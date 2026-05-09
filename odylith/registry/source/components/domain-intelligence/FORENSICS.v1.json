@@ -20,12 +20,23 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_traceability.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_cli_output.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_registry_scope.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_profile.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_experience.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_programs.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_project_brief.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_project_intelligence.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
         "src/odylith/runtime/domain_intelligence/greenfield_workstream_intelligence.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_workstream_terms.py",
+        "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+        "src/odylith/runtime/domain_intelligence/proposal_memory.py",
+        "src/odylith/runtime/domain_intelligence/proposal_normalization.py",
         "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
         "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
-        "src/odylith/runtime/domain_intelligence/proposal_validation.py"
+        "src/odylith/runtime/domain_intelligence/proposal_tribunal.py",
+        "src/odylith/runtime/domain_intelligence/robot_swarm_profile.py"
       ],
       "confidence": "high",
       "event_index": 466,
@@ -35,8 +46,8 @@
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_traceability.py +4 more",
-      "ts_iso": "2026-05-08T13:21:01-07:00",
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/domain_intelligence/greenfield_cli_output.py, src/odylith/runtime/domain_intelligence/greenfield_component_registry_scope.py +15 more",
+      "ts_iso": "2026-05-08T17:08:03-07:00",
       "workstreams": []
     },
     {

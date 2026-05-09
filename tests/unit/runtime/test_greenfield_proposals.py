@@ -130,7 +130,7 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
             "selector": "0.0.1",
             "label": "First governed commerce release",
             "provisional_release_id": "release-commerce-launch-first",
-            "strategy": "Promote only after checkout validation and refreshed governance surfaces.",
+            "strategy": "Promote only after checkout validation and refreshed governance records.",
             "release_stages": [
                 {"stage": "wave-1", "label": "Checkout spine", "release_gate": "Browser and recovery proof pass."},
             ],
@@ -153,7 +153,7 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                 "success_metrics": [
                     "The checkout spine has a parent workstream and first child boundary.",
                     "Candidate components are user_intent until source evidence exists.",
-                    "Atlas carries distinct system-context and program-wave drafts.",
+                    "Architecture diagrams carry distinct system-context and program-wave drafts.",
                 ],
                 "priority": "P1",
                 "sizing": "L",
@@ -168,7 +168,7 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                 "opportunity": "Keep storefront behavior independently reviewable and testable.",
                 "product_view": "Storefront should own browse, cart entry, checkout entry, and user-visible errors.",
                 "success_metrics": [
-                    "Storefront appears in Registry and Atlas with user_intent evidence.",
+                    "Storefront appears in component specs and architecture diagrams with user_intent evidence.",
                     "Browse-to-cart entry has a first-slice validation gate before implementation.",
                 ],
                 "priority": "P1",
@@ -195,7 +195,7 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                 "opportunity": "Keep product facts and inventory snapshots separate from checkout orchestration.",
                 "product_view": "Catalog should own product reads, price snapshots, inventory visibility, and merchandising review boundaries.",
                 "success_metrics": [
-                    "Catalog appears in Registry and Atlas with user_intent evidence.",
+                    "Catalog appears in component specs and architecture diagrams with user_intent evidence.",
                     "Price and inventory snapshot rules have a first-slice validation gate.",
                 ],
                 "priority": "P1",
@@ -384,7 +384,7 @@ def _host_reasoned_recipe_legacy_shape() -> dict[str, object]:
                 "release": "0.0.1",
                 "label": "Recipe-sharing 0.0.1",
                 "first_target_workstreams": ["WS-01", "WS-02", "WS-03"],
-                "exit_criteria": "Golden-path browser E2E, HTTP contract tests, and Atlas render proof all pass.",
+                "exit_criteria": "Golden-path browser E2E, HTTP contract tests, and architecture render proof all pass.",
             },
             {
                 "release": "0.1.0",
@@ -404,7 +404,7 @@ def _host_reasoned_recipe_legacy_shape() -> dict[str, object]:
                 "recommended_first_slice": "Create the first governed release lane for accounts, recipe authoring, browsing, and UI shell.",
                 "success_metrics": [
                     "First release target includes the wave-one workstreams.",
-                    "Registry and Atlas records are linked to the created workstreams.",
+                    "Component and architecture records are linked to the created workstreams.",
                 ],
             },
             {
@@ -829,7 +829,7 @@ def test_greenfield_text_keeps_host_reasoning_and_no_write_boundary_visible(tmp_
     assert output.index("Project intelligence control surface") < output.index("Project-first blueprint")
     assert output.index("Project-first blueprint") < output.index("Backlog proposal")
     assert "proposal Tribunal must pass before any source-truth writes" in output
-    assert "Radar, Registry, Atlas, and Compass visible after writes" in output
+    assert "accepted governance records after writes" in output
 
 
 def test_greenfield_cli_json_is_apply_ready_proposal(tmp_path, capsys) -> None:
@@ -965,7 +965,7 @@ def test_greenfield_apply_writes_domain_intelligence_into_radar_specs(tmp_path, 
     assert "stale oracle" in joined
     assert "liquidity shock" in joined
     assert "financial advice" in joined
-    assert "title-only Radar items" in joined
+    assert "title-only workstream items" in joined
     parent_spec = next(
         Path(row["idea_path"]).read_text(encoding="utf-8")
         for row in result["backlog"]
@@ -987,8 +987,8 @@ def test_greenfield_apply_writes_domain_intelligence_into_radar_specs(tmp_path, 
     assert child_specs_by_title["Add release proof and operations harness"].count("Scenario fixture:") == 1
     assert "Which runtime, deployment target, and user role should constrain the first implementation slice?" in all_radar_text
     assert (
-        "First governed slice: Product workflow, domain contract, Atlas render, Registry specs, Compass, and Radar "
-        "all agree." in all_radar_text
+        "First governed slice: Product workflow, domain contract, architecture diagrams, component specs, "
+        "and release records all agree." in all_radar_text
     )
     assert "- R1." not in all_radar_text
     assert "- Q1." not in all_radar_text
@@ -1137,7 +1137,7 @@ def test_greenfield_release_target_label_extracts_numeric_selector_from_custom_t
 def test_greenfield_apply_rejects_shallow_child_backlog_metrics(tmp_path) -> None:
     _seed_empty_governance_repo(tmp_path)
     proposal = _host_reasoned_ecommerce_proposal()
-    proposal["backlog"][1]["success_metrics"] = ["Registry linked."]
+    proposal["backlog"][1]["success_metrics"] = ["Component linked."]
 
     with pytest.raises(ValueError, match="at least two success_metrics"):
         greenfield_proposals.apply_greenfield_proposal(

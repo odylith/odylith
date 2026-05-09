@@ -133,7 +133,7 @@ def _validation_strategy() -> list[str]:
         "Contract-test robot identity, capability metadata, telemetry envelopes, task assignment, and reservation semantics.",
         "Prove operator console normal, empty-fleet, degraded-telemetry, and rejected-override states with browser or UI tests.",
         "Audit every task assignment, override, simulated e-stop, and coordination conflict in test fixtures.",
-        "Refresh Compass, Radar, Registry, and Atlas after apply and after the first source-backed implementation slice.",
+        "Refresh governance records after apply and after the first source-backed implementation slice.",
     ]
 
 
@@ -169,8 +169,8 @@ def _release_plan_updates(*, title: str, selector: str) -> dict[str, Any]:
     _ = title
     return {
         "strategy": (
-            "Promote only after the simulation-backed dispatch path, robot domain contracts, Atlas render, "
-            "Registry specs, Radar, and Compass all agree."
+            "Promote only after the simulation-backed dispatch path, robot domain contracts, architecture render, "
+            "component specs and release records all agree."
         ),
         "release_stages": [
             {
@@ -184,7 +184,7 @@ def _release_plan_updates(*, title: str, selector: str) -> dict[str, Any]:
         ],
         "promotion_criteria": [
             "One simulated logistics task completes from operator dispatch through robot state update under CI proof.",
-            "Registry, Atlas, Radar, and Compass refresh cleanly and show the same robot swarm first-wave lane.",
+            "Governance records refresh cleanly and show the same robot swarm first-wave lane.",
             "No live hardware, production credentials, or safety claim is made before the hardening wave.",
         ],
     }
@@ -218,7 +218,7 @@ def _dispatch_backlog_row(title: str, *, diagram_slugs: Mapping[str, str]) -> di
         "success_metrics": [
             "Browser or UI proof covers normal dispatch, empty fleet, degraded telemetry, and rejected override states.",
             "The console reads robot/task state through the domain contract rather than direct simulator internals.",
-            "Every operator-visible state links back to the first Radar workstream and Registry component.",
+            "Every operator-visible state links back to the first workstream and component candidate.",
         ],
         "dependencies": [
             "Depends on the robot task and telemetry contract from WS-02 before adding vendor SDK integration.",
@@ -254,8 +254,8 @@ def _contract_backlog_row(title: str, *, diagram_slugs: Mapping[str, str]) -> di
         "recommended_first_slice": "Implement the robot task/telemetry contract and tests for valid assignment, invalid capability, lost telemetry, and idempotent retry.",
         "success_metrics": [
             "Contract tests prove valid assignment, invalid capability rejection, lost telemetry, and idempotent retry behavior.",
-            "Registry records the domain component dependencies, interfaces, and verification commands.",
-            "Atlas diagrams show how console, domain core, and simulator exchange task and telemetry state.",
+            "Component records capture the domain dependencies, interfaces, and verification commands.",
+            "Architecture diagrams show how console, domain core, and simulator exchange task and telemetry state.",
         ],
         "dependencies": [
             "Depends on the first operator workflow semantics and defers vendor-specific robot SDK choices until planning.",
@@ -292,7 +292,7 @@ def _simulation_backlog_row(title: str, *, diagram_slugs: Mapping[str, str]) -> 
         "success_metrics": [
             "Fixed seed replay produces byte-identical or semantically identical task/telemetry output across two runs.",
             "Smoke proof covers lost telemetry, two-robot conflict, rejected override, and audit output.",
-            "Compass/Radar/Registry/Atlas refresh after proof and show the same first release lane.",
+            "Governance records refresh after proof and show the same first release lane.",
         ],
         "dependencies": [
             "Depends on WS-01 console behavior and WS-02 robot task/telemetry contract before hardening expands scope.",
@@ -386,22 +386,22 @@ def _apply_diagrams(
     )
     updates = [
         {
-            "title": f"{title} Simulation-First Atlas Overview",
-            "summary": "Topology connecting operator console, robot coordination core, deterministic simulation harness, audit proof, and Odylith surfaces.",
+            "title": f"{title} Simulation-First Architecture Overview",
+            "summary": "Topology connecting operator console, robot coordination core, deterministic simulation harness, audit proof, and release-readiness evidence.",
             "components": common_components,
             "related_workstreams": ["WS-00", "WS-01", "WS-02", "WS-03"],
             "mermaid_source": _overview_mermaid(),
         },
         {
             "title": f"{title} Dispatch And Telemetry Flow",
-            "summary": "Sequence for one simulated logistics task moving from operator dispatch through coordination contract, simulator telemetry, audit, and surface refresh.",
+            "summary": "Sequence for one simulated logistics task moving from operator dispatch through coordination contract, simulator telemetry, audit, and proof report.",
             "components": common_components,
             "related_workstreams": ["WS-01", "WS-02", "WS-03"],
             "mermaid_source": _slice_mermaid(),
         },
         {
             "title": f"{title} Component Responsibility Map",
-            "summary": "Ownership map separating operator UX, robot coordination contracts, simulation proof, safety audit, and Odylith governance surfaces.",
+            "summary": "Ownership map separating operator UX, robot coordination contracts, simulation proof, safety audit, and release-readiness evidence.",
             "components": common_components,
             "related_workstreams": ["WS-00", "WS-01", "WS-02", "WS-03"],
             "mermaid_source": _component_map_mermaid(),
@@ -415,7 +415,7 @@ def _apply_diagrams(
         },
         {
             "title": f"{title} Release Proof Topology",
-            "summary": "Validation topology for simulator replay, browser proofs, contract tests, audit assertions, surface refresh, and release promotion.",
+            "summary": "Validation topology for simulator replay, browser proofs, contract tests, audit assertions, release evidence, and release promotion.",
             "components": common_components,
             "related_workstreams": ["WS-00", "WS-03"],
             "mermaid_source": _validation_release_mermaid(),
@@ -558,13 +558,12 @@ def _overview_mermaid() -> str:
         "  Sim --> Telemetry[Telemetry<br/>Replay]:::core\n"
         "  Telemetry --> Console\n"
         "  Sim --> Audit[(Audit<br/>Evidence)]:::proof\n"
-        "  Audit --> Surfaces[Odylith<br/>Surfaces]:::governance\n"
-        "  Surfaces --> Radar[Radar Registry<br/>Atlas Compass]:::governance\n"
+        "  Audit --> Review[Release readiness<br/>review]:::planning\n"
         "  classDef actor fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b;\n"
         "  classDef ux fill:#fff7df,stroke:#d7a93d,color:#52390a;\n"
         "  classDef core fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
         "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
-        "  classDef governance fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
+        "  classDef planning fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
     )
 
 
@@ -576,15 +575,13 @@ def _slice_mermaid() -> str:
         "  participant Core as Robot Coordination Core\n"
         "  participant Sim as Simulation Harness\n"
         "  participant Audit as Audit Evidence\n"
-        "  participant Surfaces as Odylith Surfaces\n"
         "  Operator->>Console: dispatch one logistics task\n"
         "  Console->>Core: assign task request\n"
         "  Core-->>Console: robot assignment and task state\n"
         "  Core->>Sim: run seeded robot scenario\n"
         "  Sim-->>Core: telemetry and completion event\n"
         "  Sim->>Audit: record assignment, telemetry loss, override checks\n"
-        "  Audit->>Surfaces: refresh proof references\n"
-        "  Surfaces-->>Operator: show release lane and first workstream\n"
+        "  Audit-->>Operator: proof report and release gate evidence\n"
     )
 
 
@@ -609,11 +606,11 @@ def _component_map_mermaid() -> str:
         "  Replay --> Task\n"
         "  Faults --> Telemetry\n"
         "  Faults --> Audit\n"
-        "  Audit --> Surfaces[Compass Radar<br/>Registry Atlas]:::governance\n"
+        "  Audit --> Gate[Simulation release<br/>readiness gate]:::planning\n"
         "  classDef ux fill:#fff7df,stroke:#d7a93d,color:#52390a;\n"
         "  classDef core fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
         "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
-        "  classDef governance fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
+        "  classDef planning fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
     )
 
 
@@ -641,16 +638,16 @@ def _robot_state_mermaid() -> str:
 def _validation_release_mermaid() -> str:
     return (
         "flowchart LR\n"
-        "  Plan[Workstream plan<br/>B-002 first slice]:::governance --> Browser[Console browser<br/>normal empty degraded]:::proof\n"
+        "  Plan[Workstream plan<br/>B-002 first slice]:::planning --> Browser[Console browser<br/>normal empty degraded]:::proof\n"
         "  Plan --> Contract[Robot contract<br/>assignment telemetry retry]:::proof\n"
         "  Plan --> Replay[Seeded simulator<br/>replay proof]:::proof\n"
         "  Browser --> Gate[Release gate<br/>simulation only]:::release\n"
         "  Contract --> Gate\n"
         "  Replay --> Gate\n"
-        "  Gate --> Refresh[Refresh Radar Registry<br/>Atlas Compass]:::governance\n"
-        "  Refresh --> Handoff[Next wave<br/>conflict and safety]:::release\n"
+        "  Gate --> Evidence[Release evidence<br/>browser contract replay]:::proof\n"
+        "  Evidence --> Handoff[Next wave<br/>conflict and safety]:::release\n"
         "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
-        "  classDef governance fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
+        "  classDef planning fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
         "  classDef release fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b;\n"
     )
 
@@ -732,13 +729,12 @@ def _deployment_boundaries_mermaid() -> str:
         "  Console --> Core\n"
         "  Agent -. planned integration .-> Core\n"
         "  Hardware -. blocked until HIL proof .-> Agent\n"
-        "  Core --> Surfaces[Odylith surfaces<br/>release evidence]:::governance\n"
+        "  Core --> Evidence[Release evidence<br/>simulation only]:::proof\n"
         "  classDef ux fill:#fff7df,stroke:#d7a93d,color:#52390a;\n"
         "  classDef core fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
         "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
         "  classDef edge fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b;\n"
         "  classDef blocked fill:#fee2e2,stroke:#dc2626,color:#5f1212;\n"
-        "  classDef governance fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
     )
 
 
@@ -750,14 +746,12 @@ def _observability_audit_mermaid() -> str:
         "  Sim[Seeded replay<br/>artifact]:::proof --> Audit[Audit assertion<br/>bundle]:::proof\n"
         "  EventLog --> Audit\n"
         "  Metrics --> Audit\n"
-        "  Audit --> Compass[Compass current<br/>release lane]:::governance\n"
-        "  Audit --> Radar[Radar workstream<br/>validation evidence]:::governance\n"
-        "  Audit --> Registry[Registry component<br/>proof links]:::governance\n"
-        "  Audit --> Atlas[Atlas diagram<br/>render proof]:::governance\n"
+        "  Audit --> Report[Release evidence<br/>normal degraded blocked]:::proof\n"
+        "  Audit --> Review[Operator review<br/>before next wave]:::planning\n"
         "  classDef ux fill:#fff7df,stroke:#d7a93d,color:#52390a;\n"
         "  classDef core fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
         "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
-        "  classDef governance fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
+        "  classDef planning fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
     )
 
 

@@ -212,12 +212,12 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
             "include topology hints such as component_focus and related_diagram_slugs, "
             "plus first-slice validation. For every component, include enough boundary, "
             "responsibility, dependencies, interfaces, and validation expectations to seed "
-            "a useful Registry CURRENT_SPEC.md. Default the provisional release selector "
+            "a useful component CURRENT_SPEC.md. Default the provisional release selector "
             "and release label to exactly 0.0.1 unless the operator explicitly asks for another release target; "
             "do not add project names or descriptive words to release targets, "
             "and identify the first-wave workstreams that should target that release."
             " Odylith will run the confirmed proposal through a deterministic Tribunal "
-            "before writes and will refresh Radar, Registry, Atlas, and Compass after "
+            "before writes and will refresh governance records after "
             "the accepted artifacts are written. Include a domain-appropriate security, "
             "privacy, compliance, abuse, accessibility, data retention, and operational "
             "risk posture; keep it proportional, specific, and host-model agnostic."
@@ -432,7 +432,7 @@ def _has_component_posture(text: str, tokens: Sequence[str]) -> bool:
 
 def _component_operational_risk(*, row: Mapping[str, Any], label: str) -> str:
     boundary = str(row.get("boundary", "") or row.get("responsibility", "")).strip()
-    boundary_hint = f" its stated boundary ({boundary})" if boundary else " its stated Registry boundary"
+    boundary_hint = f" its stated boundary ({boundary})" if boundary else " its stated component boundary"
     return f"Operational risk: {label} must not expand beyond{boundary_hint} without a refreshed component spec and source-backed proof."
 
 

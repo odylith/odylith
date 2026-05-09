@@ -1,6 +1,6 @@
-"""Component-local Registry scope selection for greenfield apply.
+"""Component-local registry scope selection for greenfield apply.
 
-Radar and Atlas own the broad project topology. This module keeps Registry
+Workstreams and architecture diagrams own the broad project topology. This module keeps
 component dossiers focused on the component's own implementation lane and
 component-relevant diagrams so generated specs do not repeat the whole project.
 """

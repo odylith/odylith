@@ -1,4 +1,4 @@
-"""Domain-intelligent Radar payloads for greenfield workstreams."""
+"""Domain-intelligent payloads for greenfield workstreams."""
 
 from __future__ import annotations
 
@@ -133,8 +133,8 @@ def build_domain_intelligence(
     diagrams_for_row = _diagram_focus(row=row, diagrams=diagrams)
     first_slice = clean_text(row.get("recommended_first_slice")) or "Confirm the smallest source-backed slice."
     wave = _wave_for_row(row=row, program=program)
-    component_clause = ", ".join(focus[:3]) if focus else "candidate Registry components"
-    diagram_clause = ", ".join(diagrams_for_row[:4]) if diagrams_for_row else "first Atlas views"
+    component_clause = ", ".join(focus[:3]) if focus else "candidate components"
+    diagram_clause = ", ".join(diagrams_for_row[:4]) if diagrams_for_row else "first architecture views"
     profile_focus = domain_profile.components.get(_profile_role(kind), domain_profile.components["domain"])
 
     return {
@@ -167,56 +167,56 @@ def build_domain_intelligence(
         "ontology": _ontology(domain_profile=domain_profile, kind=kind, components=focus, title=title),
         "state": [
             f"Current state: user_intent evidence only; no source-backed runtime behavior is claimed for `{row_title}`.",
-            f"Desired state: {wave} has a plan, code slice, repository-native proof, and refreshed Radar/Registry/Atlas/Compass surfaces.",
+            f"Desired state: {wave} has a plan, code slice, repository-native proof, and refreshed governance records.",
             f"Intermediate states: proposed -> queued -> planning -> implementation -> source_backed -> release-gated.",
-            f"Blocked states: missing component owner, missing validation fixture, unresolved security/compliance assumption, or stale Atlas/Radar links.",
+            f"Blocked states: missing component owner, missing validation fixture, unresolved security/compliance assumption, or stale workstream/architecture links.",
             f"Invalid states: active source claim without tests; release `{selector}` advanced while first-wave proof is missing.",
-            "Freshness owner: Radar owns workstream intent; Registry owns component identity; Atlas owns topology; Compass owns live wave posture.",
+            "Freshness owner: workstream records own intent; component specs own component identity; architecture diagrams own topology; progress views own live wave posture.",
         ],
         "operators": _operators(domain_profile=domain_profile, kind=kind, selector=selector),
         "constraints": [
             *terms["constraints"],
             f"Keep source edits inside the named component boundary until the technical plan proves a narrower split: {component_clause}.",
-            "Do not mark planned Registry specs active until source paths, tests, and proof artifacts exist.",
-            "Do not change release scope without updating Radar dependencies, Compass wave state, and Atlas topology.",
+            "Do not mark planned component specs active until source paths, tests, and proof artifacts exist.",
+            "Do not change release scope without updating dependencies, wave state, and architecture topology.",
         ],
         "source_of_truth_map": [
-            "Radar source file: canonical intent, scope, non-goals, dependencies, risks, and validation obligations.",
-            "Registry component specs: canonical component identity, component-scoped ownership boundary, collaborators, interfaces, failure modes, and proof expectations.",
-            "Atlas source catalog and Mermaid files: canonical topology and cross-workstream traceability.",
-            "Compass runtime state: derived live posture; refresh it after governed source or plan changes.",
+            "Workstream source file: canonical intent, scope, non-goals, dependencies, risks, and validation obligations.",
+            "Component specs: canonical component identity, component-scoped ownership boundary, collaborators, interfaces, failure modes, and proof expectations.",
+            "Architecture diagram source and Mermaid files: canonical topology and cross-workstream traceability.",
+            "Progress runtime state: derived live posture; refresh it after governed source or plan changes.",
             "Repo-native tests and fixtures: highest-strength implementation evidence once source exists.",
             "Generated dashboards: readable projections, not the source of truth when they conflict with source files.",
         ],
         "evidence_model": [
             *terms["evidence_counts"],
-            "Counts as evidence: passing repo-native tests, rendered Atlas diagrams, Registry validation, Compass/Radar refresh, and explicit human decisions.",
+            "Counts as evidence: passing repo-native tests, rendered architecture diagrams, component/workstream validation, project-record refresh, and explicit human decisions.",
             "Does not count as evidence: proposal prose alone, dashboard freshness without source change, unlabeled assumptions, or host-agent summaries.",
             "Evidence strength order: source-backed tests > validated governed source > explicit human confirmation > user_intent proposal > odylith_assumption.",
         ],
         "decisions": [
             f"Decision: start `{selector}` with {wave} instead of broad project scaffolding.",
             f"Decision pressure: preserve correctness and operator trust before latency or breadth; {terms['decision_pressure']}",
-            "Rejected path: title-only Radar items or component labels that force the next agent to rediscover domain vocabulary.",
+            "Rejected path: title-only workstream items or component labels that force the next agent to rediscover domain vocabulary.",
             "Reversal criteria: operator changes runtime, compliance posture, first user role, or release target before implementation starts.",
         ],
         "assumptions": [
             *terms["assumptions"],
             f"Assumption: `{row_title}` stays candidate/user_intent until a technical plan and source proof land.",
-            f"Validation path: answer open questions, bind a plan, implement the first slice, run {terms['primary_validation_command']}, then refresh Odylith surfaces.",
+            f"Validation path: answer open questions, bind a plan, implement the first slice, run {terms['primary_validation_command']}, then refresh governance records.",
             "Expiration condition: source-backed implementation, changed compliance target, or changed first-wave release scope.",
         ],
         "topology": [
             f"`{row_title}` depends on {component_clause}; it must stay linked to {diagram_clause}.",
             f"{terms['topology_spine']}",
-            "Radar -> technical plan -> code paths -> tests -> Registry -> Atlas -> Compass is the required proof path.",
+            "Workstream -> technical plan -> code paths -> tests -> component specs -> architecture diagrams -> progress view is the required proof path.",
             "A validation harness blocks release promotion if normal, empty, degraded, and failure fixtures are missing.",
         ],
         "invariants": [
             *terms["invariants"],
             "Every source-backed claim must name a file path, workstream, component owner, and runnable proof.",
             "Generated artifacts must be reproducible from governed source and must not become hand-edited truth.",
-            "Every first-release workstream must map to a component boundary, Atlas view, and release validation gate.",
+            "Every first-release workstream must map to a component boundary, architecture view, and release validation gate.",
         ],
         "risks": [
             *terms["risks"],
@@ -228,14 +228,14 @@ def build_domain_intelligence(
             *_row_validation_obligations(domain_profile=domain_profile, kind=kind),
             *terms["validation_obligations"],
             f"Claim: `{row_title}` is ready for implementation. Method: technical plan names source paths, fixtures, owners, and rollback path.",
-            "Claim: candidate components are coherent. Method: Registry validation and component specs list dependencies, interfaces, first slice, and verification commands.",
-            "Claim: topology is understandable. Method: Atlas render passes and diagrams link back to the created Radar workstreams.",
+            "Claim: candidate components are coherent. Method: component validation and specs list dependencies, interfaces, first slice, and verification commands.",
+            "Claim: topology is understandable. Method: architecture render passes and diagrams link back to the created workstreams.",
             "Failure condition: any proof relies on live production systems, unstated credentials, or unverifiable host-agent inference.",
         ],
         "artifacts": [
-            f"Radar workstream `{row_title}`: domain-intelligence control surface; update when scope, assumptions, or proof obligations change.",
-            f"Registry specs for {component_clause}: planned ownership contracts until source-backed proof lands.",
-            f"Atlas diagrams {diagram_clause}: topology and sequence/state/release views for the first slice.",
+            f"Workstream `{row_title}`: domain-intelligence control surface; update when scope, assumptions, or proof obligations change.",
+            f"Component specs for {component_clause}: planned ownership contracts until source-backed proof lands.",
+            f"Architecture diagrams {diagram_clause}: topology and sequence/state/release views for the first slice.",
             f"Release target `{selector}`: first-wave promotion gate with explicit validation evidence.",
         ],
         "authority": [
@@ -245,9 +245,9 @@ def build_domain_intelligence(
             "No agent may infer source-backed readiness from proposal text or generated dashboards alone.",
         ],
         "owners": [
-            f"Radar owner: `{row_title}` owns intent, scope, dependencies, risks, assumptions, validation obligations, and execution memory.",
-            f"Registry owner: {component_clause} own component identity, boundaries, interfaces, collaborators, and component-specific proof.",
-            f"Atlas owner: {diagram_clause} own topology claims and must be refreshed when source paths, owners, states, or release gates change.",
+            f"Workstream owner: `{row_title}` owns intent, scope, dependencies, risks, assumptions, validation obligations, and execution memory.",
+            f"Component owner: {component_clause} own component identity, boundaries, interfaces, collaborators, and component-specific proof.",
+            f"Architecture owner: {diagram_clause} own topology claims and must be refreshed when source paths, owners, states, or release gates change.",
             "Operator owner: human direction owns primary user, runtime, compliance posture, release ambition, and any reversal of Odylith assumptions.",
             "Implementation owner: the future technical plan owns source paths, rollback or recovery posture, repo-native tests, and proof attachment.",
         ],
@@ -263,21 +263,21 @@ def build_domain_intelligence(
             "Agent behavior metric: no visible canonical-object patching loop, no title-only plan, no repeated generic component-spec structure.",
         ],
         "change_model": [
-            "If the runtime target changes, invalidate transport/interface assumptions and rerun component plus Atlas review.",
+            "If the runtime target changes, invalidate transport/interface assumptions and rerun component plus architecture review.",
             "If a schema, fixture, or test is removed, downgrade evidence that depended on it until replacement proof exists.",
-            "If release scope changes, recompute workstream dependencies, release assignment, and Compass wave posture.",
-            "If a component owner changes, refresh Registry, Radar impacted components, and Atlas ownership views together.",
+            "If release scope changes, recompute workstream dependencies, release assignment, and wave posture.",
+            "If a component owner changes, refresh component specs, impacted workstreams, and architecture ownership views together.",
         ],
         "invalidation_rules": [
             *terms["invalidation_rules"],
-            f"If `{row_title}` changes first slice, owner, runtime, data boundary, or release `{selector}` assignment, expire dependent assumptions, diagrams, Registry interfaces, and proof gates before implementation continues.",
+            f"If `{row_title}` changes first slice, owner, runtime, data boundary, or release `{selector}` assignment, expire dependent assumptions, diagrams, component interfaces, and proof gates before implementation continues.",
             "If a named test, fixture, browser proof, schema, or render disappears, downgrade every claim that depended on it from source_backed to assumption or blocked until replacement proof lands.",
             "If the operator contradicts an Odylith assumption, the operator decision wins and this workstream must be rewritten before code uses the old assumption.",
-            "If Compass or dashboards disagree with Radar, Registry, Atlas, or repo-native tests, treat the projection as stale and repair source truth plus refresh before promotion.",
+            "If dashboards disagree with workstreams, component specs, architecture diagrams, or repo-native tests, treat the projection as stale and repair source truth plus refresh before promotion.",
         ],
         "conflict_model": [
-            "Conflict priority: source-backed tests beat generated dashboards; Registry beats inferred component ownership; Radar beats chat summaries for intent.",
-            "If docs, diagrams, and Registry disagree, stop promotion and open a plan or Casebook repair before coding forward.",
+            "Conflict priority: source-backed tests beat generated dashboards; component specs beat inferred ownership; workstream records beat chat summaries for intent.",
+            "If docs, diagrams, and component specs disagree, stop promotion and open a plan or Casebook repair before coding forward.",
             "If operator answers contradict assumptions, update this workstream before source changes that depend on the old assumption.",
         ],
         "transfer_priors": [
@@ -289,7 +289,7 @@ def build_domain_intelligence(
 
 
 def render_domain_intelligence_section(value: Any) -> str:
-    """Render a domain-intelligence mapping as Radar markdown."""
+    """Render a domain-intelligence mapping as workstream markdown."""
 
     if not isinstance(value, Mapping):
         return ""
@@ -450,7 +450,7 @@ def _ontology(
                 "Scenario fixture: pinned local input for price shock, liquidity drain, stale oracle, or missing indexer proof.",
                 "Replay report: deterministic evidence tying fixture inputs to alert state, severity, and confidence.",
                 "Fault case: stale oracle, missing indexer, unsupported chain, or credential/live-network attempt.",
-                "Proof artifact: repo-native test or smoke output plus refreshed Radar/Registry/Atlas/Compass surfaces.",
+                "Proof artifact: repo-native test or smoke output plus refreshed governance records.",
             ],
         }
         rows = rows_by_kind.get(kind, rows_by_kind["domain"])
@@ -599,14 +599,14 @@ def _contains_malformed_ownership_phrase(value: Any) -> bool:
 def _operators(*, domain_profile: GreenfieldDomainProfile, kind: str, selector: str) -> list[str]:
     common = [
         "Bind technical plan: precondition is confirmed scope and component focus; postcondition is a plan with source paths, rollback path, and proof commands.",
-        "Attach evidence: precondition is a real test, fixture, render, or human decision; postcondition is Radar/Registry/Atlas/Compass traceability refreshed.",
+        "Attach evidence: precondition is a real test, fixture, render, or human decision; postcondition is refreshed governance traceability.",
         f"Promote release `{selector}`: precondition is source-backed first-wave proof; postcondition is release gate evidence with no unresolved blockers.",
     ]
     if domain_profile.family == "defi_risk":
         rows_by_kind = {
             "program": [
                 "Set first-wave risk lane: precondition is operator-confirmed subject class and compliance posture; postcondition is release-gated workstream topology.",
-                "Approve boundary change: precondition is explicit non-custody and no-advice review; postcondition is updated Radar, Registry, and Atlas truth.",
+                "Approve boundary change: precondition is explicit non-custody and no-advice review; postcondition is updated workstream, component, and architecture truth.",
                 "Escalate compliance uncertainty: precondition is unclear regulated claim; postcondition is blocked release gate or explicit operator decision.",
             ],
             "experience": [
@@ -622,7 +622,7 @@ def _operators(*, domain_profile: GreenfieldDomainProfile, kind: str, selector: 
             "validation": [
                 "Replay risk scenario: precondition is pinned local fixture; postcondition is deterministic report over price shock, liquidity drain, stale oracle, or missing indexer.",
                 "Assert no live network: precondition is first-release proof run; postcondition is failure on RPC, credentials, private key, or unpinned provider access.",
-                "Publish release proof: precondition is replay plus UI/contract proof; postcondition is refreshed governance surfaces and release gate evidence.",
+                "Publish release proof: precondition is replay plus UI/contract proof; postcondition is refreshed governance records and release gate evidence.",
             ],
         }
         rows = rows_by_kind.get(kind, rows_by_kind["domain"])
@@ -662,7 +662,7 @@ def _operators(*, domain_profile: GreenfieldDomainProfile, kind: str, selector: 
             "experience": [
                 "Start first workflow: precondition is named operator role and input fixture; postcondition is visible normal, empty, degraded, or failure state.",
                 "Render fallback state: precondition is empty, degraded, or invalid domain result; postcondition is visible recovery guidance.",
-                "Capture interaction proof: precondition is route or command surface; postcondition is behavior evidence tied to Radar.",
+                "Capture interaction proof: precondition is route or command surface; postcondition is behavior evidence tied to the workstream record.",
             ],
             "domain": [
                 "Execute domain command: precondition is validated input and current state; postcondition is accepted, rejected, completed, or retryable domain result.",
@@ -671,7 +671,7 @@ def _operators(*, domain_profile: GreenfieldDomainProfile, kind: str, selector: 
             ],
             "validation": [
                 "Run proof harness: precondition is deterministic fixture set; postcondition is repository-native evidence and stale-surface detection.",
-                "Refresh surfaces: precondition is changed governance/source truth; postcondition is synchronized Radar, Registry, Atlas, and Compass.",
+                "Refresh governance records: precondition is changed governance/source truth; postcondition is synchronized project truth and release posture.",
                 "Block release promotion: precondition is missing proof or stale topology; postcondition is failed validation gate.",
             ],
         }
@@ -686,7 +686,7 @@ def _row_validation_obligations(*, domain_profile: GreenfieldDomainProfile, kind
         rows_by_kind = {
             "program": [
                 "Claim: DeFi first wave is coherent. Method: release target contains console, risk engine, scenario harness, and no live-chain scope.",
-                "Claim: regulated posture is explicit. Method: non-custody, no-advice, no-private-key, and no-live-RPC constraints appear in Radar and Registry.",
+                "Claim: regulated posture is explicit. Method: non-custody, no-advice, no-private-key, and no-live-RPC constraints appear in workstream and component records.",
             ],
             "experience": [
                 "Claim: analyst workflow is intelligible. Method: UI or command proof covers watchlist empty, normal risk card, stale oracle, and unsupported-chain states.",

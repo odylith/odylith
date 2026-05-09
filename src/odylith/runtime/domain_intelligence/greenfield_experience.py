@@ -3,7 +3,7 @@
 This module owns the text and ID shaping that turns an accepted proposal into
 the next coding move. Greenfield apply writes governance truth elsewhere; this
 owner keeps the human handoff, component runways, and first-wave proof language
-consistent across CLI output and Registry candidate specs.
+consistent across CLI output and candidate component specs.
 """
 
 from __future__ import annotations
@@ -84,8 +84,8 @@ def build_next_steps(
         "validation_gates": list(validation_items[:6]),
         "operator_sequence": [
             "Do not start source edits from this closeout; treat the applied records as the project review board.",
-            f"Open Radar program view for `{umbrella_id or start_id}` and review project intelligence, direction choices, non-goals, diagrams, and proof gates.",
-            f"Open Compass and verify the active wave `{wave_label}` plus release `{release_selector or '0.0.1'}` match the accepted project shape.",
+            f"Open the project program view for `{umbrella_id or start_id}` and review project intelligence, direction choices, non-goals, diagrams, and proof gates.",
+            f"Open the progress view and verify the active wave `{wave_label}` plus release `{release_selector or '0.0.1'}` match the accepted project shape.",
             "Answer or explicitly accept the choices that materially change runtime, data posture, architecture, validation, release ambition, or first user.",
             f"Only after the coding-readiness gates are accepted, open `{start_id}` and author the first technical plan before source writes.",
         ],

@@ -1465,3 +1465,12 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   stablecoin liquidity, disbursement, repayment, KYB/AML, no-custody, and
   no-live-protocol proof gates, while normal dashboard/sync refresh converges
   generated browser surfaces and installed managed assets.
+- The v0.1.15 greenfield product-topology wording pass is covered by
+  `migration-observer:0.1.15:browser-surfaces:9c686c53fa16`. The pass records
+  `CB-191`, removes Odylith governance-surface labels from generated greenfield
+  architecture diagrams and proposal text, and refreshes generated Casebook
+  browser surfaces from governed source truth. Existing consumer governed source
+  remains unchanged; upgraded runtimes keep Odylith recordkeeping in apply
+  metadata while future greenfield proposals describe the user's workstreams,
+  component specs, architecture diagrams, evidence, progress view, and release
+  gates without modeling Radar/Registry/Atlas/Compass as product components.

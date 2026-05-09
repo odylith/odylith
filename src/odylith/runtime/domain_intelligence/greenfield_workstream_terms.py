@@ -1,4 +1,4 @@
-"""Family-specific term tables for greenfield Radar workstream intelligence."""
+"""Family-specific term tables for greenfield workstream intelligence."""
 
 from __future__ import annotations
 
@@ -57,7 +57,7 @@ def _defi_terms() -> dict[str, Any]:
             "Claim: acknowledgements are idempotent. Method: repeated acknowledgement keeps one durable state transition with audit evidence.",
         ],
         "invalidation_rules": [
-            "If oracle freshness, indexer provenance, chain support, liquidity model, or protocol-health inputs change, invalidate risk confidence, data_state proof, and Atlas data-flow claims.",
+            "If oracle freshness, indexer provenance, chain support, liquidity model, or protocol-health inputs change, invalidate risk confidence, data_state proof, and architecture data-flow claims.",
             "If non-custody, no-advice, audit, or live-RPC posture changes, block release promotion until compliance risk, authority, and proof obligations are rewritten.",
         ],
         "metrics": [
@@ -177,7 +177,7 @@ def _defi_merchant_lending_terms() -> dict[str, Any]:
             "Claim: compliance blocks funding. Method: KYB/AML/sanctions fault fixture prevents approved/funded states.",
         ],
         "invalidation_rules": [
-            "If Shopify snapshot schema, underwriting inputs, stablecoin ledger semantics, liquidity source, disbursement rail, or repayment schedule changes, invalidate facility, funding, repayment, and Atlas data-flow proof.",
+            "If Shopify snapshot schema, underwriting inputs, stablecoin ledger semantics, liquidity source, disbursement rail, or repayment schedule changes, invalidate facility, funding, repayment, and architecture data-flow proof.",
             "If KYB/AML, lending, securities, money-transmission, custody, or live-protocol posture changes, block release promotion until authority, risks, proof, and non-goals are rewritten.",
         ],
         "metrics": [
@@ -267,7 +267,7 @@ def merchant_lending_validation_rows(kind: str) -> list[str]:
     rows_by_kind = {
         "program": [
             "Claim: merchant-lending first wave is coherent. Method: release target contains merchant portal, credit-liquidity core, proof harness, and no consumer-purchase or live-protocol scope.",
-            "Claim: regulated posture is explicit. Method: KYB/AML/sanctions, lending disclosure, no-custody, no-private-key, no-live-protocol, and audit constraints appear in Radar and Registry.",
+            "Claim: regulated posture is explicit. Method: KYB/AML/sanctions, lending disclosure, no-custody, no-private-key, no-live-protocol, and audit constraints appear in workstream and component records.",
         ],
         "experience": [
             "Claim: merchant borrower workflow is intelligible. Method: UI/API proof covers application, eligible offer, declined application, stale Shopify data, liquidity block, and repayment state.",
@@ -297,14 +297,14 @@ def _generic_terms(*, title: str) -> dict[str, Any]:
         "non_goals": "no broad platform, production readiness, external integration, or source-backed claim until the first slice proves it.",
         "decision_pressure": "domain clarity and proof gates beat broad scaffold volume.",
         "primary_validation_command": "repo-native tests for normal, empty, degraded, and failure states",
-        "topology_spine": "experience boundary consumes the domain core; validation harness proves both; Odylith surfaces expose the trace.",
+        "topology_spine": "experience boundary consumes the domain core; validation harness proves both; release evidence preserves the trace.",
         "constraints": [
             "Keep the first slice small enough to prove with local fixtures and repository-native tests.",
             "Do not infer runtime, storage, or deployment ownership from project title alone.",
             "Keep data, auth, audit, accessibility, and recovery assumptions explicit until the operator confirms them.",
         ],
         "evidence_counts": [
-            "Generic greenfield evidence must include behavior proof, contract proof, rendered topology, and refreshed governance surfaces.",
+            "Generic greenfield evidence must include behavior proof, contract proof, rendered topology, and refreshed governance records.",
         ],
         "assumptions": [
             f"Assumption: {compact} starts with one operator-visible workflow and one domain object before wider architecture.",
@@ -319,8 +319,8 @@ def _generic_terms(*, title: str) -> dict[str, Any]:
         ],
         "validation_obligations": [
             "Claim: first workflow is meaningful. Method: normal, empty, degraded, and failure state tests use real domain behavior.",
-            "Claim: domain ownership is clear. Method: Registry spec names owned state, interfaces, dependencies, and non-goals.",
-            "Claim: release gate is honest. Method: release target stays planning until proof and surface refresh pass.",
+            "Claim: domain ownership is clear. Method: component spec names owned state, interfaces, dependencies, and non-goals.",
+            "Claim: release gate is honest. Method: release target stays planning until proof and governance refresh pass.",
         ],
         "invalidation_rules": [
             "If first user, runtime, storage, deployment, data source, or proof surface changes, invalidate affected component contracts, diagrams, validation commands, and release assumptions.",

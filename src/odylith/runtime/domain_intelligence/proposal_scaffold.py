@@ -214,7 +214,7 @@ def _base_risks(*, title: str, domain_profile: GreenfieldDomainProfile) -> list[
                 ),
                 "mitigation": (
                     "Keep the first wave fixture-backed and non-custodial; require freshness/confidence fields, "
-                    "deterministic replay proof, and refreshed Radar/Registry/Atlas/Compass before release promotion."
+                    "deterministic replay proof, and refreshed governance records before release promotion."
                 ),
             },
             {
@@ -249,7 +249,7 @@ def _base_risks(*, title: str, domain_profile: GreenfieldDomainProfile) -> list[
                 ),
                 "mitigation": (
                     "Keep the first wave fixture-backed; require Shopify merchant snapshots, eligibility gates, liquidity snapshots, "
-                    "idempotent disbursement/repayment replay, and refreshed Radar/Registry/Atlas/Compass before release promotion."
+                    "idempotent disbursement/repayment replay, and refreshed governance records before release promotion."
                 ),
             },
             {
@@ -318,7 +318,7 @@ def _base_risks(*, title: str, domain_profile: GreenfieldDomainProfile) -> list[
             ),
             "mitigation": (
                 "Apply only after operator review, then bind every source change to a child workstream, component boundary, "
-                "proof command, and refreshed Odylith surface."
+                "proof command, and refreshed governance record."
             ),
         },
         {
@@ -402,9 +402,9 @@ def _base_security_compliance(title: str, *, domain_profile: GreenfieldDomainPro
 def _base_validation_strategy() -> list[str]:
     return [
         "First-wave workstreams must define source-backed behavior proof before implementation starts.",
-        "Registry candidate specs must stay component-specific: interfaces, dependencies, failure modes, first coding slice, definition of done, and verification commands belong to the component, not copied project posture.",
-        "Atlas diagrams must render after apply and remain traceable to Radar workstreams and Registry components.",
-        "Compass and Radar must show the first release lane, active wave, start workstream, and proof gates after apply.",
+        "Candidate component specs must stay component-specific: interfaces, dependencies, failure modes, first coding slice, definition of done, and verification commands belong to the component, not copied project posture.",
+        "Architecture diagrams must render after apply and remain traceable to workstreams and component candidates.",
+        "Governance records must show the first release lane, active wave, start workstream, and proof gates after apply.",
     ]
 
 
@@ -417,8 +417,8 @@ def _program(*, title: str, components: Mapping[str, str]) -> dict[str, Any]:
                 "label": "First governed slice",
                 "goal": "Prove the smallest coherent product workflow with source-backed validation.",
                 "validation_gate": (
-                    "The first workstream has a technical plan, behavior proof, refreshed Radar/Registry/Atlas/"
-                    "Compass surfaces, and release-target validation."
+                    "The first workstream has a technical plan, behavior proof, refreshed governance records, "
+                    "and release-target validation."
                 ),
                 "workstreams": ["WS-01", "WS-02"],
                 "component_focus": [components["experience"], components["domain"]],
@@ -450,18 +450,18 @@ def _release_plan(
         "selector": selector,
         "label": greenfield_programs.compact_release_target_label(selector),
         "provisional_release_id": f"release-{slug}-{slugify(selector)}",
-        "strategy": "Promote only after the first governed slice has source-backed tests and refreshed Odylith surfaces.",
+        "strategy": "Promote only after the first governed slice has source-backed tests and refreshed governance records.",
         "target_workstreams": ["WS-01", "WS-02"],
         "release_stages": [
             {
                 "release": selector,
                 "label": "First governed slice",
-                "exit_criteria": "Product workflow, domain contract, Atlas render, Registry specs, Compass, and Radar all agree.",
+                "exit_criteria": "Product workflow, domain contract, architecture diagrams, component specs, and release records all agree.",
             }
         ],
         "promotion_criteria": [
             "First workstream has a technical plan and repository-native behavior proof.",
-            "Registry, Atlas, Radar, and Compass refresh cleanly after source changes.",
+            "Governance records refresh cleanly after source changes.",
         ],
         "component_focus": [experience_component, domain_component],
         "evidence_tier": "odylith_assumption",
@@ -494,14 +494,14 @@ def _umbrella_backlog_row(
         ),
         "customer": "The project operator, implementation agents, reviewers, and maintainers who need one trusted program view before code starts.",
         "opportunity": (
-            "Create one umbrella program that ties user intent, first wave, release target, Radar workstreams, "
-            "Registry candidates, Atlas topology, and proof gates together."
+            "Create one umbrella program that ties user intent, first wave, release target, workstreams, "
+            "component candidates, topology drafts, and proof gates together."
         ),
-        "product_view": f"A proposal-first Odylith program for {title} with one active first wave, a {selector} release target, candidate components, and diagram traceability.",
+        "product_view": f"A proposal-first governed program for {title} with one active first wave, a {selector} release target, candidate components, and diagram traceability.",
         "recommended_first_slice": "Confirm the first governed slice, then open the first child workstream and author the technical plan before editing source.",
         "success_metrics": [
-            "Compass shows the umbrella, first wave, and release target after apply.",
-            "Radar, Registry, and Atlas all link the first-wave workstreams to the same component and diagram boundaries.",
+            "Governance records show the umbrella, first wave, and release target after apply.",
+            "Workstreams, component candidates, and diagrams all link the first wave to the same boundaries.",
             "The start workstream includes validation gates and a first implementation prompt.",
         ],
         "component_focus": [components["experience"], components["domain"], components["validation"]],
@@ -513,8 +513,8 @@ def _umbrella_backlog_row(
             diagrams["validation_release"],
         ],
         "dependencies": ["Child workstreams depend on this umbrella for wave membership, release targeting, and proof sequencing."],
-        "interfaces": ["Compass, Radar, Registry, and Atlas expose one shared greenfield program topology."],
-        "validation": ["Greenfield apply Tribunal passes and all four dashboard surfaces refresh."],
+        "interfaces": ["Accepted project records expose one shared greenfield program topology."],
+        "validation": ["Greenfield apply Tribunal passes and governed records refresh."],
         "domain_risk": "Greenfield governance can mislead source implementation if the first wave, component ownership, release target, or proof gates are vague.",
         "security_posture": "Security, privacy, accessibility, abuse, audit, and recovery posture stay explicit until source-backed implementation narrows them.",
         "priority": "P1",
@@ -535,7 +535,7 @@ def _workflow_backlog_row(*, title: str, components: Mapping[str, str], diagrams
         "recommended_first_slice": "Implement the smallest operator-visible path with normal, empty, and degraded/error state proof.",
         "success_metrics": [
             "The first workflow has a source-backed test or browser proof before the next wave starts.",
-            "The workflow boundary appears in Registry and Atlas with linked Radar traceability.",
+            "The workflow boundary appears in component specs and architecture diagrams with linked workstream traceability.",
         ],
         "component_focus": [components["experience"], components["domain"]],
         "related_diagram_slugs": [diagrams["overview"], diagrams["slice"], diagrams["component_map"]],
@@ -560,7 +560,7 @@ def _domain_backlog_row(*, title: str, components: Mapping[str, str], diagrams: 
         "recommended_first_slice": "Write the domain contract and minimal implementation that the first workflow consumes.",
         "success_metrics": [
             "Domain contract tests prove the first state transition and invalid input rejection.",
-            "Registry records the domain component interfaces, dependencies, and verification commands.",
+            "Component records capture the domain component interfaces, dependencies, and verification commands.",
         ],
         "component_focus": [components["domain"]],
         "related_diagram_slugs": [diagrams["component_map"], diagrams["domain_state"], diagrams["slice"]],
@@ -585,7 +585,7 @@ def _verification_backlog_row(*, title: str, components: Mapping[str, str], diag
         "recommended_first_slice": "Create the first smoke or regression harness around the operator workflow and domain contract.",
         "success_metrics": [
             "Release proof runs locally with deterministic fixtures and no production credentials.",
-            "Compass/Radar/Registry/Atlas refresh after the proof and show the same first release lane.",
+            "Governance records refresh after the proof and show the same first release lane.",
         ],
         "component_focus": [components["validation"]],
         "related_diagram_slugs": [diagrams["validation_release"], diagrams["domain_state"]],
@@ -689,7 +689,7 @@ def _diagrams(*, title: str, components: Mapping[str, str], diagrams: Mapping[st
             "slug": diagrams["overview"],
             "title": f"{title} System Overview",
             "kind": "flowchart",
-            "summary": "Top-level project formation map: intent becomes governed project truth first, then candidate components, proof, surfaces, and operator review.",
+            "summary": "Top-level project formation map: intent becomes accepted project truth first, then candidate components, proof, and operator review.",
             "review_focus": "Use this view to confirm the project spine, evidence boundary, and no-code gate before any child plan is opened.",
             "operator_question": "Does this show the right first user, project truth, component path, and review gate?",
             "proof_gate": "No source-backed claim until the first child plan names paths, tests, degraded states, and rollback or recovery posture.",
@@ -707,7 +707,7 @@ def _diagrams(*, title: str, components: Mapping[str, str], diagrams: Mapping[st
             "slug": diagrams["slice"],
             "title": f"{title} First Slice Flow",
             "kind": "sequenceDiagram",
-            "summary": "First-slice sequence showing where the operator action, domain decision, proof harness, refresh, and handoff happen.",
+            "summary": "First-slice sequence showing where the operator action, domain decision, proof harness, and handoff happen.",
             "review_focus": "Use this view to decide which interaction becomes B-002 and what normal, empty, degraded, and failure evidence must prove.",
             "operator_question": "Is this the first workflow the project should prove before broader platform work?",
             "proof_gate": "The technical plan must name behavior proof and contract proof before source edits start.",
@@ -725,10 +725,10 @@ def _diagrams(*, title: str, components: Mapping[str, str], diagrams: Mapping[st
             "slug": diagrams["component_map"],
             "title": f"{title} Component Ownership Map",
             "kind": "flowchart",
-            "summary": "Ownership review map: separates experience, domain contract, proof harness, governance surfaces, and the split rules between them.",
+            "summary": "Ownership review map: separates experience, domain contract, proof harness, and the split rules between them.",
             "review_focus": "Use this view to prevent broad project narrative from leaking into component specs.",
             "operator_question": "Are the component boundaries specific enough that future agents know who owns each interface and proof obligation?",
-            "proof_gate": "Each candidate component stays planned until its own source path, tests, and refreshed Registry evidence exist.",
+            "proof_gate": "Each candidate component stays planned until its own source path, tests, and refreshed component evidence exist.",
             "link_state": "atlas_first_draft",
             "components": [
                 {"name": components["experience"], "description": "Owns the human-facing first workflow boundary and fallback behavior."},
@@ -761,10 +761,10 @@ def _diagrams(*, title: str, components: Mapping[str, str], diagrams: Mapping[st
             "slug": diagrams["validation_release"],
             "title": f"{title} Validation And Release Topology",
             "kind": "flowchart",
-            "summary": "Release-readiness control map tying plan, behavior proof, contract proof, refresh, Compass, and operator handoff together.",
+            "summary": "Release-readiness control map tying plan, behavior proof, contract proof, evidence bundle, release decision, and operator handoff together.",
             "review_focus": "Use this view to decide what must be proven before release 0.0.1 can advance.",
             "operator_question": "Are the acceptance gates strong enough for the chosen runtime, data boundary, and compliance posture?",
-            "proof_gate": "Release movement is blocked until plan, proof, refreshed surfaces, and unresolved-risk review agree.",
+            "proof_gate": "Release movement is blocked until plan, proof, evidence, and unresolved-risk review agree.",
             "link_state": "atlas_first_draft",
             "components": [
                 {"name": components["validation"], "description": "Owns the proof command, fixtures, and release-readiness evidence."},
@@ -782,20 +782,19 @@ def _overview_mermaid() -> str:
     return (
         "flowchart LR\n"
         "  Intent[Operator<br/>intent]:::actor --> Choices[Direction choices<br/>user data runtime proof]:::decision\n"
-        "  Choices --> ProjectTruth[Project intelligence<br/>Radar parent]:::governance\n"
+        "  Choices --> ProjectTruth[Project intelligence<br/>accepted brief]:::planning\n"
         "  ProjectTruth --> Experience[Experience<br/>boundary]:::service\n"
         "  ProjectTruth --> Domain[Domain<br/>core]:::service\n"
         "  Experience --> Domain\n"
         "  Domain --> Harness[Verification<br/>harness]:::proof\n"
-        "  Harness --> Surfaces[Odylith surfaces<br/>Radar Registry Atlas Compass]:::governance\n"
-        "  Surfaces --> Review[Operator review<br/>accept gates before code]:::actor\n"
+        "  Harness --> Review[Operator review<br/>accept gates before code]:::actor\n"
         "  Review --> CodeGate[Code gate<br/>plan paths tests rollback]:::gate\n"
         "  Evidence[Evidence boundary<br/>intent not source-backed]:::note -. constrains .-> ProjectTruth\n"
         "  Evidence -. constrains .-> CodeGate\n"
         "  classDef actor fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b;\n"
         "  classDef service fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
         "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
-        "  classDef governance fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
+        "  classDef planning fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
         "  classDef decision fill:#eef2ff,stroke:#818cf8,color:#1e1b4b;\n"
         "  classDef gate fill:#fee2e2,stroke:#dc2626,color:#5f1212;\n"
         "  classDef note fill:#f8fafc,stroke:#cbd5e1,color:#334155,stroke-dasharray: 3 3;\n"
@@ -809,17 +808,15 @@ def _slice_mermaid() -> str:
         "  participant Experience as Experience Boundary\n"
         "  participant Domain as Domain Core\n"
         "  participant Harness as Verification Harness\n"
-        "  participant Surfaces as Odylith Surfaces\n"
-        "  Note over Operator,Surfaces: Project review and direction choices happen before source edits\n"
+        "  Note over Operator,Harness: Project review and direction choices happen before source edits\n"
         "  Operator->>Experience: start first workflow\n"
         "  Experience->>Domain: execute command or query\n"
         "  Domain-->>Experience: validated state result\n"
         "  Note over Experience,Domain: Normal empty degraded and failure states must be explicit\n"
         "  Harness->>Experience: run behavior proof\n"
         "  Harness->>Domain: run contract proof\n"
-        "  Harness->>Surfaces: refresh Radar Registry Atlas Compass\n"
-        "  Note over Harness,Surfaces: Proof is not accepted until governed surfaces agree\n"
-        "  Surfaces-->>Operator: show first wave and release lane\n"
+        "  Harness-->>Operator: proof report and release gate evidence\n"
+        "  Note over Harness,Operator: Proof is not accepted until behavior and contract evidence agree\n"
     )
 
 
@@ -842,14 +839,14 @@ def _component_map_mermaid() -> str:
         "  Entry --> Contract --> Invariants --> States\n"
         "  Fixtures --> Contract\n"
         "  Fixtures --> Entry\n"
-        "  Report --> Surfaces[Compass Radar<br/>Registry Atlas]:::governance\n"
+        "  Fixtures --> Report\n"
+        "  Report --> Lens\n"
         "  Lens -. review .-> experience\n"
         "  Lens -. review .-> domain\n"
         "  Lens -. review .-> proof\n"
         "  classDef ux fill:#fff7df,stroke:#d7a93d,color:#52390a;\n"
         "  classDef core fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
         "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
-        "  classDef governance fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
         "  classDef note fill:#f8fafc,stroke:#cbd5e1,color:#334155,stroke-dasharray: 3 3;\n"
     )
 
@@ -880,17 +877,17 @@ def _domain_state_mermaid() -> str:
 def _validation_release_mermaid() -> str:
     return (
         "flowchart LR\n"
-        "  Plan[Technical plan<br/>for first workstream]:::governance --> Behavior[Behavior proof<br/>normal empty degraded]:::proof\n"
+        "  Plan[Technical plan<br/>for first workstream]:::planning --> Behavior[Behavior proof<br/>normal empty degraded]:::proof\n"
         "  Plan --> Contract[Contract proof<br/>state and invariants]:::proof\n"
         "  Choices[Accepted choices<br/>runtime data proof]:::gate --> Plan\n"
         "  Behavior --> Harness[Verification<br/>harness]:::proof\n"
         "  Contract --> Harness\n"
-        "  Harness --> Refresh[Surface refresh<br/>Radar Registry Atlas Compass]:::governance\n"
-        "  Refresh --> Lane[Compass lane<br/>release 0.0.1]:::release\n"
-        "  Lane --> Handoff[Operator handoff<br/>next command and gates]:::release\n"
-        "  Blocked[Blocked if risks<br/>or choices unresolved]:::blocked -. prevents .-> Lane\n"
+        "  Harness --> Evidence[Evidence bundle<br/>fixtures reports traces]:::proof\n"
+        "  Evidence --> Decision[Release decision<br/>0.0.1 scope]:::release\n"
+        "  Decision --> Handoff[Operator handoff<br/>next command and gates]:::release\n"
+        "  Blocked[Blocked if risks<br/>or choices unresolved]:::blocked -. prevents .-> Decision\n"
         "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
-        "  classDef governance fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
+        "  classDef planning fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
         "  classDef release fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b;\n"
         "  classDef gate fill:#eef2ff,stroke:#818cf8,color:#1e1b4b;\n"
         "  classDef blocked fill:#fee2e2,stroke:#dc2626,color:#5f1212;\n"

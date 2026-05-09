@@ -3,7 +3,7 @@
 Greenfield workstreams already carry detailed domain intelligence, but the
 project itself also needs a governed control surface before source work starts.
 This module builds that project object from the canonical proposal inputs so
-CLI text, JSON, and applied Radar records all share the same project-first
+CLI text, JSON, and applied project records all share the same project-first
 truth.
 """
 
@@ -124,8 +124,8 @@ def build_project_intelligence(
     source_posture = clean_text((observed_source or {}).get("source_posture")) or "unknown"
     choice_refs = _choice_refs(project_brief or {})
     first_wave = wave_refs[0] if wave_refs else "first governed slice"
-    component_spine = ", ".join(component_refs[:4]) or "candidate Registry components"
-    diagram_spine = ", ".join(diagram_refs[:5]) or "Atlas architecture views"
+    component_spine = ", ".join(component_refs[:4]) or "candidate components"
+    diagram_spine = ", ".join(diagram_refs[:5]) or "architecture views"
 
     return {
         "schema_version": PROJECT_INTELLIGENCE_SCHEMA_VERSION,
@@ -140,8 +140,8 @@ def build_project_intelligence(
         "control_surface_summary": [
             f"What exists: {source_posture} repo evidence plus user-intent project truth for `{title}`.",
             "What may change: direction choices, runtime, first user, data boundary, proof bar, release ambition, and wave order.",
-            "What must remain invariant: no source-backed claim without code paths, tests, component owner, and refreshed surfaces.",
-            "What counts as proof: repo-native tests or fixtures, rendered Atlas diagrams, validated Registry/Radar records, and explicit human decisions.",
+            "What must remain invariant: no source-backed claim without code paths, tests, component owner, and refreshed project records.",
+            "What counts as proof: repo-native tests or fixtures, rendered architecture diagrams, validated component/workstream records, and explicit human decisions.",
             "What prior experience changes next action: avoid manual proposal reconstruction, generic component specs, title-only workstreams, and premature coding handoff.",
         ],
         "customization_flow": _customization_flow(choice_refs=choice_refs, release=release),
@@ -163,8 +163,8 @@ def build_project_intelligence(
             *family["ontology"],
             "Project parent: umbrella workstream that owns program intent, wave order, release target, and cross-slice proof sequencing.",
             "Child workstream: implementation candidate with a single first slice, component focus, dependencies, interfaces, and validation obligations.",
-            "Candidate component: planned Registry boundary with user_intent evidence; not a source-backed module until code and proof land.",
-            "Atlas view: architecture claim that must link back to workstreams and components before it can guide implementation.",
+            "Candidate component: planned ownership boundary with user_intent evidence; not a source-backed module until code and proof land.",
+            "Architecture view: product-topology claim that must link back to workstreams and components before it can guide implementation.",
             "Readiness gate: condition that must pass before the next transformation is allowed.",
         ],
         "state": [
@@ -176,9 +176,9 @@ def build_project_intelligence(
         ],
         "operators": [
             "Customize direction: precondition is proposal review; postcondition is updated prompt or canonical JSON before any write.",
-            "Apply governed project: precondition is explicit confirmation and passing Tribunal; postcondition is Radar, Registry, Atlas, Compass, and release truth written together.",
+            "Apply governed project: precondition is explicit confirmation and passing Tribunal; postcondition is accepted project, component, architecture, release, assumption, risk, and validation records written together.",
             "Open first plan: precondition is applied project truth and accepted readiness gates; postcondition is a child-workstream technical plan with source paths and proof commands.",
-            "Promote source evidence: precondition is implementation plus repo-native tests; postcondition is Registry/Radar/Atlas/Compass refreshed from source-backed proof.",
+            "Promote source evidence: precondition is implementation plus repo-native tests; postcondition is project, component, architecture, and release records refreshed from source-backed proof.",
             "Split scope: precondition is different owner, evidence, risk, or release gate; postcondition is a new child workstream linked into topology.",
         ],
         "constraints": [
@@ -189,18 +189,18 @@ def build_project_intelligence(
             "Do not let dashboard projections outrank governed source files when conflicts appear.",
         ],
         "source_of_truth_map": [
-            "Project intelligence: canonical project-first control surface in proposal JSON and parent Radar workstream.",
+            "Project intelligence: canonical project-first control surface in proposal JSON and parent project workstream.",
             "Project brief: operator-facing choices, checkpoints, host-independent paths, and coding-readiness gates.",
-            "Radar source: canonical backlog intent, domain intelligence, dependencies, risks, and success metrics.",
-            "Registry source: canonical component identity, ownership, interfaces, collaborators, failure modes, and proof.",
-            "Atlas source: canonical topology, sequence, state/data, validation, operational-risk, and release diagrams.",
-            "Compass runtime: derived live posture; useful for navigation, not source truth when stale.",
+            "Workstream source: canonical backlog intent, domain intelligence, dependencies, risks, and success metrics.",
+            "Component specs: canonical component identity, ownership, interfaces, collaborators, failure modes, and proof.",
+            "Architecture diagrams: canonical topology, sequence, state/data, validation, operational-risk, and release views.",
+            "Progress view: derived live posture; useful for navigation, not source truth when stale.",
         ],
         "evidence": [
             "Observed source evidence comes only from the repo inventory.",
             "User intent comes from the operator prompt and explicit follow-up choices.",
             "Odylith assumptions are useful defaults that must remain labeled until confirmed or source-backed.",
-            "Strong proof means repository-native tests, fixture replays, browser/API/simulation proof where relevant, and rendered Atlas plus validation passes.",
+            "Strong proof means repository-native tests, fixture replays, browser/API/simulation proof where relevant, and rendered architecture diagrams plus validation passes.",
             "Weak proof means proposal prose, host summaries, generated dashboards, or unlabeled assumptions.",
         ],
         "decisions": [
@@ -220,42 +220,42 @@ def build_project_intelligence(
             f"Program topology: parent workstream -> {', '.join(wave_refs[:3]) or 'first wave'} -> child workstreams -> components -> diagrams -> validation.",
             f"Component topology: planned ownership currently spans {component_spine}; each component must keep its own boundary, dependencies, interfaces, and proof.",
             f"Diagram topology: architecture review currently spans {diagram_spine}; each view must remain traceable to workstreams and component owners.",
-            "Proof topology: prompt -> proposal JSON -> Tribunal -> governed writes -> technical plan -> source paths -> repo-native proof -> refreshed surfaces.",
+            "Proof topology: prompt -> proposal JSON -> Tribunal -> governed writes -> technical plan -> source paths -> repo-native proof -> refreshed project records.",
             "Release topology: release target points at first-wave workstreams and should not imply later-wave readiness.",
         ],
         "invariants": [
             "Every project claim keeps its evidence tier visible: observed_source, user_intent, odylith_assumption, or later source_backed.",
             "Every child workstream must name a first slice, components, diagrams, dependencies, interfaces, and validation.",
             "Every component spec stays component-specific instead of repeating the whole project narrative.",
-            "Every Atlas diagram must be purposeful, traceable, and rendered from Mermaid source.",
+            "Every architecture diagram must be purposeful, traceable, and rendered from Mermaid source.",
             "Every release promotion requires proof, not proposal confidence.",
         ],
         "risks": [
             *family["risks"],
             "UX risk: a one-command create path can feel like permission to code unless the handoff makes project review and readiness gates explicit.",
             "Governance risk: deep project text can become sludge if it is repetitive, not tied to topology, or not enforced by validation.",
-            "Agent risk: future sessions can skip prior choices if project intelligence is not written into parent Radar truth.",
+            "Agent risk: future sessions can skip prior choices if project intelligence is not written into parent project truth.",
         ],
         "validation_obligations": [
             "Proposal validation must reject missing project intelligence, shallow readiness gates, and empty customization flow.",
-            "Tribunal must pass before writes and reject disconnected Radar, Registry, Atlas, wave, or release topology.",
-            "After apply, Radar parent must contain Project Intelligence and child workstreams must contain Domain Intelligence.",
+            "Tribunal must pass before writes and reject disconnected workstream, component, architecture, wave, or release topology.",
+            "After apply, the parent workstream must contain Project Intelligence and child workstreams must contain Domain Intelligence.",
             "Before coding, the first technical plan must name source paths, tests, fallback/degraded proof, rollback or recovery path, and refresh commands.",
-            "Before release promotion, repo-native proof and generated surfaces must agree with the accepted project topology.",
+            "Before release promotion, repo-native proof and generated project records must agree with the accepted project topology.",
         ],
         "artifacts": [
             "Canonical proposal JSON: source object for project intelligence, project brief, workstreams, components, diagrams, waves, and release plan.",
-            "Parent Radar workstream: durable project intelligence and execution memory.",
-            "Child Radar workstreams: domain-specific implementation control surfaces.",
-            "Registry candidate specs: component-specific planned ownership and proof contracts.",
-            "Atlas diagram suite: multi-view architecture review surface before source exists.",
-            "Release target and Compass posture: navigation and first-wave progress surface.",
+            "Parent workstream: durable project intelligence and execution memory.",
+            "Child workstreams: domain-specific implementation control surfaces.",
+            "Candidate component specs: component-specific planned ownership and proof contracts.",
+            "Architecture diagram suite: multi-view product review surface before source exists.",
+            "Release target and progress posture: navigation and first-wave progress surface.",
         ],
         "owners": [
             "Operator owns product direction, customization choices, compliance posture, runtime target, and release ambition.",
             "Odylith owns schema, normalization, validation, Tribunal, apply, rollback, refresh, and memory recording.",
             "Technical-plan author owns source paths, implementation sequence, proof commands, and rollback/recovery plan after apply.",
-            "Registry owns component identity; Atlas owns topology; Radar owns workstream intent; Compass reports derived state.",
+            "Component specs own component identity; architecture diagrams own topology; workstreams own intent; progress views report derived state.",
         ],
         "execution_memory": [
             "Prior failure: agents produced decent prose, then manually reconstructed apply objects, hit validation failures, patched fields, and exposed implementation artifacts to users.",
@@ -272,22 +272,22 @@ def build_project_intelligence(
         ],
         "change_model": [
             "If a customization choice changes, invalidate dependent wave, component, diagram, and release assumptions before coding.",
-            "If runtime changes, recompute source paths, proof commands, component interfaces, and Atlas deployment views.",
+            "If runtime changes, recompute source paths, proof commands, component interfaces, and deployment architecture views.",
             "If compliance posture changes, update risks, validation obligations, component failure modes, and release gate before implementation.",
             "If source proof lands, promote only the affected claims from user_intent or assumption to source_backed.",
         ],
         "invalidation_rules": [
             *family["invalidation_rules"],
             "If the operator changes primary user, runtime, data boundary, compliance posture, proof threshold, or release ambition, invalidate the affected wave order, component boundaries, diagrams, and release assumptions before coding.",
-            "If source-backed proof lands, changes, or disappears, reclassify only the claims tied to that proof and expire dependent Registry, Radar, Atlas, and Compass projections until refreshed.",
+            "If source-backed proof lands, changes, or disappears, reclassify only the claims tied to that proof and expire dependent component, workstream, architecture, and progress projections until refreshed.",
             "If a technical plan contradicts the accepted project intelligence, stop implementation and require an explicit proposal revision, plan revision, or human decision record.",
             "If a generated dashboard disagrees with governed source files, treat the dashboard as stale and repair source truth plus the Surface DAG before using it for direction.",
         ],
         "conflict_model": [
             "Source-backed tests outrank proposal prose; governed source files outrank generated dashboards; operator decisions outrank Odylith assumptions.",
-            "When Radar, Registry, Atlas, or Compass disagree, block promotion and repair source truth rather than coding forward.",
+            "When workstream, component, architecture, or progress records disagree, block promotion and repair source truth rather than coding forward.",
             "When host chat contradicts canonical proposal JSON, the JSON wins until the operator confirms a revised proposal.",
-            "When component scope conflicts with project posture, keep the component spec narrow and move project-wide concerns to parent Radar.",
+            "When component scope conflicts with project posture, keep the component spec narrow and move project-wide concerns to the parent workstream.",
         ],
         "transfer_priors": [
             *family["transfer_priors"],
@@ -375,7 +375,7 @@ def project_intelligence_issues(value: Any) -> list[str]:
 
 
 def render_project_intelligence_section(value: Any, *, preview: bool = False) -> str:
-    """Render project intelligence as Markdown for proposal text or Radar."""
+    """Render project intelligence as Markdown for proposal text or workstream records."""
 
     if not isinstance(value, Mapping):
         return ""
@@ -573,7 +573,7 @@ def _family_terms(*, profile: GreenfieldDomainProfile, title: str) -> dict[str, 
                 "Compliance risk: KYB/AML, lending, money-transmission, securities, no-custody, and stablecoin obligations can be hidden by generic commerce language.",
             ],
             "invalidation_rules": [
-                "If Shopify data scope, underwriting inputs, liquidity model, stablecoin ledger semantics, disbursement rail, or repayment rules change, invalidate facility-state proof, component interfaces, Atlas data-flow views, and release gates.",
+                "If Shopify data scope, underwriting inputs, liquidity model, stablecoin ledger semantics, disbursement rail, or repayment rules change, invalidate facility-state proof, component interfaces, architecture data-flow views, and release gates.",
                 "If KYB/AML, lending disclosure, custody, money-transmission, securities, or live-protocol posture changes, block release promotion until risks, authority, proof, and non-goals are rewritten.",
                 "If a proposal introduces consumer cart or retail-order semantics, treat it as a domain-family conflict and regenerate before coding.",
             ],

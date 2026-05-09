@@ -173,7 +173,7 @@ def _normalize_validation_strategy(value: Any) -> list[Any]:
         return rows
     return [
         "Define focused behavior proof for each first-slice workstream before implementation starts.",
-        "Render Radar, Registry, Atlas, and Compass after proposal acceptance.",
+        "Refresh governance records after proposal acceptance.",
     ]
 
 
@@ -463,8 +463,8 @@ def _synthesized_program_parent(
             "place to understand the greenfield program before code is written."
         ),
         "opportunity": (
-            "Turn the confirmed greenfield intent into an execution spine: child workstreams, candidate Registry "
-            "components, Atlas topology, Compass waves, release target, and proof gates all tied to the same parent."
+            "Turn the confirmed greenfield intent into an execution spine: child workstreams, candidate "
+            "components, architecture topology, waves, release target, and proof gates all tied to the same parent."
         ),
         "product_view": (
             f"Umbrella program for {title}: start implementation with `{first_wave_label}`, keep `{release_selector}` "
@@ -473,13 +473,13 @@ def _synthesized_program_parent(
         "recommended_first_slice": (
             f"Start coding with the first active wave `{first_wave_label}`; pick the first targeted child workstream, "
             "write its technical plan, implement the smallest source-backed slice, then run the repository test suite "
-            "plus Odylith surface refresh and release-target validation before expanding to later waves."
+            "plus governance-record refresh and release-target validation before expanding to later waves."
         ),
         "success_metrics": [
-            "Program coherence: Compass shows this umbrella as the program parent, and every child workstream belongs to an explicit wave rather than being mistaken for the program itself.",
+            "Program coherence: the progress view shows this umbrella as the program parent, and every child workstream belongs to an explicit wave rather than being mistaken for the program itself.",
             "Coding readiness: the first active wave names the implementation-start workstreams, component boundaries, dependencies, interfaces, and validation gates before source edits begin.",
-            "Release traceability: Radar, Registry, Atlas, Compass, and the provisional release target all point at the same first-wave workstreams with no orphaned governance objects.",
-            "Verification clarity: the applied proposal names the behavior tests, component contract tests, dashboard refresh, and release validation needed before claiming the first slice is complete.",
+            "Release traceability: workstreams, component specs, architecture diagrams, progress view, and the provisional release target all point at the same first-wave workstreams with no orphaned governance objects.",
+            "Verification clarity: the applied proposal names the behavior tests, component contract tests, project-record refresh, and release validation needed before claiming the first slice is complete.",
         ],
         "component_focus": component_focus,
         "related_diagram_slugs": diagram_refs,
@@ -488,14 +488,14 @@ def _synthesized_program_parent(
             "First-wave implementation depends on confirming the release target, component boundaries, interfaces, and validation gates captured by the accepted proposal.",
         ],
         "interfaces": [
-            "Compass program view exposes the umbrella, active wave, child workstreams, progress, and exit gate.",
-            "Radar child workstreams expose first-slice proof, dependencies, interface expectations, validation, and impacted components.",
-            "Registry candidate specs expose component-specific ownership, collaborators, interfaces, failure modes, proof, and implementation kickoff steps.",
+            "Program progress view exposes the umbrella, active wave, child workstreams, progress, and exit gate.",
+            "Child workstreams expose first-slice proof, dependencies, interface expectations, validation, and impacted components.",
+            "Candidate component specs expose component-specific ownership, collaborators, interfaces, failure modes, proof, and implementation kickoff steps.",
         ],
         "validation": validation
         or [
             "Greenfield apply Tribunal passes before writes.",
-            "Radar, Registry, Atlas, and Compass refresh after confirmed writes.",
+            "Governance records refresh after confirmed writes.",
         ],
         "domain_risk": _domain_posture_text(security_compliance)
         or "Greenfield governance can mislead implementation if the program parent, release target, validation gates, or component boundaries are ambiguous.",
@@ -568,7 +568,7 @@ def _enrich_backlog_expectations(rows: Sequence[Any], components: Sequence[Any])
         for row in components
         if isinstance(row, Mapping)
     ]
-    component_text = ", ".join(item for item in component_ids if item) or "planned Registry components"
+    component_text = ", ".join(item for item in component_ids if item) or "planned components"
     enriched: list[Any] = []
     for index, raw in enumerate(rows):
         if not isinstance(raw, Mapping):

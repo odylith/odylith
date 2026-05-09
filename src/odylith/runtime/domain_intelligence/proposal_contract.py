@@ -14,7 +14,7 @@ DEFAULT_GREENFIELD_RELEASE_SELECTOR = greenfield_programs.DEFAULT_GREENFIELD_REL
 GREENFIELD_ENGINE_ACTIVATION_LAYERS: tuple[dict[str, str], ...] = (
     {
         "layer": "context_engine",
-        "activation": "Resolve repo source posture, exact anchors, Registry owners, and narrowing before any write.",
+        "activation": "Resolve repo source posture, exact anchors, component owners, and narrowing before any write.",
     },
     {
         "layer": "execution_engine",
@@ -22,7 +22,7 @@ GREENFIELD_ENGINE_ACTIVATION_LAYERS: tuple[dict[str, str], ...] = (
     },
     {
         "layer": "tribunal",
-        "activation": "Adjudicate Radar, Registry, Atlas, waves, release targeting, and proof topology before source truth changes.",
+        "activation": "Adjudicate workstreams, component specs, architecture diagrams, waves, release targeting, and proof topology before source truth changes.",
     },
     {
         "layer": "intervention_engine",
@@ -30,7 +30,7 @@ GREENFIELD_ENGINE_ACTIVATION_LAYERS: tuple[dict[str, str], ...] = (
     },
     {
         "layer": "governance",
-        "activation": "Write only confirmed Radar, Registry, Atlas, Compass, release, assumption, risk, and validation records.",
+        "activation": "Write only confirmed workstream, component, architecture, progress, release, assumption, risk, and validation records.",
     },
     {
         "layer": "subagent_orchestration",
@@ -112,11 +112,11 @@ def build_proposal_contract() -> dict[str, Any]:
                 "metrics, change rules, invalidation rules, conflict rules, and reusable priors"
             ),
             "components": (
-                "candidate Registry components with component_id, label, intended_path, responsibility, "
+                "candidate component specs with component_id, label, intended_path, responsibility, "
                 "boundary/interfaces/dependencies where known, evidence_tier, status, and qualification"
             ),
             "diagrams": (
-                "a purposeful Atlas view suite such as system context, first-slice sequence, component ownership, "
+                "a purposeful architecture view suite such as system context, first-slice sequence, component ownership, "
                 "domain state/data contract, validation/release topology, operational risk, or a better "
                 "domain-specific set; each diagram must name related components and workstream/backlog focus, "
                 "and flowcharts must use subtle diagram-internal colors plus wrapped labels"
@@ -146,8 +146,8 @@ def build_proposal_contract() -> dict[str, Any]:
                 "operational risk posture; keep it concrete and proportional to the project"
             ),
             "tribunal": (
-                "apply runs a deterministic proposal Tribunal before writes; proposals fail if Radar, Registry, "
-                "Atlas, program waves, or release targeting do not form a coherent topology"
+                "apply runs a deterministic proposal Tribunal before writes; proposals fail if workstreams, components, "
+                "diagrams, program waves, or release targeting do not form a coherent topology"
             ),
         },
         "quality_bar": [
@@ -169,18 +169,18 @@ def build_proposal_contract() -> dict[str, Any]:
                 "candidate components, topology/dependency hints, and validation gates."
             ),
             (
-                "Greenfield Radar workstreams must be domain-intelligent control surfaces, not task labels: "
+                "Greenfield workstreams must be domain-intelligent control surfaces, not task labels: "
                 "capture domain vocabulary, allowed operations, state transitions, constraints, source-of-truth "
                 "hierarchy, evidence grammar, risks, validation obligations, owners, execution memory, change rules, invalidation rules, "
                 "conflict rules, and transfer priors with project-specific terms."
             ),
             (
-                "Registry components must read like planned ownership specs, not labels; include boundary, "
+                "Component specs must read like planned ownership specs, not labels; include boundary, "
                 "responsibility, interface, dependency, and proof expectations where the prompt supports them. "
                 "Do not copy project-level risk, compliance, or product narrative into every component spec; "
                 "each component dossier must stay scoped to that component's own boundary, collaborators, failure modes, and proof."
             ),
-            "Atlas diagrams and Radar workstreams must be mutually traceable through related workstream/component hints.",
+            "Architecture diagrams and workstreams must be mutually traceable through related workstream/component hints.",
             "For science and math, propose validation obligations and review gates; do not invent claims or results.",
             (
                 "For consumer apps, account for security, privacy, abuse, accessibility, data retention, "
@@ -196,8 +196,8 @@ def build_proposal_contract() -> dict[str, Any]:
                 "name, wave name, or any other words."
             ),
             (
-                "Name the first release target workstreams from the first wave so Compass can show a concrete "
-                "release lane without pretending every child belongs to the first release."
+                "Name the first release target workstreams from the first wave so the progress view can show "
+                "a concrete release lane without pretending every child belongs to the first release."
             ),
             (
                 "Greenfield UX is project-first: do not push the operator straight into coding. The proposal must "
@@ -214,7 +214,7 @@ def build_proposal_contract() -> dict[str, Any]:
                 "wave, and which surfaces the operator should open to verify the program."
             ),
             (
-                "Candidate Registry specs must carry an implementation runway: first child workstream, wave, release, "
+                "Candidate component specs must carry an implementation runway: first child workstream, wave, release, "
                 "first coding slice, definition of done, and verification commands. The umbrella parent is context, "
                 "not the first coding anchor."
             ),

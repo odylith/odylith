@@ -13,7 +13,7 @@ def print_apply_result(result: Mapping[str, Any], *, verb: str) -> None:
     print(f"- backlog: {len(result['backlog'])}")
     print(f"- components: {len(result['components'])}")
     print(f"- diagrams: {len(result['diagrams'])}")
-    print("- validation already run: proposal schema, proposal Tribunal, governed backlog Tribunal, Atlas scaffold, surface refresh")
+    print("- validation already run: proposal schema, proposal Tribunal, governed backlog Tribunal, architecture scaffold, governance refresh")
     program = result.get("program", {})
     if isinstance(program, Mapping) and bool(program.get("created")):
         print(f"- program: {program.get('umbrella_id')} ({len(program.get('waves', []))} waves)")
@@ -31,7 +31,7 @@ def print_apply_result(result: Mapping[str, Any], *, verb: str) -> None:
         surfaces = ", ".join(str(item) for item in dashboard.get("surfaces", []))
         print(f"- dashboard: refreshed {surfaces}")
         print(f"- view: {dashboard.get('view')}")
-        print("- reflected in: Compass current lane, Radar workstreams, Registry candidate specs, Atlas draft topology")
+        print("- reflected in: progress lane, workstreams, candidate component specs, and draft architecture topology")
 
 
 def _print_created_surfaces(result: Mapping[str, Any]) -> None:
@@ -50,17 +50,17 @@ def _print_created_surfaces(result: Mapping[str, Any]) -> None:
         return
     print("- created governance files:")
     for label, values in (
-        ("Radar", backlog_paths[:3]),
-        ("Registry", spec_paths[:3]),
+        ("workstream", backlog_paths[:3]),
+        ("component spec", spec_paths[:3]),
     ):
         for value in values:
             print(f"  - {label}: {value}")
     if len(backlog_paths) > 3:
-        print(f"  - Radar: {len(backlog_paths) - 3} more workstream file(s)")
+        print(f"  - workstream: {len(backlog_paths) - 3} more workstream file(s)")
     if len(spec_paths) > 3:
-        print(f"  - Registry: {len(spec_paths) - 3} more component spec(s)")
+        print(f"  - component spec: {len(spec_paths) - 3} more component spec(s)")
     if diagram_ids:
-        print(f"  - Atlas: {', '.join(diagram_ids)} plus catalog/source render artifacts")
+        print(f"  - architecture: {', '.join(diagram_ids)} plus catalog/source render artifacts")
 
 
 def _print_next_steps(next_steps: Mapping[str, Any]) -> None:
@@ -73,13 +73,13 @@ def _print_next_steps(next_steps: Mapping[str, Any]) -> None:
     project_prompt = str(next_steps.get("project_first_prompt", "")).strip()
     if project_id:
         print(f"- project-first workstream: {project_id} {project_title}".rstrip())
-        print(f"- Radar project brief: odylith/radar/radar.html?view=plan&workstream={project_id}")
+        print(f"- project brief: odylith/radar/radar.html?view=plan&workstream={project_id}")
         print("- project gate: review direction choices and readiness gates before opening a technical plan; do not edit source from this closeout")
     if project_prompt:
         print(f"- next project prompt: {project_prompt}")
     if start_id:
         print(f"- future first implementation lane after gates: {start_id} {start_title}".rstrip())
-        print(f"- Radar child lane: odylith/radar/radar.html?view=plan&workstream={start_id}")
+        print(f"- child lane: odylith/radar/radar.html?view=plan&workstream={start_id}")
     if first_wave or next_release:
         lane = " | ".join(
             item
