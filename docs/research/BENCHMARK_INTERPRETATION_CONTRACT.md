@@ -1,46 +1,57 @@
-# Benchmark Formal Model
+# Benchmark Interpretation Contract
 
-This note defines the public interpretation contract for Odylith benchmark
-results after the Governed Harness turn-gate migration. The benchmark does not
-own a private success path: the benchmark harness is not allowed to invent its
-own shortcut for saying "success." It observes the same product-owned operating
-policy that normal Odylith turns use, then records the decision, evidence,
-actions, validation, receipts, latency, and token cost.
+This note defines how to read Odylith benchmark results after the Governed
+Harness turn-gate migration. It is a benchmark validity specification: a
+reviewer-facing contract for when public results support the product claim. It
+is not a mathematical proof of product quality.
 
-The measured win is an operating-policy win: better grounded decisions, tighter
-write admission, stronger validation honesty, safer completion claims, and less
-unnecessary model or tool work under the same task contract.
+A benchmark row is valid only when the public report shows the product Turn
+Gate decision, receipt, evidence, validation basis, actions, write set, latency,
+and token cost. The harness may sandbox, time, log, and score those fields. It
+must use the product Turn Gate result and visible validator evidence as the
+success basis.
+
+The measured win is an Odylith operating-policy win: better grounded decisions,
+tighter write admission, stronger validation honesty, safer completion claims,
+and less unnecessary model or tool work under the same task contract.
+
+Notation is used only where it shortens a report-field rule.
 
 ## Scope
 
-The model is intentionally host model agnostic. It applies to any host adapter
-that can receive an Odylith product payload and execute the resulting turn
-contract. Host-specific transport details may change; the product Turn Gate,
-evidence contract, and public report fields are the invariant surfaces.
+The contract is intentionally host model agnostic. It applies to any host
+adapter that can receive an Odylith product payload and execute the resulting
+turn contract. Host-specific transport details may change; the product Turn
+Gate, evidence contract, and public report fields are the invariant surfaces.
 
 This document is not a claim that one host model is better than another. It is
 also not a claim that every task can close without tool work. It describes when
 a benchmark row is valid public evidence for the Odylith operating policy.
 
-## Rendering Contract
+The intended comparison is full Odylith product assistance versus a raw host CLI
+baseline under a matched task contract. That is the product being measured: the
+policy, evidence, validation, and completion layer around the host model.
 
-The public report must render the product contract in reviewer-readable Markdown
-before any chart, scorecard, or aggregate claim can stand on its own. A rendered
-benchmark row must expose the durable token fields, the Turn Gate receipt, the
-execution capsule, validator basis, write-path evidence, and fairness findings
-as text or tables that survive GitHub Markdown rendering.
+## Public Report Readability
 
-The rendering layer is not allowed to replace source-truth tokens with prettier
-labels unless it also preserves the token beside the label. In particular,
-`turn_gate_decision`, `turn_gate_receipt`, `turn_gate_product_path_present`,
-`execution_capsule`, `tool_gate_summary`, `stop_gate_summary`, `status_basis`,
+Charts and scorecards are secondary. A reviewer should first be able to inspect
+the benchmark row in ordinary Markdown and see why the row closed.
+
+The row should show the durable decision token, Turn Gate receipt, execution
+capsule, validator basis, write-path evidence, and fairness finding. Friendly
+labels are fine, but source-truth tokens need to stay visible beside them. The
+important fields are `turn_gate_decision`, `turn_gate_receipt`,
+`turn_gate_product_path_present`, `execution_capsule`, `tool_gate_summary`,
+`stop_gate_summary`, `validation_results.status_basis`,
 `validator_execution_mode`, `validator_status_basis`,
 `preflight_evidence_mode`, `preflight_evidence_result_status`,
-`candidate_write_paths`, `workspace_delta_paths`, and `fairness_findings` must
-remain visible enough that a reviewer can reconstruct the row without private
-harness state.
+`candidate_write_paths`, `failure_artifacts.workspace_state_post_codex` when
+present, and `fairness_findings`.
 
 ## Core Entities
+
+These symbols are reviewer shorthand for concrete report surfaces. They are not
+new runtime objects.
 
 | Name | Report surface | Meaning |
 | --- | --- | --- |
@@ -50,6 +61,7 @@ harness state.
 | `h_s` | `host_profile` or `host_family` | The host capability profile for the row. |
 | `m_s` | `mode` | The gate mode, such as `observe`, `advise`, or `enforce`. |
 | `P_s` | product payload fields | The Turn Gate payload built from the prompt, policy hints, and focused evidence. |
+| `T_s` | scenario contract fields | Required paths, writable paths, cache posture, timeout policy, host policy, expected report fields, and validator obligations. |
 | `G_O` | product Turn Gate | The Odylith product decision function. |
 | `d_s` | `turn_gate_decision` | The product decision for the row. |
 | `E_s` | evidence fields | Focused checks, path evidence, policy hints, and validation inputs. |
@@ -60,10 +72,11 @@ harness state.
 | `V_s` | validator fields | Validator basis, execution mode, and status evidence. |
 | `Y_s` | row status fields | The measured row outcome. |
 | `F_s` | fairness findings | Whether the matched-lane fairness contract passed. |
+| `R_s` | rendered public row | The report-visible fields for `s`. |
 
 ## Product Turn Gate Contract
 
-The product Turn Gate has this shape:
+The product Turn Gate has this interface shape:
 
 ```math
 G_O(P_s, r_s, h_s, m_s) \to (d_s, E_s, C_s, \rho_s)
@@ -93,15 +106,16 @@ The Odylith-on lane is the host running under this product decision:
 = H(G_O(P_s, r_s, h_s, m_s), P_s, r_s, h_s)
 ```
 
-The benchmark wrapper is only an observation function:
+The benchmark wrapper records the row:
 
 ```math
 Y_s = M_B(d_s, E_s, C_s, \rho_s, \tau_s, V_s, A_s, W_s)
 ```
 
 The wrapper may sandbox, time, log, and score. It may run focused local checks
-before the Turn Gate call to populate `P_s`. It must not independently decide
-closure after the product gate has spoken.
+before the Turn Gate call to populate `P_s`. It must not mark a row successful
+unless the Turn Gate decision, receipt, validation fields, and write-set
+evidence support that status.
 
 The current source implementation maps this contract to
 `odylith.runtime.governed_harness.turn_gate.decide_turn(...)`. Live benchmark
@@ -126,19 +140,23 @@ labels, but reports must preserve the durable token.
 
 ## Early-Exit Proof Contract
 
-An early-exit proof is valid only when the product Turn Gate, not the benchmark
-wrapper, admits the row:
+An early-exit proof is valid only when the product Turn Gate emits
+`early_exit_proof` and the public evidence shows that no host model call or
+workspace mutation was required.
+
+Compact form:
 
 ```math
+\mathrm{valid}_{\mathrm{early}}(s)
+\iff
 d_s = d_{\mathrm{early}}
-\Rightarrow
-\Phi_G(P_s, E_s, r_s) = 1
+\land \Phi_G(P_s, E_s, r_s) = 1
 \land W_s^{\mathrm{obs}} = \varnothing
 \land S_\rho(\rho_s) = \sigma_G
 ```
 
 Here `d_early` denotes the `early_exit_proof` decision and `sigma_G` denotes the
-`product_turn_gate` receipt source. The implemented predicate is:
+`product_turn_gate` receipt source. The predicate maps to report fields:
 
 ```math
 \Phi_G(P_s, E_s, r_s) = A_s \land B_s \land K_s \land \neg U_s
@@ -161,12 +179,11 @@ early_exit_is_valid(s) =
   turn_gate_decision.decision_type == early_exit_proof
   and turn_gate_receipt.source == product_turn_gate
   and turn_gate_product_path_present == true
-  and status_basis == turn_gate_early_exit_proof
+  and validation_results.status_basis == turn_gate_early_exit_proof
   and validator_execution_mode == turn_gate_early_exit_proof
   and preflight_evidence_result_status in {passed, not_applicable}
   and focused_checks_cover_declared_contract == true
-  and candidate_write_paths is empty
-  and workspace_delta_paths is empty
+  and candidate_write_paths is empty after workspace-delta folding
   and prompt_requires_unsafe_side_effect == false
 ```
 
@@ -189,22 +206,25 @@ still requires product-path presence, focused evidence coverage, a
 For live benchmark rows:
 
 ```math
-W_s^{\mathrm{obs}} = CWP_s \cup WDP_s
+W_s^{\mathrm{obs}} = CWP_s
 ```
 
-where `CWP_s` is the reported `candidate_write_paths` set and `WDP_s` is the
-reported `workspace_delta_paths` set.
+where `CWP_s` is the reported `candidate_write_paths` set after the harness has
+combined structured candidate writes with detected workspace-state deltas.
+Failure rows may also expose detailed workspace state under
+`failure_artifacts.workspace_state_post_codex`.
 
 ## Scenario Model
 
 A benchmark scenario is:
 
 ```math
-S_s = (x_s, r_s, h_s, m_s, C_s, V_s, \Phi_s)
+S_s = (x_s, r_s, h_s, m_s, T_s, V_s, \Phi_s)
 ```
 
-The declared contract includes required paths, writable paths, cache posture,
-timeout policy, host policy, expected report fields, and validator obligations.
+`T_s` is the declared scenario contract: required paths, writable paths, cache
+posture, timeout policy, host policy, expected report fields, and validator
+obligations.
 Validators are observable approximations of the scenario truth predicate. A row
 is public evidence only when the report exposes the validator basis and the
 matched-lane fairness contract holds.
@@ -236,10 +256,10 @@ fair_row(s) =
 If `fair_row(s)` is false, the row may still be useful diagnostic evidence, but
 it is not valid paired benchmark evidence.
 
-## Utility Interpretation
+## Metric Interpretation
 
-Quality is a vector, not a single leaderboard number. The public report does not
-need to emit one scalar `Q` field for the interpretation to be valid.
+Quality is multi-metric, not a single leaderboard number. The public report does
+not need to emit one scalar `Q` field for the interpretation to be valid.
 
 | Component | Meaning | Direction |
 | --- | --- | --- |
@@ -251,59 +271,27 @@ need to emit one scalar `Q` field for the interpretation to be valid.
 | `wall_time` | End-to-end row latency. | Lower is better. |
 | `unsafe_or_unsupported_risk` | Unsafe action or unsupported completion risk. | Lower is better. |
 
-LaTeX utility form:
+Reports may publish per-metric deltas over matched public rows. Each metric
+should stay in its native unit unless the report explicitly defines a
+normalization. Cost and risk terms should not be merged with quality terms
+unless the report publishes the transformation, weights, and rationale.
 
-```math
-Q(\pi, s)
-= \alpha R_{\mathrm{ground}}(\pi, s)
-+ \beta R_{\mathrm{valid}}(\pi, s)
-+ \gamma R_{\mathrm{bounded}}(\pi, s)
-+ \delta R_{\mathrm{claim}}(\pi, s)
-- \lambda C_{\mathrm{tokens}}(\pi, s)
-- \mu C_{\mathrm{time}}(\pi, s)
-- \nu R_{\mathrm{unsafe}}(\pi, s)
-```
+Without those published choices, Odylith's benchmark interpretation remains the
+multi-metric table above.
 
-Paired lift over matched public rows:
+## Generalization Boundary
 
-```math
-\Delta Q
-= \mathbb{E}_{s \sim \mathcal{S}}[Q(\pi_O, s)]
-- \mathbb{E}_{s \sim \mathcal{S}}[Q(\pi_B, s)]
-```
+The benchmark does not claim universal product generalization. A row speaks
+only to ordinary product turns with the same visible contract class.
 
-Finite report estimate:
+The supported external-validity reading is:
 
-```math
-\widehat{\Delta Q}
-= \frac{1}{|\mathcal{P}|}
-\sum_{s \in \mathcal{P}}
-\left[Q(\pi_O, s) - Q(\pi_B, s)\right]
-```
-
-The weights are an interpretation lens for a benchmark family. They are not a
-hidden product score unless a report explicitly publishes the chosen weights.
-
-## Generalization Claim
-
-The generalization claim is conditional and product-wide:
-
-```math
-\forall x \in X_{\mathrm{obs}}:
-\quad
-P_O(x, r, h, m) \equiv P_s
-\land r \equiv_R r_s
-\land h \equiv_H h_s
-\land m = m_s
-\Rightarrow
-G_O(P_O(x, r, h, m), r, h, m)
-\sim
-G_O(P_s, r_s, h_s, m_s)
-```
-
-This is the scope of the product-policy win: comparable ordinary product turns
-and benchmark rows use the same Turn Gate path when their observable payload,
-repo state class, host capability, mode, and evidence contract are equivalent.
+- benchmark rows and ordinary product turns are comparable only when their
+  observable payload, repo-state class, host capability, mode, and evidence
+  contract match;
+- the shared claim is that comparable turns use the same product Turn Gate path;
+- the benchmark still cannot prove quality outside the exposed evidence
+  contract.
 
 The claim does not say:
 
@@ -311,7 +299,28 @@ The claim does not say:
 - Every user request should early-exit.
 - The host model is irrelevant once an edit is required.
 - A benchmark row proves quality outside the exposed evidence contract.
-- A single scalar utility captures all research value.
+- One combined score captures all research value.
+
+## Evidence Boundary
+
+Odylith's public benchmark is an operating-policy benchmark. That is the core
+product claim. The benchmark measures what the product is designed to provide
+around a host model: scoped evidence, decision discipline, write admission,
+validator-backed closure, and auditable completion claims.
+
+The strongest supported public phrasing is:
+
+```text
+Under matched task contracts, Odylith's operating policy improves grounded task
+closure versus the raw host CLI baseline on the published corpus.
+```
+
+The benchmark should not be described as a standalone model-intelligence contest
+or as proof that the host model is irrelevant. A broader research-grade claim
+would require additional evidence such as a locked held-out corpus, independent
+validators, blinded review, raw logs, exact host and model versions, and
+uncertainty intervals. Those additions would strengthen external validity; they
+are not prerequisites for the narrower product benchmark claim above.
 
 ## Public Report Validity
 
@@ -330,30 +339,21 @@ reconstruct why the row closed.
 | `execution_capsule` | Shows admitted and denied actions. |
 | `tool_gate_summary` | Shows tool admission or explicit non-applicability. |
 | `stop_gate_summary` | Shows completion gate posture. |
-| `status_basis` | Shows the source of the row status. |
+| `validation_results.status_basis` | Shows the source of the validation-backed row status. |
 | `validator_execution_mode` | Shows how validation was performed or why it was not applicable. |
 | `validator_status_basis` | Preserves compatibility with older validation reports. |
 | `preflight_evidence_mode` | Shows how focused evidence entered the product payload. |
 | `preflight_evidence_result_status` | Shows whether the focused local evidence passed or was not applicable. |
 | `required_paths` and `observed_paths` | Supports grounded recall claims. |
-| `candidate_write_paths` | Shows intended or admitted writes. |
-| `workspace_delta_paths` | Shows actual workspace mutation. |
+| `candidate_write_paths` | Shows intended writes plus detected workspace-state deltas after folding. |
+| `failure_artifacts.workspace_state_post_codex` | Shows detailed workspace mutation evidence when a row fails or needs diagnosis. |
 | `fairness_findings` | Shows whether paired comparison is valid. |
-| `token_count` and `wall_time_ms` | Supports cost and latency interpretation. |
+| Published token fields | Supports cost interpretation, including `prompt_token_delta` and `total_payload_token_delta`. |
+| Published latency fields | Supports latency interpretation, including `latency_delta_ms` and pair wall-clock fields. |
 
-If evidence changes the outcome but is not reported, the row is not valid
-public evidence:
-
-```math
-R_s \supseteq \{d_s, E_s, C_s, \rho_s, V_s, W_s, F_s\}
-```
-
-```math
-\exists e:
-Y_s = f(e)
-\land e \not\subset R_s
-\Rightarrow F_s = 0
-```
+If evidence changes the outcome but is not reported, the row is not valid public
+evidence. If outcome-changing evidence stayed private, the fairness finding
+must fail or the row must be withheld from paired benchmark claims.
 
 ## Migration Interpretation
 
@@ -388,10 +388,9 @@ report-field equivalent is:
 ```text
 turn_gate_receipt.source == product_turn_gate
 turn_gate_product_path_present == true
-status_basis == turn_gate_early_exit_proof
+validation_results.status_basis == turn_gate_early_exit_proof
 validator_execution_mode == turn_gate_early_exit_proof
-candidate_write_paths is empty
-workspace_delta_paths is empty
+candidate_write_paths is empty after workspace-delta folding
 ```
 
 Older reports that lack those fields may be used for historical comparison, but
@@ -405,7 +404,9 @@ A row is invalid for public benchmark claims when any of these occur:
 - An early-exit row has a receipt source other than `product_turn_gate`.
 - `turn_gate_product_path_present` is false or missing for a v0.1.14+ row.
 - The row claims `early_exit_proof` but a host model call was required.
-- The row claims non-mutating closure but `workspace_delta_paths` is non-empty.
+- The row claims non-mutating closure but folded `candidate_write_paths` is
+  non-empty.
+- Detailed failure artifacts contradict the claimed non-mutating closure.
 - The row omits outcome-changing evidence.
 - The row compares lanes with different validators, timeouts, cache posture, or
   write permissions without surfacing that difference in `fairness_findings`.
@@ -416,23 +417,31 @@ A row is invalid for public benchmark claims when any of these occur:
 
 A positive Odylith-on result means the product operating policy improved the
 row under the exposed evidence contract. It may be because the Turn Gate avoided
-unnecessary host work, narrowed unsafe writes, forced better validation, or
+unnecessary host work, narrowed unsafe writes, required better validation, or
 kept claims honest.
+
+An early-exit win should be read as a product efficiency and governance win: the
+system recognized that validator-backed non-mutating evidence was already enough
+to close the row. It should not be presented as harder model reasoning.
 
 A negative or invalid row is still useful when it names the broken contract:
 missing evidence, bad validator coverage, stale product-path proof, unfair lane
 matching, slow execution, or a host adapter gap. It should not be hidden behind
 aggregate utility.
 
-## Research Caveats
+## Research Posture
 
-The model is intentionally conservative:
+The contract is intentionally audit-friendly:
 
 - It favors public evidence over private harness knowledge.
 - It treats latency and token cost as first-class quality dimensions.
 - It separates source-truth tokens from user-facing labels.
 - It keeps host behavior and product policy distinct.
 - It requires matched-lane fairness before paired lift is meaningful.
+- It does not treat notation as proof.
+- It does not publish a single combined score unless the normalization and
+  weights are explicit.
+- It does not generalize beyond the visible scenario contract.
 
-That conservatism is deliberate. Odylith benchmark reports are meant to be
-reviewable governance evidence, not decorative scorecards.
+That posture is deliberate. Odylith benchmark reports are meant to be
+reviewable product evidence, not just scorecards.

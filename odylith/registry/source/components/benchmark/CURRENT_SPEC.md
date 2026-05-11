@@ -53,8 +53,8 @@ reviewer framing that explains how Odylith should be compared.
 - Maintained benchmark graph generation in
   `src/odylith/runtime/evaluation/odylith_benchmark_graphs.py`.
 - Public benchmark framing and reviewer guidance under `docs/benchmarks/`.
-- Research interpretation notes and formal claim models under
-  `docs/research/`, including the benchmark formal model.
+- Research interpretation notes and validity contracts under
+  `docs/research/`, including the benchmark interpretation contract.
 - Local benchmark history under `.odylith/runtime/odylith-benchmarks/`.
 - The release-safe benchmark publication contract used by README and maintainer
   release proof.
@@ -277,7 +277,7 @@ reviewer framing that explains how Odylith should be compared.
   `v0.1.14` carries a tracked `skip_proof_and_compare` override after the
   maintainer explicitly waived full benchmark runs for GA. This release is
   benchmark-advisory while the shipped benchmark story is the product Turn Gate
-  formal model plus migration, browser, install, topology, guidance,
+  interpretation contract plus migration, browser, install, topology, guidance,
   discipline, and release-candidate proof. Do not describe `v0.1.14` as fresh
   benchmark proof.
 

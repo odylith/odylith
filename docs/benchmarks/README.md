@@ -23,7 +23,7 @@ Related docs:
 - [Current Live Benchmark Snapshot](LIVE_BENCHMARK_SNAPSHOT.md)
 - [Benchmark Families And Eval Catalog](FAMILIES_AND_EVALS.md)
 - [Metrics And Priorities](METRICS_AND_PRIORITIES.md)
-- [Benchmark Formal Model](../research/BENCHMARK_FORMAL_MODEL.md)
+- [Benchmark Interpretation Contract](../research/BENCHMARK_INTERPRETATION_CONTRACT.md)
 - [Reviewer Guide And Prompt](REVIEWER_GUIDE.md)
 
 ## What Is Being Compared
@@ -219,9 +219,9 @@ Current live-proof secondary guardrail:
 - `within_budget_rate >= 0.80` on packet-backed sampled slices
 
 See [Metrics And Priorities](METRICS_AND_PRIORITIES.md) for the full ordering.
-See [Benchmark Formal Model](../research/BENCHMARK_FORMAL_MODEL.md) for the mathematical
-interpretation of policy value, write-admission risk, and non-mutating closure
-dominance.
+See the [Benchmark Interpretation Contract](../research/BENCHMARK_INTERPRETATION_CONTRACT.md)
+for the public validity rules behind policy value, write-admission risk, and
+non-mutating closure claims.
 
 ## How To Read The Graphs
 

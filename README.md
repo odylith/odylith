@@ -448,8 +448,8 @@ Full current artifacts:
 [Grounding Benchmark Snapshot](docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md),
 [Benchmark Tables](docs/benchmarks/BENCHMARK_TABLES.md), and
 [How To Read Odylith's Benchmark Proof](docs/benchmarks/README.md).
-For the formal risk model behind the benchmark claim, read
-[Benchmark Formal Model](docs/research/BENCHMARK_FORMAL_MODEL.md).
+For the public validity contract behind the benchmark claim, read the
+[Benchmark Interpretation Contract](docs/research/BENCHMARK_INTERPRETATION_CONTRACT.md).
 The versioned GitHub artifact bundle, including the compressed raw source
 truth, is stored under
 [docs/benchmarks/v0.1.11](docs/benchmarks/v0.1.11/README.md).
