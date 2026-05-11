@@ -159,9 +159,9 @@ def build_proposal_contract() -> dict[str, Any]:
             ),
             "Each diagram must include host-authored mermaid_source; Odylith validates it but does not invent topology.",
             (
-                "For flowchart mermaid_source, use classDef/style colors inside the diagram for semantic grouping "
-                "and <br/> to wrap long labels so text stays readable. Use subgraph lanes only where they clarify "
-                "the topology; never rely on viewer background treatment."
+                "For flowchart mermaid_source, use the Atlas semantic classDef/style color language for node state "
+                "and restrained neutral containers, plus <br/> to wrap long labels so text stays readable. Use "
+                "subgraph lanes only where they clarify the topology; never rely on viewer background treatment."
             ),
             "For sequenceDiagram mermaid_source, keep message text parser-safe: use words instead of semicolons in arrow labels.",
             (
@@ -413,8 +413,8 @@ def build_proposal_template(*, intent_title: str, project_slug: str, source_post
                 "mermaid_source": (
                     "flowchart LR\n"
                     "  User[User] --> Core[Core<br/>boundary]\n"
-                    "  classDef actor fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b;\n"
-                    "  classDef service fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
+                    "  classDef actor fill:#EFF6FF,stroke:#BFD7FE,color:#17233A;\n"
+                    "  classDef service fill:#ECFDFB,stroke:#A7E9E3,color:#17233A;\n"
                     "  class User actor;\n"
                     "  class Core service;"
                 ),

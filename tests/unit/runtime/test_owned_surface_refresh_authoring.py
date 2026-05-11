@@ -182,6 +182,37 @@ def test_owned_surface_refresh_batches_multiple_surfaces_once(tmp_path: Path, mo
     ]
 
 
+def test_owned_surface_refresh_supports_tooling_shell_project_surface(tmp_path: Path, monkeypatch) -> None:
+    calls: list[dict[str, object]] = []
+
+    from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
+    from odylith.runtime.governance import sync_workstream_artifacts
+
+    monkeypatch.setattr(
+        odylith_context_engine_projection_search_runtime,
+        "clear_runtime_process_caches",
+        lambda **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "refresh_dashboard_surfaces",
+        lambda **kwargs: calls.append(dict(kwargs)) or 0,
+    )
+
+    rc = owned_surface_refresh.refresh_owned_surface(repo_root=tmp_path, surface="tooling_shell")
+
+    assert rc == 0
+    assert calls == [
+        {
+            "repo_root": tmp_path.resolve(),
+            "surfaces": ("tooling_shell",),
+            "runtime_mode": "auto",
+            "atlas_sync": False,
+        }
+    ]
+    assert owned_surface_refresh.dashboard_handoff(surface="project") == "odylith/index.html?tab=project"
+
+
 def test_backlog_create_refreshes_radar_surface(tmp_path: Path, monkeypatch, capsys) -> None:
     calls: list[dict[str, object]] = []
     _seed_backlog_repo(tmp_path)
@@ -404,8 +435,8 @@ def test_atlas_scaffold_allows_atlas_first_draft_without_governance_links(
     assert 'subgraph intent_lane["Intent lane"]' in source_text
     assert 'subgraph component_lane["Component lane"]' in source_text
     assert 'subgraph evidence_lane["Evidence lane"]' in source_text
-    assert "classDef anchor fill:#e8fbf7" in source_text
-    assert "style component_lane fill:#f9fcff" in source_text
+    assert "classDef primary fill:#EFF6FF" in source_text
+    assert "style component_lane fill:#FBFDFF,stroke:#A7E9E3" in source_text
     assert "Link Radar, plan, and docs<br/>as governance matures" in source_text
     assert calls == [
         {

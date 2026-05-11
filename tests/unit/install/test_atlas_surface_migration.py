@@ -27,8 +27,8 @@ def _write_polished_cluster_svg(path: Path) -> None:
         "\n".join(
             [
                 '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80" viewBox="0 0 120 80">',
-                '  <g class="cluster default"><rect x="2" y="2" width="100" height="60" style="fill:#fafffe !important;stroke:#d8f2ed !important;"></rect><g class="cluster-label"><text>Source truth</text></g></g>',
-                '  <g class="nodes"><g class="node default"><rect class="basic label-container" x="8" y="10" width="80" height="28" style="fill:#e8fbf7 !important;stroke:#5bbfb2 !important;"></rect></g></g>',
+                '  <g class="cluster default"><rect x="2" y="2" width="100" height="60" style="fill:#FBFDFF !important;stroke:#BFD7FE !important;"></rect><g class="cluster-label"><text>Source truth</text></g></g>',
+                '  <g class="nodes"><g class="node default"><rect class="basic label-container" x="8" y="10" width="80" height="28" style="fill:#EFF6FF !important;stroke:#BFD7FE !important;"></rect></g></g>',
                 "</svg>",
                 "",
             ]
@@ -75,8 +75,8 @@ def _write_matching_semantic_cluster_svg_with_label_fill(path: Path) -> None:
         "\n".join(
             [
                 '<svg xmlns="http://www.w3.org/2000/svg" width="180" height="120" viewBox="0 0 180 120">',
-                '  <g class="cluster" id="decision_gate"><rect style="fill:#fff9f8 !important;stroke:#f6d8d0 !important;"></rect><g class="cluster-label"><text style="fill:#5c2418 !important;">Decision gate</text></g></g>',
-                '  <g class="nodes"><g class="node default"><rect style="fill:#ffece7 !important;stroke:#df8f7d !important;"></rect></g></g>',
+                '  <g class="cluster" id="decision_gate"><rect style="fill:#FBFDFF !important;stroke:#F6D98B !important;"></rect><g class="cluster-label"><text style="fill:#334155 !important;">Decision gate</text></g></g>',
+                '  <g class="nodes"><g class="node default"><rect style="fill:#FFF8E6 !important;stroke:#F6D98B !important;"></rect></g></g>',
                 "</svg>",
                 "",
             ]
@@ -187,8 +187,8 @@ def test_atlas_surface_migration_flags_cluster_inherited_node_fill(tmp_path: Pat
         "\n".join(
             [
                 '<svg xmlns="http://www.w3.org/2000/svg" width="180" height="120" viewBox="0 0 180 120">',
-                '  <g class="cluster" id="memory_lane"><rect style="fill:#f2fbef !important;stroke:#a9d69e !important;"></rect><g class="cluster-label"><text>Memory lane</text></g></g>',
-                '  <g class="nodes"><g class="node default"><rect style="fill:#f2fbef !important;stroke:#a9d69e !important;"></rect><g class="label"><text>projection bundle</text></g></g></g>',
+                '  <g class="cluster" id="memory_lane"><rect style="fill:#ECFDFB !important;stroke:#A7E9E3 !important;"></rect><g class="cluster-label"><text>Memory lane</text></g></g>',
+                '  <g class="nodes"><g class="node default"><rect style="fill:#ECFDFB !important;stroke:#A7E9E3 !important;"></rect><g class="label"><text>projection bundle</text></g></g></g>',
                 "</svg>",
                 "",
             ]
@@ -205,8 +205,8 @@ def test_atlas_surface_migration_accepts_effective_final_wash_over_stale_authore
         "\n".join(
             [
                 '<svg xmlns="http://www.w3.org/2000/svg" width="180" height="120" viewBox="0 0 180 120">',
-                '  <g class="cluster" id="input_lane"><rect style="fill:#effcf9 !important;stroke:#9bd8cf !important;fill:#fafffe !important;stroke:#d8f2ed !important;"></rect><g class="cluster-label"><text>Input lane</text></g></g>',
-                '  <g class="nodes"><g class="node default"><rect class="basic label-container" style="fill:#eafbf7 !important;stroke:#78c9bd !important;fill:#e8fbf7 !important;stroke:#5bbfb2 !important;"></rect><g class="label"><text>source request</text></g></g></g>',
+                '  <g class="cluster" id="input_lane"><rect style="fill:#effcf9 !important;stroke:#9bd8cf !important;fill:#FBFDFF !important;stroke:#BFD7FE !important;"></rect><g class="cluster-label"><text>Input lane</text></g></g>',
+                '  <g class="nodes"><g class="node default"><rect class="basic label-container" style="fill:#eafbf7 !important;stroke:#78c9bd !important;fill:#EFF6FF !important;stroke:#BFD7FE !important;"></rect><g class="label"><text>source request</text></g></g></g>',
                 "</svg>",
                 "",
             ]
@@ -223,8 +223,8 @@ def test_atlas_surface_migration_flags_partial_final_wash_with_legacy_stroke(tmp
         "\n".join(
             [
                 '<svg xmlns="http://www.w3.org/2000/svg" width="180" height="120" viewBox="0 0 180 120">',
-                '  <g class="cluster" id="input_lane"><rect style="fill:#fafffe !important;stroke:#9bd8cf !important;"></rect><g class="cluster-label"><text>Input lane</text></g></g>',
-                '  <g class="nodes"><g class="node default"><rect class="basic label-container" style="fill:#e8fbf7 !important;stroke:#5bbfb2 !important;"></rect></g></g>',
+                '  <g class="cluster" id="input_lane"><rect style="fill:#FBFDFF !important;stroke:#9bd8cf !important;"></rect><g class="cluster-label"><text>Input lane</text></g></g>',
+                '  <g class="nodes"><g class="node default"><rect class="basic label-container" style="fill:#EFF6FF !important;stroke:#BFD7FE !important;"></rect></g></g>',
                 "</svg>",
                 "",
             ]
@@ -254,8 +254,8 @@ def test_atlas_surface_migration_uses_cluster_identifier_like_renderer(tmp_path:
         "\n".join(
             [
                 '<svg xmlns="http://www.w3.org/2000/svg" width="180" height="120" viewBox="0 0 180 120">',
-                '  <g class="cluster" id="flowchart-Release-1"><rect style="fill:#fdfaff !important;stroke:#e8dcfb !important;"></rect><g class="cluster-label"><text>Maintainer proof and public claim</text></g></g>',
-                '  <g class="nodes"><g class="node default"><rect style="fill:#f4ebff !important;stroke:#ad8ae6 !important;"></rect></g></g>',
+                '  <g class="cluster" id="flowchart-Release-1"><rect style="fill:#FBFDFF !important;stroke:#DDD6FE !important;"></rect><g class="cluster-label"><text>Maintainer proof and public claim</text></g></g>',
+                '  <g class="nodes"><g class="node default"><rect style="fill:#F5F3FF !important;stroke:#DDD6FE !important;"></rect></g></g>',
                 "</svg>",
                 "",
             ]
@@ -263,7 +263,8 @@ def test_atlas_surface_migration_uses_cluster_identifier_like_renderer(tmp_path:
         encoding="utf-8",
     )
 
-    assert atlas_surface_migration._semantic_cluster_expected_fills(mmd_path) == ("#fdfaff",)  # noqa: SLF001
+    assert atlas_surface_migration._semantic_cluster_expected_fills(mmd_path) == ("#fbfdff",)  # noqa: SLF001
+    assert atlas_surface_migration._semantic_cluster_expected_styles(mmd_path) == (("#fbfdff", "#ddd6fe"),)  # noqa: SLF001
     assert atlas_surface_migration._svg_needs_polish(svg_path, source_mmd_path=mmd_path) is False  # noqa: SLF001
 
 
@@ -296,10 +297,9 @@ def test_atlas_surface_migration_renders_polished_assets_and_dashboard(tmp_path:
     assert result.applied is True
     assert result.migration_id == atlas_surface_migration.MIGRATION_ID
     assert catalog["diagrams"][0]["render_source_fingerprint"]
-    assert "fill:#fafffe" in svg_text
-    assert "stroke:#d8f2ed" in svg_text
-    assert "fill:#e8fbf7" in svg_text
-    assert "stroke:#5bbfb2" in svg_text
+    assert "fill:#FBFDFF" in svg_text
+    assert "stroke:#BFD7FE" in svg_text
+    assert "fill:#EFF6FF" in svg_text
     assert ".viewer-stage::before" not in html_text
     assert "background: #ffffff;" in html_text
     assert ledger["migration_id"] == atlas_surface_migration.MIGRATION_ID

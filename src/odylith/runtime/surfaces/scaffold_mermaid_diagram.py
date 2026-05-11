@@ -128,7 +128,7 @@ def _starter_source(
     related_docs: list[str],
 ) -> str:
     lines = [
-        "%% Atlas visual contract: colored lanes group ownership/phase; node classes mark semantic role; labels stay wrapped.",
+        "%% Atlas visual contract: neutral containers organize structure; semantic node classes carry state; labels stay wrapped.",
         "flowchart TB",
         '    subgraph intent_lane["Intent lane"]',
         "      direction TB",
@@ -180,27 +180,29 @@ def _starter_source(
     lines.extend(
         [
             "",
-            "    classDef anchor fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b,stroke-width:1px;",
-            "    classDef component fill:#eaf3ff,stroke:#77a9ef,color:#102f5f,stroke-width:1px;",
-            "    classDef evidence fill:#ffece7,stroke:#df8f7d,color:#5c2418,stroke-width:1px;",
-            "    classDef followup fill:#f5f8fb,stroke:#b7c7d9,color:#1f2937,stroke-width:1px;",
-            "    class diagram,owner anchor;",
+            "    classDef neutral fill:#FBFDFF,stroke:#D8E5F4,color:#17233A,stroke-width:1px;",
+            "    classDef primary fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;",
+            "    classDef execution fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;",
+            "    classDef governance fill:#F5F3FF,stroke:#DDD6FE,color:#17233A,stroke-width:1px;",
+            "    classDef constraint fill:#FFF8E6,stroke:#F6D98B,color:#17233A,stroke-width:1px;",
+            "    classDef invalid fill:#FFF1F0,stroke:#F7B4AE,color:#17233A,stroke-width:1px;",
+            "    class diagram,owner primary;",
         ]
     )
     if component_ids:
-        lines.append(f"    class {','.join(component_ids)} component;")
+        lines.append(f"    class {','.join(component_ids)} execution;")
     if evidence_ids:
         watch_ids = [value for value in evidence_ids if value != "followup"]
         if watch_ids:
-            lines.append(f"    class {','.join(watch_ids)} evidence;")
+            lines.append(f"    class {','.join(watch_ids)} execution;")
         if "followup" in evidence_ids:
-            lines.append("    class followup followup;")
+            lines.append("    class followup constraint;")
     lines.extend(
         [
-            "    style intent_lane fill:#fafffe,stroke:#d8f2ed,stroke-width:1px,color:#062f2b",
-            "    style component_lane fill:#f9fcff,stroke:#dceaff,stroke-width:1px,color:#102f5f",
-            "    style evidence_lane fill:#fff9f8,stroke:#f6d8d0,stroke-width:1px,color:#5c2418",
-            "    linkStyle default stroke:#647d96,stroke-width:1.4px",
+            "    style intent_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155",
+            "    style component_lane fill:#FBFDFF,stroke:#A7E9E3,stroke-width:1px,color:#334155",
+            "    style evidence_lane fill:#FBFDFF,stroke:#A7E9E3,stroke-width:1px,color:#334155",
+            "    linkStyle default stroke:#B9C7D8,stroke-width:1.25px",
         ]
     )
     return "\n".join(lines) + "\n"

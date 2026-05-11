@@ -224,7 +224,7 @@ async function main() {
       globalThis.__odylithPolishRenderedSvg = svg => {
         svg.setAttribute(
           'style',
-          'background: transparent; shape-rendering: geometricPrecision; text-rendering: geometricPrecision;',
+          'background: #FFFFFF; shape-rendering: geometricPrecision; text-rendering: geometricPrecision;',
         );
         const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
         style.textContent = `
@@ -242,11 +242,22 @@ async function main() {
           .cluster rect {
             rx: 14px;
             ry: 14px;
-            stroke-width: 1.2px;
+            stroke-width: 1.15px;
           }
           .edgePath .path,
           .flowchart-link {
-            stroke-width: 1.45px;
+            stroke: #B9C7D8;
+            stroke-width: 1.25px;
+            opacity: 0.65;
+          }
+          .edgeLabel {
+            color: #334155;
+            fill: #334155;
+          }
+          .edgeLabel rect,
+          .edgeLabel background {
+            fill: #FFFFFF;
+            opacity: 0.96;
           }
           .edgeLabel,
           .nodeLabel,
@@ -255,41 +266,89 @@ async function main() {
           }
         `;
         svg.insertBefore(style, svg.firstChild);
+        const BODY_TEXT = '#17233A';
+        const STRUCTURE_LABEL = '#334155';
         const nodePalette = {
-          input: { fill: '#e8fbf7', stroke: '#5bbfb2', label: '#062f2b' },
-          intelligence: { fill: '#eaf3ff', stroke: '#77a9ef', label: '#102f5f' },
-          decision: { fill: '#ffece7', stroke: '#df8f7d', label: '#5c2418' },
-          apply: { fill: '#f4ebff', stroke: '#ad8ae6', label: '#31135f' },
-          memory: { fill: '#ebf9e8', stroke: '#7ec373', label: '#0f3a24' },
-          neutral: { fill: '#f5f8fb', stroke: '#b7c7d9', label: '#1f2937' },
+          neutral: { fill: '#FBFDFF', stroke: '#D8E5F4', label: BODY_TEXT, title: '#334155' },
+          primary: { fill: '#EFF6FF', stroke: '#BFD7FE', label: BODY_TEXT, title: '#1D4ED8' },
+          execution: { fill: '#ECFDFB', stroke: '#A7E9E3', label: BODY_TEXT, title: '#0F766E' },
+          governance: { fill: '#F5F3FF', stroke: '#DDD6FE', label: BODY_TEXT, title: '#6D28D9' },
+          constraint: { fill: '#FFF8E6', stroke: '#F6D98B', label: BODY_TEXT, title: '#B7791F' },
+          invalid: { fill: '#FFF1F0', stroke: '#F7B4AE', label: BODY_TEXT, title: '#B42318' },
         };
         const clusterPalette = [
-          { bucket: 'input', fill: '#fafffe', stroke: '#d8f2ed', label: '#062f2b', nodeTone: nodePalette.input },
-          { bucket: 'intelligence', fill: '#f9fcff', stroke: '#dceaff', label: '#102f5f', nodeTone: nodePalette.intelligence },
-          { bucket: 'decision', fill: '#fff9f8', stroke: '#f6d8d0', label: '#5c2418', nodeTone: nodePalette.decision },
-          { bucket: 'memory', fill: '#f9fff7', stroke: '#ddefd6', label: '#0f3a24', nodeTone: nodePalette.memory },
-          { bucket: 'apply', fill: '#fdfaff', stroke: '#e8dcfb', label: '#31135f', nodeTone: nodePalette.apply },
+          { bucket: 'neutral', fill: '#FBFDFF', stroke: '#D8E5F4', label: STRUCTURE_LABEL },
+          { bucket: 'primary', fill: '#FBFDFF', stroke: '#BFD7FE', label: STRUCTURE_LABEL },
+          { bucket: 'execution', fill: '#FBFDFF', stroke: '#A7E9E3', label: STRUCTURE_LABEL },
+          { bucket: 'governance', fill: '#FBFDFF', stroke: '#DDD6FE', label: STRUCTURE_LABEL },
+          { bucket: 'constraint', fill: '#FBFDFF', stroke: '#F6D98B', label: STRUCTURE_LABEL },
+          { bucket: 'invalid', fill: '#FBFDFF', stroke: '#F7B4AE', label: STRUCTURE_LABEL },
         ];
         const clusterPaletteByBucket = {
-          input: clusterPalette[0],
-          intelligence: clusterPalette[1],
-          decision: clusterPalette[2],
-          apply: clusterPalette[4],
-          memory: clusterPalette[3],
+          neutral: clusterPalette[0],
+          primary: clusterPalette[1],
+          execution: clusterPalette[2],
+          governance: clusterPalette[3],
+          constraint: clusterPalette[4],
+          invalid: clusterPalette[5],
         };
-        const fallbackNodeTones = [
-          nodePalette.input,
-          nodePalette.intelligence,
-          nodePalette.decision,
-          nodePalette.apply,
-          nodePalette.memory,
-          nodePalette.neutral,
-        ];
-        // Atlas owns rendered color for consistency across legacy and new diagrams.
-        // Source Mermaid stays topology truth; rendered fill/stroke/text color is a
-        // surface-level readability contract and may override authored color tokens.
-        // Containers use wash tones that are deliberately lighter than their
-        // matching node tone; nodes never inherit the container fill directly.
+        const connectorPalette = {
+          default: { stroke: '#B9C7D8', width: '1.25px', opacity: '0.65', dash: '' },
+          primary: { stroke: '#52677F', width: '1.75px', opacity: '0.90', dash: '' },
+          evidence: { stroke: '#0F766E', width: '1.5px', opacity: '0.80', dash: '4 4' },
+          dependency: { stroke: '#B7791F', width: '1.5px', opacity: '0.75', dash: '3 3' },
+          invalid: { stroke: '#B42318', width: '1.5px', opacity: '0.80', dash: '5 3' },
+        };
+        const classBucketAliases = {
+          actor: 'primary',
+          anchor: 'primary',
+          input: 'primary',
+          intent: 'primary',
+          request: 'primary',
+          shell: 'primary',
+          source: 'primary',
+          report: 'primary',
+          metadata: 'primary',
+          diagram: 'primary',
+          service: 'execution',
+          runtime: 'execution',
+          engine: 'execution',
+          execution: 'execution',
+          apply: 'execution',
+          memory: 'execution',
+          cache: 'execution',
+          persistence: 'execution',
+          notification: 'execution',
+          component: 'execution',
+          intelligence: 'governance',
+          governance: 'governance',
+          policy: 'governance',
+          rule: 'governance',
+          owner: 'governance',
+          truth: 'governance',
+          proof: 'governance',
+          delivery: 'governance',
+          decision: 'constraint',
+          gate: 'constraint',
+          followup: 'constraint',
+          fallback: 'constraint',
+          constraint: 'constraint',
+          warning: 'constraint',
+          denied: 'invalid',
+          invalid: 'invalid',
+          failure: 'invalid',
+          error: 'invalid',
+          neutral: 'neutral',
+          note: 'neutral',
+        };
+        // Atlas owns rendered semantic color for consistency across legacy and
+        // new diagrams. Source Mermaid stays topology truth; rendered color is
+        // a surface-level readability contract and may override authored color
+        // tokens when those tokens drift from the Atlas semantic language.
+        // Containers default to neutral structure and only use semantic borders
+        // when their label clearly names a semantic region. Nodes carry the
+        // semantic fill; unclassified nodes stay neutral instead of rotating
+        // through arbitrary colors or inheriting a container tone.
         const stripManagedShapeStyle = styleText => (
           String(styleText || '')
             .split(';')
@@ -301,56 +360,55 @@ async function main() {
           const retainedStyle = stripManagedShapeStyle(authoredStyle);
           return `${retainedStyle ? `${retainedStyle};` : ''}${managedStyleText}`;
         };
-        const numericAttr = (element, name) => {
-          const value = Number.parseFloat(element?.getAttribute(name) || '');
-          return Number.isFinite(value) ? value : null;
-        };
-        const translatePoint = element => {
-          const match = /translate\(\s*([-\d.]+)(?:[\s,]+)([-\d.]+)\s*\)/.exec(element.getAttribute('transform') || '');
-          if (!match) {
-            return null;
-          }
-          const x = Number.parseFloat(match[1]);
-          const y = Number.parseFloat(match[2]);
-          if (!Number.isFinite(x) || !Number.isFinite(y)) {
-            return null;
-          }
-          return { x, y };
+        const stripManagedEdgeStyle = styleText => (
+          String(styleText || '')
+            .split(';')
+            .map(part => part.trim())
+            .filter(part => part && !/^(stroke|stroke-width|stroke-dasharray|opacity)\s*:/i.test(part))
+            .join(';')
+        );
+        const managedEdgeStyle = (authoredStyle, tone) => {
+          const retainedStyle = stripManagedEdgeStyle(authoredStyle);
+          const dash = tone.dash ? `stroke-dasharray:${tone.dash} !important;` : 'stroke-dasharray:none !important;';
+          return `${retainedStyle ? `${retainedStyle};` : ''}stroke:${tone.stroke} !important;stroke-width:${tone.width} !important;opacity:${tone.opacity} !important;${dash}`;
         };
         const bucketForText = text => {
           const normalized = String(text || '').toLowerCase();
-          if (/\?|decision|decide|gate|confirm|choose|blocked|valid|stale|ready|pass|fail|whether/.test(normalized)) {
-            return 'decision';
+          if (/\b(denied?|reject(?:ed|ion)?|invalid|security violation|policy rejection|destructive failure|unrecoverable)\b/.test(normalized)) {
+            return 'invalid';
           }
-          if (/\b(apply|write|render|refresh|sync|update|publish|release|migrate|deploy|repair|scaffold|register|create|author|materialize|bundle)\b/.test(normalized)) {
-            return 'apply';
+          if (/\b(ambiguous|ambiguity|missing|unresolved|assumption|partial|fallback|conflict|retry|pending|conditional|condition|stale|blocked|blocker|gap|decision|decide|gate|confirm|choose|whether)\b/.test(normalized) || /\?/.test(normalized)) {
+            return 'constraint';
           }
-          if (/\b(memory|compass|state|ledger|history|cache|session|timeline|proof|observation)\b/.test(normalized)) {
-            return 'memory';
+          if (/\b(policy|grant|ownership|owner|governance|rule|provenance|authorization|authorisation|access|tribunal|adjudication|audit|dossier|reasoning|evidence|proof)\b/.test(normalized)) {
+            return 'governance';
           }
-          if (/\b(input|intent|prompt|source|repo|docs|catalog|watch|signal|request|operator|user|external)\b/.test(normalized)) {
-            return 'input';
+          if (/\b(runtime|execution|service|cache|lookup|notification|persist|persistence|record|create|write|apply|render|refresh|sync|update|publish|release|migrate|deploy|repair|scaffold|register|materialize|bundle|worker|daemon|process|valid|resolved|success|memory|compass|state|ledger|history|timeline|observation)\b/.test(normalized)) {
+            return 'execution';
           }
-          if (/\b(engine|compiler|planner|routing|classifier|agent|runtime|registry|radar|atlas|casebook|tribunal|context|component|analysis|proposal)\b/.test(normalized)) {
-            return 'intelligence';
+          if (/\b(user|developer|operator|input|intent|prompt|request|api|entry|source|repo|docs|catalog|watch|signal|external|atlas|diagram|metadata|report|final|dashboard|output|artifact|proposal)\b/.test(normalized)) {
+            return 'primary';
           }
           return '';
         };
         const bucketForClassNames = element => {
           const classNames = Array.from(element?.classList || []).map(value => String(value || '').toLowerCase());
-          for (const bucket of ['input', 'intelligence', 'decision', 'apply', 'memory']) {
-            if (classNames.includes(bucket)) {
-              return bucket;
+          for (const className of classNames) {
+            if (nodePalette[className]) {
+              return className;
+            }
+            if (classBucketAliases[className]) {
+              return classBucketAliases[className];
             }
           }
           return '';
         };
-        const toneForNode = (node, fallbackTone) => {
+        const toneForNode = node => {
           const bucket = bucketForClassNames(node) || bucketForText(node.textContent || '');
           if (bucket && nodePalette[bucket]) {
             return nodePalette[bucket];
           }
-          return fallbackTone || nodePalette.neutral;
+          return nodePalette.neutral;
         };
         const clusterLabelText = cluster => (
           Array.from(cluster.querySelectorAll('.cluster-label'))
@@ -359,20 +417,18 @@ async function main() {
           || cluster.id
           || ''
         );
-        const toneForCluster = (cluster, fallbackTone) => {
-          const bucket = bucketForText(`${clusterLabelText(cluster)} ${cluster.id || ''}`);
+        const toneForCluster = cluster => {
+          const bucket = bucketForClassNames(cluster) || bucketForText(`${clusterLabelText(cluster)} ${cluster.id || ''}`);
           if (bucket && clusterPaletteByBucket[bucket]) {
             return clusterPaletteByBucket[bucket];
           }
-          return fallbackTone;
+          return clusterPaletteByBucket.neutral;
         };
         for (const rect of svg.querySelectorAll('.node rect')) {
           rect.setAttribute('rx', rect.getAttribute('rx') || '8');
           rect.setAttribute('ry', rect.getAttribute('ry') || '8');
         }
-        const clusterBounds = [];
-        const clusterGroups = Array.from(svg.querySelectorAll('.cluster'));
-        for (const [index, cluster] of clusterGroups.entries()) {
+        for (const cluster of Array.from(svg.querySelectorAll('.cluster'))) {
           const rect = cluster.querySelector('rect');
           if (!rect) {
             continue;
@@ -380,14 +436,7 @@ async function main() {
           rect.setAttribute('rx', rect.getAttribute('rx') || '14');
           rect.setAttribute('ry', rect.getAttribute('ry') || '14');
           const authoredStyle = rect.getAttribute('style') || '';
-          const tone = toneForCluster(cluster, clusterPalette[index % clusterPalette.length]);
-          const x = numericAttr(rect, 'x');
-          const y = numericAttr(rect, 'y');
-          const width = numericAttr(rect, 'width');
-          const height = numericAttr(rect, 'height');
-          if (x !== null && y !== null && width !== null && height !== null) {
-            clusterBounds.push({ x, y, width, height, nodeTone: tone.nodeTone || null });
-          }
+          const tone = toneForCluster(cluster);
           rect.setAttribute(
             'style',
             managedShapeStyle(
@@ -399,26 +448,11 @@ async function main() {
             label.setAttribute('style', `${label.getAttribute('style') || ''};color:${tone.label} !important;fill:${tone.label} !important`);
           }
         }
-        const clusterNodeToneForNode = node => {
-          const point = translatePoint(node);
-          if (!point) {
-            return null;
-          }
-          const matches = clusterBounds
-            .filter(bounds => (
-              point.x >= bounds.x
-              && point.x <= bounds.x + bounds.width
-              && point.y >= bounds.y
-              && point.y <= bounds.y + bounds.height
-            ))
-            .sort((a, b) => (a.width * a.height) - (b.width * b.height));
-          return matches[0]?.nodeTone || null;
-        };
         const nodeShape = node => (
           node.querySelector(':scope > rect.label-container, :scope > rect.basic, :scope > polygon, :scope > circle, :scope > ellipse, :scope > path')
           || node.querySelector('rect.label-container, rect.basic, polygon, circle, ellipse, path')
         );
-        for (const [index, node] of Array.from(svg.querySelectorAll('.node')).entries()) {
+        for (const node of Array.from(svg.querySelectorAll('.node'))) {
           const shape = nodeShape(node);
           if (!shape) {
             continue;
@@ -428,9 +462,7 @@ async function main() {
             shape.setAttribute('ry', shape.getAttribute('ry') || '8');
           }
           const authoredStyle = shape.getAttribute('style') || '';
-          const clusterNodeTone = clusterNodeToneForNode(node);
-          const fallbackTone = clusterNodeTone || fallbackNodeTones[index % fallbackNodeTones.length];
-          const tone = toneForNode(node, fallbackTone);
+          const tone = toneForNode(node);
           shape.setAttribute(
             'style',
             managedShapeStyle(
@@ -441,6 +473,38 @@ async function main() {
           for (const label of node.querySelectorAll('.label, .nodeLabel, .label span, .label text, .label p, .label div')) {
             label.setAttribute('style', `${label.getAttribute('style') || ''};color:${tone.label} !important;fill:${tone.label} !important`);
           }
+        }
+        const bucketForEdge = edge => {
+          const edgeGroup = edge?.closest?.('.edgePath');
+          const text = `${edge?.id || ''} ${edgeGroup?.id || ''} ${Array.from(edge?.classList || []).join(' ')}`.toLowerCase();
+          if (/\b(denied?|reject(?:ed|ion)?|invalid|security violation|policy rejection|destructive failure|unrecoverable)\b/.test(text)) {
+            return 'invalid';
+          }
+          if (/\b(evidence|validation|validated|proof|verified|verify|provenance)\b/.test(text)) {
+            return 'evidence';
+          }
+          if (/\b(dependency|depends|retry|assumption|fallback|missing|partial|pending|conditional|conflict|ambiguous|unresolved)\b/.test(text)) {
+            return 'dependency';
+          }
+          if (/\b(primary|selected|entry|request|intent|api|final|report)\b/.test(text)) {
+            return 'primary';
+          }
+          const authoredStyle = String(edge?.getAttribute?.('style') || '');
+          const authoredDash = String(edge?.getAttribute?.('stroke-dasharray') || '');
+          if (/stroke-dasharray\s*:/i.test(authoredStyle) || authoredDash) {
+            return 'dependency';
+          }
+          return 'default';
+        };
+        for (const edge of svg.querySelectorAll('.edgePath .path, .flowchart-link')) {
+          const tone = connectorPalette[bucketForEdge(edge)] || connectorPalette.default;
+          edge.setAttribute('style', managedEdgeStyle(edge.getAttribute('style') || '', tone));
+        }
+        for (const label of svg.querySelectorAll('.edgeLabel, .edgeLabel span, .edgeLabel text, .edgeLabel p, .edgeLabel div')) {
+          label.setAttribute('style', `${label.getAttribute('style') || ''};color:${STRUCTURE_LABEL} !important;fill:${STRUCTURE_LABEL} !important`);
+        }
+        for (const labelBackground of svg.querySelectorAll('.edgeLabel rect, .edgeLabel background')) {
+          labelBackground.setAttribute('style', `${labelBackground.getAttribute('style') || ''};fill:#FFFFFF !important;opacity:0.96 !important`);
         }
       };
     }, mermaidRenderConfig);

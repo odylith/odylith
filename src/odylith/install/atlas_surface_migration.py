@@ -39,30 +39,37 @@ _OLD_VIEWER_BACKGROUND_TOKENS = (
     "linear-gradient(rgba(15, 23, 42, 0.06)",
 )
 _POLISHED_CLUSTER_FILLS = frozenset(
-    {"#fafffe", "#f9fcff", "#fff9f8", "#f9fff7", "#fdfaff"}
+    {"#fbfdff"}
 )
 _POLISHED_CLUSTER_STROKES = frozenset(
-    {"#d8f2ed", "#dceaff", "#f6d8d0", "#ddefd6", "#e8dcfb"}
+    {"#d8e5f4", "#bfd7fe", "#a7e9e3", "#ddd6fe", "#f6d98b", "#f7b4ae"}
 )
 _POLISHED_NODE_FILLS = frozenset(
     {
-        "#e8fbf7",
-        "#eaf3ff",
-        "#ffece7",
-        "#f4ebff",
-        "#ebf9e8",
-        "#f5f8fb",
+        "#fbfdff",
+        "#eff6ff",
+        "#ecfdfb",
+        "#f5f3ff",
+        "#fff8e6",
+        "#fff1f0",
     }
 )
 _POLISHED_NODE_STROKES = frozenset(
-    {"#5bbfb2", "#77a9ef", "#df8f7d", "#ad8ae6", "#7ec373", "#b7c7d9"}
+    {"#d8e5f4", "#bfd7fe", "#a7e9e3", "#ddd6fe", "#f6d98b", "#f7b4ae"}
 )
 _SEMANTIC_CLUSTER_FILL_BY_BUCKET = {
-    "input": "#fafffe",
-    "intelligence": "#f9fcff",
-    "decision": "#fff9f8",
-    "apply": "#fdfaff",
-    "memory": "#f9fff7",
+    "primary": "#fbfdff",
+    "execution": "#fbfdff",
+    "governance": "#fbfdff",
+    "constraint": "#fbfdff",
+    "invalid": "#fbfdff",
+}
+_SEMANTIC_CLUSTER_STROKE_BY_BUCKET = {
+    "primary": "#bfd7fe",
+    "execution": "#a7e9e3",
+    "governance": "#ddd6fe",
+    "constraint": "#f6d98b",
+    "invalid": "#f7b4ae",
 }
 _LEGACY_CLUSTER_STYLE_TOKENS = (
     "style=\"\"",
@@ -245,14 +252,14 @@ def _write_ledger(
         "removed_paths": list(removed_paths),
         "verification_result": dict(verification_result),
         "notes": (
-            "v0.1.14 migrates Atlas generated diagram assets and the Atlas "
+            "v0.1.14+ migrates Atlas generated diagram assets and the Atlas "
             "dashboard to the pure-white viewer background plus the managed "
-            "wash-layer cluster and semantic node color contract, including the "
-            "Soft Coral decision/gate node accent and the lighter wash-layer "
-            "container tones with semantic-label-first lane coloring. Source "
-            "Mermaid remains topology truth; the migration regenerates derived render "
-            "surfaces, rebuilds the shared topology traceability graph, and "
-            "records verified fingerprints plus topology integrity evidence."
+            "semantic color contract: neutral structural containers, semantic "
+            "node fills, rare amber constraints, rare red invalid states, and "
+            "subdued connector styling. Source Mermaid remains topology truth; "
+            "the migration regenerates derived render surfaces, rebuilds the "
+            "shared topology traceability graph, and records verified "
+            "fingerprints plus topology integrity evidence."
         ),
     }
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -379,22 +386,31 @@ def _svg_cluster_needs_polish_from_inspection(inspection: _SvgStyleInspection) -
 
 def _semantic_bucket_for_text(text: str) -> str:
     normalized = str(text or "").lower()
-    if re.search(r"\?|decision|decide|gate|confirm|choose|blocked|valid|stale|ready|pass|fail|whether", normalized):
-        return "decision"
     if re.search(
-        r"\b(apply|write|render|refresh|sync|update|publish|release|migrate|deploy|repair|scaffold|register|create|author|materialize|bundle)\b",
+        r"\b(denied?|reject(?:ed|ion)?|invalid|security violation|policy rejection|destructive failure|unrecoverable)\b",
         normalized,
     ):
-        return "apply"
-    if re.search(r"\b(memory|compass|state|ledger|history|cache|session|timeline|proof|observation)\b", normalized):
-        return "memory"
-    if re.search(r"\b(input|intent|prompt|source|repo|docs|catalog|watch|signal|request|operator|user|external)\b", normalized):
-        return "input"
+        return "invalid"
     if re.search(
-        r"\b(engine|compiler|planner|routing|classifier|agent|runtime|registry|radar|atlas|casebook|tribunal|context|component|analysis|proposal)\b",
+        r"\b(ambiguous|ambiguity|missing|unresolved|assumption|partial|fallback|conflict|retry|pending|conditional|condition|stale|blocked|blocker|gap|decision|decide|gate|confirm|choose|whether)\b",
+        normalized,
+    ) or "?" in normalized:
+        return "constraint"
+    if re.search(
+        r"\b(policy|grant|ownership|owner|governance|rule|provenance|authorization|authorisation|access|tribunal|adjudication|audit|dossier|reasoning|evidence|proof)\b",
         normalized,
     ):
-        return "intelligence"
+        return "governance"
+    if re.search(
+        r"\b(runtime|execution|service|cache|lookup|notification|persist|persistence|record|create|write|apply|render|refresh|sync|update|publish|release|migrate|deploy|repair|scaffold|register|materialize|bundle|worker|daemon|process|valid|resolved|success|memory|compass|state|ledger|history|timeline|observation)\b",
+        normalized,
+    ):
+        return "execution"
+    if re.search(
+        r"\b(user|developer|operator|input|intent|prompt|request|api|entry|source|repo|docs|catalog|watch|signal|external|atlas|diagram|metadata|report|final|dashboard|output|artifact|proposal)\b",
+        normalized,
+    ):
+        return "primary"
     return ""
 
 
@@ -452,6 +468,17 @@ def _semantic_cluster_expected_fills(source_mmd_path: Path) -> tuple[str, ...]:
     return tuple(fills)
 
 
+def _semantic_cluster_expected_styles(source_mmd_path: Path) -> tuple[tuple[str, str], ...]:
+    styles: list[tuple[str, str]] = []
+    for semantic_text in _mermaid_subgraph_semantic_texts(source_mmd_path):
+        bucket = _semantic_bucket_for_text(semantic_text)
+        fill = _SEMANTIC_CLUSTER_FILL_BY_BUCKET.get(bucket, "")
+        stroke = _SEMANTIC_CLUSTER_STROKE_BY_BUCKET.get(bucket, "")
+        if fill and stroke:
+            styles.append((fill, stroke))
+    return tuple(styles)
+
+
 def _svg_block_text(block: str) -> str:
     return " ".join(html.unescape(re.sub(r"<[^>]+>", " ", str(block or ""))).split())
 
@@ -505,27 +532,37 @@ def _cluster_rect_stroke(block: str) -> str:
 def _semantic_cluster_style_mismatch(block: str) -> bool:
     bucket = _semantic_bucket_for_text(_svg_cluster_semantic_text(block))
     expected_fill = _SEMANTIC_CLUSTER_FILL_BY_BUCKET.get(bucket, "")
+    expected_stroke = _SEMANTIC_CLUSTER_STROKE_BY_BUCKET.get(bucket, "")
     actual_fill = _cluster_rect_fill(block)
-    return bool(expected_fill and actual_fill and actual_fill != expected_fill)
+    actual_stroke = _cluster_rect_stroke(block)
+    if not expected_fill and not expected_stroke:
+        return False
+    if not actual_fill or not actual_stroke:
+        return True
+    return actual_fill != expected_fill or actual_stroke != expected_stroke
 
 
 def _semantic_cluster_source_mismatch(source_mmd_path: Path, inspection: _SvgStyleInspection) -> bool:
     if any(_semantic_bucket_for_text(_svg_cluster_semantic_text(block)) for block in inspection.cluster_blocks):
         return False
-    expected_fills = _semantic_cluster_expected_fills(source_mmd_path)
-    if not expected_fills:
+    expected_styles = _semantic_cluster_expected_styles(source_mmd_path)
+    if not expected_styles:
         return False
-    actual_fills = tuple(
-        fill for fill in (_cluster_rect_fill(block) for block in inspection.cluster_blocks) if fill
+    actual_styles = tuple(
+        (fill, stroke)
+        for fill, stroke in (
+            (_cluster_rect_fill(block), _cluster_rect_stroke(block)) for block in inspection.cluster_blocks
+        )
+        if fill and stroke
     )
-    if not actual_fills:
+    if not actual_styles:
         return True
     # Mermaid commonly serializes clusters in reverse source order, and older
     # SVGs may not expose cluster labels. This source-order fallback is only for
     # that label-less shape; label-bearing clusters are checked per cluster.
-    if actual_fills[: len(expected_fills)] == expected_fills:
+    if actual_styles[: len(expected_styles)] == expected_styles:
         return False
-    if actual_fills[: len(expected_fills)] == tuple(reversed(expected_fills)):
+    if actual_styles[: len(expected_styles)] == tuple(reversed(expected_styles)):
         return False
     return True
 

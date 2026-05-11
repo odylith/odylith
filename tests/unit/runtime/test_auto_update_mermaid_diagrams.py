@@ -116,42 +116,49 @@ def test_mermaid_worker_applies_managed_palette_to_legacy_and_new_diagrams() -> 
     assert "const clusterPalette = [" in worker_source
     assert "const clusterPaletteByBucket = {" in worker_source
     assert "const nodePalette = {" in worker_source
+    assert "const connectorPalette = {" in worker_source
+    assert "const classBucketAliases = {" in worker_source
     assert "bucketForText" in worker_source
     assert "bucketForClassNames" in worker_source
     assert "toneForCluster" in worker_source
     assert "toneForNode" in worker_source
-    assert "clusterPalette[index % clusterPalette.length]" in worker_source
+    assert "clusterPalette[index % clusterPalette.length]" not in worker_source
     assert "const tone = clusterPalette[index % clusterPalette.length];" not in worker_source
-    assert "const tone = toneForCluster(cluster, clusterPalette[index % clusterPalette.length]);" in worker_source
-    assert "#fafffe" in worker_source
-    assert "#f9fcff" in worker_source
-    assert "#fff9f8" in worker_source
-    assert "#ffece7" in worker_source
-    assert "#e8fbf7" in worker_source
-    assert "#df8f7d" in worker_source
-    assert "#f4ebff" in worker_source
-    assert "nodes never inherit the container fill directly" in worker_source
+    assert "#FBFDFF" in worker_source
+    assert "#EFF6FF" in worker_source
+    assert "#ECFDFB" in worker_source
+    assert "#F5F3FF" in worker_source
+    assert "#FFF8E6" in worker_source
+    assert "#FFF1F0" in worker_source
+    assert "#B9C7D8" in worker_source
+    assert "#52677F" in worker_source
+    assert "unclassified nodes stay neutral" in worker_source
     assert "stripManagedShapeStyle" in worker_source
+    assert "stripManagedEdgeStyle" in worker_source
     assert "/^(fill|stroke|stroke-width)" in worker_source
-    assert "Atlas owns rendered color for consistency across legacy and new diagrams." in worker_source
+    assert "Atlas owns rendered semantic color for consistency across legacy and" in worker_source
     assert "styleDeclares(authoredStyle, 'fill')" not in worker_source
     assert "styleDeclares(authoredStyle, 'stroke')" not in worker_source
-    assert "clusterNodeToneForNode" in worker_source
+    assert "clusterNodeToneForNode" not in worker_source
 
 
 def test_mermaid_worker_container_wash_is_lighter_than_matching_node_tone() -> None:
     worker_source = (Path(mermaid.__file__).with_name("assets") / "mermaid_cli_worker.mjs").read_text(encoding="utf-8")
 
-    node_fills = dict(re.findall(r"^\s+(\w+): \{ fill: '(#[0-9a-f]{6})'", worker_source, flags=re.MULTILINE))
+    node_fills = dict(re.findall(r"^\s+(\w+): \{ fill: '(#[0-9a-f]{6})'", worker_source, flags=re.MULTILINE | re.I))
     cluster_rows = re.findall(
         r"\{ bucket: '(\w+)', fill: '(#[0-9a-f]{6})', stroke: '(#[0-9a-f]{6})'",
         worker_source,
+        flags=re.I,
     )
 
-    assert len(cluster_rows) == 5
+    assert len(cluster_rows) == 6
     for bucket, cluster_fill, _cluster_stroke in cluster_rows:
         assert bucket in node_fills
-        assert _relative_luminance(cluster_fill) > _relative_luminance(node_fills[bucket])
+        if bucket == "neutral":
+            assert cluster_fill.casefold() == node_fills[bucket].casefold()
+        else:
+            assert _relative_luminance(cluster_fill) > _relative_luminance(node_fills[bucket])
 
 
 def _relative_luminance(hex_color: str) -> float:

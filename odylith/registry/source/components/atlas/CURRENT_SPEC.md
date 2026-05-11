@@ -6,10 +6,10 @@
   affordances, admissible action, proof, compact learning, benchmark evidence,
   updated priors, and the cross-system loop through Context, Execution,
   Memory, Intervention, Tribunal, Surfaces, and Benchmarks.
-Last updated: 2026-05-09
+Last updated: 2026-05-11
 
 
-Last updated (UTC): 2026-05-09
+Last updated (UTC): 2026-05-11
 
 ## Purpose
 Atlas is Odylith's architecture and diagram-governance surface. It manages the
@@ -77,8 +77,8 @@ grounding.
 - `src/odylith/runtime/surfaces/scaffold_mermaid_diagram.py`
   Catalog and source scaffolding helper.
 - `src/odylith/runtime/surfaces/assets/mermaid_render_config.json`
-  Shared Mermaid render theme for diagram-internal typography, pastel semantic
-  colors, spacing, and edge shape.
+  Shared Mermaid render theme for diagram-internal typography, semantic state
+  colors, neutral containers, white canvas, and subdued connector shape.
 - `src/odylith/runtime/context_engine/odylith_architecture_mode.py`
   Compiled architecture bundle and architecture dossier builder.
 
@@ -151,32 +151,47 @@ non-empty `change_watch_paths`; later Registry/Radar/plan work should tighten
 the same catalog entry instead of forcing a new diagram.
 
 Starter flowcharts use Atlas's visual grammar inside the Mermaid source:
-subgraph lanes where they clarify placement, subtle `classDef`/`style` colors
-for semantic grouping, and wrapped node labels (`<br/>`) where copy would
-otherwise become too wide to read. The Atlas viewer canvas stays plain white;
-it must not simulate lanes, ruled grids, or color bands behind diagrams.
+subgraph lanes where they clarify placement, the shared semantic `classDef`
+system for node state, restrained neutral `style` rules for containers, and
+wrapped node labels (`<br/>`) where copy would otherwise become too wide to
+read. The Atlas viewer canvas stays plain white; it must not simulate lanes,
+ruled grids, or color bands behind diagrams.
 
 Atlas color is a deterministic readability aid, not source truth. Authored
-Mermaid remains topology truth, but rendered fill, stroke, and text color are
-Atlas-owned so legacy diagrams and newly scaffolded diagrams share one visual
-contract. Container/subgraph colors use semantic lane labels first, then a
-restrained wash-tone rotation only when the lane has no clear role. The
-container tone must stay visibly lighter than the matching node tone, so lanes
-read as quiet grouping and never compete with the boxes inside them. Inner
-node colors respect authored semantic classes such as `input`, `intelligence`,
-`decision`, `apply`, and `memory` before falling back to normalized label text
-through broad semantic buckets: inputs/sources/operators/signals,
-engines/runtimes/planners/Radar/Registry/Atlas/Casebook/proposals,
-decisions/gates/validation/blockers/readiness, writes/apply/render/refresh/
-release/migrate/deploy/register, memory/Compass/state/history/proof/
-observation, and neutral fallback. Color must never assert status, ownership,
-freshness, correctness, or evidence quality; those remain governed by catalog
-metadata, labels, traceability, and source records.
-The decision/gate node bucket uses the Soft Coral accent (`#ffece7` fill,
-`#df8f7d` stroke, `#5c2418` text) so it stays visually distinct without
-reading as warning/status truth. Containers never reuse full-strength node
-accents over large areas; the matching container rotation uses a much lighter
-wash (`#fff9f8` fill, `#f6d8d0` stroke) so grouped lanes stay quiet.
+Mermaid remains topology truth, but rendered fill, stroke, connector, and text
+color are Atlas-owned so legacy diagrams and newly scaffolded diagrams share
+one visual contract. Containers default to neutral structure (`#FBFDFF` fill,
+`#D8E5F4` border, `#334155` label) and may use only a semantic border when
+the whole region has a clear role. Nodes carry semantic color: primary blue for
+intent, API entry, diagram metadata, and final reporting; execution teal for
+runtime activity, successful lookup, cache, persistence, notification, and
+record creation; governance violet for policy, grants, ownership, access,
+provenance, authorization, and artifact reasoning; constraint amber for
+ambiguity, missing information, fallback, retry, partial evidence, conflict,
+or conditional outcomes; invalid red only for hard failure, denial, security
+violation, destructive failure, or unrecoverable rejection. Unclassified nodes
+fall back to neutral instead of rotating through arbitrary colors or inheriting
+container tone.
+
+The canonical Mermaid node classes are:
+
+```mermaid
+classDef neutral fill:#FBFDFF,stroke:#D8E5F4,color:#17233A;
+classDef primary fill:#EFF6FF,stroke:#BFD7FE,color:#17233A;
+classDef execution fill:#ECFDFB,stroke:#A7E9E3,color:#17233A;
+classDef governance fill:#F5F3FF,stroke:#DDD6FE,color:#17233A;
+classDef constraint fill:#FFF8E6,stroke:#F6D98B,color:#17233A;
+classDef invalid fill:#FFF1F0,stroke:#F7B4AE,color:#17233A;
+```
+
+Connectors default to subdued blue-gray (`#B9C7D8`, 1.25px, 65% opacity).
+Primary-path, evidence/validation, dependency/retry/assumption, and invalid
+connectors have distinct stroke rules, but dashed edges must remain
+semantically meaningful and cross-links must not dominate the map. Edge labels
+stay `#334155` on white or near-white backgrounds. Color must never assert
+status, ownership, freshness, correctness, or evidence quality beyond the
+semantic state it encodes; those remain governed by catalog metadata, labels,
+traceability, and source records.
 
 Strict callers can pass `--require-links` to preserve the older fail-closed
 behavior when at least one Radar backlog path, technical-plan path, and doc path

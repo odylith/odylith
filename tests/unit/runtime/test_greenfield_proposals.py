@@ -301,15 +301,15 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                     "    checkout --> order\n"
                     "    order --> evidence\n"
                     "    payment -. failure recovery .-> checkout\n"
-                    "    classDef actor fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b,stroke-width:1px;\n"
-                    "    classDef service fill:#eaf3ff,stroke:#77a9ef,color:#102f5f,stroke-width:1px;\n"
-                    "    classDef evidence fill:#ffece7,stroke:#df8f7d,color:#5c2418,stroke-width:1px;\n"
+                    "    classDef actor fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;\n"
+                    "    classDef service fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;\n"
+                    "    classDef evidence fill:#F5F3FF,stroke:#DDD6FE,color:#17233A,stroke-width:1px;\n"
                     "    class shopper,storefront actor;\n"
                     "    class checkout,payment,order service;\n"
                     "    class evidence evidence;\n"
-                    "    style experience_lane fill:#fafffe,stroke:#d8f2ed,stroke-width:1px,color:#062f2b\n"
-                    "    style transaction_lane fill:#f9fcff,stroke:#dceaff,stroke-width:1px,color:#102f5f\n"
-                    "    style evidence_lane fill:#fff9f8,stroke:#f6d8d0,stroke-width:1px,color:#5c2418\n"
+                    "    style experience_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155\n"
+                    "    style transaction_lane fill:#FBFDFF,stroke:#A7E9E3,stroke-width:1px,color:#334155\n"
+                    "    style evidence_lane fill:#FBFDFF,stroke:#DDD6FE,stroke-width:1px,color:#334155\n"
                 ),
             },
             {
@@ -552,9 +552,9 @@ def _host_reasoned_recipe_legacy_shape() -> dict[str, object]:
                     "  Store --> DB[(Relational store)]\n"
                     "  Account --> DB\n"
                     "  Social --> DB\n"
-                    "  classDef actor fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b;\n"
-                    "  classDef service fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
-                    "  classDef data fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
+                    "  classDef actor fill:#EFF6FF,stroke:#BFD7FE,color:#17233A;\n"
+                    "  classDef service fill:#ECFDFB,stroke:#A7E9E3,color:#17233A;\n"
+                    "  classDef data fill:#ECFDFB,stroke:#A7E9E3,color:#17233A;\n"
                     "  class User actor;\n"
                     "  class WebUI,Account,Store,Social service;\n"
                     "  class DB data;\n"
@@ -774,7 +774,7 @@ def test_greenfield_prompt_returns_host_reasoning_contract(tmp_path) -> None:
     ]
     assert "mermaid_source" in " ".join(proposal["reasoning_contract"]["quality_bar"])
     quality_bar = " ".join(proposal["reasoning_contract"]["quality_bar"])
-    assert "colors inside the diagram" in quality_bar
+    assert "Atlas semantic classDef/style color language" in quality_bar
     assert "never rely on viewer background treatment" in quality_bar
     assert "Tribunal gate" in quality_bar
     assert "Surface DAGs" in quality_bar

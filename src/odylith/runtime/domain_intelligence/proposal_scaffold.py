@@ -985,13 +985,13 @@ def _overview_mermaid(domain_profile: GreenfieldDomainProfile) -> str:
         "  Review --> CodeGate[Code gate<br/>plan paths tests rollback]:::gate\n"
         "  Evidence[Evidence boundary<br/>intent not source-backed]:::note -. constrains .-> AcceptedBrief\n"
         "  Evidence -. constrains .-> CodeGate\n"
-        "  classDef actor fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b;\n"
-        "  classDef service fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
-        "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
-        "  classDef planning fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
-        "  classDef decision fill:#eef2ff,stroke:#818cf8,color:#1e1b4b;\n"
-        "  classDef gate fill:#fee2e2,stroke:#dc2626,color:#5f1212;\n"
-        "  classDef note fill:#f8fafc,stroke:#cbd5e1,color:#334155,stroke-dasharray: 3 3;\n"
+        "  classDef actor fill:#EFF6FF,stroke:#BFD7FE,color:#17233A;\n"
+        "  classDef service fill:#ECFDFB,stroke:#A7E9E3,color:#17233A;\n"
+        "  classDef proof fill:#F5F3FF,stroke:#DDD6FE,color:#17233A;\n"
+        "  classDef planning fill:#FBFDFF,stroke:#D8E5F4,color:#17233A;\n"
+        "  classDef decision fill:#FFF8E6,stroke:#F6D98B,color:#17233A;\n"
+        "  classDef gate fill:#FFF8E6,stroke:#F6D98B,color:#17233A;\n"
+        "  classDef note fill:#FBFDFF,stroke:#D8E5F4,color:#475569,stroke-dasharray: 3 3;\n"
     )
 
 
@@ -1044,10 +1044,10 @@ def _component_map_mermaid(domain_profile: GreenfieldDomainProfile) -> str:
         "  Lens -. review .-> experience\n"
         "  Lens -. review .-> domain\n"
         "  Lens -. review .-> proof\n"
-        "  classDef ux fill:#fff7df,stroke:#d7a93d,color:#52390a;\n"
-        "  classDef core fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
-        "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
-        "  classDef note fill:#f8fafc,stroke:#cbd5e1,color:#334155,stroke-dasharray: 3 3;\n"
+        "  classDef ux fill:#EFF6FF,stroke:#BFD7FE,color:#17233A;\n"
+        "  classDef core fill:#ECFDFB,stroke:#A7E9E3,color:#17233A;\n"
+        "  classDef proof fill:#F5F3FF,stroke:#DDD6FE,color:#17233A;\n"
+        "  classDef note fill:#FBFDFF,stroke:#D8E5F4,color:#475569,stroke-dasharray: 3 3;\n"
     )
 
 
@@ -1089,11 +1089,11 @@ def _validation_release_mermaid(domain_profile: GreenfieldDomainProfile) -> str:
         "  Evidence --> Decision[Release decision<br/>0.0.1 scope]:::release\n"
         "  Decision --> Handoff[Operator handoff<br/>next command and gates]:::release\n"
         "  Blocked[Blocked if risks<br/>or choices unresolved]:::blocked -. prevents .-> Decision\n"
-        "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
-        "  classDef planning fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
-        "  classDef release fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b;\n"
-        "  classDef gate fill:#eef2ff,stroke:#818cf8,color:#1e1b4b;\n"
-        "  classDef blocked fill:#fee2e2,stroke:#dc2626,color:#5f1212;\n"
+        "  classDef proof fill:#F5F3FF,stroke:#DDD6FE,color:#17233A;\n"
+        "  classDef planning fill:#FBFDFF,stroke:#D8E5F4,color:#17233A;\n"
+        "  classDef release fill:#EFF6FF,stroke:#BFD7FE,color:#17233A;\n"
+        "  classDef gate fill:#FFF8E6,stroke:#F6D98B,color:#17233A;\n"
+        "  classDef blocked fill:#FFF8E6,stroke:#F6D98B,color:#17233A;\n"
     )
 
 

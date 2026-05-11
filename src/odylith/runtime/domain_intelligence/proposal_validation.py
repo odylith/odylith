@@ -185,7 +185,7 @@ def _validate_visual_contract(*, source: str, slug: str, first_content: str) -> 
         flags=re.IGNORECASE | re.MULTILINE,
     ):
         raise ValueError(
-            f"diagram `{slug}` flowchart mermaid_source must define subtle classDef/style colors"
+            f"diagram `{slug}` flowchart mermaid_source must define semantic classDef/style colors"
         )
     long_label = _first_long_unwrapped_label(source)
     if long_label:

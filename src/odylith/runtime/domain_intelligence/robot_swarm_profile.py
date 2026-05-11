@@ -555,11 +555,11 @@ def _overview_mermaid() -> str:
         "  Telemetry --> Console\n"
         "  Sim --> Audit[(Audit<br/>Evidence)]:::proof\n"
         "  Audit --> Review[Release readiness<br/>review]:::planning\n"
-        "  classDef actor fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b;\n"
-        "  classDef ux fill:#fff7df,stroke:#d7a93d,color:#52390a;\n"
-        "  classDef core fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
-        "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
-        "  classDef planning fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
+        "  classDef actor fill:#EFF6FF,stroke:#BFD7FE,color:#17233A;\n"
+        "  classDef ux fill:#EFF6FF,stroke:#BFD7FE,color:#17233A;\n"
+        "  classDef core fill:#ECFDFB,stroke:#A7E9E3,color:#17233A;\n"
+        "  classDef proof fill:#F5F3FF,stroke:#DDD6FE,color:#17233A;\n"
+        "  classDef planning fill:#FBFDFF,stroke:#D8E5F4,color:#17233A;\n"
     )
 
 
@@ -603,10 +603,10 @@ def _component_map_mermaid() -> str:
         "  Faults --> Telemetry\n"
         "  Faults --> Audit\n"
         "  Audit --> Gate[Simulation release<br/>readiness gate]:::planning\n"
-        "  classDef ux fill:#fff7df,stroke:#d7a93d,color:#52390a;\n"
-        "  classDef core fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
-        "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
-        "  classDef planning fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
+        "  classDef ux fill:#EFF6FF,stroke:#BFD7FE,color:#17233A;\n"
+        "  classDef core fill:#ECFDFB,stroke:#A7E9E3,color:#17233A;\n"
+        "  classDef proof fill:#F5F3FF,stroke:#DDD6FE,color:#17233A;\n"
+        "  classDef planning fill:#FBFDFF,stroke:#D8E5F4,color:#17233A;\n"
     )
 
 
@@ -642,9 +642,9 @@ def _validation_release_mermaid() -> str:
         "  Replay --> Gate\n"
         "  Gate --> Evidence[Release evidence<br/>browser contract replay]:::proof\n"
         "  Evidence --> Handoff[Next wave<br/>conflict and safety]:::release\n"
-        "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
-        "  classDef planning fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
-        "  classDef release fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b;\n"
+        "  classDef proof fill:#F5F3FF,stroke:#DDD6FE,color:#17233A;\n"
+        "  classDef planning fill:#FBFDFF,stroke:#D8E5F4,color:#17233A;\n"
+        "  classDef release fill:#EFF6FF,stroke:#BFD7FE,color:#17233A;\n"
     )
 
 
@@ -679,11 +679,11 @@ def _safety_envelope_mermaid() -> str:
         "  Safety -->|breach| Estop[E-stop fan out<br/>simulation only]:::safety\n"
         "  Estop --> Audit[Incident audit<br/>and replay artifact]:::proof\n"
         "  Audit --> Review[Safety review<br/>before hardware claim]:::governance\n"
-        "  classDef ux fill:#fff7df,stroke:#d7a93d,color:#52390a;\n"
-        "  classDef core fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
-        "  classDef safety fill:#fee2e2,stroke:#dc2626,color:#5f1212;\n"
-        "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
-        "  classDef governance fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
+        "  classDef ux fill:#EFF6FF,stroke:#BFD7FE,color:#17233A;\n"
+        "  classDef core fill:#ECFDFB,stroke:#A7E9E3,color:#17233A;\n"
+        "  classDef safety fill:#FFF1F0,stroke:#F7B4AE,color:#17233A;\n"
+        "  classDef proof fill:#F5F3FF,stroke:#DDD6FE,color:#17233A;\n"
+        "  classDef governance fill:#F5F3FF,stroke:#DDD6FE,color:#17233A;\n"
     )
 
 
@@ -698,10 +698,10 @@ def _telemetry_contract_mermaid() -> str:
         "  Task --> ReadModel[Console read<br/>model]:::ux\n"
         "  Identity --> ReadModel\n"
         "  Envelope --> Audit[Replayable audit<br/>fixture]:::proof\n"
-        "  classDef edge fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b;\n"
-        "  classDef ux fill:#fff7df,stroke:#d7a93d,color:#52390a;\n"
-        "  classDef core fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
-        "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
+        "  classDef edge fill:#FFF8E6,stroke:#F6D98B,color:#17233A;\n"
+        "  classDef ux fill:#EFF6FF,stroke:#BFD7FE,color:#17233A;\n"
+        "  classDef core fill:#ECFDFB,stroke:#A7E9E3,color:#17233A;\n"
+        "  classDef proof fill:#F5F3FF,stroke:#DDD6FE,color:#17233A;\n"
     )
 
 
@@ -726,11 +726,11 @@ def _deployment_boundaries_mermaid() -> str:
         "  Agent -. planned integration .-> Core\n"
         "  Hardware -. blocked until HIL proof .-> Agent\n"
         "  Core --> Evidence[Release evidence<br/>simulation only]:::proof\n"
-        "  classDef ux fill:#fff7df,stroke:#d7a93d,color:#52390a;\n"
-        "  classDef core fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
-        "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
-        "  classDef edge fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b;\n"
-        "  classDef blocked fill:#fee2e2,stroke:#dc2626,color:#5f1212;\n"
+        "  classDef ux fill:#EFF6FF,stroke:#BFD7FE,color:#17233A;\n"
+        "  classDef core fill:#ECFDFB,stroke:#A7E9E3,color:#17233A;\n"
+        "  classDef proof fill:#F5F3FF,stroke:#DDD6FE,color:#17233A;\n"
+        "  classDef edge fill:#FFF8E6,stroke:#F6D98B,color:#17233A;\n"
+        "  classDef blocked fill:#FFF8E6,stroke:#F6D98B,color:#17233A;\n"
     )
 
 
@@ -744,10 +744,10 @@ def _observability_audit_mermaid() -> str:
         "  Metrics --> Audit\n"
         "  Audit --> Report[Release evidence<br/>normal degraded blocked]:::proof\n"
         "  Audit --> Review[Operator review<br/>before next wave]:::planning\n"
-        "  classDef ux fill:#fff7df,stroke:#d7a93d,color:#52390a;\n"
-        "  classDef core fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
-        "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
-        "  classDef planning fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
+        "  classDef ux fill:#EFF6FF,stroke:#BFD7FE,color:#17233A;\n"
+        "  classDef core fill:#ECFDFB,stroke:#A7E9E3,color:#17233A;\n"
+        "  classDef proof fill:#F5F3FF,stroke:#DDD6FE,color:#17233A;\n"
+        "  classDef planning fill:#FBFDFF,stroke:#D8E5F4,color:#17233A;\n"
     )
 
 

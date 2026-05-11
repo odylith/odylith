@@ -185,7 +185,7 @@ def test_greenfield_apply_rejects_unstyled_flowchart_diagram_sources(tmp_path) -
         "    shopper --> checkout\n"
     )
 
-    with pytest.raises(ValueError, match="subtle classDef/style colors"):
+    with pytest.raises(ValueError, match="semantic classDef/style colors"):
         greenfield_proposals.apply_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,
@@ -206,8 +206,8 @@ def test_greenfield_apply_allows_styled_flowchart_without_forced_lanes(tmp_path,
         "    checkout[\"Checkout<br/>orchestrator\"]\n"
         "    payment[\"Payment sandbox\"]\n"
         "    shopper --> checkout --> payment\n"
-        "    classDef actor fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b,stroke-width:1px;\n"
-        "    classDef service fill:#eaf3ff,stroke:#77a9ef,color:#102f5f,stroke-width:1px;\n"
+        "    classDef actor fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;\n"
+        "    classDef service fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;\n"
         "    class shopper actor;\n"
         "    class checkout,payment service;\n"
     )
@@ -230,7 +230,7 @@ def test_greenfield_apply_rejects_overlong_unwrapped_flowchart_labels(tmp_path) 
         "    subgraph transaction_lane[\"Transaction lane\"]\n"
         "      checkout[\"Checkout orchestrator that owns payment handoff order draft idempotency retry recovery and user visible repair state\"]\n"
         "    end\n"
-        "    classDef service fill:#eaf3ff,stroke:#77a9ef,color:#102f5f,stroke-width:1px;\n"
+        "    classDef service fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;\n"
         "    class checkout service;\n"
     )
 

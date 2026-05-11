@@ -85,12 +85,12 @@ flowchart LR
     b124 -. "compares" .-> claude
     b125 -. "closes" .-> release
 
-    classDef input fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b,stroke-width:1.2px;
-    classDef engine fill:#eaf3ff,stroke:#77a9ef,color:#102f5f,stroke-width:1.2px;
-    classDef gate fill:#fff0e6,stroke:#e6a075,color:#5c2418,stroke-width:1.3px;
-    classDef delivery fill:#f4ebff,stroke:#ad8ae6,color:#31135f,stroke-width:1.2px;
-    classDef memory fill:#ebf9e8,stroke:#7ec373,color:#0f3a24,stroke-width:1.2px;
-    classDef neutral fill:#f5f8fb,stroke:#b7c7d9,color:#1f2937,stroke-width:1.1px;
+    classDef input fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1.2px;
+    classDef engine fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1.2px;
+    classDef gate fill:#FFF8E6,stroke:#F6D98B,color:#17233A,stroke-width:1.3px;
+    classDef delivery fill:#F5F3FF,stroke:#DDD6FE,color:#17233A,stroke-width:1.2px;
+    classDef memory fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1.2px;
+    classDef neutral fill:#FBFDFF,stroke:#D8E5F4,color:#17233A,stroke-width:1.1px;
     class prompt,repo,context,governance input;
     class decision,cache,capsule,execution engine;
     class sufficiency,tool_gate,stop_gate,proof_state gate;
@@ -98,10 +98,10 @@ flowchart LR
     class receipt,benchmark,compass,release memory;
     class b118,b119,b120,b121,b122,b123,b124,b125 neutral;
 
-    style evidence_lane fill:#fafffe,stroke:#d8f2ed,stroke-width:1px,color:#062f2b
-    style turn_gate_lane fill:#f9fcff,stroke:#dceaff,stroke-width:1px,color:#102f5f
-    style enforcement_lane fill:#fffaf7,stroke:#f5d8c5,stroke-width:1px,color:#5c2418
-    style host_lane fill:#fdfbff,stroke:#eadfff,stroke-width:1px,color:#31135f
-    style proof_lane fill:#fbfff9,stroke:#def2d9,stroke-width:1px,color:#0f3a24
-    style waves_lane fill:#fcfdff,stroke:#e1e9f2,stroke-width:1px,color:#1f2937
-    linkStyle default stroke:#647d96,stroke-width:1.35px
+    style evidence_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155
+    style turn_gate_lane fill:#FBFDFF,stroke:#A7E9E3,stroke-width:1px,color:#334155
+    style enforcement_lane fill:#FBFDFF,stroke:#F6D98B,stroke-width:1px,color:#334155
+    style host_lane fill:#FBFDFF,stroke:#DDD6FE,stroke-width:1px,color:#334155
+    style proof_lane fill:#FBFDFF,stroke:#A7E9E3,stroke-width:1px,color:#334155
+    style waves_lane fill:#FBFDFF,stroke:#D8E5F4,stroke-width:1px,color:#334155
+    linkStyle default stroke:#B9C7D8,stroke-width:1.25px
