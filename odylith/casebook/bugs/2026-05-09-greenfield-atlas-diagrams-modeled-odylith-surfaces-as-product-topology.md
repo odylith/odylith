@@ -42,7 +42,7 @@
 
 - Solution: Replace branded governance surface nodes and proposal strings with project-domain terms: workstreams, component specs, architecture diagrams, evidence bundle, progress view, release records, and governed project records. Add regression tests that forbid Radar/Registry/Atlas/Compass leakage in generated diagram sources and rendered proposal text.
 
-- Verification: PYTHONPATH=src python3 -m pytest tests/unit/runtime/test_greenfield_atlas_contract.py tests/unit/runtime/test_greenfield_proposals.py tests/unit/runtime/test_greenfield_merchant_lending_profile.py tests/unit/runtime/test_greenfield_host_routing.py -q (48 passed); generated proposal text leak check passed for generic, robot-swarm, and Shopify/DeFi merchant-lending prompts.
+- Verification: PYTHONPATH=src python3 -m pytest tests/unit/runtime/test_greenfield_atlas_contract.py tests/unit/runtime/test_greenfield_proposals.py tests/unit/runtime/test_greenfield_host_routing.py -q; generated proposal text leak check passed for generic and robot-swarm prompts.
 
 - Prevention: Keep Odylith governance naming out of greenfield product diagrams and proposal body; reserve product-owned labels for implementation records and CLI apply metadata only.
 

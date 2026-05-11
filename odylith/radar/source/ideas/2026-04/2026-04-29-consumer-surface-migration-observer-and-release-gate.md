@@ -1348,6 +1348,48 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   source remains repo-owned truth, while future proposals and normal
   dashboard/sync refresh converge generated browser surfaces to the clearer
   architecture-review UX.
+- The v0.1.15 Atlas diagram-explanation and migration-plan polish pass is
+  covered by `migration-observer:0.1.15:browser-surfaces:777b7816a1a3` and
+  `migration-observer:0.1.15:install-managed-assets:e0926445e49d`. The pass
+  changes the generated Atlas detail layout, catalog payload, bundled Atlas
+  assets, and migration-runtime diagram metadata so D-042 explains every
+  rendered box while owning components and linked engineering context stay
+  separate. Existing consumer governance source is not rewritten by upgrade
+  adoption; normal dashboard/sync refresh converges generated browser and
+  install-managed assets, and future Atlas catalog entries may add
+  diagram-box guidance without requiring a data migration. The final governed
+  sync settlement for the same pass is covered by
+  `migration-observer:0.1.15:browser-surfaces:a3edd81ad5fb` and
+  `migration-observer:0.1.15:install-managed-assets:e34d37573c60`.
+- The v0.1.15 Atlas D-041 inner-box explanation pass is covered by
+  `migration-observer:0.1.15:browser-surfaces:6d8cea661bdf`. The pass adds
+  reader-facing catalog metadata for every container and inner node in the
+  anti-slop host-parity diagram and fixes the empty box-explanation section
+  hidden state for diagrams without box metadata. Existing consumer repos do
+  not need a data or source-truth migration; normal dashboard/sync refresh
+  converges the generated Atlas browser surface.
+- The v0.1.15 general Atlas box-explanation migration pass is covered by
+  `migration-observer:0.1.15:browser-surfaces:7abe1d8e097c` and
+  `migration-observer:0.1.15:install-managed-assets:48624cbca1de`. The pass
+  promotes readable box explanations from diagram-specific metadata into a
+  product-wide Atlas rule: flowchart containers and inner boxes are derived
+  from Mermaid source, catalog-authored overrides must be complete clear
+  sentences, generated Atlas browser surfaces expose the derived inventory,
+  and the registered v0.1.15 migration regenerates surfaces plus a ledger for
+  0.1.10, 0.1.11, 0.1.12, 0.1.13, and 0.1.14 consumers upgrading to 0.1.15.
+  Existing consumer Atlas source truth is not rewritten by upgrade adoption;
+  normal generated-surface refresh converges the readable detail panes.
+- The v0.1.15 release-manifest migration closeout is covered by
+  `migration-observer:0.1.15:public-docs-and-release-guidance:83ace78c0e22`,
+  `migration-observer:0.1.15:browser-surfaces:0b35c5ea7bc1`, and
+  `migration-observer:0.1.15:install-managed-assets:9d235171e8be`. The pass
+  makes the release asset builder derive `migration_required` from the
+  registered migration registry, keeps the checked-in product-version pin
+  activation-safe, updates release notes/spec truth, and removes the hosted
+  bootstrap rejection of migration-marked releases. Existing consumer repos do
+  not need source-truth rewrites; the published `0.1.15` manifest will route
+  upgrades through the registered migration planner before activation, while
+  first installs remain ordinary installs.
 - The v0.1.15 startup target-recognition hardening pass is covered by
   `migration-observer:0.1.15:operator-cli-contracts:b196c5a54b60` and
   `migration-observer:0.1.15:browser-surfaces:c60b6a7c7415`, with the final
@@ -1453,18 +1495,16 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   source remains unchanged; upgraded runtimes get the stricter validator and
   clearer capability UX, while refreshed browser surfaces converge from normal
   dashboard/sync rendering.
-- The v0.1.15 merchant-lending greenfield domain-family pass is covered by
+- The v0.1.15 greenfield domain-family pass is covered by
   `migration-observer:0.1.15:browser-surfaces:f0125fb7feb7` and
   `migration-observer:0.1.15:install-managed-assets:352b7f58e4df`. The pass
-  records `CB-190`, adds a first-class `defi_merchant_lending` proposal family,
-  and refreshes generated Casebook/Radar/Compass browser surfaces plus managed
-  HTML bundle mirrors after a merchant-lending transcript showed a
-  borrower-lending prompt being routed to shopper checkout. Existing consumer
-  governed source remains unchanged; upgraded runtimes route future merchant
-  lending proposals through merchant borrower, Shopify data, credit facility,
-  stablecoin liquidity, disbursement, repayment, KYB/AML, no-custody, and
-  no-live-protocol proof gates, while normal dashboard/sync refresh converges
-  generated browser surfaces and installed managed assets.
+  strengthens domain-profile selection and refreshes generated
+  Casebook/Radar/Compass browser surfaces plus managed HTML bundle mirrors
+  after a mixed-domain transcript showed an integration token overpowering the
+  actual project intent. Existing consumer governed source remains unchanged;
+  upgraded runtimes preserve the inferred beneficiary, state object, risk
+  model, proof obligations, and release boundary while normal dashboard/sync
+  refresh converges generated browser surfaces and installed managed assets.
 - The v0.1.15 greenfield product-topology wording pass is covered by
   `migration-observer:0.1.15:browser-surfaces:9c686c53fa16`. The pass records
   `CB-191`, removes Odylith governance-surface labels from generated greenfield
@@ -1474,30 +1514,29 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   metadata while future greenfield proposals describe the user's workstreams,
   component specs, architecture diagrams, evidence, progress view, and release
   gates without modeling Radar/Registry/Atlas/Compass as product components.
-- The v0.1.15 greenfield product-requirements and legacy merchant-lending repair
+- The v0.1.15 greenfield product-requirements and legacy-record repair
   pass is covered by `migration-observer:0.1.15:operator-cli-contracts:13e8531fb4af`.
   The pass removes remaining control-plane wording from generated proposal and
-  workstream text, keeps fresh merchant-lending proposals focused on borrower
-  workflows, commerce-data snapshots, liquidity, repayment, and compliance,
-  and adds a backlog-normalization repair for already-applied consumer records
-  that still carry retail-commerce semantics. Existing consumer source is only
-  changed when that exact merchant-lending plus retail-commerce misclassification
-  is present; unrelated workstreams and valid commerce projects are left alone.
+  workstream text, keeps fresh proposals focused on project-specific domain
+  objects, and adds a backlog-normalization repair for already-applied consumer
+  records that still carry unrelated default-domain semantics. Existing consumer
+  source is only changed when a specific domain-misclassification signature is
+  present; unrelated workstreams and valid projects are left alone.
 - The rendered-surface settlement for that pass is covered by
   `migration-observer:0.1.15:browser-surfaces:2c1204385f3e`. The rendered
   Radar, Casebook, Registry, Compass, shell, and bundle HTML refreshes are
-  generated from product-requirements source truth plus `CB-193`; existing
-  consumer source is not overwritten by those browser artifacts.
-- The mockrepo-derived merchant-lending hardening pass is covered by
+  generated from product-requirements source truth; existing consumer source is
+  not overwritten by those browser artifacts.
+- The mockrepo-derived greenfield hardening pass is covered by
   `migration-observer:0.1.15:guidance-and-skills:4e1cbbef93d2`,
   `migration-observer:0.1.15:operator-cli-contracts:778c1bb05cdd`,
   `migration-observer:0.1.15:operator-cli-contracts:d48cd7f8f9c7`,
   `migration-observer:0.1.15:browser-surfaces:08249609bf09`, and
   `migration-observer:0.1.15:install-managed-assets:a15f59f7ee85`. The pass
-  verifies the already-applied bad consumer repo shape, rewrites poisoned
+  verifies already-applied bad consumer repo shapes, rewrites poisoned
   workstreams plus component and architecture source through a narrow legacy
-  repair, and keeps fresh proposals focused on merchant borrower, credit,
-  liquidity, compliance, disbursement, and repayment requirements.
+  repair, and keeps fresh proposals focused on the inferred project domain
+  instead of unrelated template labels.
 - The greenfield preview/write-gate UX pass is covered by
   `migration-observer:0.1.15:browser-surfaces:1d0c3772feb7`,
   `migration-observer:0.1.15:browser-surfaces:372c48aeebd3`,
@@ -1540,3 +1579,46 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   refresh. The diagram-title hardening only changes future generated titles and
   regenerated rendered surfaces: existing slugs, source paths, and consumer
   component/workstream identity remain stable.
+- The greenfield intelligence QA, shell route repair, migration-gate tightening,
+  and generated-surface refresh pass is covered by
+  `migration-observer:0.1.15:guidance-and-skills:fd93c32b70d4`,
+  `migration-observer:0.1.15:operator-cli-contracts:b4fae1032033`,
+  `migration-observer:0.1.15:public-docs-and-release-guidance:dbbcd0c4fd93`,
+  `migration-observer:0.1.15:browser-surfaces:f54c7182a630`, and
+  `migration-observer:0.1.15:install-managed-assets:4f95432b1bdd`. The pass
+  adds source-backed greenfield product-manager relevance tests, verifies
+  migration-required releases cannot be satisfied by stale historical repairs,
+  refreshes generated browser assets after the shell deep-link fix, and keeps
+  installed guidance as managed runtime behavior rather than consumer-owned
+  governance truth. Existing consumer source records do not require mutation;
+  upgraded repos receive the managed guidance/browser refresh and keep their
+  repo-local governed artifacts intact.
+- The post-unit migration settlement is covered by
+  `migration-observer:0.1.15:guidance-and-skills:546323ead55c`,
+  `migration-observer:0.1.15:public-docs-and-release-guidance:18051641a71a`,
+  `migration-observer:0.1.15:browser-surfaces:7635de5e06c0`, and
+  `migration-observer:0.1.15:install-managed-assets:be96ef6710ed`. The pass
+  syncs the managed root guidance block, records the benchmark supporting-path
+  corpus update, and refreshes generated surfaces after the browser proof
+  repair. Existing consumer source truth remains untouched; upgrade adoption is
+  limited to managed guidance, runtime assets, and regenerated read-only
+  browser surfaces.
+- The final guidance-byte-budget settlement is covered by
+  `migration-observer:0.1.15:guidance-and-skills:71f8a6be668f` and
+  `migration-observer:0.1.15:install-managed-assets:80cc3efb673d`. The pass
+  keeps the managed root guidance under the install byte ceiling while
+  preserving visible Assist closeout semantics. Existing consumer governance
+  source does not need migration; only managed guidance assets refresh.
+- The final generated-surface settlement is covered by
+  `migration-observer:0.1.15:guidance-and-skills:ce84f5c4280c` and
+  `migration-observer:0.1.15:install-managed-assets:92707097c4ea`. The pass
+  records the post-refresh guidance fingerprint after the managed block and
+  bundled guidance assets converged. Existing consumer-owned artifacts remain
+  preserved; upgrade adoption is limited to managed install/runtime assets.
+- The final anti-slop guidance contract settlement is covered by
+  `migration-observer:0.1.15:guidance-and-skills:20a3c91c6eab` and
+  `migration-observer:0.1.15:install-managed-assets:86ee2445d791`. The pass
+  restores the exact anti-slop completeness phrases required by install and
+  hygiene tests while keeping the managed root block below the install byte
+  ceiling. Existing consumer governance truth does not require migration; only
+  managed guidance text and bundle assets refresh on upgrade.

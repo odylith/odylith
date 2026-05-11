@@ -3,6 +3,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     const shellBrandName = shellTitle.replace(/\s+Dashboard$/, "") || "Odylith";
     const payloadScript = document.getElementById("toolingDashboardData");
     const tabTitles = {
+      project: "Project",
       radar: "Radar",
       atlas: "Atlas",
       compass: "Compass",
@@ -10,6 +11,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       casebook: "Casebook",
     };
     const tabs = {
+      project: document.getElementById("tab-project"),
       radar: document.getElementById("tab-radar"),
       atlas: document.getElementById("tab-atlas"),
       compass: document.getElementById("tab-compass"),
@@ -17,6 +19,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       casebook: document.getElementById("tab-casebook"),
     };
     const panes = {
+      project: document.getElementById("pane-project"),
       radar: document.getElementById("frame-radar"),
       atlas: document.getElementById("frame-atlas"),
       compass: document.getElementById("frame-compass"),
@@ -24,6 +27,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       casebook: document.getElementById("frame-casebook"),
     };
     const paneVisitState = {
+      project: true,
       radar: false,
       atlas: false,
       compass: false,
@@ -897,6 +901,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     }
 
     const tabStateMemory = {
+      project: {},
       radar: { workstream: "", view: "" },
       atlas: { workstream: "", diagram: "" },
       compass: { workstream: "", window: "", date: "", audit_day: "" },
@@ -906,9 +911,11 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
 
     function sanitizeShellState(rawState) {
       const tabToken = String(rawState && rawState.tab ? rawState.tab : "").trim().toLowerCase();
-      const tab = tabToken === "atlas"
-        ? "atlas"
-        : (tabToken === "compass" ? "compass" : (tabToken === "registry" ? "registry" : (tabToken === "casebook" ? "casebook" : "radar")));
+      const tab = tabToken === "project"
+        ? "project"
+        : (tabToken === "atlas"
+          ? "atlas"
+          : (tabToken === "compass" ? "compass" : (tabToken === "registry" ? "registry" : (tabToken === "casebook" ? "casebook" : (tabToken === "radar" ? "radar" : "project")))));
       const workstream = /^B-\d{3,}$/.test(String(rawState && rawState.workstream ? rawState.workstream : "").trim())
         ? String(rawState.workstream).trim()
         : "";
@@ -951,6 +958,9 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         state.component = String(rawState && rawState.component ? rawState.component : "").trim().toLowerCase();
         return state;
       }
+      if (tab === "project") {
+        return state;
+      }
       state.bug = String(rawState && rawState.bug ? rawState.bug : "").trim();
       state.severity = String(rawState && rawState.severity ? rawState.severity : "").trim().toLowerCase();
       state.status = String(rawState && rawState.status ? rawState.status : "").trim().toLowerCase();
@@ -986,6 +996,10 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         tabStateMemory.registry = { component: state.component };
         return state;
       }
+      if (state.tab === "project") {
+        tabStateMemory.project = {};
+        return state;
+      }
       tabStateMemory.casebook = {
         bug: state.bug,
         severity: state.severity,
@@ -1014,10 +1028,6 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
           }
         }
       }
-      const tabToken = (params.get("tab") || "").trim().toLowerCase();
-      const tab = tabToken === "atlas"
-        ? "atlas"
-        : (tabToken === "compass" ? "compass" : (tabToken === "registry" ? "registry" : (tabToken === "casebook" ? "casebook" : "radar")));
       const scopeToken = (params.get("scope") || "").trim();
       const workstreamToken = (params.get("workstream") || "").trim();
       const normalizedScopeToken = /^B-\d{3,}$/.test(scopeToken) ? scopeToken : "";
@@ -1027,6 +1037,16 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       const severityToken = (params.get("severity") || "").trim().toLowerCase();
       const statusToken = (params.get("status") || "").trim().toLowerCase();
       const sortToken = (params.get("sort") || "").trim().toLowerCase();
+      const tabToken = (params.get("tab") || "").trim().toLowerCase();
+      const knownTab = ["project", "atlas", "compass", "registry", "casebook", "radar"].includes(tabToken)
+        ? tabToken
+        : "";
+      const tab = knownTab
+        || (normalizedWorkstreamToken || normalizedScopeToken ? "radar" : "")
+        || (componentToken ? "registry" : "")
+        || (bugToken || severityToken || statusToken || sortToken ? "casebook" : "")
+        || (canonicalizeDiagramToken(params.get("diagram") || "") ? "atlas" : "")
+        || "project";
       // Compass prefers `scope`, but still accepts legacy `workstream` query links.
       const activeWorkstreamToken = tab === "compass"
         ? (normalizedScopeToken || normalizedWorkstreamToken)
@@ -1216,6 +1236,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
 
     function frameHrefsForState(state) {
       return {
+        project: "",
         radar: buildFrameHref(payload.radar_href, buildRadarQuery(state)),
         atlas: buildFrameHref(payload.atlas_href, buildAtlasQuery(state)),
         compass: buildFrameHref(payload.compass_href, buildCompassQuery(state)),
@@ -1259,6 +1280,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     }
 
     function syncFrames(state) {
+      if (state.tab === "project") return;
       const frameHrefs = frameHrefsForState(state);
       syncFrameForTab(state.tab, frameHrefs[state.tab], { forceLoad: true });
     }
@@ -1311,11 +1333,13 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     function applyTab(state, options = {}) {
       const next = rememberTabState(state);
       const tab = next.tab;
+      tabs.project.setAttribute("aria-selected", String(tab === "project"));
       tabs.radar.setAttribute("aria-selected", String(tab === "radar"));
       tabs.atlas.setAttribute("aria-selected", String(tab === "atlas"));
       tabs.compass.setAttribute("aria-selected", String(tab === "compass"));
       tabs.registry.setAttribute("aria-selected", String(tab === "registry"));
       tabs.casebook.setAttribute("aria-selected", String(tab === "casebook"));
+      panes.project.hidden = tab !== "project";
       panes.radar.hidden = tab !== "radar";
       panes.atlas.hidden = tab !== "atlas";
       panes.compass.hidden = tab !== "compass";
@@ -1335,6 +1359,9 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       applyRuntimeStatus(latestRuntimeStatusState || {});
     }
 
+    tabs.project.addEventListener("click", () => {
+      applyTab(buildTabActivationState("project"), { pushHistory: true });
+    });
     tabs.radar.addEventListener("click", () => {
       applyTab(buildTabActivationState("radar"), { pushHistory: true });
     });

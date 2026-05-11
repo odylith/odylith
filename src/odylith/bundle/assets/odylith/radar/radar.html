@@ -468,19 +468,11 @@ h1 {
 .execution-wave-section-summary {
   cursor: pointer;
   padding: 16px 18px;
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  min-width: 0;
-}
-
-.execution-wave-section-summary-compass {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
   gap: 12px 16px;
+  min-width: 0;
 }
 
 .execution-wave-section-summary:hover {
@@ -496,7 +488,7 @@ h1 {
   display: grid;
   gap: 6px;
   min-width: 0;
-  flex: 1 1 320px;
+  grid-column: 1 / 2;
 }
 
 .execution-wave-section-line {
@@ -515,7 +507,7 @@ h1 {
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   min-width: 0;
 }
 
@@ -523,6 +515,8 @@ h1 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  grid-column: 2;
+  grid-row: 1;
 }
 
 .execution-wave-section-meta-bottom {
@@ -973,6 +967,16 @@ h1 {
 
   .execution-wave-section-summary-compass {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .execution-wave-section-summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .execution-wave-section-toggle {
+    grid-column: 1;
+    grid-row: auto;
+    justify-self: start;
   }
 
   .execution-wave-section-meta-bottom {
@@ -2523,7 +2527,7 @@ h1 {
   }
 })();
 </script>
-  <script id="backlogData" src="backlog-payload.v1.js?v=0050c578f9c8"></script>
-  <script src="backlog-app.v1.js?v=0050c578f9c8"></script>
+  <script id="backlogData" src="backlog-payload.v1.js?v=c0e024c2569b"></script>
+  <script src="backlog-app.v1.js?v=c0e024c2569b"></script>
 </body>
 </html>

@@ -24,6 +24,7 @@ class ToolingDashboardTemplateContext:
     welcome_html: str
     maintainer_notes_html: str
     cheatsheet_html: str
+    project_html: str
     payload_json: str
     control_script: str
 
@@ -34,6 +35,7 @@ def build_template_context(
     welcome_html: str,
     maintainer_notes_html: str,
     cheatsheet_html: str,
+    project_html: str = "",
 ) -> ToolingDashboardTemplateContext:
     """Assemble the stable template context for one shell render."""
 
@@ -68,6 +70,7 @@ def build_template_context(
         welcome_html=welcome_html,
         maintainer_notes_html=maintainer_notes_html,
         cheatsheet_html=cheatsheet_html,
+        project_html=project_html,
         payload_json=payload_json,
         control_script=tooling_dashboard_frontend_contract.load_tooling_shell_control_js(),
     )

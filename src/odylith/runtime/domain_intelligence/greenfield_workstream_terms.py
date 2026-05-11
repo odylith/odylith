@@ -12,8 +12,8 @@ def workstream_family_terms(*, domain_profile: GreenfieldDomainProfile, title: s
 
     if domain_profile.family == "defi_risk":
         return _defi_terms()
-    if domain_profile.family == "defi_merchant_lending":
-        return _defi_merchant_lending_terms()
+    if domain_profile.family == "capital_merchant_lending":
+        return _merchant_capital_terms()
     if domain_profile.family == "commerce":
         return _commerce_terms()
     return _generic_terms(title=title)
@@ -121,169 +121,72 @@ def _commerce_terms() -> dict[str, Any]:
     }
 
 
-def _defi_merchant_lending_terms() -> dict[str, Any]:
+def _merchant_capital_terms() -> dict[str, Any]:
     return {
-        "domain_phrase": "DeFi merchant lending",
+        "domain_phrase": "merchant capital",
         "project_objective": (
-            "prove a Shopify SMB merchant borrowing path with explicit eligibility, stablecoin liquidity, "
-            "disbursement, repayment, compliance, and no-custody boundaries."
+            "turn verified merchant performance into reviewable funding offers, approval decisions, payout status, "
+            "and repayment evidence before live treasury automation."
         ),
         "stakeholder_outcome": (
-            "a merchant borrower can understand application, offer, funding, and repayment state while capital operators "
-            "can verify liquidity, freshness, compliance, and audit evidence."
+            "a merchant can request funding, understand an offer or rejection, receive manually approved funding, "
+            "and see repayment evidence without hidden credit or custody assumptions."
         ),
         "failure_mode": (
-            "the project can drift into a retail-purchase scaffold, misstate approved credit, duplicate money-movement events, "
-            "or imply production lending and custody before proof exists."
+            "the product can imply approved credit, live payout, repayment obligation, lender-of-record certainty, "
+            "or protocol safety before underwriting and treasury proof exist."
         ),
         "non_goals": (
-            "no retail-buyer purchase flow, production lending approval, live DeFi protocol transactions, custody, private keys, "
-            "financial advice, real Shopify merchant data, or production stablecoin movement in the first release."
+            "no automated DeFi routing, production stablecoin custody, live bank movement, marketplace capital providers, "
+            "or unreviewed lending compliance claims in the first release."
         ),
-        "decision_pressure": "credit integrity, liquidity proof, compliance posture, and no-custody boundaries beat app breadth.",
-        "primary_validation_command": "merchant-lending fixture replay plus facility/disbursement/repayment contract proof",
+        "decision_pressure": "underwriting traceability and manual treasury approval beat live liquidity automation.",
+        "primary_validation_command": "scenario replay plus eligibility, approval, settlement, repayment, and ledger proof",
         "topology_spine": (
-            "merchant capital portal consumes the credit and liquidity core; the core consumes fixture-backed Shopify, "
-            "compliance, stablecoin ledger, and liquidity snapshots; the lending proof harness validates both."
+            "merchant funding workspace consumes the underwriting and facility core; the facility core consumes source-backed "
+            "store signals; the evidence harness proves offer, approval, payout, repayment, and reconciliation state."
         ),
         "constraints": [
-            "Shopify is merchant data and embedded-app context, not evidence for retail-buyer workflow ownership.",
-            "No live Shopify access, live DeFi protocol calls, private keys, custody, or production stablecoin movement in release 0.0.1.",
-            "Facility, disbursement, and repayment states must be idempotent under retry and replay.",
-            "KYB/AML/sanctions, lending disclosure, audit, retention, and data classification gates must stay explicit.",
+            "Merchant source signals must carry provenance, consent, and freshness before underwriting claims can be trusted.",
+            "Funding cannot be marked approved without explicit risk and treasury owner review.",
+            "Stablecoin, bank, or DeFi protocol movement stays fixture-backed until custody, lender-of-record, and loss ownership are decided.",
         ],
         "evidence_counts": [
-            "Merchant-lending evidence must include eligible merchant, declined merchant, stale Shopify data, liquidity shortfall, duplicate disbursement, repayment replay, and compliance-blocked fixtures.",
+            "Merchant-capital evidence must include source-signal provenance, offer trace, manual approval, settlement status, repayment event, and ledger reconciliation.",
         ],
         "assumptions": [
-            "Assumption: first release uses fixture-backed Shopify snapshots and stablecoin/liquidity ledgers, not production merchant data or live protocol execution.",
-            "Assumption: borrower-visible funding state is audit-relevant even before production authentication and compliance tooling exists.",
+            "Assumption: first release proves one merchant funding journey with manual approval, not automated capital routing.",
+            "Assumption: repayment and ledger evidence are reviewable before collection automation exists.",
         ],
         "invariants": [
-            "A stale Shopify snapshot cannot produce a normal eligibility or credit-limit claim.",
-            "A disbursement or repayment replay cannot create a second money-movement state transition.",
-            "A facility cannot move to approved or funded while KYB/AML, sanctions, or liquidity gates are blocked.",
-            "No component may own private keys, custody, or production protocol execution in the first release.",
+            "An offer cannot be treated as funded until treasury approval and settlement evidence exist.",
+            "A repayment schedule cannot be hidden from the merchant or detached from the facility state.",
+            "Any lender-of-record, loss-owner, custody, or protocol-exposure uncertainty remains visible as a blocker.",
         ],
         "risks": [
-            "Credit risk: stale or incomplete Shopify data can overstate eligibility or facility size.",
-            "Treasury risk: liquidity shortfall or duplicate event handling can corrupt funding and repayment state.",
-            "Compliance risk: KYB/AML, lending disclosure, money-transmission, securities, and no-custody obligations can be hidden by generic commerce language.",
+            "Credit risk: weak eligibility or offer semantics can approve the wrong merchant, amount, pricing, or repayment structure.",
+            "Treasury risk: stablecoin or protocol movement can hide custody, liquidity, settlement, and loss ownership.",
+            "Compliance risk: lending, KYB, AML, disclosure, and lender-of-record posture can be overstated before review.",
         ],
         "validation_obligations": [
-            "Claim: merchant eligibility is freshness-gated. Method: stale Shopify fixture blocks normal offer output.",
-            "Claim: liquidity shortfall is degraded. Method: fixture where requested facility exceeds available stablecoin liquidity.",
-            "Claim: disbursement and repayment are idempotent. Method: replayed events produce one state transition with audit evidence.",
-            "Claim: compliance blocks funding. Method: KYB/AML/sanctions fault fixture prevents approved/funded states.",
+            "Claim: offer trace is explainable. Method: fixture-backed store signals produce eligibility, amount, pricing, terms, and policy trace.",
+            "Claim: funding is manually approved. Method: approval fixture records risk owner, treasury owner, funding source, and payout status.",
+            "Claim: repayment evidence reconciles. Method: repayment event updates facility state and ledger report without live money movement.",
         ],
         "invalidation_rules": [
-            "If Shopify snapshot schema, underwriting inputs, stablecoin ledger semantics, liquidity source, disbursement rail, or repayment schedule changes, invalidate facility, funding, repayment, and architecture data-flow proof.",
-            "If KYB/AML, lending, securities, money-transmission, custody, or live-protocol posture changes, block release promotion until authority, risks, proof, and non-goals are rewritten.",
+            "If lender of record, loss owner, repayment rail, settlement rail, custody model, or protocol exposure changes, invalidate offer, approval, and release-gate claims.",
+            "If live merchant data, stablecoin movement, bank movement, or DeFi protocol execution enters scope, block promotion until security, compliance, treasury, and reconciliation proof are rewritten.",
         ],
         "metrics": [
-            "Domain metric: stale Shopify, declined, liquidity-shortfall, duplicate-disbursement, and repayment-replay fixtures covered.",
-            "Treasury metric: duplicate money-movement state transitions under replay remains zero.",
-            "Compliance metric: every funding transition is blocked until required compliance fixture state is satisfied.",
-            "UX metric: merchant can distinguish application, eligible, declined, liquidity-blocked, funded, and repayment states.",
+            "Domain metric: percentage of offer terms explained by source-backed store signals and policy trace.",
+            "Risk metric: unresolved lender, repayment, custody, loss-owner, and settlement questions before release.",
+            "Evidence metric: first journey has offer, approval, funding-status, repayment, and ledger proof.",
         ],
         "transfer_priors": [
-            "Pattern: treat borrower, underwriting input, facility, liquidity, disbursement, repayment, and compliance gate as separate domain objects.",
-            "Pattern: stablecoin funding needs closed-world ledger and liquidity replay before live DeFi or production money movement.",
-            "Pattern: Shopify merchant lending prompts should not inherit consumer-retail defaults.",
+            "Pattern: prove underwriting and manual approval before automating liquidity or protocol routing.",
+            "Pattern: treat lender-of-record, custody, repayment, and loss ownership as first-class project questions.",
         ],
     }
-
-
-def merchant_lending_ontology_rows(kind: str) -> list[str]:
-    rows_by_kind = {
-        "program": [
-            "Program parent: merchant borrower journey, Shopify data posture, credit facility, stablecoin liquidity, repayment, compliance, and release gate.",
-            "Merchant lending path: application -> Shopify snapshot -> eligibility -> compliance gate -> offer -> funding state -> repayment state.",
-            "Release gate: no production lending, custody, live protocol execution, or real merchant data before closed-world proof.",
-            "Domain-family guard: Shopify merchant data does not imply retail-buyer, retail-purchase, or card-processing sandbox ownership.",
-            "Execution wave: merchant-lending delivery checkpoint with portal, credit-liquidity, and proof-harness workstreams.",
-            "Evidence tier: merchant intent, labeled assumptions, and later implementation-proven claims kept visibly separate.",
-        ],
-        "experience": [
-            "Merchant borrower: SMB Shopify seller applying for working capital and reviewing funding or repayment state.",
-            "Capital-ops reviewer: operator who can inspect eligibility, liquidity, compliance, and audit evidence.",
-            "Visible facility state: draft, in_review, declined, eligible, liquidity_blocked, compliance_blocked, funded, repayment_due, and repaid.",
-            "Degraded state: stale Shopify data, missing KYB, sanctions block, insufficient liquidity, or paused disbursement shown without approved-funds language.",
-            "Credit facility: eligibility, limit, terms, funding, and repayment lifecycle.",
-            "Liquidity source: fixture-backed stablecoin availability context; not custody or production protocol execution.",
-            "Compliance gate: KYB/AML/sanctions/lending/no-custody decision that can block funding.",
-        ],
-        "domain": [
-            "Shopify merchant snapshot: fixture-backed sales, refund, chargeback, currency, and freshness input for underwriting.",
-            "Credit facility: eligibility, limit, terms, compliance state, liquidity state, disbursement state, and repayment state.",
-            "Stablecoin liquidity allocation: funding availability evidence from a fixture-backed pool, vault, or ledger; not a custody account.",
-            "Disbursement event: idempotent stablecoin funding transition with replay key, actor, amount, currency, and timestamp.",
-            "Repayment event: idempotent repayment transition tied to balance, schedule, replay key, and audit evidence.",
-            "Compliance gate: KYB, AML, sanctions, lending disclosure, no-custody, and release-approval posture.",
-            "Merchant borrower: SMB Shopify seller applying for working capital; not a retail buyer.",
-        ],
-        "validation": [
-            "Merchant fixture: pinned Shopify shop snapshot with sales, refund, chargeback, currency, consent, and freshness metadata.",
-            "Liquidity fixture: stablecoin availability, source posture, currency, timestamp, and no-live-protocol proof.",
-            "Compliance fault case: KYB, AML, sanctions, lending disclosure, or no-custody blocker that prevents funding.",
-            "Replay report: deterministic evidence for eligibility, declined application, liquidity shortfall, duplicate disbursement, and repayment replay.",
-            "Merchant borrower: SMB Shopify seller applying for working capital; not a retail buyer.",
-            "Credit facility: eligibility, limit, terms, funding, and repayment lifecycle.",
-            "Compliance gate: KYB/AML/sanctions/lending/no-custody decision that can block funding.",
-        ],
-    }
-    return list(rows_by_kind.get(kind, rows_by_kind["domain"]))
-
-
-def merchant_lending_operator_rows(kind: str) -> list[str]:
-    rows_by_kind = {
-        "program": [
-            "Set merchant lending lane: precondition is confirmed borrower role, Shopify data boundary, stablecoin posture, and compliance posture; postcondition is release-gated merchant-capital topology.",
-            "Defer production funding: precondition is absent compliance approval, live-protocol proof, or treasury approval; postcondition is fixture-only or sandbox-only release scope.",
-            "Escalate regulated uncertainty: precondition is unclear lending, KYB/AML, sanctions, custody, money-transmission, or securities claim; postcondition is blocked release gate or explicit operator decision.",
-        ],
-        "experience": [
-            "Submit merchant application: precondition is merchant identity, consent posture, requested capital amount, and Shopify snapshot reference; postcondition is visible review or rejection state.",
-            "Review funding offer: precondition is eligibility, terms, compliance status, and liquidity status; postcondition is accepted, declined, or blocked facility state.",
-            "Show funding and repayment state: precondition is facility state and ledger events; postcondition is borrower-visible funded, repayment_due, repaid, or degraded state without retail-purchase language.",
-        ],
-        "domain": [
-            "Evaluate merchant eligibility: precondition is fresh Shopify snapshot and compliance input; postcondition is eligible, declined, stale_data, or compliance_blocked state.",
-            "Reserve fixture liquidity: precondition is approved facility and available stablecoin liquidity; postcondition is liquidity_allocated or liquidity_blocked state without live protocol movement.",
-            "Record disbursement event: precondition is compliance-approved facility and idempotency key; postcondition is one funding transition with audit evidence.",
-            "Record repayment event: precondition is funded facility and replay key; postcondition is one repayment transition with balance and audit evidence.",
-        ],
-        "validation": [
-            "Replay merchant application: precondition is pinned Shopify and compliance fixture; postcondition is deterministic eligibility or declined output.",
-            "Replay liquidity shortfall: precondition is requested capital above stablecoin availability; postcondition is liquidity_blocked state and no funded claim.",
-            "Replay duplicate disbursement or repayment: precondition is repeated ledger event; postcondition is one state transition with replay evidence.",
-            "Assert no live funding surfaces: precondition is first-release proof run; postcondition is failure on live Shopify, protocol access, private keys, custody, or production credentials.",
-        ],
-    }
-    return list(rows_by_kind.get(kind, rows_by_kind["domain"]))
-
-
-def merchant_lending_validation_rows(kind: str) -> list[str]:
-    rows_by_kind = {
-        "program": [
-            "Claim: merchant-lending first wave is coherent. Method: release target contains merchant portal, credit-liquidity core, proof harness, and no consumer-purchase or live-protocol scope.",
-            "Claim: regulated posture is explicit. Method: KYB/AML/sanctions, lending disclosure, no-custody, no-private-key, no-live-protocol, and audit constraints appear in workstream and component records.",
-        ],
-        "experience": [
-            "Claim: merchant borrower workflow is intelligible. Method: UI/API proof covers application, eligible offer, declined application, stale Shopify data, liquidity block, and repayment state.",
-            "Claim: borrower-visible funding state is honest. Method: funded or repayment_due state derives from credit-liquidity contract output, not presentation-only labels.",
-        ],
-        "domain": [
-            "Claim: facility state is deterministic. Method: same Shopify, compliance, liquidity, and ledger fixtures produce the same eligibility, funding, and repayment state.",
-            "Claim: disbursement and repayment are idempotent. Method: replayed ledger events preserve one state transition with audit evidence.",
-            "Claim: compliance blocks funding. Method: KYB/AML/sanctions fault fixture prevents approved or funded state.",
-        ],
-        "validation": [
-            "Claim: lending proof harness is closed-world. Method: proof fails on live Shopify access, protocol calls, credentials, custody keys, or unpinned external data.",
-            "Claim: scenario coverage is release-worthy. Method: eligible merchant, declined merchant, stale Shopify data, liquidity shortfall, duplicate disbursement, repayment replay, and compliance block all pass.",
-        ],
-    }
-    return list(rows_by_kind.get(kind, rows_by_kind["domain"]))
 
 
 def _generic_terms(*, title: str) -> dict[str, Any]:
@@ -337,8 +240,5 @@ def _generic_terms(*, title: str) -> dict[str, Any]:
 
 
 __all__ = [
-    "merchant_lending_ontology_rows",
-    "merchant_lending_operator_rows",
-    "merchant_lending_validation_rows",
     "workstream_family_terms",
 ]

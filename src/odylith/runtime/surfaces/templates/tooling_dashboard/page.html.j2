@@ -29,10 +29,11 @@
         <div class="toolbar-actions">
         </div>
         <nav class="tabs" role="tablist" aria-label="Dashboard tabs">
+          <button id="tab-project" type="button" role="tab" class="tab" data-tab="project" aria-selected="true">Project</button>
           <button id="tab-registry" type="button" role="tab" class="tab" data-tab="registry" aria-selected="false">Registry</button>
           <button id="tab-casebook" type="button" role="tab" class="tab" data-tab="casebook" aria-selected="false">Casebook</button>
           <button id="tab-atlas" type="button" role="tab" class="tab" data-tab="atlas" aria-selected="false">Atlas</button>
-          <button id="tab-radar" type="button" role="tab" class="tab" data-tab="radar" aria-selected="true">Radar</button>
+          <button id="tab-radar" type="button" role="tab" class="tab" data-tab="radar" aria-selected="false">Radar</button>
           <button id="tab-compass" type="button" role="tab" class="tab" data-tab="compass" aria-selected="false">Compass</button>
         </nav>
       </div>
@@ -56,7 +57,10 @@
           <button id="shellRuntimeStatusReload" type="button" class="shell-runtime-status-button" hidden>Reload view</button>
         </div>
       </section>
-      <iframe id="frame-radar" class="pane" title="Backlog Radar"></iframe>
+      <section id="pane-project" class="pane project-pane" role="tabpanel" aria-labelledby="tab-project">
+        {{ project_html | safe }}
+      </section>
+      <iframe id="frame-radar" class="pane" title="Backlog Radar" hidden></iframe>
       <iframe id="frame-atlas" class="pane" title="Atlas" hidden></iframe>
       <iframe id="frame-compass" class="pane" title="Executive Compass" hidden></iframe>
       <iframe id="frame-registry" class="pane" title="Component Registry" hidden></iframe>

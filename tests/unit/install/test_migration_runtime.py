@@ -6,6 +6,9 @@ from pathlib import Path
 import pytest
 
 from odylith.install import migration_observer, migration_runtime
+from odylith.install.atlas_box_explanation_migration import (
+    MIGRATION_ID as ATLAS_BOX_EXPLANATION_MIGRATION_ID,
+)
 from odylith.install.atlas_surface_migration import (
     MIGRATION_ID as ATLAS_SURFACE_MIGRATION_ID,
 )
@@ -58,6 +61,12 @@ MIGRATION_FIXTURE_COVERAGE_MARKERS = (
     "v0.1.14-atlas-render-surface-polish:stale_ledger",
     "v0.1.14-atlas-render-surface-polish:skipped_version",
     "v0.1.14-atlas-render-surface-polish:historical_range",
+    "v0.1.15-atlas-box-explanation-contract:dry_run",
+    "v0.1.15-atlas-box-explanation-contract:apply",
+    "v0.1.15-atlas-box-explanation-contract:rerun",
+    "v0.1.15-atlas-box-explanation-contract:stale_ledger",
+    "v0.1.15-atlas-box-explanation-contract:skipped_version",
+    "v0.1.15-atlas-box-explanation-contract:historical_range",
 )
 HISTORICAL_0_1_RELEASES_BEFORE_0_1_14 = (
     "",
@@ -75,6 +84,10 @@ HISTORICAL_0_1_RELEASES_BEFORE_0_1_14 = (
     "0.1.11",
     "0.1.12",
     "0.1.13",
+)
+HISTORICAL_0_1_RELEASES_BEFORE_0_1_15 = (
+    *HISTORICAL_0_1_RELEASES_BEFORE_0_1_14,
+    "0.1.14",
 )
 
 
@@ -248,6 +261,18 @@ def test_registered_atlas_surface_definition_has_release_gate_fixture_coverage()
 
     assert definition.migration_id == ATLAS_SURFACE_MIGRATION_ID
     assert definition.introduced_version == "0.1.14"
+    assert set(FIXTURE_COVERAGE_TOKENS).issubset(definition.coverage_fixtures)
+    assert definition.automatic is True
+
+
+def test_registered_atlas_box_explanation_definition_has_release_gate_fixture_coverage() -> None:
+    definition = next(
+        item for item in migration_runtime.registered_migrations()
+        if item.migration_id == ATLAS_BOX_EXPLANATION_MIGRATION_ID
+    )
+
+    assert definition.migration_id == ATLAS_BOX_EXPLANATION_MIGRATION_ID
+    assert definition.introduced_version == "0.1.15"
     assert set(FIXTURE_COVERAGE_TOKENS).issubset(definition.coverage_fixtures)
     assert definition.automatic is True
 
@@ -819,6 +844,39 @@ def test_migration_required_future_release_does_not_pass_on_noop_registered_migr
     assert "no registered migration" in plan.blocked_reason
 
 
+def test_migration_required_future_release_does_not_pass_on_historical_repairs(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, active_version="1.2.3")
+    _seed_casebook_bug(tmp_path)
+    _seed_atlas_catalog(tmp_path)
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="1.2.3",
+        target_version="1.2.4",
+        release_manifest={"migration_required": True, "repo_schema_version": 1},
+    )
+
+    assert plan.satisfies_manifest_requirement() is False
+    assert plan.blocked
+    assert "no registered migration" in plan.blocked_reason
+    assert _decision_for(plan, CASEBOOK_METADATA_MIGRATION_ID).state == migration_runtime.STATE_SELECTED
+    assert _decision_for(plan, CASEBOOK_STATUS_FSM_MIGRATION_ID).state == migration_runtime.STATE_SELECTED
+    assert _decision_for(plan, ATLAS_SURFACE_MIGRATION_ID).state == migration_runtime.STATE_SELECTED
+    assert _decision_for(plan, ATLAS_BOX_EXPLANATION_MIGRATION_ID).state == migration_runtime.STATE_SELECTED
+
+
+def test_release_migration_gate_blocks_migration_required_release_without_same_train_definition(tmp_path: Path) -> None:
+    report = migration_runtime.validate_release_migration_gate(
+        repo_root=tmp_path,
+        target_version="1.2.4",
+        release_manifest={"version": "1.2.4", "migration_required": True, "repo_schema_version": 1},
+    )
+
+    assert report.ok is False
+    assert any("migration_required manifest for 1.2.4 has no registered migration definition" in note for note in report.blocked_manual_migrations)
+
+
 def test_casebook_metadata_migration_is_selected_for_prior_versions_to_v013(tmp_path: Path) -> None:
     for previous_version in ("0.1.10", "0.1.11", "0.1.12"):
         repo_root = tmp_path / previous_version.replace(".", "_")
@@ -882,6 +940,27 @@ def test_atlas_surface_migration_is_selected_for_supported_versions_to_v014(tmp_
         assert "no registered migration" not in plan.blocked_reason
 
 
+def test_atlas_box_explanation_migration_is_selected_for_supported_versions_to_v015(tmp_path: Path) -> None:
+    for previous_version in ("0.1.10", "0.1.11", "0.1.12", "0.1.13", "0.1.14"):
+        repo_root = tmp_path / f"atlas_boxes_{previous_version.replace('.', '_')}"
+        repo_root.mkdir()
+        _seed_repo(repo_root, active_version=previous_version)
+        _seed_atlas_catalog(repo_root)
+
+        plan = migration_runtime.plan_release_migrations(
+            repo_root=repo_root,
+            repo_role="consumer_repo",
+            previous_version=previous_version,
+            target_version="0.1.15",
+            release_manifest={"migration_required": True, "repo_schema_version": 1},
+        )
+
+        decision = _decision_for(plan, ATLAS_BOX_EXPLANATION_MIGRATION_ID)
+        assert decision.state == migration_runtime.STATE_SELECTED
+        assert plan.satisfies_manifest_requirement() is True
+        assert "no registered migration" not in plan.blocked_reason
+
+
 def test_release_migrations_cover_any_historical_0_1_release_to_v014(tmp_path: Path) -> None:
     value_engine_required_versions = {
         "",
@@ -925,6 +1004,29 @@ def test_release_migrations_cover_any_historical_0_1_release_to_v014(tmp_path: P
             else migration_runtime.STATE_SKIPPED
         )
         assert plan.ledger_state[MIGRATION_ID] == expected_value_state
+
+
+def test_release_migrations_cover_0_1_10_through_0_1_14_to_v015(tmp_path: Path) -> None:
+    for previous_version in HISTORICAL_0_1_RELEASES_BEFORE_0_1_15:
+        if previous_version not in {"0.1.10", "0.1.11", "0.1.12", "0.1.13", "0.1.14"}:
+            continue
+        repo_root = tmp_path / f"historical_v015_{previous_version.replace('.', '_')}"
+        repo_root.mkdir()
+        _seed_repo(repo_root, active_version=previous_version)
+        _seed_casebook_bug(repo_root)
+        _seed_atlas_catalog(repo_root)
+
+        plan = migration_runtime.plan_release_migrations(
+            repo_root=repo_root,
+            repo_role="consumer_repo",
+            previous_version=previous_version,
+            target_version="0.1.15",
+            release_manifest={"migration_required": True, "repo_schema_version": 1},
+        )
+
+        assert not plan.blocked, (previous_version, plan.blocked_reason)
+        assert plan.satisfies_manifest_requirement() is True
+        assert plan.ledger_state[ATLAS_BOX_EXPLANATION_MIGRATION_ID] == migration_runtime.STATE_SELECTED
 
 
 def test_casebook_metadata_migration_skips_index_only_repos_without_blocking_manifest(tmp_path: Path) -> None:

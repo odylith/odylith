@@ -17,6 +17,7 @@ class EngineArea:
     area: str
     inventory_names: tuple[str, ...]
     required_commands: tuple[str, ...] = ()
+    fits_as: str = ""
     purpose: str = ""
     requires_command_backing: bool = True
     requires_anchor_backing: bool = True
@@ -31,30 +32,261 @@ class EngineFinding:
     action: str = ""
 
 
+@dataclass(frozen=True)
+class EngineHandshake:
+    source: str
+    target: str
+    contract: str
+
+
 ENGINE_AREAS: tuple[EngineArea, ...] = (
-    EngineArea("Context Engine", ("Context Engine",), ("odylith start", "odylith context")),
-    EngineArea("Execution Engine", ("Execution Engine",), purpose="Context handoff and admissibility must stay distinct."),
-    EngineArea("Tribunal", ("Tribunal",), purpose="Reasoning adjudication must stay explicit and evidence-gated."),
+    EngineArea(
+        "Analysis Engine",
+        ("Analysis Engine",),
+        ("odylith show", "odylith capabilities"),
+        "repo and source discovery plus capability explanation",
+    ),
+    EngineArea(
+        "Domain Intelligence",
+        ("Domain Intelligence",),
+        ("odylith greenfield propose", "odylith greenfield create"),
+        "greenfield and project-shape intelligence before governed writes",
+    ),
+    EngineArea(
+        "Delivery Intelligence",
+        ("Delivery Intelligence",),
+        ("odylith sync", "odylith governance-slice"),
+        "unified delivery and readiness posture",
+    ),
+    EngineArea(
+        "Tribunal",
+        ("Tribunal",),
+        ("odylith bug capture", "odylith greenfield propose"),
+        "adjudication, diagnosis, and correction reasoning",
+        purpose="Reasoning adjudication must stay explicit and evidence-gated.",
+    ),
+    EngineArea(
+        "Reasoning Engine",
+        ("Reasoning Engine",),
+        ("odylith bug capture", "odylith greenfield propose"),
+        "deterministic and provider-gated reasoning family",
+    ),
+    EngineArea(
+        "Execution Engine",
+        ("Execution Engine",),
+        ("odylith context", "odylith governance-slice"),
+        "next admissible move and execution handshake",
+        purpose="Context handoff and admissibility must stay distinct.",
+    ),
+    EngineArea(
+        "Proof State",
+        ("Proof State",),
+        ("odylith sync", "odylith governance-slice"),
+        "claim tiers, blocker frontier, falsification, and proof posture",
+    ),
+    EngineArea(
+        "Surface DAGs",
+        ("Surface DAGs",),
+        ("odylith sync", "odylith dashboard refresh"),
+        "generated-surface dependency integrity",
+    ),
+    EngineArea(
+        "Topology Integrity",
+        ("Topology Integrity",),
+        ("odylith validate topology-integrity",),
+        "graph coherence across Radar, Registry, Atlas, and related surfaces",
+    ),
+    EngineArea(
+        "Governance Engine",
+        ("Governance Engine",),
+        ("odylith sync", "odylith validate"),
+        "governed writes, validation, and sync",
+    ),
+    EngineArea(
+        "Governed Harness / Turn Gate",
+        ("Governed Harness / Turn Gate",),
+        ("odylith turn-gate decide", "odylith turn-gate tool-check", "odylith turn-gate stop-check"),
+        "host turn classification, execution capsule, tool gates, and stop gates",
+    ),
     EngineArea(
         "Intervention Engine",
         ("Governance Intervention Engine",),
         ("odylith codex intervention-status", "odylith claude intervention-status"),
+        "visible Observation, Proposal, and Assist timing and voice",
     ),
-    EngineArea("Governance", ("Governance Engine",), ("odylith sync", "odylith validate")),
-    EngineArea("Subagent Orchestration", ("Subagent Router", "Subagent Orchestrator")),
-    EngineArea("Discipline", ("Discipline Engine",), ("odylith discipline", "odylith validate discipline")),
-    EngineArea("Surface DAGs", ("Surface DAGs",)),
-    EngineArea("Delivery", ("Delivery Intelligence",)),
-    EngineArea("Analysis", ("Analysis Engine",), ("odylith show", "odylith capabilities")),
-    EngineArea("Memory Substrate", ("Memory Substrate",), ("odylith query", "odylith session-brief")),
-    EngineArea("Topology", ("Topology Integrity",), ("odylith validate topology-integrity",)),
-    EngineArea("Taxonomies and FSMs", ("Taxonomies and FSMs",), ("odylith casebook validate",)),
     EngineArea(
-        "Greenfield proposals and domain intelligence",
-        ("Domain Intelligence",),
-        ("odylith greenfield propose", "odylith greenfield create"),
+        "Discipline Engine",
+        ("Discipline Engine",),
+        ("odylith discipline", "odylith validate discipline"),
+        "hard laws, restraint, and credit-safe behavior",
     ),
-    EngineArea("Overall UX", ("Operator Experience",), ("odylith dashboard refresh",)),
+    EngineArea(
+        "Benchmark Harness",
+        ("Benchmark Harness",),
+        ("odylith benchmark",),
+        "product proof and benchmark-backed claims",
+    ),
+    EngineArea(
+        "Taxonomies and FSMs",
+        ("Taxonomies and FSMs",),
+        ("odylith casebook validate",),
+        "controlled vocabularies and lifecycle legality",
+    ),
+    EngineArea(
+        "Context Engine",
+        ("Context Engine",),
+        ("odylith start", "odylith context"),
+        "grounding, packets, retrieval, and anchor resolution",
+    ),
+    EngineArea(
+        "Memory Substrate",
+        ("Memory Substrate",),
+        ("odylith query", "odylith session-brief"),
+        "projection memory, retrieval backend, and session memory",
+    ),
+    EngineArea(
+        "Subagent Router",
+        ("Subagent Router",),
+        ("odylith subagent-router",),
+        "route and delegation eligibility",
+    ),
+    EngineArea(
+        "Subagent Orchestrator",
+        ("Subagent Orchestrator",),
+        ("odylith subagent-orchestrator",),
+        "multi-leaf task decomposition and handoff",
+    ),
+    EngineArea(
+        "Install / Upgrade / Migration Runtime",
+        ("Install / Upgrade / Migration Runtime",),
+        ("odylith install", "odylith upgrade", "odylith doctor"),
+        "lifecycle, repair, rollback, and migration gates",
+    ),
+    EngineArea(
+        "Security and Trust",
+        ("Security and Trust",),
+        ("odylith version", "odylith doctor"),
+        "release integrity, provenance, SBOM, and digest trust",
+    ),
+    EngineArea(
+        "Operator Experience",
+        ("Operator Experience",),
+        ("odylith show", "odylith dashboard refresh"),
+        "cross-host UX, dashboard navigation, and visible recovery paths",
+    ),
+)
+
+ENGINE_HANDSHAKES: tuple[EngineHandshake, ...] = (
+    EngineHandshake(
+        "Operator Experience",
+        "Analysis Engine",
+        "first-turn UX and show/help paths start from repo-local capability discovery",
+    ),
+    EngineHandshake(
+        "Analysis Engine",
+        "Domain Intelligence",
+        "repo/source discovery feeds project-shape and greenfield interpretation",
+    ),
+    EngineHandshake(
+        "Domain Intelligence",
+        "Tribunal",
+        "project-shape proposals are adjudicated before governed writes",
+    ),
+    EngineHandshake(
+        "Reasoning Engine",
+        "Tribunal",
+        "deterministic and provider-gated reasoning feeds adjudication",
+    ),
+    EngineHandshake(
+        "Discipline Engine",
+        "Reasoning Engine",
+        "hard laws constrain reasoning, credit, and provider use",
+    ),
+    EngineHandshake(
+        "Tribunal",
+        "Governance Engine",
+        "accepted judgments gate Radar, Registry, Atlas, Casebook, Compass, and plan writes",
+    ),
+    EngineHandshake(
+        "Taxonomies and FSMs",
+        "Governance Engine",
+        "controlled vocabularies and lifecycle legality constrain governed writes",
+    ),
+    EngineHandshake(
+        "Governance Engine",
+        "Surface DAGs",
+        "owned writes trigger dependency-aware surface refresh",
+    ),
+    EngineHandshake(
+        "Surface DAGs",
+        "Topology Integrity",
+        "generated-surface dependencies feed graph-coherence validation",
+    ),
+    EngineHandshake(
+        "Surface DAGs",
+        "Operator Experience",
+        "fresh surfaces become dashboard navigation and visible recovery paths",
+    ),
+    EngineHandshake(
+        "Topology Integrity",
+        "Proof State",
+        "graph coherence and gaps become claim, blocker, and falsification posture",
+    ),
+    EngineHandshake(
+        "Benchmark Harness",
+        "Proof State",
+        "benchmark-backed results become product-proof claims",
+    ),
+    EngineHandshake(
+        "Proof State",
+        "Delivery Intelligence",
+        "claim tiers, blockers, and proof gaps feed readiness posture",
+    ),
+    EngineHandshake(
+        "Delivery Intelligence",
+        "Execution Engine",
+        "delivery posture constrains the next admissible move",
+    ),
+    EngineHandshake(
+        "Memory Substrate",
+        "Context Engine",
+        "projection memory and retrieval backend feed bounded grounding packets",
+    ),
+    EngineHandshake(
+        "Context Engine",
+        "Execution Engine",
+        "grounding packets and anchors constrain admissibility",
+    ),
+    EngineHandshake(
+        "Execution Engine",
+        "Governed Harness / Turn Gate",
+        "admissible moves are checked at host turn, tool, and stop gates",
+    ),
+    EngineHandshake(
+        "Governed Harness / Turn Gate",
+        "Intervention Engine",
+        "turn outcomes control visible Observation, Proposal, and Assist timing",
+    ),
+    EngineHandshake(
+        "Subagent Router",
+        "Subagent Orchestrator",
+        "delegation eligibility shapes bounded multi-leaf work",
+    ),
+    EngineHandshake(
+        "Subagent Orchestrator",
+        "Execution Engine",
+        "leaf handoffs return bounded work contracts and validation obligations",
+    ),
+    EngineHandshake(
+        "Security and Trust",
+        "Install / Upgrade / Migration Runtime",
+        "provenance, digests, SBOM, and hot-file checks gate lifecycle changes",
+    ),
+    EngineHandshake(
+        "Install / Upgrade / Migration Runtime",
+        "Operator Experience",
+        "install, repair, rollback, and migration status surface as visible recovery paths",
+    ),
 )
 
 KNOWN_TOP_LEVEL_COMMANDS = frozenset(
@@ -247,9 +479,92 @@ def _item_findings(*, repo_root: Path, area: EngineArea, item: Mapping[str, Any]
                     area.area,
                     f"`{name}` has stale anchor references: {', '.join(missing)}.",
                     "Keep the product-owned inventory aligned with current source truth.",
+            )
+        )
+    return findings
+
+
+def _area_is_active(row: Mapping[str, Any]) -> bool:
+    return bool(
+        row.get("present")
+        and row.get("command_backed")
+        and row.get("anchor_backed")
+        and row.get("activation_backed")
+    )
+
+
+def _handshake_report(area_rows: list[dict[str, Any]], findings: list[EngineFinding]) -> list[dict[str, Any]]:
+    configured_areas = {area.area for area in ENGINE_AREAS}
+    rows_by_area = {str(row.get("area", "")): row for row in area_rows}
+    incoming: dict[str, list[str]] = {name: [] for name in rows_by_area}
+    outgoing: dict[str, list[str]] = {name: [] for name in rows_by_area}
+    integrated_areas: set[str] = set()
+    handshakes: list[dict[str, Any]] = []
+
+    for handshake in ENGINE_HANDSHAKES:
+        if handshake.source not in configured_areas:
+            findings.append(
+                EngineFinding(
+                    "error",
+                    handshake.source,
+                    f"Engine handshake references unknown source area `{handshake.source}`.",
+                    "Fix `ENGINE_HANDSHAKES` so every source is a configured engine area.",
                 )
             )
-    return findings
+        if handshake.target not in configured_areas:
+            findings.append(
+                EngineFinding(
+                    "error",
+                    handshake.target,
+                    f"Engine handshake references unknown target area `{handshake.target}`.",
+                    "Fix `ENGINE_HANDSHAKES` so every target is a configured engine area.",
+                )
+            )
+
+        source_row = rows_by_area.get(handshake.source)
+        target_row = rows_by_area.get(handshake.target)
+        wired = bool(source_row and target_row and _area_is_active(source_row) and _area_is_active(target_row))
+        if source_row is not None:
+            outgoing.setdefault(handshake.source, []).append(handshake.target)
+        if target_row is not None:
+            incoming.setdefault(handshake.target, []).append(handshake.source)
+        if wired:
+            integrated_areas.add(handshake.source)
+            integrated_areas.add(handshake.target)
+        else:
+            findings.append(
+                EngineFinding(
+                    "error",
+                    f"{handshake.source} -> {handshake.target}",
+                    "Engine handshake is not fully backed by present, command-backed, anchor-backed, activated areas.",
+                    "Repair the endpoint inventory rows before claiming the engine spine is active.",
+                )
+            )
+        handshakes.append(
+            {
+                "source": handshake.source,
+                "target": handshake.target,
+                "contract": handshake.contract,
+                "wired": wired,
+            }
+        )
+
+    for row in area_rows:
+        area = str(row.get("area", ""))
+        row["handoff_in"] = incoming.get(area, [])
+        row["handoff_out"] = outgoing.get(area, [])
+        row["integration_backed"] = area in integrated_areas
+        if not row["integration_backed"]:
+            findings.append(
+                EngineFinding(
+                    "error",
+                    area,
+                    "Engine area is inventory-backed but not connected to the end-to-end handshake spine.",
+                    "Add the missing upstream or downstream handshake before release proof relies on it.",
+                )
+            )
+
+    return handshakes
 
 
 def evaluate_engine_integrity(repo_root: Path, *, strict: bool = False) -> dict[str, Any]:
@@ -311,6 +626,7 @@ def evaluate_engine_integrity(repo_root: Path, *, strict: bool = False) -> dict[
             {
                 "area": area.area,
                 "inventory_names": list(area.inventory_names),
+                "fits_as": area.fits_as,
                 "present": not missing,
                 "command_backed": bool(item_commands),
                 "anchor_backed": bool(item_anchors),
@@ -322,6 +638,9 @@ def evaluate_engine_integrity(repo_root: Path, *, strict: bool = False) -> dict[
             }
         )
 
+    handshakes = _handshake_report(area_rows, findings)
+    handshakes_wired = sum(1 for handshake in handshakes if handshake["wired"])
+    integration_backed = sum(1 for row in area_rows if row["integration_backed"])
     counts = {
         "error": sum(1 for finding in findings if finding.severity == "error"),
         "warning": sum(1 for finding in findings if finding.severity == "warning"),
@@ -337,6 +656,10 @@ def evaluate_engine_integrity(repo_root: Path, *, strict: bool = False) -> dict[
         "command_backed_areas": command_backed,
         "anchor_backed_areas": anchor_backed,
         "activation_backed_areas": activation_backed,
+        "integration_backed_areas": integration_backed,
+        "handshakes_checked": len(ENGINE_HANDSHAKES),
+        "handshakes_wired": handshakes_wired,
+        "handshakes": handshakes,
         "findings": [asdict(finding) for finding in findings],
         "counts": counts,
         "areas": area_rows,
@@ -358,6 +681,8 @@ def _format_text(report: Mapping[str, Any]) -> str:
         f"- command_backed: {report.get('command_backed_areas', 0)}",
         f"- anchor_backed: {report.get('anchor_backed_areas', 0)}",
         f"- activation_backed: {report.get('activation_backed_areas', 0)}",
+        f"- integration_backed: {report.get('integration_backed_areas', 0)}",
+        f"- handshakes: {report.get('handshakes_wired', 0)}/{report.get('handshakes_checked', 0)} wired",
         f"- findings: {int(counts.get('error', 0) or 0)} error(s), {int(counts.get('warning', 0) or 0)} warning(s)",
     ]
     findings = report.get("findings", [])
@@ -374,6 +699,27 @@ def _format_text(report: Mapping[str, Any]) -> str:
                 lines.append(f"  action: {action}")
     else:
         lines.append("- result: all requested engine areas are inventory-backed and have active command or source anchors.")
+    areas = report.get("areas", [])
+    if isinstance(areas, list) and areas:
+        lines.append("")
+        lines.append("Engine spine")
+        for raw in areas:
+            if not isinstance(raw, Mapping):
+                continue
+            fits_as = str(raw.get("fits_as", "")).strip()
+            suffix = f" - {fits_as}" if fits_as else ""
+            lines.append(f"- {raw.get('area', '-')}{suffix}")
+    handshakes = report.get("handshakes", [])
+    if isinstance(handshakes, list) and handshakes:
+        lines.append("")
+        lines.append("Engine handshakes")
+        for raw in handshakes:
+            if not isinstance(raw, Mapping):
+                continue
+            status = "wired" if raw.get("wired") else "unwired"
+            lines.append(
+                f"- {raw.get('source', '-')} -> {raw.get('target', '-')} ({status}): {raw.get('contract', '')}"
+            )
     return "\n".join(lines)
 
 

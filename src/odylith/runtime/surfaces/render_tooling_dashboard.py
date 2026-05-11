@@ -25,6 +25,7 @@ from odylith.runtime.context_engine import odylith_context_engine_runtime_artifa
 from odylith.runtime.context_engine import odylith_control_state
 from odylith.runtime.governance import agent_governance_intelligence
 from odylith.runtime.governance import workstream_inference as ws_inference
+from odylith.runtime.project_intelligence import builder as project_intelligence_builder
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import dashboard_shell_links
 from odylith.runtime.surfaces import dashboard_surface_bundle
@@ -89,6 +90,11 @@ def _refresh_guard_watched_paths(
         "odylith/runtime/source/product-version.v1.json",
         "odylith/runtime/delivery_intelligence.v4.json",
         "odylith/compass/runtime/current.v1.json",
+        "odylith/radar/source/INDEX.md",
+        "odylith/technical-plans/INDEX.md",
+        "odylith/casebook/bugs/INDEX.md",
+        "odylith/registry/source/component_registry.v1.json",
+        "odylith/atlas/source/catalog/diagrams.v1.json",
         ".odylith/install.json",
         ".odylith/runtime/release-upgrade-spotlight.v1.json",
         ".odylith/runtime/odylith-benchmarks",
@@ -101,6 +107,7 @@ def _refresh_guard_watched_paths(
         "src/odylith/runtime/common",
         "src/odylith/runtime/context_engine",
         "src/odylith/runtime/evaluation",
+        "src/odylith/runtime/project_intelligence",
         "src/odylith/runtime/surfaces",
     )
 
@@ -469,6 +476,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     runtime_payload["surface_runtime_status"] = tooling_dashboard_surface_status.build_surface_runtime_status(
         repo_root=repo_root,
         shell_rendered_utc=tooling_dashboard_surface_status.now_utc(),
+    )
+    runtime_payload["project_intelligence"] = project_intelligence_builder.build_project_intelligence_payload(
+        repo_root=repo_root,
+        shell_payload=runtime_payload,
     )
     if bool(runtime_payload["live_refresh"].get("enabled")):
         odylith_context_engine_runtime_artifacts.ensure_state_js_probe_asset(repo_root=repo_root)

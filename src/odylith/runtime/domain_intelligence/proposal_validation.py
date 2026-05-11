@@ -10,6 +10,7 @@ from odylith.runtime.domain_intelligence.greenfield_project_brief import project
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import project_intelligence_issues
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import domain_intelligence_issues
+from odylith.runtime.domain_intelligence.project_intelligence_binding import project_intelligence_binding_issues
 
 
 _ALLOWED_MERMAID_PREFIXES = (
@@ -117,6 +118,7 @@ def collect_host_reasoned_proposal_issues(proposal: Mapping[str, Any]) -> list[s
             capture(lambda row=row, index=index: _validate_component_row(row, index))
     if isinstance(diagrams, list):
         capture(lambda: _validate_diagrams(diagrams))
+    issues.extend(project_intelligence_binding_issues(proposal))
     return _dedupe_issues(issues)
 
 

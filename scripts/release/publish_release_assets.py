@@ -47,6 +47,7 @@ from odylith.install.managed_runtime import (  # noqa: E402
     supported_managed_runtime_feature_packs,
     supported_managed_runtime_platforms,
 )
+from odylith.install.migration_definitions import registered_migration_specs  # noqa: E402
 from odylith.install.python_env import PYTHON_ENV_SCRUB_LINES  # noqa: E402
 from odylith.runtime import release_notes  # noqa: E402
 
@@ -448,8 +449,8 @@ def _write_install_script(*, output_path: Path, tag: str, repo: str, odylith_whe
         "    raise SystemExit('unexpected release manifest schema version')",
         "if str(manifest.get('repo') or '').strip() != repo:",
         "    raise SystemExit('release manifest repo mismatch')",
-        "if bool(manifest.get('migration_required')):",
-        "    raise SystemExit('migration-marked releases require an explicit maintainer adoption flow')",
+        "if not isinstance(manifest.get('migration_required'), bool):",
+        "    raise SystemExit('release manifest migration_required must be a boolean')",
         "version = str(manifest.get('version') or '').strip()",
         "if requested_version != 'latest' and version != requested_version:",
         "    raise SystemExit(f'release manifest version mismatch: {version} != {requested_version}')",
@@ -1009,6 +1010,42 @@ def _write_sha256sums(*, output_path: Path, files: list[Path]) -> None:
     output_path.write_text("\n".join(rows) + "\n", encoding="utf-8")
 
 
+def _release_manifest_policy(*, version: str) -> dict[str, object]:
+    """Return release manifest policy from checked-in version and migration truth."""
+    path = REPO_ROOT / "odylith" / "runtime" / "source" / "product-version.v1.json"
+    defaults: dict[str, object] = {
+        "repo_schema_version": DEFAULT_REPO_SCHEMA_VERSION,
+        "migration_required": _release_version_requires_migration(version),
+    }
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return defaults
+    if not isinstance(payload, dict):
+        return defaults
+    pinned_version = str(payload.get("odylith_version") or "").strip()
+    if pinned_version != version:
+        return defaults
+    repo_schema_version = payload.get("repo_schema_version", DEFAULT_REPO_SCHEMA_VERSION)
+    try:
+        resolved_schema_version = int(repo_schema_version)
+    except (TypeError, ValueError):
+        resolved_schema_version = DEFAULT_REPO_SCHEMA_VERSION
+    return {
+        "repo_schema_version": resolved_schema_version,
+        "migration_required": _release_version_requires_migration(version),
+    }
+
+
+def _release_version_requires_migration(version: str) -> bool:
+    """Return whether the target release has a registered consumer migration."""
+    target = str(version or "").strip()
+    return any(
+        str(spec.get("introduced_version") or "").strip() == target
+        for spec in registered_migration_specs()
+    )
+
+
 def _write_release_manifest(
     *,
     output_path: Path,
@@ -1024,13 +1061,14 @@ def _write_release_manifest(
     release_note: release_notes.ReleaseNotesSource | None = None,
 ) -> None:
     version = tag.removeprefix("v")
+    release_policy = _release_manifest_policy(version=version)
     payload = {
         "schema_version": MANIFEST_SCHEMA_VERSION,
         "version": version,
         "tag": tag,
         "repo": repo,
-        "repo_schema_version": DEFAULT_REPO_SCHEMA_VERSION,
-        "migration_required": False,
+        "repo_schema_version": release_policy["repo_schema_version"],
+        "migration_required": release_policy["migration_required"],
         "supported_platforms": [runtime_platform.slug for runtime_platform, _ in runtime_bundles],
         "published_at": (
             str(release_note.published_at).strip()

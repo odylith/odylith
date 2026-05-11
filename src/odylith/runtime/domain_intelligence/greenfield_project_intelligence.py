@@ -21,7 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
 PROJECT_INTELLIGENCE_SCHEMA_VERSION = "odylith.greenfield.project_intelligence.v1"
-PROJECT_INTELLIGENCE_SECTION_TITLE = "Project Intelligence"
+PROJECT_WORKSTREAM_SECTION_TITLE = "Project Requirements"
 
 PROJECT_INTELLIGENCE_LAYERS: tuple[str, ...] = (
     "intent",
@@ -129,6 +129,7 @@ def build_project_intelligence(
 
     return {
         "schema_version": PROJECT_INTELLIGENCE_SCHEMA_VERSION,
+        "domain_family": profile.family,
         "purpose": (
             f"Make {title} a concrete product program before implementation starts: the project object captures intent, "
             "domain language, allowed change, invariants, proof, memory, and customization choices in one place."
@@ -189,9 +190,9 @@ def build_project_intelligence(
             "Do not let generated views outrank source files when conflicts appear.",
         ],
         "source_of_truth_map": [
-            "Project requirements: canonical project-first requirements in proposal JSON and parent project workstream.",
-            "Project brief: operator-facing choices, checkpoints, host-independent paths, and coding-readiness gates.",
-            "Workstream source: canonical backlog intent, domain intelligence, dependencies, risks, and success metrics.",
+            "Project requirements: canonical project-first requirements in the accepted project source record.",
+            "Project review: operator-facing choices, checkpoints, host-independent paths, and coding-readiness gates.",
+            "Workstream source: canonical backlog intent, domain-shaped boundaries, dependencies, risks, proof gates, and success metrics.",
             "Component specs: canonical component identity, ownership, interfaces, collaborators, failure modes, and proof.",
             "Architecture diagrams: canonical topology, sequence, state/data, validation, operational-risk, and release views.",
             "Progress view: derived live posture; useful for navigation, not source truth when stale.",
@@ -239,23 +240,23 @@ def build_project_intelligence(
         "validation_obligations": [
             "Proposal validation must reject missing project requirements, shallow readiness gates, and empty customization flow.",
             "Proposal validation must pass before writes and reject disconnected workstream, component, architecture, wave, or release topology.",
-            "After apply, the parent workstream must contain Project Intelligence and child workstreams must contain Domain Intelligence.",
+            (
+                "After apply, project intelligence must shape backlog, component inventory, architecture views, status narration, project page, and review-board judgment "
+                "through artifact-native fields instead of pasting a generic project-intelligence section into any workstream."
+            ),
             "Before coding, the first technical plan must name source paths, tests, fallback/degraded proof, rollback or recovery path, and refresh commands.",
             "Before release promotion, repo-native proof and release evidence must agree with the accepted project topology.",
         ],
         "artifacts": [
-            "Canonical proposal JSON: source object for project requirements, project brief, workstreams, components, diagrams, waves, and release plan.",
-            "Parent workstream: durable project requirements and execution memory.",
+            "Accepted project source: durable project requirements, proposal provenance, review-board decision, created workstreams, components, diagrams, waves, and release plan.",
+            "Parent workstream: durable backlog intent and execution memory, shaped by project requirements without embedding them as a pasted section.",
             "Child workstreams: domain-specific product requirements.",
             "Candidate component specs: component-specific planned ownership and proof contracts.",
             "Architecture diagram suite: multi-view product review artifact before source exists.",
             "Release target and progress posture: navigation and first-wave progress view.",
         ],
         "owners": [
-            "Operator owns product direction, customization choices, compliance posture, runtime target, and release ambition.",
-            "Project tooling owns schema, normalization, validation, apply, rollback, refresh, and memory recording.",
-            "Technical-plan author owns source paths, implementation sequence, proof commands, and rollback/recovery plan after apply.",
-            "Component specs own component identity; architecture diagrams own topology; workstreams own intent; release records report derived state.",
+            *family["owners"],
         ],
         "execution_memory": [
             "Prior failure: agents produced decent prose, then manually reconstructed apply objects, hit validation failures, patched fields, and exposed implementation artifacts to users.",
@@ -520,6 +521,11 @@ def _family_terms(*, profile: GreenfieldDomainProfile, title: str) -> dict[str, 
                 "Compliance risk: risk language can become financial-advice language if confidence and data limits are hidden.",
                 "Data risk: stale oracle or missing indexer evidence can make exposure look safer than it is.",
             ],
+            "owners": [
+                "Analyst advocate owns the first readout: exposure, stale-data warnings, alert severity, confidence, and acknowledgement.",
+                "Risk signal operator owns the monitored subject, oracle or indexer freshness, thresholds, and degraded data states.",
+                "Scenario proof owner owns replay fixtures, no-live-network guards, confidence evidence, and release proof.",
+            ],
             "invalidation_rules": [
                 "If chain coverage, oracle provenance, indexer source, liquidity model, or live-RPC posture changes, invalidate risk confidence, stale/missing-state proof, data-flow diagrams, and release gates until replayed.",
                 "If non-custody or no-advice posture changes, block release promotion until authority, audit, security, and compliance decisions are rewritten.",
@@ -529,58 +535,58 @@ def _family_terms(*, profile: GreenfieldDomainProfile, title: str) -> dict[str, 
                 "Non-custodial and no-advice boundaries belong in project truth before component work begins.",
             ],
         }
-    if profile.family == "defi_merchant_lending":
+    if profile.family == "capital_merchant_lending":
         return {
             "project_objective": (
-                "govern an SMB merchant lending product where Shopify merchant data, credit eligibility, "
-                "stablecoin funding, DeFi liquidity, disbursement, repayment, and compliance gates stay explicit "
-                "before live protocol or production lending claims."
+                "govern a merchant-capital product that turns verified store performance into reviewable funding offers, "
+                "manual approval, funding status, repayment evidence, and ledger reconciliation before live liquidity automation."
             ),
             "stakeholder_outcome": (
-                "an SMB merchant can understand application status, eligible capital, terms, funding state, and repayment obligations, "
-                "while operators can trace liquidity, compliance, and data freshness without treating the product as a consumer purchase flow."
+                "a merchant can request capital, understand eligibility and terms, receive manually approved funding, "
+                "and see repayment state without hidden lender, custody, or protocol assumptions."
             ),
             "failure_mode": (
-                "the product can become a generic retail-purchase scaffold, misstate credit availability, duplicate disbursements or repayments, "
-                "or imply custody, live DeFi execution, or production lending readiness before proof exists."
+                "the product can imply approved credit, live payout, repayment obligation, lender-of-record certainty, "
+                "or protocol safety before underwriting, treasury, and compliance proof exist."
             ),
             "non_goals": (
-                "consumer purchase flow, production loan approval, live DeFi deposits or withdrawals, custody, private keys, "
-                "financial advice, real Shopify merchant data, and production stablecoin disbursement in the first release."
+                "automated DeFi routing, production stablecoin custody, live bank movement, capital-provider marketplace, "
+                "repayment enforcement, and unreviewed lending compliance claims in the first release."
             ),
             "ontology": [
-                "Merchant borrower: SMB Shopify seller applying for working capital; not a retail consumer.",
-                "Shopify commerce snapshot: fixture-backed shop sales, order, refund, chargeback, and freshness data used for underwriting inputs.",
-                "Credit facility: eligibility, limit, terms, status, disbursement, and repayment state under compliance gates.",
-                "DeFi liquidity source: stablecoin pool, vault, or protocol posture used as funding availability evidence; not a custody account.",
-                "Stablecoin disbursement: idempotent funding event from an approved facility, replay-safe and blocked before compliance approval.",
-                "Repayment event: scheduled or received repayment state tied to facility balance, replay key, and audit evidence.",
-                "Compliance gate: KYB, AML, sanctions, lending disclosure, and no-custody checks that can block funding or release movement.",
+                "Merchant: business actor requesting capital and reviewing offer, payout, and repayment status.",
+                "Funding request: state object moving from requested to eligible, offered, approved, funded, repaying, repaid, rejected, or blocked.",
+                "Underwriting signal: source-backed store performance, refunds, chargebacks, seasonality, and identity data with provenance and freshness.",
+                "Offer trace: approved amount, pricing, repayment terms, policy rationale, review owner, and evidence tier.",
+                "Settlement and repayment evidence: funding status, payout rail, repayment event, facility state, and ledger reconciliation record.",
             ],
             "constraints": [
-                "No retail-buyer, retail-purchase, or card-processing sandbox framing for merchant lending prompts.",
-                "First-release liquidity, Shopify, disbursement, and repayment proof stays fixture-backed or sandboxed unless the operator explicitly accepts live integration risk.",
-                "No custody, private keys, protocol transactions, or production stablecoin movement in release 0.0.1.",
-                "KYB/AML/sanctions, lending-disclosure, retention, audit, and data-classification posture must be visible before implementation planning.",
+                "Merchant source signals require provenance, consent, and freshness before underwriting claims are trusted.",
+                "Funding cannot be marked approved without risk and treasury owner review.",
+                "Stablecoin, bank, or DeFi movement stays fixture-backed until custody, lender-of-record, loss ownership, and compliance posture are decided.",
             ],
             "assumptions": [
-                "The first user is an SMB merchant borrower or capital-ops reviewer, not a retail buyer.",
-                "The first data path uses fixture-backed Shopify snapshots and stablecoin/liquidity ledgers, not live protocol or production merchant data.",
+                "The first release proves one merchant funding journey with manual risk and treasury approval.",
+                "The first release uses fixture-backed store data and settlement proof rather than live capital movement.",
             ],
             "risks": [
-                "Credit risk: stale Shopify data, weak eligibility rules, or missing compliance checks can overstate approved capital.",
-                "Treasury risk: liquidity availability, disbursement, and repayment can drift without idempotent event proof.",
-                "Compliance risk: KYB/AML, lending, money-transmission, securities, no-custody, and stablecoin obligations can be hidden by generic commerce language.",
+                "Credit risk: eligibility, offer amount, pricing, or repayment terms can be misleading without policy trace and review.",
+                "Treasury risk: stablecoin or protocol movement can hide custody, liquidity, settlement, and loss ownership.",
+                "Compliance risk: KYB, AML, lending disclosures, lender of record, and jurisdiction scope can be overstated before review.",
+            ],
+            "owners": [
+                "Merchant advocate owns the merchant-facing funding request, offer explanation, funding status, and repayment visibility.",
+                "Underwriting operator owns store-signal readiness, eligibility, offer terms, and manual review state.",
+                "Treasury and credit risk owner owns approval, loss exposure, custody boundary, payout status, and repayment evidence.",
+                "Funding evidence owner owns ledger reconciliation, scenario replay, and release proof for the first funding journey.",
             ],
             "invalidation_rules": [
-                "If Shopify data scope, underwriting inputs, liquidity model, stablecoin ledger semantics, disbursement rail, or repayment rules change, invalidate facility-state proof, component interfaces, architecture data-flow views, and release gates.",
-                "If KYB/AML, lending disclosure, custody, money-transmission, securities, or live-protocol posture changes, block release promotion until risks, authority, proof, and non-goals are rewritten.",
-                "If a proposal introduces retail-buyer, retail-purchase, or card-processing semantics, treat it as a domain-family conflict and regenerate before coding.",
+                "If lender of record, loss owner, repayment rail, settlement rail, custody model, or protocol exposure changes, invalidate offer, approval, and release-gate claims.",
+                "If live merchant data, stablecoin movement, bank movement, or DeFi protocol execution enters scope, block promotion until security, compliance, treasury, and reconciliation proof are rewritten.",
             ],
             "transfer_priors": [
-                "Merchant lending projects must keep borrower workflow, underwriting inputs, liquidity availability, compliance gates, disbursement, and repayment as separate domain objects.",
-                "Shopify in a lending prompt is usually merchant data and embedded-app context, not proof that the product is a retail purchase product.",
-                "Stablecoin funding claims need closed-world liquidity and ledger replay before live DeFi integration or production disbursement.",
+                "Merchant capital products should prove underwriting traceability and manual approval before liquidity automation.",
+                "Lender-of-record, custody, repayment, settlement, and loss ownership belong in project truth before component work begins.",
             ],
         }
     if profile.family == "commerce":
@@ -607,6 +613,12 @@ def _family_terms(*, profile: GreenfieldDomainProfile, title: str) -> dict[str, 
             "risks": [
                 "Transaction risk: duplicate or lost order state can silently corrupt checkout trust.",
                 "Compliance risk: payment/provider claims can outrun sandbox evidence.",
+            ],
+            "owners": [
+                "Shopper advocate owns the visible browse, cart, checkout, recovery, and completion experience.",
+                "Checkout operator owns cart state, order draft, payment handoff, retry semantics, and degraded states.",
+                "Payment risk owner owns duplicate payment, callback replay, provider boundary, and compliance exposure.",
+                "Recovery proof owner owns browser/API proof for happy, failed, retry, empty, and completed paths.",
             ],
             "invalidation_rules": [
                 "If payment provider, sandbox contract, price snapshot, inventory reservation, or callback semantics change, invalidate checkout idempotency proof and recovery diagrams.",
@@ -642,6 +654,11 @@ def _family_terms(*, profile: GreenfieldDomainProfile, title: str) -> dict[str, 
             "Architecture risk: vague ownership can merge experience, domain, storage, and proof into one brittle surface.",
             "Proof risk: demo-like output can appear real while lacking tests, fixtures, or degraded-state behavior.",
         ],
+        "owners": [
+            f"{compact} user advocate owns the first user outcome and prevents the proposal from drifting into internal machinery.",
+            f"{compact} operator owns the first workflow, state object, handoffs, and exception path.",
+            f"{compact} proof owner owns fixtures, tests, evidence quality, and release proof for the first slice.",
+        ],
         "invalidation_rules": [
             "If first user, runtime, storage, deployment, data source, or proof target changes, invalidate the affected source paths, component contracts, diagrams, and validation commands.",
             "If a broad prompt narrows into a regulated, safety-sensitive, or external-provider domain, regenerate the security, privacy, compliance, and release-gate posture before implementation.",
@@ -655,7 +672,7 @@ def _family_terms(*, profile: GreenfieldDomainProfile, title: str) -> dict[str, 
 
 __all__ = [
     "PROJECT_INTELLIGENCE_SCHEMA_VERSION",
-    "PROJECT_INTELLIGENCE_SECTION_TITLE",
+    "PROJECT_WORKSTREAM_SECTION_TITLE",
     "PROJECT_INTELLIGENCE_LAYERS",
     "build_project_intelligence",
     "normalize_project_intelligence",

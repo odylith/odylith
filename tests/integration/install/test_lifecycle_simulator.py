@@ -4,6 +4,7 @@ import json
 import shutil
 from pathlib import Path
 
+from odylith.install.atlas_box_explanation_migration import MIGRATION_ID as ATLAS_BOX_EXPLANATION_MIGRATION_ID
 from odylith.install.atlas_surface_migration import MIGRATION_ID as ATLAS_SURFACE_MIGRATION_ID
 from odylith.install.casebook_metadata_migration import (
     MIGRATION_ID as CASEBOOK_METADATA_MIGRATION_ID,
@@ -29,6 +30,10 @@ HISTORICAL_0_1_RELEASES_BEFORE_0_1_14 = (
     "0.1.11",
     "0.1.12",
     "0.1.13",
+)
+HISTORICAL_0_1_RELEASES_BEFORE_0_1_15 = (
+    *HISTORICAL_0_1_RELEASES_BEFORE_0_1_14,
+    "0.1.14",
 )
 
 
@@ -261,6 +266,52 @@ def test_lifecycle_simulator_proves_historical_upgrades_to_0_1_14(tmp_path: Path
         atlas_html = (sim.repo_root / "odylith" / "atlas" / "atlas.html").read_text(encoding="utf-8")
         assert ".viewer-stage::before" not in atlas_html
         assert "background: #ffffff;" in atlas_html
+
+
+def test_lifecycle_simulator_proves_historical_upgrades_to_0_1_15(tmp_path: Path, monkeypatch) -> None:
+    target_version = "0.1.15"
+    _patch_mermaid_render(monkeypatch)
+
+    for from_version in HISTORICAL_0_1_RELEASES_BEFORE_0_1_15:
+        if from_version not in {"0.1.10", "0.1.11", "0.1.12", "0.1.13", "0.1.14"}:
+            continue
+        case_root = tmp_path / f"v015_{from_version.replace('.', '_')}"
+        case_root.mkdir()
+        sim = InstallLifecycleSimulator(tmp_path=case_root, monkeypatch=monkeypatch)
+        sim.register_release(target_version, migration_required=True)
+
+        assert sim.install(from_version) == 0
+        _write_legacy_casebook_metadata_bug(sim.repo_root)
+        _write_legacy_atlas_surface(sim.repo_root)
+        sim.write_pin(target_version)
+
+        assert sim.upgrade() == 0
+        assert sim.status().active_version == target_version
+        assert sim.pin().odylith_version == target_version
+
+        activated_events = [
+            entry
+            for entry in sim.install_ledger()
+            if entry.get("operation") == "upgrade" and entry.get("status") == "activated"
+        ]
+        assert activated_events
+        upgrade_event = activated_events[-1]
+        assert upgrade_event["previous_version"] == from_version
+        assert upgrade_event["active_version"] == target_version
+        assert upgrade_event["migration_plan"]["target_version"] == target_version
+        assert upgrade_event["migration_plan"]["ledger_state"][ATLAS_BOX_EXPLANATION_MIGRATION_ID] == "selected"
+        assert not upgrade_event["migration_plan"]["blocked"]
+
+        migration_results = {result["migration_id"]: result for result in upgrade_event["migration_results"]}
+        assert migration_results[ATLAS_BOX_EXPLANATION_MIGRATION_ID]["state"] == "applied"
+        assert (
+            sim.repo_root / ".odylith/state/migrations/v0.1.15-atlas-box-explanation-contract.v1.json"
+        ).is_file()
+        payload_text = (sim.repo_root / "odylith" / "atlas" / "mermaid-payload.v1.js").read_text(encoding="utf-8")
+        assert '"label": "Lane"' in payload_text
+        assert '"label": "Source"' in payload_text
+        assert '"label": "Render"' in payload_text
+        assert "inside Lane" in payload_text
 
 
 def test_lifecycle_simulator_blocks_migration_release_activation(tmp_path: Path, monkeypatch) -> None:

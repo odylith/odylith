@@ -8,11 +8,10 @@ import re
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.domain_intelligence.artifact_enrichment import build_artifact_enrichment
 from odylith.runtime.domain_intelligence.greenfield_text import collect_delimited_text_values
 from odylith.runtime.domain_intelligence.greenfield_text import delimited_text_values
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
-from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import SECTION_TITLE
-from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import render_domain_intelligence_section
 from odylith.runtime.governance import backlog_authoring
 
 _REF_FIELDS = (
@@ -362,9 +361,7 @@ def _patch_sections(
     )
     sections["Why Now"] = str(row.get("opportunity", "")).strip() or sections.get("Why Now", "")
     sections["Open Questions"] = _bullets(_question_lines(row.get("open_questions", [])) or open_questions[:3])
-    domain_intelligence = render_domain_intelligence_section(row.get("domain_intelligence"))
-    if domain_intelligence:
-        sections[SECTION_TITLE] = domain_intelligence
+    sections.update(build_artifact_enrichment(row=row, proposal=proposal).radar_sections)
 
 
 def _section_items(value: Any) -> list[str]:

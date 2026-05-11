@@ -28,16 +28,15 @@ from odylith.runtime.domain_intelligence import greenfield_component_registry_sc
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_traceability
+from odylith.runtime.domain_intelligence.artifact_enrichment import build_artifact_enrichment
 from odylith.runtime.domain_intelligence.greenfield_cli_output import print_apply_result
 from odylith.runtime.domain_intelligence.greenfield_experience import proposal_posture_tuple
 from odylith.runtime.domain_intelligence.greenfield_experience import row_text_tuple
-from odylith.runtime.domain_intelligence.greenfield_project_intelligence import PROJECT_INTELLIGENCE_SECTION_TITLE
-from odylith.runtime.domain_intelligence.greenfield_project_intelligence import render_project_intelligence_section
 from odylith.runtime.domain_intelligence.greenfield_text import join_sentence_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
-from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import SECTION_TITLE
+from odylith.runtime.domain_intelligence.greenfield_project_intelligence import render_project_intelligence_section
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import render_domain_intelligence_section
 from odylith.runtime.domain_intelligence.proposal_contract import build_proposal_contract
 from odylith.runtime.domain_intelligence.proposal_memory import record_greenfield_acceptance
@@ -361,21 +360,55 @@ def _backlog_section_overrides(proposal: Mapping[str, Any]) -> dict[str, dict[st
             "priority": str(row.get("priority", "P1")).strip() or "P1",
             "sizing": str(row.get("sizing", "M")).strip() or "M",
             "complexity": str(row.get("complexity", "Medium")).strip() or "Medium",
-            "ordering_rationale": "Created from a confirmed greenfield product proposal.",
+            "ordering_rationale": _greenfield_ordering_rationale(row),
+            "rationale_lines": _greenfield_rationale_lines(row),
         }
+        enrichment = build_artifact_enrichment(row=row, proposal=proposal)
         extra_sections: dict[str, str] = {}
-        if title == parent_title:
-            project_intelligence = render_project_intelligence_section(proposal.get("project_intelligence"))
-            if project_intelligence:
-                extra_sections[PROJECT_INTELLIGENCE_SECTION_TITLE] = project_intelligence
-        domain_intelligence = render_domain_intelligence_section(row.get("domain_intelligence"))
-        if domain_intelligence:
-            extra_sections[SECTION_TITLE] = domain_intelligence
+        extra_sections.update(enrichment.radar_sections)
         if extra_sections:
             override["extra_sections"] = extra_sections
         overrides[title] = override
         overrides[slugify(title)] = override
     return overrides
+
+
+def _greenfield_ordering_rationale(row: Mapping[str, Any]) -> str:
+    first_slice = str(row.get("recommended_first_slice", "")).strip()
+    opportunity = str(row.get("opportunity", "")).strip()
+    return opportunity or first_slice or "Created from the accepted greenfield project path."
+
+
+def _greenfield_rationale_lines(row: Mapping[str, Any]) -> list[str]:
+    explicit = list(row_text_tuple(row, "rationale_lines"))
+    if _has_required_rationale_bullets(explicit):
+        return explicit
+    opportunity = str(row.get("opportunity", "")).strip()
+    first_slice = str(row.get("recommended_first_slice", "")).strip()
+    product_view = str(row.get("product_view", "")).strip()
+    metrics = list(row_text_tuple(row, "success_metrics"))
+    proof = next((item for item in metrics if item), first_slice or product_view)
+    return [
+        f"- why now: {opportunity or product_view or first_slice}",
+        f"- expected outcome: {first_slice or proof}",
+        "- tradeoff: keep the release narrow enough that the user path, owner, risk, and proof remain visible together.",
+        "- deferred for now: broader automation, integrations, and release expansion wait until this path is proven.",
+        f"- ranking basis: {proof or 'the first path is prerequisite to downstream component, diagram, and release proof.'}",
+    ]
+
+
+def _has_required_rationale_bullets(lines: Sequence[str]) -> bool:
+    text = "\n".join(str(line).casefold() for line in lines)
+    return all(
+        bullet in text
+        for bullet in (
+            "- why now:",
+            "- expected outcome:",
+            "- tradeoff:",
+            "- deferred for now:",
+            "- ranking basis:",
+        )
+    )
 
 
 def _backlog_apply_args(proposal: Mapping[str, Any], *, release_selector: str) -> argparse.Namespace:
@@ -693,6 +726,7 @@ def _scaffold_proposal_diagram(
         kind=str(row.get("kind", "flowchart")).strip() or "flowchart",
         owner=str(row.get("owner", "repo")).strip() or "repo",
         summary=str(row.get("summary", "")).strip(),
+        read_guide=str(row.get("read_guide", "")).strip(),
         components=components,
         related_backlog=related_backlog,
         related_plans=[],
@@ -864,6 +898,7 @@ def _write_greenfield_proposal(
         diagram_ids=diagrams_created,
         release_selector=release_selector,
         release_id=release_id,
+        tribunal=tribunal.to_dict(),
     )
     dashboard_refresh = _refresh_greenfield_dashboard(repo_root=root)
     next_steps = greenfield_experience.build_next_steps(

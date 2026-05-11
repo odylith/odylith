@@ -26,6 +26,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--kind", required=True, help="Mermaid kind (flowchart, sequence, ...)")
     parser.add_argument("--owner", required=True, help="Owning team/role")
     parser.add_argument("--summary", required=True, help="One-paragraph summary")
+    parser.add_argument(
+        "--read-guide",
+        default="",
+        help="Optional diagram-specific reader guidance shown in the Atlas detail pane.",
+    )
     parser.add_argument("--component", action="append", default=[], help="Component in format 'Name::Description' (repeatable)")
     parser.add_argument("--backlog", action="append", default=[], help="Related backlog path (repeatable)")
     parser.add_argument("--plan", action="append", default=[], help="Related plan path (repeatable)")
@@ -201,6 +206,36 @@ def _starter_source(
     return "\n".join(lines) + "\n"
 
 
+def _default_read_guide(*, title: str, kind: str, components: list[dict[str, str]]) -> str:
+    component_names = [
+        str(component.get("name", "")).strip()
+        for component in components[:3]
+        if str(component.get("name", "")).strip()
+    ]
+    component_hint = ""
+    if component_names:
+        component_hint = (
+            f" Use the component cards to decode {', '.join(component_names)} before following the links."
+        )
+    kind_token = str(kind or "").strip().lower()
+    title_token = str(title or "").strip() or "this diagram"
+    if "sequence" in kind_token:
+        return (
+            f"Read {title_token} from top to bottom. Each lane is an actor or component; "
+            f"arrows are calls, handoffs, or proof events; notes and failure branches show block or recovery points."
+            f"{component_hint}"
+        )
+    if "state" in kind_token:
+        return (
+            f"Read {title_token} as allowed states and transitions. Arrows are the only valid moves; "
+            f"blocked or rejected states require proof before advancement.{component_hint}"
+        )
+    return (
+        f"Read {title_token} from the named entrypoint through the arrows. Boxes are the governing components, "
+        f"states, decisions, or proof obligations; grouped lanes show ownership or phase boundaries.{component_hint}"
+    )
+
+
 def scaffold_diagram(
     *,
     repo_root: Path,
@@ -211,6 +246,7 @@ def scaffold_diagram(
     kind: str,
     owner: str,
     summary: str,
+    read_guide: str,
     components: list[dict[str, str]],
     related_backlog: list[str],
     related_plans: list[str],
@@ -278,6 +314,8 @@ def scaffold_diagram(
         "source_png": source_png,
         "change_watch_paths": watch_paths,
         "summary": str(summary).strip(),
+        "read_guide": str(read_guide).strip()
+        or _default_read_guide(title=str(title).strip(), kind=str(kind).strip(), components=components),
         "components": components,
         "related_backlog": related_backlog,
         "related_plans": related_plans,
@@ -295,6 +333,7 @@ def scaffold_diagram(
             "kind": kind,
             "owner": owner,
             "summary": summary,
+            "read_guide": str(read_guide).strip(),
             "components": components,
             "related_backlog": related_backlog,
             "related_plans": related_plans,
@@ -362,6 +401,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             kind=str(args.kind),
             owner=str(args.owner),
             summary=str(args.summary),
+            read_guide=str(args.read_guide),
             components=components,
             related_backlog=list(args.backlog),
             related_plans=list(args.plan),

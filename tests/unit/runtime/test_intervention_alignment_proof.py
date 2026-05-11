@@ -79,35 +79,49 @@ def test_visibility_recovery_alignment_proof_covers_required_engine_lanes() -> N
     assert lanes["execution_engine"]["status"] == "covered"
     assert lanes["intervention_engine"]["status"] == "covered"
     assert lanes["tribunal"]["status"] == "covered"
-    assert lanes["governance"]["status"] == "covered"
-    assert lanes["delivery"]["status"] == "covered"
+    assert lanes["governance_engine"]["status"] == "covered"
+    assert lanes["delivery_intelligence"]["status"] == "covered"
     assert lanes["memory_substrate"]["status"] == "covered"
-    assert lanes["subagent_orchestration"]["status"] == "policy_deferred"
-    assert lanes["subagent_orchestration"]["satisfied"] is True
-    assert lanes["discipline"]["status"] == "covered"
+    assert lanes["subagent_router"]["status"] == "policy_deferred"
+    assert lanes["subagent_router"]["satisfied"] is True
+    assert lanes["subagent_orchestrator"]["status"] == "policy_deferred"
+    assert lanes["subagent_orchestrator"]["satisfied"] is True
+    assert lanes["discipline_engine"]["status"] == "covered"
     assert lanes["surface_dags"]["status"] == "covered"
-    assert lanes["analysis"]["status"] == "covered"
-    assert lanes["topology"]["status"] == "covered"
+    assert lanes["analysis_engine"]["status"] == "covered"
+    assert lanes["topology_integrity"]["status"] == "covered"
     assert lanes["taxonomies_fsms"]["status"] == "covered"
-    assert lanes["greenfield_domain_intelligence"]["status"] == "covered"
-    assert lanes["overall_ux"]["status"] == "covered"
-    assert proof["lane_count"] == 15
+    assert lanes["domain_intelligence"]["status"] == "covered"
+    assert lanes["operator_experience"]["status"] == "covered"
+    assert lanes["proof_state"]["status"] == "policy_deferred"
+    assert lanes["turn_gate"]["status"] == "policy_deferred"
+    assert lanes["benchmark_harness"]["status"] == "policy_deferred"
+    assert lanes["install_upgrade_migration_runtime"]["status"] == "policy_deferred"
+    assert lanes["security_trust"]["status"] == "policy_deferred"
+    assert proof["lane_count"] == 22
     assert set(lanes) == {
+        "analysis_engine",
+        "domain_intelligence",
+        "delivery_intelligence",
         "context_engine",
+        "reasoning_engine",
         "execution_engine",
+        "proof_state",
         "intervention_engine",
         "tribunal",
-        "governance",
-        "subagent_orchestration",
-        "discipline",
         "surface_dags",
-        "delivery",
-        "analysis",
+        "topology_integrity",
+        "governance_engine",
+        "turn_gate",
         "memory_substrate",
-        "topology",
+        "subagent_router",
+        "subagent_orchestrator",
+        "discipline_engine",
+        "benchmark_harness",
         "taxonomies_fsms",
-        "greenfield_domain_intelligence",
-        "overall_ux",
+        "install_upgrade_migration_runtime",
+        "security_trust",
+        "operator_experience",
     }
 
 
@@ -127,10 +141,11 @@ def test_visibility_recovery_alignment_proof_degrades_when_required_lane_is_miss
 
     assert proof["status"] == "degraded"
     assert set(proof["missing_required_lanes"]) == {
-        "governance",
         "memory_substrate",
-        "subagent_orchestration",
+        "subagent_router",
+        "subagent_orchestrator",
         "tribunal",
+        "governance_engine",
     }
 
 
@@ -157,11 +172,12 @@ def test_quiet_alignment_proof_does_not_claim_optional_lanes_without_evidence() 
     assert proof["status"] == "quiet"
     assert proof["missing_required_lanes"] == []
     assert lanes["tribunal"]["status"] == "quiet"
-    assert lanes["governance"]["status"] == "quiet"
-    assert lanes["subagent_orchestration"]["required"] is False
+    assert lanes["governance_engine"]["status"] == "quiet"
+    assert lanes["subagent_router"]["required"] is False
+    assert lanes["subagent_orchestrator"]["required"] is False
     assert lanes["surface_dags"]["status"] == "quiet"
-    assert lanes["analysis"]["status"] == "quiet"
-    assert lanes["topology"]["status"] == "quiet"
+    assert lanes["analysis_engine"]["status"] == "quiet"
+    assert lanes["topology_integrity"]["status"] == "quiet"
     assert lanes["taxonomies_fsms"]["status"] == "quiet"
-    assert lanes["greenfield_domain_intelligence"]["status"] == "quiet"
-    assert lanes["overall_ux"]["status"] == "covered"
+    assert lanes["domain_intelligence"]["status"] == "quiet"
+    assert lanes["operator_experience"]["status"] == "covered"

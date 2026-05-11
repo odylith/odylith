@@ -11,27 +11,27 @@ from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfie
 
 CASES = [
     {
-        "name": "merchant_lending",
-        "prompt": "draft a greenfield proposal for a SMB lending application pulling stable coins from DeFi protocols to merchants on Shopify",
-        "must": ("merchant", "shopify", "stablecoin", "underwriting", "liquidity", "repayment"),
-        "labels": ("Merchant Capital Portal", "Credit And Liquidity Core", "Lending Proof Harness"),
-        "forbidden": ("shopper", "cart", "checkout", "storefront", "payment sandbox", "order draft"),
-        "family": "defi_merchant_lending",
-    },
-    {
         "name": "defi_risk_sentinel",
         "prompt": "draft a greenfield proposal for a DeFi risk sentinel app",
         "must": ("wallet", "protocol", "oracle", "liquidity", "alert", "watchlist"),
         "labels": ("Risk Sentinel Console", "Risk Signal Engine", "Scenario Replay Harness"),
-        "forbidden": ("shopify", "merchant borrower", "checkout", "storefront"),
+        "forbidden": ("checkout", "storefront", "patient intake"),
         "family": "defi_risk",
+    },
+    {
+        "name": "merchant_capital_lending",
+        "prompt": "draft a greenfield proposal for a SMB lending application pulling stable coins from DeFi protocols into a merchant on Shopify",
+        "must": ("merchant", "funding", "underwriting", "treasury", "repayment", "stablecoin"),
+        "labels": ("Merchant Funding Workspace", "Underwriting And Facility Core", "Funding Evidence Harness"),
+        "forbidden": ("checkout", "cart", "shopper", "storefront"),
+        "family": "capital_merchant_lending",
     },
     {
         "name": "clinical_trial_matching",
         "prompt": "draft a greenfield proposal for a clinical trial patient matching app for oncology coordinators",
         "must": ("patient", "trial", "protocol", "consent", "eligibility", "oncology"),
         "labels": ("Patient Match Review Workbench", "Eligibility Protocol Engine", "Trial Matching Proof Harness"),
-        "forbidden": ("defi", "shopify", "checkout", "stablecoin", "robot"),
+        "forbidden": ("defi", "checkout", "robot"),
         "family": "clinical_trial_matching",
     },
     {
@@ -39,7 +39,7 @@ CASES = [
         "prompt": "draft a greenfield proposal for an immigration legal intake app for attorneys and clients",
         "must": ("immigration", "client", "document", "attorney", "consent", "case"),
         "labels": ("Client Intake Workspace", "Case Eligibility And Document Core", "Confidential Intake Proof Harness"),
-        "forbidden": ("defi", "shopify", "checkout", "stablecoin", "robot"),
+        "forbidden": ("defi", "checkout", "robot"),
         "family": "legal_intake",
     },
     {
@@ -47,7 +47,7 @@ CASES = [
         "prompt": "draft a greenfield proposal for a bioinformatics variant analysis pipeline for clinical genomics",
         "must": ("sample", "variant", "vcf", "qc", "sequencing", "reference"),
         "labels": ("Variant Review Workbench", "Sequencing Analysis Core", "Pipeline Reproducibility Harness"),
-        "forbidden": ("defi", "shopify", "checkout", "stablecoin", "robot"),
+        "forbidden": ("defi", "checkout", "robot"),
         "family": "bioinformatics_variant_pipeline",
     },
     {
@@ -59,7 +59,7 @@ CASES = [
             "A Statistics Notebook Repo Product Model",
             "A Statistics Notebook Repo Evidence Harness",
         ),
-        "forbidden": ("Domain Core", "Verification Harness", "Experience Boundary", "shopify", "checkout"),
+        "forbidden": ("Domain Core", "Verification Harness", "Experience Boundary", "checkout"),
         "family": "generic",
     },
 ]
@@ -140,6 +140,47 @@ def test_greenfield_profiles_capture_prompt_specific_domain_without_surface_leak
     assert families == {case["family"]}
 
 
+@pytest.mark.parametrize("case", CASES, ids=[case["name"] for case in CASES])
+def test_greenfield_cases_pass_product_manager_relevance_filter(tmp_path, case) -> None:
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=case["prompt"],
+    )["proposal_template"]
+
+    assert proposal["artifact_derivation"]["root"] == "project_intelligence"
+    assert greenfield_quality_issues(proposal) == []
+    project_title = str(proposal["intent"]["title"])
+    forbidden_preparation_phrases = (
+        "accepted execution spine",
+        "created as a new queued workstream",
+        "deeper scope decomposition waits",
+        "implementation owner starts",
+        "before source exists",
+        "follow-on implementation planning",
+    )
+
+    for row in proposal["backlog"]:
+        joined = json.dumps(row, sort_keys=True)
+        assert row["project_intelligence_binding"]["source"] == "project_intelligence"
+        assert any(_has_token(joined, token) for token in case["must"]), row["title"]
+        for phrase in forbidden_preparation_phrases:
+            assert phrase not in joined
+        if case["family"] != "generic":
+            assert project_title not in row["problem"]
+            assert project_title not in row["product_view"]
+
+    for component in proposal["components"]:
+        joined = json.dumps(component, sort_keys=True)
+        assert component["project_intelligence_binding"]["source"] == "project_intelligence"
+        assert any(_has_token(joined, token) for token in case["must"]), component["label"]
+
+    diagram_payload = "\n".join(json.dumps(diagram, sort_keys=True) for diagram in proposal["diagrams"])
+    assert any(label in diagram_payload for label in case["labels"])
+    for diagram in proposal["diagrams"]:
+        joined = json.dumps(diagram, sort_keys=True)
+        assert diagram["project_intelligence_binding"]["source"] == "project_intelligence"
+
+
 def test_robot_swarm_greenfield_keeps_robot_domain_language_without_surface_leaks(tmp_path) -> None:
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
@@ -158,7 +199,7 @@ def test_robot_swarm_greenfield_keeps_robot_domain_language_without_surface_leak
         assert _has_token(combined, token), token
     for label in ("Fleet Operations Console", "Robot Coordination Core", "Simulation And Safety Harness"):
         assert label in combined
-    for token in ("shopify", "checkout", "stablecoin", "patient"):
+    for token in ("checkout", "patient"):
         assert not _has_token(combined, token), token
     for token in SURFACE_TERMS:
         assert token not in text

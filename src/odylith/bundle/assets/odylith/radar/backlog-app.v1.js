@@ -2306,10 +2306,8 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
             ${contextLine ? `<div class="execution-wave-section-line">${escapeHtml(contextLine)}</div>` : ""}
             ${summaryLine ? `<div class="execution-wave-section-line execution-wave-section-line-muted">${escapeHtml(summaryLine)}</div>` : ""}
           </div>
-          <div class="execution-wave-section-meta">
-            ${sectionChips.join("")}
-            <span class="execution-wave-section-toggle execution-wave-section-toggle-triangle" aria-hidden="true"></span>
-          </div>
+          <span class="execution-wave-section-toggle execution-wave-section-toggle-triangle" aria-hidden="true"></span>
+          ${sectionChips.length ? `<div class="execution-wave-section-meta execution-wave-section-meta-bottom">${sectionChips.join("")}</div>` : ""}
         </summary>
         <div class="execution-wave-section-body">${boardsHtml}</div>
       </details>

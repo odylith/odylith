@@ -22,6 +22,7 @@ from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence.greenfield_project_brief import normalize_project_brief
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import normalize_project_intelligence
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import enrich_backlog_rows
+from odylith.runtime.domain_intelligence.project_intelligence_binding import attach_project_intelligence_bindings
 
 DEFAULT_GREENFIELD_RELEASE_SELECTOR = greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR
 
@@ -133,7 +134,7 @@ def normalize_host_reasoned_proposal(proposal: Mapping[str, Any]) -> dict[str, A
         components=normalized["components"],
         diagrams=normalized["diagrams"],
     )
-    return normalized
+    return attach_project_intelligence_bindings(normalized)
 
 
 def _proposal_object(value: Any) -> dict[str, Any]:

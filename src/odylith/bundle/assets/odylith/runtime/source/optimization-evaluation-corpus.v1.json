@@ -4490,6 +4490,9 @@
           "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
           "README.md",
           "odylith/MAINTAINER_RELEASE_RUNBOOK.md"
+        ],
+        "supporting_paths": [
+          "docs/specs/odylith-repo-integration-contract.md"
         ]
       },
       "match": {

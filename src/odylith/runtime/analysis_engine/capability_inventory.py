@@ -104,6 +104,7 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                     "policy first, optional provider enrichment only when evidence-gated, and "
                     "degraded states that remain explicit"
                 ),
+                commands=("odylith bug capture", "odylith greenfield propose"),
                 anchors=(
                     "src/odylith/runtime/reasoning/",
                     "odylith/atlas/source/odylith-tribunal-multi-actor-reasoning-engine.mmd",
@@ -137,6 +138,7 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                     "live blocker frontier, claim-tier posture, falsification memory, and proof "
                     "resolution fields consumed by Delivery Intelligence and Execution Engine"
                 ),
+                commands=("odylith sync", "odylith governance-slice"),
                 anchors=("odylith/registry/source/components/proof-state/CURRENT_SPEC.md",),
                 activation=(
                     "Delivery Intelligence and Execution Engine read proof-state posture as claim-tier "
@@ -375,7 +377,7 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                 ),
             ),
             InventoryItem(
-                name="Install, Upgrade, and Migration Runtime",
+                name="Install / Upgrade / Migration Runtime",
                 layer="lifecycle",
                 kind="engine family",
                 owns=(
@@ -404,6 +406,7 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                     "release provenance, SBOM and digest checks, trust receipts, hot-file integrity, "
                     "runtime metadata, and archive-safety validation"
                 ),
+                commands=("odylith version", "odylith doctor", "odylith install"),
                 anchors=("src/odylith/install/runtime_integrity.py", "src/odylith/install/release_assets.py"),
                 activation=(
                     "release verification and runtime-integrity checks validate provenance, digests, and "

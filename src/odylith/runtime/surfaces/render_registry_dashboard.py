@@ -30,7 +30,6 @@ from odylith.runtime.context_engine import odylith_context_engine_delivery_surfa
 from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.context_engine import odylith_runtime_surface_summary
 from odylith.runtime.governance import traceability_ui_lookup
-
 _REGISTRY_DETAIL_SHARD_SIZE = 32
 _REGISTRY_SUMMARY_HEAVY_FIELDS = frozenset(
     {
@@ -63,7 +62,6 @@ _REGISTRY_INTELLIGENCE_COMPONENT_FIELDS = (
     "trajectory",
 )
 _REGISTRY_REFRESH_GUARD_KEY = "registry-dashboard-render"
-
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -102,7 +100,6 @@ def _refresh_guard_watched_paths(
         "src/odylith/runtime/governance",
         "src/odylith/runtime/surfaces",
     )
-
 
 def _display_spec_markdown(markdown: str) -> str:
     lines = []

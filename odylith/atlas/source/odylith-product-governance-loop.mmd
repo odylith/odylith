@@ -1,12 +1,38 @@
-flowchart LR
-    registry["Registry"] --> radar["Radar"]
-    radar --> plans["Technical Plans"]
-    plans --> compass["Compass"]
-    compass --> casebook["Casebook"]
-    atlas["Atlas"] --> registry
-    dashboard["Dashboard"] --> radar
-    dashboard --> atlas
-    dashboard --> compass
-    dashboard --> casebook
+%% Product Governance Loop: read top to bottom from the installable product into the operator shell, then follow the governed truth loop.
+flowchart TB
+    odylith["Odylith product<br/>installable CLI + runtime"]
+    dashboard["Dashboard<br/>operator shell + surface navigation"]
+
+    subgraph truth["Governed product truth"]
+        direction TB
+        registry["Registry<br/>component ownership + specs"]
+        atlas["Atlas<br/>architecture diagrams + freshness"]
+        radar["Radar<br/>ranked workstreams + queues"]
+        plans["Technical Plans<br/>implementation intent + gates"]
+        compass["Compass<br/>execution timeline + proof"]
+        casebook["Casebook<br/>bugs + learning records"]
+    end
+
+    odylith --> dashboard
+    dashboard --> radar
     dashboard --> registry
-    odylith["Odylith"] --> dashboard
+    dashboard --> atlas
+
+    registry -- "component scope" --> radar
+    radar -- "selected slice" --> plans
+    plans -- "planned change + proof obligations" --> compass
+    compass -- "evidence, blockers, regressions" --> casebook
+    casebook -- "corrective learning" --> radar
+    atlas -- "topology truth" --> registry
+    registry -- "component dossiers explain diagrams" --> atlas
+
+    classDef product fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b,stroke-width:1px;
+    classDef shell fill:#eaf3ff,stroke:#77a9ef,color:#102f5f,stroke-width:1px;
+    classDef truth fill:#f4ebff,stroke:#ad8ae6,color:#31135f,stroke-width:1px;
+    classDef proof fill:#ffece7,stroke:#df8f7d,color:#5c2418,stroke-width:1px;
+    class odylith product;
+    class dashboard shell;
+    class registry,atlas,radar,plans truth;
+    class compass,casebook proof;
+    style truth fill:#fbf8ff,stroke:#e4d8f8,stroke-width:1px,color:#31135f
+    linkStyle default stroke:#647d96,stroke-width:1.35px

@@ -236,8 +236,7 @@
         if (options && options.link === false) {
           return `<span class="chip execution-wave-chip-link${tone}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(`${token}: ${tooltip}`)}">${escapeHtml(token)}</span>`;
         }
-        const summaryClass = options && options.summary ? " ws-id-btn" : "";
-        return `<a class="chip chip-link execution-wave-chip-link${summaryClass}${tone}" href="${escapeHtml(radarWorkstreamHref(token))}" target="_top" data-ws-id="${escapeHtml(token)}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(`${token}: ${tooltip}`)}">${escapeHtml(token)}</a>`;
+        return `<a class="chip chip-link execution-wave-chip-link${tone}" href="${escapeHtml(radarWorkstreamHref(token))}" target="_top" data-ws-id="${escapeHtml(token)}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(`${token}: ${tooltip}`)}">${escapeHtml(token)}</a>`;
       };
       const formatMemberProgress = (member) => {
         const explicitLabel = String(member && member.progress_label ? member.progress_label : "").trim();
@@ -329,15 +328,6 @@
           completedCount ? `<span class="label execution-wave-label wave-status-complete">${escapeHtml(completedLabel)}</span>` : "",
           releaseProgress.percent ? `<span class="label execution-wave-label wave-progress-chip">${escapeHtml(`Overall ${releaseProgress.percent} progress`)}</span>` : "",
         ].filter(Boolean);
-        const representativeMember = visibleMembers
-          .map((member) => String(member && member.idea_id ? member.idea_id : "").trim())
-          .find((ideaId) => WORKSTREAM_RE.test(ideaId));
-        if (representativeMember) {
-          sectionChips.push(renderMemberChip(representativeMember, {
-            summary: true,
-            selected: representativeMember === scopedWorkstream,
-          }));
-        }
         const openAttr = resolveCompassDisclosureOpen(
           disclosureGroup,
           state,

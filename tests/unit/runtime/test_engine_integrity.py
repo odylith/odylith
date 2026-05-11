@@ -12,36 +12,51 @@ def test_engine_integrity_covers_operator_requested_engine_set() -> None:
     report = engine_integrity.evaluate_engine_integrity(REPO_ROOT)
 
     assert report["status"] == "pass"
-    assert report["areas_checked"] == 15
-    assert report["areas_present"] == 15
-    assert report["command_backed_areas"] == 15
-    assert report["anchor_backed_areas"] == 15
-    assert report["activation_backed_areas"] == 15
+    assert report["areas_checked"] == 22
+    assert report["areas_present"] == 22
+    assert report["command_backed_areas"] == 22
+    assert report["anchor_backed_areas"] == 22
+    assert report["activation_backed_areas"] == 22
+    assert report["integration_backed_areas"] == 22
+    assert report["handshakes_checked"] == len(engine_integrity.ENGINE_HANDSHAKES)
+    assert report["handshakes_wired"] == len(engine_integrity.ENGINE_HANDSHAKES)
     assert report["counts"]["error"] == 0
     areas = {row["area"]: row for row in report["areas"]}
     assert {
-        "Context Engine",
-        "Execution Engine",
+        "Analysis Engine",
+        "Domain Intelligence",
+        "Delivery Intelligence",
         "Tribunal",
-        "Intervention Engine",
-        "Governance",
-        "Subagent Orchestration",
-        "Discipline",
+        "Reasoning Engine",
+        "Execution Engine",
+        "Proof State",
         "Surface DAGs",
-        "Delivery",
-        "Analysis",
-        "Memory Substrate",
-        "Topology",
+        "Topology Integrity",
+        "Governance Engine",
+        "Governed Harness / Turn Gate",
+        "Intervention Engine",
+        "Discipline Engine",
+        "Benchmark Harness",
         "Taxonomies and FSMs",
-        "Greenfield proposals and domain intelligence",
-        "Overall UX",
+        "Context Engine",
+        "Memory Substrate",
+        "Subagent Router",
+        "Subagent Orchestrator",
+        "Install / Upgrade / Migration Runtime",
+        "Security and Trust",
+        "Operator Experience",
     } == set(areas)
     for row in areas.values():
+        assert row["fits_as"], row["area"]
         assert row["command_backed"], row["area"]
         assert row["anchor_backed"], row["area"]
         assert row["activation_backed"], row["area"]
-    assert "odylith greenfield create" in areas["Greenfield proposals and domain intelligence"]["commands"]
-    assert areas["Subagent Orchestration"]["inventory_names"] == ["Subagent Router", "Subagent Orchestrator"]
+        assert row["integration_backed"], row["area"]
+        assert row["handoff_in"] or row["handoff_out"], row["area"]
+    assert "odylith greenfield create" in areas["Domain Intelligence"]["commands"]
+    assert areas["Subagent Router"]["inventory_names"] == ["Subagent Router"]
+    assert areas["Subagent Orchestrator"]["inventory_names"] == ["Subagent Orchestrator"]
+    assert "odylith doctor" in areas["Security and Trust"]["commands"]
 
 
 def test_engine_integrity_text_report_is_operator_readable() -> None:
@@ -50,8 +65,12 @@ def test_engine_integrity_text_report_is_operator_readable() -> None:
 
     assert "Odylith engine integrity report" in text
     assert "- status: pass" in text
-    assert "- activation_backed: 15" in text
+    assert "- activation_backed: 22" in text
+    assert "- integration_backed: 22" in text
+    assert "Engine handshakes" in text
     assert "all requested engine areas are inventory-backed" in text
+    assert "Engine spine" in text
+    assert "Domain Intelligence - greenfield and project-shape intelligence before governed writes" in text
 
 
 def test_engine_integrity_rejects_command_only_activation(monkeypatch) -> None:
@@ -67,7 +86,7 @@ def test_engine_integrity_rejects_command_only_activation(monkeypatch) -> None:
 
     assert report["status"] == "fail"
     assert any(
-        finding["area"] == "Discipline"
+        finding["area"] == "Discipline Engine"
         and "no source anchor backing" in finding["message"]
         for finding in report["findings"]
     )
@@ -88,5 +107,25 @@ def test_engine_integrity_rejects_unknown_command_roots(monkeypatch) -> None:
     assert any(
         finding["area"] == "Context Engine"
         and "unknown top-level command" in finding["message"]
+        for finding in report["findings"]
+    )
+
+
+def test_engine_integrity_rejects_unknown_handshake_area(monkeypatch) -> None:
+    broken = engine_integrity.ENGINE_HANDSHAKES + (
+        engine_integrity.EngineHandshake(
+            "Imaginary Engine",
+            "Analysis Engine",
+            "bad handoff for regression coverage",
+        ),
+    )
+    monkeypatch.setattr(engine_integrity, "ENGINE_HANDSHAKES", broken)
+
+    report = engine_integrity.evaluate_engine_integrity(REPO_ROOT)
+
+    assert report["status"] == "fail"
+    assert any(
+        finding["area"] == "Imaginary Engine"
+        and "unknown source area" in finding["message"]
         for finding in report["findings"]
     )

@@ -12,28 +12,41 @@ DETAIL_LAYOUT_CSS = r"""
       min-width: 0;
       max-width: 100%;
       border: 1px solid var(--border);
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.88);
-      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 16px;
     }
 
     .section h3 {
+      margin: 0 0 12px;
     }
 
     .summary {
       margin: 0;
     }
 
-    .read-guide {
-      margin-top: 12px;
-      border: 1px solid rgba(3, 105, 161, 0.14);
-      border-radius: 12px;
-      background: rgba(248, 252, 255, 0.92);
-      padding: 10px 11px;
+    .diagram-explanation-section {
+      display: grid;
+      gap: 14px;
+    }
+
+    .diagram-guide-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.95fr);
+      gap: 12px;
+      align-items: stretch;
       min-width: 0;
     }
 
-    .read-guide .artifact-label {
+    .diagram-guide-panel {
+      border: 1px solid rgba(3, 105, 161, 0.14);
+      border-radius: 10px;
+      background: rgba(248, 252, 255, 0.92);
+      padding: 11px 12px;
+      min-width: 0;
+    }
+
+    .diagram-guide-panel .artifact-label {
       margin-bottom: 5px;
     }
 
@@ -41,27 +54,108 @@ DETAIL_LAYOUT_CSS = r"""
       margin: 0;
     }
 
-    .component-list-label {
-      margin-top: 13px;
-      margin-bottom: 7px;
+    .diagram-box-section,
+    .ownership-section {
+      display: grid;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .diagram-box-section[hidden] {
+      display: none;
+    }
+
+    .diagram-box-list {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      min-width: 0;
+      border: 1px solid rgba(3, 105, 161, 0.14);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.94);
+      overflow: hidden;
+    }
+
+    .diagram-box-row {
+      display: grid;
+      grid-template-columns: 38px minmax(170px, 0.42fr) minmax(0, 1fr);
+      gap: 11px;
+      align-items: start;
+      min-width: 0;
+      padding: 9px 11px;
+      border-bottom: 1px solid rgba(3, 105, 161, 0.12);
+    }
+
+    .diagram-box-row:last-child {
+      border-bottom: 0;
+    }
+
+    .diagram-box-index {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 24px;
+      border: 1px solid rgba(13, 68, 104, 0.2);
+      border-radius: 999px;
+      color: #294961;
+      background: rgba(248, 252, 255, 0.96);
+      font-weight: 700;
+      font-size: 0.76rem;
+    }
+
+    .diagram-box-name {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .diagram-box-name strong {
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    __ODYLITH_ATLAS_DIAGRAM_BOX_ROLE_LABEL__
+    .diagram-box-role {
+      width: fit-content;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      justify-content: flex-start;
+      white-space: normal;
+    }
+
+    .diagram-box-description {
+      margin: 0;
+      min-width: 0;
     }
 
     .component-list {
       margin-top: 0;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-      gap: 10px;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
       min-width: 0;
       max-width: 100%;
+      border: 1px solid rgba(3, 105, 161, 0.14);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.94);
+      overflow: hidden;
     }
 
     .component-card {
+      display: grid;
+      grid-template-columns: minmax(170px, 240px) minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
       min-width: 0;
       max-width: 100%;
-      border: 1px solid rgba(3, 105, 161, 0.17);
-      border-radius: 10px;
-      padding: 9px 10px;
-      background: rgba(255, 255, 255, 0.95);
+      border-bottom: 1px solid rgba(3, 105, 161, 0.12);
+      padding: 9px 11px;
+      background: transparent;
+    }
+
+    .component-card:last-child {
+      border-bottom: 0;
     }
 
     .component-card strong {
@@ -70,7 +164,7 @@ DETAIL_LAYOUT_CSS = r"""
 
     .component-token {
       display: block;
-      margin: -1px 0 6px;
+      margin: 2px 0 0;
       overflow-wrap: anywhere;
       word-break: break-word;
     }
@@ -98,20 +192,33 @@ DETAIL_LAYOUT_CSS = r"""
     }
     __ODYLITH_ATLAS_ARTIFACT_LABEL_TYPOGRAPHY__
 
-    .engineering-context-grid {
+    .engineering-context-list {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 10px;
-      min-width: 0;
-    }
-
-    .linked-context-section .artifact-group {
-      margin-bottom: 0;
+      grid-template-columns: minmax(0, 1fr);
       min-width: 0;
       border: 1px solid rgba(3, 105, 161, 0.14);
       border-radius: 10px;
       background: rgba(255, 255, 255, 0.94);
+      overflow: hidden;
+    }
+
+    .linked-context-section .artifact-group {
+      display: grid;
+      grid-template-columns: minmax(150px, 210px) minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 0;
+      min-width: 0;
       padding: 10px 11px;
+      border-bottom: 1px solid rgba(3, 105, 161, 0.12);
+    }
+
+    .linked-context-section .artifact-group:last-child {
+      border-bottom: 0;
+    }
+
+    .linked-context-section .artifact-label {
+      margin: 0;
     }
 
     .artifact-list {
@@ -126,9 +233,9 @@ DETAIL_LAYOUT_CSS = r"""
     }
 
     .linked-context-section .artifact-list {
-      max-height: 210px;
-      overflow: auto;
-      padding-right: 2px;
+      max-height: none;
+      overflow: visible;
+      padding-right: 0;
     }
 
     .workstream-context-list {
@@ -223,24 +330,45 @@ DETAIL_LAYOUT_CSS = r"""
     .artifact-list a.workstream-pill-link:hover {
       border-bottom: 0;
     }
+
+    @media (max-width: 760px) {
+      .diagram-guide-grid,
+      .diagram-box-row,
+      .component-card,
+      .linked-context-section .artifact-group {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
+      }
+    }
 """
 
 DETAIL_LAYOUT_HTML = r"""
       <section class="details-grid">
         <article class="section diagram-explanation-section">
           <h3>What This Diagram Shows</h3>
-          <p id="diagramSummary" class="summary"></p>
-          <div class="read-guide">
-            <p class="artifact-label">How To Read This View</p>
-            <p id="diagramReadGuide" class="read-guide-body"></p>
+          <div class="diagram-guide-grid">
+            <div class="diagram-guide-panel">
+              <p class="artifact-label">Summary</p>
+              <p id="diagramSummary" class="summary"></p>
+            </div>
+            <div class="diagram-guide-panel read-guide">
+              <p class="artifact-label">How To Read This View</p>
+              <p id="diagramReadGuide" class="read-guide-body"></p>
+            </div>
           </div>
-          <p class="artifact-label component-list-label">Components In This Diagram</p>
-          <div id="componentList" class="component-list"></div>
+          <div id="diagramBoxesSection" class="diagram-box-section" hidden>
+            <p class="artifact-label">Boxes In This Diagram</p>
+            <div id="diagramBoxList" class="diagram-box-list"></div>
+          </div>
+          <div class="ownership-section">
+            <p class="artifact-label">Owning Components</p>
+            <div id="componentList" class="component-list"></div>
+          </div>
         </article>
 
         <article class="section linked-context-section">
           <h3>Linked Engineering Context</h3>
-          <div class="engineering-context-grid">
+          <div class="engineering-context-list">
             <div class="artifact-group">
               <p class="artifact-label">Backlog</p>
               <ul id="backlogLinks" class="artifact-list"></ul>
@@ -289,6 +417,10 @@ DETAIL_RUNTIME_HELPERS_JS = r"""
     }
 
     function diagramReadGuide(diagram) {
+      const catalogGuide = String(diagram && diagram.read_guide ? diagram.read_guide : "").trim();
+      if (catalogGuide) {
+        return catalogGuide;
+      }
       const kind = String(diagram && diagram.kind ? diagram.kind : "").trim().toLowerCase();
       if (kind.includes("sequence")) {
         return "Read from top to bottom. Each lane is an actor or component; arrows are calls, handoffs, or proof events; notes and failure branches show where the workflow can block or recover.";

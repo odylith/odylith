@@ -63,9 +63,10 @@ def _has_versioned_script_tag(*, html: str, src: str, script_id: str | None = No
 def test_shell_index_declares_all_surface_tabs_and_frames() -> None:
     html = _read("odylith/index.html")
 
-    for tab in ("radar", "registry", "casebook", "atlas", "compass"):
+    for tab in ("project", "radar", "registry", "casebook", "atlas", "compass"):
         assert f'id="tab-{tab}"' in html
 
+    assert 'id="pane-project"' in html
     for frame_id in ("frame-radar", "frame-registry", "frame-casebook", "frame-atlas", "frame-compass"):
         assert f'id="{frame_id}"' in html
 

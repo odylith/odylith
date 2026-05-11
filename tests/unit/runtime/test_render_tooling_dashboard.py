@@ -780,6 +780,10 @@ def test_render_tooling_dashboard_uses_tab_local_state_for_shell_surface_switche
     assert rc == 0
     control_js = (tmp_path / "odylith" / "tooling-app.v1.js").read_text(encoding="utf-8")
     assert "const tabStateMemory =" in control_js
+    assert 'project: "Project",' in control_js
+    assert 'project: document.getElementById("tab-project")' in control_js
+    assert 'project: document.getElementById("pane-project")' in control_js
+    assert 'applyTab(buildTabActivationState("project"), { pushHistory: true });' in control_js
     assert "function sanitizeShellState(rawState)" in control_js
     assert "function buildTabActivationState(tab)" in control_js
     assert "const hasOdylithDrawer = Boolean(" in control_js
@@ -842,6 +846,10 @@ def test_render_tooling_dashboard_uses_tab_local_state_for_shell_surface_switche
     assert 'applyTab(buildTabActivationState("atlas"), { pushHistory: true });' in control_js
     assert 'applyTab(buildTabActivationState("radar"), { pushHistory: true });' in control_js
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
+    assert 'id="tab-project"' in html
+    assert 'id="pane-project"' in html
+    assert "project-scenario" in html
+    assert "Product scenario journey" not in html
     assert 'id="upgradeReopen"' in html
     assert 'id="runtimeStatusReopen"' not in html
     assert 'id="shellRuntimeStatusKicker"' in html

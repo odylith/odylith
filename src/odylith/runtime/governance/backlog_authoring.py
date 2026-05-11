@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import datetime as dt
 import json
 from dataclasses import dataclass
@@ -37,6 +38,7 @@ class CreatedBacklogItem:
     idea_path: Path
     ordering_score: int
     founder_override: bool
+    rationale_lines: tuple[str, ...] = ()
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -45,6 +47,7 @@ class CreatedBacklogItem:
             "idea_path": str(self.idea_path.resolve()),
             "ordering_score": self.ordering_score,
             "founder_override": self.founder_override,
+            "rationale_lines": list(self.rationale_lines),
         }
 
 
@@ -381,17 +384,39 @@ def _title_specific_args(*, title: str, args: argparse.Namespace) -> argparse.Na
         "sizing",
         "complexity",
         "ordering_rationale",
+        "rationale_lines",
         "extra_sections",
     ):
         if key in override:
             value = override[key]
             if key == "success_metrics" and isinstance(value, (list, tuple)):
                 value = "\n".join(f"- {item}" for item in value if str(item).strip())
+            if key == "rationale_lines":
+                setattr(resolved, key, _rationale_line_tuple(value))
+                continue
             if key == "extra_sections" and isinstance(value, Mapping):
                 setattr(resolved, key, dict(value))
             else:
                 setattr(resolved, key, str(value).strip())
     return resolved
+
+
+def _rationale_line_tuple(value: Any) -> tuple[str, ...]:
+    if isinstance(value, (list, tuple)):
+        return tuple(str(line).strip() for line in value if str(line).strip())
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return ()
+        if text.startswith("[") and text.endswith("]"):
+            try:
+                parsed = ast.literal_eval(text)
+            except (SyntaxError, ValueError):
+                parsed = None
+            if isinstance(parsed, (list, tuple)):
+                return tuple(str(line).strip() for line in parsed if str(line).strip())
+        return tuple(line.strip() for line in text.splitlines() if line.strip())
+    return ()
 
 
 def _build_metadata(
@@ -558,23 +583,39 @@ def _build_rationale_lines(
     override_note: str,
     override_review_date: str,
 ) -> list[str]:
-    cost_line = "- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins."
+    if item.rationale_lines and _has_required_rationale_lines(item.rationale_lines):
+        return [str(line).strip() for line in item.rationale_lines if str(line).strip()]
+    cost_line = "- tradeoff: keep the first pass narrow until owner, evidence, and validation are explicit."
     if item.founder_override:
         note = override_note or "Manual priority override applied to keep this workstream in a deliberate queue position."
         return [
-            f"- why now: created as a new queued workstream for {item.title}.",
-            "- expected outcome: clearer product truth and faster follow-on implementation planning.",
+            f"- why now: {item.title} is the next bounded project move from the current backlog posture.",
+            "- expected outcome: a reviewer can see the user path, owner, risk, and proof before implementation widens.",
             cost_line,
-            "- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.",
+            "- deferred for now: later automation, integrations, and release expansion wait until the first proof path is accepted.",
             f"- ranking basis: {note} Review checkpoint: {override_review_date}.",
         ]
     return [
-        f"- why now: created as a new queued workstream for {item.title}.",
-        "- expected outcome: clearer product truth and faster follow-on implementation planning.",
+        f"- why now: {item.title} is the next bounded project move from the current backlog posture.",
+        "- expected outcome: a reviewer can see the user path, owner, risk, and proof before implementation widens.",
         cost_line,
-        "- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.",
+        "- deferred for now: later automation, integrations, and release expansion wait until the first proof path is accepted.",
         "- ranking basis: score-based rank; no manual priority override.",
     ]
+
+
+def _has_required_rationale_lines(lines: Sequence[str]) -> bool:
+    text = "\n".join(str(line).casefold() for line in lines)
+    return all(
+        bullet in text
+        for bullet in (
+            "- why now:",
+            "- expected outcome:",
+            "- tradeoff:",
+            "- deferred for now:",
+            "- ranking basis:",
+        )
+    )
 
 
 def _unique_idea_path(*, ideas_root: Path, title: str, today: dt.date, reserved: set[Path]) -> Path:
@@ -747,6 +788,7 @@ def create_queued_backlog_items(
             idea_path=idea_path,
             ordering_score=int(metadata["ordering_score"]),
             founder_override=bool(args.founder_override),
+            rationale_lines=_rationale_line_tuple(getattr(row_args, "rationale_lines", ())),
         )
         created_items.append(item)
         mutable_ideas[idea_id] = backlog_contract.IdeaSpec(

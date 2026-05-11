@@ -18,7 +18,13 @@ architect a new project before source code exists.
    from prose, and do not patch schema fields in front of the operator. Use host
    reasoning only to critique, amend, or answer open questions when the operator
    asks for changes.
-4. Do not write records until the operator confirms the proposal or gives
+4. Print the full default proposal stdout directly in the chat answer. Do not
+   rely on collapsed Bash/tool output as the only place the proposal is visible,
+   and do not replace the preview with a shorter host-written "apply as-is,
+   revise, or export JSON" menu. The visible answer must include the proposal's
+   interpretation, clarify-before-apply choices, proposal preview, and choose
+   next action gate unless the operator explicitly asks for a shorter summary.
+5. Do not write records until the operator confirms the proposal or gives
    explicit edits. On confirmation, prefer the one-command path:
    `./.odylith/bin/odylith greenfield create --repo-root . --prompt "<operator request>" --release 0.0.1 --confirm`.
    If a workflow explicitly needs a proposal file, obtain it from
@@ -26,14 +32,14 @@ architect a new project before source code exists.
    `greenfield apply`; never author the file by hand. `create` and `apply` run
    deterministic validation, the Tribunal write gate, project-record writes,
    and the batched visibility refresh before printing the handoff.
-5. Preserve the evidence boundary: observed source, user intent, and Odylith
+6. Preserve the evidence boundary: observed source, user intent, and Odylith
    assumptions must stay distinct. For consumer apps, include proportional
    security, privacy, abuse, accessibility, data-retention, compliance, and
    operational risk posture instead of generic risk copy. For science and math, reason from the
    domain named by the user and propose correctness obligations such as proof
    checking, reproducibility, units, tolerances, derivation review, datasets,
    peer review, or validation fixtures only when they actually fit.
-6. For vague or broad prompts, preserve the project-first and
+7. For vague or broad prompts, preserve the project-first and
    program-formation contract without forcing a fixed bucket: show the parent
    workstream, child-boundary strategy, wave-to-workstream policy,
    provisional release selector, decisive assumptions, customization options,
@@ -41,6 +47,6 @@ architect a new project before source code exists.
    Do not rush to `start B-***`; greenfield apply creates the governed project
    truth, and coding begins only after the operator accepts the product gates
    and a child workstream has a technical plan.
-7. Keep latency low: rely on `greenfield create` or `greenfield apply` for the
+8. Keep latency low: rely on `greenfield create` or `greenfield apply` for the
    final batched visibility refresh instead of running separate refresh commands
    after each artifact family.

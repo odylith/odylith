@@ -40,6 +40,13 @@ _CONVENTIONAL_COMMIT_PREFIX_RE = re.compile(
 _RETIRED_SURFACE_MARKER = "sentinel"
 _RETIRED_SURFACE_LABEL = "retired control surface"
 _CASEBOOK_BUG_PATH_PREFIX = "odylith/casebook/bugs/"
+_SUPPRESSED_ACTIVITY_SHAS: frozenset[str] = frozenset(
+    {
+        "119dcfc141bf097928670358952d0c869a84fe1f",
+        "dd7dcca4c0db3290032caa2b4849192aaa596aa8",
+        "d1f2e8c800afcb0dcbd2aee55c2cd33d68ab5dff",
+    }
+)
 _GENERIC_TX_HEADLINE_RE = re.compile(
     r"^(?:"
     r"(?:edited|updated|modified|changed)\s+(?:\d+\s+)?files?"
@@ -622,7 +629,8 @@ def _collect_git_commits(repo_root: Path, *, since_hours: int, my_name: str, my_
                     files=files,
                     live_casebook_bug_paths=live_casebook_bug_paths,
                 )
-                commits.append(current)
+                if _is_publishable_commit_activity(current):
+                    commits.append(current)
             parts = raw.split("\x1f")
             if len(parts) < 5:
                 current = None
@@ -656,7 +664,8 @@ def _collect_git_commits(repo_root: Path, *, since_hours: int, my_name: str, my_
             files=files,
             live_casebook_bug_paths=live_casebook_bug_paths,
         )
-        commits.append(current)
+        if _is_publishable_commit_activity(current):
+            commits.append(current)
 
     name_token = my_name.strip().lower()
     email_token = my_email.strip().lower()
@@ -675,6 +684,16 @@ def _collect_git_commits(repo_root: Path, *, since_hours: int, my_name: str, my_
     mine = [item for item in commits if _is_mine(item)]
     mine.sort(key=lambda item: item.get("ts", dt.datetime.min.replace(tzinfo=dt.timezone.utc)), reverse=True)
     return mine
+
+
+def _is_publishable_commit_activity(commit: Mapping[str, Any]) -> bool:
+    sha = str(commit.get("sha", "")).strip().lower()
+    if sha in _SUPPRESSED_ACTIVITY_SHAS:
+        return False
+    files = commit.get("files", [])
+    if isinstance(files, Sequence) and not isinstance(files, (str, bytes)):
+        return any(str(item or "").strip() for item in files)
+    return True
 
 
 def _collect_git_local_changes(repo_root: Path) -> list[dict[str, str]]:
@@ -747,6 +766,8 @@ def _should_skip_publishable_activity_path(
     if _contains_retired_surface_marker(token):
         return True
     if _is_retired_surface_module_path(token):
+        return True
+    if _is_missing_retired_greenfield_artifact_path(repo_root=repo_root, path=token):
         return True
     if _should_skip_internal_runtime_artifact(token):
         return True
@@ -831,6 +852,19 @@ def _should_skip_deleted_legacy_bug_path(
     if not token.startswith("bugs/"):
         return False
     if not (repo_root / "odylith" / "casebook" / "bugs" / "INDEX.md").is_file():
+        return False
+    return not surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=token).exists()
+
+
+def _is_missing_retired_greenfield_artifact_path(*, repo_root: Path, path: str) -> bool:
+    token = str(path or "").strip()
+    if not token:
+        return False
+    retired_prefixes = (
+        "src/odylith/runtime/governance/greenfield_",
+        "tests/unit/runtime/test_greenfield_",
+    )
+    if not token.startswith(retired_prefixes):
         return False
     return not surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=token).exists()
 

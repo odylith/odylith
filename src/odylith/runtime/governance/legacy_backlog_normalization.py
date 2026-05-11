@@ -11,7 +11,6 @@ from odylith.install.fs import atomic_write_text
 from odylith.runtime.common.consumer_profile import truth_root_path
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import execution_wave_contract
-from odylith.runtime.governance.greenfield_legacy_repairs import repair_legacy_merchant_lending_checkout_workstreams
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.governance.backlog_topology_contract import validate_topology_contract
 
@@ -64,7 +63,6 @@ def normalize_legacy_backlog_index(*, repo_root: str | Path, today: dt.date | No
             normalized_table_sections=(),
         )
     current_day = today or dt.date.today()
-    merchant_lending_repair = repair_legacy_merchant_lending_checkout_workstreams(repo_root=root)
     normalized_idea_specs = _normalize_legacy_idea_specs(idea_root=idea_root)
     ideas, _idea_errors = backlog_contract._validate_idea_specs(idea_root)  # noqa: SLF001
     snapshot = backlog_contract.load_backlog_index_snapshot(backlog_index)
@@ -150,9 +148,7 @@ def normalize_legacy_backlog_index(*, repo_root: str | Path, today: dt.date | No
     updated = _update_last_updated("\n".join(lines), today=current_day)
     if not updated.endswith("\n"):
         updated += "\n"
-    all_normalized_idea_specs = tuple(
-        dict.fromkeys((*merchant_lending_repair.repaired_specs, *normalized_idea_specs))
-    )
+    all_normalized_idea_specs = tuple(dict.fromkeys(normalized_idea_specs))
     changed = (
         updated != content
         or bool(all_normalized_idea_specs)

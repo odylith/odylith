@@ -79,33 +79,20 @@
       return String(value || "").trim().replace(/[\s_-]+/g, "").toLowerCase();
     }
 
-    function displayRiskStatus(value) {
-      const text = String(value || "").trim();
-      if (!text) return "Unknown";
-      const compact = compactStatusToken(text);
-      if (compact === "inprogress") return "In progress";
-      if (compact === "fixedpendingrelease") return "Fixed pending release";
-      return text
-        .replace(/[_-]+/g, " ")
-        .replace(/([a-z])([A-Z])/g, "$1 $2")
-        .replace(/\s+/g, " ")
-        .trim();
-    }
-
     function bugRequiresActiveRiskAttention(row) {
       if (!row || row.is_open_critical !== true) return false;
       return ACTIVE_CRITICAL_RISK_STATUS_TOKENS.has(compactStatusToken(row.status));
     }
 
-    function renderRiskItem({ severity, title, status, meta = "" }) {
-      const metaLabel = status ? displayRiskStatus(status) : String(meta || "").trim();
+    function renderRiskItem({ severity, title, meta = "" }) {
+      const metaLabel = String(meta || "").trim();
       return `
         <div class="risk">
-          <div class="risk-line">
-            <strong class="risk-severity">${escapeHtml(severity || "warning")}</strong>
+          <strong class="risk-severity">${escapeHtml(severity || "warning")}</strong>
+          <div class="risk-copy">
             <span class="risk-title">${escapeHtml(title || "Risk needs attention.")}</span>
+            ${metaLabel ? `<span class="risk-meta">${escapeHtml(metaLabel)}</span>` : ""}
           </div>
-          ${metaLabel ? `<div class="risk-meta"><span>${escapeHtml(metaLabel)}</span></div>` : ""}
         </div>
       `;
     }
@@ -164,7 +151,7 @@
       const blocks = [];
 
       for (const row of scoped.bugs.slice(0, 6)) {
-        blocks.push(renderRiskItem({ severity: row.severity, title: row.title, status: row.status }));
+        blocks.push(renderRiskItem({ severity: row.severity, title: row.title }));
       }
       for (const row of scoped.selfHost.slice(0, 3)) {
         blocks.push(renderRiskItem({ severity: row.severity || "warning", title: row.message || "Self-host posture needs attention." }));

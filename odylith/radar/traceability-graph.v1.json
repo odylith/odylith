@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "34448d965d9f8cfb557c7752a670c005fbd18fc81be1fad7589c517dd2fdd874",
+    "digest": "bcef83704af19d71ba3d78bfdc00b0a6d7142277466109e3e02b15273a1d7615",
     "file_count": 312,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -11038,6 +11038,13 @@
         "B-020",
         "B-021",
         "B-022",
+        "B-001",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-072",
+        "B-096",
+        "B-099",
         "B-038",
         "B-037",
         "B-033",
@@ -11056,7 +11063,6 @@
         "B-083",
         "B-093",
         "B-092",
-        "B-096",
         "B-110",
         "B-108",
         "B-109",
@@ -11064,11 +11070,11 @@
       ],
       "diagrams": [
         "D-024",
+        "D-002",
         "D-039",
         "D-041",
         "D-044",
         "D-007",
-        "D-002",
         "D-012",
         "D-014",
         "D-019",
@@ -11414,6 +11420,12 @@
         "B-061",
         "B-062",
         "B-072",
+        "B-001",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-096",
+        "B-099",
         "B-080",
         "B-075",
         "B-071",
@@ -11423,10 +11435,10 @@
         "D-005",
         "D-009",
         "D-026",
+        "D-002",
         "D-007",
         "D-010",
         "D-011",
-        "D-002",
         "D-020",
         "D-025",
         "D-030",
@@ -11437,6 +11449,7 @@
       ],
       "sources": [
         "manifest",
+        "catalog",
         "idea_specs"
       ]
     },
@@ -11497,6 +11510,10 @@
         "B-102",
         "B-103",
         "B-104",
+        "B-001",
+        "B-031",
+        "B-058",
+        "B-059",
         "B-096",
         "B-110",
         "B-109",
@@ -11562,6 +11579,12 @@
       "file": "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
       "workstreams": [
         "B-096",
+        "B-001",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-072",
+        "B-099",
         "B-110",
         "B-107",
         "B-108",
@@ -11842,9 +11865,14 @@
       "file": "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
       "workstreams": [
         "B-031",
+        "B-001",
+        "B-058",
+        "B-059",
+        "B-072",
+        "B-096",
+        "B-099",
         "B-062",
         "B-082",
-        "B-096",
         "B-110",
         "B-107",
         "B-141"
@@ -12008,6 +12036,11 @@
         "B-010",
         "B-058",
         "B-059",
+        "B-001",
+        "B-031",
+        "B-072",
+        "B-096",
+        "B-099",
         "B-021",
         "B-011",
         "B-038",
@@ -12049,7 +12082,11 @@
       "workstreams": [
         "B-058",
         "B-059",
+        "B-001",
+        "B-031",
+        "B-072",
         "B-096",
+        "B-099",
         "B-110",
         "B-109",
         "B-106"
@@ -12064,6 +12101,7 @@
       ],
       "sources": [
         "manifest",
+        "catalog",
         "idea_specs"
       ]
     },
@@ -12086,7 +12124,12 @@
       "file": "odylith/registry/source/components/odylith-projection-bundle/CURRENT_SPEC.md",
       "workstreams": [
         "B-058",
-        "B-059"
+        "B-059",
+        "B-001",
+        "B-031",
+        "B-072",
+        "B-096",
+        "B-099"
       ],
       "diagrams": [
         "D-002",
@@ -12096,6 +12139,7 @@
       ],
       "sources": [
         "manifest",
+        "catalog",
         "idea_specs"
       ]
     },
@@ -12118,7 +12162,12 @@
       "file": "odylith/registry/source/components/odylith-projection-snapshot/CURRENT_SPEC.md",
       "workstreams": [
         "B-058",
-        "B-059"
+        "B-059",
+        "B-001",
+        "B-031",
+        "B-072",
+        "B-096",
+        "B-099"
       ],
       "diagrams": [
         "D-002",
@@ -12128,6 +12177,7 @@
       ],
       "sources": [
         "manifest",
+        "catalog",
         "idea_specs"
       ]
     },
@@ -12151,7 +12201,12 @@
       "workstreams": [
         "B-021",
         "B-058",
-        "B-059"
+        "B-059",
+        "B-001",
+        "B-031",
+        "B-072",
+        "B-096",
+        "B-099"
       ],
       "diagrams": [
         "D-002",
@@ -12161,6 +12216,7 @@
       ],
       "sources": [
         "manifest",
+        "catalog",
         "idea_specs"
       ]
     },
@@ -12183,15 +12239,21 @@
       "workstreams": [
         "B-062",
         "B-072",
+        "B-001",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-096",
+        "B-099",
         "B-075",
         "B-071",
         "B-110"
       ],
       "diagrams": [
         "D-026",
+        "D-002",
         "D-044",
         "D-004",
-        "D-002",
         "D-030",
         "D-031",
         "D-028",
@@ -12524,6 +12586,11 @@
       "workstreams": [
         "B-001",
         "B-072",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-096",
+        "B-099",
         "B-002",
         "B-009",
         "B-022",
@@ -12534,7 +12601,6 @@
         "B-016",
         "B-013",
         "B-015",
-        "B-031",
         "B-042",
         "B-069",
         "B-084",
@@ -12573,6 +12639,7 @@
       ],
       "sources": [
         "manifest",
+        "catalog",
         "idea_specs"
       ]
     },
@@ -12594,12 +12661,16 @@
       "workstreams": [
         "B-001",
         "B-072",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-096",
+        "B-099",
         "B-002",
         "B-009",
         "B-016",
         "B-013",
         "B-015",
-        "B-031",
         "B-069",
         "B-084",
         "B-087",
@@ -12638,6 +12709,7 @@
       ],
       "sources": [
         "manifest",
+        "catalog",
         "idea_specs"
       ]
     },
@@ -12659,6 +12731,11 @@
       "workstreams": [
         "B-001",
         "B-072",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-096",
+        "B-099",
         "B-022",
         "B-012",
         "B-038",
@@ -12669,7 +12746,6 @@
         "B-047",
         "B-061",
         "B-062",
-        "B-096",
         "B-110",
         "B-109",
         "B-106"
@@ -12728,7 +12804,15 @@
         "registry",
         "casebook"
       ],
-      "related_component_ids": []
+      "related_component_ids": [
+        "odylith",
+        "dashboard",
+        "radar",
+        "atlas",
+        "compass",
+        "registry",
+        "casebook"
+      ]
     },
     {
       "id": "diagram:D-002",
@@ -12749,9 +12833,20 @@
       ],
       "component_names": [
         "odylith-context-engine",
-        "memory substrate",
-        "delivery and diagnosis",
-        "execution engine and agent control"
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-memory-backend",
+        "odylith-remote-retrieval",
+        "odylith-memory-contracts",
+        "delivery-intelligence",
+        "governance-intervention-engine",
+        "proof-state",
+        "tribunal",
+        "execution-engine",
+        "subagent-router",
+        "subagent-orchestrator",
+        "odylith-chatter",
+        "benchmark"
       ],
       "related_component_ids": [
         "odylith",
@@ -12761,12 +12856,15 @@
         "odylith-memory-backend",
         "odylith-remote-retrieval",
         "odylith-memory-contracts",
+        "delivery-intelligence",
+        "governance-intervention-engine",
         "execution-engine",
         "proof-state",
         "odylith-chatter",
         "subagent-router",
         "subagent-orchestrator",
-        "tribunal"
+        "tribunal",
+        "benchmark"
       ]
     },
     {
@@ -14763,6 +14861,11 @@
     },
     {
       "source": "B-001",
+      "target": "component:benchmark",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-001",
       "target": "component:casebook",
       "edge_type": "component_linkage"
     },
@@ -14778,12 +14881,62 @@
     },
     {
       "source": "B-001",
+      "target": "component:delivery-intelligence",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "component:execution-engine",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "component:governance-intervention-engine",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-001",
       "target": "component:odylith",
       "edge_type": "component_linkage"
     },
     {
       "source": "B-001",
+      "target": "component:odylith-chatter",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-001",
       "target": "component:odylith-context-engine",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "component:odylith-memory-backend",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "component:odylith-memory-contracts",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "component:odylith-projection-bundle",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "component:odylith-projection-snapshot",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "component:odylith-remote-retrieval",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-001",
+      "target": "component:proof-state",
       "edge_type": "component_linkage"
     },
     {
@@ -16623,6 +16776,26 @@
     },
     {
       "source": "B-031",
+      "target": "component:benchmark",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-031",
+      "target": "component:delivery-intelligence",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-031",
+      "target": "component:execution-engine",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-031",
+      "target": "component:governance-intervention-engine",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-031",
       "target": "component:odylith",
       "edge_type": "component_linkage"
     },
@@ -16638,12 +16811,47 @@
     },
     {
       "source": "B-031",
+      "target": "component:odylith-memory-backend",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-031",
+      "target": "component:odylith-memory-contracts",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-031",
+      "target": "component:odylith-projection-bundle",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-031",
+      "target": "component:odylith-projection-snapshot",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-031",
+      "target": "component:odylith-remote-retrieval",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-031",
+      "target": "component:proof-state",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-031",
       "target": "component:subagent-orchestrator",
       "edge_type": "component_linkage"
     },
     {
       "source": "B-031",
       "target": "component:subagent-router",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-031",
+      "target": "component:tribunal",
       "edge_type": "component_linkage"
     },
     {
@@ -17568,12 +17776,37 @@
     },
     {
       "source": "B-058",
+      "target": "component:benchmark",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-058",
       "target": "component:dashboard",
       "edge_type": "component_linkage"
     },
     {
       "source": "B-058",
+      "target": "component:delivery-intelligence",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-058",
+      "target": "component:execution-engine",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-058",
+      "target": "component:governance-intervention-engine",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-058",
       "target": "component:odylith",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-058",
+      "target": "component:odylith-chatter",
       "edge_type": "component_linkage"
     },
     {
@@ -17608,7 +17841,27 @@
     },
     {
       "source": "B-058",
+      "target": "component:proof-state",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-058",
       "target": "component:registry",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-058",
+      "target": "component:subagent-orchestrator",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-058",
+      "target": "component:subagent-router",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-058",
+      "target": "component:tribunal",
       "edge_type": "component_linkage"
     },
     {
@@ -17648,12 +17901,37 @@
     },
     {
       "source": "B-059",
+      "target": "component:benchmark",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-059",
       "target": "component:compass",
       "edge_type": "component_linkage"
     },
     {
       "source": "B-059",
+      "target": "component:delivery-intelligence",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-059",
+      "target": "component:execution-engine",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-059",
+      "target": "component:governance-intervention-engine",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-059",
       "target": "component:odylith",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-059",
+      "target": "component:odylith-chatter",
       "edge_type": "component_linkage"
     },
     {
@@ -17688,12 +17966,32 @@
     },
     {
       "source": "B-059",
+      "target": "component:proof-state",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-059",
       "target": "component:radar",
       "edge_type": "component_linkage"
     },
     {
       "source": "B-059",
       "target": "component:registry",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-059",
+      "target": "component:subagent-orchestrator",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-059",
+      "target": "component:subagent-router",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-059",
+      "target": "component:tribunal",
       "edge_type": "component_linkage"
     },
     {
@@ -18308,6 +18606,11 @@
     },
     {
       "source": "B-072",
+      "target": "component:benchmark",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-072",
       "target": "component:compass",
       "edge_type": "component_linkage"
     },
@@ -18323,12 +18626,47 @@
     },
     {
       "source": "B-072",
+      "target": "component:governance-intervention-engine",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-072",
       "target": "component:odylith",
       "edge_type": "component_linkage"
     },
     {
       "source": "B-072",
+      "target": "component:odylith-chatter",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-072",
       "target": "component:odylith-context-engine",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-072",
+      "target": "component:odylith-memory-backend",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-072",
+      "target": "component:odylith-memory-contracts",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-072",
+      "target": "component:odylith-projection-bundle",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-072",
+      "target": "component:odylith-projection-snapshot",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-072",
+      "target": "component:odylith-remote-retrieval",
       "edge_type": "component_linkage"
     },
     {
@@ -19208,6 +19546,11 @@
     },
     {
       "source": "B-096",
+      "target": "component:delivery-intelligence",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-096",
       "target": "component:execution-engine",
       "edge_type": "component_linkage"
     },
@@ -19228,7 +19571,42 @@
     },
     {
       "source": "B-096",
+      "target": "component:odylith-memory-backend",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-096",
       "target": "component:odylith-memory-contracts",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-096",
+      "target": "component:odylith-projection-bundle",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-096",
+      "target": "component:odylith-projection-snapshot",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-096",
+      "target": "component:odylith-remote-retrieval",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-096",
+      "target": "component:proof-state",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-096",
+      "target": "component:subagent-orchestrator",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-096",
+      "target": "component:subagent-router",
       "edge_type": "component_linkage"
     },
     {
@@ -19318,7 +19696,22 @@
     },
     {
       "source": "B-099",
+      "target": "component:benchmark",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-099",
+      "target": "component:delivery-intelligence",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-099",
       "target": "component:execution-engine",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-099",
+      "target": "component:governance-intervention-engine",
       "edge_type": "component_linkage"
     },
     {
@@ -19328,7 +19721,57 @@
     },
     {
       "source": "B-099",
+      "target": "component:odylith-chatter",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-099",
       "target": "component:odylith-context-engine",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-099",
+      "target": "component:odylith-memory-backend",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-099",
+      "target": "component:odylith-memory-contracts",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-099",
+      "target": "component:odylith-projection-bundle",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-099",
+      "target": "component:odylith-projection-snapshot",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-099",
+      "target": "component:odylith-remote-retrieval",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-099",
+      "target": "component:proof-state",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-099",
+      "target": "component:subagent-orchestrator",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-099",
+      "target": "component:subagent-router",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-099",
+      "target": "component:tribunal",
       "edge_type": "component_linkage"
     },
     {
@@ -24620,7 +25063,7 @@
     },
     "connectivity": {
       "spine_node_count": 256,
-      "structural_edge_count": 1625,
+      "structural_edge_count": 1694,
       "connected_component_count": 3,
       "largest_component_size": 254,
       "isolated_node_count": 2,
@@ -24639,11 +25082,11 @@
     "execution_program_count": 5,
     "execution_wave_count": 30,
     "node_count": 376,
-    "edge_count": 1778,
+    "edge_count": 1847,
     "warning_count": 6,
     "warning_item_count": 6,
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-05-09 16:27:44Z"
+  "generated_utc": "2026-05-11 08:55:14Z"
 }

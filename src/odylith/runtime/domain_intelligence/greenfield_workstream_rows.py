@@ -17,10 +17,10 @@ def build_child_backlog_rows(
     """Return product-specific child workstreams for the inferred greenfield family."""
 
     family = domain_profile.family
-    if family == "defi_merchant_lending":
-        return _merchant_lending_rows(title=title, components=components, diagrams=diagrams)
     if family == "defi_risk":
         return _defi_risk_rows(title=title, components=components, diagrams=diagrams)
+    if family == "capital_merchant_lending":
+        return _merchant_capital_rows(title=title, components=components, diagrams=diagrams)
     if family == "commerce":
         return _commerce_rows(title=title, components=components, diagrams=diagrams)
     if family == "clinical_trial_matching":
@@ -68,141 +68,6 @@ def build_child_backlog_rows(
     return _generic_rows(title=title, components=components, diagrams=diagrams)
 
 
-def _merchant_lending_rows(
-    *,
-    title: str,
-    components: Mapping[str, str],
-    diagrams: Mapping[str, str],
-) -> list[dict[str, Any]]:
-    return [
-        _row(
-            row_id="WS-01",
-            title="Prove merchant borrower application and funding-status workflow",
-            problem=(
-                f"{title} needs a merchant-borrower workflow before implementation can reason about Shopify "
-                "data consent, eligibility, funding state, repayment visibility, or regulated blocked states."
-            ),
-            customer="Shopify SMB merchant borrowers, capital-ops reviewers, and engineers building the first merchant-capital slice.",
-            opportunity=(
-                "Turn the lending intent into a narrow borrower path: submit capital request, evaluate eligibility, "
-                "show offer or decline, expose liquidity and compliance blocks, and display funding plus repayment state."
-            ),
-            product_view=(
-                "The merchant capital portal owns borrower application intake, Shopify snapshot consent, offer review, "
-                "funding-status visibility, repayment-state visibility, and degraded states for stale data, compliance, "
-                "or insufficient stablecoin liquidity."
-            ),
-            first_slice=(
-                "Prove fixture-backed merchant application through eligible, declined, stale-shopify, "
-                "liquidity_blocked, compliance_blocked, funded, and repayment_due states."
-            ),
-            success_metrics=[
-                "Merchant borrower workflow has source-backed UI or API proof for application, offer, blocked, funded, and repayment-visible states.",
-                "Borrower-visible funding state is derived from the credit-liquidity contract, not presentation-only labels.",
-                "No first-release workstream depends on retail-buyer, retail-purchase, or card-processing semantics.",
-            ],
-            component_focus=[components["experience"], components["domain"]],
-            related_diagram_slugs=[diagrams["overview"], diagrams["slice"], diagrams["component_map"]],
-            dependencies=[
-                "Depends on the credit-liquidity core for eligibility, facility, disbursement, repayment, liquidity, and compliance state.",
-                "Depends on lending fixtures for Shopify snapshot freshness, compliance status, stablecoin liquidity, and replayed ledger events.",
-            ],
-            interfaces=[
-                "Merchant application intake with shop identifier, consent posture, requested capital amount, and operator/audit context.",
-                "Offer and funding-status read model with eligibility, limit, terms, liquidity state, compliance state, disbursement state, and repayment state.",
-                "Borrower-visible degraded-state contract for stale Shopify data, missing KYB, sanctions block, liquidity shortfall, and paused disbursement.",
-            ],
-            validation=[
-                "Behavior proof covers eligible merchant, declined merchant, stale Shopify data, liquidity shortfall, compliance block, funded state, and repayment_due state.",
-                "Negative proof confirms the first workflow makes no live Shopify, live DeFi, custody, private-key, or production stablecoin movement call.",
-            ],
-        ),
-        _row(
-            row_id="WS-02",
-            title="Define credit facility, liquidity, and repayment contract",
-            problem=(
-                f"{title} cannot make trustworthy lending claims without a domain contract for Shopify snapshot "
-                "freshness, eligibility, facility terms, compliance gates, stablecoin liquidity, disbursement, and repayment."
-            ),
-            customer="Engineers implementing credit and liquidity rules, capital-ops reviewers, and regulated-release reviewers.",
-            opportunity=(
-                "Make the money-state model explicit before portal, storage, treasury, or provider-adapter choices harden into accidental lending architecture."
-            ),
-            product_view=(
-                "The credit-liquidity core owns deterministic merchant snapshot evaluation, facility lifecycle, compliance block, "
-                "liquidity allocation, idempotent disbursement, and repayment replay semantics."
-            ),
-            first_slice=(
-                "Write the pure facility contract and fixture-backed implementation consumed by the merchant portal: "
-                "eligibility, terms, compliance state, liquidity state, disbursement state, and repayment state."
-            ),
-            success_metrics=[
-                "Contract tests prove eligible, declined, stale-shopify, liquidity_blocked, compliance_blocked, duplicate-disbursement, and repayment-replay outcomes.",
-                "The contract has no live Shopify, live DeFi protocol, custody, private-key, production credential, or legal-approval dependency.",
-                "Facility, disbursement, and repayment state transitions are idempotent under retry and replay.",
-            ],
-            component_focus=[components["domain"]],
-            related_diagram_slugs=[diagrams["component_map"], diagrams["domain_state"], diagrams["slice"]],
-            dependencies=[
-                "Depends on confirmed merchant borrower workflow semantics and fixture schemas for Shopify, compliance, liquidity, and ledger events.",
-                "Defers provider adapters, custody posture, legal underwriting decisions, and production treasury execution until release gates are explicit.",
-            ],
-            interfaces=[
-                "Merchant snapshot schema with shop identity, sales history, chargeback posture, currency, consent, and freshness.",
-                "Credit facility command/query contract for eligibility, limit, terms, compliance status, liquidity status, facility state, and repayment schedule.",
-                "Idempotent stablecoin disbursement and repayment event contract with replay key, actor, amount, currency, timestamp, and audit evidence.",
-            ],
-            validation=[
-                "Contract proof covers eligibility, decline, stale Shopify snapshot, liquidity shortfall, compliance block, duplicate disbursement, and repayment replay.",
-                "Negative proof fails closed if a first-release path tries live protocol execution, custody, private keys, or production merchant data.",
-            ],
-            evidence_tier="odylith_assumption",
-        ),
-        _row(
-            row_id="WS-03",
-            title="Prove merchant lending fixtures and regulated proof harness",
-            problem=(
-                f"{title} needs closed-world lending evidence before release movement can claim merchant capital, "
-                "stablecoin funding, repayment, compliance, or no-custody posture."
-            ),
-            customer="Release reviewers, capital-ops reviewers, future operators, and engineers maintaining regulated lending proof.",
-            opportunity=(
-                "Capture deterministic merchant-lending fixtures, replay checks, negative live-access guards, and release evidence while scope is small."
-            ),
-            product_view=(
-                "The lending proof harness owns Shopify snapshot fixtures, KYB/AML/sanctions fault cases, liquidity scenarios, "
-                "stablecoin ledger replay, duplicate disbursement checks, repayment replay, and regulated release proof."
-            ),
-            first_slice=(
-                "Create the first fixture replay harness for eligible funding, declined application, stale Shopify data, "
-                "liquidity shortfall, compliance block, duplicate disbursement, and repayment replay."
-            ),
-            success_metrics=[
-                "Release proof runs locally with deterministic merchant, compliance, liquidity, disbursement, and repayment fixtures.",
-                "Harness fails closed on live Shopify access, live DeFi protocol access, custody keys, production credentials, or unpinned external data.",
-                "Proof report distinguishes user_intent, assumptions, and source-backed evidence for regulated lending claims.",
-            ],
-            component_focus=[components["validation"]],
-            related_diagram_slugs=[diagrams["validation_release"], diagrams["domain_state"]],
-            dependencies=[
-                "Depends on merchant portal visible-state contract and credit-liquidity domain contract before release proof expands.",
-                "Depends on fixture schemas for Shopify snapshot freshness, compliance block, liquidity state, stablecoin ledger events, and repayment schedule.",
-            ],
-            interfaces=[
-                "Scenario runner with merchant fixture, liquidity fixture, compliance state, expected facility state, and proof report output.",
-                "Fixture schema for Shopify merchant data freshness, stablecoin ledger events, liquidity source posture, and compliance gate outcomes.",
-                "Release-readiness report that lists passed fixtures, blocked live-access attempts, unresolved regulated assumptions, and retest triggers.",
-            ],
-            validation=[
-                "Replay proof covers eligible, declined, stale-shopify, liquidity-blocked, compliance-blocked, duplicate-disbursement, repayment-replay, and no-live-access cases.",
-                "Proof fails closed when fixture provenance, compliance state, replay key, or liquidity timestamp is missing.",
-            ],
-            priority="P2",
-            evidence_tier="odylith_assumption",
-        ),
-    ]
-
-
 def _defi_risk_rows(
     *,
     title: str,
@@ -214,7 +79,7 @@ def _defi_risk_rows(
             row_id="WS-01",
             title="Prove analyst watchlist and alert triage workflow",
             problem=(
-                f"{title} needs one analyst-visible risk workflow before implementation can distinguish monitored "
+                "The risk workflow needs one analyst-visible path before implementation can distinguish monitored "
                 "subjects, stale data, unsupported chains, alert severity, confidence, and acknowledgement semantics."
             ),
             customer="Risk analysts and engineers implementing the first non-custodial risk-sentinel slice.",
@@ -255,7 +120,7 @@ def _defi_risk_rows(
             row_id="WS-02",
             title="Define exposure, freshness, and alert contract",
             problem=(
-                f"{title} cannot produce trustworthy risk cards without a domain contract for risk subject identity, "
+                "Risk cards cannot be trustworthy without a domain contract for risk subject identity, "
                 "exposure normalization, oracle/indexer freshness, liquidity shock, confidence, and alert transitions."
             ),
             customer="Engineers implementing risk math and reviewers checking non-custodial, no-advice boundaries.",
@@ -287,7 +152,7 @@ def _defi_risk_rows(
         _row(
             row_id="WS-03",
             title="Prove scenario replay and risk release harness",
-            problem=f"{title} needs deterministic DeFi scenario proof before release movement can claim trustworthy risk detection.",
+            problem="The risk sentinel needs deterministic scenario proof before release movement can claim trustworthy risk detection.",
             customer="Risk reviewers, maintainers, and future operators who need reproducible risk evidence instead of a one-off demo.",
             opportunity="Capture oracle, liquidity, protocol-health, exposure, acknowledgement, and no-live-network proof while the sentinel is still small.",
             product_view="The scenario replay harness owns local fixtures, fault cases, replay reports, and release proof for console plus risk-engine behavior.",
@@ -317,7 +182,7 @@ def _commerce_rows(
         _row(
             row_id="WS-01",
             title="Prove shopper checkout and recovery workflow",
-            problem=f"{title} needs a shopper-visible checkout path before implementation can avoid generic storefront scaffolding.",
+            problem="The checkout product needs a shopper-visible recovery path before implementation can avoid generic storefront scaffolding.",
             customer="Shoppers, commerce operators, and engineers implementing the first checkout slice.",
             opportunity="Turn broad commerce intent into a browse, cart, checkout, failure, retry, and completion path.",
             product_view="The storefront owns shopper entry, cart state, checkout handoff, visible payment failure, retry, and completion criteria.",
@@ -335,7 +200,7 @@ def _commerce_rows(
         _row(
             row_id="WS-02",
             title="Define checkout order and payment-state contract",
-            problem=f"{title} cannot prove checkout without a named contract for cart, order draft, payment handoff, callback replay, and recovery state.",
+            problem="Checkout cannot be proven without a named contract for cart, order draft, payment handoff, callback replay, and recovery state.",
             customer="Engineers implementing checkout/order boundaries and reviewers checking payment correctness.",
             opportunity="Make checkout and order invariants explicit before storage, provider SDK, or UI choices harden into accidental architecture.",
             product_view="The checkout/order core owns cart validation, idempotent order draft creation, payment callback handling, and recovery transitions.",
@@ -354,7 +219,7 @@ def _commerce_rows(
         _row(
             row_id="WS-03",
             title="Prove checkout replay and release harness",
-            problem=f"{title} needs repeatable checkout proof, fallback checks, and release-readiness evidence before the first slice can be promoted.",
+            problem="The checkout slice needs repeatable proof, fallback checks, and release-readiness evidence before it can be promoted.",
             customer="Maintainers, reviewers, and future operators who need reproducible validation instead of a one-off manual demo.",
             opportunity="Capture checkout smoke commands, sandbox fixtures, replay reports, and release proof while the program is still small.",
             product_view="A checkout proof harness records happy, empty-cart, failed-payment, retry, callback-replay, accessibility, and recovery checks.",
@@ -368,6 +233,121 @@ def _commerce_rows(
             dependencies=["Depends on WS-01 and WS-02 behavior proof before hardening expands scope."],
             interfaces=["Defines local smoke commands, fixture inputs, report output, and release-readiness checks."],
             validation=["Smoke proof runs under the repo-native toolchain and fails closed on missing fixtures or stale proof."],
+            priority="P2",
+            evidence_tier="odylith_assumption",
+        ),
+    ]
+
+
+def _merchant_capital_rows(
+    *,
+    title: str,
+    components: Mapping[str, str],
+    diagrams: Mapping[str, str],
+) -> list[dict[str, Any]]:
+    return [
+        _row(
+            row_id="WS-01",
+            title="Prove merchant funding request and offer review workflow",
+            problem=(
+                "Merchants cannot trust a capital product unless one funding request clearly shows store-signal readiness, "
+                "eligibility, offer terms, manual approval, funding status, repayment state, and unresolved capital risk."
+            ),
+            customer="Merchants, risk operators, treasury reviewers, and engineers implementing the first funding slice.",
+            opportunity=(
+                "Turn broad capital intent into a merchant request, underwriting review, offer, approval, payout status, "
+                "repayment evidence, and ledger-reconciliation path."
+            ),
+            product_view=(
+                "B-002 proves the visible merchant journey: request capital, review store-data readiness, see an offer or rejection, "
+                "wait for manual risk and treasury approval, then track funding and repayment evidence."
+            ),
+            first_slice=(
+                "Prove one merchant profile through requested, missing-data, eligible-offer, manual-risk-review, "
+                "manual-treasury-approval, funded, repayment-recorded, and reconciled states."
+            ),
+            success_metrics=[
+                "Merchant workflow has source-backed UI or API proof for request, offer, approval, funding status, and repayment evidence.",
+                "Offer terms always carry source-signal provenance, policy trace, approval owner, and evidence tier.",
+                "No first-release workflow implies live custody, automated protocol routing, or production lending compliance readiness.",
+            ],
+            component_focus=[components["experience"], components["domain"]],
+            related_diagram_slugs=[diagrams["overview"], diagrams["slice"], diagrams["component_map"]],
+            dependencies=[
+                "Depends on the underwriting and facility contract for eligibility, offer terms, approval state, facility state, and repayment schedule.",
+                "Depends on funding evidence fixtures for source store data, settlement status, repayment event, and ledger reconciliation.",
+            ],
+            interfaces=[
+                "Merchant funding request command with business profile, requested amount, store signal references, and consent posture.",
+                "Offer review read model with eligibility, approved amount, pricing, repayment terms, policy trace, and funding status.",
+                "Blocked-state contract for missing store data, unresolved lender-of-record, custody, repayment rail, or settlement rail.",
+            ],
+            validation=[
+                "Behavior proof covers request created, missing store data, eligible offer, rejected request, manual approval, funded, repayment-recorded, and reconciled states.",
+                "Negative proof confirms no production merchant data, live bank movement, stablecoin custody, or DeFi protocol execution is required for first-release proof.",
+            ],
+        ),
+        _row(
+            row_id="WS-02",
+            title="Define eligibility, offer, approval, and repayment contract",
+            problem=(
+                "Funding offers cannot be trustworthy without a domain contract for merchant source signals, "
+                "eligibility, pricing, repayment terms, risk approval, treasury approval, facility state, and ledger evidence."
+            ),
+            customer="Engineers implementing underwriting semantics and reviewers checking credit, treasury, and compliance boundaries.",
+            opportunity="Make capital state explicit before live providers, custody choices, settlement rails, repayment collection, or UI choices blur the evidence boundary.",
+            product_view=(
+                "The underwriting and facility core owns deterministic merchant profile normalization, eligibility, offer trace, "
+                "manual approval state, funding facility state, and repayment schedule semantics."
+            ),
+            first_slice=(
+                "Write the funding contract and minimal implementation consumed by the merchant workflow: merchant profile, "
+                "source signals, eligibility, offer, approval, facility state, repayment schedule, and ledger reference."
+            ),
+            success_metrics=[
+                "Contract tests prove missing-data rejection, eligibility rejection, offer generation, manual approval, payout block, funding state, and repayment transition.",
+                "Lender-of-record, risk owner, treasury owner, custody, settlement rail, repayment rail, and protocol exposure cannot remain hidden in a normal success claim.",
+                "The contract has no live merchant data, production lending decision, stablecoin custody, bank movement, or DeFi execution dependency.",
+            ],
+            component_focus=[components["domain"]],
+            related_diagram_slugs=[diagrams["component_map"], diagrams["domain_state"], diagrams["slice"]],
+            dependencies=["Depends on confirmed merchant workflow semantics and deterministic merchant, underwriting, approval, settlement, and repayment fixtures."],
+            interfaces=[
+                "Merchant profile schema with source signal provenance, consent, freshness, and risk flags.",
+                "Eligibility and offer command returning decision state, amount, pricing, repayment terms, policy trace, and approval requirements.",
+                "Facility state query for requested, eligible, offered, approved, funded, repaying, repaid, rejected, and blocked states.",
+            ],
+            validation=["Contract proof covers source signals, eligibility, offer trace, approval, settlement status, repayment state, and ledger reconciliation."],
+            evidence_tier="odylith_assumption",
+        ),
+        _row(
+            row_id="WS-03",
+            title="Prove funding, repayment, and ledger evidence harness",
+            problem="The capital-flow path needs deterministic proof before release movement can claim trustworthy funding or repayment behavior.",
+            customer="Risk reviewers, treasury reviewers, maintainers, and future operators who need reproducible funding evidence instead of a one-off demo.",
+            opportunity=(
+                "Capture source store signals, underwriting scenarios, manual approval, payout status, repayment event, "
+                "ledger reconciliation, and no-live-money proof while the product is still small."
+            ),
+            product_view=(
+                "The funding evidence harness owns local fixtures, scenario replay, approval reports, settlement evidence, "
+                "repayment evidence, ledger reconciliation, and release proof."
+            ),
+            first_slice=(
+                "Create the first scenario replay harness for missing data, rejected request, eligible offer, manual approval, "
+                "payout blocked, funded, repayment recorded, and ledger reconciliation."
+            ),
+            success_metrics=[
+                "Replay proof runs locally with deterministic fixtures and no production merchant data, credentials, custody, bank movement, or live protocol calls.",
+                "Harness fails closed on unlabeled lender-of-record, custody, loss-owner, settlement, repayment, or protocol-exposure assumptions.",
+            ],
+            component_focus=[components["validation"]],
+            related_diagram_slugs=[diagrams["validation_release"], diagrams["domain_state"]],
+            dependencies=["Depends on the merchant workflow and underwriting/facility contract before hardening expands scope."],
+            interfaces=["Defines scenario runner inputs, merchant fixture schema, expected funding states, repayment events, and release-readiness report output."],
+            validation=[
+                "Replay proof covers merchant source data, offer trace, manual approval, funding status, repayment event, and ledger reconciliation."
+            ],
             priority="P2",
             evidence_tier="odylith_assumption",
         ),
@@ -392,7 +372,7 @@ def _profiled_rows(
         _row(
             row_id="WS-01",
             title=workflow_title,
-            problem=f"{title} needs a concrete {actor} workflow before implementation can avoid generic scaffolding.",
+            problem=f"The {actor} workflow needs a concrete first path before implementation can avoid generic scaffolding.",
             customer=f"{actor.title()}s, reviewers, and engineers implementing the first product slice.",
             opportunity=f"Turn broad intent into a narrow workflow around {workflow_focus}.",
             product_view=f"The first workflow owns {workflow_focus}.",
@@ -411,7 +391,7 @@ def _profiled_rows(
         _row(
             row_id="WS-02",
             title=contract_title,
-            problem=f"{title} cannot make trustworthy product claims without a named contract for {domain_focus}.",
+            problem=f"The product cannot make trustworthy claims without a named contract for {domain_focus}.",
             customer="Engineers implementing source boundaries and reviewers checking correctness, safety, and evidence quality.",
             opportunity=f"Make {domain_focus} explicit before storage, provider, UI, or deployment choices harden into accidental architecture.",
             product_view=f"The domain component owns {domain_focus}.",
@@ -430,7 +410,7 @@ def _profiled_rows(
         _row(
             row_id="WS-03",
             title=proof_title,
-            problem=f"{title} needs deterministic proof before release movement can claim the first slice is real.",
+            problem="The first slice needs deterministic proof before release movement can claim it is real.",
             customer="Reviewers, maintainers, and future operators who need reproducible evidence instead of a one-off demo.",
             opportunity=f"Capture fixture, replay, report, and release-readiness evidence for {proof_focus}.",
             product_view=f"The proof harness owns deterministic scenarios for {proof_focus}.",
@@ -458,11 +438,12 @@ def _generic_rows(
 ) -> list[dict[str, Any]]:
     project = title.strip() or "Greenfield Product"
     product_noun = project.removeprefix("A ").removeprefix("An ").strip() or project
+    product_phrase = "the proposed product"
     return [
         _row(
             row_id="WS-01",
             title=f"Prove {product_noun} first workflow",
-            problem=f"{project} needs one concrete product workflow before implementation can avoid generic scaffolding.",
+            problem="The proposed product needs one concrete workflow before implementation can avoid generic scaffolding.",
             customer=f"Primary {product_noun.lower()} users or operators and the engineers implementing the first slice.",
             opportunity=(
                 f"Turn {product_noun.lower()} intent into a narrow behavior path that can be implemented, "
@@ -486,7 +467,7 @@ def _generic_rows(
         _row(
             row_id="WS-02",
             title=f"Define {product_noun} product model and invariants",
-            problem=f"{project} cannot scale beyond the first workflow without a named product model for state, commands, ownership, and invariants.",
+            problem=f"{product_phrase.title()} cannot scale beyond the first workflow without a named product model for state, commands, ownership, and invariants.",
             customer=f"Engineers implementing {product_noun.lower()} source boundaries and reviewers checking correctness of data and state transitions.",
             opportunity=(
                 f"Make the {product_noun.lower()} state model explicit before storage, API, worker, or UI choices "
@@ -508,7 +489,7 @@ def _generic_rows(
         _row(
             row_id="WS-03",
             title=f"Prove {product_noun} evidence harness",
-            problem=f"{project} needs repeatable proof, fallback checks, and release-readiness evidence before the first slice can be promoted.",
+            problem="The first slice needs repeatable proof, fallback checks, and release-readiness evidence before it can be promoted.",
             customer=f"Maintainers, reviewers, and future {product_noun.lower()} operators who need reproducible validation instead of a one-off manual demo.",
             opportunity=f"Capture {product_noun.lower()} verification commands, smoke fixtures, and release evidence while the program is still small.",
             product_view=f"The {product_noun.lower()} evidence harness records first-release smoke, regression checks, accessibility or safety gates, and operational recovery expectations.",
@@ -547,6 +528,7 @@ def _row(
     sizing: str = "M",
     complexity: str = "Medium",
     evidence_tier: str = "user_intent",
+    rationale_lines: list[str] | None = None,
 ) -> dict[str, Any]:
     return {
         "id": row_id,
@@ -566,4 +548,33 @@ def _row(
         "sizing": sizing,
         "complexity": complexity,
         "evidence_tier": evidence_tier,
+        "rationale_lines": rationale_lines
+        or _product_rationale_lines(
+            opportunity=opportunity,
+            first_slice=first_slice,
+            success_metrics=success_metrics,
+            priority=priority,
+        ),
     }
+
+
+def _product_rationale_lines(
+    *,
+    opportunity: str,
+    first_slice: str,
+    success_metrics: list[str],
+    priority: str,
+) -> list[str]:
+    proof = next((str(item).strip() for item in success_metrics if str(item).strip()), first_slice)
+    deferred = (
+        "Broader automation, live integrations, and release expansion stay outside this lane until the first proof path passes."
+        if priority == "P1"
+        else "Release hardening expands only after the first workflow and contract prove the product boundary."
+    )
+    return [
+        f"- why now: {opportunity}",
+        f"- expected outcome: {first_slice}",
+        "- tradeoff: keep the first release narrow enough that a reviewer can see the user path, owner, risk, and proof together.",
+        f"- deferred for now: {deferred}",
+        f"- ranking basis: {proof}",
+    ]

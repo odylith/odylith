@@ -21291,7 +21291,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/13",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -21321,7 +21320,6 @@
         "start_date": "2026-04-08",
         "last_activity_iso": "2026-04-12T10:37:07-07:00",
         "age_days": 21,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -21681,7 +21679,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/17",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -21711,7 +21708,6 @@
         "start_date": "2026-04-10",
         "last_activity_iso": "2026-04-29T23:17:51-07:00",
         "age_days": 19,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -22504,7 +22500,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/20",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -22534,7 +22529,6 @@
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-12T10:18:23-07:00",
         "age_days": 18,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -22877,7 +22871,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/35",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -22907,7 +22900,6 @@
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-11T17:40:14-07:00",
         "age_days": 18,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -23414,7 +23406,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/16",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -23444,7 +23435,6 @@
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-04-12T16:26:24-07:00",
         "age_days": 17,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -23866,7 +23856,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/21",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -23896,7 +23885,6 @@
         "start_date": "2026-04-15",
         "last_activity_iso": "2026-04-15T09:38:42-07:00",
         "age_days": 14,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -24475,7 +24463,6 @@
         "start_date": "2026-03-27",
         "last_activity_iso": "",
         "age_days": 33,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -25138,7 +25125,6 @@
         "start_date": "2026-03-27",
         "last_activity_iso": "",
         "age_days": 33,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -29075,7 +29061,6 @@
         "start_date": "2026-03-30",
         "last_activity_iso": "",
         "age_days": 30,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -29238,7 +29223,6 @@
         "start_date": "2026-03-30",
         "last_activity_iso": "",
         "age_days": 30,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -29401,7 +29385,6 @@
         "start_date": "2026-03-30",
         "last_activity_iso": "",
         "age_days": 30,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -29564,7 +29547,6 @@
         "start_date": "2026-03-30",
         "last_activity_iso": "",
         "age_days": 30,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -29723,7 +29705,6 @@
         "start_date": "2026-03-31",
         "last_activity_iso": "",
         "age_days": 29,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -29888,7 +29869,6 @@
         "start_date": "2026-04-02",
         "last_activity_iso": "",
         "age_days": 27,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -30053,7 +30033,6 @@
         "start_date": "2026-04-02",
         "last_activity_iso": "",
         "age_days": 27,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -30222,7 +30201,6 @@
         "start_date": "2026-04-02",
         "last_activity_iso": "",
         "age_days": 27,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -30387,7 +30365,6 @@
         "start_date": "2026-04-02",
         "last_activity_iso": "",
         "age_days": 27,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -30548,7 +30525,6 @@
         "start_date": "2026-04-04",
         "last_activity_iso": "",
         "age_days": 25,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -30717,7 +30693,6 @@
         "start_date": "2026-04-04",
         "last_activity_iso": "",
         "age_days": 25,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -32124,7 +32099,6 @@
         "start_date": "2026-04-06",
         "last_activity_iso": "",
         "age_days": 23,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -34090,7 +34064,6 @@
         "start_date": "2026-04-09",
         "last_activity_iso": "",
         "age_days": 20,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -34691,8 +34664,6 @@
             }
           ],
           "completion_label": "All waves complete",
-          "current_wave": null,
-          "next_wave": null,
           "waves": [
             {
               "wave_id": "W1",
@@ -36804,7 +36775,6 @@
         "start_date": "2026-04-10",
         "last_activity_iso": "",
         "age_days": 19,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -37153,7 +37123,6 @@
         "start_date": "2026-04-13",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 16,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -37308,7 +37277,6 @@
         "start_date": "2026-04-13",
         "last_activity_iso": "",
         "age_days": 16,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -37789,8 +37757,6 @@
             }
           ],
           "completion_label": "All waves complete",
-          "current_wave": null,
-          "next_wave": null,
           "waves": [
             {
               "wave_id": "W1",
@@ -38768,8 +38734,6 @@
             }
           ],
           "completion_label": "All waves complete",
-          "current_wave": null,
-          "next_wave": null,
           "waves": [
             {
               "wave_id": "W1",
@@ -41753,8 +41717,6 @@
             }
           ],
           "completion_label": "All waves complete",
-          "current_wave": null,
-          "next_wave": null,
           "waves": [
             {
               "wave_id": "W1",
@@ -42244,7 +42206,6 @@
         "start_date": "2026-04-17",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 12,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -42431,7 +42392,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
         "age_days": 4,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -42656,7 +42616,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
         "age_days": 4,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -42881,7 +42840,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
         "age_days": 4,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -43106,7 +43064,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
         "age_days": 4,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -43331,7 +43288,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 4,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -43518,7 +43474,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
         "age_days": 4,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -43743,7 +43698,6 @@
         "start_date": "2026-04-17",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 12,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -43943,7 +43897,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "",
         "age_days": 11,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -44139,7 +44092,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "",
         "age_days": 11,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -44335,7 +44287,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "",
         "age_days": 11,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -44531,7 +44482,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "",
         "age_days": 11,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -44727,7 +44677,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "",
         "age_days": 11,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -44923,7 +44872,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "",
         "age_days": 11,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -45119,7 +45067,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "",
         "age_days": 11,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -45315,7 +45262,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "",
         "age_days": 11,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -45626,7 +45572,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -45777,7 +45722,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -45928,7 +45872,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -46079,7 +46022,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -46230,7 +46172,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -46381,7 +46322,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -46532,7 +46472,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -46683,7 +46622,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -46834,7 +46772,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -46985,7 +46922,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -47136,7 +47072,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -47287,7 +47222,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -47623,7 +47557,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/17",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -47653,7 +47586,6 @@
           "start_date": "2026-04-10",
           "last_activity_iso": "2026-04-29T23:17:51-07:00",
           "age_days": 19,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -48291,7 +48223,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/20",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -48321,7 +48252,6 @@
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-12T10:18:23-07:00",
           "age_days": 18,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -48705,7 +48635,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/16",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -48735,7 +48664,6 @@
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-04-12T16:26:24-07:00",
           "age_days": 17,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -49157,7 +49085,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/21",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -49187,7 +49114,6 @@
           "start_date": "2026-04-15",
           "last_activity_iso": "2026-04-15T09:38:42-07:00",
           "age_days": 14,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -49583,7 +49509,6 @@
           "start_date": "2026-04-09",
           "last_activity_iso": "",
           "age_days": 20,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -49781,7 +49706,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "",
           "age_days": 11,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -49977,7 +49901,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "",
           "age_days": 11,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -50173,7 +50096,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "",
           "age_days": 11,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -50369,7 +50291,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "",
           "age_days": 11,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -50565,7 +50486,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "",
           "age_days": 11,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -50761,7 +50681,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "",
           "age_days": 11,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -50957,7 +50876,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "",
           "age_days": 11,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -51153,7 +51071,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "",
           "age_days": 11,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -53723,8 +53640,6 @@
               }
             ],
             "completion_label": "All waves complete",
-            "current_wave": null,
-            "next_wave": null,
             "waves": [
               {
                 "wave_id": "W1",
@@ -54844,8 +54759,6 @@
               }
             ],
             "completion_label": "All waves complete",
-            "current_wave": null,
-            "next_wave": null,
             "waves": [
               {
                 "wave_id": "W1",
@@ -55495,7 +55408,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 4,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -55682,7 +55594,6 @@
           "start_date": "2026-04-17",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 12,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -56387,8 +56298,6 @@
               }
             ],
             "completion_label": "All waves complete",
-            "current_wave": null,
-            "next_wave": null,
             "waves": [
               {
                 "wave_id": "W1",
@@ -59316,7 +59225,6 @@
           "start_date": "2026-04-13",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 16,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -59467,7 +59375,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -59618,7 +59525,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -59769,7 +59675,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -59920,7 +59825,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -60071,7 +59975,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -60222,7 +60125,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -60373,7 +60275,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -60524,7 +60425,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -60675,7 +60575,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -60826,7 +60725,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -60977,7 +60875,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -61128,7 +61025,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -61935,8 +61831,6 @@
               }
             ],
             "completion_label": "All waves complete",
-            "current_wave": null,
-            "next_wave": null,
             "waves": [
               {
                 "wave_id": "W1",
@@ -62426,7 +62320,6 @@
           "start_date": "2026-04-17",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 12,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -63618,7 +63511,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/13",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -63648,7 +63540,6 @@
           "start_date": "2026-04-08",
           "last_activity_iso": "2026-04-12T10:37:07-07:00",
           "age_days": 21,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -63939,7 +63830,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/35",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -63969,7 +63859,6 @@
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-11T17:40:14-07:00",
           "age_days": 18,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -64315,7 +64204,6 @@
           "start_date": "2026-03-27",
           "last_activity_iso": "",
           "age_days": 33,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -64490,7 +64378,6 @@
           "start_date": "2026-03-27",
           "last_activity_iso": "",
           "age_days": 33,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -67611,7 +67498,6 @@
           "start_date": "2026-03-30",
           "last_activity_iso": "",
           "age_days": 30,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -67774,7 +67660,6 @@
           "start_date": "2026-03-30",
           "last_activity_iso": "",
           "age_days": 30,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -67937,7 +67822,6 @@
           "start_date": "2026-03-30",
           "last_activity_iso": "",
           "age_days": 30,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -68100,7 +67984,6 @@
           "start_date": "2026-03-30",
           "last_activity_iso": "",
           "age_days": 30,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -68259,7 +68142,6 @@
           "start_date": "2026-03-31",
           "last_activity_iso": "",
           "age_days": 29,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -68424,7 +68306,6 @@
           "start_date": "2026-04-02",
           "last_activity_iso": "",
           "age_days": 27,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -68589,7 +68470,6 @@
           "start_date": "2026-04-02",
           "last_activity_iso": "",
           "age_days": 27,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -68758,7 +68638,6 @@
           "start_date": "2026-04-02",
           "last_activity_iso": "",
           "age_days": 27,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -68923,7 +68802,6 @@
           "start_date": "2026-04-02",
           "last_activity_iso": "",
           "age_days": 27,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -69084,7 +68962,6 @@
           "start_date": "2026-04-04",
           "last_activity_iso": "",
           "age_days": 25,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -69253,7 +69130,6 @@
           "start_date": "2026-04-04",
           "last_activity_iso": "",
           "age_days": 25,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -70504,7 +70380,6 @@
           "start_date": "2026-04-06",
           "last_activity_iso": "",
           "age_days": 23,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -72763,7 +72638,6 @@
           "start_date": "2026-04-10",
           "last_activity_iso": "",
           "age_days": 19,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -73112,7 +72986,6 @@
           "start_date": "2026-04-13",
           "last_activity_iso": "",
           "age_days": 16,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -74411,7 +74284,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
           "age_days": 4,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -74636,7 +74508,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
           "age_days": 4,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -74861,7 +74732,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
           "age_days": 4,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -75086,7 +74956,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
           "age_days": 4,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -75311,7 +75180,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
           "age_days": 4,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -75536,7 +75404,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/17",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -75566,7 +75433,6 @@
           "start_date": "2026-04-10",
           "last_activity_iso": "2026-04-29T23:17:51-07:00",
           "age_days": 19,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -76449,7 +76315,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/20",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -76479,7 +76344,6 @@
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-12T10:18:23-07:00",
           "age_days": 18,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -76863,7 +76727,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/16",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -76893,7 +76756,6 @@
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-04-12T16:26:24-07:00",
           "age_days": 17,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -77070,7 +76932,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/21",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -77100,7 +76961,6 @@
           "start_date": "2026-04-15",
           "last_activity_iso": "2026-04-15T09:38:42-07:00",
           "age_days": 14,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -77496,7 +77356,6 @@
           "start_date": "2026-04-09",
           "last_activity_iso": "",
           "age_days": 20,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -77694,7 +77553,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "",
           "age_days": 11,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -77890,7 +77748,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "",
           "age_days": 11,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -78086,7 +77943,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "",
           "age_days": 11,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -78282,7 +78138,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "",
           "age_days": 11,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -78478,7 +78333,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "",
           "age_days": 11,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -78674,7 +78528,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "",
           "age_days": 11,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -78870,7 +78723,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "",
           "age_days": 11,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -79066,7 +78918,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "",
           "age_days": 11,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -79721,8 +79572,6 @@
               }
             ],
             "completion_label": "All waves complete",
-            "current_wave": null,
-            "next_wave": null,
             "waves": [
               {
                 "wave_id": "W1",
@@ -80266,7 +80115,6 @@
           "start_date": "2026-04-17",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 12,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -81465,7 +81313,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 4,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -83813,8 +83660,6 @@
               }
             ],
             "completion_label": "All waves complete",
-            "current_wave": null,
-            "next_wave": null,
             "waves": [
               {
                 "wave_id": "W1",
@@ -85481,8 +85326,6 @@
               }
             ],
             "completion_label": "All waves complete",
-            "current_wave": null,
-            "next_wave": null,
             "waves": [
               {
                 "wave_id": "W1",
@@ -87058,8 +86901,6 @@
               }
             ],
             "completion_label": "All waves complete",
-            "current_wave": null,
-            "next_wave": null,
             "waves": [
               {
                 "wave_id": "W1",
@@ -87549,7 +87390,6 @@
           "start_date": "2026-04-17",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 12,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -89475,7 +89315,6 @@
           "start_date": "2026-04-13",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 16,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -89626,7 +89465,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -89777,7 +89615,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -89928,7 +89765,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -90079,7 +89915,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -90230,7 +90065,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -90381,7 +90215,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -90532,7 +90365,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -90683,7 +90515,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -90834,7 +90665,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -90985,7 +90815,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -91136,7 +90965,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -91287,7 +91115,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-04-29T22:50:29-07:00",
           "age_days": 0,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -92475,7 +92302,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/13",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -92505,7 +92331,6 @@
           "start_date": "2026-04-08",
           "last_activity_iso": "2026-04-12T10:37:07-07:00",
           "age_days": 21,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -92796,7 +92621,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/35",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -92826,7 +92650,6 @@
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-11T17:40:14-07:00",
           "age_days": 18,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -93172,7 +92995,6 @@
           "start_date": "2026-03-27",
           "last_activity_iso": "",
           "age_days": 33,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -93347,7 +93169,6 @@
           "start_date": "2026-03-27",
           "last_activity_iso": "",
           "age_days": 33,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -96304,7 +96125,6 @@
           "start_date": "2026-03-30",
           "last_activity_iso": "",
           "age_days": 30,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -96467,7 +96287,6 @@
           "start_date": "2026-03-30",
           "last_activity_iso": "",
           "age_days": 30,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -96630,7 +96449,6 @@
           "start_date": "2026-03-30",
           "last_activity_iso": "",
           "age_days": 30,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -96793,7 +96611,6 @@
           "start_date": "2026-03-30",
           "last_activity_iso": "",
           "age_days": 30,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -96952,7 +96769,6 @@
           "start_date": "2026-03-31",
           "last_activity_iso": "",
           "age_days": 29,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -97117,7 +96933,6 @@
           "start_date": "2026-04-02",
           "last_activity_iso": "",
           "age_days": 27,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -97282,7 +97097,6 @@
           "start_date": "2026-04-02",
           "last_activity_iso": "",
           "age_days": 27,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -97451,7 +97265,6 @@
           "start_date": "2026-04-02",
           "last_activity_iso": "",
           "age_days": 27,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -97616,7 +97429,6 @@
           "start_date": "2026-04-02",
           "last_activity_iso": "",
           "age_days": 27,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -97777,7 +97589,6 @@
           "start_date": "2026-04-04",
           "last_activity_iso": "",
           "age_days": 25,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -97946,7 +97757,6 @@
           "start_date": "2026-04-04",
           "last_activity_iso": "",
           "age_days": 25,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -98417,7 +98227,6 @@
           "start_date": "2026-04-06",
           "last_activity_iso": "",
           "age_days": 23,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -100676,7 +100485,6 @@
           "start_date": "2026-04-10",
           "last_activity_iso": "",
           "age_days": 19,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -101025,7 +100833,6 @@
           "start_date": "2026-04-13",
           "last_activity_iso": "",
           "age_days": 16,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -102324,7 +102131,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
           "age_days": 4,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -102549,7 +102355,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
           "age_days": 4,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -102774,7 +102579,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
           "age_days": 4,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -102999,7 +102803,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
           "age_days": 4,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -103224,7 +103027,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
           "age_days": 4,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -103450,7 +103252,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/17",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -103480,7 +103281,6 @@
         "start_date": "2026-04-10",
         "last_activity_iso": "2026-04-29T23:17:51-07:00",
         "age_days": 19,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -104363,7 +104163,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/20",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -104393,7 +104192,6 @@
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-12T10:18:23-07:00",
         "age_days": 18,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -104777,7 +104575,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/16",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -104807,7 +104604,6 @@
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-04-12T16:26:24-07:00",
         "age_days": 17,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -104984,7 +104780,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/21",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -105014,7 +104809,6 @@
         "start_date": "2026-04-15",
         "last_activity_iso": "2026-04-15T09:38:42-07:00",
         "age_days": 14,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -105410,7 +105204,6 @@
         "start_date": "2026-04-09",
         "last_activity_iso": "",
         "age_days": 20,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -105608,7 +105401,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "",
         "age_days": 11,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -105804,7 +105596,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "",
         "age_days": 11,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -106000,7 +105791,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "",
         "age_days": 11,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -106196,7 +105986,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "",
         "age_days": 11,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -106392,7 +106181,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "",
         "age_days": 11,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -106588,7 +106376,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "",
         "age_days": 11,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -106784,7 +106571,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "",
         "age_days": 11,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -106980,7 +106766,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "",
         "age_days": 11,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -107635,8 +107420,6 @@
             }
           ],
           "completion_label": "All waves complete",
-          "current_wave": null,
-          "next_wave": null,
           "waves": [
             {
               "wave_id": "W1",
@@ -108180,7 +107963,6 @@
         "start_date": "2026-04-17",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 12,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -109379,7 +109161,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 4,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -111727,8 +111508,6 @@
             }
           ],
           "completion_label": "All waves complete",
-          "current_wave": null,
-          "next_wave": null,
           "waves": [
             {
               "wave_id": "W1",
@@ -113395,8 +113174,6 @@
             }
           ],
           "completion_label": "All waves complete",
-          "current_wave": null,
-          "next_wave": null,
           "waves": [
             {
               "wave_id": "W1",
@@ -114972,8 +114749,6 @@
             }
           ],
           "completion_label": "All waves complete",
-          "current_wave": null,
-          "next_wave": null,
           "waves": [
             {
               "wave_id": "W1",
@@ -115463,7 +115238,6 @@
         "start_date": "2026-04-17",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 12,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -117389,7 +117163,6 @@
         "start_date": "2026-04-13",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 16,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -117540,7 +117313,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -117691,7 +117463,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -117842,7 +117613,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -117993,7 +117763,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -118144,7 +117913,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -118295,7 +118063,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -118446,7 +118213,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -118597,7 +118363,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -118748,7 +118513,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -118899,7 +118663,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -119050,7 +118813,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -119201,7 +118963,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-04-29T22:50:29-07:00",
         "age_days": 0,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -120389,7 +120150,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/13",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -120419,7 +120179,6 @@
         "start_date": "2026-04-08",
         "last_activity_iso": "2026-04-12T10:37:07-07:00",
         "age_days": 21,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -120710,7 +120469,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/35",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -120740,7 +120498,6 @@
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-11T17:40:14-07:00",
         "age_days": 18,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -121086,7 +120843,6 @@
         "start_date": "2026-03-27",
         "last_activity_iso": "",
         "age_days": 33,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -121261,7 +121017,6 @@
         "start_date": "2026-03-27",
         "last_activity_iso": "",
         "age_days": 33,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -124218,7 +123973,6 @@
         "start_date": "2026-03-30",
         "last_activity_iso": "",
         "age_days": 30,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -124381,7 +124135,6 @@
         "start_date": "2026-03-30",
         "last_activity_iso": "",
         "age_days": 30,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -124544,7 +124297,6 @@
         "start_date": "2026-03-30",
         "last_activity_iso": "",
         "age_days": 30,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -124707,7 +124459,6 @@
         "start_date": "2026-03-30",
         "last_activity_iso": "",
         "age_days": 30,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -124866,7 +124617,6 @@
         "start_date": "2026-03-31",
         "last_activity_iso": "",
         "age_days": 29,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -125031,7 +124781,6 @@
         "start_date": "2026-04-02",
         "last_activity_iso": "",
         "age_days": 27,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -125196,7 +124945,6 @@
         "start_date": "2026-04-02",
         "last_activity_iso": "",
         "age_days": 27,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -125365,7 +125113,6 @@
         "start_date": "2026-04-02",
         "last_activity_iso": "",
         "age_days": 27,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -125530,7 +125277,6 @@
         "start_date": "2026-04-02",
         "last_activity_iso": "",
         "age_days": 27,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -125691,7 +125437,6 @@
         "start_date": "2026-04-04",
         "last_activity_iso": "",
         "age_days": 25,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -125860,7 +125605,6 @@
         "start_date": "2026-04-04",
         "last_activity_iso": "",
         "age_days": 25,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -126331,7 +126075,6 @@
         "start_date": "2026-04-06",
         "last_activity_iso": "",
         "age_days": 23,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -128590,7 +128333,6 @@
         "start_date": "2026-04-10",
         "last_activity_iso": "",
         "age_days": 19,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -128939,7 +128681,6 @@
         "start_date": "2026-04-13",
         "last_activity_iso": "",
         "age_days": 16,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -130238,7 +129979,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
         "age_days": 4,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -130463,7 +130203,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
         "age_days": 4,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -130688,7 +130427,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
         "age_days": 4,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -130913,7 +130651,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
         "age_days": 4,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -131138,7 +130875,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
         "age_days": 4,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -131722,8 +131458,6 @@
           }
         ],
         "completion_label": "All waves complete",
-        "current_wave": null,
-        "next_wave": null,
         "waves": [
           {
             "wave_id": "W1",
@@ -132490,8 +132224,6 @@
           }
         ],
         "completion_label": "All waves complete",
-        "current_wave": null,
-        "next_wave": null,
         "waves": [
           {
             "wave_id": "W1",
@@ -133152,8 +132884,6 @@
           }
         ],
         "completion_label": "All waves complete",
-        "current_wave": null,
-        "next_wave": null,
         "waves": [
           {
             "wave_id": "W1",
@@ -133944,8 +133674,6 @@
           }
         ],
         "completion_label": "All waves complete",
-        "current_wave": null,
-        "next_wave": null,
         "waves": [
           {
             "wave_id": "W1",
@@ -134844,8 +134572,6 @@
           }
         ],
         "completion_label": "All waves complete",
-        "current_wave": null,
-        "next_wave": null,
         "waves": [
           {
             "wave_id": "W1",
@@ -135612,8 +135338,6 @@
           }
         ],
         "completion_label": "All waves complete",
-        "current_wave": null,
-        "next_wave": null,
         "waves": [
           {
             "wave_id": "W1",
@@ -136274,8 +135998,6 @@
           }
         ],
         "completion_label": "All waves complete",
-        "current_wave": null,
-        "next_wave": null,
         "waves": [
           {
             "wave_id": "W1",
@@ -137066,8 +136788,6 @@
           }
         ],
         "completion_label": "All waves complete",
-        "current_wave": null,
-        "next_wave": null,
         "waves": [
           {
             "wave_id": "W1",
@@ -138645,7 +138365,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -138671,7 +138390,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -138697,7 +138415,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -138725,7 +138442,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -138751,7 +138467,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -138777,7 +138492,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -138803,7 +138517,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -138829,7 +138542,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -138855,7 +138567,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -138881,7 +138592,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -138907,7 +138617,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -138933,7 +138642,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -138959,7 +138667,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -138985,7 +138692,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139011,7 +138717,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139037,7 +138742,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139063,7 +138767,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139089,7 +138792,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139115,7 +138817,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139141,7 +138842,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139167,7 +138867,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139193,7 +138892,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139219,7 +138917,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139245,7 +138942,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139271,7 +138967,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139297,7 +138992,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139323,7 +139017,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139349,7 +139042,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139375,7 +139067,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139401,7 +139092,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139427,7 +139117,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139453,7 +139142,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139479,7 +139167,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139505,7 +139192,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139531,7 +139217,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139557,7 +139242,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139583,7 +139267,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139609,7 +139292,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139635,7 +139317,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139661,7 +139342,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139687,7 +139367,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139713,7 +139392,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139747,7 +139425,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139773,7 +139450,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139814,7 +139490,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139840,7 +139515,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139868,7 +139542,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139894,7 +139567,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139920,7 +139592,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139946,7 +139617,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139972,7 +139642,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -139998,7 +139667,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140024,7 +139692,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140062,7 +139729,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140088,7 +139754,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140114,7 +139779,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140140,7 +139804,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140166,7 +139829,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140192,7 +139854,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140223,7 +139884,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140252,7 +139912,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140278,7 +139937,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140304,7 +139962,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140330,7 +139987,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140356,7 +140012,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140382,7 +140037,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140519,7 +140173,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140545,7 +140198,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140571,7 +140223,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140597,7 +140248,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140623,7 +140273,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140649,7 +140298,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140675,7 +140323,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140701,7 +140348,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140727,7 +140373,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140753,7 +140398,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140779,7 +140423,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140805,7 +140448,6 @@
       "source": "odylith.self_host",
       "session_id": "019ddb17-5882-7ac1-a90f-ec935fe80fbd",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140846,7 +140488,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140872,7 +140513,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140934,7 +140574,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -140986,7 +140625,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -141015,7 +140653,6 @@
       "source": "plan_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -141044,7 +140681,6 @@
       "source": "plan_file",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -141070,7 +140706,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -141098,7 +140733,6 @@
       "source": "plan_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -141188,7 +140822,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -141235,7 +140868,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -141276,7 +140908,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -141302,7 +140933,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -141366,7 +140996,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -141412,7 +141041,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -141454,7 +141082,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -141504,7 +141131,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -141551,7 +141177,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -141589,7 +141214,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -141626,7 +141250,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -141662,7 +141285,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -141696,7 +141318,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -141744,7 +141365,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -141788,7 +141408,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -141821,7 +141440,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -141872,7 +141490,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -141903,7 +141520,6 @@
       "source": "codex",
       "session_id": "019dd049-028c-7d90-91a2-ecc429c9b044",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -141935,7 +141551,6 @@
       "source": "codex",
       "session_id": "019dd049-028c-7d90-91a2-ecc429c9b044",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142009,7 +141624,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142042,7 +141656,6 @@
       "source": "plan_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142075,7 +141688,6 @@
       "source": "plan_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142108,7 +141720,6 @@
       "source": "plan_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142141,7 +141752,6 @@
       "source": "plan_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142174,7 +141784,6 @@
       "source": "plan_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142207,7 +141816,6 @@
       "source": "plan_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142290,7 +141898,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142354,7 +141961,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142385,7 +141991,6 @@
       "source": "plan_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142416,7 +142021,6 @@
       "source": "plan_file",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142442,7 +142046,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142495,7 +142098,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142523,7 +142125,6 @@
       "source": "plan_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142549,7 +142150,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142602,7 +142202,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142630,7 +142229,6 @@
       "source": "plan_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142656,7 +142254,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142710,7 +142307,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142738,7 +142334,6 @@
       "source": "plan_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142764,7 +142359,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142818,7 +142412,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142846,7 +142439,6 @@
       "source": "plan_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142872,7 +142464,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142924,7 +142515,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142952,7 +142542,6 @@
       "source": "plan_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -142978,7 +142567,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143002,7 +142590,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143055,7 +142642,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143083,7 +142669,6 @@
       "source": "plan_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143109,7 +142694,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143159,7 +142743,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143187,7 +142770,6 @@
       "source": "plan_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143213,7 +142795,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143245,7 +142826,6 @@
       "source": "assistant",
       "session_id": "019dd049-028c-7d90-91a2-ecc429c9b044",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143274,7 +142854,6 @@
       "source": "codex",
       "session_id": "019dd049-028c-7d90-91a2-ecc429c9b044",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143303,7 +142882,6 @@
       "source": "codex",
       "session_id": "019dd049-028c-7d90-91a2-ecc429c9b044",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143333,7 +142911,6 @@
       "source": "codex",
       "session_id": "019dd049-028c-7d90-91a2-ecc429c9b044",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143363,7 +142940,6 @@
       "source": "assistant",
       "session_id": "019dd049-028c-7d90-91a2-ecc429c9b044",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143387,7 +142963,6 @@
       "source": "assistant",
       "session_id": "019dd049-028c-7d90-91a2-ecc429c9b044",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143417,7 +142992,6 @@
       "source": "codex",
       "session_id": "019dd049-028c-7d90-91a2-ecc429c9b044",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143448,7 +143022,6 @@
       "source": "assistant",
       "session_id": "019dd049-028c-7d90-91a2-ecc429c9b044",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143493,7 +143066,6 @@
       "source": "assistant",
       "session_id": "019dd049-028c-7d90-91a2-ecc429c9b044",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143620,7 +143192,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -143646,7 +143217,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -143672,7 +143242,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -143700,7 +143269,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -143726,7 +143294,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -143752,7 +143319,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -143778,7 +143344,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -143804,7 +143369,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -143830,7 +143394,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -143856,7 +143419,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -143882,7 +143444,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -143908,7 +143469,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -143934,7 +143494,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -143960,7 +143519,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -143986,7 +143544,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144012,7 +143569,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144038,7 +143594,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144064,7 +143619,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144090,7 +143644,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144116,7 +143669,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144142,7 +143694,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144168,7 +143719,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144194,7 +143744,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144220,7 +143769,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144246,7 +143794,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144272,7 +143819,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144298,7 +143844,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144324,7 +143869,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144350,7 +143894,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144376,7 +143919,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144402,7 +143944,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144428,7 +143969,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144454,7 +143994,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144480,7 +144019,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144506,7 +144044,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144532,7 +144069,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144558,7 +144094,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144584,7 +144119,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144610,7 +144144,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144636,7 +144169,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144662,7 +144194,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144688,7 +144219,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144722,7 +144252,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144748,7 +144277,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144789,7 +144317,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144815,7 +144342,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144843,7 +144369,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144869,7 +144394,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144895,7 +144419,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144921,7 +144444,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144947,7 +144469,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144973,7 +144494,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -144999,7 +144519,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -145037,7 +144556,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -145063,7 +144581,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -145089,7 +144606,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -145115,7 +144631,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -145141,7 +144656,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -145167,7 +144681,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -145225,7 +144738,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -145254,7 +144766,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -145280,7 +144791,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -145306,7 +144816,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -145353,7 +144862,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -145379,7 +144887,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -145405,7 +144912,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -145870,7 +145376,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -145915,7 +145420,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -145961,7 +145465,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -145987,7 +145490,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146032,7 +145534,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146077,7 +145578,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146122,7 +145622,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146167,7 +145666,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146213,7 +145711,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146239,7 +145736,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146284,7 +145780,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146329,7 +145824,6 @@
           "source": "odylith.self_host",
           "session_id": "019ddb17-5882-7ac1-a90f-ec935fe80fbd",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146404,7 +145898,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146449,7 +145942,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146566,7 +146058,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146663,7 +146154,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146692,7 +146182,6 @@
           "source": "plan_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146721,7 +146210,6 @@
           "source": "plan_file",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146766,7 +146254,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146815,7 +146302,6 @@
           "source": "plan_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146988,7 +146474,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -147075,7 +146560,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -147150,7 +146634,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -147176,7 +146659,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -147297,7 +146779,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -147382,7 +146863,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -147459,7 +146939,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -147552,7 +147031,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -147639,7 +147117,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -147708,7 +147185,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -147775,7 +147251,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -147840,7 +147315,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -147901,7 +147375,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -147990,7 +147463,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148078,7 +147550,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148111,7 +147582,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148206,7 +147676,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148261,7 +147730,6 @@
           "source": "codex",
           "session_id": "019dd049-028c-7d90-91a2-ecc429c9b044",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148318,7 +147786,6 @@
           "source": "codex",
           "session_id": "019dd049-028c-7d90-91a2-ecc429c9b044",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148459,7 +147926,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148518,7 +147984,6 @@
           "source": "plan_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148551,7 +148016,6 @@
           "source": "plan_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148584,7 +148048,6 @@
           "source": "plan_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148617,7 +148080,6 @@
           "source": "plan_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148650,7 +148112,6 @@
           "source": "plan_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148683,7 +148144,6 @@
           "source": "plan_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148842,7 +148302,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148963,7 +148422,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148994,7 +148452,6 @@
           "source": "plan_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149025,7 +148482,6 @@
           "source": "plan_file",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149051,7 +148507,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149150,7 +148605,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149227,7 +148681,6 @@
           "source": "plan_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149253,7 +148706,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149306,7 +148758,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149356,7 +148807,6 @@
           "source": "plan_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149382,7 +148832,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149483,7 +148932,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149533,7 +148981,6 @@
           "source": "plan_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149559,7 +149006,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149660,7 +149106,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149710,7 +149155,6 @@
           "source": "plan_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149736,7 +149180,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149833,7 +149276,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149861,7 +149303,6 @@
           "source": "plan_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149906,7 +149347,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149947,7 +149387,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150046,7 +149485,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150074,7 +149512,6 @@
           "source": "plan_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150119,7 +149556,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150212,7 +149648,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150261,7 +149696,6 @@
           "source": "plan_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150306,7 +149740,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150363,7 +149796,6 @@
           "source": "assistant",
           "session_id": "019dd049-028c-7d90-91a2-ecc429c9b044",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150414,7 +149846,6 @@
           "source": "codex",
           "session_id": "019dd049-028c-7d90-91a2-ecc429c9b044",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150465,7 +149896,6 @@
           "source": "codex",
           "session_id": "019dd049-028c-7d90-91a2-ecc429c9b044",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150518,7 +149948,6 @@
           "source": "codex",
           "session_id": "019dd049-028c-7d90-91a2-ecc429c9b044",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150571,7 +150000,6 @@
           "source": "assistant",
           "session_id": "019dd049-028c-7d90-91a2-ecc429c9b044",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150612,7 +150040,6 @@
           "source": "assistant",
           "session_id": "019dd049-028c-7d90-91a2-ecc429c9b044",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150665,7 +150092,6 @@
           "source": "codex",
           "session_id": "019dd049-028c-7d90-91a2-ecc429c9b044",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150720,7 +150146,6 @@
           "source": "assistant",
           "session_id": "019dd049-028c-7d90-91a2-ecc429c9b044",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150803,7 +150228,6 @@
           "source": "assistant",
           "session_id": "019dd049-028c-7d90-91a2-ecc429c9b044",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",

@@ -119,8 +119,12 @@ def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic(
     assert "No critical blended risks in current payload." not in summary_js
     assert "function bugRequiresActiveRiskAttention(row)" in summary_js
     assert 'ACTIVE_CRITICAL_RISK_STATUS_TOKENS.has(compactStatusToken(row.status))' in summary_js
-    assert 'displayRiskStatus(status)' in summary_js
-    assert 'Fixed pending release' in summary_js
+    assert "function displayRiskStatus" not in summary_js
+    assert "status: row.status" not in summary_js
+    assert '<strong class="risk-severity">${escapeHtml(severity || "warning")}</strong>' in summary_js
+    assert '<div class="risk-copy">' in summary_js
+    assert '<div class="risk-line">' not in summary_js
+    assert 'Fixed pending release' not in summary_js
     assert '<strong>${escapeHtml(row.severity)}</strong> ${escapeHtml(row.title)} (${escapeHtml(row.status)})' not in summary_js
     assert "No validated AI-authored standup brief is available for this view." not in summary_js
     assert "No validated narrative bullets available for this section." not in summary_js
@@ -267,8 +271,9 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert "execution-wave-focus-title" not in releases_js
     assert "`Open radar for ${token}`" in releases_js
     assert 'href="${escapeHtml(radarWorkstreamHref(token))}"' in releases_js
-    assert 'const summaryClass = options && options.summary ? " ws-id-btn" : "";' in releases_js
-    assert 'renderMemberChip(representativeMember, {' in releases_js
+    assert 'const summaryClass = options && options.summary ? " ws-id-btn" : "";' not in releases_js
+    assert 'const representativeMember = visibleMembers' not in releases_js
+    assert 'renderMemberChip(representativeMember, {' not in releases_js
     assert "compassScopeHref(token, state)" not in releases_js
     assert "`Scope to ${token}`" not in releases_js
     assert "const progressKnown = progressRatio !== null;" in workstreams_js
@@ -298,6 +303,7 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert 'sectionChips.push(`<span class="label execution-wave-label wave-status-active">${escapeHtml(`${sectionActiveCount} active`)}</span>`);' in waves_js
     execution_wave_css = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-style-execution-waves.v1.css")
     base_css = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-style-base.v1.css")
+    surface_css = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-style-surface.v1.css")
     expected_stats_grid_css = dashboard_ui_primitives.kpi_grid_layout_css(container_selector=".stats")
     expected_stat_card_css = dashboard_ui_primitives.kpi_card_surface_css(card_selector=".stat")
     expected_stat_typography_css = dashboard_ui_primitives.governance_kpi_label_value_css(
@@ -328,6 +334,13 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert "__ODYLITH_COMPASS_KPI_CARD_CONTRACT__" not in base_css
     assert "__ODYLITH_COMPASS_KPI_TYPOGRAPHY_CONTRACT__" not in base_css
     assert "__ODYLITH_COMPASS_CARD_SURFACE_CONTRACT__" not in base_css
+    assert ".risk {\n      border-left: 3px solid var(--danger);" in surface_css
+    assert "padding: 6px 0 6px 10px;" in surface_css
+    assert "margin-bottom: 4px;" in surface_css
+    assert "grid-template-columns: max-content minmax(0, 1fr);" in surface_css
+    assert "gap: 4px 6px;" in surface_css
+    assert ".risk-copy {" in surface_css
+    assert ".risk-line {" not in surface_css
     assert expected_stats_grid_css in base_css
     assert expected_stat_card_css in base_css
     assert expected_stat_typography_css in base_css

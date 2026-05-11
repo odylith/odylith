@@ -10,6 +10,12 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from odylith.install.fs import atomic_write_text, display_path
+from odylith.install.atlas_box_explanation_migration import (
+    MIGRATION_ID as ATLAS_BOX_EXPLANATION_MIGRATION_ID,
+    atlas_box_explanation_decision_state,
+    inspect_atlas_box_explanation_migration,
+    migrate_atlas_box_explanation_contract,
+)
 from odylith.install.atlas_surface_migration import (
     MIGRATION_ID as ATLAS_SURFACE_MIGRATION_ID,
     atlas_surface_decision_state,
@@ -60,7 +66,7 @@ from odylith.install.value_engine_migration import (
     migrate_visible_intervention_value_engine,
     record_visible_intervention_value_engine_migration_satisfied,
 )
-from odylith.install.versioning import is_at_least, is_before, normalize_version
+from odylith.install.versioning import is_at_least, is_before, normalize_version, version_key
 
 MIGRATION_LEDGER_SCHEMA_VERSION = "odylith.migration-ledger.v1"
 SCENARIO_FIRST_INSTALL = "first_install"
@@ -294,7 +300,7 @@ def _decision_satisfies_manifest_requirement(
         definition = _definition_for(decision.migration_id)
     except KeyError:
         return False
-    if not is_at_least(target_version, definition.introduced_version):
+    if not _definition_covers_manifest_target(definition, target_version):
         return False
     if decision.state in {STATE_SELECTED, STATE_SATISFIED_UNRECORDED}:
         return True
@@ -305,6 +311,25 @@ def _decision_satisfies_manifest_requirement(
         definition.introduced_version,
     )
     return crosses_introduced_version and "target window" not in decision.reason
+
+
+def _definition_covers_manifest_target(definition: MigrationDefinition, target_version: str) -> bool:
+    """Return whether a registered migration can satisfy a migration-required release.
+
+    Runtime inspections may still select historical repair migrations when a later
+    release encounters stale repo state. That does not mean the later release has a
+    registered migration contract of its own. Manifest satisfaction is intentionally
+    limited to the release train that introduced the migration so a future
+    migration_required release cannot activate because an older repair happened to
+    run.
+    """
+    target = normalize_version(target_version)
+    introduced = normalize_version(definition.introduced_version)
+    if not target or not introduced or not is_at_least(target, introduced):
+        return False
+    target_key = version_key(target)
+    introduced_key = version_key(introduced)
+    return target_key[:2] == introduced_key[:2]
 
 
 def registered_migrations() -> tuple[MigrationDefinition, ...]:
@@ -797,6 +822,32 @@ def _atlas_surface_decision(
     )
 
 
+def _atlas_box_explanation_decision(
+    *,
+    repo_root: Path,
+    previous_version: str,
+    target_version: str,
+    scenario: RepoMigrationScenario,
+) -> MigrationDecision:
+    inspection = inspect_atlas_box_explanation_migration(
+        repo_root=repo_root,
+        previous_version=previous_version,
+        target_version=target_version,
+    )
+    state, reason = atlas_box_explanation_decision_state(
+        repo_scenario=scenario.scenario,
+        inspection=inspection,
+    )
+    return _decision(
+        migration_id=ATLAS_BOX_EXPLANATION_MIGRATION_ID,
+        state=state,
+        reason=reason,
+        ledger_path=inspection.ledger_path,
+        planned_paths=inspection.planned_paths,
+        evidence=inspection.as_dict(),
+    )
+
+
 def _repo_schema_from_manifest(manifest: Mapping[str, object]) -> int:
     try:
         return int(manifest.get("repo_schema_version") or DEFAULT_REPO_SCHEMA_VERSION)
@@ -843,6 +894,7 @@ def plan_release_migrations(
         _casebook_metadata_decision(repo_root=root, previous_version=previous, target_version=target, scenario=scenario),
         _casebook_status_fsm_decision(repo_root=root, previous_version=previous, target_version=target, scenario=scenario),
         _atlas_surface_decision(repo_root=root, previous_version=previous, target_version=target, scenario=scenario),
+        _atlas_box_explanation_decision(repo_root=root, previous_version=previous, target_version=target, scenario=scenario),
     ]
     selected = tuple(decision for decision in decisions if decision.needs_apply())
     blocked = [decision for decision in decisions if decision.blocks_upgrade()]
@@ -957,6 +1009,24 @@ def apply_release_migrations(*, plan: MigrationPlan, runtime_root: str | Path | 
             continue
         if decision.migration_id == ATLAS_SURFACE_MIGRATION_ID:
             atlas_result = migrate_atlas_surface_polish(
+                repo_root=plan.repo_root,
+                previous_version=plan.previous_version,
+                target_version=plan.target_version,
+            )
+            results.append(
+                MigrationResult(
+                    migration_id=atlas_result.migration_id,
+                    state=STATE_APPLIED if atlas_result.applied else STATE_SKIPPED,
+                    reason=atlas_result.skipped_reason,
+                    written_paths=atlas_result.written_paths,
+                    removed_paths=atlas_result.removed_paths,
+                    ledger_path=atlas_result.ledger_path,
+                    verification_result=dict(atlas_result.verification_result or {"status": "skipped"}),
+                )
+            )
+            continue
+        if decision.migration_id == ATLAS_BOX_EXPLANATION_MIGRATION_ID:
+            atlas_result = migrate_atlas_box_explanation_contract(
                 repo_root=plan.repo_root,
                 previous_version=plan.previous_version,
                 target_version=plan.target_version,
@@ -1220,7 +1290,7 @@ def validate_release_migration_gate(
     blocked_manual: list[str] = []
     if bool(manifest.get("migration_required")):
         target = normalize_version(target_version or manifest.get("version") or manifest.get("tag"))
-        if not any(is_at_least(target, definition.introduced_version) for definition in definitions):
+        if not any(_definition_covers_manifest_target(definition, target) for definition in definitions):
             blocked_manual.append(
                 f"migration_required manifest for {target or 'unknown target'} has no registered migration definition"
             )

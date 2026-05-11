@@ -48,6 +48,10 @@ contract.
   version sidecar and force the shell-facing dashboard refresh so generated
   `odylith/index.html` cannot silently lag the authoritative `odylith version`
   state after release adoption.
+- The v0.1.15 Atlas box-explanation migration regenerates generated Atlas
+  browser surfaces so older 0.1.10 through 0.1.14 installs derive every
+  flowchart container and inner box from Mermaid source, preserve repo-owned
+  Atlas catalog truth, and write a dedicated migration ledger.
 - Install-time repo-state migrations must also force the shell-facing dashboard
   refresh before closeout when first-run surfaces already exist, and hosted
   installer output must make the complete-install upgrade lifecycle explicit.
@@ -145,5 +149,6 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-29: Expanded CB-136 from direct settings overwrite into symlinked host/project managed-asset protection; the release gate now proves 21 destructive-write scenarios, including symlinked `.claude/`, `.codex/`, `.agents/`, `odylith/`, and release-note target paths. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127); Casebook: CB-136)
 - 2026-04-30: Corrected consumer uninstall to preserve repo-local `odylith/` governed source truth, remove `.odylith/` runtime state, and leave host config directories in place, with symlink-safe runtime-state proof in the destructive-write matrix. (Plan: [B-140](odylith/radar/radar.html?view=plan&workstream=B-140); Casebook: CB-143)
 - 2026-05-03: Bound v0.1.14 upgrade safety to registered migrations instead of repair folklore: install reruns detect existing Odylith installs as upgrades, Casebook source metadata is normalized through the release migration runner, Atlas SVG/PNG assets rerender when render-style fingerprints drift, topology-spine edges are regenerated, and the release migration gate proves 0.1.10/0.1.11/0.1.12/0.1.13 -> 0.1.14. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Assessment: [B-140](odylith/radar/radar.html?view=plan&workstream=B-140); Bugs: `CB-150`, `CB-162`)
+- 2026-05-09: Registered the v0.1.15 Atlas box-explanation migration so 0.1.10, 0.1.11, 0.1.12, 0.1.13, and 0.1.14 consumer installs upgrade to Atlas surfaces that explain containers and inner boxes with readable copy while leaving repo-owned Atlas source truth intact. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Assessment: [B-140](odylith/radar/radar.html?view=plan&workstream=B-140))
 - 2026-05-04: Invalidated generated refresh-guard cache entries with a v2 byte-content fingerprint so existing installs upgrading to v0.1.14 cannot reuse stale surface-render decisions from older size/mtime cache state. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-167`)
 - 2026-05-04: Added the post-upgrade dashboard version-state sidecar and forced default shell refresh so upgraded consumer repos cannot keep showing an old shell version after `odylith version` has advanced. Install-time repo-state migrations now force the same dashboard refresh when they do not route through upgrade, the hosted installer names the complete-install upgrade lifecycle, and sync dirty-overlap recovery blocks before tracked Radar normalization while pointing shell drift to the narrow dashboard refresh path. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Bug: `CB-168`)

@@ -95,6 +95,8 @@ const payload = window["__ODYLITH_MERMAID_DATA__"] || {};
     const staleAlertEl = document.getElementById("staleAlert");
     const summaryEl = document.getElementById("diagramSummary");
     const readGuideEl = document.getElementById("diagramReadGuide");
+    const diagramBoxesSectionEl = document.getElementById("diagramBoxesSection");
+    const diagramBoxListEl = document.getElementById("diagramBoxList");
     const componentListEl = document.getElementById("componentList");
 
     const backlogLinksEl = document.getElementById("backlogLinks");
@@ -629,6 +631,10 @@ initSharedQuickTooltips();
     }
 
     function diagramReadGuide(diagram) {
+      const catalogGuide = String(diagram && diagram.read_guide ? diagram.read_guide : "").trim();
+      if (catalogGuide) {
+        return catalogGuide;
+      }
       const kind = String(diagram && diagram.kind ? diagram.kind : "").trim().toLowerCase();
       if (kind.includes("sequence")) {
         return "Read from top to bottom. Each lane is an actor or component; arrows are calls, handoffs, or proof events; notes and failure branches show where the workflow can block or recover.";
@@ -721,6 +727,8 @@ initSharedQuickTooltips();
         const displayName = componentDisplayName(rawName);
         const card = document.createElement("article");
         card.className = "component-card";
+        const headingGroup = document.createElement("div");
+        headingGroup.className = "component-heading";
 
         const heading = document.createElement("strong");
         heading.textContent = displayName || rawName;
@@ -728,15 +736,54 @@ initSharedQuickTooltips();
         const body = document.createElement("p");
         body.textContent = component.description;
 
-        card.appendChild(heading);
+        headingGroup.appendChild(heading);
         if (rawName && displayName && rawName !== displayName) {
           const token = document.createElement("span");
           token.className = "component-token";
           token.textContent = rawName;
-          card.appendChild(token);
+          headingGroup.appendChild(token);
         }
+        card.appendChild(headingGroup);
         card.appendChild(body);
         componentListEl.appendChild(card);
+      });
+    }
+
+    function renderDiagramBoxes(diagram) {
+      clearNode(diagramBoxListEl);
+      const boxes = Array.isArray(diagram.diagram_boxes)
+        ? diagram.diagram_boxes.filter((box) => box && typeof box === "object")
+        : [];
+      diagramBoxesSectionEl.hidden = !boxes.length;
+      boxes.forEach((box, index) => {
+        const row = document.createElement("article");
+        row.className = "diagram-box-row";
+
+        const number = document.createElement("span");
+        number.className = "diagram-box-index";
+        number.textContent = String(index + 1);
+
+        const name = document.createElement("div");
+        name.className = "diagram-box-name";
+        const heading = document.createElement("strong");
+        heading.textContent = String(box.label || "").trim();
+        name.appendChild(heading);
+        const roleText = String(box.role || "").trim();
+        if (roleText) {
+          const role = document.createElement("span");
+          role.className = "diagram-box-role";
+          role.textContent = roleText;
+          name.appendChild(role);
+        }
+
+        const description = document.createElement("p");
+        description.className = "diagram-box-description";
+        description.textContent = String(box.description || "").trim();
+
+        row.appendChild(number);
+        row.appendChild(name);
+        row.appendChild(description);
+        diagramBoxListEl.appendChild(row);
       });
     }
 
@@ -763,6 +810,8 @@ initSharedQuickTooltips();
       summaryEl.textContent = "";
       readGuideEl.textContent = "";
       clearNode(sourceLinksEl);
+      clearNode(diagramBoxListEl);
+      diagramBoxesSectionEl.hidden = true;
       clearNode(componentListEl);
       clearNode(backlogLinksEl);
       clearNode(planLinksEl);
@@ -810,6 +859,7 @@ initSharedQuickTooltips();
       imageEl.src = diagram.source_svg_href;
 
       renderSourceLinks(diagram);
+      renderDiagramBoxes(diagram);
       renderComponents(diagram);
       renderAlert(diagram);
 

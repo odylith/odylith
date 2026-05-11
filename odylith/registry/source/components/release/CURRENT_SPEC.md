@@ -420,6 +420,12 @@ governed subsystem.
 - The release manifest must expose exactly one Odylith wheel plus the expected
   base-runtime and feature-pack assets; preflight must fail closed on sidecar
   wheels, missing wheel metadata, or missing feature-pack asset metadata.
+- The release manifest must carry `repo_schema_version` from checked-in
+  product-version truth and derive `migration_required` from the registered
+  migration registry for the published version. Migration-marked releases must
+  be accepted by the hosted installer and routed to the install runtime's
+  registered migration planner instead of being rejected by bootstrap shell
+  validation.
 - Local release smoke should prove the installer from a nested repo directory
   as well as the repo root so the zero-friction repo-root detection contract
   does not silently regress.
@@ -477,3 +483,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-09: Codified release-target progress semantics so release-member badges use shared execution-progress truth, show tracked partial completion honestly, and never render active implementation with unchecked execution as fake `0% progress`. (Plan: [B-068](odylith/radar/radar.html?view=plan&workstream=B-068)) (Bug: [CB-087](odylith/casebook/casebook.html?bug=CB-087))
 - 2026-05-07: Added release-smoke coverage for both empty-repo greenfield paths: the explicit `show -> greenfield propose --format json -> greenfield apply --proposal-file --confirm -> surfaces` journey and the one-command `greenfield create --confirm` shortcut. The same slice tightened installer progress output so child renderer lines no longer collide with the elapsed progress row. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005); Bugs: `CB-180`, `CB-181`)
 - 2026-05-07: Extended release smoke from runtime behavior into installed guidance proof: fresh installed AGENTS/README/skill guidance must point confirmation at `greenfield create --confirm`, forbid hand-authored proposal JSON, and reject stale host-drafts-proposal instructions. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005); Bugs: `CB-176`, `CB-181`)
+- 2026-05-09: Release manifests now derive `migration_required` from the registered migration registry, and hosted bootstrap validation accepts migration-marked releases so v0.1.15 can route installed `0.1.10` through `0.1.14` repos into the registered Atlas box-explanation migration. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127))

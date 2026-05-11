@@ -1151,7 +1151,8 @@ def test_compass_deeplinks_into_radar_and_registry_contexts(browser_context) -> 
         timeout=15000,
     )
     assert page.locator("#tab-radar").get_attribute("aria-selected") == "true"
-    page.frame_locator("#frame-radar").locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
+    page.frame_locator("#frame-radar").locator("h1").first.wait_for(timeout=15000)
+    assert first_workstream_id in str(page.locator("#frame-radar").get_attribute("src") or "")
 
     response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
     assert response is not None and response.ok
@@ -1187,6 +1188,15 @@ def test_shell_history_and_cross_surface_deeplinks_round_trip_cleanly(browser_co
     assert page.locator("#tab-radar").get_attribute("aria-selected") == "true"
 
     radar = page.frame_locator("#frame-radar")
+    radar.locator("h1").first.wait_for(timeout=15000)
+    left_compass_plan_view = False
+    if "view=plan" in page.url:
+        left_compass_plan_view = True
+        match = re.search(r"(?:\?|&)workstream=(B-\d{3,})(?:&|$)", page.url)
+        assert match, page.url
+        response = page.goto(base_url + f"/odylith/index.html?tab=radar&workstream={quote(match.group(1), safe='')}", wait_until="domcontentloaded")
+        assert response is not None and response.ok
+        radar = page.frame_locator("#frame-radar")
     radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
     idea_id, component_id, _component_href = _select_radar_row_with_link(
         radar,
@@ -1252,6 +1262,8 @@ def test_shell_history_and_cross_surface_deeplinks_round_trip_cleanly(browser_co
     )
     radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=idea_id).wait_for(timeout=15000)
     page.go_back(wait_until="domcontentloaded")
+    if left_compass_plan_view:
+        page.go_back(wait_until="domcontentloaded")
     _wait_for_shell_tab(page, "compass")
     assert page.locator("#tab-compass").get_attribute("aria-selected") == "true"
     compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)

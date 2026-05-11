@@ -170,11 +170,11 @@ def _project_outcome(*, title: str, family: str) -> str:
             "analyst workflow, risk signal boundaries, stale-data behavior, and non-custodial posture before "
             "any live-chain or trading integration is considered."
         )
-    if family == "defi_merchant_lending":
+    if family == "capital_merchant_lending":
         return (
-            f"{title} should become a merchant-capital product whose first release proves the SMB borrower journey, "
-            "Shopify merchant-data boundary, credit eligibility, stablecoin funding state, repayment state, "
-            "liquidity freshness, and compliance gates before live DeFi protocol or production lending claims."
+            f"{title} should become a merchant-capital product whose first release proves one funding request from "
+            "source-backed merchant signals to reviewable offer, manual approval, funding status, repayment evidence, "
+            "and ledger reconciliation before live treasury or protocol automation."
         )
     if family == "commerce":
         return (
@@ -226,19 +226,13 @@ def _blueprint_sections(*, family: str) -> list[dict[str, str]]:
                 "why_it_matters": "Prevents a risk product from sounding authoritative before data quality and regulatory posture are proven.",
             },
         )
-    elif family == "defi_merchant_lending":
+    elif family == "capital_merchant_lending":
         sections.insert(
             2,
             {
-                "section": "Credit, liquidity, and compliance posture",
-                "must_capture": (
-                    "Merchant borrower identity, Shopify data freshness, underwriting inputs, facility lifecycle, "
-                    "stablecoin liquidity, disbursement, repayment, KYB/AML, no-custody, and no-live-protocol gates."
-                ),
-                "why_it_matters": (
-                    "Prevents a merchant lending product from collapsing into a consumer retail flow or implying approved credit, "
-                    "available funds, custody, or production lending before proof exists."
-                ),
+                "section": "Capital and responsibility posture",
+                "must_capture": "Lender of record, loss owner, underwriting policy, merchant data provenance, approval owner, settlement rail, repayment rail, custody, and treasury exposure.",
+                "why_it_matters": "Prevents funding, repayment, stablecoin, and protocol claims from outrunning legal, treasury, and evidence boundaries.",
             },
         )
     elif family == "robot_swarm":
@@ -318,29 +312,22 @@ def _customization_options(*, title: str, family: str) -> list[dict[str, Any]]:
                 "Changes degraded-state UX, replay fixtures, confidence scoring, and release blockers.",
             ),
         ]
-    if family == "defi_merchant_lending":
+    if family == "capital_merchant_lending":
         return [
             _option(
                 "D0",
-                "Borrower and capital-ops boundary",
-                "Default to the Shopify SMB merchant as borrower and capital-ops as reviewer; do not model retail buyers as the primary actor.",
-                ["merchant borrower portal", "capital-ops review", "underwriter workflow", "embedded Shopify app"],
-                "Changes the first workflow, authorization model, data consent, visible funding states, and proof target.",
+                "Lender, custody, and loss boundary",
+                "Default to manual risk and treasury approval with lender-of-record, custody, and loss ownership unresolved until explicitly decided.",
+                ["manual approval first", "lender of record undecided", "custody out of scope", "loss ownership must be named"],
+                "Changes compliance posture, treasury controls, repayment terms, settlement proof, and release blockers.",
             ),
             *common,
             _option(
                 "D6",
-                "Stablecoin and DeFi liquidity posture",
-                "Default to fixture-backed stablecoin ledger and liquidity snapshots before live protocol access.",
-                ["fixture-only liquidity ledger", "sandbox vault adapter", "read-only protocol quote", "live protocol later"],
-                "Changes treasury risk, no-custody proof, replay fixtures, compliance gates, and release blockers.",
-            ),
-            _option(
-                "D7",
-                "Compliance and lending posture",
-                "Keep KYB, AML, sanctions, lending disclosures, audit, retention, and no-custody posture explicit before source edits.",
-                ["strict regulated posture", "sandbox compliance gate", "research prototype", "production compliance later"],
-                "Changes data classification, release approval, authority, evidence thresholds, and what funding claims are allowed.",
+                "Funding and repayment rail",
+                "Default to fixture-backed settlement and repayment evidence before stablecoin, bank, or protocol movement.",
+                ["fixture-only ledger", "stablecoin sandbox", "bank rail later", "DeFi routing later"],
+                "Changes custody risk, reconciliation proof, repayment collection, and what can be claimed as funded.",
             ),
         ]
     if family == "robot_swarm":
@@ -401,11 +388,11 @@ def _customization_prompts(*, family: str) -> list[str]:
             "Keep release 0.0.1 non-custodial and read-only while deferring live RPC, trade execution, and advice language.",
             "Make stale oracle, missing indexer, unsupported chain, and confidence display mandatory first-wave states.",
         ]
-    if family == "defi_merchant_lending":
+    if family == "capital_merchant_lending":
         return [
-            "Use Shopify merchant as borrower, fixture-backed Shopify sales data, sandbox stablecoin ledger, and no live DeFi protocol calls.",
-            "Make KYB, AML, sanctions, lending disclosures, no-custody, and idempotent disbursement and repayment mandatory first-wave gates.",
-            "Defer consumer retail flows, production lending decisions, live protocol deposits, custody keys, and real merchant data until release proof passes.",
+            "Use one merchant funding journey, fixture-backed store data, manual risk approval, manual treasury approval, and ledger proof.",
+            "Keep lender of record, custody, loss ownership, repayment rail, and live protocol routing unresolved until reviewed.",
+            "Make offer trace, funding status, repayment event, and reconciliation evidence mandatory first-wave states.",
         ]
     if family == "robot_swarm":
         return [
@@ -457,18 +444,12 @@ def _pre_coding_checkpoints(*, family: str) -> list[dict[str, str]]:
                 "done_when": "Degraded states, no-live-RPC posture, non-custody posture, and audit requirements are visible before code.",
             }
         )
-    elif family == "defi_merchant_lending":
+    elif family == "capital_merchant_lending":
         checkpoints.append(
             {
-                "checkpoint": "Merchant-lending posture accepted",
-                "operator_question": (
-                    "Which borrower role, Shopify data boundary, underwriting inputs, liquidity source, stablecoin rail, "
-                    "repayment model, and compliance gates are non-negotiable?"
-                ),
-                "done_when": (
-                    "Workstream, component, and architecture records show merchant borrower workflow, Shopify snapshot rules, no-custody posture, "
-                    "KYB/AML gates, liquidity/disbursement/repayment proof, and no consumer-purchase scope before code."
-                ),
+                "checkpoint": "Capital responsibility accepted",
+                "operator_question": "Who owns lender-of-record, loss, custody, repayment, compliance, and treasury approval decisions for the first release?",
+                "done_when": "Funding, repayment, custody, loss ownership, and approval boundaries are explicit before implementation starts.",
             }
         )
     elif family == "robot_swarm":

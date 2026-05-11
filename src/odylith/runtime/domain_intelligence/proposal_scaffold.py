@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_project_brief import build_p
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import build_project_intelligence
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import enrich_backlog_rows
 from odylith.runtime.domain_intelligence.greenfield_workstream_rows import build_child_backlog_rows
+from odylith.runtime.domain_intelligence.project_intelligence_binding import attach_project_intelligence_bindings
 from odylith.runtime.domain_intelligence.proposal_rendering import build_apply_commands
 from odylith.runtime.domain_intelligence.robot_swarm_profile import apply_robot_swarm_logistics_profile
 from odylith.runtime.domain_intelligence.robot_swarm_profile import is_robot_swarm_logistics_prompt
@@ -34,9 +35,10 @@ def build_apply_ready_proposal(
     slug = slugify(str(project_slug or "").strip() or title) or "greenfield-project"
     robot_swarm_logistics = is_robot_swarm_logistics_prompt(prompt)
     domain_profile = infer_greenfield_domain_profile(prompt=prompt, title=title, slug=slug)
-    components = _component_ids(slug=slug, domain_profile=domain_profile, robot_swarm_logistics=robot_swarm_logistics)
-    diagrams = _diagram_ids(slug=slug)
-    intent = _intent(prompt=prompt, title=title, slug=slug, robot_swarm_logistics=robot_swarm_logistics)
+    artifact_slug = _artifact_slug(slug=slug, title=title, domain_profile=domain_profile, robot_swarm_logistics=robot_swarm_logistics)
+    components = _component_ids(slug=artifact_slug, domain_profile=domain_profile, robot_swarm_logistics=robot_swarm_logistics)
+    diagrams = _diagram_ids(slug=artifact_slug)
+    intent = _intent(prompt=prompt, title=title, slug=artifact_slug, robot_swarm_logistics=robot_swarm_logistics)
     assumptions = _base_assumptions()
     open_questions = _base_open_questions()
     risks = _base_risks(title=title, domain_profile=domain_profile)
@@ -45,14 +47,14 @@ def build_apply_ready_proposal(
     project_brief = build_project_brief(
         prompt=prompt,
         title=title,
-        slug=slug,
+        slug=artifact_slug,
         domain_profile=domain_profile,
         release_selector=selector,
     )
     program = _program(title=title, components=components, domain_profile=domain_profile)
     release_plan = _release_plan(
         selector=selector,
-        slug=slug,
+        slug=artifact_slug,
         experience_component=components["experience"],
         domain_component=components["domain"],
         domain_profile=domain_profile,
@@ -62,7 +64,7 @@ def build_apply_ready_proposal(
     project_intelligence = build_project_intelligence(
         prompt=prompt,
         title=title,
-        slug=slug,
+        slug=artifact_slug,
         release_selector=selector,
         domain_profile=domain_profile,
         project_brief=project_brief,
@@ -120,6 +122,7 @@ def build_apply_ready_proposal(
             validation_component=components["validation"],
             diagram_slugs=diagrams,
         )
+    proposal = attach_project_intelligence_bindings(proposal)
     proposal["apply_commands"] = build_apply_commands(proposal)
     return proposal
 
@@ -144,6 +147,31 @@ def _component_ids(
         "domain": f"{slug}-{suffixes[1]}",
         "validation": f"{slug}-{suffixes[2]}",
     }
+
+
+def _artifact_slug(
+    *,
+    slug: str,
+    title: str,
+    domain_profile: GreenfieldDomainProfile,
+    robot_swarm_logistics: bool,
+) -> str:
+    if robot_swarm_logistics:
+        return "robot-swarm-logistics"
+    family_slugs = {
+        "capital_merchant_lending": "merchant-capital",
+        "defi_risk": "defi-risk-sentinel",
+        "commerce": "checkout-commerce",
+        "clinical_trial_matching": "clinical-trial-matching",
+        "legal_intake": "legal-intake",
+        "bioinformatics_variant_pipeline": "variant-analysis-pipeline",
+    }
+    family_slug = family_slugs.get(domain_profile.family, "")
+    if family_slug:
+        return family_slug
+    compact = slugify(_compact_project_name(title)) or slugify(slug)
+    tokens = [token for token in compact.split("-") if token]
+    return "-".join(tokens[:5]) or "greenfield-project"
 
 
 def _diagram_ids(*, slug: str) -> dict[str, str]:
@@ -239,38 +267,38 @@ def _base_risks(*, title: str, domain_profile: GreenfieldDomainProfile) -> list[
                 ),
             },
         ]
-    if domain_profile.family == "defi_merchant_lending":
+    if domain_profile.family == "capital_merchant_lending":
         return [
             {
                 "id": "R1",
-                "risk_class": "credit_liquidity_integrity",
+                "risk_class": "credit_and_offer_integrity",
                 "severity": "high",
-                "trigger": "merchant eligibility, underwriting inputs, liquidity, disbursement, repayment, or Shopify data boundaries are unclear",
-                "early_warning": "retail-buyer or card-processing language appears before merchant facility, liquidity, and repayment proof exists",
+                "trigger": "merchant source signals, eligibility, offer terms, approval owner, or repayment model are unclear",
+                "early_warning": "offer or funding language appears before policy trace, manual approval, and repayment evidence exist",
                 "evidence_tier": "odylith_assumption",
                 "statement": (
-                    "Merchant lending implementation can misstate approved capital, over-commit stablecoin liquidity, "
-                    "or duplicate disbursement/repayment events if credit, liquidity, and facility state are not separated before source edits."
+                    "Merchant-capital implementation can misstate eligibility, amount, pricing, repayment terms, or approval "
+                    "if underwriting evidence and policy trace are not bound before source edits."
                 ),
                 "mitigation": (
-                    "Keep the first wave fixture-backed; require Shopify merchant snapshots, eligibility gates, liquidity snapshots, "
-                    "idempotent disbursement/repayment replay, and refreshed release evidence before release promotion."
+                    "Keep the first wave fixture-backed; require source-signal provenance, offer trace, manual risk approval, "
+                    "manual treasury approval, repayment state, and ledger reconciliation before release promotion."
                 ),
             },
             {
                 "id": "R2",
-                "risk_class": "compliance_treasury_boundary",
+                "risk_class": "treasury_compliance_boundary",
                 "severity": "high",
-                "trigger": "KYB, AML, sanctions, lending disclosure, no-custody, private-key, stablecoin, or live-protocol posture is implicit",
-                "early_warning": "component specs describe DeFi funding or Shopify integration without regulated data, no-custody, and live-protocol proof gates",
+                "trigger": "lender of record, loss ownership, custody, settlement rail, repayment rail, or protocol exposure is unresolved",
+                "early_warning": "stablecoin, DeFi, or payout text appears without custody, treasury, compliance, and reconciliation proof",
                 "evidence_tier": "odylith_assumption",
                 "statement": (
-                    "Stablecoin merchant lending can imply production lending, custody, money movement, or financial advice before "
-                    "KYB/AML, lending, treasury, and protocol-risk decisions are explicit."
+                    "Funding movement can imply live lending, custody, or protocol safety before lender-of-record, "
+                    "loss ownership, settlement, repayment, and compliance posture are decided."
                 ),
                 "mitigation": (
-                    "Make KYB/AML/sanctions, lending disclosures, no-custody, no-private-key, no-live-protocol, data classification, "
-                    "audit, retention, and release approval obligations explicit before the first technical plan can open."
+                    "Treat live stablecoin, bank, and DeFi movement as out of first-release scope unless operator-reviewed "
+                    "custody, treasury, compliance, and ledger proof gates are explicit."
                 ),
             },
         ]
@@ -361,19 +389,19 @@ def _base_security_compliance(title: str, *, domain_profile: GreenfieldDomainPro
                 "freshness/confidence disclosure, retention, and release approval explicit before source edits."
             ),
         }
-    if domain_profile.family == "defi_merchant_lending":
+    if domain_profile.family == "capital_merchant_lending":
         return {
             "domain": (
-                f"{title} is an SMB merchant lending proposal with sensitive Shopify merchant data, underwriting inputs, "
-                "credit facility state, stablecoin funding, DeFi liquidity, disbursement, repayment, treasury, and audit data."
+                f"{title} is a merchant-capital proposal with sensitive merchant performance, underwriting, offer, "
+                "approval, funding, repayment, stablecoin or fiat settlement, and ledger evidence boundaries."
             ),
             "security": (
-                "Security posture covers merchant identity and consent, Shopify app scopes, secret-free fixtures, audit trails, "
-                "idempotency keys, private-key exclusion, no custody, and no live protocol or production disbursement in the first release."
+                "Security posture covers merchant data consent and provenance, KYB/AML input handling, approval audit, "
+                "treasury controls, custody exclusion, replayable repayment evidence, and secret-free fixtures."
             ),
             "policy": (
-                "Strict regulated posture keeps KYB, AML, sanctions, lending disclosures, money-transmission or securities review, "
-                "data classification, retention, stablecoin/DeFi risk disclosure, and release approval explicit before source edits."
+                "Policy posture keeps lender of record, credit loss ownership, disclosures, jurisdiction, custody, "
+                "settlement rail, repayment rail, and protocol exposure explicit before source edits."
             ),
         }
     if domain_profile.family == "commerce":
@@ -414,42 +442,6 @@ def _base_validation_strategy() -> list[str]:
 
 
 def _program(*, title: str, components: Mapping[str, str], domain_profile: GreenfieldDomainProfile) -> dict[str, Any]:
-    if domain_profile.family == "defi_merchant_lending":
-        return {
-            "name": title,
-            "waves": [
-                {
-                    "wave_id": "W1",
-                    "label": "Merchant capital first slice",
-                    "goal": (
-                        "Prove merchant application, Shopify snapshot freshness, eligibility, compliance, "
-                        "stablecoin liquidity, funding status, and repayment visibility with deterministic evidence."
-                    ),
-                    "validation_gate": (
-                        "Eligible, declined, stale-data, liquidity-blocked, compliance-blocked, duplicate-disbursement, "
-                        "and repayment-replay scenarios pass without live Shopify, live DeFi, custody keys, or production credentials."
-                    ),
-                    "workstreams": ["WS-01", "WS-02"],
-                    "component_focus": [components["experience"], components["domain"]],
-                    "evidence_tier": "odylith_assumption",
-                },
-                {
-                    "wave_id": "W2",
-                    "label": "Regulated operations hardening",
-                    "goal": (
-                        "Harden audit, replay, disclosure, fallback, liquidity-source, and repayment evidence after "
-                        "the merchant capital slice is coherent."
-                    ),
-                    "validation_gate": (
-                        "Closed-world proof covers regulated blockers, no-custody posture, no-live-protocol posture, "
-                        "accessibility, audit evidence, and release non-goals without expanding production scope."
-                    ),
-                    "workstreams": ["WS-03"],
-                    "component_focus": [components["validation"]],
-                    "evidence_tier": "odylith_assumption",
-                },
-            ],
-        }
     return {
         "name": title,
         "waves": [
@@ -488,33 +480,6 @@ def _release_plan(
     domain_component: str,
     domain_profile: GreenfieldDomainProfile,
 ) -> dict[str, Any]:
-    if domain_profile.family == "defi_merchant_lending":
-        return {
-            "selector": selector,
-            "label": greenfield_programs.compact_release_target_label(selector),
-            "provisional_release_id": f"release-{slug}-{slugify(selector)}",
-            "strategy": (
-                "Promote only after merchant application, eligibility, compliance, stablecoin liquidity, "
-                "funding status, and repayment proof pass with closed-world fixtures."
-            ),
-            "target_workstreams": ["WS-01", "WS-02"],
-            "release_stages": [
-                {
-                    "release": selector,
-                    "label": "Merchant capital first slice",
-                    "exit_criteria": (
-                        "Merchant portal, credit-liquidity contract, Shopify snapshot fixture, compliance fixture, "
-                        "stablecoin liquidity fixture, and repayment replay agree."
-                    ),
-                }
-            ],
-            "promotion_criteria": [
-                "Eligible, declined, stale Shopify, liquidity shortfall, compliance block, duplicate disbursement, and repayment replay scenarios pass.",
-                "No live Shopify access, live DeFi protocol calls, custody keys, private keys, or production credentials are required.",
-            ],
-            "component_focus": [experience_component, domain_component],
-            "evidence_tier": "odylith_assumption",
-        }
     return {
         "selector": selector,
         "label": greenfield_programs.compact_release_target_label(selector),
@@ -570,87 +535,17 @@ def _umbrella_backlog_row(
     diagrams: Mapping[str, str],
     domain_profile: GreenfieldDomainProfile,
 ) -> dict[str, Any]:
-    if domain_profile.family == "defi_merchant_lending":
-        return {
-            "id": "WS-00",
-            "title": f"Shape {title} merchant lending launch",
-            "workstream_type": "umbrella",
-            "problem": (
-                f"{title} needs product requirements for SMB Shopify merchant borrowers, Shopify data consent, "
-                "credit eligibility, stablecoin liquidity, compliance blockers, disbursement, and repayment before "
-                "implementation can make any lending or funding claim."
-            ),
-            "customer": (
-                "SMB Shopify merchants seeking working capital, capital-ops reviewers checking offer readiness, "
-                "and compliance or treasury reviewers constraining regulated funding behavior."
-            ),
-            "opportunity": (
-                "Turn broad DeFi-plus-Shopify lending intent into a concrete merchant-capital product lane with "
-                "borrower states, credit-facility rules, stablecoin liquidity posture, repayment visibility, and "
-                "regulated non-goals."
-            ),
-            "product_view": (
-                f"A merchant capital product for Shopify sellers: application intake, Shopify sales snapshot, "
-                "eligibility decision, compliance gate, stablecoin-funded offer, funding status, and repayment state."
-            ),
-            "recommended_first_slice": (
-                "Start with the merchant application and funding-status path, then bind the credit-liquidity contract "
-                "that proves eligibility, blocked states, disbursement replay, and repayment replay."
-            ),
-            "success_metrics": [
-                "Merchant borrower states cover draft, in review, declined, eligible, liquidity blocked, compliance blocked, funded, repayment due, and repaid.",
-                "Closed-world fixtures prove stale Shopify data, liquidity shortfall, compliance block, duplicate disbursement, and repayment replay.",
-                "Release 0.0.1 makes no production lending, custody, private-key, live-protocol, or real-merchant-data claim.",
-            ],
-            "component_focus": [components["experience"], components["domain"], components["validation"]],
-            "related_diagram_slugs": [
-                diagrams["overview"],
-                diagrams["slice"],
-                diagrams["component_map"],
-                diagrams["domain_state"],
-                diagrams["validation_release"],
-            ],
-            "dependencies": [
-                "Merchant borrower workflow depends on Shopify data consent, credit-liquidity semantics, compliance posture, and closed-world proof fixtures."
-            ],
-            "interfaces": [
-                "Product requirements expose borrower application state, credit facility state, liquidity state, compliance state, disbursement events, and repayment events."
-            ],
-            "validation": [
-                "Requirement review passes only when borrower workflow, credit-liquidity contract, fixtures, non-goals, and regulated blockers agree."
-            ],
-            "domain_risk": (
-                "Generic commerce defaults can erase the actual lending domain, causing borrower states, regulated blockers, "
-                "stablecoin liquidity, repayment, and no-custody constraints to disappear."
-            ),
-            "security_posture": (
-                "KYB/AML/sanctions, lending disclosure, no-custody, no-private-key, no-live-protocol, audit, privacy, and repayment evidence stay explicit."
-            ),
-            "priority": "P1",
-            "sizing": "L",
-            "complexity": "High",
-            "evidence_tier": "user_intent",
-        }
+    terms = _umbrella_backlog_terms(title=title, selector=selector, domain_profile=domain_profile)
     return {
         "id": "WS-00",
-        "title": f"Govern {title}",
+        "title": terms["title"],
         "workstream_type": "umbrella",
-        "problem": (
-            f"{title} needs an accepted execution spine before source exists, otherwise first-wave implementation "
-            "choices will not trace to product intent, components, diagrams, release gates, or validation proof."
-        ),
-        "customer": "The project operator, implementation agents, reviewers, and maintainers who need one trusted program view before code starts.",
-        "opportunity": (
-            "Create one umbrella program that ties user intent, first wave, release target, workstreams, "
-            "component candidates, topology drafts, and proof gates together."
-        ),
-        "product_view": f"A proposal-first product program for {title} with one active first wave, a {selector} release target, candidate components, and diagram traceability.",
-        "recommended_first_slice": "Confirm the first product slice, then open the first child workstream and author the technical plan before editing source.",
-        "success_metrics": [
-            "Accepted product records show the umbrella, first wave, and release target after apply.",
-            "Workstreams, component candidates, and diagrams all link the first wave to the same boundaries.",
-            "The start workstream includes validation gates and a first implementation prompt.",
-        ],
+        "problem": terms["problem"],
+        "customer": terms["customer"],
+        "opportunity": terms["opportunity"],
+        "product_view": terms["product_view"],
+        "recommended_first_slice": terms["recommended_first_slice"],
+        "success_metrics": terms["success_metrics"],
         "component_focus": [components["experience"], components["domain"], components["validation"]],
         "related_diagram_slugs": [
             diagrams["overview"],
@@ -659,17 +554,235 @@ def _umbrella_backlog_row(
             diagrams["domain_state"],
             diagrams["validation_release"],
         ],
-        "dependencies": ["Child workstreams depend on this umbrella for wave membership, release targeting, and proof sequencing."],
-        "interfaces": ["Accepted product records expose one shared greenfield program topology."],
-        "validation": ["Greenfield proposal validation passes and release evidence regenerates cleanly."],
-        "domain_risk": "Greenfield planning can mislead source implementation if the first wave, component ownership, release target, or proof gates are vague.",
-        "security_posture": "Security, privacy, accessibility, abuse, audit, and recovery posture stay explicit until source-backed implementation narrows them.",
+        "dependencies": terms["dependencies"],
+        "interfaces": terms["interfaces"],
+        "validation": terms["validation"],
+        "domain_risk": terms["domain_risk"],
+        "security_posture": terms["security_posture"],
         "priority": "P1",
         "sizing": "L",
         "complexity": "High",
         "evidence_tier": "user_intent",
     }
 
+
+def _umbrella_backlog_terms(
+    *,
+    title: str,
+    selector: str,
+    domain_profile: GreenfieldDomainProfile,
+) -> dict[str, Any]:
+    experience = domain_profile.components["experience"]
+    domain = domain_profile.components["domain"]
+    validation = domain_profile.components["validation"]
+    component_sentence = f"{experience.label}, {domain.label}, and {validation.label}"
+    if domain_profile.family == "capital_merchant_lending":
+        return {
+            "title": "Shape merchant capital funding program",
+            "problem": (
+                "Merchants need a trustworthy path from verified store performance to a funding offer, manual approval, "
+                "funding status, repayment record, and ledger reconciliation. Without that first path, the product can imply "
+                "live lending, stablecoin custody, DeFi protocol safety, or repayment obligations before risk, treasury, "
+                "compliance, and loss ownership are decided."
+            ),
+            "customer": (
+                "Merchants seeking working capital, plus risk, treasury, compliance, and product reviewers who must know "
+                "which funding claims are real before the first build starts."
+            ),
+            "opportunity": (
+                "Prove one merchant funding journey: request capital, verify store signals, review eligibility and terms, "
+                "require manual approval, show funding status, record repayment, and reconcile the ledger before any live "
+                "stablecoin or protocol movement."
+            ),
+            "product_view": (
+                f"The first product shape is a controlled merchant-capital system: {experience.label} owns the request and "
+                f"offer experience, {domain.label} owns eligibility, approval, facility, and repayment state, and "
+                f"{validation.label} proves funding, repayment, and ledger evidence. Live custody and protocol routing stay "
+                "outside the first release until ownership and proof are explicit."
+            ),
+            "recommended_first_slice": (
+                "Prove one fixture-backed merchant funding request from store-signal readiness through offer review, manual "
+                "risk and treasury approval, funding status, repayment event, and ledger reconciliation."
+            ),
+            "success_metrics": [
+                "A merchant can understand request status, eligibility, offer terms, approval state, funding status, and repayment state without hidden lender or custody assumptions.",
+                "Risk, treasury, compliance, lender-of-record, custody, loss-owner, and repayment assumptions are visible before release promotion.",
+                "The first release proves the funding journey with fixtures and ledger evidence, not live stablecoin custody, DeFi deposits, or production lending decisions.",
+            ],
+            "dependencies": [
+                f"First-path implementation depends on {component_sentence} agreeing on merchant state, approval ownership, and proof boundaries.",
+            ],
+            "interfaces": [
+                "The accepted program exposes merchant request, store-signal, offer, approval, facility, repayment, and reconciliation states as the first product contract.",
+            ],
+            "validation": [
+                "Greenfield validation must prove the merchant funding story, component boundaries, architecture views, release target, and proof gates agree before coding starts.",
+            ],
+            "domain_risk": (
+                "A capital product can create credit, treasury, custody, compliance, and merchant-trust risk if offer, approval, funding, repayment, and ledger claims are vague."
+            ),
+            "security_posture": (
+                "Merchant data provenance, consent, KYB/AML inputs, approval audit, treasury controls, custody exclusion, and secret-free fixtures remain explicit until source-backed proof exists."
+            ),
+        }
+    if domain_profile.family == "defi_risk":
+        return {
+            "title": "Shape DeFi risk sentinel program",
+            "problem": (
+                "Risk analysts need exposure, freshness, confidence, and alert state they can trust before the product touches live-chain providers. "
+                "Without that path, the product can imply custody, trading, financial advice, or precise risk scoring from stale or incomplete data."
+            ),
+            "customer": "Risk analysts, protocol operators, and reviewers who need non-custodial risk posture before live-provider integration.",
+            "opportunity": "Prove one analyst watchlist and alert journey with fixture-backed exposure snapshots, stale-data handling, acknowledgement, and audit evidence.",
+            "product_view": (
+                f"The first shape ties {component_sentence}: the console shows risk posture, the signal engine owns exposure and alert semantics, "
+                "and the replay harness proves stale, missing, unsupported, and acknowledged states without custody or live execution."
+            ),
+            "recommended_first_slice": "Prove one monitored subject from watchlist entry to alert triage, degraded-data disclosure, acknowledgement, and replay proof.",
+            "success_metrics": [
+                "Risk cards disclose freshness, confidence, provenance, and degraded-data state.",
+                "No first-release path requires custody, signing, trading, live RPC, or production financial-advice claims.",
+                "Scenario replay proves normal, stale, missing, unsupported-chain, and acknowledgement states.",
+            ],
+            "dependencies": [f"The first path depends on {component_sentence} sharing exposure, alert, confidence, and proof semantics."],
+            "interfaces": ["The accepted program exposes risk subject, exposure snapshot, alert state, acknowledgement, and replay-report contracts."],
+            "validation": ["Validation must prove watchlist, risk signal, degraded-state, acknowledgement, and replay evidence agree before source work starts."],
+            "domain_risk": "Weak freshness, confidence, custody, or no-advice boundaries can make incomplete data look actionable.",
+            "security_posture": "No custody, no signing, no trading, live-provider exclusion, audit trail, and fixture provenance remain explicit until source-backed proof exists.",
+        }
+    if domain_profile.family == "clinical_trial_matching":
+        return {
+            "title": "Shape patient trial matching program",
+            "problem": (
+                "Oncology coordinators need one safe patient-to-trial review path that separates intake facts, consent, "
+                "eligibility criteria, exclusion reasons, manual review, and match evidence. Without that path, the product "
+                "can look like a clinical recommendation before protocol, consent, and safety proof exist."
+            ),
+            "customer": "Oncology coordinators, patient-review teams, trial operations staff, and clinical reviewers who need eligibility evidence before outreach or care decisions.",
+            "opportunity": "Prove one patient matching journey with fixture-backed intake, consent status, protocol criteria, eligibility gaps, manual review, and outcome evidence.",
+            "product_view": (
+                f"The first shape ties {component_sentence}: the workbench owns coordinator review, the protocol engine owns eligibility semantics, "
+                "and the proof harness validates consent, exclusion, stale-protocol, and manual-review states without production patient data."
+            ),
+            "recommended_first_slice": "Prove one oncology patient profile from intake through consent check, protocol eligibility review, match explanation, manual review, and proof report.",
+            "success_metrics": [
+                "A coordinator can see why a patient is eligible, ineligible, blocked by consent, missing data, or waiting for manual review.",
+                "Protocol criteria, consent state, exclusion reasons, and review disposition are explicit before any outreach or clinical recommendation claim.",
+                "The first release uses fixtures and review evidence, not production patient data, EHR access, or automated clinical approval.",
+            ],
+            "dependencies": [f"The first path depends on {component_sentence} sharing patient, protocol, consent, eligibility, and proof semantics."],
+            "interfaces": ["The accepted program exposes patient intake, consent, protocol criteria, eligibility result, exclusion reason, and manual-review contracts."],
+            "validation": ["Validation must prove eligible, ineligible, missing-consent, missing-data, stale-protocol, and manual-review scenarios before source work widens."],
+            "domain_risk": "Clinical matching can become unsafe if consent, protocol criteria, eligibility confidence, or manual review ownership are vague.",
+            "security_posture": "Patient privacy, consent boundaries, fixture-only health data, protocol provenance, and clinical-approval exclusion remain explicit until source-backed proof exists.",
+        }
+    if domain_profile.family == "legal_intake":
+        return {
+            "title": "Shape immigration intake program",
+            "problem": (
+                "Clients and attorneys need one confidential intake path that captures client facts, document gaps, consent, "
+                "case-type risk, attorney handoff, and review evidence without implying legal advice or filing readiness."
+            ),
+            "customer": "Immigration clients, intake operators, attorneys, and confidentiality reviewers who need complete intake evidence before advice or filing decisions.",
+            "opportunity": "Prove one client intake journey with fixture-backed profile capture, document checklist, consent gate, urgency or risk flag, and attorney-review handoff.",
+            "product_view": (
+                f"The first shape ties {component_sentence}: the workspace owns client intake, the case core owns document and eligibility semantics, "
+                "and the proof harness validates privacy, consent, missing-document, conflict, and attorney-review states."
+            ),
+            "recommended_first_slice": "Prove one client case from intake through consent, document completeness, risk flagging, attorney review, and confidential proof report.",
+            "success_metrics": [
+                "A client or intake operator can see required documents, missing items, consent state, urgency, and attorney-review status.",
+                "The product never presents legal advice, filing readiness, or representation acceptance before attorney review.",
+                "The first release proves complete, missing-document, urgent-deadline, consent-blocked, conflict, and attorney-review paths with fixtures.",
+            ],
+            "dependencies": [f"The first path depends on {component_sentence} sharing client, document, consent, risk, and review semantics."],
+            "interfaces": ["The accepted program exposes client intake, document inventory, consent state, case-type risk, missing-item, and attorney-review contracts."],
+            "validation": ["Validation must prove complete intake, missing documents, urgent deadline, consent block, conflict flag, and attorney-review scenarios before source work widens."],
+            "domain_risk": "Legal intake can create confidentiality, unauthorized-advice, or filing-readiness risk if consent, document state, or attorney authority are vague.",
+            "security_posture": "PII handling, confidentiality, consent, conflict checks, fixture-only client data, and legal-advice exclusion remain explicit until source-backed proof exists.",
+        }
+    if domain_profile.family == "bioinformatics_variant_pipeline":
+        return {
+            "title": "Shape variant analysis pipeline program",
+            "problem": (
+                "Clinical genomics teams need one reproducible sample-to-variant review path that separates sample intake, "
+                "QC, reference data, VCF output, annotation, analyst review, and proof of rerun stability."
+            ),
+            "customer": "Bioinformatics analysts, clinical genomics reviewers, pipeline maintainers, and quality owners who need reproducible variant evidence before interpretation claims.",
+            "opportunity": "Prove one sample analysis journey with pinned fixtures for QC, reference selection, VCF generation, malformed input, annotation, and reproducibility evidence.",
+            "product_view": (
+                f"The first shape ties {component_sentence}: the workbench owns analyst review, the analysis core owns sample and variant semantics, "
+                "and the proof harness validates QC failure, malformed VCF, reference mismatch, and deterministic rerun evidence."
+            ),
+            "recommended_first_slice": "Prove one sample fixture from intake through QC, variant output, annotation readiness, analyst review, and reproducibility report.",
+            "success_metrics": [
+                "An analyst can see sample status, QC outcome, variant output, reference provenance, failure reason, and review readiness.",
+                "Reference, QC, VCF, annotation, and provenance claims are reproducible before clinical interpretation or production sample claims.",
+                "The first release proves passing sample, failed QC, empty variants, malformed VCF, reference mismatch, and deterministic rerun paths.",
+            ],
+            "dependencies": [f"The first path depends on {component_sentence} sharing sample, QC, variant, reference, annotation, and proof semantics."],
+            "interfaces": ["The accepted program exposes sample metadata, QC metrics, reference identity, VCF output, annotation state, and reproducibility-report contracts."],
+            "validation": ["Validation must prove passing sample, failed QC, empty variants, malformed VCF, reference mismatch, and deterministic rerun scenarios before source work widens."],
+            "domain_risk": "Variant analysis can become invalid or irreproducible if sample identity, QC thresholds, reference data, VCF semantics, or provenance are vague.",
+            "security_posture": "Fixture-only samples, reference provenance, PHI exclusion, reproducibility, audit, and clinical-interpretation exclusion remain explicit until source-backed proof exists.",
+        }
+    if domain_profile.family == "commerce":
+        return {
+            "title": "Shape checkout recovery program",
+            "problem": (
+                "Shoppers need checkout to preserve cart, payment, retry, and order state without duplicate orders or misleading success messages. "
+                "Without a first recovery path, the build can look like a storefront while payment failure and order truth remain unproven."
+            ),
+            "customer": "Shoppers, commerce operators, and reviewers who need checkout recovery proof before production payment claims.",
+            "opportunity": "Prove one browse-to-checkout journey with empty, failed-payment, retry, callback replay, and completion states.",
+            "product_view": (
+                f"The first shape ties {component_sentence}: the storefront owns visible shopper state, the checkout core owns order and payment transitions, "
+                "and the proof harness validates recovery without production credentials."
+            ),
+            "recommended_first_slice": "Prove one checkout path from browse to cart, checkout handoff, failed payment, retry, and completed order draft.",
+            "success_metrics": [
+                "Checkout proof shows happy path, empty cart, failed payment, retry, and callback replay.",
+                "Order draft creation is idempotent under repeated checkout and provider callback duplication.",
+                "No first release claims production payment readiness or live fulfillment.",
+            ],
+            "dependencies": [f"The first path depends on {component_sentence} sharing cart, order, payment, recovery, and proof semantics."],
+            "interfaces": ["The accepted program exposes browse, cart-entry, checkout-entry, payment-result, retry, and order-status contracts."],
+            "validation": ["Validation must prove visible checkout states, idempotent order handling, payment recovery, and release evidence before source work starts."],
+            "domain_risk": "Payment, order, inventory, and recovery state can diverge if checkout proof is vague.",
+            "security_posture": "Session, payment handoff, idempotency, callback replay, abuse control, accessibility, and secret-free sandbox posture remain explicit until source-backed proof exists.",
+        }
+    compact = _compact_project_name(title)
+    return {
+        "title": f"Shape {compact} program",
+        "problem": (
+            f"{compact} needs one credible first path before implementation starts: who it serves, what state changes, "
+            "which boundaries own the work, and what proof makes the first slice real."
+        ),
+        "customer": "The first users and operators named by the proposal, plus reviewers and builders who need a coherent product boundary before code starts.",
+        "opportunity": "Turn the initial intent into a concrete first journey, named ownership boundaries, topology views, release target, and validation gates.",
+        "product_view": (
+            f"The first shape ties {component_sentence}: each boundary owns a different part of the journey, and proof remains separate from assumptions until source exists."
+        ),
+        "recommended_first_slice": "Prove the smallest complete journey from actor need to verified outcome before widening scope.",
+        "success_metrics": [
+            "The first user, state object, boundary owners, topology views, and proof gates are explicit before source work starts.",
+            "Components and diagrams agree on the same first path and do not repeat the whole project prompt.",
+            f"Release {selector} promotes only after the first path has source-backed validation.",
+        ],
+        "dependencies": [f"The first path depends on {component_sentence} agreeing on ownership, interfaces, and proof obligations."],
+        "interfaces": ["The accepted program exposes the first actor need, state object, handoff, evidence, and outcome contracts."],
+        "validation": ["Greenfield validation must prove the product story, components, topology, release target, and proof gates agree before coding starts."],
+        "domain_risk": "Implementation can become generic or misleading if the first user, state object, owner, risk, and proof are not explicit.",
+        "security_posture": "Access, data sensitivity, privacy, audit, degraded behavior, and recovery posture remain explicit until source-backed proof exists.",
+    }
+
+
+def _compact_project_name(title: str) -> str:
+    cleaned = " ".join(str(title or "").replace("_", " ").split()).strip()
+    for suffix in (" Application", " Platform", " System", " App", " Product"):
+        if cleaned.endswith(suffix):
+            cleaned = cleaned[: -len(suffix)].strip()
+    return cleaned or "project"
 
 
 def _components(
@@ -762,8 +875,6 @@ def _diagrams(
     diagrams: Mapping[str, str],
     domain_profile: GreenfieldDomainProfile,
 ) -> list[dict[str, Any]]:
-    if domain_profile.family == "defi_merchant_lending":
-        return _merchant_lending_diagrams(components=components, diagrams=diagrams)
     return [
         {
             "slug": diagrams["overview"],
@@ -858,105 +969,6 @@ def _diagrams(
     ]
 
 
-def _merchant_lending_diagrams(
-    *,
-    components: Mapping[str, str],
-    diagrams: Mapping[str, str],
-) -> list[dict[str, Any]]:
-    return [
-        {
-            "slug": diagrams["overview"],
-            "title": "System Overview",
-            "kind": "flowchart",
-            "summary": "Merchant-capital map: Shopify merchant intent becomes borrower workflow, credit-liquidity state, fixture proof, and release review.",
-            "review_focus": "Use this view to confirm borrower role, Shopify data boundary, stablecoin-liquidity posture, and no-custody gate.",
-            "operator_question": "Does this show the merchant borrower and funding-state path instead of a retail purchase path?",
-            "proof_gate": "No production lending, custody, live protocol, or real merchant-data claim before fixture proof exists.",
-            "link_state": _GREENFIELD_FIRST_DRAFT_LINK_STATE,
-            "components": [
-                {"name": components["experience"], "description": "Owns merchant application intake and visible funding states."},
-                {"name": components["domain"], "description": "Owns credit, liquidity, compliance, disbursement, and repayment invariants."},
-                {"name": components["validation"], "description": "Owns merchant, liquidity, compliance, and ledger replay fixtures."},
-            ],
-            "related_workstreams": ["WS-00", "WS-01", "WS-02", "WS-03"],
-            "evidence_tier": "user_intent",
-            "mermaid_source": _merchant_lending_overview_mermaid(),
-        },
-        {
-            "slug": diagrams["slice"],
-            "title": "First Slice Flow",
-            "kind": "sequenceDiagram",
-            "summary": "First borrower slice: merchant application, Shopify snapshot, compliance gate, liquidity check, offer or blocked state, and proof replay.",
-            "review_focus": "Use this view to decide which borrower-visible application and funding states release 0.0.1 must prove.",
-            "operator_question": "Are the eligible, declined, stale-data, compliance-blocked, liquidity-blocked, funded, and repayment states right?",
-            "proof_gate": "The technical plan must name fixture schemas and replay proof before source edits start.",
-            "link_state": _GREENFIELD_FIRST_DRAFT_LINK_STATE,
-            "components": [
-                {"name": components["experience"], "description": "Starts the merchant borrower application and renders funding state."},
-                {"name": components["domain"], "description": "Evaluates eligibility, compliance, liquidity, disbursement, and repayment state."},
-                {"name": components["validation"], "description": "Replays fixtures for happy, blocked, stale, and duplicate-event cases."},
-            ],
-            "related_workstreams": ["WS-01", "WS-02", "WS-03"],
-            "evidence_tier": "user_intent",
-            "mermaid_source": _merchant_lending_slice_mermaid(),
-        },
-        {
-            "slug": diagrams["component_map"],
-            "title": "Component Ownership Map",
-            "kind": "flowchart",
-            "summary": "Ownership map separating merchant portal, credit-liquidity core, proof harness, and the regulated split rules between them.",
-            "review_focus": "Use this view to keep borrower UX, credit decisions, liquidity, compliance, and proof ownership distinct.",
-            "operator_question": "Are the component boundaries specific enough for implementation without re-learning the product?",
-            "proof_gate": "Each candidate component stays planned until its own source path and merchant-lending proof exists.",
-            "link_state": _GREENFIELD_FIRST_DRAFT_LINK_STATE,
-            "components": [
-                {"name": components["experience"], "description": "Owns borrower workflow, application status, offer review, funding and repayment visibility."},
-                {"name": components["domain"], "description": "Owns credit facility, liquidity allocation, compliance gates, disbursement, and repayment."},
-                {"name": components["validation"], "description": "Owns deterministic fixtures and regulated proof reports."},
-            ],
-            "related_workstreams": ["WS-00", "WS-01", "WS-02", "WS-03"],
-            "evidence_tier": "user_intent",
-            "mermaid_source": _merchant_lending_component_map_mermaid(),
-        },
-        {
-            "slug": diagrams["domain_state"],
-            "title": "Domain State Model",
-            "kind": "stateDiagram",
-            "summary": "Merchant facility state model covering draft, stale data, declined, compliance block, liquidity block, offer, funded, repayment due, and repaid.",
-            "review_focus": "Use this view to catch unsafe transitions before source code chooses the state machine.",
-            "operator_question": "Which facility state would be misleading without fixture or compliance proof?",
-            "proof_gate": "Every promoted facility transition needs deterministic fixture proof.",
-            "link_state": _GREENFIELD_FIRST_DRAFT_LINK_STATE,
-            "components": [
-                {"name": components["domain"], "description": "Owns facility states and valid transitions."},
-                {"name": components["experience"], "description": "Renders application, blocked, funded, and repayment states to the merchant."},
-                {"name": components["validation"], "description": "Exercises transitions through fixture replay."},
-            ],
-            "related_workstreams": ["WS-01", "WS-02", "WS-03"],
-            "evidence_tier": "user_intent",
-            "mermaid_source": _merchant_lending_state_mermaid(),
-        },
-        {
-            "slug": diagrams["validation_release"],
-            "title": "Validation And Release Topology",
-            "kind": "flowchart",
-            "summary": "Release-readiness map tying Shopify, compliance, liquidity, disbursement, repayment, negative live-access proof, and release decision together.",
-            "review_focus": "Use this view to decide what must be proven before release 0.0.1 can claim merchant lending progress.",
-            "operator_question": "Are the regulated acceptance gates strong enough for merchant lending and stablecoin funding?",
-            "proof_gate": "Release movement is blocked until fixture proof, no-live-access guards, and unresolved-risk review agree.",
-            "link_state": _GREENFIELD_FIRST_DRAFT_LINK_STATE,
-            "components": [
-                {"name": components["validation"], "description": "Owns fixture replay, negative live-access guards, and release evidence."},
-                {"name": components["experience"], "description": "Supplies borrower-visible state proof."},
-                {"name": components["domain"], "description": "Supplies facility, compliance, liquidity, disbursement, and repayment proof."},
-            ],
-            "related_workstreams": ["WS-00", "WS-03"],
-            "evidence_tier": "user_intent",
-            "mermaid_source": _merchant_lending_validation_mermaid(),
-        },
-    ]
-
-
 def _overview_mermaid(domain_profile: GreenfieldDomainProfile) -> str:
     experience = _profile_label(domain_profile, "experience", fallback="Workflow Boundary")
     domain = _profile_label(domain_profile, "domain", fallback="State Contract")
@@ -983,31 +995,6 @@ def _overview_mermaid(domain_profile: GreenfieldDomainProfile) -> str:
     )
 
 
-def _merchant_lending_overview_mermaid() -> str:
-    return (
-        "flowchart LR\n"
-        "  Merchant[SMB merchant<br/>borrower]:::actor --> Portal[Merchant capital<br/>portal]:::portal\n"
-        "  Portal --> Snapshot[Shopify snapshot<br/>fixture input]:::data\n"
-        "  Snapshot --> Core[Credit liquidity<br/>core]:::core\n"
-        "  Compliance[KYB AML sanctions<br/>fixture]:::risk --> Core\n"
-        "  Liquidity[Stablecoin liquidity<br/>fixture]:::funding --> Core\n"
-        "  Core --> Offer[Eligible declined<br/>or blocked state]:::decision\n"
-        "  Offer --> Funding[Disbursement and<br/>repayment state]:::funding\n"
-        "  Funding --> Proof[Lending proof<br/>harness]:::proof\n"
-        "  Proof --> Review[Release review<br/>no live rails]:::gate\n"
-        "  Custody[No custody keys<br/>or protocol calls]:::blocked -. blocks .-> Funding\n"
-        "  classDef actor fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b;\n"
-        "  classDef portal fill:#fff7df,stroke:#d7a93d,color:#52390a;\n"
-        "  classDef data fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
-        "  classDef core fill:#eef2ff,stroke:#818cf8,color:#1e1b4b;\n"
-        "  classDef funding fill:#ecfdf5,stroke:#10b981,color:#064e3b;\n"
-        "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
-        "  classDef decision fill:#f1f5f9,stroke:#94a3b8,color:#1f2937;\n"
-        "  classDef gate fill:#fee2e2,stroke:#dc2626,color:#5f1212;\n"
-        "  classDef blocked fill:#f8fafc,stroke:#64748b,color:#334155,stroke-dasharray: 3 3;\n"
-    )
-
-
 def _slice_mermaid(domain_profile: GreenfieldDomainProfile) -> str:
     experience = _profile_label(domain_profile, "experience", fallback="Workflow")
     domain = _profile_label(domain_profile, "domain", fallback="State Contract")
@@ -1027,28 +1014,6 @@ def _slice_mermaid(domain_profile: GreenfieldDomainProfile) -> str:
         "  Harness->>Domain: run contract proof\n"
         "  Harness-->>Operator: proof report and release gate evidence\n"
         "  Note over Harness,Operator: Proof is not accepted until behavior and contract evidence agree\n"
-    )
-
-
-def _merchant_lending_slice_mermaid() -> str:
-    return (
-        "sequenceDiagram\n"
-        "  participant Merchant as Merchant Borrower\n"
-        "  participant Portal as Merchant Capital Portal\n"
-        "  participant Core as Credit Liquidity Core\n"
-        "  participant Shopify as Shopify Snapshot Fixture\n"
-        "  participant Compliance as Compliance Fixture\n"
-        "  participant Liquidity as Stablecoin Liquidity Fixture\n"
-        "  participant Harness as Lending Proof Harness\n"
-        "  Merchant->>Portal: submit capital request and consent\n"
-        "  Portal->>Core: evaluate facility request\n"
-        "  Core->>Shopify: read sales freshness fixture\n"
-        "  Core->>Compliance: check KYB AML sanctions state\n"
-        "  Core->>Liquidity: check available stablecoin liquidity\n"
-        "  Core-->>Portal: eligible declined stale or blocked state\n"
-        "  Portal-->>Merchant: show offer funding or repayment state\n"
-        "  Harness->>Core: replay disbursement and repayment events\n"
-        "  Harness-->>Merchant: proof report uses fixture evidence only\n"
     )
 
 
@@ -1086,34 +1051,6 @@ def _component_map_mermaid(domain_profile: GreenfieldDomainProfile) -> str:
     )
 
 
-def _merchant_lending_component_map_mermaid() -> str:
-    return (
-        "flowchart TB\n"
-        "  subgraph portal[Merchant capital<br/>portal]\n"
-        "    Intake[Application intake<br/>and consent]:::portal\n"
-        "    Visible[Funding status<br/>and repayment view]:::portal\n"
-        "  end\n"
-        "  subgraph core[Credit liquidity<br/>core]\n"
-        "    Facility[Facility terms<br/>and eligibility]:::core\n"
-        "    Rails[Disbursement and<br/>repayment invariants]:::core\n"
-        "    Gates[KYB AML sanctions<br/>and no custody gates]:::risk\n"
-        "  end\n"
-        "  subgraph proof[Lending proof<br/>harness]\n"
-        "    Fixtures[Shopify liquidity<br/>compliance fixtures]:::proof\n"
-        "    Replay[Duplicate event<br/>replay report]:::proof\n"
-        "  end\n"
-        "  Intake --> Facility --> Gates --> Rails --> Visible\n"
-        "  Fixtures --> Facility\n"
-        "  Fixtures --> Gates\n"
-        "  Fixtures --> Replay\n"
-        "  Replay --> Rails\n"
-        "  classDef portal fill:#fff7df,stroke:#d7a93d,color:#52390a;\n"
-        "  classDef core fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
-        "  classDef risk fill:#fee2e2,stroke:#dc2626,color:#5f1212;\n"
-        "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
-    )
-
-
 def _domain_state_mermaid(domain_profile: GreenfieldDomainProfile) -> str:
     domain = _profile_label(domain_profile, "domain", fallback="Domain")
     return (
@@ -1136,29 +1073,6 @@ def _domain_state_mermaid(domain_profile: GreenfieldDomainProfile) -> str:
         "  Retried --> Rejected: retry exhausted\n"
         "  Completed --> [*]\n"
         "  Rejected --> [*]\n"
-    )
-
-
-def _merchant_lending_state_mermaid() -> str:
-    return (
-        "stateDiagram-v2\n"
-        "  [*] --> DraftApplication\n"
-        "  DraftApplication --> StaleData: Shopify snapshot stale\n"
-        "  DraftApplication --> ComplianceBlocked: KYB AML blocked\n"
-        "  DraftApplication --> Declined: eligibility fails\n"
-        "  DraftApplication --> Eligible: eligible and compliant\n"
-        "  Eligible --> LiquidityBlocked: stablecoin shortfall\n"
-        "  Eligible --> OfferReady: liquidity available\n"
-        "  OfferReady --> Funded: fixture disbursement accepted\n"
-        "  Funded --> RepaymentDue: schedule opens\n"
-        "  RepaymentDue --> Repaid: repayment replay accepted\n"
-        "  RepaymentDue --> RepaymentBlocked: duplicate or invalid event\n"
-        "  StaleData --> DraftApplication: fresh snapshot supplied\n"
-        "  LiquidityBlocked --> Eligible: liquidity fixture refreshed\n"
-        "  ComplianceBlocked --> DraftApplication: compliance proof supplied\n"
-        "  Declined --> [*]\n"
-        "  Repaid --> [*]\n"
-        "  RepaymentBlocked --> [*]\n"
     )
 
 
@@ -1191,26 +1105,6 @@ def _profile_label(domain_profile: GreenfieldDomainProfile, role: str, *, fallba
         return " ".join(words)
     midpoint = max(2, min(4, (len(words) + 1) // 2))
     return " ".join(words[:midpoint]) + "<br/>" + " ".join(words[midpoint:])
-
-
-def _merchant_lending_validation_mermaid() -> str:
-    return (
-        "flowchart LR\n"
-        "  Shopify[Shopify snapshot<br/>freshness fixtures]:::fixture --> Matrix[Scenario matrix<br/>merchant lending]:::proof\n"
-        "  Compliance[KYB AML sanctions<br/>fault fixtures]:::fixture --> Matrix\n"
-        "  Liquidity[Stablecoin liquidity<br/>shortfall fixtures]:::fixture --> Matrix\n"
-        "  Ledger[Disbursement repayment<br/>replay fixtures]:::fixture --> Matrix\n"
-        "  Matrix --> Guards[No live Shopify<br/>or DeFi access guards]:::blocked\n"
-        "  Matrix --> Evidence[Eligible declined stale<br/>blocked funded repaid]:::proof\n"
-        "  Guards --> Decision[Release decision<br/>0.0.1 merchant slice]:::release\n"
-        "  Evidence --> Decision\n"
-        "  Risk[Unresolved custody<br/>or lending review]:::risk -. blocks .-> Decision\n"
-        "  classDef fixture fill:#eaf3ff,stroke:#77a9ef,color:#102f5f;\n"
-        "  classDef proof fill:#fff1ed,stroke:#df8f7d,color:#5c2418;\n"
-        "  classDef blocked fill:#fee2e2,stroke:#dc2626,color:#5f1212;\n"
-        "  classDef release fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b;\n"
-        "  classDef risk fill:#f8fafc,stroke:#64748b,color:#334155,stroke-dasharray: 3 3;\n"
-    )
 
 
 __all__ = ["build_apply_ready_proposal"]

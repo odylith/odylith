@@ -256,6 +256,44 @@ def test_greenfield_guidance_uses_canonical_create_path_not_host_json_authoring(
             assert token not in text, f"{path} still carries stale greenfield guidance: {token}"
 
 
+def test_greenfield_guidance_requires_visible_proposal_stdout() -> None:
+    guidance_paths = (
+        REPO_ROOT / "AGENTS.md",
+        REPO_ROOT / "odylith" / "AGENTS.md",
+        REPO_ROOT / "odylith" / "skills" / "odylith-greenfield-governance" / "SKILL.md",
+        REPO_ROOT / "odylith" / "skills" / "odylith-show-me" / "SKILL.md",
+        REPO_ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md",
+        REPO_ROOT
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "skills"
+        / "odylith-greenfield-governance"
+        / "SKILL.md",
+        REPO_ROOT
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "skills"
+        / "odylith-show-me"
+        / "SKILL.md",
+        REPO_ROOT / "src" / "odylith" / "install" / "agents.py",
+        REPO_ROOT / "src" / "odylith" / "install" / "bootstrap_assets.py",
+    )
+
+    for path in guidance_paths:
+        text = path.read_text(encoding="utf-8")
+        normalized = " ".join(text.split())
+        assert "proposal stdout directly" in normalized, path
+        assert "collapsed" in normalized, path
+        assert "tool output" in normalized, path
+        assert "host-written" in normalized, path
+
+
 def test_claude_output_style_keeps_observation_rare_and_assist_concrete() -> None:
     paths = (
         LIVE_CLAUDE_ROOT / "output-styles" / "odylith-grounded.md",

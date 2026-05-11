@@ -8,7 +8,7 @@
     "explicit_event_count": 29,
     "mapped_workstream_evidence_count": 27,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 20,
+    "spec_history_event_count": 22,
     "status": "forensic_coverage_present",
     "timeline_event_count": 30
   },
@@ -20,24 +20,19 @@
   "timeline": [
     {
       "artifacts": [
-        "src/odylith/runtime/domain_intelligence/greenfield_project_brief.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_project_intelligence.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_workstream_intelligence.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_workstream_terms.py",
-        "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
-        "src/odylith/runtime/domain_intelligence/proposal_scaffold.py"
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
       ],
       "confidence": "high",
-      "event_index": 466,
+      "event_index": 468,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/domain_intelligence/greenfield_project_brief.py, src/odylith/runtime/domain_intelligence/greenfield_project_intelligence.py +5 more",
-      "ts_iso": "2026-05-08T18:04:32-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+      "ts_iso": "2026-05-09T19:12:54-07:00",
       "workstreams": []
     },
     {

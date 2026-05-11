@@ -30,8 +30,6 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
     near-identical fork.
     """
 
-    header_variant = str(section_header_variant or "").strip().lower()
-
     layout_css = """
 .execution-wave-board {
   display: grid;
@@ -67,19 +65,11 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
 .execution-wave-section-summary {
   cursor: pointer;
   padding: 16px 18px;
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  min-width: 0;
-}
-
-.execution-wave-section-summary-compass {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
   gap: 12px 16px;
+  min-width: 0;
 }
 
 .execution-wave-section-summary:hover {
@@ -95,7 +85,7 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   display: grid;
   gap: 6px;
   min-width: 0;
-  flex: 1 1 320px;
+  grid-column: 1 / 2;
 }
 
 .execution-wave-section-line {
@@ -114,7 +104,7 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   min-width: 0;
 }
 
@@ -122,6 +112,8 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  grid-column: 2;
+  grid-row: 1;
 }
 
 .execution-wave-section-meta-bottom {
@@ -572,6 +564,16 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
 
   .execution-wave-section-summary-compass {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .execution-wave-section-summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .execution-wave-section-toggle {
+    grid-column: 1;
+    grid-row: auto;
+    justify-self: start;
   }
 
   .execution-wave-section-meta-bottom {
@@ -1159,10 +1161,8 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
             ${contextLine ? `<div class="execution-wave-section-line">${escapeHtml(contextLine)}</div>` : ""}
             ${summaryLine ? `<div class="execution-wave-section-line execution-wave-section-line-muted">${escapeHtml(summaryLine)}</div>` : ""}
           </div>
-          <div class="execution-wave-section-meta">
-            ${sectionChips.join("")}
-            <span class="execution-wave-section-toggle execution-wave-section-toggle-triangle" aria-hidden="true"></span>
-          </div>
+          <span class="execution-wave-section-toggle execution-wave-section-toggle-triangle" aria-hidden="true"></span>
+          ${sectionChips.length ? `<div class="execution-wave-section-meta execution-wave-section-meta-bottom">${sectionChips.join("")}</div>` : ""}
         </summary>
         <div class="execution-wave-section-body">${boardsHtml}</div>
       </details>

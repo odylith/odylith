@@ -191,10 +191,11 @@ def test_host_conversation_bundle_carries_full_alignment_context_for_zero_signal
     assert proof_lanes["execution_engine"]["status"] == "covered"
     assert proof_lanes["tribunal"]["status"] == "covered"
     assert proof_lanes["intervention_engine"]["status"] == "covered"
-    assert proof_lanes["governance"]["status"] == "covered"
-    assert proof_lanes["delivery"]["status"] == "covered"
+    assert proof_lanes["governance_engine"]["status"] == "covered"
+    assert proof_lanes["delivery_intelligence"]["status"] == "covered"
     assert proof_lanes["memory_substrate"]["status"] == "covered"
-    assert proof_lanes["subagent_orchestration"]["status"] == "policy_deferred"
+    assert proof_lanes["subagent_router"]["status"] == "policy_deferred"
+    assert proof_lanes["subagent_orchestrator"]["status"] == "policy_deferred"
 
     decision = host_surface_runtime.visible_intervention_decision(
         repo_root=tmp_path,

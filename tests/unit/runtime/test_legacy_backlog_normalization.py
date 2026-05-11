@@ -121,9 +121,12 @@ def test_normalize_legacy_backlog_index_preserves_existing_prose_and_adds_missin
     assert "impacted_lanes" not in text
     assert "impacted_lanes" not in idea_text
     assert "operator supplied context stays intact." in text
-    assert "- expected outcome: clearer product truth and faster follow-on implementation planning." in text
-    assert "- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins." in text
-    assert "- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream." in text
+    assert "- expected outcome: a reviewer can see the user path, owner, risk, and proof before implementation widens." in text
+    assert "- tradeoff: keep the first pass narrow until owner, evidence, and validation are explicit." in text
+    assert (
+        "- deferred for now: later automation, integrations, and release expansion wait until the first proof path is accepted."
+        in text
+    )
     assert "- ranking basis: score-based rank; no manual priority override." in text
 
 
@@ -203,7 +206,7 @@ def test_normalize_legacy_backlog_index_adds_missing_reorder_rationale_section(t
     assert result.added_sections == ("B-101",)
     assert "## Reorder Rationale Log" in text
     assert "### B-101 (rank 1)" in text
-    assert "- why now: created as a new queued workstream for Legacy Sync Fix." in text
+    assert "- why now: Legacy Sync Fix is the next bounded project move from the current backlog posture." in text
     assert "- ranking basis: score-based rank; no manual priority override." in text
 
 

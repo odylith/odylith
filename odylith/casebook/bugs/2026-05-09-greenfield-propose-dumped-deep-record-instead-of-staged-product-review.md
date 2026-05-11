@@ -18,11 +18,11 @@
 
 - Environment(s): Odylith v0.1.15 consumer greenfield propose/create flow in docs-only or empty repos.
 
-- Detected By: Maintainer reproduced from /Users/freedom/mock/mockrepo transcript for SMB lending stablecoin Shopify merchant prompt.
+- Detected By: Maintainer reproduced from a greenfield proposal transcript where project-shaping output exposed the deep accepted record too early.
 
 - Failure Signature: greenfield propose emitted apply-ready JSON, mode/provider metadata, project-first blueprint, workstream domain intelligence, and write/apply internals as one large default text payload.
 
-- Trigger Path: odylith greenfield propose --repo-root . --prompt 'SMB lending application pulling stable coins from DeFi protocols to merchants on Shopify'
+- Trigger Path: odylith greenfield propose --repo-root . --prompt '<greenfield project prompt>'
 
 - Ownership: domain-intelligence proposal rendering, greenfield CLI UX, show guidance, and managed greenfield skills
 
@@ -38,9 +38,9 @@
 
 - Invariant Violated: Propose must be a no-write, product-first clarification gate; confirmed create/apply is the first point where validated records are written.
 
-- Root Cause: format_proposal_text rendered the canonical apply-ready object for host_reasoned_proposal_request, while show/guidance still primed users with Odylith surface names and _intent_title truncated meaningful trailing prompt terms. The legacy merchant-lending repair guard also used multi-lookahead regex over full Radar records, which turned surface refresh into CPU-bound regex work during final validation. A follow-on refresh exposed a separate lane-boundary flaw: the consumer-only merchant-lending repair could run in the Odylith product repo, and standalone Registry rendering could prefer a stale runtime snapshot over source manifest truth.
+- Root Cause: format_proposal_text rendered the canonical apply-ready object for host_reasoned_proposal_request, while show/guidance still primed users with Odylith surface names and _intent_title truncated meaningful trailing prompt terms. A legacy repair guard also used multi-lookahead regex over full Radar records, which turned surface refresh into CPU-bound regex work during final validation. A follow-on refresh exposed a separate lane-boundary flaw: consumer-only repair logic could run in the Odylith product repo, and standalone Registry rendering could prefer a stale runtime snapshot over source manifest truth.
 
-- Solution: Split default propose text into four gates: interpretation, clarification, proposal preview, and next action; keep full depth in --format json/apply; make the closeout explicitly tell operators to either apply as-is, revise Gate 2 choices, or export full JSON before apply; remove surface-first show/guidance wording; preserve meaningful trailing domain terms in titles; delete stale legacy Atlas artifacts during merchant-lending repair; replace the repair guard with linear token-family checks so refresh latency stays bounded; make legacy consumer repair return immediately for Odylith product-repo shape; make standalone Registry rendering use source manifest truth without loading stale runtime snapshots.
+- Solution: Split default propose text into four gates: interpretation, clarification, proposal preview, and next action; keep full depth in --format json/apply; make the closeout explicitly tell operators to either apply as-is, revise Gate 2 choices, or export full JSON before apply; remove surface-first show/guidance wording; preserve meaningful trailing domain terms in titles; delete stale legacy Atlas artifacts during consumer repair; replace the repair guard with linear token-family checks so refresh latency stays bounded; make legacy consumer repair return immediately for Odylith product-repo shape; make standalone Registry rendering use source manifest truth without loading stale runtime snapshots.
 
 - Rollback/Forward Fix: Forward fix only; restore old renderer only by explicit rollback if preview gate loses required product requirements, while JSON/apply remains deep.
 
@@ -50,17 +50,16 @@
 
 - Agent Guardrails: When a greenfield UX complaint includes a transcript, test the exact prompt through text and JSON modes; do not judge quality only from schema or apply success.
 
-- Preflight Checks: Before release, run greenfield text/JSON repro for merchant-lending prompt, greenfield profile tests, legacy repair tests, release migration gate, and browser surface refresh proof.
+- Preflight Checks: Before release, run greenfield text/JSON repros, greenfield profile tests, source-guard tests, release migration gate, and browser surface refresh proof.
 
-- Regression Tests Added: tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_text_is_compact_product_preview_before_confirmed_write; tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_title_preserves_meaningful_trailing_domain_terms; tests/unit/runtime/test_greenfield_legacy_repairs.py::test_legacy_merchant_lending_repair_skips_odylith_product_repo; tests/unit/runtime/test_render_registry_dashboard.py::test_render_registry_dashboard_standalone_uses_source_manifest_not_runtime_snapshot; updated show/bundle/merchant-lending/legacy-repair assertions.
+- Regression Tests Added: tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_text_is_compact_product_preview_before_confirmed_write; tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_title_preserves_meaningful_trailing_domain_terms; tests/unit/runtime/test_render_registry_dashboard.py::test_render_registry_dashboard_standalone_uses_source_manifest_not_runtime_snapshot; updated show, bundle, and source-guard assertions.
 
 - Monitoring Updates: Release migration observer markers added for guidance-and-skills, operator-cli-contracts, public-docs-and-release-guidance, browser-surfaces, and install-managed-assets.
 
 - Version/Build: v0.1.15 maintainer source-local
 
-- Related Incidents/Bugs: CB-190, CB-191, CB-192, CB-193
+- Related Incidents/Bugs: CB-191
 
 - Code References: - src/odylith/runtime/domain_intelligence/proposal_rendering.py
 - src/odylith/runtime/domain_intelligence/greenfield_proposals.py
 - src/odylith/runtime/analysis_engine/show_capabilities.py
-- src/odylith/runtime/governance/greenfield_legacy_repairs.py

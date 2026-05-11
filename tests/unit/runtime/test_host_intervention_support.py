@@ -132,9 +132,10 @@ def test_prompt_bundle_preserves_engine_alignment_proof_for_visible_assist(tmp_p
     assert lanes["execution_engine"]["status"] == "covered"
     assert lanes["intervention_engine"]["status"] == "covered"
     assert lanes["tribunal"]["status"] == "covered"
-    assert lanes["delivery"]["status"] == "covered"
+    assert lanes["delivery_intelligence"]["status"] == "covered"
     assert lanes["memory_substrate"]["status"] == "covered"
-    assert lanes["subagent_orchestration"]["status"] == "policy_deferred"
+    assert lanes["subagent_router"]["status"] == "policy_deferred"
+    assert lanes["subagent_orchestrator"]["status"] == "policy_deferred"
 
 
 def test_render_prompt_system_message_keeps_generic_failure_free_of_fake_assist(tmp_path: Path) -> None:

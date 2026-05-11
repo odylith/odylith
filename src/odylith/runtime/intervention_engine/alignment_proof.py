@@ -26,20 +26,27 @@ _BASE_REQUIRED_LANES = {
     "execution_engine",
     "intervention_engine",
     "memory_substrate",
-    "delivery",
-    "overall_ux",
+    "delivery_intelligence",
+    "operator_experience",
 }
 _VISIBILITY_REQUIRED_LANES = {
     *_BASE_REQUIRED_LANES,
+    "analysis_engine",
+    "domain_intelligence",
+    "reasoning_engine",
     "tribunal",
-    "governance",
-    "subagent_orchestration",
-    "discipline",
+    "proof_state",
     "surface_dags",
-    "analysis",
-    "topology",
+    "topology_integrity",
+    "governance_engine",
+    "turn_gate",
+    "discipline_engine",
+    "benchmark_harness",
     "taxonomies_fsms",
-    "greenfield_domain_intelligence",
+    "subagent_router",
+    "subagent_orchestrator",
+    "install_upgrade_migration_runtime",
+    "security_trust",
 }
 
 
@@ -235,7 +242,7 @@ def build_alignment_proof(
     surface_status = _normalize_token(runtime_surface.get("status"))
     subagent_status, subagent_evidence = _subagent_status(
         execution,
-        required="subagent_orchestration" in required_lanes,
+        required=("subagent_router" in required_lanes or "subagent_orchestrator" in required_lanes),
     )
     discipline_summary = _mapping(context.get("discipline_summary")) or _mapping(memory.get("discipline_summary"))
     guidance_summary = _mapping(context.get("guidance_behavior_summary")) or _mapping(
@@ -257,13 +264,66 @@ def build_alignment_proof(
         or any(token == "B-142" for token in workstream_evidence)
         or "greenfield" in _normalize_token(context.get("packet_kind"))
     )
-    overall_ux_present = bool(
+    operator_experience_present = bool(
         _normalize_token(host_family)
         or _normalize_token(turn_phase)
         or _normalize_string(visibility.get("chat_visible_proof"))
     )
+    reasoning_present = bool(tribunal_present or greenfield_present)
+    proof_state_present = bool(_mapping(context.get("proof_state")) or _mapping(delivery.get("proof_state")))
+    turn_gate_present = bool(_mapping(context.get("turn_gate")) or _mapping(execution.get("turn_gate")))
+    benchmark_present = bool(_mapping(context.get("benchmark_summary")) or _mapping(memory.get("benchmark_summary")))
+    lifecycle_present = bool(
+        _mapping(context.get("install_upgrade_migration"))
+        or _mapping(context.get("migration_runtime"))
+        or _mapping(context.get("lifecycle"))
+    )
+    security_present = bool(_mapping(context.get("security_trust")) or _mapping(context.get("runtime_integrity")))
 
     lanes = [
+        _lane(
+            "analysis_engine",
+            "Analysis Engine",
+            "benchmark",
+            _status_or_policy_deferred(
+                present=bool(tribunal_present or guidance_summary),
+                required="analysis_engine" in required_lanes,
+            ),
+            [
+                _normalize_string(_mapping(tribunal.get("systemic_brief")).get("headline")),
+                f"guidance_status={guidance_summary.get('status')}",
+            ],
+            required="analysis_engine" in required_lanes,
+            note="analysis uses compact Tribunal or guidance summaries on the hot path; it must not start a fresh repo scan",
+        ),
+        _lane(
+            "domain_intelligence",
+            "Domain Intelligence",
+            "domain-intelligence",
+            _status_or_policy_deferred(
+                present=greenfield_present,
+                required="domain_intelligence" in required_lanes,
+            ),
+            [
+                *[token for token in component_evidence if token == "domain-intelligence"],
+                *[token for token in workstream_evidence if token == "B-142"],
+                f"packet_kind={context.get('packet_kind')}",
+            ],
+            required="domain_intelligence" in required_lanes,
+            note="domain intelligence is covered for greenfield/project-shape evidence and policy-deferred otherwise",
+        ),
+        _lane(
+            "delivery_intelligence",
+            "Delivery Intelligence",
+            "delivery-intelligence",
+            _status_from_presence(present=delivery_present, required=True),
+            [
+                f"chat_visible_proof={visibility.get('chat_visible_proof')}",
+                f"delivery_events={delivery.get('event_count')}",
+                f"visible_events={delivery.get('visible_event_count')}",
+            ],
+            required="delivery_intelligence" in required_lanes,
+        ),
         _lane(
             "context_engine",
             "Context Engine",
@@ -276,6 +336,21 @@ def build_alignment_proof(
             required="context_engine" in required_lanes,
         ),
         _lane(
+            "reasoning_engine",
+            "Reasoning Engine",
+            "tribunal",
+            _status_or_policy_deferred(
+                present=reasoning_present,
+                required="reasoning_engine" in required_lanes,
+            ),
+            [
+                f"tribunal_source={tribunal.get('source')}",
+                f"greenfield_present={greenfield_present}",
+            ],
+            required="reasoning_engine" in required_lanes,
+            note="reasoning is represented through deterministic Tribunal or greenfield adjudication summaries",
+        ),
+        _lane(
             "execution_engine",
             "Execution Engine",
             "execution-engine",
@@ -286,6 +361,21 @@ def build_alignment_proof(
                 f"mode={execution.get('execution_engine_mode')}",
             ],
             required="execution_engine" in required_lanes,
+        ),
+        _lane(
+            "proof_state",
+            "Proof State",
+            "proof-state",
+            _status_or_policy_deferred(
+                present=proof_state_present,
+                required="proof_state" in required_lanes,
+            ),
+            [
+                f"context_proof_state={bool(_mapping(context.get('proof_state')))}",
+                f"delivery_proof_state={bool(_mapping(delivery.get('proof_state')))}",
+            ],
+            required="proof_state" in required_lanes,
+            note="proof-state claims use supplied compact proof posture only; missing proof snapshots are deferred on the hot path",
         ),
         _lane(
             "intervention_engine",
@@ -311,47 +401,6 @@ def build_alignment_proof(
             required="tribunal" in required_lanes,
         ),
         _lane(
-            "governance",
-            "Governance",
-            "registry",
-            _status_from_presence(
-                present=governance_anchor_count > 0,
-                required="governance" in required_lanes,
-            ),
-            [
-                f"anchor_count={governance_anchor_count}",
-                *workstreams,
-                *components,
-                *bugs,
-                *diagrams,
-            ],
-            required="governance" in required_lanes,
-        ),
-        _lane(
-            "subagent_orchestration",
-            "Subagent Orchestration",
-            "subagent-orchestrator",
-            subagent_status,
-            subagent_evidence,
-            required="subagent_orchestration" in required_lanes,
-            note="transport known; active host policy decides whether delegation may run",
-        ),
-        _lane(
-            "discipline",
-            "Discipline",
-            "execution-engine",
-            _status_or_policy_deferred(
-                present=bool(discipline_summary),
-                required="discipline" in required_lanes,
-            ),
-            [
-                f"status={discipline_summary.get('status')}",
-                f"validation_status={discipline_summary.get('validation_status')}",
-            ],
-            required="discipline" in required_lanes,
-            note="local deterministic discipline summaries stay quiet unless evidence or a visibility-recovery proof needs the lane",
-        ),
-        _lane(
             "surface_dags",
             "Surface DAGs",
             "odylith-projection-bundle",
@@ -367,31 +416,52 @@ def build_alignment_proof(
             note="DAG proof is covered when cached runtime surface summary exists; otherwise visibility recovery defers rather than rescans",
         ),
         _lane(
-            "delivery",
-            "Delivery",
-            "delivery-intelligence",
-            _status_from_presence(present=delivery_present, required=True),
-            [
-                f"chat_visible_proof={visibility.get('chat_visible_proof')}",
-                f"delivery_events={delivery.get('event_count')}",
-                f"visible_events={delivery.get('visible_event_count')}",
-            ],
-            required="delivery" in required_lanes,
-        ),
-        _lane(
-            "analysis",
-            "Analysis",
-            "benchmark",
+            "topology_integrity",
+            "Topology Integrity",
+            "atlas",
             _status_or_policy_deferred(
-                present=bool(tribunal_present or guidance_summary),
-                required="analysis" in required_lanes,
+                present=topology_present,
+                required="topology_integrity" in required_lanes,
             ),
             [
-                _normalize_string(_mapping(tribunal.get("systemic_brief")).get("headline")),
-                f"guidance_status={guidance_summary.get('status')}",
+                f"diagram_count={len(diagrams)}",
+                f"anchor_diagram_count={len(anchor_diagrams)}",
+                f"topology_quality={_mapping(context.get('topology_integrity')).get('quality')}",
             ],
-            required="analysis" in required_lanes,
-            note="analysis is represented by existing Tribunal or guidance summaries; the hot path must not start a fresh repo scan",
+            required="topology_integrity" in required_lanes,
+            note="topology proof uses supplied diagram/topology summaries only; missing topology evidence is policy-deferred on the hot path",
+        ),
+        _lane(
+            "governance_engine",
+            "Governance Engine",
+            "registry",
+            _status_from_presence(
+                present=governance_anchor_count > 0,
+                required="governance_engine" in required_lanes,
+            ),
+            [
+                f"anchor_count={governance_anchor_count}",
+                *workstreams,
+                *components,
+                *bugs,
+                *diagrams,
+            ],
+            required="governance_engine" in required_lanes,
+        ),
+        _lane(
+            "turn_gate",
+            "Governed Harness / Turn Gate",
+            "governed-harness",
+            _status_or_policy_deferred(
+                present=turn_gate_present,
+                required="turn_gate" in required_lanes,
+            ),
+            [
+                f"context_turn_gate={bool(_mapping(context.get('turn_gate')))}",
+                f"execution_turn_gate={bool(_mapping(execution.get('turn_gate')))}",
+            ],
+            required="turn_gate" in required_lanes,
+            note="turn-gate proof is covered when compact gate summaries are supplied; visibility recovery does not run gate validation inline",
         ),
         _lane(
             "memory_substrate",
@@ -406,20 +476,52 @@ def build_alignment_proof(
             required="memory_substrate" in required_lanes,
         ),
         _lane(
-            "topology",
-            "Topology",
-            "atlas",
+            "subagent_router",
+            "Subagent Router",
+            "subagent-router",
+            subagent_status,
+            subagent_evidence,
+            required="subagent_router" in required_lanes,
+            note="router evidence uses host support and policy hints; active host policy decides whether delegation may run",
+        ),
+        _lane(
+            "subagent_orchestrator",
+            "Subagent Orchestrator",
+            "subagent-orchestrator",
+            subagent_status,
+            subagent_evidence,
+            required="subagent_orchestrator" in required_lanes,
+            note="orchestrator proof shares the same compact delegation-policy evidence as the router on this hot path",
+        ),
+        _lane(
+            "discipline_engine",
+            "Discipline Engine",
+            "execution-engine",
             _status_or_policy_deferred(
-                present=topology_present,
-                required="topology" in required_lanes,
+                present=bool(discipline_summary),
+                required="discipline_engine" in required_lanes,
             ),
             [
-                f"diagram_count={len(diagrams)}",
-                f"anchor_diagram_count={len(anchor_diagrams)}",
-                f"topology_quality={_mapping(context.get('topology_integrity')).get('quality')}",
+                f"status={discipline_summary.get('status')}",
+                f"validation_status={discipline_summary.get('validation_status')}",
             ],
-            required="topology" in required_lanes,
-            note="topology proof uses supplied diagram/topology summaries only; missing topology evidence is policy-deferred on the hot path",
+            required="discipline_engine" in required_lanes,
+            note="local deterministic discipline summaries stay quiet unless evidence or a visibility-recovery proof needs the lane",
+        ),
+        _lane(
+            "benchmark_harness",
+            "Benchmark Harness",
+            "benchmark",
+            _status_or_policy_deferred(
+                present=benchmark_present,
+                required="benchmark_harness" in required_lanes,
+            ),
+            [
+                f"context_benchmark={bool(_mapping(context.get('benchmark_summary')))}",
+                f"memory_benchmark={bool(_mapping(memory.get('benchmark_summary')))}",
+            ],
+            required="benchmark_harness" in required_lanes,
+            note="benchmark proof is policy-deferred on intervention hot paths unless a compact benchmark summary is already attached",
         ),
         _lane(
             "taxonomies_fsms",
@@ -438,35 +540,49 @@ def build_alignment_proof(
             note="controlled vocabulary/FSM evidence comes from compact validation summaries, not fresh source validation",
         ),
         _lane(
-            "greenfield_domain_intelligence",
-            "Greenfield proposals and domain intelligence",
-            "domain-intelligence",
+            "install_upgrade_migration_runtime",
+            "Install / Upgrade / Migration Runtime",
+            "migration-runtime",
             _status_or_policy_deferred(
-                present=greenfield_present,
-                required="greenfield_domain_intelligence" in required_lanes,
+                present=lifecycle_present,
+                required="install_upgrade_migration_runtime" in required_lanes,
             ),
             [
-                *[token for token in component_evidence if token == "domain-intelligence"],
-                *[token for token in workstream_evidence if token == "B-142"],
-                f"packet_kind={context.get('packet_kind')}",
+                f"install_upgrade_migration={bool(_mapping(context.get('install_upgrade_migration')))}",
+                f"migration_runtime={bool(_mapping(context.get('migration_runtime')))}",
             ],
-            required="greenfield_domain_intelligence" in required_lanes,
-            note="greenfield is covered only for greenfield-domain evidence; unrelated visibility recovery defers the lane",
+            required="install_upgrade_migration_runtime" in required_lanes,
+            note="lifecycle proof is supplied by compact migration/runtime summaries and otherwise deferred on intervention hot paths",
         ),
         _lane(
-            "overall_ux",
-            "Overall UX",
+            "security_trust",
+            "Security and Trust",
+            "release",
+            _status_or_policy_deferred(
+                present=security_present,
+                required="security_trust" in required_lanes,
+            ),
+            [
+                f"security_trust={bool(_mapping(context.get('security_trust')))}",
+                f"runtime_integrity={bool(_mapping(context.get('runtime_integrity')))}",
+            ],
+            required="security_trust" in required_lanes,
+            note="security/trust proof is covered when compact integrity summaries are attached; it must not verify release assets inline",
+        ),
+        _lane(
+            "operator_experience",
+            "Operator Experience",
             "governance-intervention-engine",
             _status_from_presence(
-                present=overall_ux_present,
-                required="overall_ux" in required_lanes,
+                present=operator_experience_present,
+                required="operator_experience" in required_lanes,
             ),
             [
                 f"host_family={host_family}",
                 f"turn_phase={turn_phase}",
                 f"chat_visible_proof={visibility.get('chat_visible_proof')}",
             ],
-            required="overall_ux" in required_lanes,
+            required="operator_experience" in required_lanes,
         ),
     ]
     missing_required = [

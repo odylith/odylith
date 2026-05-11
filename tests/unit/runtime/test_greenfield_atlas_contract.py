@@ -69,17 +69,18 @@ def test_robot_swarm_greenfield_scaffold_expands_domain_specific_atlas_suite(tmp
     diagram_slugs = {row["slug"] for row in proposal["diagrams"]}
     assert len(proposal["diagrams"]) == 10
     assert {
-        "robot-swarm-logistics-app-system-overview",
-        "robot-swarm-logistics-app-first-slice-flow",
-        "robot-swarm-logistics-app-component-ownership-map",
-        "robot-swarm-logistics-app-domain-state-model",
-        "robot-swarm-logistics-app-validation-release-topology",
-        "robot-swarm-logistics-app-multi-robot-conflict",
-        "robot-swarm-logistics-app-safety-envelope",
-        "robot-swarm-logistics-app-telemetry-contract",
-        "robot-swarm-logistics-app-deployment-boundaries",
-        "robot-swarm-logistics-app-observability-audit-loop",
+        "robot-swarm-logistics-system-overview",
+        "robot-swarm-logistics-first-slice-flow",
+        "robot-swarm-logistics-component-ownership-map",
+        "robot-swarm-logistics-domain-state-model",
+        "robot-swarm-logistics-validation-release-topology",
+        "robot-swarm-logistics-multi-robot-conflict",
+        "robot-swarm-logistics-safety-envelope",
+        "robot-swarm-logistics-telemetry-contract",
+        "robot-swarm-logistics-deployment-boundaries",
+        "robot-swarm-logistics-observability-audit-loop",
     } == diagram_slugs
+    assert not any("-app-" in slug for slug in diagram_slugs)
     sources = {row["slug"]: row["mermaid_source"] for row in proposal["diagrams"]}
     assert {
         row["title"]
@@ -97,13 +98,13 @@ def test_robot_swarm_greenfield_scaffold_expands_domain_specific_atlas_suite(tmp
         "Observability And Audit Loop",
     }
     _assert_greenfield_diagram_titles_are_view_names(proposal)
-    assert "bounded wait queued" in sources["robot-swarm-logistics-app-multi-robot-conflict"]
-    assert "Hardware -. blocked until HIL proof .-> Agent" in sources["robot-swarm-logistics-app-deployment-boundaries"]
-    assert "Release evidence<br/>normal degraded blocked" in sources["robot-swarm-logistics-app-observability-audit-loop"]
+    assert "bounded wait queued" in sources["robot-swarm-logistics-multi-robot-conflict"]
+    assert "Hardware -. blocked until HIL proof .-> Agent" in sources["robot-swarm-logistics-deployment-boundaries"]
+    assert "Release evidence<br/>normal degraded blocked" in sources["robot-swarm-logistics-observability-audit-loop"]
     _assert_greenfield_diagram_sources_do_not_model_odylith_surfaces(proposal)
     _assert_greenfield_text_does_not_leak_odylith_surfaces(greenfield_proposals.format_proposal_text(proposal))
     assert set(proposal["backlog"][0]["related_diagram_slugs"]) == diagram_slugs
-    assert "robot-swarm-logistics-app-safety-envelope" in proposal["components"][1]["related_diagram_slugs"]
+    assert "robot-swarm-logistics-safety-envelope" in proposal["components"][1]["related_diagram_slugs"]
     greenfield_proposals.validate_host_reasoned_proposal(proposal)
     assert greenfield_proposals.run_greenfield_tribunal(proposal, release_selector="0.0.1").passed
 

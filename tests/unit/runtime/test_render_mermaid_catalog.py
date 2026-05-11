@@ -6,6 +6,7 @@ from pathlib import Path
 
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import render_mermaid_catalog as renderer
+from odylith.runtime.surfaces import scaffold_mermaid_diagram
 
 
 def test_render_mermaid_catalog_uses_relative_tooling_shell_href_for_workstream_pills() -> None:
@@ -105,6 +106,8 @@ def test_render_mermaid_catalog_defaults_to_newest_diagram_sort_filter() -> None
     assert 'id="sortWorkstreamFilters"' in html
     assert "grid-template-columns: 400px minmax(0, 1fr);" in html
     assert "grid-template-columns: minmax(150px, 0.78fr) minmax(190px, 1fr);" in html
+    assert ".main {\n        order: 1;" in html
+    assert ".sidebar {\n        order: 2;" in html
     assert "justify-content: flex-end;" in html
     assert '<option value="newest">Newest Diagram</option>' in html
     assert 'let sortFilter = "newest";' in html
@@ -193,7 +196,7 @@ def test_render_mermaid_catalog_uses_casebook_style_detail_fact_cards() -> None:
     assert html.index('data-fact="diagram-id"') < html.index('data-fact="status"')
 
 
-def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_grid() -> None:
+def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_list() -> None:
     html = renderer._render_html(  # noqa: SLF001
         diagrams=[],
         stats={"total": 0, "fresh": 0, "stale": 0},
@@ -208,17 +211,34 @@ def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_gri
     assert "How To Read This View" in html
     assert 'id="diagramReadGuide"' in html
     assert "function diagramReadGuide(diagram)" in html
+    assert "const catalogGuide = String(diagram && diagram.read_guide ? diagram.read_guide : \"\").trim();" in html
+    assert "if (catalogGuide) {" in html
     assert "Read from named entrypoints through the arrows." in html
-    assert "Components In This Diagram" in html
+    assert "Boxes In This Diagram" in html
+    assert 'id="diagramBoxList"' in html
+    assert "function renderDiagramBoxes(diagram)" in html
+    assert "diagram-box-row" in html
+    assert ".diagram-box-role {\n  --label-bg: #f6faf7;" in html
+    assert "border-radius: 4px;" in html
+    assert "padding: 3px 8px;" in html
+    assert "font-size: 11px;" in html
+    assert "white-space: normal;" in html
+    assert "border-radius: 999px;\n      padding: 1px 7px;\n      color: #446179;" not in html
+    assert "Owning Components" in html
     assert "const componentTitleLookup = sanitizeLookupObject(tooltipLookup.component_titles);" in html
     assert "function componentDisplayName(value)" in html
     assert "component-token" in html
+    assert "diagram-guide-grid" in html
+    assert ".diagram-box-section[hidden]" in html
     assert '<article class="section linked-context-section">' in html
-    assert '<div class="engineering-context-grid">' in html
+    assert '<div class="engineering-context-list">' in html
     assert ".details-grid {" in html
     assert "grid-template-columns: minmax(0, 1fr);" in html
     assert ".linked-context-section .artifact-group {" in html
-    assert "grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));" in html
+    assert "grid-template-columns: minmax(150px, 210px) minmax(0, 1fr);" in html
+    assert ".linked-context-section .artifact-group:last-child" in html
+    assert ".linked-context-section .artifact-list {\n      max-height: none;" in html
+    assert "grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));" not in html
     assert html.index('<article class="section diagram-explanation-section">') < html.index(
         '<article class="section linked-context-section">'
     )
@@ -342,6 +362,14 @@ def test_load_catalog_enriches_related_backlog_entries_with_front_matter_metadat
                         "status": "active",
                         "owner": "freedom-research",
                         "summary": "Keep atlas render latency low.",
+                        "read_guide": "Start at Atlas, then follow the freshness checks into the linked implementation paths.",
+                        "diagram_boxes": [
+                                {
+                                    "label": "Atlas renderer",
+                                    "role": "Surface",
+                                    "description": "Builds the operator-facing catalog from governed diagram source.",
+                                }
+                        ],
                         "source_mmd": "odylith/atlas/source/diagrams/sample.mmd",
                         "source_svg": "odylith/atlas/source/diagrams/sample.svg",
                         "last_reviewed_utc": dt.date.today().isoformat(),
@@ -374,6 +402,16 @@ def test_load_catalog_enriches_related_backlog_entries_with_front_matter_metadat
             "href": "../radar/source/ideas/2026-04/sample.md",
             "idea_id": "B-321",
             "title": "Atlas Hot Path",
+        }
+    ]
+    assert diagrams[0]["read_guide"] == (
+        "Start at Atlas, then follow the freshness checks into the linked implementation paths."
+    )
+    assert diagrams[0]["diagram_boxes"] == [
+        {
+            "label": "Atlas renderer",
+            "role": "Surface",
+            "description": "Builds the operator-facing catalog from governed diagram source.",
         }
     ]
 
@@ -434,6 +472,139 @@ def test_load_catalog_allows_atlas_first_draft_without_related_links(tmp_path: P
     assert diagrams[0]["related_backlog"] == []
     assert diagrams[0]["related_plans"] == []
     assert diagrams[0]["related_docs"] == []
+
+
+def test_atlas_scaffold_default_read_guide_names_diagram_and_components() -> None:
+    guide = scaffold_mermaid_diagram._default_read_guide(  # noqa: SLF001
+        title="Checkout Settlement Flow",
+        kind="flowchart",
+        components=[
+            {"name": "checkout", "description": "Checkout surface"},
+            {"name": "settlement", "description": "Settlement ledger"},
+        ],
+    )
+
+    assert "Checkout Settlement Flow" in guide
+    assert "named entrypoint" in guide
+    assert "checkout, settlement" in guide
+
+
+def test_load_catalog_derives_container_and_inner_box_explanations(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
+    mmd_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "sample.mmd"
+    svg_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "sample.svg"
+    catalog_path = repo_root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    for path in (mmd_path, svg_path, catalog_path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    mmd_path.write_text(
+        "\n".join(
+            [
+                "flowchart TB",
+                "  subgraph SourceTruth[Source truth]",
+                "    A[Catalog] --> B[Renderer]",
+                "  end",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    svg_path.write_text("<svg viewBox='0 0 1200 800'></svg>\n", encoding="utf-8")
+    catalog_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "diagrams": [
+                    {
+                        "diagram_id": "D-322",
+                        "slug": "atlas-box-rules",
+                        "title": "Atlas Box Rules",
+                        "kind": "flowchart",
+                        "status": "active",
+                        "owner": "freedom-research",
+                        "summary": "Shows the Atlas box explanation rule.",
+                        "source_mmd": "odylith/atlas/source/diagrams/sample.mmd",
+                        "source_svg": "odylith/atlas/source/diagrams/sample.svg",
+                        "last_reviewed_utc": dt.date.today().isoformat(),
+                        "change_watch_paths": ["odylith/atlas/source/diagrams/sample.mmd"],
+                        "components": [{"name": "atlas", "description": "Atlas surface."}],
+                    }
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    diagrams, errors, _stats = renderer._load_catalog(  # noqa: SLF001
+        repo_root=repo_root,
+        catalog_path=catalog_path,
+        output_path=repo_root / "odylith" / "atlas" / "atlas.html",
+        max_review_age_days=21,
+        component_index={},
+    )
+
+    assert errors == []
+    boxes = diagrams[0]["diagram_boxes"]
+    assert [box["label"] for box in boxes] == ["Source truth", "Catalog", "Renderer"]
+    assert boxes[0]["role"] == "Container"
+    assert boxes[1]["role"] == "Source truth"
+    assert "boxes inside it" in boxes[0]["description"]
+    assert "inside Source truth" in boxes[1]["description"]
+
+
+def test_load_catalog_rejects_thin_diagram_box_copy(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
+    mmd_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "thin.mmd"
+    svg_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "thin.svg"
+    catalog_path = repo_root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    for path in (mmd_path, svg_path, catalog_path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    mmd_path.write_text("flowchart TB\n  A[Catalog]\n", encoding="utf-8")
+    svg_path.write_text("<svg viewBox='0 0 1200 800'></svg>\n", encoding="utf-8")
+    catalog_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "diagrams": [
+                    {
+                        "diagram_id": "D-323",
+                        "slug": "thin-box-copy",
+                        "title": "Thin Box Copy",
+                        "kind": "flowchart",
+                        "status": "active",
+                        "owner": "freedom-research",
+                        "summary": "Shows thin box copy rejection.",
+                        "source_mmd": "odylith/atlas/source/diagrams/thin.mmd",
+                        "source_svg": "odylith/atlas/source/diagrams/thin.svg",
+                        "last_reviewed_utc": dt.date.today().isoformat(),
+                        "change_watch_paths": ["odylith/atlas/source/diagrams/thin.mmd"],
+                        "components": [{"name": "atlas", "description": "Atlas surface."}],
+                        "diagram_boxes": [
+                            {
+                                "label": "Catalog",
+                                "role": "Source",
+                                "description": "Catalog.",
+                            }
+                        ],
+                    }
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    _diagrams, errors, _stats = renderer._load_catalog(  # noqa: SLF001
+        repo_root=repo_root,
+        catalog_path=catalog_path,
+        output_path=repo_root / "odylith" / "atlas" / "atlas.html",
+        max_review_age_days=21,
+        component_index={},
+    )
+
+    assert any("description must explain the box in a complete sentence" in error for error in errors)
 
 
 def test_load_catalog_uses_reviewed_watch_fingerprints_over_mtime_for_freshness(tmp_path: Path) -> None:

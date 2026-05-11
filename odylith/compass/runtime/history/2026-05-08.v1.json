@@ -20012,7 +20012,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/13",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -20042,7 +20041,6 @@
         "start_date": "2026-04-08",
         "last_activity_iso": "2026-04-12T10:37:07-07:00",
         "age_days": 30,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -20390,7 +20388,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/17",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -20420,7 +20417,6 @@
         "start_date": "2026-04-10",
         "last_activity_iso": "2026-05-08T15:16:47-07:00",
         "age_days": 28,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -21177,7 +21173,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/20",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -21207,7 +21202,6 @@
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-12T10:18:23-07:00",
         "age_days": 27,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -21538,7 +21532,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/35",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -21568,7 +21561,6 @@
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-11T17:40:14-07:00",
         "age_days": 27,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -22063,7 +22055,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/16",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -22093,7 +22084,6 @@
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-04-12T16:26:24-07:00",
         "age_days": 26,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -22491,7 +22481,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/21",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -22521,7 +22510,6 @@
         "start_date": "2026-04-15",
         "last_activity_iso": "2026-04-15T09:38:42-07:00",
         "age_days": 23,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -23525,7 +23513,6 @@
         "start_date": "2026-03-27",
         "last_activity_iso": "",
         "age_days": 42,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -24188,7 +24175,6 @@
         "start_date": "2026-03-27",
         "last_activity_iso": "",
         "age_days": 42,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -28125,7 +28111,6 @@
         "start_date": "2026-03-30",
         "last_activity_iso": "",
         "age_days": 39,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -28288,7 +28273,6 @@
         "start_date": "2026-03-30",
         "last_activity_iso": "",
         "age_days": 39,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -28451,7 +28435,6 @@
         "start_date": "2026-03-30",
         "last_activity_iso": "",
         "age_days": 39,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -28614,7 +28597,6 @@
         "start_date": "2026-03-30",
         "last_activity_iso": "",
         "age_days": 39,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -28773,7 +28755,6 @@
         "start_date": "2026-03-31",
         "last_activity_iso": "",
         "age_days": 38,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -28938,7 +28919,6 @@
         "start_date": "2026-04-02",
         "last_activity_iso": "",
         "age_days": 36,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -29103,7 +29083,6 @@
         "start_date": "2026-04-02",
         "last_activity_iso": "",
         "age_days": 36,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -29272,7 +29251,6 @@
         "start_date": "2026-04-02",
         "last_activity_iso": "",
         "age_days": 36,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -29437,7 +29415,6 @@
         "start_date": "2026-04-02",
         "last_activity_iso": "",
         "age_days": 36,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -29598,7 +29575,6 @@
         "start_date": "2026-04-04",
         "last_activity_iso": "",
         "age_days": 34,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -29767,7 +29743,6 @@
         "start_date": "2026-04-04",
         "last_activity_iso": "",
         "age_days": 34,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -31174,7 +31149,6 @@
         "start_date": "2026-04-06",
         "last_activity_iso": "",
         "age_days": 32,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -33128,7 +33102,6 @@
         "start_date": "2026-04-09",
         "last_activity_iso": "",
         "age_days": 29,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -33747,8 +33720,6 @@
             }
           ],
           "completion_label": "All waves complete",
-          "current_wave": null,
-          "next_wave": null,
           "waves": [
             {
               "wave_id": "W1",
@@ -35878,7 +35849,6 @@
         "start_date": "2026-04-10",
         "last_activity_iso": "",
         "age_days": 28,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -36227,7 +36197,6 @@
         "start_date": "2026-04-13",
         "last_activity_iso": "2026-05-08T12:34:12-07:00",
         "age_days": 25,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -36382,7 +36351,6 @@
         "start_date": "2026-04-13",
         "last_activity_iso": "",
         "age_days": 25,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -36878,8 +36846,6 @@
             }
           ],
           "completion_label": "All waves complete",
-          "current_wave": null,
-          "next_wave": null,
           "waves": [
             {
               "wave_id": "W1",
@@ -37887,8 +37853,6 @@
             }
           ],
           "completion_label": "All waves complete",
-          "current_wave": null,
-          "next_wave": null,
           "waves": [
             {
               "wave_id": "W1",
@@ -40908,8 +40872,6 @@
             }
           ],
           "completion_label": "All waves complete",
-          "current_wave": null,
-          "next_wave": null,
           "waves": [
             {
               "wave_id": "W1",
@@ -41420,7 +41382,6 @@
         "start_date": "2026-04-17",
         "last_activity_iso": "2026-05-08T08:25:36-07:00",
         "age_days": 21,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -41607,7 +41568,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
         "age_days": 13,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -41832,7 +41792,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
         "age_days": 13,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -42057,7 +42016,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
         "age_days": 13,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -42282,7 +42240,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
         "age_days": 13,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -42507,7 +42464,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-05-08T08:25:36-07:00",
         "age_days": 13,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -42694,7 +42650,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
         "age_days": 13,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -42919,7 +42874,6 @@
         "start_date": "2026-04-17",
         "last_activity_iso": "2026-05-08T08:25:36-07:00",
         "age_days": 21,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -43058,7 +43012,6 @@
           "blocked_waves": [],
           "complete_waves": [],
           "completion_label": "",
-          "current_wave": null,
           "next_wave": {
             "wave_id": "W1",
             "label": "Benchmark baseline proof",
@@ -43574,7 +43527,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "2026-05-07T12:15:09-07:00",
         "age_days": 20,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -43792,7 +43744,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "2026-05-07T12:15:09-07:00",
         "age_days": 20,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -44008,7 +43959,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "2026-05-07T12:15:09-07:00",
         "age_days": 20,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -44224,7 +44174,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "2026-05-07T12:15:09-07:00",
         "age_days": 20,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -44440,7 +44389,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "2026-05-07T12:15:09-07:00",
         "age_days": 20,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -44656,7 +44604,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "2026-05-07T12:15:09-07:00",
         "age_days": 20,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -44872,7 +44819,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "2026-05-07T12:15:09-07:00",
         "age_days": 20,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -45088,7 +45034,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "2026-05-07T12:15:09-07:00",
         "age_days": 20,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -45399,7 +45344,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -45550,7 +45494,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -45701,7 +45644,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -45852,7 +45794,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -46003,7 +45944,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -46154,7 +46094,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -46305,7 +46244,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -46456,7 +46394,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -46607,7 +46544,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -46758,7 +46694,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -46909,7 +46844,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -47060,7 +46994,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -48041,7 +47974,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/17",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -48071,7 +48003,6 @@
           "start_date": "2026-04-10",
           "last_activity_iso": "2026-05-08T15:16:47-07:00",
           "age_days": 28,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -49550,8 +49481,6 @@
               }
             ],
             "completion_label": "All waves complete",
-            "current_wave": null,
-            "next_wave": null,
             "waves": [
               {
                 "wave_id": "W1",
@@ -51250,8 +51179,6 @@
               }
             ],
             "completion_label": "All waves complete",
-            "current_wave": null,
-            "next_wave": null,
             "waves": [
               {
                 "wave_id": "W1",
@@ -52103,8 +52030,6 @@
               }
             ],
             "completion_label": "All waves complete",
-            "current_wave": null,
-            "next_wave": null,
             "waves": [
               {
                 "wave_id": "W1",
@@ -55316,7 +55241,6 @@
           "start_date": "2026-04-13",
           "last_activity_iso": "2026-05-08T12:34:12-07:00",
           "age_days": 25,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -56316,8 +56240,6 @@
               }
             ],
             "completion_label": "All waves complete",
-            "current_wave": null,
-            "next_wave": null,
             "waves": [
               {
                 "wave_id": "W1",
@@ -56828,7 +56750,6 @@
           "start_date": "2026-04-17",
           "last_activity_iso": "2026-05-08T08:25:36-07:00",
           "age_days": 21,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -57015,7 +56936,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-05-08T08:25:36-07:00",
           "age_days": 13,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -57202,7 +57122,6 @@
           "start_date": "2026-04-17",
           "last_activity_iso": "2026-05-08T08:25:36-07:00",
           "age_days": 21,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -58394,7 +58313,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/13",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -58424,7 +58342,6 @@
           "start_date": "2026-04-08",
           "last_activity_iso": "2026-04-12T10:37:07-07:00",
           "age_days": 30,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -59181,7 +59098,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/20",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -59211,7 +59127,6 @@
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-12T10:18:23-07:00",
           "age_days": 27,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -59542,7 +59457,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/35",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -59572,7 +59486,6 @@
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-11T17:40:14-07:00",
           "age_days": 27,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -59896,7 +59809,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/16",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -59926,7 +59838,6 @@
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-04-12T16:26:24-07:00",
           "age_days": 26,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -60324,7 +60235,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/21",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -60354,7 +60264,6 @@
           "start_date": "2026-04-15",
           "last_activity_iso": "2026-04-15T09:38:42-07:00",
           "age_days": 23,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -60725,7 +60634,6 @@
           "start_date": "2026-03-27",
           "last_activity_iso": "",
           "age_days": 42,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -60900,7 +60808,6 @@
           "start_date": "2026-03-27",
           "last_activity_iso": "",
           "age_days": 42,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -64021,7 +63928,6 @@
           "start_date": "2026-03-30",
           "last_activity_iso": "",
           "age_days": 39,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -64184,7 +64090,6 @@
           "start_date": "2026-03-30",
           "last_activity_iso": "",
           "age_days": 39,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -64347,7 +64252,6 @@
           "start_date": "2026-03-30",
           "last_activity_iso": "",
           "age_days": 39,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -64510,7 +64414,6 @@
           "start_date": "2026-03-30",
           "last_activity_iso": "",
           "age_days": 39,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -64669,7 +64572,6 @@
           "start_date": "2026-03-31",
           "last_activity_iso": "",
           "age_days": 38,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -64834,7 +64736,6 @@
           "start_date": "2026-04-02",
           "last_activity_iso": "",
           "age_days": 36,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -64999,7 +64900,6 @@
           "start_date": "2026-04-02",
           "last_activity_iso": "",
           "age_days": 36,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -65168,7 +65068,6 @@
           "start_date": "2026-04-02",
           "last_activity_iso": "",
           "age_days": 36,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -65333,7 +65232,6 @@
           "start_date": "2026-04-02",
           "last_activity_iso": "",
           "age_days": 36,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -65494,7 +65392,6 @@
           "start_date": "2026-04-04",
           "last_activity_iso": "",
           "age_days": 34,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -65663,7 +65560,6 @@
           "start_date": "2026-04-04",
           "last_activity_iso": "",
           "age_days": 34,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -67070,7 +66966,6 @@
           "start_date": "2026-04-06",
           "last_activity_iso": "",
           "age_days": 32,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -68060,7 +67955,6 @@
           "start_date": "2026-04-09",
           "last_activity_iso": "",
           "age_days": 29,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -69519,7 +69413,6 @@
           "start_date": "2026-04-10",
           "last_activity_iso": "",
           "age_days": 28,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -69868,7 +69761,6 @@
           "start_date": "2026-04-13",
           "last_activity_iso": "",
           "age_days": 25,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -71167,7 +71059,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
           "age_days": 13,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -71392,7 +71283,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
           "age_days": 13,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -71617,7 +71507,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
           "age_days": 13,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -71842,7 +71731,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
           "age_days": 13,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -72067,7 +71955,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
           "age_days": 13,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -72244,7 +72131,6 @@
             "blocked_waves": [],
             "complete_waves": [],
             "completion_label": "",
-            "current_wave": null,
             "next_wave": {
               "wave_id": "W1",
               "label": "Benchmark baseline proof",
@@ -72760,7 +72646,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "2026-05-07T12:15:09-07:00",
           "age_days": 20,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -72978,7 +72863,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "2026-05-07T12:15:09-07:00",
           "age_days": 20,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -73194,7 +73078,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "2026-05-07T12:15:09-07:00",
           "age_days": 20,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -73410,7 +73293,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "2026-05-07T12:15:09-07:00",
           "age_days": 20,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -73626,7 +73508,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "2026-05-07T12:15:09-07:00",
           "age_days": 20,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -73842,7 +73723,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "2026-05-07T12:15:09-07:00",
           "age_days": 20,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -74058,7 +73938,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "2026-05-07T12:15:09-07:00",
           "age_days": 20,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -74274,7 +74153,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "2026-05-07T12:15:09-07:00",
           "age_days": 20,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -74585,7 +74463,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -74736,7 +74613,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -74887,7 +74763,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -75038,7 +74913,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -75189,7 +75063,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -75340,7 +75213,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -75491,7 +75363,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -75642,7 +75513,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -75793,7 +75663,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -75944,7 +75813,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -76095,7 +75963,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -76246,7 +76113,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -77396,7 +77262,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/17",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -77426,7 +77291,6 @@
           "start_date": "2026-04-10",
           "last_activity_iso": "2026-05-08T15:16:47-07:00",
           "age_days": 28,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -78933,8 +78797,6 @@
               }
             ],
             "completion_label": "All waves complete",
-            "current_wave": null,
-            "next_wave": null,
             "waves": [
               {
                 "wave_id": "W1",
@@ -80249,8 +80111,6 @@
               }
             ],
             "completion_label": "All waves complete",
-            "current_wave": null,
-            "next_wave": null,
             "waves": [
               {
                 "wave_id": "W1",
@@ -81102,8 +80962,6 @@
               }
             ],
             "completion_label": "All waves complete",
-            "current_wave": null,
-            "next_wave": null,
             "waves": [
               {
                 "wave_id": "W1",
@@ -84427,8 +84285,6 @@
               }
             ],
             "completion_label": "All waves complete",
-            "current_wave": null,
-            "next_wave": null,
             "waves": [
               {
                 "wave_id": "W1",
@@ -84939,7 +84795,6 @@
           "start_date": "2026-04-17",
           "last_activity_iso": "2026-05-08T08:25:36-07:00",
           "age_days": 21,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -85126,7 +84981,6 @@
           "start_date": "2026-04-17",
           "last_activity_iso": "2026-05-08T08:25:36-07:00",
           "age_days": 21,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -85690,7 +85544,6 @@
           "start_date": "2026-04-13",
           "last_activity_iso": "2026-05-08T12:34:12-07:00",
           "age_days": 25,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -85825,7 +85678,6 @@
             "blocked_waves": [],
             "complete_waves": [],
             "completion_label": "",
-            "current_wave": null,
             "next_wave": {
               "wave_id": "W1",
               "label": "Benchmark baseline proof",
@@ -86341,7 +86193,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "2026-05-07T12:15:09-07:00",
           "age_days": 20,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -86559,7 +86410,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "2026-05-07T12:15:09-07:00",
           "age_days": 20,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -86775,7 +86625,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "2026-05-07T12:15:09-07:00",
           "age_days": 20,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -86991,7 +86840,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "2026-05-07T12:15:09-07:00",
           "age_days": 20,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -87207,7 +87055,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "2026-05-07T12:15:09-07:00",
           "age_days": 20,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -87423,7 +87270,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "2026-05-07T12:15:09-07:00",
           "age_days": 20,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -87639,7 +87485,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "2026-05-07T12:15:09-07:00",
           "age_days": 20,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -87855,7 +87700,6 @@
           "start_date": "2026-04-18",
           "last_activity_iso": "2026-05-07T12:15:09-07:00",
           "age_days": 20,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -88366,7 +88210,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-05-08T08:25:36-07:00",
           "age_days": 13,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -89558,7 +89401,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/13",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -89588,7 +89430,6 @@
           "start_date": "2026-04-08",
           "last_activity_iso": "2026-04-12T10:37:07-07:00",
           "age_days": 30,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -90345,7 +90186,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/20",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -90375,7 +90215,6 @@
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-12T10:18:23-07:00",
           "age_days": 27,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -90706,7 +90545,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/35",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -90736,7 +90574,6 @@
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-11T17:40:14-07:00",
           "age_days": 27,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -91060,7 +90897,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/16",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -91090,7 +90926,6 @@
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-04-12T16:26:24-07:00",
           "age_days": 26,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -91488,7 +91323,6 @@
           "done_tasks": 0,
           "progress_ratio": 0.0,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
           "display_progress_label": "Checklist 0/21",
           "display_progress_state": "checklist_only",
           "progress_classification": "active_untracked",
@@ -91518,7 +91352,6 @@
           "start_date": "2026-04-15",
           "last_activity_iso": "2026-04-15T09:38:42-07:00",
           "age_days": 23,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -91889,7 +91722,6 @@
           "start_date": "2026-03-27",
           "last_activity_iso": "",
           "age_days": 42,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -92064,7 +91896,6 @@
           "start_date": "2026-03-27",
           "last_activity_iso": "",
           "age_days": 42,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -95185,7 +95016,6 @@
           "start_date": "2026-03-30",
           "last_activity_iso": "",
           "age_days": 39,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -95348,7 +95178,6 @@
           "start_date": "2026-03-30",
           "last_activity_iso": "",
           "age_days": 39,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -95511,7 +95340,6 @@
           "start_date": "2026-03-30",
           "last_activity_iso": "",
           "age_days": 39,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -95674,7 +95502,6 @@
           "start_date": "2026-03-30",
           "last_activity_iso": "",
           "age_days": 39,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -95833,7 +95660,6 @@
           "start_date": "2026-03-31",
           "last_activity_iso": "",
           "age_days": 38,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -95998,7 +95824,6 @@
           "start_date": "2026-04-02",
           "last_activity_iso": "",
           "age_days": 36,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -96163,7 +95988,6 @@
           "start_date": "2026-04-02",
           "last_activity_iso": "",
           "age_days": 36,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -96332,7 +96156,6 @@
           "start_date": "2026-04-02",
           "last_activity_iso": "",
           "age_days": 36,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -96497,7 +96320,6 @@
           "start_date": "2026-04-02",
           "last_activity_iso": "",
           "age_days": 36,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -96658,7 +96480,6 @@
           "start_date": "2026-04-04",
           "last_activity_iso": "",
           "age_days": 34,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -96827,7 +96648,6 @@
           "start_date": "2026-04-04",
           "last_activity_iso": "",
           "age_days": 34,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -98234,7 +98054,6 @@
           "start_date": "2026-04-06",
           "last_activity_iso": "",
           "age_days": 32,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -99224,7 +99043,6 @@
           "start_date": "2026-04-09",
           "last_activity_iso": "",
           "age_days": 29,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -100683,7 +100501,6 @@
           "start_date": "2026-04-10",
           "last_activity_iso": "",
           "age_days": 28,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -101032,7 +100849,6 @@
           "start_date": "2026-04-13",
           "last_activity_iso": "",
           "age_days": 25,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -102331,7 +102147,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
           "age_days": 13,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -102556,7 +102371,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
           "age_days": 13,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -102781,7 +102595,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
           "age_days": 13,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -103006,7 +102819,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
           "age_days": 13,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -103231,7 +103043,6 @@
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
           "age_days": 13,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -103584,7 +103395,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -103735,7 +103545,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -103886,7 +103695,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -104037,7 +103845,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -104188,7 +103995,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -104339,7 +104145,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -104490,7 +104295,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -104641,7 +104445,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -104792,7 +104595,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -104943,7 +104745,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -105094,7 +104895,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -105245,7 +105045,6 @@
           "start_date": "2026-04-29",
           "last_activity_iso": "",
           "age_days": 9,
-          "eta_days": null,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -106396,7 +106195,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/17",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -106426,7 +106224,6 @@
         "start_date": "2026-04-10",
         "last_activity_iso": "2026-05-08T15:16:47-07:00",
         "age_days": 28,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -107933,8 +107730,6 @@
             }
           ],
           "completion_label": "All waves complete",
-          "current_wave": null,
-          "next_wave": null,
           "waves": [
             {
               "wave_id": "W1",
@@ -109249,8 +109044,6 @@
             }
           ],
           "completion_label": "All waves complete",
-          "current_wave": null,
-          "next_wave": null,
           "waves": [
             {
               "wave_id": "W1",
@@ -110102,8 +109895,6 @@
             }
           ],
           "completion_label": "All waves complete",
-          "current_wave": null,
-          "next_wave": null,
           "waves": [
             {
               "wave_id": "W1",
@@ -113427,8 +113218,6 @@
             }
           ],
           "completion_label": "All waves complete",
-          "current_wave": null,
-          "next_wave": null,
           "waves": [
             {
               "wave_id": "W1",
@@ -113939,7 +113728,6 @@
         "start_date": "2026-04-17",
         "last_activity_iso": "2026-05-08T08:25:36-07:00",
         "age_days": 21,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -114126,7 +113914,6 @@
         "start_date": "2026-04-17",
         "last_activity_iso": "2026-05-08T08:25:36-07:00",
         "age_days": 21,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -114690,7 +114477,6 @@
         "start_date": "2026-04-13",
         "last_activity_iso": "2026-05-08T12:34:12-07:00",
         "age_days": 25,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -114825,7 +114611,6 @@
           "blocked_waves": [],
           "complete_waves": [],
           "completion_label": "",
-          "current_wave": null,
           "next_wave": {
             "wave_id": "W1",
             "label": "Benchmark baseline proof",
@@ -115341,7 +115126,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "2026-05-07T12:15:09-07:00",
         "age_days": 20,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -115559,7 +115343,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "2026-05-07T12:15:09-07:00",
         "age_days": 20,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -115775,7 +115558,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "2026-05-07T12:15:09-07:00",
         "age_days": 20,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -115991,7 +115773,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "2026-05-07T12:15:09-07:00",
         "age_days": 20,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -116207,7 +115988,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "2026-05-07T12:15:09-07:00",
         "age_days": 20,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -116423,7 +116203,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "2026-05-07T12:15:09-07:00",
         "age_days": 20,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -116639,7 +116418,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "2026-05-07T12:15:09-07:00",
         "age_days": 20,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -116855,7 +116633,6 @@
         "start_date": "2026-04-18",
         "last_activity_iso": "2026-05-07T12:15:09-07:00",
         "age_days": 20,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -117366,7 +117143,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-05-08T08:25:36-07:00",
         "age_days": 13,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -118558,7 +118334,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/13",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -118588,7 +118363,6 @@
         "start_date": "2026-04-08",
         "last_activity_iso": "2026-04-12T10:37:07-07:00",
         "age_days": 30,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -119345,7 +119119,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/20",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -119375,7 +119148,6 @@
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-12T10:18:23-07:00",
         "age_days": 27,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -119706,7 +119478,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/35",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -119736,7 +119507,6 @@
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-11T17:40:14-07:00",
         "age_days": 27,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -120060,7 +119830,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/16",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -120090,7 +119859,6 @@
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-04-12T16:26:24-07:00",
         "age_days": 26,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -120488,7 +120256,6 @@
         "done_tasks": 0,
         "progress_ratio": 0.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
         "display_progress_label": "Checklist 0/21",
         "display_progress_state": "checklist_only",
         "progress_classification": "active_untracked",
@@ -120518,7 +120285,6 @@
         "start_date": "2026-04-15",
         "last_activity_iso": "2026-04-15T09:38:42-07:00",
         "age_days": 23,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -120889,7 +120655,6 @@
         "start_date": "2026-03-27",
         "last_activity_iso": "",
         "age_days": 42,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -121064,7 +120829,6 @@
         "start_date": "2026-03-27",
         "last_activity_iso": "",
         "age_days": 42,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -124185,7 +123949,6 @@
         "start_date": "2026-03-30",
         "last_activity_iso": "",
         "age_days": 39,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -124348,7 +124111,6 @@
         "start_date": "2026-03-30",
         "last_activity_iso": "",
         "age_days": 39,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -124511,7 +124273,6 @@
         "start_date": "2026-03-30",
         "last_activity_iso": "",
         "age_days": 39,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -124674,7 +124435,6 @@
         "start_date": "2026-03-30",
         "last_activity_iso": "",
         "age_days": 39,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -124833,7 +124593,6 @@
         "start_date": "2026-03-31",
         "last_activity_iso": "",
         "age_days": 38,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -124998,7 +124757,6 @@
         "start_date": "2026-04-02",
         "last_activity_iso": "",
         "age_days": 36,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -125163,7 +124921,6 @@
         "start_date": "2026-04-02",
         "last_activity_iso": "",
         "age_days": 36,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -125332,7 +125089,6 @@
         "start_date": "2026-04-02",
         "last_activity_iso": "",
         "age_days": 36,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -125497,7 +125253,6 @@
         "start_date": "2026-04-02",
         "last_activity_iso": "",
         "age_days": 36,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -125658,7 +125413,6 @@
         "start_date": "2026-04-04",
         "last_activity_iso": "",
         "age_days": 34,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -125827,7 +125581,6 @@
         "start_date": "2026-04-04",
         "last_activity_iso": "",
         "age_days": 34,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -127234,7 +126987,6 @@
         "start_date": "2026-04-06",
         "last_activity_iso": "",
         "age_days": 32,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -128224,7 +127976,6 @@
         "start_date": "2026-04-09",
         "last_activity_iso": "",
         "age_days": 29,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -129683,7 +129434,6 @@
         "start_date": "2026-04-10",
         "last_activity_iso": "",
         "age_days": 28,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -130032,7 +129782,6 @@
         "start_date": "2026-04-13",
         "last_activity_iso": "",
         "age_days": 25,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -131331,7 +131080,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
         "age_days": 13,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -131556,7 +131304,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
         "age_days": 13,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -131781,7 +131528,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
         "age_days": 13,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -132006,7 +131752,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
         "age_days": 13,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -132231,7 +131976,6 @@
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
         "age_days": 13,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -132584,7 +132328,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -132735,7 +132478,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -132886,7 +132628,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -133037,7 +132778,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -133188,7 +132928,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -133339,7 +133078,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -133490,7 +133228,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -133641,7 +133378,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -133792,7 +133528,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -133943,7 +133678,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -134094,7 +133828,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -134245,7 +133978,6 @@
         "start_date": "2026-04-29",
         "last_activity_iso": "",
         "age_days": 9,
-        "eta_days": null,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -134805,8 +134537,6 @@
           }
         ],
         "completion_label": "All waves complete",
-        "current_wave": null,
-        "next_wave": null,
         "waves": [
           {
             "wave_id": "W1",
@@ -135606,8 +135336,6 @@
           }
         ],
         "completion_label": "All waves complete",
-        "current_wave": null,
-        "next_wave": null,
         "waves": [
           {
             "wave_id": "W1",
@@ -136298,8 +136026,6 @@
           }
         ],
         "completion_label": "All waves complete",
-        "current_wave": null,
-        "next_wave": null,
         "waves": [
           {
             "wave_id": "W1",
@@ -137126,8 +136852,6 @@
           }
         ],
         "completion_label": "All waves complete",
-        "current_wave": null,
-        "next_wave": null,
         "waves": [
           {
             "wave_id": "W1",
@@ -137617,7 +137341,6 @@
         "blocked_waves": [],
         "complete_waves": [],
         "completion_label": "",
-        "current_wave": null,
         "next_wave": {
           "wave_id": "W1",
           "label": "Benchmark baseline proof",
@@ -138531,8 +138254,6 @@
           }
         ],
         "completion_label": "All waves complete",
-        "current_wave": null,
-        "next_wave": null,
         "waves": [
           {
             "wave_id": "W1",
@@ -139332,8 +139053,6 @@
           }
         ],
         "completion_label": "All waves complete",
-        "current_wave": null,
-        "next_wave": null,
         "waves": [
           {
             "wave_id": "W1",
@@ -140024,8 +139743,6 @@
           }
         ],
         "completion_label": "All waves complete",
-        "current_wave": null,
-        "next_wave": null,
         "waves": [
           {
             "wave_id": "W1",
@@ -140852,8 +140569,6 @@
           }
         ],
         "completion_label": "All waves complete",
-        "current_wave": null,
-        "next_wave": null,
         "waves": [
           {
             "wave_id": "W1",
@@ -141343,7 +141058,6 @@
         "blocked_waves": [],
         "complete_waves": [],
         "completion_label": "",
-        "current_wave": null,
         "next_wave": {
           "wave_id": "W1",
           "label": "Benchmark baseline proof",
@@ -143155,7 +142869,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143181,7 +142894,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143207,7 +142919,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143233,7 +142944,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143259,7 +142969,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143285,7 +142994,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143311,59 +143019,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
-      "id": "local:M:odylith/casebook/bugs/2026-05-09-legacy-merchant-lending-greenfield-records-retained-checkout-workstreams.md",
-      "kind": "local_change",
-      "ts_iso": "2026-05-08T18:39:51-07:00",
-      "summary": "Modified odylith/casebook/bugs/2026-05-09-legacy-merchant-lending-greenfield-records-retained-checkout-workstreams.md",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "odylith/casebook/bugs/2026-05-09-legacy-merchant-lending-greenfield-records-retained-checkout-workstreams.md"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
-      "id": "bug:watch:1:P1",
-      "kind": "bug_watch",
-      "ts_iso": "2026-05-08T18:39:51-07:00",
-      "summary": "Critical bug remains open (P1): Legacy merchant lending greenfield records retained checkout workstreams.",
-      "author": "bugs",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "odylith/casebook/bugs/2026-05-09-legacy-merchant-lending-greenfield-records-retained-checkout-workstreams.md"
-      ],
-      "source": "bugs_index",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143391,85 +143046,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
-      "id": "local:M:src/odylith/runtime/governance/greenfield_legacy_repairs.py",
-      "kind": "local_change",
-      "ts_iso": "2026-05-08T18:38:33-07:00",
-      "summary": "Modified src/odylith/runtime/governance/greenfield_legacy_repairs.py",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "src/odylith/runtime/governance/greenfield_legacy_repairs.py"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
-      "id": "local:M:tests/unit/runtime/test_greenfield_legacy_repairs.py",
-      "kind": "local_change",
-      "ts_iso": "2026-05-08T18:36:10-07:00",
-      "summary": "Modified tests/unit/runtime/test_greenfield_legacy_repairs.py",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "tests/unit/runtime/test_greenfield_legacy_repairs.py"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
-      "id": "local:M:tests/unit/runtime/test_greenfield_merchant_lending_profile.py",
-      "kind": "local_change",
-      "ts_iso": "2026-05-08T18:35:07-07:00",
-      "summary": "Modified tests/unit/runtime/test_greenfield_merchant_lending_profile.py",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "tests/unit/runtime/test_greenfield_merchant_lending_profile.py"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143497,7 +143073,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143525,7 +143100,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143553,7 +143127,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143581,180 +143154,6 @@
       "source": "local",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
-      "id": "commit:dd7dcca4c0db3290032caa2b4849192aaa596aa8",
-      "kind": "commit",
-      "ts_iso": "2026-05-08T18:18:54-07:00",
-      "summary": "Harden merchant lending greenfield records",
-      "author": "freedom-research",
-      "sha": "dd7dcca4c0db3290032caa2b4849192aaa596aa8",
-      "workstreams": [
-        "B-140",
-        "B-142"
-      ],
-      "files": [
-        "odylith/atlas/source/catalog/diagrams.v1.json",
-        "odylith/casebook/bugs/2026-05-09-legacy-merchant-lending-greenfield-records-retained-checkout-workstreams.md",
-        "odylith/casebook/bugs/INDEX.md",
-        "odylith/casebook/casebook-detail-shard-003.v1.js",
-        "odylith/casebook/casebook-detail-shard-006.v1.js",
-        "odylith/casebook/casebook-payload.v1.js",
-        "odylith/casebook/casebook.html",
-        "odylith/compass/compass-payload.v1.js",
-        "odylith/compass/compass-source-truth.v1.json",
-        "odylith/compass/compass.html",
-        "odylith/compass/runtime/current.v1.js",
-        "odylith/compass/runtime/current.v1.json",
-        "odylith/compass/runtime/history/2026-05-08.v1.json",
-        "odylith/compass/runtime/history/embedded.v1.js",
-        "odylith/compass/runtime/history/index.v1.json",
-        "odylith/index.html",
-        "odylith/radar/backlog-detail-shard-001.v1.js",
-        "odylith/radar/backlog-detail-shard-002.v1.js",
-        "odylith/radar/backlog-detail-shard-003.v1.js",
-        "odylith/radar/backlog-document-shard-008.v1.js",
-        "odylith/radar/backlog-payload.v1.js",
-        "odylith/radar/radar.html",
-        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
-        "odylith/radar/traceability-graph.v1.json",
-        "odylith/registry/registry-detail-shard-001.v1.js",
-        "odylith/registry/registry-payload.v1.js",
-        "odylith/registry/registry.html",
-        "odylith/registry/source/components/domain-intelligence/FORENSICS.v1.json",
-        "odylith/registry/source/components/radar/FORENSICS.v1.json",
-        "odylith/runtime/delivery_intelligence.v4.json",
-        "odylith/tooling-payload.v1.js",
-        "src/odylith/bundle/assets/odylith/casebook/casebook.html",
-        "src/odylith/bundle/assets/odylith/compass/compass.html",
-        "src/odylith/bundle/assets/odylith/index.html",
-        "src/odylith/bundle/assets/odylith/radar/radar.html",
-        "src/odylith/bundle/assets/odylith/registry/registry.html",
-        "src/odylith/runtime/domain_intelligence/greenfield_project_brief.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_project_intelligence.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_workstream_intelligence.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_workstream_terms.py",
-        "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
-        "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
-        "src/odylith/runtime/governance/greenfield_legacy_repairs.py",
-        "src/odylith/runtime/governance/legacy_backlog_normalization.py",
-        "tests/unit/runtime/test_greenfield_legacy_repairs.py",
-        "tests/unit/runtime/test_greenfield_merchant_lending_profile.py",
-        "tests/unit/runtime/test_greenfield_proposals.py"
-      ],
-      "source": "git",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
-      "id": "commit:c66e54f39173e7c2e80476f06f5d0f7266fa6aae",
-      "kind": "commit",
-      "ts_iso": "2026-05-08T17:36:10-07:00",
-      "summary": "Harden greenfield workstream product requirements",
-      "author": "freedom-research",
-      "sha": "c66e54f39173e7c2e80476f06f5d0f7266fa6aae",
-      "workstreams": [
-        "B-142"
-      ],
-      "files": [
-        "odylith/atlas/source/catalog/diagrams.v1.json",
-        "odylith/casebook/bugs/2026-05-09-greenfield-child-workstreams-used-generic-shells-for-merchant-lending.md",
-        "odylith/casebook/bugs/INDEX.md",
-        "odylith/casebook/casebook-detail-shard-003.v1.js",
-        "odylith/casebook/casebook-detail-shard-006.v1.js",
-        "odylith/casebook/casebook-payload.v1.js",
-        "odylith/casebook/casebook.html",
-        "odylith/compass/compass-payload.v1.js",
-        "odylith/compass/compass-source-truth.v1.json",
-        "odylith/compass/compass.html",
-        "odylith/compass/runtime/current.v1.js",
-        "odylith/compass/runtime/current.v1.json",
-        "odylith/compass/runtime/history/2026-05-08.v1.json",
-        "odylith/compass/runtime/history/embedded.v1.js",
-        "odylith/compass/runtime/history/index.v1.json",
-        "odylith/index.html",
-        "odylith/radar/backlog-detail-shard-001.v1.js",
-        "odylith/radar/backlog-detail-shard-002.v1.js",
-        "odylith/radar/backlog-detail-shard-003.v1.js",
-        "odylith/radar/backlog-payload.v1.js",
-        "odylith/radar/radar.html",
-        "odylith/radar/traceability-graph.v1.json",
-        "odylith/registry/registry-detail-shard-001.v1.js",
-        "odylith/registry/registry-payload.v1.js",
-        "odylith/registry/registry.html",
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "odylith/registry/source/components/domain-intelligence/FORENSICS.v1.json",
-        "odylith/registry/source/components/radar/FORENSICS.v1.json",
-        "odylith/runtime/delivery_intelligence.v4.json",
-        "odylith/tooling-payload.v1.js",
-        "src/odylith/bundle/assets/odylith/casebook/casebook.html",
-        "src/odylith/bundle/assets/odylith/compass/compass.html",
-        "src/odylith/bundle/assets/odylith/index.html",
-        "src/odylith/bundle/assets/odylith/radar/radar.html",
-        "src/odylith/bundle/assets/odylith/registry/registry.html",
-        "src/odylith/runtime/domain_intelligence/greenfield_domain_profile.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_project_intelligence.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_workstream_rows.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_workstream_terms.py",
-        "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
-        "tests/unit/runtime/test_greenfield_intelligence_schema.py",
-        "tests/unit/runtime/test_greenfield_merchant_lending_profile.py",
-        "tests/unit/runtime/test_greenfield_proposals.py"
-      ],
-      "source": "git",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
-      "id": "bug:watch:2:P1",
-      "kind": "bug_watch",
-      "ts_iso": "2026-05-08T17:29:32-07:00",
-      "summary": "Critical bug remains open (P1): Greenfield child workstreams used generic shells for merchant lending.",
-      "author": "bugs",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "odylith/casebook/bugs/2026-05-09-greenfield-child-workstreams-used-generic-shells-for-merchant-lending.md"
-      ],
-      "source": "bugs_index",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143842,7 +143241,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143868,93 +143266,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
-      "id": "commit:d1f2e8c800afcb0dcbd2aee55c2cd33d68ab5dff",
-      "kind": "commit",
-      "ts_iso": "2026-05-08T16:44:08-07:00",
-      "summary": "Fix merchant lending greenfield routing",
-      "author": "freedom-research",
-      "sha": "d1f2e8c800afcb0dcbd2aee55c2cd33d68ab5dff",
-      "workstreams": [
-        "B-140",
-        "B-142"
-      ],
-      "files": [
-        "odylith/casebook/bugs/2026-05-08-greenfield-shopify-merchant-lending-prompt-routed-to-checkout.md",
-        "odylith/casebook/bugs/INDEX.md",
-        "odylith/casebook/casebook-detail-shard-003.v1.js",
-        "odylith/casebook/casebook-detail-shard-006.v1.js",
-        "odylith/casebook/casebook-payload.v1.js",
-        "odylith/casebook/casebook.html",
-        "odylith/compass/compass-payload.v1.js",
-        "odylith/compass/compass-source-truth.v1.json",
-        "odylith/compass/compass.html",
-        "odylith/compass/runtime/current.v1.js",
-        "odylith/compass/runtime/current.v1.json",
-        "odylith/compass/runtime/history/2026-05-08.v1.json",
-        "odylith/compass/runtime/history/embedded.v1.js",
-        "odylith/compass/runtime/history/index.v1.json",
-        "odylith/radar/backlog-document-shard-008.v1.js",
-        "odylith/radar/backlog-payload.v1.js",
-        "odylith/radar/radar.html",
-        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-        "odylith/radar/traceability-graph.v1.json",
-        "src/odylith/bundle/assets/odylith/casebook/casebook.html",
-        "src/odylith/bundle/assets/odylith/compass/compass.html",
-        "src/odylith/bundle/assets/odylith/radar/radar.html",
-        "src/odylith/runtime/domain_intelligence/greenfield_cli_output.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_domain_profile.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_experience.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_project_brief.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_project_intelligence.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_workstream_intelligence.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_workstream_terms.py",
-        "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
-        "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
-        "tests/unit/runtime/test_greenfield_merchant_lending_profile.py"
-      ],
-      "source": "git",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
-      "id": "bug:watch:5:P1",
-      "kind": "bug_watch",
-      "ts_iso": "2026-05-08T16:42:52-07:00",
-      "summary": "Critical bug remains open (P1): Greenfield shopify merchant lending prompt routed to checkout.",
-      "author": "bugs",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "odylith/casebook/bugs/2026-05-08-greenfield-shopify-merchant-lending-prompt-routed-to-checkout.md"
-      ],
-      "source": "bugs_index",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -143982,7 +143293,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -144098,7 +143408,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -144124,7 +143433,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -144150,7 +143458,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -144256,7 +143563,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -144282,7 +143588,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -144311,7 +143616,6 @@
       "source": "plan_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -144340,7 +143644,6 @@
       "source": "plan_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -144369,7 +143672,6 @@
       "source": "plan_file",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -144398,7 +143700,6 @@
       "source": "plan_file",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -144466,7 +143767,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -144537,7 +143837,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -144629,7 +143928,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -144718,7 +144016,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -144789,7 +144086,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -144869,7 +144165,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -144895,7 +144190,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -144996,7 +144290,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -145022,7 +144315,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -145101,7 +144393,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -145202,7 +144493,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -145228,7 +144518,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -145334,7 +144623,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -145360,7 +144648,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -145384,7 +144671,6 @@
       "source": "assistant",
       "session_id": "019df0fe-5cb0-72d2-8d3b-21b6adc84e4c",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -145408,7 +144694,6 @@
       "source": "assistant",
       "session_id": "019df0fe-5cb0-72d2-8d3b-21b6adc84e4c",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -145434,7 +144719,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -145517,7 +144801,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -145543,7 +144826,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -145574,7 +144856,6 @@
       "source": "assistant",
       "session_id": "019df0fe-5cb0-72d2-8d3b-21b6adc84e4c",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -145694,7 +144975,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -145720,7 +145000,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -145746,7 +145025,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -145772,7 +145050,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -145798,7 +145075,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -145824,7 +145100,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -145850,7 +145125,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -145876,7 +145150,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -145902,7 +145175,6 @@
       "source": "bugs_index",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -145976,7 +145248,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -146020,7 +145291,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -146056,7 +145326,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -146154,7 +145423,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -146243,7 +145511,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -146278,7 +145545,6 @@
       "source": "git",
       "session_id": "",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -146307,7 +145573,6 @@
       "source": "assistant",
       "session_id": "019df0fe-5cb0-72d2-8d3b-21b6adc84e4c",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -146333,7 +145598,6 @@
       "source": "assistant",
       "session_id": "019df0fe-5cb0-72d2-8d3b-21b6adc84e4c",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -146372,7 +145636,6 @@
       "source": "assistant",
       "session_id": "019df0fe-5cb0-72d2-8d3b-21b6adc84e4c",
       "transaction_id": "",
-      "transaction_seq": null,
       "transaction_boundary": "",
       "context": "",
       "headline_hint": "",
@@ -146423,7 +145686,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146449,7 +145711,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146475,7 +145736,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146501,7 +145761,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146527,7 +145786,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146553,7 +145811,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146579,136 +145836,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        }
-      ]
-    },
-    {
-      "id": "txn:global:auto-global-0049:0049",
-      "transaction_id": "txn:global:auto-global-0049:0049",
-      "session_id": "",
-      "start_ts_iso": "2026-05-08T18:38:33-07:00",
-      "end_ts_iso": "2026-05-08T18:39:51-07:00",
-      "headline": "Updated product code + Casebook dashboard for B-142",
-      "context": "",
-      "event_count": 4,
-      "files_count": 3,
-      "workstreams": [
-        "B-142"
-      ],
-      "files": [
-        "odylith/casebook/bugs/2026-05-09-legacy-merchant-lending-greenfield-records-retained-checkout-workstreams.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_domain_profile.py",
-        "src/odylith/runtime/governance/greenfield_legacy_repairs.py"
-      ],
-      "explicit_open": false,
-      "explicit_closed": false,
-      "events": [
-        {
-          "id": "local:M:odylith/casebook/bugs/2026-05-09-legacy-merchant-lending-greenfield-records-retained-checkout-workstreams.md",
-          "kind": "local_change",
-          "ts_iso": "2026-05-08T18:39:51-07:00",
-          "summary": "Modified odylith/casebook/bugs/2026-05-09-legacy-merchant-lending-greenfield-records-retained-checkout-workstreams.md",
-          "author": "local",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "odylith/casebook/bugs/2026-05-09-legacy-merchant-lending-greenfield-records-retained-checkout-workstreams.md"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        },
-        {
-          "id": "bug:watch:1:P1",
-          "kind": "bug_watch",
-          "ts_iso": "2026-05-08T18:39:51-07:00",
-          "summary": "Critical bug remains open (P1): Legacy merchant lending greenfield records retained checkout workstreams.",
-          "author": "bugs",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "odylith/casebook/bugs/2026-05-09-legacy-merchant-lending-greenfield-records-retained-checkout-workstreams.md"
-          ],
-          "source": "bugs_index",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        },
-        {
-          "id": "local:M:src/odylith/runtime/domain_intelligence/greenfield_domain_profile.py",
-          "kind": "local_change",
-          "ts_iso": "2026-05-08T18:39:11-07:00",
-          "summary": "Modified src/odylith/runtime/domain_intelligence/greenfield_domain_profile.py",
-          "author": "local",
-          "sha": "",
-          "workstreams": [
-            "B-142"
-          ],
-          "files": [
-            "src/odylith/runtime/domain_intelligence/greenfield_domain_profile.py"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        },
-        {
-          "id": "local:M:src/odylith/runtime/governance/greenfield_legacy_repairs.py",
-          "kind": "local_change",
-          "ts_iso": "2026-05-08T18:38:33-07:00",
-          "summary": "Modified src/odylith/runtime/governance/greenfield_legacy_repairs.py",
-          "author": "local",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "src/odylith/runtime/governance/greenfield_legacy_repairs.py"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146739,65 +145866,11 @@
         "odylith/skills/odylith-greenfield-governance/SKILL.md",
         "src/odylith/runtime/domain_intelligence/greenfield_workstream_terms.py",
         "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
-        "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
-        "tests/unit/runtime/test_greenfield_legacy_repairs.py",
-        "tests/unit/runtime/test_greenfield_merchant_lending_profile.py"
+        "src/odylith/runtime/domain_intelligence/proposal_scaffold.py"
       ],
       "explicit_open": false,
       "explicit_closed": false,
       "events": [
-        {
-          "id": "local:M:tests/unit/runtime/test_greenfield_legacy_repairs.py",
-          "kind": "local_change",
-          "ts_iso": "2026-05-08T18:36:10-07:00",
-          "summary": "Modified tests/unit/runtime/test_greenfield_legacy_repairs.py",
-          "author": "local",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "tests/unit/runtime/test_greenfield_legacy_repairs.py"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        },
-        {
-          "id": "local:M:tests/unit/runtime/test_greenfield_merchant_lending_profile.py",
-          "kind": "local_change",
-          "ts_iso": "2026-05-08T18:35:07-07:00",
-          "summary": "Modified tests/unit/runtime/test_greenfield_merchant_lending_profile.py",
-          "author": "local",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "tests/unit/runtime/test_greenfield_merchant_lending_profile.py"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        },
         {
           "id": "local:M:src/odylith/runtime/domain_intelligence/proposal_rendering.py",
           "kind": "local_change",
@@ -146814,7 +145887,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146842,7 +145914,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146870,7 +145941,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -146898,332 +145968,6 @@
           "source": "local",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        }
-      ]
-    },
-    {
-      "id": "txn:global:auto-global-0047:0047",
-      "transaction_id": "txn:global:auto-global-0047:0047",
-      "session_id": "",
-      "start_ts_iso": "2026-05-08T18:18:54-07:00",
-      "end_ts_iso": "2026-05-08T18:18:54-07:00",
-      "headline": "Harden merchant lending greenfield records",
-      "context": "",
-      "event_count": 1,
-      "files_count": 49,
-      "workstreams": [
-        "B-140",
-        "B-142"
-      ],
-      "files": [
-        "odylith/atlas/source/catalog/diagrams.v1.json",
-        "odylith/casebook/bugs/2026-05-09-legacy-merchant-lending-greenfield-records-retained-checkout-workstreams.md",
-        "odylith/casebook/bugs/INDEX.md",
-        "odylith/casebook/casebook-detail-shard-003.v1.js",
-        "odylith/casebook/casebook-detail-shard-006.v1.js",
-        "odylith/casebook/casebook-payload.v1.js",
-        "odylith/casebook/casebook.html",
-        "odylith/compass/compass-payload.v1.js",
-        "odylith/compass/compass-source-truth.v1.json",
-        "odylith/compass/compass.html",
-        "odylith/compass/runtime/current.v1.js",
-        "odylith/compass/runtime/current.v1.json",
-        "odylith/compass/runtime/history/2026-05-08.v1.json",
-        "odylith/compass/runtime/history/embedded.v1.js",
-        "odylith/compass/runtime/history/index.v1.json",
-        "odylith/index.html",
-        "odylith/radar/backlog-detail-shard-001.v1.js",
-        "odylith/radar/backlog-detail-shard-002.v1.js",
-        "odylith/radar/backlog-detail-shard-003.v1.js",
-        "odylith/radar/backlog-document-shard-008.v1.js",
-        "odylith/radar/backlog-payload.v1.js",
-        "odylith/radar/radar.html",
-        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
-        "odylith/radar/traceability-graph.v1.json",
-        "odylith/registry/registry-detail-shard-001.v1.js",
-        "odylith/registry/registry-payload.v1.js",
-        "odylith/registry/registry.html",
-        "odylith/registry/source/components/domain-intelligence/FORENSICS.v1.json",
-        "odylith/registry/source/components/radar/FORENSICS.v1.json",
-        "odylith/runtime/delivery_intelligence.v4.json",
-        "odylith/tooling-payload.v1.js",
-        "src/odylith/bundle/assets/odylith/casebook/casebook.html",
-        "src/odylith/bundle/assets/odylith/compass/compass.html",
-        "src/odylith/bundle/assets/odylith/index.html",
-        "src/odylith/bundle/assets/odylith/radar/radar.html",
-        "src/odylith/bundle/assets/odylith/registry/registry.html",
-        "src/odylith/runtime/domain_intelligence/greenfield_project_brief.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_project_intelligence.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_workstream_intelligence.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_workstream_terms.py",
-        "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
-        "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
-        "src/odylith/runtime/governance/greenfield_legacy_repairs.py",
-        "src/odylith/runtime/governance/legacy_backlog_normalization.py",
-        "tests/unit/runtime/test_greenfield_legacy_repairs.py",
-        "tests/unit/runtime/test_greenfield_merchant_lending_profile.py",
-        "tests/unit/runtime/test_greenfield_proposals.py"
-      ],
-      "explicit_open": false,
-      "explicit_closed": false,
-      "events": [
-        {
-          "id": "commit:dd7dcca4c0db3290032caa2b4849192aaa596aa8",
-          "kind": "commit",
-          "ts_iso": "2026-05-08T18:18:54-07:00",
-          "summary": "Harden merchant lending greenfield records",
-          "author": "freedom-research",
-          "sha": "dd7dcca4c0db3290032caa2b4849192aaa596aa8",
-          "workstreams": [
-            "B-140",
-            "B-142"
-          ],
-          "files": [
-            "odylith/atlas/source/catalog/diagrams.v1.json",
-            "odylith/casebook/bugs/2026-05-09-legacy-merchant-lending-greenfield-records-retained-checkout-workstreams.md",
-            "odylith/casebook/bugs/INDEX.md",
-            "odylith/casebook/casebook-detail-shard-003.v1.js",
-            "odylith/casebook/casebook-detail-shard-006.v1.js",
-            "odylith/casebook/casebook-payload.v1.js",
-            "odylith/casebook/casebook.html",
-            "odylith/compass/compass-payload.v1.js",
-            "odylith/compass/compass-source-truth.v1.json",
-            "odylith/compass/compass.html",
-            "odylith/compass/runtime/current.v1.js",
-            "odylith/compass/runtime/current.v1.json",
-            "odylith/compass/runtime/history/2026-05-08.v1.json",
-            "odylith/compass/runtime/history/embedded.v1.js",
-            "odylith/compass/runtime/history/index.v1.json",
-            "odylith/index.html",
-            "odylith/radar/backlog-detail-shard-001.v1.js",
-            "odylith/radar/backlog-detail-shard-002.v1.js",
-            "odylith/radar/backlog-detail-shard-003.v1.js",
-            "odylith/radar/backlog-document-shard-008.v1.js",
-            "odylith/radar/backlog-payload.v1.js",
-            "odylith/radar/radar.html",
-            "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-            "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
-            "odylith/radar/traceability-graph.v1.json",
-            "odylith/registry/registry-detail-shard-001.v1.js",
-            "odylith/registry/registry-payload.v1.js",
-            "odylith/registry/registry.html",
-            "odylith/registry/source/components/domain-intelligence/FORENSICS.v1.json",
-            "odylith/registry/source/components/radar/FORENSICS.v1.json",
-            "odylith/runtime/delivery_intelligence.v4.json",
-            "odylith/tooling-payload.v1.js",
-            "src/odylith/bundle/assets/odylith/casebook/casebook.html",
-            "src/odylith/bundle/assets/odylith/compass/compass.html",
-            "src/odylith/bundle/assets/odylith/index.html",
-            "src/odylith/bundle/assets/odylith/radar/radar.html",
-            "src/odylith/bundle/assets/odylith/registry/registry.html",
-            "src/odylith/runtime/domain_intelligence/greenfield_project_brief.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_project_intelligence.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_workstream_intelligence.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_workstream_terms.py",
-            "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
-            "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
-            "src/odylith/runtime/governance/greenfield_legacy_repairs.py",
-            "src/odylith/runtime/governance/legacy_backlog_normalization.py",
-            "tests/unit/runtime/test_greenfield_legacy_repairs.py",
-            "tests/unit/runtime/test_greenfield_merchant_lending_profile.py",
-            "tests/unit/runtime/test_greenfield_proposals.py"
-          ],
-          "source": "git",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        }
-      ]
-    },
-    {
-      "id": "txn:global:auto-global-0046:0046",
-      "transaction_id": "txn:global:auto-global-0046:0046",
-      "session_id": "",
-      "start_ts_iso": "2026-05-08T17:36:10-07:00",
-      "end_ts_iso": "2026-05-08T17:36:10-07:00",
-      "headline": "Harden greenfield workstream product requirements",
-      "context": "",
-      "event_count": 1,
-      "files_count": 43,
-      "workstreams": [
-        "B-142"
-      ],
-      "files": [
-        "odylith/atlas/source/catalog/diagrams.v1.json",
-        "odylith/casebook/bugs/2026-05-09-greenfield-child-workstreams-used-generic-shells-for-merchant-lending.md",
-        "odylith/casebook/bugs/INDEX.md",
-        "odylith/casebook/casebook-detail-shard-003.v1.js",
-        "odylith/casebook/casebook-detail-shard-006.v1.js",
-        "odylith/casebook/casebook-payload.v1.js",
-        "odylith/casebook/casebook.html",
-        "odylith/compass/compass-payload.v1.js",
-        "odylith/compass/compass-source-truth.v1.json",
-        "odylith/compass/compass.html",
-        "odylith/compass/runtime/current.v1.js",
-        "odylith/compass/runtime/current.v1.json",
-        "odylith/compass/runtime/history/2026-05-08.v1.json",
-        "odylith/compass/runtime/history/embedded.v1.js",
-        "odylith/compass/runtime/history/index.v1.json",
-        "odylith/index.html",
-        "odylith/radar/backlog-detail-shard-001.v1.js",
-        "odylith/radar/backlog-detail-shard-002.v1.js",
-        "odylith/radar/backlog-detail-shard-003.v1.js",
-        "odylith/radar/backlog-payload.v1.js",
-        "odylith/radar/radar.html",
-        "odylith/radar/traceability-graph.v1.json",
-        "odylith/registry/registry-detail-shard-001.v1.js",
-        "odylith/registry/registry-payload.v1.js",
-        "odylith/registry/registry.html",
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "odylith/registry/source/components/domain-intelligence/FORENSICS.v1.json",
-        "odylith/registry/source/components/radar/FORENSICS.v1.json",
-        "odylith/runtime/delivery_intelligence.v4.json",
-        "odylith/tooling-payload.v1.js",
-        "src/odylith/bundle/assets/odylith/casebook/casebook.html",
-        "src/odylith/bundle/assets/odylith/compass/compass.html",
-        "src/odylith/bundle/assets/odylith/index.html",
-        "src/odylith/bundle/assets/odylith/radar/radar.html",
-        "src/odylith/bundle/assets/odylith/registry/registry.html",
-        "src/odylith/runtime/domain_intelligence/greenfield_domain_profile.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_project_intelligence.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_workstream_rows.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_workstream_terms.py",
-        "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
-        "tests/unit/runtime/test_greenfield_intelligence_schema.py",
-        "tests/unit/runtime/test_greenfield_merchant_lending_profile.py",
-        "tests/unit/runtime/test_greenfield_proposals.py"
-      ],
-      "explicit_open": false,
-      "explicit_closed": false,
-      "events": [
-        {
-          "id": "commit:c66e54f39173e7c2e80476f06f5d0f7266fa6aae",
-          "kind": "commit",
-          "ts_iso": "2026-05-08T17:36:10-07:00",
-          "summary": "Harden greenfield workstream product requirements",
-          "author": "freedom-research",
-          "sha": "c66e54f39173e7c2e80476f06f5d0f7266fa6aae",
-          "workstreams": [
-            "B-142"
-          ],
-          "files": [
-            "odylith/atlas/source/catalog/diagrams.v1.json",
-            "odylith/casebook/bugs/2026-05-09-greenfield-child-workstreams-used-generic-shells-for-merchant-lending.md",
-            "odylith/casebook/bugs/INDEX.md",
-            "odylith/casebook/casebook-detail-shard-003.v1.js",
-            "odylith/casebook/casebook-detail-shard-006.v1.js",
-            "odylith/casebook/casebook-payload.v1.js",
-            "odylith/casebook/casebook.html",
-            "odylith/compass/compass-payload.v1.js",
-            "odylith/compass/compass-source-truth.v1.json",
-            "odylith/compass/compass.html",
-            "odylith/compass/runtime/current.v1.js",
-            "odylith/compass/runtime/current.v1.json",
-            "odylith/compass/runtime/history/2026-05-08.v1.json",
-            "odylith/compass/runtime/history/embedded.v1.js",
-            "odylith/compass/runtime/history/index.v1.json",
-            "odylith/index.html",
-            "odylith/radar/backlog-detail-shard-001.v1.js",
-            "odylith/radar/backlog-detail-shard-002.v1.js",
-            "odylith/radar/backlog-detail-shard-003.v1.js",
-            "odylith/radar/backlog-payload.v1.js",
-            "odylith/radar/radar.html",
-            "odylith/radar/traceability-graph.v1.json",
-            "odylith/registry/registry-detail-shard-001.v1.js",
-            "odylith/registry/registry-payload.v1.js",
-            "odylith/registry/registry.html",
-            "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-            "odylith/registry/source/components/domain-intelligence/FORENSICS.v1.json",
-            "odylith/registry/source/components/radar/FORENSICS.v1.json",
-            "odylith/runtime/delivery_intelligence.v4.json",
-            "odylith/tooling-payload.v1.js",
-            "src/odylith/bundle/assets/odylith/casebook/casebook.html",
-            "src/odylith/bundle/assets/odylith/compass/compass.html",
-            "src/odylith/bundle/assets/odylith/index.html",
-            "src/odylith/bundle/assets/odylith/radar/radar.html",
-            "src/odylith/bundle/assets/odylith/registry/registry.html",
-            "src/odylith/runtime/domain_intelligence/greenfield_domain_profile.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_project_intelligence.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_workstream_rows.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_workstream_terms.py",
-            "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
-            "tests/unit/runtime/test_greenfield_intelligence_schema.py",
-            "tests/unit/runtime/test_greenfield_merchant_lending_profile.py",
-            "tests/unit/runtime/test_greenfield_proposals.py"
-          ],
-          "source": "git",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        }
-      ]
-    },
-    {
-      "id": "txn:global:auto-global-0045:0045",
-      "transaction_id": "txn:global:auto-global-0045:0045",
-      "session_id": "",
-      "start_ts_iso": "2026-05-08T17:29:32-07:00",
-      "end_ts_iso": "2026-05-08T17:29:32-07:00",
-      "headline": "Critical bug watch",
-      "context": "",
-      "event_count": 1,
-      "files_count": 1,
-      "workstreams": [],
-      "files": [
-        "odylith/casebook/bugs/2026-05-09-greenfield-child-workstreams-used-generic-shells-for-merchant-lending.md"
-      ],
-      "explicit_open": false,
-      "explicit_closed": false,
-      "events": [
-        {
-          "id": "bug:watch:2:P1",
-          "kind": "bug_watch",
-          "ts_iso": "2026-05-08T17:29:32-07:00",
-          "summary": "Critical bug remains open (P1): Greenfield child workstreams used generic shells for merchant lending.",
-          "author": "bugs",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "odylith/casebook/bugs/2026-05-09-greenfield-child-workstreams-used-generic-shells-for-merchant-lending.md"
-          ],
-          "source": "bugs_index",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -147392,7 +146136,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -147437,146 +146180,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        }
-      ]
-    },
-    {
-      "id": "txn:global:auto-global-0042:0042",
-      "transaction_id": "txn:global:auto-global-0042:0042",
-      "session_id": "",
-      "start_ts_iso": "2026-05-08T16:42:52-07:00",
-      "end_ts_iso": "2026-05-08T16:44:08-07:00",
-      "headline": "fixed merchant lending greenfield routing",
-      "context": "",
-      "event_count": 2,
-      "files_count": 32,
-      "workstreams": [
-        "B-140",
-        "B-142"
-      ],
-      "files": [
-        "odylith/casebook/bugs/2026-05-08-greenfield-shopify-merchant-lending-prompt-routed-to-checkout.md",
-        "odylith/casebook/bugs/INDEX.md",
-        "odylith/casebook/casebook-detail-shard-003.v1.js",
-        "odylith/casebook/casebook-detail-shard-006.v1.js",
-        "odylith/casebook/casebook-payload.v1.js",
-        "odylith/casebook/casebook.html",
-        "odylith/compass/compass-payload.v1.js",
-        "odylith/compass/compass-source-truth.v1.json",
-        "odylith/compass/compass.html",
-        "odylith/compass/runtime/current.v1.js",
-        "odylith/compass/runtime/current.v1.json",
-        "odylith/compass/runtime/history/2026-05-08.v1.json",
-        "odylith/compass/runtime/history/embedded.v1.js",
-        "odylith/compass/runtime/history/index.v1.json",
-        "odylith/radar/backlog-document-shard-008.v1.js",
-        "odylith/radar/backlog-payload.v1.js",
-        "odylith/radar/radar.html",
-        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-        "odylith/radar/traceability-graph.v1.json",
-        "src/odylith/bundle/assets/odylith/casebook/casebook.html",
-        "src/odylith/bundle/assets/odylith/compass/compass.html",
-        "src/odylith/bundle/assets/odylith/radar/radar.html",
-        "src/odylith/runtime/domain_intelligence/greenfield_cli_output.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_domain_profile.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_experience.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_project_brief.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_project_intelligence.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_workstream_intelligence.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_workstream_terms.py",
-        "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
-        "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
-        "tests/unit/runtime/test_greenfield_merchant_lending_profile.py"
-      ],
-      "explicit_open": false,
-      "explicit_closed": false,
-      "events": [
-        {
-          "id": "commit:d1f2e8c800afcb0dcbd2aee55c2cd33d68ab5dff",
-          "kind": "commit",
-          "ts_iso": "2026-05-08T16:44:08-07:00",
-          "summary": "Fix merchant lending greenfield routing",
-          "author": "freedom-research",
-          "sha": "d1f2e8c800afcb0dcbd2aee55c2cd33d68ab5dff",
-          "workstreams": [
-            "B-140",
-            "B-142"
-          ],
-          "files": [
-            "odylith/casebook/bugs/2026-05-08-greenfield-shopify-merchant-lending-prompt-routed-to-checkout.md",
-            "odylith/casebook/bugs/INDEX.md",
-            "odylith/casebook/casebook-detail-shard-003.v1.js",
-            "odylith/casebook/casebook-detail-shard-006.v1.js",
-            "odylith/casebook/casebook-payload.v1.js",
-            "odylith/casebook/casebook.html",
-            "odylith/compass/compass-payload.v1.js",
-            "odylith/compass/compass-source-truth.v1.json",
-            "odylith/compass/compass.html",
-            "odylith/compass/runtime/current.v1.js",
-            "odylith/compass/runtime/current.v1.json",
-            "odylith/compass/runtime/history/2026-05-08.v1.json",
-            "odylith/compass/runtime/history/embedded.v1.js",
-            "odylith/compass/runtime/history/index.v1.json",
-            "odylith/radar/backlog-document-shard-008.v1.js",
-            "odylith/radar/backlog-payload.v1.js",
-            "odylith/radar/radar.html",
-            "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-            "odylith/radar/traceability-graph.v1.json",
-            "src/odylith/bundle/assets/odylith/casebook/casebook.html",
-            "src/odylith/bundle/assets/odylith/compass/compass.html",
-            "src/odylith/bundle/assets/odylith/radar/radar.html",
-            "src/odylith/runtime/domain_intelligence/greenfield_cli_output.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_domain_profile.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_experience.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_project_brief.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_project_intelligence.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_workstream_intelligence.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_workstream_terms.py",
-            "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
-            "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
-            "tests/unit/runtime/test_greenfield_merchant_lending_profile.py"
-          ],
-          "source": "git",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        },
-        {
-          "id": "bug:watch:5:P1",
-          "kind": "bug_watch",
-          "ts_iso": "2026-05-08T16:42:52-07:00",
-          "summary": "Critical bug remains open (P1): Greenfield shopify merchant lending prompt routed to checkout.",
-          "author": "bugs",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "odylith/casebook/bugs/2026-05-08-greenfield-shopify-merchant-lending-prompt-routed-to-checkout.md"
-          ],
-          "source": "bugs_index",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -147625,7 +146228,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -147850,7 +146452,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -147896,7 +146497,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -147922,7 +146522,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148127,7 +146726,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148172,7 +146770,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148223,7 +146820,6 @@
           "source": "plan_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148252,7 +146848,6 @@
           "source": "plan_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148281,7 +146876,6 @@
           "source": "plan_file",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148310,7 +146904,6 @@
           "source": "plan_file",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148439,7 +147032,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148574,7 +147166,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148751,7 +147342,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -148922,7 +147512,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149057,7 +147646,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149210,7 +147798,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149255,7 +147842,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149450,7 +148036,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149495,7 +148080,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149646,7 +148230,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149847,7 +148430,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -149892,7 +148474,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150113,7 +148694,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150158,7 +148738,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150199,7 +148778,6 @@
           "source": "assistant",
           "session_id": "019df0fe-5cb0-72d2-8d3b-21b6adc84e4c",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150240,7 +148818,6 @@
           "source": "assistant",
           "session_id": "019df0fe-5cb0-72d2-8d3b-21b6adc84e4c",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150285,7 +148862,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150444,7 +149020,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150489,7 +149064,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150544,7 +149118,6 @@
           "source": "assistant",
           "session_id": "019df0fe-5cb0-72d2-8d3b-21b6adc84e4c",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150831,7 +149404,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150877,7 +149449,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150903,7 +149474,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150948,7 +149518,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -150995,7 +149564,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -151021,7 +149589,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -151047,7 +149614,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -151092,7 +149658,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -151137,7 +149702,6 @@
           "source": "bugs_index",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -151278,7 +149842,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -151359,7 +149922,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -151424,7 +149986,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -151616,7 +150177,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -151787,7 +150347,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -151850,7 +150409,6 @@
           "source": "git",
           "session_id": "",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -151901,7 +150459,6 @@
           "source": "assistant",
           "session_id": "019df0fe-5cb0-72d2-8d3b-21b6adc84e4c",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -151946,7 +150503,6 @@
           "source": "assistant",
           "session_id": "019df0fe-5cb0-72d2-8d3b-21b6adc84e4c",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -152017,7 +150573,6 @@
           "source": "assistant",
           "session_id": "019df0fe-5cb0-72d2-8d3b-21b6adc84e4c",
           "transaction_id": "",
-          "transaction_seq": null,
           "transaction_boundary": "",
           "context": "",
           "headline_hint": "",
@@ -152060,15 +150615,12 @@
         "odylith/skills/odylith-greenfield-governance/SKILL.md",
         "src/odylith/runtime/domain_intelligence/greenfield_workstream_terms.py",
         "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
-        "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
-        "tests/unit/runtime/test_greenfield_legacy_repairs.py",
-        "tests/unit/runtime/test_greenfield_merchant_lending_profile.py"
+        "src/odylith/runtime/domain_intelligence/proposal_scaffold.py"
       ],
       "source_files_count": 6,
       "generated_files_count": 0,
       "generated_only_batch": false,
       "latest_event_kind": "local_change",
-      "latest_event_summary": "Modified tests/unit/runtime/test_greenfield_legacy_repairs.py",
       "has_implementation_signal": true,
       "focus_reason": "recent_activity_signal",
       "selection_mode": "active_implementation",
@@ -152102,15 +150654,12 @@
           "odylith/skills/odylith-greenfield-governance/SKILL.md",
           "src/odylith/runtime/domain_intelligence/greenfield_workstream_terms.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
-          "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
-          "tests/unit/runtime/test_greenfield_legacy_repairs.py",
-          "tests/unit/runtime/test_greenfield_merchant_lending_profile.py"
+          "src/odylith/runtime/domain_intelligence/proposal_scaffold.py"
         ],
         "source_files_count": 6,
         "generated_files_count": 0,
         "generated_only_batch": false,
         "latest_event_kind": "local_change",
-        "latest_event_summary": "Modified tests/unit/runtime/test_greenfield_legacy_repairs.py",
         "has_implementation_signal": true,
         "focus_reason": "recent_activity_signal",
         "selection_mode": "active_implementation",
@@ -154964,24 +153513,6 @@
     "bugs": [
       {
         "date": "2026-05-09",
-        "title": "Legacy merchant lending greenfield records retained checkout workstreams",
-        "severity": "P1",
-        "status": "Open",
-        "link": "odylith/casebook/bugs/2026-05-09-legacy-merchant-lending-greenfield-records-retained-checkout-workstreams.md",
-        "is_open_critical": true,
-        "workstreams": []
-      },
-      {
-        "date": "2026-05-09",
-        "title": "Greenfield child workstreams used generic shells for merchant lending",
-        "severity": "P1",
-        "status": "Open",
-        "link": "odylith/casebook/bugs/2026-05-09-greenfield-child-workstreams-used-generic-shells-for-merchant-lending.md",
-        "is_open_critical": true,
-        "workstreams": []
-      },
-      {
-        "date": "2026-05-09",
         "title": "Greenfield atlas diagrams modeled odylith surfaces as product topology",
         "severity": "P1",
         "status": "Open",
@@ -154996,15 +153527,6 @@
         "status": "FixedPendingRelease",
         "link": "odylith/casebook/bugs/2026-05-08-startup-target-recognition-rejected-unquoted-source-paths.md",
         "is_open_critical": false,
-        "workstreams": []
-      },
-      {
-        "date": "2026-05-08",
-        "title": "Greenfield shopify merchant lending prompt routed to checkout",
-        "severity": "P1",
-        "status": "Open",
-        "link": "odylith/casebook/bugs/2026-05-08-greenfield-shopify-merchant-lending-prompt-routed-to-checkout.md",
-        "is_open_critical": true,
         "workstreams": []
       },
       {

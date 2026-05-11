@@ -33,9 +33,11 @@ spawn-policy note, or follow-up question.
    feature after an empty/thin show result, do not refuse because source is
    absent. Run the project-first proposal path instead:
    `./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<their request>"`.
-   Present the compact product-first preview, including interpretation,
-   direction choices, non-goals, first release ambition, and coding-readiness
-   gates. On confirmation, use
+   Print the full proposal stdout directly in your response so the operator
+   sees the interpretation, direction choices, non-goals, first release
+   ambition, and coding-readiness gates in chat. Do not leave the preview only
+   inside collapsed tool output, and do not replace it with a short host-written
+   "apply or revise" summary. On confirmation, use
    `./.odylith/bin/odylith greenfield create --repo-root . --prompt "<their request>" --release 0.0.1 --confirm`
    instead of hand-authoring proposal JSON, dumping tool internals, or starting
    code before the product gates are accepted.

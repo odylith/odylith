@@ -12,12 +12,13 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
+from odylith.runtime.project_intelligence import assets as project_intelligence_assets
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 
 _PAYLOAD_GLOBAL_BOOTSTRAP = 'const payload = window["__ODYLITH_TOOLING_DATA__"] || {};'
 _INLINE_JSON_BOOTSTRAP = 'const payload = JSON.parse(document.getElementById("toolingDashboardData").textContent);'
-_FROZEN_HEADER_TEMPLATE_SHA256 = "3955d604fde8797cba2101e88561e219a386228d67f7d2ec7690cd6ee71d1532"
+_FROZEN_HEADER_TEMPLATE_SHA256 = "c92561894e7caf06588a2557f427a1beb3aa7520f3f0df8a496be0b15b4f134a"
 _FROZEN_HEADER_STYLE_SHA256 = "dbb919356e53e9911c9f0d1475429691c7c363954cca572b8b87842aa9f3a080"
 
 
@@ -88,6 +89,9 @@ def load_tooling_shell_style_css() -> str:
     base_css = dashboard_ui_primitives.resolve_surface_shell_template_tokens(
         _template_asset_path("style.css").read_text(encoding="utf-8")
     ).rstrip("\n")
+    project_css = dashboard_ui_primitives.resolve_surface_shell_template_tokens(
+        project_intelligence_assets.load_project_tab_css()
+    ).rstrip("\n")
     cheatsheet_css = dashboard_ui_primitives.resolve_surface_shell_template_tokens(
         _template_asset_path("cheatsheet_drawer.css").read_text(encoding="utf-8")
     ).rstrip("\n")
@@ -95,6 +99,7 @@ def load_tooling_shell_style_css() -> str:
     return "\n\n".join(
         (
             base_css,
+            project_css,
             cheatsheet_css,
             _tooling_shell_shared_typography_css(),
             tooltip_surface_css,

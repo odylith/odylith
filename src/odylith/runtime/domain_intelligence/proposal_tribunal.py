@@ -11,9 +11,11 @@ from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.domain_intelligence.artifact_enrichment import tribunal_actor_projection
 from odylith.runtime.domain_intelligence.greenfield_text import collect_text_values
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence import greenfield_programs
+from odylith.runtime.domain_intelligence.project_intelligence_binding import project_intelligence_binding_issues
 from odylith.runtime.domain_intelligence.proposal_validation import format_proposal_issue_report
 
 _WORKSTREAM_REF_FIELDS = (
@@ -110,6 +112,7 @@ class GreenfieldTribunalDecision:
     dimensions: dict[str, str]
     issues: tuple[str, ...]
     warnings: tuple[str, ...]
+    visible_actors: tuple[dict[str, str], ...] = ()
 
     @property
     def passed(self) -> bool:
@@ -123,6 +126,7 @@ class GreenfieldTribunalDecision:
             "dimensions": dict(self.dimensions),
             "issues": list(self.issues),
             "warnings": list(self.warnings),
+            "visible_actors": [dict(row) for row in self.visible_actors],
         }
 
 
@@ -143,6 +147,12 @@ def run_greenfield_tribunal(
     issues: list[str] = []
     warnings: list[str] = []
     dimensions: dict[str, str] = {}
+    visible_actors = tribunal_actor_projection(proposal)
+
+    issues.extend(project_intelligence_binding_issues(proposal))
+    dimensions["project_intelligence"] = (
+        "project intelligence is the root for program, release, Radar, Registry, and Atlas projections"
+    )
 
     _check_release_plan(
         release_plan=release_plan,
@@ -178,6 +188,8 @@ def run_greenfield_tribunal(
 
     _check_domain_security_posture(proposal=proposal, issues=issues)
     dimensions["domain_security"] = "explicit domain risk, security, compliance, policy, and abuse posture present"
+    actor_labels = ", ".join(row["visible_actor"] for row in visible_actors[:4])
+    dimensions["tribunal"] = f"stable judgment roles render as domain-specific actors: {actor_labels}"
 
     dimensions["surfaces"] = "apply refreshes accepted product records after all writes"
     status = "failed" if issues else "passed"
@@ -193,6 +205,7 @@ def run_greenfield_tribunal(
         dimensions=dimensions,
         issues=tuple(issues),
         warnings=tuple(warnings),
+        visible_actors=visible_actors,
     )
 
 

@@ -79,6 +79,26 @@ def test_collect_git_local_changes_skips_retired_surface_modules(tmp_path: Path,
     ]
 
 
+def test_collect_git_local_changes_skips_deleted_retired_greenfield_artifacts(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    (tmp_path / "odylith" / "casebook" / "bugs").mkdir(parents=True, exist_ok=True)
+
+    def _fake_run_git(repo_root: Path, args: list[str]):  # noqa: ANN001, ANN202
+        _ = repo_root, args
+        return (
+            0,
+            " D tests/unit/runtime/test_greenfield_old_profile.py\n"
+            " D src/odylith/runtime/governance/greenfield_old_repairs.py\n"
+            " M src/odylith/runtime/surfaces/compass_dashboard_base.py\n",
+        )
+
+    monkeypatch.setattr(renderer, "_run_git", _fake_run_git)
+    rows = renderer._collect_git_local_changes(tmp_path)  # noqa: SLF001
+    assert rows == [{"status": "M", "path": "src/odylith/runtime/surfaces/compass_dashboard_base.py"}]
+
+
 def test_collect_git_commits_skips_stale_casebook_and_retired_presenter_tests(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001
@@ -96,6 +116,8 @@ def test_collect_git_commits_skips_stale_casebook_and_retired_presenter_tests(
     log_output = (
         "abc123\x1f1760000000\x1ffreedom-research\x1ffreedom@example.com\x1fUpdate dashboard\n"
         "odylith/casebook/bugs/removed-entry.md\n"
+        "src/odylith/runtime/governance/greenfield_old_repairs.py\n"
+        "tests/unit/runtime/test_greenfield_old_profile.py\n"
         "tests/unit/runtime/test_tooling_dashboard_debug_presenter.py\n"
         "tests/unit/runtime/test_compass_standup_brief_attempts.py\n"
         "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py\n"
@@ -118,6 +140,37 @@ def test_collect_git_commits_skips_stale_casebook_and_retired_presenter_tests(
 
     assert len(rows) == 1
     assert rows[0]["files"] == ["src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py"]
+
+
+def test_collect_git_commits_skips_suppressed_or_empty_publishable_activity(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    log_output = (
+        "119dcfc141bf097928670358952d0c869a84fe1f\x1f1760000000\x1ffreedom-research\x1ffreedom@example.com\x1fSuppressed stale event\n"
+        "src/odylith/runtime/surfaces/compass_dashboard_base.py\n"
+        "abc123\x1f1760000100\x1ffreedom-research\x1ffreedom@example.com\x1fFiltered files only\n"
+        "tests/unit/runtime/test_greenfield_old_profile.py\n"
+        "def456\x1f1760000200\x1ffreedom-research\x1ffreedom@example.com\x1fKeep event\n"
+        "src/odylith/runtime/surfaces/compass_dashboard_base.py\n"
+    )
+
+    def _fake_run_git(repo_root: Path, args: list[str]):  # noqa: ANN001, ANN202
+        _ = repo_root
+        if args and args[0] == "check-mailmap":
+            return 1, ""
+        return 0, log_output
+
+    monkeypatch.setattr(renderer, "_run_git", _fake_run_git)
+
+    rows = renderer._collect_git_commits(  # noqa: SLF001
+        tmp_path,
+        since_hours=48,
+        my_name="freedom-research",
+        my_email="",
+    )
+
+    assert [row["sha"] for row in rows] == ["def456"]
 
 
 def test_load_component_index_runtime_reuses_sync_session_registry_report(

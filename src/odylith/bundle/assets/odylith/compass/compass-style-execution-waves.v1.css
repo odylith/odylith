@@ -32,19 +32,11 @@
 .execution-wave-section-summary {
   cursor: pointer;
   padding: 16px 18px;
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  min-width: 0;
-}
-
-.execution-wave-section-summary-compass {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
   gap: 12px 16px;
+  min-width: 0;
 }
 
 .execution-wave-section-summary:hover {
@@ -60,7 +52,7 @@
   display: grid;
   gap: 6px;
   min-width: 0;
-  flex: 1 1 320px;
+  grid-column: 1 / 2;
 }
 
 .execution-wave-section-line {
@@ -79,7 +71,7 @@
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   min-width: 0;
 }
 
@@ -87,6 +79,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  grid-column: 2;
+  grid-row: 1;
 }
 
 .execution-wave-section-meta-bottom {
@@ -137,11 +131,14 @@
 }
 
 .execution-wave-focus-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 16px;
-  align-items: start;
+  display: block;
   min-width: 0;
+}
+
+.execution-wave-focus-grid::after {
+  content: "";
+  display: block;
+  clear: both;
 }
 
 .execution-wave-focus-copy {
@@ -161,7 +158,7 @@
 .execution-wave-focus-line {
   color: #27445e;
   line-height: 1.6;
-  max-width: 70ch;
+  max-width: none;
   overflow-wrap: anywhere;
   word-break: break-word;
 }
@@ -171,11 +168,14 @@
 }
 
 .execution-wave-focus-stat-rail {
+  float: right;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   justify-content: flex-end;
   align-items: flex-start;
+  max-width: min(44%, 520px);
+  margin: 0 0 8px 16px;
 }
 
 .execution-wave-sequence {
@@ -495,9 +495,14 @@
     padding-right: 14px;
   }
 
-  .execution-wave-focus-grid,
   .execution-wave-card-shell {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .execution-wave-focus-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
   }
 
   .execution-wave-card-shell-full-copy {
@@ -512,7 +517,13 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .execution-wave-focus-stat-rail,
+  .execution-wave-focus-stat-rail {
+    float: none;
+    margin: 0;
+    max-width: none;
+    justify-content: flex-start;
+  }
+
   .execution-wave-card-stat-rail,
   .execution-wave-section-meta {
     justify-content: flex-start;
@@ -520,6 +531,16 @@
 
   .execution-wave-section-summary-compass {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .execution-wave-section-summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .execution-wave-section-toggle {
+    grid-column: 1;
+    grid-row: auto;
+    justify-self: start;
   }
 
   .execution-wave-section-meta-bottom {

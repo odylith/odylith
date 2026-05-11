@@ -294,12 +294,12 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   prompts at dangling prepositions, and default proposal text stays free of
   provider/mode chatter, raw apply-ready metadata, and governance-surface names
   masquerading as product requirements. Proof: `CB-194` plus focused preview,
-  merchant-lending, show, bundle, Atlas, legacy-repair, and release-migration
+  show, bundle, Atlas, source-guard, and release-migration
   tests; live source-local repro showed the compact gated preview and `release
   migration-gate --target-version 0.1.15 --json` reported no blockers.
 - 2026-05-09 final greenfield guardrail hardening closed two migration-proof
-  gaps found while rerunning the product surfaces: the consumer merchant-lending
-  legacy repair now no-ops in the Odylith product repo, and standalone Registry
+  gaps found while rerunning the product surfaces: stale consumer repair paths
+  now no-op in the Odylith product repo, and standalone Registry
   rendering ignores stale runtime snapshots so the browser payload reflects the
   governed source manifest. Proof: a product-repo guard regression test,
   standalone Registry source-manifest precedence test, real `radar refresh`
@@ -315,8 +315,8 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   `First Slice Flow`, `Component Ownership Map`, `Domain State Model`,
   `Validation And Release Topology`, plus robot-specific view names). The
   Tribunal rejects project-title-prefixed diagram titles before confirmed
-  writes. Proof: `CB-195`, focused generic/merchant-lending/robot Atlas tests,
-  exact merchant-lending preview repro, and source-local Tribunal rejection
+  writes. Proof: `CB-195`, focused generic and robot Atlas tests,
+  compact preview repro, and source-local Tribunal rejection
   test for prefixed host-authored titles.
 - Deepening pass split science/math into targeted subdomains and added fixture
   proof for commerce, SaaS, dashboards, AI assistants, data ingestion, CLI
@@ -531,12 +531,11 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   security-and-trust guidance, updated public README/operator/release-note/security
   guidance, the v0.1.15 Compass/Radar/Registry/Casebook browser-surface refresh
   from the deeper greenfield diagram-suite contract, the project-first
-  product-requirements wording pass for proposal text, and the legacy
-  merchant-lending repair hook for already-applied checkout-shaped workstreams,
-  and the follow-up repair that rewrites already-poisoned component specs,
-  component registry records, Mermaid source diagrams, and architecture catalog
-  records to merchant borrower, credit-liquidity, compliance, disbursement, and
-  repayment requirements instead of internal surface or retail-checkout labels.
+  product-requirements wording pass for proposal text, the product-repo source
+  guard, and the follow-up repair that rewrites already-poisoned component
+  specs, component registry records, Mermaid source diagrams, and architecture
+  catalog records toward the inferred project domain instead of internal surface
+  or unrelated template labels.
   direction-option/readiness-gate guidance refresh, the engine-integrity
   validator and expanded capability inventory, the canonical project-intelligence
   proposal object and parent Radar persistence, explicit project/workstream

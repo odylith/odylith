@@ -388,6 +388,8 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert "validate_release.py" in text
     assert "expected_supported_platforms" in text
     assert "runtime_asset_to_slug" in text
+    assert "release manifest migration_required must be a boolean" in text
+    assert "migration-marked releases require an explicit maintainer adoption flow" not in text
     assert "re.fullmatch(rf'odylith-{re.escape(version)}-.*\\.whl', name)" in text
     assert "release manifest supported_platforms mismatch" in text
     assert "managed runtime bundle metadata python version mismatch" in text
@@ -1087,6 +1089,51 @@ def test_release_manifest_tracks_third_party_attribution_asset(tmp_path: Path) -
 
     payload = output_path.read_text(encoding="utf-8")
     assert "THIRD_PARTY_ATTRIBUTION.md" in payload
+
+
+def test_release_manifest_carries_registered_migration_policy(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "release-manifest.json"
+    wheel = tmp_path / "odylith-0.1.15-py3-none-any.whl"
+    install_sh = tmp_path / "install.sh"
+    provenance = tmp_path / "build-provenance.v1.json"
+    sbom = tmp_path / "odylith.sbom.spdx.json"
+    attribution = tmp_path / "THIRD_PARTY_ATTRIBUTION.md"
+    runtime_bundle = tmp_path / "odylith-runtime-linux-x86_64.tar.gz"
+
+    wheel.write_bytes(b"wheel")
+    install_sh.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    provenance.write_text("{}", encoding="utf-8")
+    sbom.write_text("{}", encoding="utf-8")
+    attribution.write_text("# attribution\n", encoding="utf-8")
+    runtime_bundle.write_bytes(b"runtime")
+
+    module._write_release_manifest(  # noqa: SLF001
+        output_path=output_path,
+        tag="v0.1.15",
+        repo="odylith/odylith",
+        wheel=wheel,
+        install_sh=install_sh,
+        provenance=provenance,
+        sbom=sbom,
+        third_party_attribution=attribution,
+        feature_packs=[],
+        runtime_bundles=[
+            (
+                next(
+                    item
+                    for item in module.supported_managed_runtime_platforms()
+                    if item.slug == "linux-x86_64"
+                ),
+                runtime_bundle,
+            )
+        ],
+    )
+
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload["version"] == "0.1.15"
+    assert payload["migration_required"] is True
+    assert payload["repo_schema_version"] == 1
 
 
 def test_local_provenance_defaults_to_authoritative_actor_for_canonical_repo(tmp_path: Path, monkeypatch) -> None:

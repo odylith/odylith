@@ -19,6 +19,7 @@ from typing import Any, Callable, Mapping, Sequence
 
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance.delivery import scope_signal_ladder
+from odylith.runtime.surfaces import atlas_box_explanations
 from odylith.runtime.surfaces import atlas_detail_layout
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import dashboard_shell_links
@@ -476,6 +477,12 @@ def _load_catalog(
         status = _assert_non_empty(name="status", value=item.get("status"), errors=errors, context=context)
         owner = _assert_non_empty(name="owner", value=item.get("owner"), errors=errors, context=context)
         summary = _assert_non_empty(name="summary", value=item.get("summary"), errors=errors, context=context)
+        read_guide = str(item.get("read_guide", "")).strip()
+        catalog_diagram_boxes = atlas_box_explanations.normalize_catalog_diagram_boxes(
+            raw_boxes=item.get("diagram_boxes", []),
+            context=context,
+            errors=errors,
+        )
         source_mmd = _assert_non_empty(name="source_mmd", value=item.get("source_mmd"), errors=errors, context=context)
         source_svg = _assert_non_empty(name="source_svg", value=item.get("source_svg"), errors=errors, context=context)
         source_png = str(item.get("source_png", "")).strip()
@@ -659,6 +666,18 @@ def _load_catalog(
         if mmd_path is None or svg_path is None or review_date is None:
             continue
 
+        try:
+            source_text = mmd_path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            errors.append(f"{context}: source_mmd is unreadable: {source_mmd} ({exc.__class__.__name__})")
+            source_text = ""
+        diagram_boxes = list(
+            atlas_box_explanations.merge_diagram_box_explanations(
+                source_text=source_text,
+                catalog_boxes=catalog_diagram_boxes,
+            )
+        )
+
         viewbox_dims = _extract_svg_viewbox_dimensions(svg_path)
         viewbox_width = float(viewbox_dims[0]) if viewbox_dims else 0.0
         viewbox_height = float(viewbox_dims[1]) if viewbox_dims else 0.0
@@ -717,6 +736,8 @@ def _load_catalog(
                 "status": status,
                 "owner": owner,
                 "summary": summary,
+                "read_guide": read_guide,
+                "diagram_boxes": diagram_boxes,
                 "last_reviewed_utc": review_date.isoformat(),
                 "review_age_days": review_age_days,
                 "freshness": freshness,
@@ -1105,6 +1126,27 @@ def _render_html(
         size_px=11,
         letter_spacing_em=0.07,
         margin="0 0 6px 0",
+    )
+    diagram_box_role_label_css = "\n\n".join(
+        (
+            dashboard_ui_primitives.label_surface_css(
+                selector=".diagram-box-role",
+                padding="3px 8px",
+                background="#f6faf7",
+                border_color="#d7e2dc",
+                color="#334155",
+                border_radius_px=4,
+                min_height_px=0,
+            ),
+            dashboard_ui_primitives.label_badge_typography_css(
+                selector=".diagram-box-role",
+                color="#334155",
+                size_px=11,
+                line_height=1.1,
+                letter_spacing_em=0.01,
+                weight=700,
+            ),
+        )
     )
     atlas_secondary_typography_css = "\n\n".join(
         (
@@ -1664,6 +1706,14 @@ def _render_html(
         height: auto;
       }
 
+      .main {
+        order: 1;
+      }
+
+      .sidebar {
+        order: 2;
+      }
+
       .details-grid {
         grid-template-columns: 1fr;
       }
@@ -1880,6 +1930,8 @@ def _render_html(
     const staleAlertEl = document.getElementById("staleAlert");
     const summaryEl = document.getElementById("diagramSummary");
     const readGuideEl = document.getElementById("diagramReadGuide");
+    const diagramBoxesSectionEl = document.getElementById("diagramBoxesSection");
+    const diagramBoxListEl = document.getElementById("diagramBoxList");
     const componentListEl = document.getElementById("componentList");
 
     const backlogLinksEl = document.getElementById("backlogLinks");
@@ -2366,6 +2418,8 @@ def _render_html(
         const displayName = componentDisplayName(rawName);
         const card = document.createElement("article");
         card.className = "component-card";
+        const headingGroup = document.createElement("div");
+        headingGroup.className = "component-heading";
 
         const heading = document.createElement("strong");
         heading.textContent = displayName || rawName;
@@ -2373,15 +2427,54 @@ def _render_html(
         const body = document.createElement("p");
         body.textContent = component.description;
 
-        card.appendChild(heading);
+        headingGroup.appendChild(heading);
         if (rawName && displayName && rawName !== displayName) {
           const token = document.createElement("span");
           token.className = "component-token";
           token.textContent = rawName;
-          card.appendChild(token);
+          headingGroup.appendChild(token);
         }
+        card.appendChild(headingGroup);
         card.appendChild(body);
         componentListEl.appendChild(card);
+      });
+    }
+
+    function renderDiagramBoxes(diagram) {
+      clearNode(diagramBoxListEl);
+      const boxes = Array.isArray(diagram.diagram_boxes)
+        ? diagram.diagram_boxes.filter((box) => box && typeof box === "object")
+        : [];
+      diagramBoxesSectionEl.hidden = !boxes.length;
+      boxes.forEach((box, index) => {
+        const row = document.createElement("article");
+        row.className = "diagram-box-row";
+
+        const number = document.createElement("span");
+        number.className = "diagram-box-index";
+        number.textContent = String(index + 1);
+
+        const name = document.createElement("div");
+        name.className = "diagram-box-name";
+        const heading = document.createElement("strong");
+        heading.textContent = String(box.label || "").trim();
+        name.appendChild(heading);
+        const roleText = String(box.role || "").trim();
+        if (roleText) {
+          const role = document.createElement("span");
+          role.className = "diagram-box-role";
+          role.textContent = roleText;
+          name.appendChild(role);
+        }
+
+        const description = document.createElement("p");
+        description.className = "diagram-box-description";
+        description.textContent = String(box.description || "").trim();
+
+        row.appendChild(number);
+        row.appendChild(name);
+        row.appendChild(description);
+        diagramBoxListEl.appendChild(row);
       });
     }
 
@@ -2408,6 +2501,8 @@ def _render_html(
       summaryEl.textContent = "";
       readGuideEl.textContent = "";
       clearNode(sourceLinksEl);
+      clearNode(diagramBoxListEl);
+      diagramBoxesSectionEl.hidden = true;
       clearNode(componentListEl);
       clearNode(backlogLinksEl);
       clearNode(planLinksEl);
@@ -2455,6 +2550,7 @@ def _render_html(
       imageEl.src = diagram.source_svg_href;
 
       renderSourceLinks(diagram);
+      renderDiagramBoxes(diagram);
       renderComponents(diagram);
       renderAlert(diagram);
 
@@ -2910,6 +3006,7 @@ def _render_html(
             atlas_detail_layout.DETAIL_RUNTIME_HELPERS_JS.strip("\n"),
         )
         .replace("__ODYLITH_ATLAS_ARTIFACT_LABEL_TYPOGRAPHY__", artifact_label_css)
+        .replace("__ODYLITH_ATLAS_DIAGRAM_BOX_ROLE_LABEL__", diagram_box_role_label_css)
         .replace("__ODYLITH_ATLAS_SECONDARY_TYPOGRAPHY__", atlas_secondary_typography_css)
         .replace("__ODYLITH_ATLAS_WORKSTREAM_PILL_TYPOGRAPHY__", workstream_pill_button_css)
         .replace("__ODYLITH_ATLAS_TOOLTIP_SURFACE__", tooltip_surface_css)

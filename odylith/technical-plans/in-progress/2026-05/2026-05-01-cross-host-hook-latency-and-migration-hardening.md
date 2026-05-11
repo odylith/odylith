@@ -679,13 +679,13 @@ Related Bugs:
       explicit, and preserves domain-bearing trailing title terms.
       The full JSON path still carries deep workstream, component, architecture,
       release, risk, validation, and memory records for confirmed apply. Proof
-      started with the exact source-local merchant-lending repro, then covered
-      compact preview assertions, show/bundle guidance, merchant-lending profile
-      checks, Atlas contract checks, legacy repair cleanup, `CB-194`, and a
+      started with a source-local domain-bearing title repro, then covered
+      compact preview assertions, show/bundle guidance, profiled-domain
+      checks, Atlas contract checks, stale repair cleanup, `CB-194`, and a
       green `release migration-gate --target-version 0.1.15 --json`.
 - [x] Greenfield product-repo guard proof:
-      the merchant-lending legacy repair is consumer-lane only and must not
-      rewrite Odylith product governance source during product-repo refreshes.
+      stale consumer repair logic is consumer-lane only and must not rewrite
+      Odylith product governance source during product-repo refreshes.
       Standalone Registry rendering now reads the source manifest rather than a
       stale runtime snapshot. Proof: product-repo guard regression test,
       standalone Registry source-manifest precedence test, and live
@@ -697,12 +697,12 @@ Related Bugs:
       horizontal overflow.
 - [x] Greenfield architecture-title proof:
       diagram titles now name the view instead of repeating the full project
-      prompt prefix. Generic, merchant-lending, and robot-swarm scaffolds keep
+      prompt prefix. Generic and robot-swarm scaffolds keep
       project identity in slugs, summaries, and context while rendering short
       titles such as `System Overview`, `First Slice Flow`, and
       `Telemetry Contract And Data Flow`. The Tribunal rejects confirmed
       proposals whose diagram titles start with the project title. Proof:
-      `CB-195`, focused Atlas/profile tests, exact merchant-lending preview
+      `CB-195`, focused Atlas/profile tests, compact preview
       repro, and source-local py_compile for the touched generator and
       Tribunal modules.
 - [x] Activation validators passed after the engine-integrity slice:

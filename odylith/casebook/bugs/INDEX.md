@@ -1,18 +1,18 @@
 # Bug Index
 
-Last updated (UTC): 2026-05-09
+Last updated (UTC): 2026-05-11
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
-| CB-193 | 2026-05-09 | Legacy merchant lending greenfield records retained checkout workstreams | P1 | domain-intelligence | Open | [2026-05-09-legacy-merchant-lending-greenfield-records-retained-checkout-workstreams.md](2026-05-09-legacy-merchant-lending-greenfield-records-retained-checkout-workstreams.md) |
+| CB-196 | 2026-05-11 | Radar execution wave summary wastes wide empty space | P2 | radar | Open | [2026-05-11-radar-execution-wave-summary-wastes-wide-empty-space.md](2026-05-11-radar-execution-wave-summary-wastes-wide-empty-space.md) |
+| CB-197 | 2026-05-11 | Greenfield umbrella workstream described governance spine instead of business problem | P1 | domain-intelligence | Open | [2026-05-11-greenfield-umbrella-workstream-described-governance-spine-instead-of-business-pr.md](2026-05-11-greenfield-umbrella-workstream-described-governance-spine-instead-of-business-pr.md) |
+| CB-198 | 2026-05-11 | Greenfield child artifacts failed product manager comprehension | P1 | domain-intelligence | Open | [2026-05-11-greenfield-child-artifacts-failed-product-manager-comprehension.md](2026-05-11-greenfield-child-artifacts-failed-product-manager-comprehension.md) |
 | CB-194 | 2026-05-09 | Greenfield propose dumped deep record instead of staged product review | P1 | domain-intelligence | FixedPendingRelease | [2026-05-09-greenfield-propose-dumped-deep-record-instead-of-staged-product-review.md](2026-05-09-greenfield-propose-dumped-deep-record-instead-of-staged-product-review.md) |
 | CB-195 | 2026-05-09 | Greenfield diagrams repeated full project prompt in view titles | P1 | domain-intelligence | FixedPendingRelease | [2026-05-09-greenfield-diagrams-repeated-full-project-prompt-in-view-titles.md](2026-05-09-greenfield-diagrams-repeated-full-project-prompt-in-view-titles.md) |
-| CB-192 | 2026-05-09 | Greenfield child workstreams used generic shells for merchant lending | P1 | domain-intelligence | Open | [2026-05-09-greenfield-child-workstreams-used-generic-shells-for-merchant-lending.md](2026-05-09-greenfield-child-workstreams-used-generic-shells-for-merchant-lending.md) |
 | CB-191 | 2026-05-09 | Greenfield atlas diagrams modeled odylith surfaces as product topology | P1 | domain-intelligence-greenfield | Open | [2026-05-09-greenfield-atlas-diagrams-modeled-odylith-surfaces-as-product-topology.md](2026-05-09-greenfield-atlas-diagrams-modeled-odylith-surfaces-as-product-topology.md) |
 | CB-183 | 2026-05-08 | Startup target recognition rejected unquoted source paths | P2 | context-engine | FixedPendingRelease | [2026-05-08-startup-target-recognition-rejected-unquoted-source-paths.md](2026-05-08-startup-target-recognition-rejected-unquoted-source-paths.md) |
-| CB-190 | 2026-05-08 | Greenfield shopify merchant lending prompt routed to checkout | P1 | domain-intelligence | Open | [2026-05-08-greenfield-shopify-merchant-lending-prompt-routed-to-checkout.md](2026-05-08-greenfield-shopify-merchant-lending-prompt-routed-to-checkout.md) |
 | CB-187 | 2026-05-08 | Greenfield registry specs repeated project posture instead of component specific | P1 | domain-intelligence | FixedPendingRelease | [2026-05-08-greenfield-registry-specs-repeated-project-posture-instead-of-component-specific.md](2026-05-08-greenfield-registry-specs-repeated-project-posture-instead-of-component-specific.md) |
 | CB-184 | 2026-05-08 | Greenfield radar workstreams lack domain intelligence control surface | P2 | domain-intelligence-greenfield | FixedPendingRelease | [2026-05-08-greenfield-radar-workstreams-lack-domain-intelligence-control-surface.md](2026-05-08-greenfield-radar-workstreams-lack-domain-intelligence-control-surface.md) |
 | CB-185 | 2026-05-08 | Greenfield json output leaks refresh progress | P2 | domain-intelligence | FixedPendingRelease | [2026-05-08-greenfield-json-output-leaks-refresh-progress.md](2026-05-08-greenfield-json-output-leaks-refresh-progress.md) |

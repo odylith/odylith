@@ -8,11 +8,14 @@ retrieve without re-asking the same scope questions.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import log_compass_timeline_event
+
+ACCEPTED_PROJECT_SOURCE_PATH = "odylith/runtime/source/accepted-project.v1.json"
 
 
 def _clean(value: Any) -> str:
@@ -85,6 +88,48 @@ def _event_context(proposal: Mapping[str, Any]) -> str:
     return "; ".join(parts)
 
 
+def _accepted_project_source_path(repo_root: Path) -> Path:
+    return Path(repo_root).expanduser().resolve() / ACCEPTED_PROJECT_SOURCE_PATH
+
+
+def _write_accepted_project_source(
+    *,
+    repo_root: Path,
+    proposal: Mapping[str, Any],
+    backlog_items: Sequence[Mapping[str, Any]],
+    component_items: Sequence[Mapping[str, Any]],
+    diagram_ids: Sequence[str],
+    release_selector: str,
+    release_id: str,
+    tribunal: Mapping[str, Any] | None,
+    event: Mapping[str, Any],
+) -> Path:
+    """Write the accepted project source record consumed by Project and context."""
+
+    path = _accepted_project_source_path(repo_root)
+    intent = _intent(proposal)
+    payload = {
+        "schema_version": "odylith.accepted_project.v1",
+        "origin": "greenfield",
+        "evidence_tier": "user_intent",
+        "accepted_at": _clean(event.get("ts_iso")),
+        "title": _clean(intent.get("title")) or "Greenfield Project",
+        "source": "greenfield_apply",
+        "proposal": dict(proposal),
+        "created": {
+            "workstreams": [dict(row) for row in backlog_items],
+            "components": [dict(row) for row in component_items],
+            "diagrams": [str(item) for item in diagram_ids],
+            "release_selector": _clean(release_selector),
+            "release_id": _clean(release_id),
+        },
+        "tribunal": dict(tribunal or {}),
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(f"{json.dumps(payload, indent=2, sort_keys=True)}\n", encoding="utf-8")
+    return path
+
+
 def record_greenfield_acceptance(
     *,
     repo_root: Path,
@@ -94,6 +139,7 @@ def record_greenfield_acceptance(
     diagram_ids: Sequence[str],
     release_selector: str = "",
     release_id: str = "",
+    tribunal: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Append the accepted proposal shape to greenfield memory.
 
@@ -136,8 +182,20 @@ def record_greenfield_acceptance(
         evidence_tier="user_intent",
         work_category="governance",
     )
+    accepted_project_path = _write_accepted_project_source(
+        repo_root=root,
+        proposal=proposal,
+        backlog_items=backlog_items,
+        component_items=component_items,
+        diagram_ids=diagram_ids,
+        release_selector=release_selector,
+        release_id=release_id,
+        tribunal=tribunal,
+        event=payload,
+    )
     return {
         "recorded": True,
         "stream": str(stream_path),
+        "accepted_project": str(accepted_project_path),
         "event": payload,
     }

@@ -10,9 +10,6 @@ from odylith.runtime.domain_intelligence.greenfield_domain_profile import Greenf
 from odylith.runtime.domain_intelligence.greenfield_domain_profile import infer_greenfield_domain_profile
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
-from odylith.runtime.domain_intelligence.greenfield_workstream_terms import merchant_lending_ontology_rows
-from odylith.runtime.domain_intelligence.greenfield_workstream_terms import merchant_lending_operator_rows
-from odylith.runtime.domain_intelligence.greenfield_workstream_terms import merchant_lending_validation_rows
 from odylith.runtime.domain_intelligence.greenfield_workstream_terms import workstream_family_terms
 
 SECTION_TITLE = "Domain Intelligence"
@@ -239,9 +236,9 @@ def build_domain_intelligence(
             f"Release target `{selector}`: first-wave promotion gate with explicit validation evidence.",
         ],
         "authority": [
-            "Operator owns product intent, compliance posture, runtime target, and release-scope approval.",
-            "Technical-plan author owns source path selection, implementation sequence, test commands, and rollback path.",
-            "Validation owns pre-write topology checks and fail-closed proposal rejection.",
+            "Domain operator owns workflow coherence, compliance posture, runtime target, and release-scope approval.",
+            "Implementation owner takes source paths only after project, workstream, component, and proof boundaries are accepted.",
+            "Evidence owner validates topology, proof obligations, and fail-closed proposal rejection.",
             "No agent may infer source-backed readiness from proposal text or generated views alone.",
         ],
         "owners": [
@@ -254,7 +251,10 @@ def build_domain_intelligence(
         "execution_memory": [
             "Prior regression to avoid: a host agent repaired shallow greenfield JSON by hand, then authored generic workstreams and templated specs.",
             "Reusable lesson: apply-ready proposal objects must already carry dependencies, interfaces, proof gates, domain vocabulary, and source-of-truth hierarchy.",
-            f"Next-session starting point: read this Domain Intelligence section before planning `{row_title}`.",
+            (
+                f"Next-session starting point: read the artifact-native first path, proof, ownership, "
+                f"and risk sections before planning `{row_title}`."
+            ),
         ],
         "metrics": [
             *terms["metrics"],
@@ -468,8 +468,43 @@ def _ontology(
                 "Alert: severity, trigger reason, threshold, confidence, state, and acknowledgement trail.",
                 "Scenario fixture: local replay input for price shock, liquidity drain, stale oracle, or missing indexer proof.",
             ]
-    elif domain_profile.family == "defi_merchant_lending":
-        rows = merchant_lending_ontology_rows(kind)
+    elif domain_profile.family == "capital_merchant_lending":
+        rows_by_kind = {
+            "program": [
+                "Program parent: merchant funding journey, underwriting trace, manual approval, settlement posture, repayment evidence, and release gate.",
+                "Funding path: request -> source signals -> eligibility -> offer -> approval -> funding status -> repayment -> reconciliation.",
+                "Release gate: no live lending, custody, protocol routing, or production capital movement before proof and owner review.",
+            ],
+            "experience": [
+                "Merchant: business actor requesting capital and reviewing offer, funding status, and repayment state.",
+                "Visible funding state: requested, missing data, eligible, offered, rejected, approved, funded, repaying, repaid, or blocked.",
+                "Review state: unresolved lender, custody, repayment, or treasury question that must stay visible to operators.",
+            ],
+            "domain": [
+                "Funding request: state object carrying merchant profile, requested amount, source signal references, and consent posture.",
+                "Underwriting signal: store performance, refunds, chargebacks, seasonality, identity, provenance, and freshness.",
+                "Offer trace: amount, pricing, repayment terms, policy rationale, approval owner, and evidence tier.",
+                "Facility state: requested, eligible, offered, approved, funded, repaying, repaid, rejected, or blocked.",
+            ],
+            "validation": [
+                "Merchant fixture: pinned local store-performance and risk input for underwriting proof.",
+                "Approval fixture: manual risk and treasury decision record with owner and reason.",
+                "Reconciliation report: funding status, repayment event, facility state, and ledger evidence tied together.",
+            ],
+        }
+        rows = rows_by_kind.get(kind, rows_by_kind["domain"])
+        if kind == "program":
+            rows = [
+                *rows,
+                "Execution wave: merchant-capital delivery checkpoint with named workflow, facility, and evidence workstreams.",
+                "Proof obligation: source-signal, offer-trace, manual-approval, settlement-status, repayment, and ledger evidence required before release movement.",
+            ]
+        else:
+            rows = [
+                *rows,
+                "Merchant: business actor requesting capital and reviewing offer, funding status, and repayment state.",
+                "Funding request: state object carrying merchant profile, source signals, offer, approval, funding, and repayment status.",
+            ]
     elif domain_profile.family == "commerce":
         rows_by_kind = {
             "program": [
@@ -626,8 +661,30 @@ def _operators(*, domain_profile: GreenfieldDomainProfile, kind: str, selector: 
             ],
         }
         rows = rows_by_kind.get(kind, rows_by_kind["domain"])
-    elif domain_profile.family == "defi_merchant_lending":
-        rows = merchant_lending_operator_rows(kind)
+    elif domain_profile.family == "capital_merchant_lending":
+        rows_by_kind = {
+            "program": [
+                "Set first-wave funding lane: precondition is operator-confirmed merchant, approval, settlement, repayment, and compliance posture; postcondition is release-gated workstream topology.",
+                "Approve boundary change: precondition is explicit lender, custody, loss, treasury, and compliance review; postcondition is updated workstream, component, and architecture truth.",
+                "Escalate capital uncertainty: precondition is unclear lender-of-record, custody, settlement, repayment, or loss owner; postcondition is blocked release gate or explicit operator decision.",
+            ],
+            "experience": [
+                "Create funding request: precondition is merchant profile and source-signal consent; postcondition is requested or missing-data state.",
+                "Review offer: precondition is eligibility and policy trace; postcondition is visible offer, rejection, or manual-review state.",
+                "Show repayment state: precondition is funding status and repayment event; postcondition is merchant-visible facility state and ledger reference.",
+            ],
+            "domain": [
+                "Normalize merchant signals: precondition is fixture-backed sales, refunds, chargebacks, seasonality, and identity inputs; postcondition is one provenance-bearing profile.",
+                "Generate offer trace: precondition is profile, policy fixture, and requested amount; postcondition is eligibility, amount, pricing, terms, and rationale.",
+                "Apply approval and repayment event: precondition is manual review and fixture-backed event; postcondition is approved, funded, repaying, repaid, rejected, or blocked state.",
+            ],
+            "validation": [
+                "Replay funding scenario: precondition is pinned local merchant and policy fixture; postcondition is deterministic offer, approval, funding-status, repayment, and ledger report.",
+                "Assert no live money movement: precondition is first-release proof run; postcondition is failure on production merchant data, credentials, custody, bank movement, or live protocol calls.",
+                "Publish release proof: precondition is workflow plus contract plus evidence harness proof; postcondition is refreshed release evidence.",
+            ],
+        }
+        rows = rows_by_kind.get(kind, rows_by_kind["domain"])
     elif domain_profile.family == "commerce":
         rows_by_kind = {
             "program": [
@@ -702,8 +759,26 @@ def _row_validation_obligations(*, domain_profile: GreenfieldDomainProfile, kind
             ],
         }
         return rows_by_kind.get(kind, rows_by_kind["domain"])
-    if domain_profile.family == "defi_merchant_lending":
-        return merchant_lending_validation_rows(kind)
+    if domain_profile.family == "capital_merchant_lending":
+        rows_by_kind = {
+            "program": [
+                "Claim: merchant-capital first wave is coherent. Method: release target contains merchant workflow, underwriting/facility core, evidence harness, and no live-money scope.",
+                "Claim: responsibility posture is explicit. Method: lender-of-record, loss-owner, custody, settlement, repayment, and compliance questions appear in workstream and component records.",
+            ],
+            "experience": [
+                "Claim: merchant workflow is intelligible. Method: UI or command proof covers request, missing data, offer, rejection, approval, funding status, and repayment state.",
+                "Claim: approval status is not misleading. Method: unapproved offers and blocked payout states remain visible.",
+            ],
+            "domain": [
+                "Claim: offer trace is deterministic. Method: same merchant fixture produces same eligibility, amount, pricing, repayment terms, and rationale.",
+                "Claim: unresolved capital responsibility is blocked. Method: lender, custody, loss-owner, settlement, and repayment unknowns cannot produce normal funded state.",
+            ],
+            "validation": [
+                "Claim: funding proof is closed-world. Method: proof fails on live merchant data, credentials, custody, bank movement, or protocol execution.",
+                "Claim: scenario coverage is release-worthy. Method: missing data, rejected request, eligible offer, manual approval, payout blocked, funded, repayment, and reconciliation all pass.",
+            ],
+        }
+        return rows_by_kind.get(kind, rows_by_kind["domain"])
     if domain_profile.family == "commerce":
         rows_by_kind = {
             "program": [

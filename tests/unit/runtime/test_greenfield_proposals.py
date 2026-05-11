@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_transaction import Greenfiel
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import build_traceability_graph
 from odylith.runtime.governance import release_planning_view_model
+from odylith.runtime.project_intelligence import builder as project_intelligence_builder
 
 
 def _write(path: Path, text: str) -> None:
@@ -848,11 +849,11 @@ def test_greenfield_text_is_compact_product_preview_before_confirmed_write(tmp_p
 def test_greenfield_title_preserves_meaningful_trailing_domain_terms(tmp_path) -> None:
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
-        prompt="SMB lending application pulling stable coins from DeFi protocols to merchants on Shopify",
+        prompt="field inspection evidence workspace for municipal building permits",
     )["proposal_template"]
 
     assert proposal["intent"]["title"] == (
-        "SMB Lending Application Pulling Stable Coins From DeFi Protocols To Merchants On Shopify"
+        "Field Inspection Evidence Workspace For Municipal Building Permits"
     )
     assert not proposal["intent"]["title"].endswith(" To")
 
@@ -949,7 +950,97 @@ def test_defi_greenfield_workstreams_capture_domain_intelligence(tmp_path) -> No
     greenfield_proposals.validate_host_reasoned_proposal(proposal)
 
 
-def test_greenfield_apply_writes_domain_intelligence_into_radar_specs(tmp_path, monkeypatch) -> None:
+def test_greenfield_tribunal_uses_domain_specific_visible_actors(tmp_path) -> None:
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="DeFi risk sentinel app",
+    )["proposal_template"]
+
+    decision = greenfield_proposals.run_greenfield_tribunal(proposal, release_selector="0.0.1")
+    actor_labels = {row["visible_actor"] for row in decision.to_dict()["visible_actors"]}
+    stable_roles = {row["stable_role"] for row in decision.to_dict()["visible_actors"]}
+
+    assert decision.passed
+    assert "Analyst advocate" in actor_labels
+    assert "Risk signal operator" in actor_labels
+    assert "Scenario proof owner" in actor_labels
+    assert "beneficiary_advocate" in stable_roles
+    assert "beneficiary advocate" not in actor_labels
+    assert "stable judgment roles render as domain-specific actors" in decision.dimensions["tribunal"]
+
+
+def test_greenfield_artifacts_are_bound_to_project_intelligence_root(tmp_path) -> None:
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="DeFi risk sentinel app",
+    )["proposal_template"]
+    schema = proposal["project_intelligence"]["schema_version"]
+    keys = list(proposal)
+
+    assert keys.index("artifact_derivation") == keys.index("project_intelligence") + 1
+    assert proposal["artifact_derivation"]["root"] == "project_intelligence"
+    assert proposal["artifact_derivation"]["root_schema_version"] == schema
+    assert proposal["release_plan"]["project_intelligence_binding"]["source"] == "project_intelligence"
+    assert proposal["program"]["project_intelligence_binding"]["source"] == "project_intelligence"
+    for collection in (
+        proposal["program"]["waves"],
+        proposal["backlog"],
+        proposal["components"],
+        proposal["diagrams"],
+    ):
+        for row in collection:
+            binding = row["project_intelligence_binding"]
+            assert binding["source"] == "project_intelligence"
+            assert binding["schema_version"] == schema
+            assert binding["artifact_kind"]
+            assert binding["artifact_id"]
+
+
+def test_greenfield_validation_rejects_artifacts_without_project_intelligence_binding(tmp_path) -> None:
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="DeFi risk sentinel app",
+    )["proposal_template"]
+    proposal["components"][0].pop("project_intelligence_binding")
+
+    with pytest.raises(ValueError, match="project_intelligence_binding"):
+        greenfield_proposals.validate_host_reasoned_proposal(proposal)
+
+
+def test_greenfield_tribunal_rejects_unbound_artifact_projection(tmp_path) -> None:
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="DeFi risk sentinel app",
+    )["proposal_template"]
+    proposal["diagrams"][0].pop("project_intelligence_binding")
+
+    decision = greenfield_proposals.run_greenfield_tribunal(proposal, release_selector="0.0.1")
+
+    assert not decision.passed
+    assert any("project_intelligence_binding" in issue for issue in decision.issues)
+
+
+def test_artifact_enrichment_projects_domain_graph_into_native_artifact_shapes(tmp_path) -> None:
+    from odylith.runtime.domain_intelligence.artifact_enrichment import build_artifact_enrichment
+
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="DeFi risk sentinel app",
+    )["proposal_template"]
+    row = next(item for item in proposal["backlog"] if item["title"] == "Define exposure, freshness, and alert contract")
+
+    enrichment = build_artifact_enrichment(row=row, proposal=proposal)
+
+    assert "Domain Intelligence" not in enrichment.radar_sections
+    assert enrichment.registry_contract["proof_obligations"]
+    assert enrichment.atlas_contract["state_objects"]
+    assert enrichment.plan_contract["validation"]
+    assert enrichment.casebook_contract["prevention_rules"]
+    assert enrichment.compass_contract["proof_boundary"]
+    assert enrichment.project_contract["first_path"]
+
+
+def test_greenfield_apply_shapes_radar_specs_with_domain_intelligence_substrate(tmp_path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
     monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
@@ -969,38 +1060,29 @@ def test_greenfield_apply_writes_domain_intelligence_into_radar_specs(tmp_path, 
     child_specs = [
         Path(row["idea_path"]).read_text(encoding="utf-8")
         for row in result["backlog"]
-        if row["title"] != "Govern DeFi Risk Sentinel App"
+        if not row["title"].startswith("Shape DeFi risk sentinel")
     ]
-    child_specs_by_title = {
-        row["title"]: Path(row["idea_path"]).read_text(encoding="utf-8")
-        for row in result["backlog"]
-        if row["title"] != "Govern DeFi Risk Sentinel App"
-    }
     joined = "\n".join(child_specs)
 
-    assert "## Domain Intelligence" in joined
-    assert "### Domain Ontology" in joined
-    assert "### Allowed Operators" in joined
-    assert "### Source Of Truth Map" in joined
-    assert "### Evidence Model" in joined
-    assert "### Change Model" in joined
-    assert "### Invalidation Rules" in joined
-    assert "Risk subject: wallet, protocol, pool, strategy" in joined
+    assert "## Domain Intelligence" not in joined
+    assert "## First Path And Boundary" in joined
+    assert "## Domain Model" not in joined
+    assert "## Proof And Acceptance Gates" in joined
+    assert "## Ownership And Risk" in joined
     assert "No live RPC" in joined
     assert "stale oracle" in joined
     assert "liquidity shock" in joined
     assert "financial advice" in joined
-    assert "title-only workstream items" in joined
     parent_spec = next(
         Path(row["idea_path"]).read_text(encoding="utf-8")
         for row in result["backlog"]
-        if row["title"] == "Govern DeFi Risk Sentinel App"
+        if row["title"].startswith("Shape DeFi risk sentinel")
     )
     all_radar_text = parent_spec + "\n" + joined
-    assert "## Project Intelligence" in parent_spec
-    assert "### Operators" in parent_spec
-    assert "### Conflicts" in parent_spec
-    assert "Do not start coding from the proposal closeout" in parent_spec
+    assert "## Project Intelligence" not in all_radar_text
+    assert "## Project Brief" not in all_radar_text
+    assert "## Project Requirements" not in all_radar_text
+    assert "Do not start coding from the proposal closeout" not in all_radar_text
     assert "Starting implementation without a named product spine" not in all_radar_text
     assert "under-modeled in broad greenfield prompts" not in all_radar_text
     assert "DeFi risk sentinel implementation can create false confidence" in all_radar_text
@@ -1008,8 +1090,6 @@ def test_greenfield_apply_writes_domain_intelligence_into_radar_specs(tmp_path, 
     assert "Early warning: risk cards show numeric confidence" in all_radar_text
     assert "owns Own" not in all_radar_text
     assert "owns owns" not in all_radar_text.casefold()
-    assert child_specs_by_title["Define exposure, freshness, and alert contract"].count("Risk subject:") == 1
-    assert child_specs_by_title["Prove scenario replay and risk release harness"].count("Scenario fixture:") == 1
     assert "Which runtime, deployment target, and user role should constrain the first implementation slice?" in all_radar_text
     assert (
         "First product slice: Product workflow, domain contract, architecture diagrams, component specs, "
@@ -1021,6 +1101,121 @@ def test_greenfield_apply_writes_domain_intelligence_into_radar_specs(tmp_path, 
     assert "- command.\n" not in all_radar_text
     assert "release targeting.\n- and proof sequencing." not in all_radar_text
     assert "?.\n" not in all_radar_text
+    accepted_path = tmp_path / "odylith" / "runtime" / "source" / "accepted-project.v1.json"
+    accepted = json.loads(accepted_path.read_text(encoding="utf-8"))
+    assert accepted["schema_version"] == "odylith.accepted_project.v1"
+    assert accepted["origin"] == "greenfield"
+    assert accepted["proposal"]["artifact_derivation"]["root"] == "project_intelligence"
+    assert accepted["tribunal"]["status"] == "passed"
+    assert accepted["tribunal"]["visible_actors"]
+
+
+def test_greenfield_apply_feeds_project_tab_from_accepted_project_and_tribunal(tmp_path, monkeypatch) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    prompt = "SMB lending application pulling stable coins from DeFi protocols into a merchant on Shopify"
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+    )["proposal_template"]
+
+    greenfield_proposals.apply_greenfield_proposal(
+        repo_root=tmp_path,
+        proposal=proposal,
+        confirm=True,
+        release_selector="0.0.1",
+    )
+    payload = project_intelligence_builder.build_project_intelligence_payload(
+        repo_root=tmp_path,
+        shell_payload={},
+    )
+    accepted = json.loads((tmp_path / "odylith" / "runtime" / "source" / "accepted-project.v1.json").read_text(encoding="utf-8"))
+    backlog_index = (tmp_path / "odylith" / "radar" / "source" / "INDEX.md").read_text(encoding="utf-8")
+    b002 = next(row for row in accepted["proposal"]["backlog"] if row["title"] == "Prove merchant funding request and offer review workflow")
+    text = json.dumps(payload, sort_keys=True).casefold()
+
+    assert accepted["proposal"]["project_intelligence"]["domain_family"] == "capital_merchant_lending"
+    assert accepted["proposal"]["intent"]["title"] == "SMB Lending Application Pulling Stable Coins From DeFi Protocols Into A Merchant On Shopify"
+    assert accepted["proposal"]["intent"]["project_slug"] == "merchant-capital"
+    assert b002["problem"].startswith("Merchants cannot trust a capital product")
+    assert "created as a new queued workstream" not in backlog_index
+    assert "deeper scope decomposition waits" not in backlog_index
+    assert "Turn broad capital intent into a merchant request" in backlog_index
+    assert "merchant-capital-merchant-funding-workspace" in text
+    assert "smb-lending-application-pulling-stable-coins" not in text
+    assert payload["title"] == "Merchant Capital Product"
+    assert payload["projection"]["origin"] == "greenfield proposal"
+    assert "merchant capital" in payload["eyebrow"]
+    assert "greenfield proposal" in payload["chips"]
+    story = payload["product_story"]
+    artifact_groups = {group["label"]: group for group in story["artifacts"]}
+    assert story["headline"].startswith("A merchant-capital product")
+    assert "merchant can request capital" in story["standfirst"]
+    assert "topology spine ties" in story["artifact_intro"].casefold()
+    assert {row["label"] for row in story["topology_spine"]} == {
+        "Story root",
+        "First path",
+        "Radar",
+        "Registry",
+        "Atlas",
+        "Release proof",
+    }
+    assert artifact_groups["Workstreams"]["items"]
+    assert artifact_groups["Registry components"]["items"]
+    assert artifact_groups["Atlas views"]["items"]
+    assert all(prompt not in json.dumps(item, sort_keys=True) for group in story["artifacts"] for item in group["items"])
+    assert "merchant" in text
+    assert "funding" in text
+    assert "underwriting" in text
+    assert "treasury" in text
+    assert "repayment" in text
+    assert "stable coins" in text or "stablecoin" in text
+    assert "checkout" not in text
+    assert "shopper" not in text
+    assert "storefront" not in text
+    assert any("Merchant advocate" == row[1] for row in payload["actors"])
+    assert any("Underwriting operator" == row[1] for row in payload["actors"])
+    assert any("Treasury and credit risk owner" == row[1] for row in payload["actors"])
+    assert any(
+        row["claim"] == "Greenfield Tribunal" and row["value"] == "passed" and row["source"].endswith("accepted-project.v1.json")
+        for row in payload["claim_evidence"]
+    )
+
+
+def test_greenfield_apply_runs_artifact_tribunal_for_each_atlas_diagram(tmp_path, monkeypatch) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="DeFi risk sentinel app",
+    )["proposal_template"]
+    original = greenfield_proposals.scaffold_mermaid_diagram.artifact_tribunal.run_governed_artifact_tribunal
+    diagram_payloads: list[dict[str, object]] = []
+
+    def capture_tribunal(*, artifact_kind: str, payload: Mapping[str, object]) -> object:
+        if artifact_kind == "atlas_diagram":
+            diagram_payloads.append(dict(payload))
+        return original(artifact_kind=artifact_kind, payload=payload)
+
+    monkeypatch.setattr(
+        greenfield_proposals.scaffold_mermaid_diagram.artifact_tribunal,
+        "run_governed_artifact_tribunal",
+        capture_tribunal,
+    )
+
+    greenfield_proposals.apply_greenfield_proposal(
+        repo_root=tmp_path,
+        proposal=proposal,
+        confirm=True,
+        release_selector="0.0.1",
+    )
+
+    assert len(diagram_payloads) == len(proposal["diagrams"])
+    assert all(payload["watch_paths"] for payload in diagram_payloads)
 
 
 def test_greenfield_normalization_enriches_legacy_proposals_with_domain_intelligence() -> None:
@@ -1518,11 +1713,11 @@ def test_greenfield_apply_writes_bespoke_domain_component_specs(tmp_path, monkey
     )
 
     spec_root = tmp_path / "odylith/registry/source/components"
-    console_spec = (spec_root / "defi-risk-sentinel-app-risk-console/CURRENT_SPEC.md").read_text(encoding="utf-8")
-    engine_spec = (spec_root / "defi-risk-sentinel-app-risk-signal-engine/CURRENT_SPEC.md").read_text(
+    console_spec = (spec_root / "defi-risk-sentinel-risk-console/CURRENT_SPEC.md").read_text(encoding="utf-8")
+    engine_spec = (spec_root / "defi-risk-sentinel-risk-signal-engine/CURRENT_SPEC.md").read_text(
         encoding="utf-8"
     )
-    harness_spec = (spec_root / "defi-risk-sentinel-app-scenario-replay-harness/CURRENT_SPEC.md").read_text(
+    harness_spec = (spec_root / "defi-risk-sentinel-scenario-replay-harness/CURRENT_SPEC.md").read_text(
         encoding="utf-8"
     )
     atlas_catalog = json.loads((tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json").read_text(encoding="utf-8"))
@@ -1625,7 +1820,7 @@ def test_greenfield_create_cli_owns_apply_ready_path(tmp_path, monkeypatch, caps
     assert rc == 0
     assert "odylith greenfield create wrote confirmed proposal" in out
     assert "- tribunal: passed" in out
-    assert "- project-first workstream: B-001 Govern Robot Swarm Logistics App" in out
+    assert "- project-first workstream: B-001 Shape Robot Swarm Logistics program" in out
     assert "- next project prompt: Deepen B-001" in out
     assert "- future first implementation lane after gates: B-002 Dispatch and observe one simulated logistics task" in out
     assert "- choose before coding:" in out

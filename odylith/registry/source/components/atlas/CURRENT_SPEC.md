@@ -6,10 +6,10 @@
   affordances, admissible action, proof, compact learning, benchmark evidence,
   updated priors, and the cross-system loop through Context, Execution,
   Memory, Intervention, Tribunal, Surfaces, and Benchmarks.
-Last updated: 2026-05-03
+Last updated: 2026-05-09
 
 
-Last updated (UTC): 2026-04-09
+Last updated (UTC): 2026-05-09
 
 ## Purpose
 Atlas is Odylith's architecture and diagram-governance surface. It manages the
@@ -94,6 +94,13 @@ implementation activity. Important fields include:
 - `change_watch_paths`
 - related workstreams, plans, docs, and code
 - linked components
+- optional diagram-specific `read_guide` copy shown in the Atlas detail pane
+- diagram-box explanations shown separately from owning Registry components:
+  Atlas derives every flowchart container and inner node from Mermaid source,
+  then overlays any catalog-authored `diagram_boxes` copy by label
+- catalog-authored `diagram_boxes` descriptions must be clear complete
+  sentences; terse placeholders are invalid because the generated detail pane
+  is an operator reading surface, not an internal shorthand dump
 
 The catalog is the authoritative metadata layer; the image files alone are not
 enough to recover engineering intent.
@@ -109,9 +116,11 @@ enough to recover engineering intent.
 - presents diagrams on a plain white viewer stage with padded first-fit sizing
   so large SVG labels are not clipped or hidden on first paint
 - explains the selected diagram with a summary, a "how to read this view"
-  guide, human-readable component cards, and a bottom linked-context grid so
-  engineering links support the diagram instead of crowding the diagram
-  explanation rail
+  guide that prefers diagram-specific catalog copy, a row-based box guide that
+  covers containers and inner boxes, and owning components as a separate
+  ownership list
+  compact owning-component rows, and a bottom linked-context list so engineering
+  links support the diagram without turning into horizontal category cards
 - renders Mermaid assets through a shared Atlas theme config so unclassified
   diagrams still get polished typography, softer colors, and readable edges
 
@@ -132,8 +141,9 @@ It also supports `--all-stale` to refresh diagrams selected by the global
 freshness contract rather than by path changes alone.
 
 ### Scaffold
-`scaffold_mermaid_diagram.py` creates a new catalog entry and starter `.mmd`
-source file. Atlas supports an Atlas-first flow: a new diagram may start as a
+`scaffold_mermaid_diagram.py` creates a new catalog entry, starter `.mmd`
+source file, and default reader guidance. Atlas supports an Atlas-first flow:
+a new diagram may start as a
 visible `draft` with empty Radar, plan, and doc link lists when the operator
 asks for topology before the rest of the governance stack exists. These entries
 carry `link_state: atlas_first_draft` and must still have components plus
@@ -280,7 +290,8 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
-- 2026-05-09: Reworked Atlas detail panes so diagrams explain what they show, how to read them, and which components they contain before presenting linked engineering context as bottom horizontal cards. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141))
+- 2026-05-09: Promoted diagram-box explanation from a per-diagram convention to a general Atlas contract: Mermaid source now derives every flowchart container and inner node, catalog-authored box copy must be clear complete sentences, and v0.1.15 upgrade migration regenerates older Atlas browser surfaces without rewriting repo-owned diagram source truth. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Assessment: [B-140](odylith/radar/radar.html?view=plan&workstream=B-140))
+- 2026-05-09: Reworked Atlas detail panes so diagrams explain what they show, how to read them, each cataloged diagram box, and their owning components before presenting linked engineering context as a bottom category list. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141))
 - 2026-03-26: Added the first Odylith-owned diagram catalog so product topology can be traced and reviewed inside the public repo rather than through a consumer-specific Atlas tree. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-04-02: Hardened Atlas Mermaid preflight so valid diagrams no longer false-fail strict refresh on the DOMPurify hook-drift path; Atlas now falls back to browser-backed scratch validation while keeping the fail-fast syntax gate for real source errors. (Plan: [B-022](odylith/radar/radar.html?view=plan&workstream=B-022); Bug: `CB-042`)
 - 2026-04-07: Refreshed the broad runtime maps to show the governed memory family, Tribunal-backed delivery flow, and conversation intelligence path, and added the dedicated memory-substrate diagram `D-025` so Registry can deep-link into projection bundle, snapshot, backend, remote retrieval, and memory-contract topology directly. (Plan: [B-059](odylith/radar/radar.html?view=plan&workstream=B-059))

@@ -107,9 +107,10 @@ greenfield proposal lane before source-backed governance exists:
 ./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<project intent>"
 ```
 
-Odylith shows a compact product-first preview with the interpreted product,
+Odylith shows a compact project-first/product-first preview with the interpreted product,
 direction choices, non-goals, first release ambition, candidate boundaries, and
-proof gates. The full proposal object is still available with `--format json`;
+proof gates. In chat, the proposal stdout should be visible directly, not only
+inside collapsed tool output. The full proposal object is still available with `--format json`;
 confirmed create/apply validates that full object, runs the Tribunal write gate,
 and writes records only with explicit confirmation:
 

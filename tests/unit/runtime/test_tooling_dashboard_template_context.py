@@ -20,6 +20,7 @@ def test_build_template_context_defaults_to_odylith_shell_copy() -> None:
     assert built.welcome_html == "<section>Welcome</section>"
     assert built.maintainer_notes_html == "<section>Notes</section>"
     assert built.cheatsheet_html == "<section>Cheatsheet</section>"
+    assert built.project_html == ""
     assert built.style_css
     assert built.control_script
 
