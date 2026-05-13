@@ -71,6 +71,23 @@ def _apply_ready_greenfield_fixture(repo_root: Path, prompt: str) -> dict[str, o
     intent.update({"prompt": prompt, "title": title, "project_slug": slug})
     proposal["project_brief"] = _host_project_brief(title=title, prompt=prompt, release="0.0.1")
     proposal["project_intelligence"] = _host_project_intelligence(title=title, release="0.0.1")
+    release_focus = _host_release_focus_for_prompt(prompt)
+    release_plan = proposal.get("release_plan")
+    if isinstance(release_plan, dict):
+        release_plan.update(
+            {
+                "label": f"{title} first governed release",
+                "provisional_release_id": f"release-{slug}-first",
+                "strategy": f"Promote the {release_focus} only after validation proof and refreshed release evidence.",
+            }
+        )
+        milestones = release_plan.get("milestones")
+        if isinstance(milestones, list):
+            for milestone in milestones:
+                if isinstance(milestone, dict):
+                    milestone["exit_criteria"] = (
+                        f"The named product operator accepts the {release_focus}, components, topology, and validation."
+                    )
     backlog = proposal.get("backlog")
     if isinstance(backlog, list):
         actor_lines = _host_actor_lines_for_prompt(prompt)
@@ -166,7 +183,7 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
             "milestones": [
                 {
                     "name": "Proposal accepted",
-                    "exit_criteria": "Operator accepts assumptions, first slice, components, topology, and validation.",
+                    "exit_criteria": "The commerce operator accepts assumptions, first slice, components, topology, and validation.",
                 }
             ],
             "evidence_tier": "odylith_assumption",
@@ -385,6 +402,7 @@ def _complete_host_reasoned_proposal(proposal: dict[str, object]) -> dict[str, o
                 continue
             if index == 0:
                 row.setdefault("workstream_type", "program_parent")
+            row.setdefault("rationale_lines", _host_rationale_lines(row, prompt=prompt))
             row.setdefault(
                 "domain_intelligence",
                 _host_domain_intelligence(
@@ -403,14 +421,48 @@ def _host_actor_lines_for_prompt(prompt: str) -> list[str]:
             "Commerce operator: owns catalog readiness, checkout handoff, and day-to-day order workflow movement.",
             "Payment risk reviewer: owns payment failure, duplicate order, retry abuse, and provider-policy exposure.",
             "Checkout proof reviewer: decides whether browser, contract, and recovery proof are strong enough to advance release.",
-            "Build owner: owns storefront, checkout, catalog, source paths, implementation sequence, and validation commands after planning.",
+            "Commerce build owner: owns storefront, checkout, catalog, source paths, implementation sequence, and validation commands after planning.",
+        ]
+    if "plant" in prompt.casefold() or "robot" in prompt.casefold():
+        return [
+            "Plant owner advocate: represents the person depending on the robot to water and monitor plants without overwatering or neglect.",
+            "Care routine operator: owns watering schedule, sensor review, refill workflow, and day-to-day plant-care movement.",
+            "Plant safety reviewer: owns overwatering, dry-soil, pump failure, electrical, and unattended-device exposure.",
+            "Care proof reviewer: decides whether sensor, watering, alert, and recovery proof is strong enough to advance release.",
+            "Robot build owner: owns device controller, plant-state model, source paths, implementation sequence, and validation commands after planning.",
         ]
     return [
-        "End-user advocate: represents the person who receives value from the first path.",
-        "Workflow operator: owns day-to-day movement through the proposed workflow.",
-        "Risk reviewer: owns the unresolved harm, loss, compliance, or operational exposure.",
-        "Proof reviewer: decides whether evidence is strong enough to advance the release.",
-        "Build owner: owns source paths, implementation sequence, and validation commands after planning.",
+        "Product beneficiary advocate: represents the person who receives value from the first path.",
+        "Product workflow operator: owns day-to-day movement through the proposed workflow.",
+        "Product risk reviewer: owns the unresolved harm, loss, compliance, or operational exposure.",
+        "Product proof reviewer: decides whether evidence is strong enough to advance the release.",
+        "Product build owner: owns source paths, implementation sequence, and validation commands after planning.",
+    ]
+
+
+def _host_release_focus_for_prompt(prompt: str) -> str:
+    lowered = prompt.casefold()
+    if "ecommerce" in lowered or "checkout" in lowered:
+        return "commerce checkout recovery path"
+    if "plant" in lowered or "robot" in lowered:
+        return "plant-care robot path"
+    if "defi" in lowered or "risk" in lowered:
+        return "DeFi risk-monitoring path"
+    return "first product path"
+
+
+def _host_rationale_lines(row: dict[str, object], *, prompt: str) -> list[str]:
+    title = str(row.get("title") or "proposed work").strip()
+    opportunity = str(row.get("opportunity") or row.get("product_view") or title).strip()
+    first_slice = str(row.get("recommended_first_slice") or row.get("product_view") or title).strip()
+    metric = next((str(item).strip() for item in row.get("success_metrics", []) if str(item).strip()), first_slice)
+    release_focus = _host_release_focus_for_prompt(prompt)
+    return [
+        f"- why now: {opportunity}",
+        f"- expected outcome: {first_slice}",
+        f"- tradeoff: {title} keeps the {release_focus} visible while delaying wider automation.",
+        f"- deferred for now: broad integrations, irreversible actions, and unrelated platform work wait until {release_focus} proof exists.",
+        f"- ranking basis: {metric}",
     ]
 
 
@@ -666,7 +718,7 @@ def _host_domain_intelligence(*, title: str, row_title: str, actors: list[str] |
             "If operator corrections contradict the proposal, governance artifacts must be regenerated or repaired.",
         ],
         "conflict_model": [
-            "Operator-confirmed product intent beats generated fallback language.",
+            "Accepted product intent beats generated fallback language.",
             "Source-backed tests beat generated dashboard projections when they disagree.",
         ],
         "transfer_priors": [
@@ -1360,11 +1412,11 @@ def test_greenfield_tribunal_uses_domain_specific_visible_actors(tmp_path) -> No
 
     assert decision.passed
     assert "beneficiary_advocate" in stable_roles
-    assert "End-user advocate" in actor_labels
-    assert "Workflow operator" in actor_labels
-    assert "Risk reviewer" in actor_labels
-    assert "Proof reviewer" in actor_labels
-    assert "Build owner" in actor_labels
+    assert "Plant owner advocate" in actor_labels
+    assert "Care routine operator" in actor_labels
+    assert "Plant safety reviewer" in actor_labels
+    assert "Care proof reviewer" in actor_labels
+    assert "Robot build owner" in actor_labels
     assert "beneficiary advocate" not in actor_labels
     assert not any("Host Reasoned Project" in label for label in actor_labels)
     assert not any(label in {"Actor", "State object", "Evidence record", "Release gate"} for label in actor_labels)

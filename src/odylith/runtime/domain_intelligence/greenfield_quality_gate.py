@@ -40,6 +40,42 @@ _STALE_GENERIC_TERMS: tuple[str, ...] = (
     "Evidence owner",
 )
 
+_GENERIC_ACTOR_LABELS: tuple[str, ...] = (
+    "Operator",
+    "Maintainer",
+    "Reviewer",
+    "Primary user",
+    "Project operator",
+    "Domain reviewer",
+    "Implementation owner",
+    "Evidence owner",
+    "End-user advocate",
+    "Workflow operator",
+    "Risk reviewer",
+    "Proof reviewer",
+    "Build owner",
+)
+
+_DIRECTIVE_LEAKS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("show the interpretation", re.compile(r"\bshow\s+(?:the\s+)?interpretation\b", re.IGNORECASE)),
+    ("show direction choices", re.compile(r"\bshow\s+(?:the\s+)?direction\s+choices\b", re.IGNORECASE)),
+    ("do not write records", re.compile(r"\bdo\s+not\s+write\s+(?:any\s+)?records?\b", re.IGNORECASE)),
+    ("until I confirm", re.compile(r"\buntil\s+i\s+confirm\b", re.IGNORECASE)),
+    ("before I confirm", re.compile(r"\bbefore\s+i\s+confirm\b", re.IGNORECASE)),
+    ("apply as-is", re.compile(r"\bapply\s+as[-\s]is\b", re.IGNORECASE)),
+    ("greenfield propose", re.compile(r"\bgreenfield\s+propose\b", re.IGNORECASE)),
+    ("repo-root", re.compile(r"--repo-root\b", re.IGNORECASE)),
+)
+
+_GOVERNANCE_PREP_PHRASES: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("execution spine before source exists", re.compile(r"\bexecution\s+spine\s+before\s+source\s+exists\b", re.IGNORECASE)),
+    ("trace to product intent", re.compile(r"\btrace\s+to\s+product\s+intent\b", re.IGNORECASE)),
+    ("component, diagram, release gate framing", re.compile(r"\bcomponents?,\s*diagrams?,\s*release\s+gates?\b", re.IGNORECASE)),
+    ("proposal-first product program", re.compile(r"\bproposal[-\s]first\s+product\s+program\b", re.IGNORECASE)),
+    ("accepted product truth before artifacts", re.compile(r"\baccepted\s+product\s+truth\s+before\b", re.IGNORECASE)),
+    ("accepted project story before artifacts", re.compile(r"\baccepted\s+project\s+story\s+before\b", re.IGNORECASE)),
+)
+
 _STALE_GENERIC_TITLES = {
     "define first operator workflow",
     "define domain contract and ownership",
@@ -149,7 +185,10 @@ def greenfield_quality_issues(proposal: Mapping[str, Any]) -> list[str]:
     prompt_terms = _prompt_terms(proposal)
     issues.extend(_control_plane_leak_issues(public_leaves, prompt_terms=prompt_terms))
     issues.extend(_stale_generic_issues(public_leaves))
+    issues.extend(_generic_actor_label_issues(public_leaves))
+    issues.extend(_directive_leak_issues(public_leaves))
     issues.extend(_scaffold_marker_issues(public_leaves))
+    issues.extend(_governance_prep_language_issues(proposal))
     if prompt_terms:
         issues.extend(_prompt_grounding_issues(proposal, prompt_terms=prompt_terms))
         issues.extend(_prompt_echo_issues(proposal, public_leaves=public_leaves))
@@ -178,6 +217,39 @@ def _stale_generic_issues(public_leaves: list[tuple[str, str]]) -> list[str]:
     return issues
 
 
+def _generic_actor_label_issues(public_leaves: list[tuple[str, str]]) -> list[str]:
+    issues: list[str] = []
+    for label in _GENERIC_ACTOR_LABELS:
+        paths = [
+            path
+            for path, text in public_leaves
+            if _starts_with_generic_actor_label(text, label)
+        ]
+        if paths:
+            issues.append(
+                f"greenfield public product content uses generic actor label `{label}` instead of a project-specific actor at {_path_preview(paths)}"
+            )
+    return issues
+
+
+def _starts_with_generic_actor_label(text: str, label: str) -> bool:
+    """Reject placeholder actor rows without rejecting domain-specific owners."""
+
+    cleaned = clean_text(text)
+    return bool(re.match(rf"^{re.escape(label)}(?:\s|:|[-–—]|$)", cleaned))
+
+
+def _directive_leak_issues(public_leaves: list[tuple[str, str]]) -> list[str]:
+    issues: list[str] = []
+    for label, pattern in _DIRECTIVE_LEAKS:
+        paths = [path for path, text in public_leaves if pattern.search(text)]
+        if paths:
+            issues.append(
+                f"greenfield public product content leaks operator instruction `{label}` into product records at {_path_preview(paths)}"
+            )
+    return issues
+
+
 def _scaffold_marker_issues(public_leaves: list[tuple[str, str]]) -> list[str]:
     issues: list[str] = []
     for marker in _SCAFFOLD_MARKERS:
@@ -197,8 +269,6 @@ def _prompt_grounding_issues(proposal: Mapping[str, Any], *, prompt_terms: tuple
             title = clean_text(row.get("title"))
             if title.casefold() in _STALE_GENERIC_TITLES:
                 issues.append(f"backlog row {index} uses stale generic title `{title}`")
-            if str(row.get("workstream_type", "")).casefold() == "umbrella":
-                continue
             if not _has_prompt_term(_grounding_text(row), prompt_terms):
                 issues.append(
                     f"backlog row {index} `{title or '<untitled>'}` is not grounded in prompt-specific terms "
@@ -216,6 +286,44 @@ def _prompt_grounding_issues(proposal: Mapping[str, Any], *, prompt_terms: tuple
                 issues.append(
                     f"component row {index} `{label or '<unlabeled>'}` is not grounded in prompt-specific terms "
                     f"such as {_term_preview(prompt_terms)}"
+                )
+    issues.extend(_top_level_grounding_issues(proposal, prompt_terms=prompt_terms))
+    return issues
+
+
+def _top_level_grounding_issues(proposal: Mapping[str, Any], *, prompt_terms: tuple[str, ...]) -> list[str]:
+    checks = (
+        ("project_brief", proposal.get("project_brief"), ("purpose", "project_outcome", "operating_principle")),
+        ("project_intelligence", proposal.get("project_intelligence"), ("purpose", "coding_posture", "control_surface_summary")),
+        ("program", proposal.get("program"), ("recommended_first_wave", "blueprint", "waves")),
+        ("release_plan", proposal.get("release_plan"), ("label", "strategy", "milestones", "promotion_criteria")),
+    )
+    issues: list[str] = []
+    for label, value, keys in checks:
+        if not isinstance(value, Mapping):
+            continue
+        text = " ".join(str(nested or "") for key in keys for nested in text_values(value.get(key))).casefold()
+        if text and not _has_prompt_term(text, prompt_terms):
+            issues.append(
+                f"proposal `{label}` is not grounded in prompt-specific terms such as {_term_preview(prompt_terms)}"
+            )
+    return issues
+
+
+def _governance_prep_language_issues(proposal: Mapping[str, Any]) -> list[str]:
+    issues: list[str] = []
+    backlog = proposal.get("backlog")
+    if not isinstance(backlog, list):
+        return issues
+    checked_fields = ("title", "problem", "customer", "opportunity", "product_view", "recommended_first_slice")
+    for index, row in enumerate(backlog, start=1):
+        if not isinstance(row, Mapping):
+            continue
+        text = " ".join(clean_text(row.get(field)) for field in checked_fields)
+        for label, pattern in _GOVERNANCE_PREP_PHRASES:
+            if pattern.search(text):
+                issues.append(
+                    f"backlog row {index} uses governance-prep phrase `{label}` where product/business language is required"
                 )
     return issues
 

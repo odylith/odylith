@@ -188,6 +188,7 @@ def run_greenfield_tribunal(
 
     _check_domain_security_posture(proposal=proposal, issues=issues)
     dimensions["domain_security"] = "explicit domain risk, security, compliance, policy, and abuse posture present"
+    _check_visible_tribunal_actors(visible_actors=visible_actors, issues=issues)
     actor_labels = ", ".join(row["visible_actor"] for row in visible_actors[:4])
     dimensions["tribunal"] = f"stable judgment roles render as domain-specific actors: {actor_labels}"
 
@@ -361,6 +362,52 @@ def _check_domain_security_posture(*, proposal: Mapping[str, Any], issues: list[
         issues.append("proposal security_compliance posture must assess security posture")
     if not _contains_any(text, _POLICY_TOKENS):
         issues.append("proposal security_compliance posture must assess compliance, policy, privacy, accessibility, or safety posture")
+
+
+_GENERIC_VISIBLE_TRIBUNAL_ACTORS = {
+    "operator",
+    "maintainer",
+    "reviewer",
+    "primary user",
+    "project operator",
+    "domain reviewer",
+    "implementation owner",
+    "evidence owner",
+    "end-user advocate",
+    "workflow operator",
+    "risk reviewer",
+    "proof reviewer",
+    "build owner",
+    "release owner",
+    "project release owner",
+}
+_STABLE_ROLE_LABELS = {
+    "beneficiary advocate",
+    "domain operator",
+    "risk owner",
+    "evidence owner",
+    "implementation owner",
+    "release owner",
+}
+
+
+def _check_visible_tribunal_actors(
+    *,
+    visible_actors: Sequence[Mapping[str, str]],
+    issues: list[str],
+) -> None:
+    labels = [str(row.get("visible_actor", "")).strip() for row in visible_actors]
+    generic = [
+        label
+        for label in labels
+        if label.casefold() in _GENERIC_VISIBLE_TRIBUNAL_ACTORS
+        or label.casefold().replace("_", " ") in _STABLE_ROLE_LABELS
+    ]
+    if generic:
+        issues.append(
+            "Tribunal visible actors must be project-specific, not stable-role placeholders: "
+            + ", ".join(generic)
+        )
 
 
 def _mapping_rows(value: Any) -> list[Mapping[str, Any]]:

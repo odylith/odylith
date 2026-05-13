@@ -468,16 +468,21 @@ def _render_idea_spec_html(
 
     {section_html}
   </main>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>
     (function() {{
-      if (!window.mermaid || !document.querySelector(".mermaid")) return;
-      window.mermaid.initialize({{
-        startOnLoad: false,
-        securityLevel: "strict",
-        theme: "neutral"
-      }});
-      window.mermaid.run({{ querySelector: ".mermaid" }});
+      if (!document.querySelector(".mermaid")) return;
+      var script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js";
+      script.onload = function() {{
+        if (!window.mermaid) return;
+        window.mermaid.initialize({{
+          startOnLoad: false,
+          securityLevel: "strict",
+          theme: "neutral"
+        }});
+        window.mermaid.run({{ querySelector: ".mermaid" }});
+      }};
+      document.head.appendChild(script);
     }})();
   </script>
 </body>
@@ -1113,16 +1118,21 @@ def _render_plan_html(
 
     {section_html}
   </main>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>
     (function() {{
-      if (!window.mermaid || !document.querySelector(".mermaid")) return;
-      window.mermaid.initialize({{
-        startOnLoad: false,
-        securityLevel: "strict",
-        theme: "neutral"
-      }});
-      window.mermaid.run({{ querySelector: ".mermaid" }});
+      if (!document.querySelector(".mermaid")) return;
+      var script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js";
+      script.onload = function() {{
+        if (!window.mermaid) return;
+        window.mermaid.initialize({{
+          startOnLoad: false,
+          securityLevel: "strict",
+          theme: "neutral"
+        }});
+        window.mermaid.run({{ querySelector: ".mermaid" }});
+      }};
+      document.head.appendChild(script);
     }})();
   </script>
 </body>

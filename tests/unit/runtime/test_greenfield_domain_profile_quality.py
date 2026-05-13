@@ -57,6 +57,20 @@ def test_product_intent_confirmation_does_not_pretend_to_reason_the_product(tmp_
     assert "Evidence owner" not in output
 
 
+def test_greenfield_title_strips_operator_directives(tmp_path: Path) -> None:
+    request = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=(
+            "Draft a product-first greenfield proposal for a robot that can keep my plants alive. "
+            "Show the interpretation and direction choices first. Do not write records until I confirm."
+        ),
+    )
+
+    assert request["intent"]["title"] == "Robot That Can Keep My Plants Alive"
+    assert "Show The Interpretation" not in request["intent"]["title"]
+    assert "Do Not Write" not in request["intent"]["title"]
+
+
 def test_confirm_intent_returns_contract_not_generated_governance(tmp_path: Path, capsys) -> None:
     rc = greenfield_proposals.main(
         [
@@ -98,6 +112,41 @@ def test_quality_gate_rejects_profile_scaffold_and_generic_persona_leaks() -> No
     assert any("Primary user" in issue for issue in issues)
     assert any("Operator Workspace" in issue for issue in issues)
     assert any("GreenfieldDomainProfile" in issue for issue in issues)
+
+
+def test_quality_gate_rejects_operator_directives_and_governance_prep_language() -> None:
+    proposal = _host_reasoned_ecommerce_proposal()
+    proposal["backlog"][0]["problem"] = (
+        "Commerce Launch System needs an accepted execution spine before source exists, otherwise work will trace "
+        "to product intent, components, diagrams, release gates, or validation proof."
+    )
+    proposal["backlog"][1]["product_view"] = "Show the interpretation and do not write records until I confirm."
+
+    issues = greenfield_quality_issues(proposal)
+
+    assert any("governance-prep phrase" in issue for issue in issues)
+    assert any("operator instruction" in issue for issue in issues)
+
+
+def test_quality_gate_allows_domain_specific_actor_names_but_rejects_placeholders() -> None:
+    proposal = _host_reasoned_ecommerce_proposal()
+    proposal["backlog"][1]["domain_intelligence"]["actors"] = [
+        "Plant operator reviews the care plan before the robot waters anything.",
+        "Operator: generic placeholder that does not explain the project role.",
+    ]
+
+    issues = greenfield_quality_issues(proposal)
+
+    assert not any("Plant operator" in issue for issue in issues)
+    assert any("generic actor label `Operator`" in issue for issue in issues)
+
+
+def test_validation_rejects_missing_host_authored_rationale_lines() -> None:
+    proposal = _host_reasoned_ecommerce_proposal()
+    proposal["backlog"][1].pop("rationale_lines")
+
+    with pytest.raises(ValueError, match="rationale_lines"):
+        greenfield_proposals.validate_host_reasoned_proposal(proposal)
 
 
 def test_project_title_echo_is_rejected_inside_artifact_content() -> None:

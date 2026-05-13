@@ -247,6 +247,7 @@ def _validate_backlog_row(row: Any, index: int) -> None:
     for key in ("title", "problem", "customer", "opportunity", "product_view", "recommended_first_slice"):
         min_words = 2 if key == "title" else 1 if key == "customer" else 6
         _require_text(row, key, owner=f"backlog row {index}", min_words=min_words)
+    _validate_rationale_lines(row, index)
     metrics = [str(item).strip() for item in row.get("success_metrics", []) if str(item).strip()]
     if len(metrics) < 2:
         raise ValueError(f"backlog row {index} must include at least two success_metrics")
@@ -257,6 +258,31 @@ def _validate_backlog_row(row: Any, index: int) -> None:
     if intelligence_issues:
         raise ValueError("; ".join(intelligence_issues))
     _validate_evidence_tier(row, owner=f"backlog row {index}")
+
+
+def _validate_rationale_lines(row: Mapping[str, Any], index: int) -> None:
+    raw_lines = row.get("rationale_lines", [])
+    if isinstance(raw_lines, str):
+        lines = [line.strip() for line in raw_lines.splitlines() if line.strip()]
+    else:
+        lines = [str(item).strip() for item in raw_lines if str(item).strip()] if isinstance(raw_lines, list) else []
+    if not lines:
+        raise ValueError(
+            f"backlog row {index} must include host-authored rationale_lines; Odylith will not synthesize ranking rationale"
+        )
+    joined = "\n".join(line.casefold() for line in lines)
+    for marker in (
+        "- why now:",
+        "- expected outcome:",
+        "- tradeoff:",
+        "- deferred for now:",
+        "- ranking basis:",
+    ):
+        if marker not in joined:
+            raise ValueError(f"backlog row {index} rationale_lines must include `{marker}`")
+    for line_index, line in enumerate(lines, start=1):
+        if _meaningful_word_count(line) < 7:
+            raise ValueError(f"backlog row {index} rationale_lines[{line_index}] is too shallow")
 
 
 def _validate_program(program: Mapping[str, Any]) -> None:

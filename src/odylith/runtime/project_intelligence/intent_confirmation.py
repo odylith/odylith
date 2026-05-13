@@ -40,23 +40,30 @@ def build_product_intent_confirmation(
             "task": "Write the Product Intent Confirmation in chat before Odylith builds any proposal records.",
             "time_budget": "20_to_30_seconds_to_read",
             "must_include": [
-                "the product story you believe the user means",
-                "the main human actors and why they matter",
-                "the external systems and internal product systems that appear material",
-                "the critical assumptions you are making",
-                "the ambiguities that would materially change the proposal",
+                "a short product title that names the actual product, not the command",
+                "the product story you believe the user means, written as concise narrative prose",
+                "the state object that changes through the first journey",
+                "the first complete path Odylith should prove before broader scope",
+                "the main human actors and why each matters",
+                "external systems separated from internal product systems",
+                "the critical assumptions you are making about origin, maturity, safety, money, data, runtime, or integrations",
+                "the few ambiguities that would materially change the first path, risk posture, topology, or proof bar",
+                "the proof boundary: what would count as evidence and what must not be claimed yet",
                 "a proceed, edit, or reject confirmation gate",
             ],
             "must_not": [
                 "echo command instructions as the product name",
                 "use the repository directory as the project title when the prompt names a product",
+                "use generic actor placeholders instead of project-specific human roles",
+                "turn the product story into a list of governance artifacts",
                 "invent source-backed implementation evidence",
                 "generate backlog, Registry, Atlas, release waves, validation obligations, or proposal JSON before confirmation",
                 "dump a generic template or domain catalog",
             ],
             "reasoning_standard": (
                 "Infer the product shape live from the operator prompt and any observed repo source. "
-                "If the prompt is broad, name the strongest plausible interpretation and only the few questions that change the first path, risk posture, or proof bar."
+                "If the prompt is broad, name the strongest plausible interpretation and only the few questions that change the first path, risk posture, topology, or proof bar. "
+                "Keep the answer human and product-first: no scaffolding language, no copied prompt-as-title, no artifact inventory before the product makes sense."
             ),
         },
         "confirmation_gate": {

@@ -185,6 +185,13 @@ Add a migration observer to the migration-runtime release gate. It scans changed
 - `migration-observer:0.1.12:guidance-and-skills:2d48e421d4a4`
 - `migration-observer:0.1.12:browser-surfaces:d6d3e6d10f84`
 - `migration-observer:0.1.12:install-managed-assets:1d47c001ac50`
+- `migration-observer:0.1.15:browser-surfaces:4dfe898235a5`
+
+The v0.1.15 browser-surface assessment covers the Radar detail-page template
+change that loads Mermaid only when the page actually contains Mermaid content.
+Existing consumer pages without diagrams no longer fetch the external Mermaid
+asset, while pages with diagrams keep the same lazy initialization behavior;
+headless browser smoke proof covers the changed cross-surface deep-link path.
 
 ## 0.1.12 Upgrade Assessment
 - First-run install and sync overlap: existing 0.1.11 consumer repos can safely

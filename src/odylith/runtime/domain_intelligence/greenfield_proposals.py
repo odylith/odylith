@@ -66,11 +66,16 @@ def _intent_title(prompt: str) -> str:
     lowered = text.casefold()
     stripped_greenfield_request = False
     for prefix in (
+        "draft a product-first greenfield proposal for ",
+        "draft product-first greenfield proposal for ",
         "draft a greenfield proposal for ",
         "draft greenfield proposal for ",
+        "create a product-first greenfield proposal for ",
+        "create product-first greenfield proposal for ",
         "draft a proposal for ",
         "draft proposal for ",
         "greenfield proposal for ",
+        "product-first greenfield proposal for ",
         "proposal for ",
     ):
         if lowered.startswith(prefix):
@@ -92,7 +97,7 @@ def _intent_title(prompt: str) -> str:
             break
     if stripped_greenfield_request:
         text = re.sub(r"^(?:a|an)\s+", "", text, flags=re.IGNORECASE).strip()
-    text = re.sub(r"\b(for me|please|with backlog.*|and diagrams.*|and atlas.*)$", "", text, flags=re.IGNORECASE).strip(" .")
+    text = _strip_greenfield_directives(text).strip(" .")
     if not text or len(text) < 4:
         return "Greenfield Project"
     words = [_title_token(word) for word in text.split()]
@@ -100,6 +105,38 @@ def _intent_title(prompt: str) -> str:
     while clipped and clipped[-1].casefold() in {"and", "for", "from", "in", "of", "on", "or", "to", "with"}:
         clipped.pop()
     return " ".join(clipped or words[:1])
+
+
+_GREENFIELD_DIRECTIVE_RE = re.compile(
+    r"(?is)(?:"
+    r"\bshow\s+(?:the\s+)?interpretation\b|"
+    r"\bshow\s+(?:the\s+)?direction\s+choices\b|"
+    r"\bdo\s+not\s+write\b|"
+    r"\bdon['’]?t\s+write\b|"
+    r"\bno\s+files?\s+changed\b|"
+    r"\buntil\s+i\s+confirm\b|"
+    r"\bbefore\s+i\s+confirm\b|"
+    r"\bwhen\s+i\s+confirm\b|"
+    r"\bwith\s+backlog\b|"
+    r"\band\s+backlog\b|"
+    r"\bwith\s+registry\b|"
+    r"\band\s+registry\b|"
+    r"\bwith\s+atlas\b|"
+    r"\band\s+atlas\b|"
+    r"\bwith\s+diagrams?\b|"
+    r"\band\s+diagrams?\b|"
+    r"\bgenerate\s+governance\b|"
+    r"\bcreate\s+governance\b"
+    r").*$"
+)
+
+
+def _strip_greenfield_directives(text: str) -> str:
+    """Remove operator instructions that should not become the product title."""
+
+    stripped = _GREENFIELD_DIRECTIVE_RE.sub("", text).strip()
+    stripped = re.sub(r"\b(for me|please)\b\.?$", "", stripped, flags=re.IGNORECASE).strip()
+    return stripped or text
 
 
 _TITLE_ACRONYMS = {
@@ -335,25 +372,14 @@ def _backlog_section_overrides(proposal: Mapping[str, Any]) -> dict[str, dict[st
 def _greenfield_ordering_rationale(row: Mapping[str, Any]) -> str:
     first_slice = str(row.get("recommended_first_slice", "")).strip()
     opportunity = str(row.get("opportunity", "")).strip()
-    return opportunity or first_slice or "Created from the accepted greenfield project path."
+    return opportunity or first_slice
 
 
 def _greenfield_rationale_lines(row: Mapping[str, Any]) -> list[str]:
     explicit = list(row_text_tuple(row, "rationale_lines"))
     if _has_required_rationale_bullets(explicit):
         return explicit
-    opportunity = str(row.get("opportunity", "")).strip()
-    first_slice = str(row.get("recommended_first_slice", "")).strip()
-    product_view = str(row.get("product_view", "")).strip()
-    metrics = list(row_text_tuple(row, "success_metrics"))
-    proof = next((item for item in metrics if item), first_slice or product_view)
-    return [
-        f"- why now: {opportunity or product_view or first_slice}",
-        f"- expected outcome: {first_slice or proof}",
-        "- tradeoff: keep the release narrow enough that the user path, owner, risk, and proof remain visible together.",
-        "- deferred for now: broader automation, integrations, and release expansion wait until this path is proven.",
-        f"- ranking basis: {proof or 'the first path is prerequisite to downstream component, diagram, and release proof.'}",
-    ]
+    return []
 
 
 def _has_required_rationale_bullets(lines: Sequence[str]) -> bool:
@@ -390,7 +416,7 @@ def _backlog_apply_args(proposal: Mapping[str, Any], *, release_selector: str) -
         sizing=str(first.get("sizing", "M")).strip() or "M",
         complexity=str(first.get("complexity", "Medium")).strip() or "Medium",
         ordering_score=None,
-        ordering_rationale="Created from a confirmed greenfield product proposal.",
+        ordering_rationale=_greenfield_ordering_rationale(first),
         confidence="medium",
         founder_override=False,
         override_note="",

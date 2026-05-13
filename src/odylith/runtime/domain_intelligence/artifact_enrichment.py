@@ -290,7 +290,7 @@ def _domain_actor_names(graph: DomainIntelligenceGraph) -> dict[str, str]:
         "risk_owner": _actor_label(risk_owners, fallback=f"{compact} risk owner"),
         "evidence_owner": _actor_label(evidence_owners, fallback=f"{compact} proof owner"),
         "implementation_owner": _actor_label(implementation_owners, fallback=f"{compact} build owner"),
-        "release_owner": "Release owner",
+        "release_owner": f"{compact} release owner",
     }
 
 
