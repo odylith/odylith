@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from odylith.runtime.surfaces import atlas_box_explanations
+from odylith.runtime.surfaces import atlas_diagram_intelligence
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import render_mermaid_catalog as renderer
 from odylith.runtime.surfaces import scaffold_mermaid_diagram
@@ -551,9 +552,8 @@ def test_load_catalog_derives_container_and_inner_box_explanations(tmp_path: Pat
     assert boxes[0]["role"] == "Container"
     assert boxes[1]["role"] == "Source truth"
     assert "boxes inside it" in boxes[0]["description"]
-    assert boxes[1]["description"] == (
-        "Inside Source truth, Catalog stores the source information that downstream boxes read or update."
-    )
+    assert "Catalog stores the source information" in boxes[1]["description"]
+    assert "hands off to Renderer" in boxes[1]["description"]
     assert "This box represents" not in boxes[1]["description"]
 
 
@@ -574,13 +574,66 @@ def test_atlas_box_explanations_generate_action_oriented_node_copy() -> None:
     )
     by_label = {box.label: box.description for box in boxes}
 
-    assert by_label["Plant owner"] == "Plant owner makes or accepts the decisions this part of the flow depends on."
-    assert by_label["One potted plant"] == "One potted plant is the object whose state changes as the flow moves from trigger to outcome."
-    assert by_label["Plant sensing unit"] == "Plant sensing unit measures the current state and feeds the decision or proof step that follows."
-    assert by_label["Care decision core"] == "Care decision core decides whether the next action is allowed, blocked, or ready for review."
-    assert by_label["Liquid dosing controller"] == "Liquid dosing controller performs the bounded action and should expose the result for verification."
-    assert by_label["Care event log"] == "Care event log records the evidence needed to review what happened and why it was allowed."
-    assert by_label["Owner status interface"] == "Owner status interface shows the current state, available action, and evidence to the person using the system."
+    assert "makes or accepts the decisions" in by_label["Plant owner"]
+    assert "hands off to One potted plant" in by_label["Plant owner"]
+    assert "object whose state changes" in by_label["One potted plant"]
+    assert "hands off to Plant sensing unit" in by_label["One potted plant"]
+    assert "measures the current state" in by_label["Plant sensing unit"]
+    assert "hands off to Care decision core" in by_label["Plant sensing unit"]
+    assert "decides whether the next action is allowed" in by_label["Care decision core"]
+    assert "hands off to Liquid dosing controller" in by_label["Care decision core"]
+    assert "performs the bounded action" in by_label["Liquid dosing controller"]
+    assert "hands off to Care event log" in by_label["Liquid dosing controller"]
+    assert "records the evidence needed" in by_label["Care event log"]
+    assert "hands off to Owner status interface" in by_label["Care event log"]
+    assert "shows the current state" in by_label["Owner status interface"]
+    assert all("This box represents" not in description for description in by_label.values())
+
+
+def test_atlas_diagram_intelligence_explains_state_model_transitions() -> None:
+    source = "\n".join(
+        [
+            "stateDiagram-v2",
+            "  [*] --> Unknown",
+            "  Unknown --> Monitored: sensor calibrated",
+            "  Monitored --> NeedsWater: moisture below target",
+            "  Monitored --> NutrientDue: interval elapsed",
+            "  NeedsWater --> Dosing: reservoir available",
+            "  NutrientDue --> Dosing: diluted dose allowed",
+            "  Dosing --> AbsorptionWait: capped pump complete",
+            "  AbsorptionWait --> Stable: recheck inside band",
+            "  AbsorptionWait --> Blocked: still dry after limit",
+            "  NeedsWater --> Blocked: sensor or reservoir fault",
+            "  NutrientDue --> Blocked: reservoir or schedule fault",
+            "  Stable --> Monitored: next sample interval",
+            "  Blocked --> Monitored: owner recovery verified",
+        ]
+    )
+
+    narrative = atlas_diagram_intelligence.build_diagram_narrative(
+        title="Plant Care State Model",
+        kind="state",
+        summary="Defines the first plant status transitions.",
+        read_guide="Stable status requires evidence.",
+        source_text=source,
+    )
+    boxes = atlas_box_explanations.extract_diagram_boxes_from_mermaid(source)
+    by_label = {box.label: box.description for box in boxes}
+
+    assert narrative.generated is True
+    assert "Unknown" in narrative.summary
+    assert "Monitored" in narrative.summary
+    assert "Dosing" in narrative.summary
+    assert "Blocked" in narrative.summary
+    assert "moisture below target" in narrative.summary
+    assert "Read this as a guarded loop" in narrative.read_guide
+    assert "At Monitored" in narrative.read_guide
+    assert "moisture below target leads to Needs Water" in narrative.read_guide
+    assert "Blocked means the system should stop" in narrative.read_guide
+    assert "starts the path" in by_label["Unknown"]
+    assert "branch point" in by_label["Monitored"]
+    assert "performs the bounded action" in by_label["Dosing"]
+    assert "stops normal progress" in by_label["Blocked"]
     assert all("This box represents" not in description for description in by_label.values())
 
 
@@ -602,24 +655,21 @@ def test_atlas_box_explanations_infer_common_governance_surface_actions() -> Non
     )
     by_label = {box.label: box.description for box in boxes}
 
-    assert by_label["Odylith product"] == (
-        "Odylith product defines the product scope, outcome, and proof boundary this diagram is organizing."
-    )
-    assert by_label["Radar"] == "Radar tracks the work choices, priorities, and next slices that need governed follow-through."
-    assert by_label["Technical Plans"] == (
-        "Technical Plans turns selected work into an implementation path, validation obligation, and release gate."
-    )
-    assert by_label["Atlas topology map"] == (
-        "Atlas topology map shows the system shape, ownership boundaries, and flow relationships reviewers need to understand."
-    )
-    assert by_label["Compass status"] == "Compass status summarizes current runtime state, recent movement, and the evidence behind the status."
-    assert by_label["Subagent Router"] == "Subagent Router chooses where work should go next and records why that route is admissible."
-    assert by_label["Subagent Orchestrator"] == (
-        "Subagent Orchestrator coordinates bounded work across owners and brings completion evidence back into the flow."
-    )
-    assert by_label["Context-to-Execution handshake"] == (
-        "Context-to-Execution handshake passes agreed state across a boundary and preserves the rules the next step must obey."
-    )
+    assert "defines the product scope" in by_label["Odylith product"]
+    assert "hands off to Radar" in by_label["Odylith product"]
+    assert "tracks the work choices" in by_label["Radar"]
+    assert "hands off to Technical Plans" in by_label["Radar"]
+    assert "turns selected work into an implementation path" in by_label["Technical Plans"]
+    assert "hands off to Atlas topology map" in by_label["Technical Plans"]
+    assert "shows the system shape" in by_label["Atlas topology map"]
+    assert "hands off to Compass status" in by_label["Atlas topology map"]
+    assert "summarizes current runtime state" in by_label["Compass status"]
+    assert "hands off to Subagent Router" in by_label["Compass status"]
+    assert "chooses where work should go next" in by_label["Subagent Router"]
+    assert "hands off to Subagent Orchestrator" in by_label["Subagent Router"]
+    assert "coordinates bounded work" in by_label["Subagent Orchestrator"]
+    assert "passes agreed state across a boundary" in by_label["Context-to-Execution handshake"]
+    assert "reached after Subagent Orchestrator" in by_label["Context-to-Execution handshake"]
     assert all("concrete step" not in description for description in by_label.values())
 
 

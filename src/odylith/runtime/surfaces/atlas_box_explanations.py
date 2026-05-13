@@ -7,6 +7,8 @@ import re
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Sequence
 
+from odylith.runtime.surfaces import atlas_diagram_intelligence
+
 
 _PLACEHOLDER_RE = re.compile(r"\b(tbd|todo|n/a|none|placeholder|fixme)\b", re.IGNORECASE)
 _NODE_LABEL_RE = re.compile(
@@ -163,6 +165,7 @@ def extract_diagram_boxes_from_mermaid(source_text: str) -> tuple[DiagramBoxExpl
     boxes: list[DiagramBoxExplanation] = []
     seen: set[str] = set()
     container_stack: list[str] = []
+    graph = atlas_diagram_intelligence.parse_mermaid_graph(source_text)
 
     for raw_line in str(source_text or "").splitlines():
         line = raw_line.split("%%", 1)[0].strip()
@@ -199,17 +202,64 @@ def extract_diagram_boxes_from_mermaid(source_text: str) -> tuple[DiagramBoxExpl
             key = _label_key(label)
             if not label or not key or key in seen:
                 continue
+            graph_description = atlas_diagram_intelligence.node_explanation_from_graph(
+                label=label,
+                source_text=source_text,
+            )
+            semantic_description = _generated_node_description(label, container_stack)
             role = container_stack[-1] if container_stack else "Diagram box"
             boxes.append(
                 DiagramBoxExplanation(
                     label=label,
                     role=role,
-                    description=_generated_node_description(label, container_stack),
+                    description=_merge_node_description(
+                        semantic_description=semantic_description,
+                        graph_description=graph_description,
+                    ),
                     generated=True,
                 )
             )
             seen.add(key)
+    for node_id in graph.node_ids():
+        label = graph.label(node_id)
+        key = _label_key(label)
+        if not label or not key or key in seen:
+            continue
+        if _low_signal_generated_graph_label(label=label, node_id=node_id):
+            continue
+        boxes.append(
+            DiagramBoxExplanation(
+                label=label,
+                role="Diagram box",
+                description=atlas_diagram_intelligence.describe_graph_node(graph=graph, node_id=node_id)
+                or _generated_node_description(label, ()),
+                generated=True,
+            )
+        )
+        seen.add(key)
     return tuple(boxes)
+
+
+def _merge_node_description(*, semantic_description: str, graph_description: str) -> str:
+    semantic = _clean_label(semantic_description)
+    graph = _clean_label(graph_description)
+    if not graph:
+        return semantic
+    if not semantic or "carries a concrete step in the flow" in semantic:
+        return graph
+    if graph.casefold() == semantic.casefold() or graph.casefold() in semantic.casefold():
+        return semantic
+    return f"{semantic} {graph}"
+
+
+def _low_signal_generated_graph_label(*, label: str, node_id: str) -> bool:
+    clean_label = _clean_label(label)
+    clean_id = _clean_label(node_id)
+    if not clean_label:
+        return True
+    if clean_label.casefold() != clean_id.casefold():
+        return False
+    return bool(re.fullmatch(r"[A-Z]|\d+|node\d+", clean_label, flags=re.IGNORECASE))
 
 
 def catalog_box_copy_errors(*, box: Mapping[str, Any], context: str) -> tuple[str, ...]:

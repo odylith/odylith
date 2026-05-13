@@ -21,6 +21,7 @@ from odylith.runtime.governance import component_registry_intelligence as compon
 from odylith.runtime.governance.delivery import scope_signal_ladder
 from odylith.runtime.surfaces import atlas_box_explanations
 from odylith.runtime.surfaces import atlas_detail_layout
+from odylith.runtime.surfaces import atlas_diagram_intelligence
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import dashboard_shell_links
 from odylith.runtime.surfaces import dashboard_ui_primitives
@@ -677,6 +678,13 @@ def _load_catalog(
                 catalog_boxes=catalog_diagram_boxes,
             )
         )
+        diagram_narrative = atlas_diagram_intelligence.build_diagram_narrative(
+            title=title,
+            kind=kind,
+            summary=summary,
+            read_guide=read_guide,
+            source_text=source_text,
+        )
 
         viewbox_dims = _extract_svg_viewbox_dimensions(svg_path)
         viewbox_width = float(viewbox_dims[0]) if viewbox_dims else 0.0
@@ -735,8 +743,8 @@ def _load_catalog(
                 "kind": kind,
                 "status": status,
                 "owner": owner,
-                "summary": summary,
-                "read_guide": read_guide,
+                "summary": diagram_narrative.summary,
+                "read_guide": diagram_narrative.read_guide,
                 "diagram_boxes": diagram_boxes,
                 "last_reviewed_utc": review_date.isoformat(),
                 "review_age_days": review_age_days,
