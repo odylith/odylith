@@ -645,7 +645,7 @@ initSharedQuickTooltips();
       if (kind.includes("timeline")) {
         return "Read left to right as release or execution order. Each segment is a phase, wave, or proof checkpoint that should line up with the linked workstreams below.";
       }
-      return "Read from named entrypoints through the arrows. Boxes are components, states, decisions, or proof obligations; grouped regions show ownership boundaries; dashed or labeled edges usually mark review, dependency, or blocked movement.";
+      return "Start with the named entrypoints, then follow each arrow to the next decision, action, proof, or recovery point. Boxes are components, states, decisions, or proof obligations; grouped regions show ownership boundaries; labeled edges explain the condition for movement.";
     }
 
     function normalizeWorkstreamId(value) {

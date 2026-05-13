@@ -63,6 +63,13 @@ _ACTION_RE = re.compile(
     r"\b(action|execute|execution|run|runner|dose|dosing|pump|write|create|generate|apply|approve|review|coordinate|ship|release)\b",
     re.IGNORECASE,
 )
+_MECHANICAL_COPY_RE = re.compile(
+    r"\b("
+    r"this diagram follows|read from .+ through the arrows|this box represents|none named|"
+    r"generic mermaid|diagram box|follow its arrows|carries a concrete step"
+    r")\b",
+    re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True)
@@ -125,13 +132,18 @@ def build_diagram_narrative(
     if len(graph.node_ids()) < 3 or len(graph.edges) < 2:
         return DiagramNarrative(summary=_sentence(summary), read_guide=_sentence(read_guide), generated=False)
 
+    if _authored_copy_is_useful(summary, graph=graph, min_words=8) and _authored_copy_is_useful(
+        read_guide,
+        graph=graph,
+        min_words=14,
+    ):
+        return DiagramNarrative(summary=_sentence(summary), read_guide=_sentence(read_guide), generated=False)
+
     generated_summary = _diagram_summary(graph=graph, title=title, kind=kind)
     generated_read_guide = _diagram_read_guide(graph=graph, kind=kind)
     if not generated_summary or not generated_read_guide:
         return DiagramNarrative(summary=_sentence(summary), read_guide=_sentence(read_guide), generated=False)
 
-    if _copy_is_specific(summary, graph) and _copy_is_specific(read_guide, graph):
-        return DiagramNarrative(summary=_sentence(summary), read_guide=_sentence(read_guide), generated=False)
     return DiagramNarrative(summary=generated_summary, read_guide=generated_read_guide, generated=True)
 
 
@@ -171,6 +183,13 @@ def parse_mermaid_graph(source_text: str) -> MermaidGraph:
                 nodes.setdefault(node_id, label)
 
         normalized_line = _NODE_SHAPE_RE.sub(lambda match: str(match.group("id") or ""), line)
+        chained_edges = _parse_chained_edges(normalized_line)
+        if chained_edges:
+            for edge in chained_edges:
+                nodes.setdefault(edge.source_id, _humanize_identifier(edge.source_id))
+                nodes.setdefault(edge.target_id, _humanize_identifier(edge.target_id))
+            edges.extend(chained_edges)
+            continue
         edge = _parse_edge(normalized_line)
         if edge is None:
             continue
@@ -197,6 +216,16 @@ def node_explanation_from_graph(*, label: str, source_text: str) -> str:
     return describe_graph_node(graph=graph, node_id=target_id)
 
 
+def node_role_from_graph(*, label: str, source_text: str) -> str:
+    """Return a compact role badge for a visible node."""
+
+    graph = parse_mermaid_graph(source_text)
+    target_id = _node_id_for_label(label=label, graph=graph)
+    if not target_id:
+        return ""
+    return describe_graph_node_role(graph=graph, node_id=target_id)
+
+
 def describe_graph_node(*, graph: MermaidGraph, node_id: str) -> str:
     """Return an action-oriented description of one node in its diagram context."""
 
@@ -204,18 +233,18 @@ def describe_graph_node(*, graph: MermaidGraph, node_id: str) -> str:
     incoming = graph.incoming(node_id)
     visible_incoming = tuple(edge for edge in incoming if edge.source_id != "[*]")
     outgoing = graph.outgoing(node_id)
-    incoming_sources = _label_list([graph.label(edge.source_id) for edge in incoming if edge.source_id != "[*]"], limit=3)
-    outgoing_targets = _label_list([graph.label(edge.target_id) for edge in outgoing if edge.target_id != "[*]"], limit=3)
+    incoming_sources = _node_label_list([graph.label(edge.source_id) for edge in incoming if edge.source_id != "[*]"], limit=3)
+    outgoing_targets = _node_label_list([graph.label(edge.target_id) for edge in outgoing if edge.target_id != "[*]"], limit=3)
     incoming_conditions = _label_list([edge.label for edge in incoming if edge.label], limit=3)
     outgoing_conditions = _label_list([edge.label for edge in outgoing if edge.label], limit=3)
-    subject = _sentence_subject(label)
+    subject = _sentence_subject(_primary_label(label))
 
-    if _is_exception_label(label):
+    if _is_exception_label(_primary_label(label)):
         route = incoming_conditions or incoming_sources
         if route:
             return f"{subject} stops normal progress when {route} makes the next step unsafe or incomplete."
         return f"{subject} is the recovery state; work should stay here until the missing proof, owner action, or fault is cleared."
-    if _is_success_label(label) and incoming:
+    if _is_success_label(_primary_label(label)) and incoming:
         proof = incoming_conditions or incoming_sources
         if proof:
             return f"{subject} is the trusted outcome reached after {proof}; it should mean the diagram's success condition is satisfied."
@@ -248,6 +277,68 @@ def describe_graph_node(*, graph: MermaidGraph, node_id: str) -> str:
     return f"{subject} is a named state or responsibility in this diagram."
 
 
+def describe_graph_node_role(*, graph: MermaidGraph, node_id: str) -> str:
+    """Return a compact role badge for one graph node."""
+
+    label = graph.label(node_id)
+    incoming = graph.incoming(node_id)
+    visible_incoming = tuple(edge for edge in incoming if edge.source_id != "[*]")
+    outgoing = graph.outgoing(node_id)
+    lowered = _primary_label(label).casefold()
+    if _is_exception_label(_primary_label(label)):
+        return "Safety stop"
+    if _is_success_label(_primary_label(label)) and incoming:
+        return "Outcome"
+    if not visible_incoming and outgoing:
+        return "Start"
+    if _ACTION_RE.search(lowered):
+        return "Action"
+    if len(outgoing) > 1:
+        return "Decision"
+    if re.search(r"\b(log|record|ledger|evidence|audit|receipt|proof|history)\b", lowered):
+        return "Evidence"
+    if re.search(r"\b(sensor|signal|classifier|resolver|registry|source|manifest|schema|input)\b", lowered):
+        return "Input"
+    if incoming and not outgoing:
+        return "End"
+    return "Step"
+
+
+def _authored_copy_is_useful(value: str, *, graph: MermaidGraph, min_words: int) -> bool:
+    text = _sentence(value)
+    if len(_WORD_RE.findall(text)) < min_words:
+        return False
+    if _MECHANICAL_COPY_RE.search(text):
+        return False
+    terms = _graph_terms(graph)
+    if not terms:
+        return True
+    text_key = _label_key(text)
+    hits = 0
+    for term in terms:
+        term_key = _label_key(term)
+        if term_key and term_key in text_key:
+            hits += 1
+    return hits >= min(2, len(terms))
+
+
+def _graph_terms(graph: MermaidGraph) -> tuple[str, ...]:
+    terms: list[str] = []
+    for node_id in graph.node_ids():
+        primary = _primary_label(graph.label(node_id))
+        if len(primary) >= 4:
+            terms.append(primary)
+        detail = _detail_label(graph.label(node_id))
+        for piece in re.split(r"[,;/]|\band\b|\bor\b", detail):
+            piece = _clean_label(piece)
+            if len(piece) >= 6:
+                terms.append(piece)
+    for edge in graph.edges:
+        if edge.label and len(edge.label) >= 5:
+            terms.append(edge.label)
+    return tuple(_unique(terms))
+
+
 def _parse_edge(line: str) -> MermaidEdge | None:
     text = " ".join(str(line or "").split())
     if not text:
@@ -265,17 +356,29 @@ def _parse_edge(line: str) -> MermaidEdge | None:
     return None
 
 
+def _parse_chained_edges(line: str) -> tuple[MermaidEdge, ...]:
+    text = " ".join(str(line or "").split())
+    if "|" in text or ":" in text:
+        return ()
+    pieces = [piece.strip() for piece in re.split(r"\s*(?:-->|==>|-\.->|-.->|---)\s*", text) if piece.strip()]
+    if len(pieces) < 3:
+        return ()
+    if any(not re.fullmatch(r"\[\*\]|[A-Za-z][\w.-]*", piece) for piece in pieces):
+        return ()
+    return tuple(MermaidEdge(source_id=source, target_id=target) for source, target in zip(pieces, pieces[1:]))
+
+
 def _diagram_summary(*, graph: MermaidGraph, title: str, kind: str) -> str:
     starts = _start_nodes(graph)
     branches = _branch_nodes(graph)
     actions = _action_nodes(graph)
     successes = _success_nodes(graph)
     exceptions = _exception_nodes(graph)
-    starts_text = _label_list([graph.label(node_id) for node_id in starts], limit=2)
-    branches_text = _label_list([graph.label(node_id) for node_id in branches], limit=2)
-    actions_text = _label_list([graph.label(node_id) for node_id in actions], limit=2)
-    successes_text = _label_list([graph.label(node_id) for node_id in successes], limit=2)
-    exceptions_text = _label_list([graph.label(node_id) for node_id in exceptions], limit=2)
+    starts_text = _node_label_list([graph.label(node_id) for node_id in starts], limit=2)
+    branches_text = _node_label_list([graph.label(node_id) for node_id in branches], limit=2)
+    actions_text = _node_label_list([graph.label(node_id) for node_id in actions], limit=2)
+    successes_text = _node_label_list([graph.label(node_id) for node_id in successes], limit=2)
+    exceptions_text = _node_label_list([graph.label(node_id) for node_id in exceptions], limit=2)
     edge_conditions = _label_list([edge.label for edge in graph.edges if edge.label], limit=4)
 
     if _is_state_kind(kind, graph):
@@ -294,16 +397,7 @@ def _diagram_summary(*, graph: MermaidGraph, title: str, kind: str) -> str:
             sentence += f" The important transitions are {edge_conditions}."
         return _sentence(sentence)
 
-    path = _main_path_labels(graph)
-    if path:
-        sentence = f"This diagram follows {path}."
-    else:
-        sentence = f"This diagram explains {str(title or 'the system').strip()}."
-    if branches_text:
-        sentence += f" The main branch point is {branches_text}."
-    if exceptions_text:
-        sentence += f" Exception or recovery work collects at {exceptions_text}."
-    return _sentence(sentence)
+    return _flow_summary(graph=graph, title=title)
 
 
 def _diagram_read_guide(*, graph: MermaidGraph, kind: str) -> str:
@@ -324,20 +418,78 @@ def _diagram_read_guide(*, graph: MermaidGraph, kind: str) -> str:
             if branch_copy:
                 lines.append(f"At {graph.label(branch)}, the labeled conditions decide the next path: {branch_copy}.")
         if action_nodes:
-            lines.append(f"{_label_list([graph.label(node_id) for node_id in action_nodes], limit=2)} is where the allowed action happens before the diagram asks for proof or recovery.")
+            lines.append(f"{_node_label_list([graph.label(node_id) for node_id in action_nodes], limit=2)} is where the allowed action happens before the diagram asks for proof or recovery.")
         if success_nodes:
-            lines.append(f"{_label_list([graph.label(node_id) for node_id in success_nodes], limit=2)} is the trusted outcome.")
+            lines.append(f"{_node_label_list([graph.label(node_id) for node_id in success_nodes], limit=2)} is the trusted outcome.")
         if exception_nodes:
-            lines.append(f"{_label_list([graph.label(node_id) for node_id in exception_nodes], limit=2)} means the system should stop and wait for owner action, repair, or stronger evidence.")
+            lines.append(f"{_node_label_list([graph.label(node_id) for node_id in exception_nodes], limit=2)} means the system should stop and wait for owner action, repair, or stronger evidence.")
         return " ".join(lines)
 
-    lines = [f"Read from {start} through the arrows."]
-    if branch_nodes:
-        lines.append(f"Use {_label_list([graph.label(node_id) for node_id in branch_nodes], limit=2)} to find where the path can split.")
+    return _flow_read_guide(graph=graph, start=start, branch_nodes=branch_nodes, conditions=conditions)
+
+
+def _flow_summary(*, graph: MermaidGraph, title: str) -> str:
+    start_ids = _start_nodes(graph)
+    start = start_ids[0] if start_ids else (graph.node_ids()[0] if graph.node_ids() else "")
+    branch = _dominant_branch_node(graph)
+    exceptions = _exception_nodes(graph)
+    start_label = _primary_label(graph.label(start)) if start else ""
+    if branch:
+        branch_label = _primary_label(graph.label(branch))
+        spine = _path_between(graph=graph, start_id=start, stop_id=branch)
+        middle = [_primary_label(graph.label(node_id)) for node_id in spine if node_id not in {start, branch}]
+        normal_targets, stop_targets = _branch_targets(graph=graph, branch_id=branch)
+        lines = [f"This view shows how {start_label or str(title or 'the work').strip()} reaches {branch_label} before the path splits."]
+        if middle:
+            lines.append(f"The spine passes through {_join_list(middle)}.")
+        if normal_targets:
+            lines.append(f"From {branch_label}, the normal branches lead to {_join_list(normal_targets)}.")
+        if stop_targets:
+            lines.append(f"Unsafe or unresolved paths stop at {_join_list(stop_targets)}.")
+        elif exceptions:
+            lines.append(f"Recovery or blocked work is shown at {_node_label_list([graph.label(node_id) for node_id in exceptions], limit=2)}.")
+        return " ".join(lines)
+
+    path = _main_path_ids(graph)
+    labels = [_primary_label(graph.label(node_id)) for node_id in path]
+    if len(labels) >= 2:
+        return _sentence(f"This view shows the path from {labels[0]} through {_join_list(labels[1:-1]) or 'the intermediate steps'} to {labels[-1]}.")
+    return _sentence(f"This view explains {str(title or 'the system').strip()}.")
+
+
+def _flow_read_guide(
+    *,
+    graph: MermaidGraph,
+    start: str,
+    branch_nodes: Sequence[str],
+    conditions: str,
+) -> str:
+    branch = _dominant_branch_node(graph) or (branch_nodes[0] if branch_nodes else "")
+    if branch:
+        spine = _path_between(graph=graph, start_id=_node_id_for_label(label=start, graph=graph) or branch, stop_id=branch)
+        spine_labels = [_primary_label(graph.label(node_id)) for node_id in spine]
+        normal_targets, stop_targets = _branch_targets(graph=graph, branch_id=branch)
+        branch_label = _primary_label(graph.label(branch))
+        lines = []
+        if len(spine_labels) > 1:
+            lines.append(f"Read the main spine first: {' -> '.join(spine_labels)}.")
+        else:
+            lines.append(f"Start at {_primary_label(start)} and read toward {branch_label}.")
+        if normal_targets:
+            lines.append(f"Then read the branches from {branch_label}; they show the allowed next modes: {_join_list(normal_targets)}.")
+        if stop_targets:
+            lines.append(f"The stop or recovery branch is {_join_list(stop_targets)}, which means the flow should not mutate state until the missing proof or unsafe condition is cleared.")
+        if conditions:
+            lines.append(f"Use the arrow labels as the conditions that permit or block movement, especially {conditions}.")
+        return " ".join(lines)
+
+    lines = [f"Start at {_primary_label(start)}, then follow each arrow to the next decision, action, proof, or recovery point."]
     if conditions:
-        lines.append(f"The edge labels explain why movement is allowed: {conditions}.")
-    success_text = _label_list([graph.label(node_id) for node_id in success_nodes], limit=2)
-    exception_text = _label_list([graph.label(node_id) for node_id in exception_nodes], limit=2)
+        lines.append(f"Use the arrow labels as the conditions that permit movement: {conditions}.")
+    success_nodes = _success_nodes(graph)
+    exception_nodes = _exception_nodes(graph)
+    success_text = _node_label_list([graph.label(node_id) for node_id in success_nodes], limit=2)
+    exception_text = _node_label_list([graph.label(node_id) for node_id in exception_nodes], limit=2)
     if success_text and exception_text:
         lines.append(f"Compare the trusted outcomes ({success_text}) with the blocked or recovery outcomes ({exception_text}).")
     elif success_text:
@@ -360,15 +512,20 @@ def _branch_nodes(graph: MermaidGraph) -> tuple[str, ...]:
 
 
 def _success_nodes(graph: MermaidGraph) -> tuple[str, ...]:
-    return tuple(node_id for node_id in graph.node_ids() if _is_success_label(graph.label(node_id)))
+    return tuple(node_id for node_id in graph.node_ids() if _is_success_label(_primary_label(graph.label(node_id))))
 
 
 def _exception_nodes(graph: MermaidGraph) -> tuple[str, ...]:
-    return tuple(node_id for node_id in graph.node_ids() if _is_exception_label(graph.label(node_id)) or any(_is_exception_label(edge.label) for edge in graph.incoming(node_id)))
+    return tuple(
+        node_id
+        for node_id in graph.node_ids()
+        if _is_exception_label(_primary_label(graph.label(node_id)))
+        or any(_is_exception_label(edge.label) for edge in graph.incoming(node_id))
+    )
 
 
 def _action_nodes(graph: MermaidGraph) -> tuple[str, ...]:
-    return tuple(node_id for node_id in graph.node_ids() if _ACTION_RE.search(graph.label(node_id)))
+    return tuple(node_id for node_id in graph.node_ids() if _ACTION_RE.search(_primary_label(graph.label(node_id))))
 
 
 def _main_path_labels(graph: MermaidGraph) -> str:
@@ -389,12 +546,112 @@ def _main_path_labels(graph: MermaidGraph) -> str:
         preferred = sorted(
             outgoing,
             key=lambda edge: (
-                _is_exception_label(edge.label) or _is_exception_label(graph.label(edge.target_id)),
+                _is_exception_label(edge.label) or _is_exception_label(_primary_label(graph.label(edge.target_id))),
                 len(graph.incoming(edge.target_id)),
             ),
         )[0]
         node_id = preferred.target_id
     return _label_list(path, limit=5)
+
+
+def _main_path_ids(graph: MermaidGraph) -> tuple[str, ...]:
+    starts = _start_nodes(graph)
+    if not starts:
+        return graph.node_ids()[:6]
+    stop = _dominant_branch_node(graph)
+    if stop:
+        return tuple(_path_between(graph=graph, start_id=starts[0], stop_id=stop))
+    path: list[str] = []
+    node_id = starts[0]
+    seen: set[str] = set()
+    for _ in range(8):
+        if not node_id or node_id in seen or node_id == "[*]":
+            break
+        seen.add(node_id)
+        path.append(node_id)
+        outgoing = [edge for edge in graph.outgoing(node_id) if edge.target_id != "[*]"]
+        if not outgoing:
+            break
+        preferred = sorted(
+            outgoing,
+            key=lambda edge: (
+                _is_exception_label(edge.label) or _is_exception_label(_primary_label(graph.label(edge.target_id))),
+                len(graph.incoming(edge.target_id)),
+            ),
+        )[0]
+        node_id = preferred.target_id
+    return tuple(path)
+
+
+def _dominant_branch_node(graph: MermaidGraph) -> str:
+    branches = _branch_nodes(graph)
+    if not branches:
+        return ""
+    starts = set(_start_nodes(graph))
+    reachable = _reachable_nodes(graph=graph, starts=starts) if starts else set(graph.node_ids())
+    candidates = [node_id for node_id in branches if node_id in reachable]
+    if not candidates:
+        candidates = list(branches)
+    return sorted(
+        candidates,
+        key=lambda node_id: (
+            -len(graph.outgoing(node_id)),
+            _is_exception_label(_primary_label(graph.label(node_id))),
+            list(graph.node_ids()).index(node_id),
+        ),
+    )[0]
+
+
+def _reachable_nodes(*, graph: MermaidGraph, starts: set[str]) -> set[str]:
+    seen: set[str] = set()
+    queue = list(starts)
+    while queue:
+        node_id = queue.pop(0)
+        if not node_id or node_id in seen:
+            continue
+        seen.add(node_id)
+        queue.extend(edge.target_id for edge in graph.outgoing(node_id) if edge.target_id not in seen)
+    return seen
+
+
+def _path_between(*, graph: MermaidGraph, start_id: str, stop_id: str) -> tuple[str, ...]:
+    if not start_id or not stop_id:
+        return ()
+    queue: list[tuple[str, tuple[str, ...]]] = [(start_id, (start_id,))]
+    seen: set[str] = set()
+    while queue:
+        node_id, path = queue.pop(0)
+        if node_id == stop_id:
+            return path
+        if node_id in seen:
+            continue
+        seen.add(node_id)
+        outgoing = sorted(
+            graph.outgoing(node_id),
+            key=lambda edge: (
+                _is_exception_label(edge.label) or _is_exception_label(_primary_label(graph.label(edge.target_id))),
+                len(graph.incoming(edge.target_id)),
+            ),
+        )
+        for edge in outgoing:
+            if edge.target_id not in seen and edge.target_id != "[*]":
+                queue.append((edge.target_id, (*path, edge.target_id)))
+    return (stop_id,)
+
+
+def _branch_targets(*, graph: MermaidGraph, branch_id: str) -> tuple[list[str], list[str]]:
+    normal: list[str] = []
+    stops: list[str] = []
+    for edge in graph.outgoing(branch_id):
+        target = _primary_label(graph.label(edge.target_id))
+        if not target or edge.target_id == "[*]":
+            continue
+        is_stop = _is_exception_label(edge.label) or _is_exception_label(target)
+        if is_stop:
+            stops.append(target)
+        else:
+            normal.append(target)
+    return _unique(normal)[:4], _unique(stops)[:3]
 
 
 def _edge_choice_copy(*, graph: MermaidGraph, edges: Sequence[MermaidEdge], limit: int) -> str:
@@ -423,7 +680,8 @@ def _node_id_for_label(*, label: str, graph: MermaidGraph) -> str:
     if not wanted:
         return ""
     for node_id in graph.node_ids():
-        if _label_key(graph.label(node_id)) == wanted:
+        node_label = graph.label(node_id)
+        if _label_key(node_label) == wanted or _label_key(_primary_label(node_label)) == wanted:
             return node_id
     return ""
 
@@ -437,10 +695,26 @@ def _first_group_label(match: re.Match[str]) -> str:
 
 def _clean_label(value: Any) -> str:
     text = html.unescape(str(value or "")).strip()
-    text = re.sub(r"<\s*br\s*/?\s*>", " ", text, flags=re.IGNORECASE)
+    text = re.sub(r"<\s*br\s*/?\s*>", " · ", text, flags=re.IGNORECASE)
     text = re.sub(r"<[^>]+>", " ", text)
     text = text.strip().strip('"').strip("'")
     return " ".join(text.split())
+
+
+def _primary_label(value: str) -> str:
+    text = _clean_label(value)
+    for separator in (" · ", "\n"):
+        if separator in text:
+            return text.split(separator, 1)[0].strip()
+    return text
+
+
+def _detail_label(value: str) -> str:
+    text = _clean_label(value)
+    for separator in (" · ", "\n"):
+        if separator in text:
+            return text.split(separator, 1)[1].strip()
+    return ""
 
 
 def _humanize_identifier(value: str) -> str:
@@ -471,6 +745,11 @@ def _sentence_subject(label: str) -> str:
 
 def _label_list(values: Sequence[str], *, limit: int) -> str:
     clean = _unique([_clean_label(value) for value in values if _clean_label(value)])
+    return _join_list(clean[:limit])
+
+
+def _node_label_list(values: Sequence[str], *, limit: int) -> str:
+    clean = _unique([_primary_label(value) for value in values if _primary_label(value)])
     return _join_list(clean[:limit])
 
 

@@ -215,7 +215,7 @@ def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_lis
     assert "function diagramReadGuide(diagram)" in html
     assert "const catalogGuide = String(diagram && diagram.read_guide ? diagram.read_guide : \"\").trim();" in html
     assert "if (catalogGuide) {" in html
-    assert "Read from named entrypoints through the arrows." in html
+    assert "Start with the named entrypoints, then follow each arrow to the next decision, action, proof, or recovery point." in html
     assert "Boxes In This Diagram" in html
     assert 'id="diagramBoxList"' in html
     assert "function renderDiagramBoxes(diagram)" in html
@@ -635,6 +635,107 @@ def test_atlas_diagram_intelligence_explains_state_model_transitions() -> None:
     assert "performs the bounded action" in by_label["Dosing"]
     assert "stops normal progress" in by_label["Blocked"]
     assert all("This box represents" not in description for description in by_label.values())
+
+
+def test_atlas_diagram_intelligence_preserves_useful_authored_migration_copy() -> None:
+    source = "\n".join(
+        [
+            "flowchart TB",
+            '  operator["Operator command<br/>install / upgrade / reinstall / doctor / release migration-gate"]',
+            '  resolver["Resolve target release<br/>version, manifest, schema, verification inputs"]',
+            '  classifier["Repo scenario classifier<br/>pin, launcher, state, runtime pointer, ledger, source-local, legacy roots"]',
+            '  registry["Migration registry<br/>MigrationDefinition contracts"]',
+            '  planner["MigrationPlan<br/>selected, skipped, blocked, satisfied-unrecorded, ledger-stale"]',
+            '  dryrun["Dry-run and JSON report<br/>scenario, write set, rollback scope, plan fingerprint"]',
+            '  apply["Upgrade/apply execution<br/>uses the same plan"]',
+            '  ledger["Durable migration ledger<br/>predicate evidence, planned/actual writes, verification"]',
+            '  doctor["Doctor observability<br/>pending, blocked, stale, repair-only cleanup"]',
+            '  gate["Release migration gate<br/>manifest coverage, fixtures, bypass scan"]',
+            '  block["Fail closed before runtime mutation"]',
+            '  surfaces["Post-upgrade surfaces<br/>dashboard refresh is separate from migration"]',
+            "  operator --> resolver --> classifier --> registry --> planner",
+            "  planner --> dryrun",
+            "  planner --> apply",
+            "  planner --> doctor",
+            "  planner --> gate",
+            '  planner -->|"blocked or ledger_stale"| block',
+            '  apply -->|"selected automatic migration"| ledger',
+            '  apply -->|"satisfied_unrecorded"| ledger',
+            "  apply --> surfaces",
+            '  gate -->|"missing definition, missing fixture, direct bypass"| block',
+        ]
+    )
+    summary = "Shows how install, upgrade, reinstall, doctor, and release gates flow through the migration runtime before mutation."
+    read_guide = (
+        "Read the center column from top to bottom first. It shows how Odylith turns a command into one shared "
+        "migration plan. Then read the branches from MigrationPlan: dry-run previews the plan, upgrade applies it, "
+        "doctor explains current health, the release gate checks release readiness, and any unsafe state stops before "
+        "runtime files change."
+    )
+
+    narrative = atlas_diagram_intelligence.build_diagram_narrative(
+        title="Migration Runtime Upgrade Transaction Flow",
+        kind="flowchart",
+        summary=summary,
+        read_guide=read_guide,
+        source_text=source,
+    )
+    boxes = atlas_box_explanations.extract_diagram_boxes_from_mermaid(source)
+    roles = {box.label: box.role for box in boxes}
+
+    assert narrative.generated is False
+    assert narrative.summary == summary
+    assert narrative.read_guide == read_guide
+    assert roles["Operator command"] == "Start"
+    assert roles["MigrationPlan"] == "Decision"
+    assert roles["Upgrade/apply execution"] == "Action"
+    assert roles["Durable migration ledger"] == "Evidence"
+    assert roles["Fail closed before runtime mutation"] == "Safety stop"
+
+
+def test_atlas_diagram_intelligence_generates_human_flow_copy_without_label_soup() -> None:
+    source = "\n".join(
+        [
+            "flowchart TB",
+            '  operator["Operator command<br/>install / upgrade / reinstall / doctor / release migration-gate"]',
+            '  resolver["Resolve target release<br/>version, manifest, schema, verification inputs"]',
+            '  classifier["Repo scenario classifier<br/>pin, launcher, state, runtime pointer, ledger, source-local, legacy roots"]',
+            '  registry["Migration registry<br/>MigrationDefinition contracts"]',
+            '  planner["MigrationPlan<br/>selected, skipped, blocked, satisfied-unrecorded, ledger-stale"]',
+            '  dryrun["Dry-run and JSON report<br/>scenario, write set, rollback scope, plan fingerprint"]',
+            '  apply["Upgrade/apply execution<br/>uses the same plan"]',
+            '  ledger["Durable migration ledger<br/>predicate evidence, planned/actual writes, verification"]',
+            '  doctor["Doctor observability<br/>pending, blocked, stale, repair-only cleanup"]',
+            '  gate["Release migration gate<br/>manifest coverage, fixtures, bypass scan"]',
+            '  block["Fail closed before runtime mutation"]',
+            "  operator --> resolver --> classifier --> registry --> planner",
+            "  planner --> dryrun",
+            "  planner --> apply",
+            "  planner --> doctor",
+            "  planner --> gate",
+            '  planner -->|"blocked or ledger_stale"| block',
+            '  apply -->|"selected automatic migration"| ledger',
+            '  gate -->|"missing definition, missing fixture, direct bypass"| block',
+        ]
+    )
+
+    narrative = atlas_diagram_intelligence.build_diagram_narrative(
+        title="Migration Runtime Upgrade Transaction Flow",
+        kind="flowchart",
+        summary="Shows a flow.",
+        read_guide="Read the arrows.",
+        source_text=source,
+    )
+
+    copy = f"{narrative.summary}\n{narrative.read_guide}"
+    assert narrative.generated is True
+    assert "This diagram follows" not in copy
+    assert "none named" not in copy
+    assert "Operator command reaches MigrationPlan" in narrative.summary
+    assert "Resolve target release" in narrative.summary
+    assert "Fail closed before runtime mutation" in narrative.summary
+    assert "Read the main spine first" in narrative.read_guide
+    assert "selected, skipped, blocked, satisfied-unrecorded" not in narrative.summary
 
 
 def test_atlas_box_explanations_infer_common_governance_surface_actions() -> None:

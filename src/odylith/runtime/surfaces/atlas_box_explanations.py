@@ -141,7 +141,7 @@ def _node_action_sentence(label: str) -> str:
         return f"{subject} moves data or requests across a system boundary and should preserve handoff evidence."
     if _looks_like_state_object(clean):
         return f"{subject} is the object whose state changes as the flow moves from trigger to outcome."
-    return f"{subject} carries a concrete step in the flow; its incoming arrows show prerequisites and its outgoing arrows show what it enables next."
+    return f"{subject} is part of the path; incoming arrows show what must be true before it runs, and outgoing arrows show what it enables next."
 
 
 def _sentence_subject(label: str) -> str:
@@ -207,7 +207,11 @@ def extract_diagram_boxes_from_mermaid(source_text: str) -> tuple[DiagramBoxExpl
                 source_text=source_text,
             )
             semantic_description = _generated_node_description(label, container_stack)
-            role = container_stack[-1] if container_stack else "Diagram box"
+            graph_role = atlas_diagram_intelligence.node_role_from_graph(
+                label=label,
+                source_text=source_text,
+            )
+            role = container_stack[-1] if container_stack else (graph_role or "Step")
             boxes.append(
                 DiagramBoxExplanation(
                     label=label,
@@ -230,7 +234,7 @@ def extract_diagram_boxes_from_mermaid(source_text: str) -> tuple[DiagramBoxExpl
         boxes.append(
             DiagramBoxExplanation(
                 label=label,
-                role="Diagram box",
+                role=atlas_diagram_intelligence.describe_graph_node_role(graph=graph, node_id=node_id),
                 description=atlas_diagram_intelligence.describe_graph_node(graph=graph, node_id=node_id)
                 or _generated_node_description(label, ()),
                 generated=True,
