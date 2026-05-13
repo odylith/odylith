@@ -102,6 +102,7 @@ def main(argv: list[str] | None = None) -> int:
         sys.stdout.write(
             json.dumps(
                 {
+                    "systemMessage": route_context,
                     "hookSpecificOutput": {
                         "hookEventName": "UserPromptSubmit",
                         "additionalContext": route_context,

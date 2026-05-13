@@ -173,7 +173,7 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert 'const sectionClassName = ["execution-wave-section", String(options.sectionClassName || "").trim()]' in shared_js
     assert '<details class="${escapeHtml(sectionClassName)}"' in shared_js
     assert 'execution-wave-card-shell execution-wave-card-shell-full-copy' in shared_js
-    assert 'const radarHref = radarWorkstreamHref(item.ideaId, { view: "plan" });' in workstreams_js
+    assert "const radarHref = radarWorkstreamHref(item.ideaId);" in workstreams_js
     assert 'const idMarkup = rowsAreProgramCovered' in workstreams_js
     assert '<a class="ws-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-ws-id="${escapeHtml(item.ideaId)}"' in workstreams_js
     assert '<a class="chip-link ws-covered-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-covered-ws-id="${escapeHtml(item.ideaId)}"' in workstreams_js

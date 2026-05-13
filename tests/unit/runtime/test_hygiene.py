@@ -976,6 +976,7 @@ def test_claude_show_me_route_lock_guidance_stays_in_contract_and_bundle() -> No
             "docs or repository-file inspection, branch-cleanliness reports, "
             "and follow-up questions"
         ) in normalized
+        assert "sample application files in response to show-me" in normalized
         assert "return stdout only, or report the shortest actionable Odylith blocker" in normalized
         assert "Bash(./.odylith/bin/odylith show:*)" in normalized
         assert "Bash(./.odylith/bin/odylith --help:*)" in normalized
@@ -999,6 +1000,7 @@ def test_codex_show_me_route_lock_guidance_stays_in_contract_and_bundle() -> Non
         assert "hand-written \"here's what Odylith demonstrated\" summaries" in normalized
         assert "install-posture narration, dirty-path analysis, context-packet summaries" in normalized
         assert "module-count scans, tmp-clone warnings, spawn-policy notes" in normalized
+        assert "sample application files in response to show-me" in normalized
         assert "return stdout only, or report the shortest actionable Odylith blocker" in normalized
 
 

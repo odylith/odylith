@@ -11,7 +11,9 @@ This is a first-match route lock. If you have not run a show command and
 captured stdout, do not answer. Never replace `odylith show` stdout with a
 hand-written "here's what Odylith demonstrated" summary, install diagnosis,
 dirty-path analysis, impact-packet recap, module-count scan, tmp-clone warning,
-spawn-policy note, or follow-up question.
+spawn-policy note, or follow-up question. Never create, scaffold, edit, or test
+example application files such as HTML/CSS/JS demos, toy apps, sample robots, or
+placeholder products in response to a show-me request.
 
 1. Run the first available show command and capture stdout only:
    - Installed or dogfood repo with launcher:
@@ -25,7 +27,9 @@ spawn-policy note, or follow-up question.
    that intervention UX is active in the current chat.
 3. Do not paste progress, repair, runtime, status, or failed-fallback chatter
    from stderr. If every show command fails, report only the shortest actionable
-   blocker.
+   blocker. If there is no repo-local launcher and no `odylith` CLI available,
+   say Odylith is not installed in this folder; do not substitute generic host
+   work.
 4. Print the full stdout directly in your response as-is. Do not summarize,
    diagnose, reformat, or wrap it in a code block. Do not add bullets before
    or after it. The scenario-aware output is already written as a trust-first action report with a short mental-model line and should be shown verbatim so the operator sees exactly what Odylith said.

@@ -218,7 +218,8 @@
   prompt-submit path pays one process, not three. It must forbid generic
   Claude identity answers, Claude tool, skill, and memory lists, docs or
   repository-file inspection, branch-cleanliness reports, and follow-up
-  questions. Claude must run the first available repo-root command, return
+  questions. It must also forbid creating, scaffolding, editing, or testing
+  sample application files in response to show-me. Claude must run the first available repo-root command, return
   stdout only, or report the shortest actionable Odylith blocker. The generated `.claude/settings.json`
   allowlist must include `Bash(./.odylith/bin/odylith show:*)`,
   `Bash(./.odylith/bin/odylith capabilities:*)`, and

@@ -201,7 +201,8 @@
   route must forbid hand-written "here's what Odylith demonstrated" summaries,
   install-posture narration, dirty-path analysis, context-packet summaries,
   module-count scans, tmp-clone warnings, spawn-policy notes, and follow-up
-  questions. Codex must run the first available repo-root show/help command,
+  questions. It must also forbid creating, scaffolding, editing, or testing
+  sample application files in response to show-me. Codex must run the first available repo-root show/help command,
   return stdout only, or report the shortest actionable Odylith blocker.
 - Requests to list Odylith capabilities, engines, product architecture, or the
   capability map must run `odylith capabilities` and print stdout only. That

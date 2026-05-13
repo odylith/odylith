@@ -6,6 +6,7 @@ Last updated (UTC): 2026-05-13
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-201 | 2026-05-13 | Uninstalled show me prompt can be mistaken for odylith behavior | P2 | odylith-chatter | Open | [2026-05-13-uninstalled-show-me-prompt-can-be-mistaken-for-odylith-behavior.md](2026-05-13-uninstalled-show-me-prompt-can-be-mistaken-for-odylith-behavior.md) |
 | CB-200 | 2026-05-12 | Local dist handoff still depends on chat memory instead of a surfaced recipe | P2 | Install / Upgrade / Migration Runtime; Operator Experience | Open | [2026-05-12-local-dist-handoff-still-depends-on-chat-memory-instead-of-a-surfaced-recipe.md](2026-05-12-local-dist-handoff-still-depends-on-chat-memory-instead-of-a-surfaced-recipe.md) |
 | CB-197 | 2026-05-11 | Greenfield umbrella workstream described governance spine instead of business problem | P1 | domain-intelligence | Open | [2026-05-11-greenfield-umbrella-workstream-described-governance-spine-instead-of-business-pr.md](2026-05-11-greenfield-umbrella-workstream-described-governance-spine-instead-of-business-pr.md) |
 | CB-199 | 2026-05-11 | Greenfield project tab rendered blank or templated after accepted proposal | P1 | dashboard | Open | [2026-05-11-greenfield-project-tab-rendered-blank-or-templated-after-accepted-proposal.md](2026-05-11-greenfield-project-tab-rendered-blank-or-templated-after-accepted-proposal.md) |

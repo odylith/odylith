@@ -275,10 +275,12 @@ def test_main_emits_show_me_route_lock_without_running_prompt_observation(
     assert "module counts" in additional_context
     assert "tmp clone noise" in additional_context
     assert "spawn policy" in additional_context
+    assert "must not create, scaffold, edit, or test" in additional_context
+    assert "sample robots" in additional_context
     assert "`./.odylith/bin/odylith show --repo-root .`" in additional_context
     assert "`odylith show --repo-root .`" in additional_context
     assert "Return that stdout directly" in additional_context
-    assert "systemMessage" not in payload
+    assert payload["systemMessage"] == additional_context
 
 
 def test_main_emits_help_route_lock_without_pending_replay(
@@ -313,7 +315,7 @@ def test_main_emits_help_route_lock_without_pending_replay(
     assert "`./.odylith/bin/odylith --help`" in additional_context
     assert "`odylith --help`" in additional_context
     assert "stale replay" not in additional_context
-    assert "systemMessage" not in payload
+    assert payload["systemMessage"] == additional_context
 
 
 def test_main_emits_prompt_first_receipt_for_low_signal_prompt_without_bundle(
@@ -405,7 +407,7 @@ def test_main_emits_capability_inventory_route_lock_without_host_taxonomy(
     assert "`./.odylith/bin/odylith capabilities --repo-root .`" in additional_context
     assert "`odylith capabilities --repo-root .`" in additional_context
     assert "Return that stdout directly" in additional_context
-    assert "systemMessage" not in payload
+    assert payload["systemMessage"] == additional_context
 
 
 def test_main_surfaces_visible_teaser_in_system_message(monkeypatch, tmp_path: Path, capsys) -> None:

@@ -583,6 +583,8 @@ def test_show_me_skill_blocks_host_status_detours() -> None:
             assert "module-count scan" in normalized_text
             assert "tmp-clone warning" in normalized_text
             assert "spawn-policy note" in normalized_text
+            assert "Never create, scaffold, edit, or test example application files" in normalized_text
+            assert "Odylith is not installed in this folder" in normalized_text
             assert "Do not add bullets before or after it" in normalized_text
 
 
@@ -627,6 +629,8 @@ def test_managed_guidance_exempts_show_me_from_intervention_proof() -> None:
     assert "not a request to prove intervention UX" in block
     assert "run `doctor`" in block
     assert "explain missing launcher state" in block
+    assert "build a sample application" in block
+    assert "If Odylith is not installed in the current folder" in block
     assert "print stdout only" in block
 
 

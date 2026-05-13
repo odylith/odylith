@@ -846,7 +846,7 @@ def test_compass_current_workstreams_excludes_rows_already_represented_in_progra
     current_hrefs = compass.locator("#current-workstreams a.ws-id-btn").evaluate_all(
         """(nodes) => nodes.map((node) => String(node.getAttribute("href") || "").trim())"""
     )
-    assert all("tab=radar" in href and "view=plan" in href and "workstream=B-" in href for href in current_hrefs)
+    assert all("tab=radar" in href and "workstream=B-" in href and "view=plan" not in href for href in current_hrefs)
 
     assert represented_ids, "expected Compass Programs or Release Targets to represent at least one workstream"
     assert represented_ids.isdisjoint(current_ids), (
