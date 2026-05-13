@@ -4,6 +4,7 @@ import datetime as dt
 import json
 from pathlib import Path
 
+from odylith.runtime.surfaces import atlas_box_explanations
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import render_mermaid_catalog as renderer
 from odylith.runtime.surfaces import scaffold_mermaid_diagram
@@ -550,7 +551,76 @@ def test_load_catalog_derives_container_and_inner_box_explanations(tmp_path: Pat
     assert boxes[0]["role"] == "Container"
     assert boxes[1]["role"] == "Source truth"
     assert "boxes inside it" in boxes[0]["description"]
-    assert "inside Source truth" in boxes[1]["description"]
+    assert boxes[1]["description"] == (
+        "Inside Source truth, Catalog stores the source information that downstream boxes read or update."
+    )
+    assert "This box represents" not in boxes[1]["description"]
+
+
+def test_atlas_box_explanations_generate_action_oriented_node_copy() -> None:
+    boxes = atlas_box_explanations.extract_diagram_boxes_from_mermaid(
+        "\n".join(
+            [
+                "flowchart LR",
+                "  PlantOwner[Plant owner] --> Plant[One potted plant]",
+                "  Plant --> Sensor[Plant sensing unit]",
+                "  Sensor --> Decision[Care decision core]",
+                "  Decision --> Doser[Liquid dosing controller]",
+                "  Doser --> Log[Care event log]",
+                "  Log --> Interface[Owner status interface]",
+                "",
+            ]
+        )
+    )
+    by_label = {box.label: box.description for box in boxes}
+
+    assert by_label["Plant owner"] == "Plant owner makes or accepts the decisions this part of the flow depends on."
+    assert by_label["One potted plant"] == "One potted plant is the object whose state changes as the flow moves from trigger to outcome."
+    assert by_label["Plant sensing unit"] == "Plant sensing unit measures the current state and feeds the decision or proof step that follows."
+    assert by_label["Care decision core"] == "Care decision core decides whether the next action is allowed, blocked, or ready for review."
+    assert by_label["Liquid dosing controller"] == "Liquid dosing controller performs the bounded action and should expose the result for verification."
+    assert by_label["Care event log"] == "Care event log records the evidence needed to review what happened and why it was allowed."
+    assert by_label["Owner status interface"] == "Owner status interface shows the current state, available action, and evidence to the person using the system."
+    assert all("This box represents" not in description for description in by_label.values())
+
+
+def test_atlas_box_explanations_infer_common_governance_surface_actions() -> None:
+    boxes = atlas_box_explanations.extract_diagram_boxes_from_mermaid(
+        "\n".join(
+            [
+                "flowchart LR",
+                "  Product[Odylith product] --> Radar[Radar]",
+                "  Radar --> Plans[Technical Plans]",
+                "  Plans --> Atlas[Atlas topology map]",
+                "  Atlas --> Compass[Compass status]",
+                "  Compass --> Router[Subagent Router]",
+                "  Router --> Orchestrator[Subagent Orchestrator]",
+                "  Orchestrator --> Handshake[Context-to-Execution handshake]",
+                "",
+            ]
+        )
+    )
+    by_label = {box.label: box.description for box in boxes}
+
+    assert by_label["Odylith product"] == (
+        "Odylith product defines the product scope, outcome, and proof boundary this diagram is organizing."
+    )
+    assert by_label["Radar"] == "Radar tracks the work choices, priorities, and next slices that need governed follow-through."
+    assert by_label["Technical Plans"] == (
+        "Technical Plans turns selected work into an implementation path, validation obligation, and release gate."
+    )
+    assert by_label["Atlas topology map"] == (
+        "Atlas topology map shows the system shape, ownership boundaries, and flow relationships reviewers need to understand."
+    )
+    assert by_label["Compass status"] == "Compass status summarizes current runtime state, recent movement, and the evidence behind the status."
+    assert by_label["Subagent Router"] == "Subagent Router chooses where work should go next and records why that route is admissible."
+    assert by_label["Subagent Orchestrator"] == (
+        "Subagent Orchestrator coordinates bounded work across owners and brings completion evidence back into the flow."
+    )
+    assert by_label["Context-to-Execution handshake"] == (
+        "Context-to-Execution handshake passes agreed state across a boundary and preserves the rules the next step must obey."
+    )
+    assert all("concrete step" not in description for description in by_label.values())
 
 
 def test_load_catalog_rejects_thin_diagram_box_copy(tmp_path: Path) -> None:

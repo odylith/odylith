@@ -84,22 +84,78 @@ def _first_label_match(match: re.Match[str]) -> str:
 
 def _generated_container_description(label: str) -> str:
     return (
-        f"This container groups the {label} part of the diagram. "
-        "Read the boxes inside it as the concrete items that belong to that area."
+        f"{label} defines a responsibility zone in the diagram. "
+        "Read the boxes inside it as the concrete work, data, decisions, or proof owned by that zone."
     )
 
 
 def _generated_node_description(label: str, container_stack: Sequence[str]) -> str:
+    role_sentence = _node_action_sentence(label)
     if container_stack:
         container = container_stack[-1]
-        return (
-            f"This box represents {label} inside {container}. "
-            "Follow its arrows to see what feeds it and what it affects."
-        )
-    return (
-        f"This box represents {label}. "
-        "Follow its arrows to see what feeds it and what it affects."
-    )
+        return f"Inside {container}, {role_sentence}"
+    return role_sentence
+
+
+def _node_action_sentence(label: str) -> str:
+    clean = _clean_label(label).strip()
+    lowered = clean.lower()
+    subject = _sentence_subject(clean)
+    if _has_any(lowered, ("product", "program", "release")):
+        return f"{subject} defines the product scope, outcome, and proof boundary this diagram is organizing."
+    if _has_any(lowered, ("interface", "dashboard", "ui", "surface", "portal", "console", "app", "workspace")):
+        return f"{subject} shows the current state, available action, and evidence to the person using the system."
+    if _has_any(lowered, ("radar", "backlog", "workstream", "queue")):
+        return f"{subject} tracks the work choices, priorities, and next slices that need governed follow-through."
+    if _has_any(lowered, ("atlas", "diagram", "topology", "map")):
+        return f"{subject} shows the system shape, ownership boundaries, and flow relationships reviewers need to understand."
+    if _has_any(lowered, ("compass", "timeline", "status")):
+        return f"{subject} summarizes current runtime state, recent movement, and the evidence behind the status."
+    if _has_any(lowered, ("plan", "plans", "implementation path", "implementation sequence")):
+        return f"{subject} turns selected work into an implementation path, validation obligation, and release gate."
+    if _has_any(lowered, ("router", "routing")):
+        return f"{subject} chooses where work should go next and records why that route is admissible."
+    if _has_any(lowered, ("orchestrator", "coordination")):
+        return f"{subject} coordinates bounded work across owners and brings completion evidence back into the flow."
+    if _has_any(lowered, ("broker", "proposal", "intervention", "observation", "assist")):
+        return f"{subject} decides what should be shown to the operator and when it is safe to surface."
+    if _has_any(lowered, ("chatter", "chat", "message", "narration")):
+        return f"{subject} turns governed state into user-visible language without changing the underlying source truth."
+    if _has_any(lowered, ("handshake", "contract")):
+        return f"{subject} passes agreed state across a boundary and preserves the rules the next step must obey."
+    if _has_any(lowered, ("owner", "operator", "reviewer", "approver", "advocate", "user", "customer", "patient", "merchant", "scientist", "engineer", "maintainer")):
+        return f"{subject} makes or accepts the decisions this part of the flow depends on."
+    if _has_any(lowered, ("sensor", "sensing", "monitor", "measurement", "telemetry", "signal", "probe", "scanner")):
+        return f"{subject} measures the current state and feeds the decision or proof step that follows."
+    if _has_any(lowered, ("decision", "policy", "rule", "eligibility", "approval", "review", "gate", "core", "engine", "tribunal")):
+        return f"{subject} decides whether the next action is allowed, blocked, or ready for review."
+    if _has_any(lowered, ("controller", "actuator", "pump", "dosing", "executor", "execution", "worker", "runner", "adapter")):
+        return f"{subject} performs the bounded action and should expose the result for verification."
+    if _has_any(lowered, ("log", "record", "ledger", "evidence", "audit", "receipt", "proof", "history", "casebook")):
+        return f"{subject} records the evidence needed to review what happened and why it was allowed."
+    if _has_any(lowered, ("repo", "registry", "catalog", "store", "database", "source", "memory", "bundle", "snapshot")):
+        return f"{subject} stores the source information that downstream boxes read or update."
+    if _has_any(lowered, ("connector", "gateway", "api", "integration", "webhook", "bridge", "rail")):
+        return f"{subject} moves data or requests across a system boundary and should preserve handoff evidence."
+    if _looks_like_state_object(clean):
+        return f"{subject} is the object whose state changes as the flow moves from trigger to outcome."
+    return f"{subject} carries a concrete step in the flow; its incoming arrows show prerequisites and its outgoing arrows show what it enables next."
+
+
+def _sentence_subject(label: str) -> str:
+    text = _clean_label(label).strip().rstrip(".")
+    return text[:1].upper() + text[1:] if text else "This step"
+
+
+def _has_any(value: str, markers: Sequence[str]) -> bool:
+    return any(re.search(rf"\b{re.escape(marker)}\b", value) for marker in markers)
+
+
+def _looks_like_state_object(label: str) -> bool:
+    lowered = label.lower().strip()
+    if lowered.startswith(("one ", "a ", "an ", "the ")):
+        return True
+    return bool(re.search(r"\b(state|case|request|order|endpoint|contract|experiment|shipment|asset|record|object)\b", lowered))
 
 
 def extract_diagram_boxes_from_mermaid(source_text: str) -> tuple[DiagramBoxExplanation, ...]:
