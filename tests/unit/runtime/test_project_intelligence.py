@@ -340,8 +340,8 @@ def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path:
     assert '<div class="project-prose-lines"><p>Project tab now compiles from source records.</p><p>Current release: 0.2.0: Human Project Entry.</p><p>Worktree: mixed with 2 meaningful and 1 generated changed paths.</p></div>' in html
     assert (
         '<a class="project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-201" '
-        'data-tooltip="B-201: Dynamic Project intelligence" aria-label="B-201: Dynamic Project intelligence" '
-        'title="B-201: Dynamic Project intelligence">B-201</a>'
+        'data-tooltip="Dynamic Project intelligence" aria-label="Dynamic Project intelligence" '
+        'title="Dynamic Project intelligence">B-201</a>'
     ) in html
     assert '<a class="project-deeplink" target="_top" href="?tab=casebook">Casebook</a>' in html
     assert '<a class="project-deeplink" target="_top" href="?tab=registry">Registry</a>' in html
@@ -402,10 +402,10 @@ def test_project_intelligence_deeplink_renderer_links_governance_references() ->
         },
     )
 
-    assert 'href="?tab=radar&amp;workstream=B-321" data-tooltip="B-321: Customer intake workflow"' in html
-    assert 'href="?tab=casebook&amp;bug=CB-654" data-tooltip="CB-654: Rollback owner missing"' in html
-    assert 'href="?tab=atlas&amp;diagram=D-987" data-tooltip="D-987: First slice flow"' in html
-    assert 'title="B-321: Customer intake workflow"' in html
+    assert 'href="?tab=radar&amp;workstream=B-321" data-tooltip="Customer intake workflow"' in html
+    assert 'href="?tab=casebook&amp;bug=CB-654" data-tooltip="Rollback owner missing"' in html
+    assert 'href="?tab=atlas&amp;diagram=D-987" data-tooltip="First slice flow"' in html
+    assert 'title="Customer intake workflow"' in html
     assert 'href="?tab=registry">Registry</a>' in html
     assert 'href="?tab=radar">radar</a>' in html
     assert 'href="technical-plans/in-progress/demo.md"' in html
@@ -529,24 +529,105 @@ def test_project_intelligence_renders_greenfield_origin_from_proposal(tmp_path: 
     assert payload["product_story_title"] == "Product Story"
     story = payload["product_story"]
     assert isinstance(story, dict)
-    assert "the team can prove" in story["headline"]
+    assert "the team can prove" not in story["headline"]
+    assert "accept the" not in story["headline"].casefold()
+    assert story["release_contract"]
+    assert {row["label"] for row in story["release_contract"]} >= {"User value", "Core loop", "Proof"}
     assert len(story["paragraphs"]) >= 3
-    assert any("the product narrows to" in row for row in story["paragraphs"])
-    assert any("outside the first proof" in row for row in story["paragraphs"])
-    assert any("Together, those records keep release" in row for row in story["paragraphs"])
+    assert any("narrows that promise" in row for row in story["paragraphs"])
+    assert any("before scope expands" in row or "failure mode" in row or "outside the first slice" in row for row in story["paragraphs"])
+    assert any("After the product path is clear" in row for row in story["paragraphs"])
     source_records = story["supporting_records"]
-    assert any("Radar carries" in row for row in source_records)
-    assert any("Registry gives ownership" in row for row in source_records)
-    assert any("Atlas gives reviewers" in row for row in source_records)
-    assert any("Release 0.0.1 stays tied" in row for row in source_records)
+    assert any(row.startswith("Radar:") for row in source_records)
+    assert any(row.startswith("Registry:") for row in source_records)
+    assert any(row.startswith("Atlas:") for row in source_records)
+    assert any(row.startswith("Proof:") for row in source_records)
     assert "Product Story" in html
-    assert "the team can prove" in html
+    assert "the team can prove" not in html
+    assert "project-story-contract" in html
     assert "Radar" in html
     assert "Registry" in html
     assert "Atlas" in html
     assert "Topology spine" not in html
     assert "Story root" not in html
     assert "How the story becomes governance" not in html
+
+
+def test_project_intelligence_greenfield_story_skips_meta_acceptance_path(tmp_path: Path) -> None:
+    proposal = {
+        "mode": "greenfield_apply_ready",
+        "intent": {"title": "Knowledge Base Assistant"},
+        "project_intelligence": {
+            "intent": [
+                "Project objective: Help support teams answer customer questions with reviewed citations.",
+                "User or stakeholder outcome: A support agent uploads an article, asks a question, reviews the answer, and keeps a citation record.",
+                "Success condition: one article answer review path is proven with reviewer-visible citation evidence.",
+                "Non-goals: autonomous customer replies, production data ingestion, and unreviewed answer publication.",
+            ],
+            "owners": ["Support agent owns answer review and citation acceptance."],
+        },
+        "program": {"waves": []},
+        "release_plan": {"label": "0.0.1", "strategy": "Promote only after answer review proof exists."},
+        "observed_source": {"source_posture": "docs_only"},
+        "backlog": [
+            {
+                "title": "Guide knowledge assistant program",
+                "recommended_first_slice": (
+                    "Accept the answer-review path, component boundaries, release 0.0.1 proof gates, "
+                    "and explicit non-goals before implementation planning starts."
+                ),
+                "evidence_tier": "proposal",
+            },
+            {
+                "title": "Prove article ingestion and answer review",
+                "recommended_first_slice": (
+                    "Prove one article from upload through extracted answer, reviewer approval, and citation record."
+                ),
+                "evidence_tier": "proposal",
+            },
+        ],
+        "components": [
+            {"label": "Article Intake", "responsibility": "Owns upload and parsing."},
+            {"label": "Answer Review Core", "responsibility": "Owns answer review and citation evidence."},
+        ],
+        "diagrams": [{"title": "Article Answer Flow", "slug": "article-answer-flow"}],
+        "_accepted_project": {
+            "created": {
+                "workstreams": [
+                    {"idea_id": "B-001", "title": "Guide knowledge assistant program"},
+                    {"idea_id": "B-002", "title": "Prove article ingestion and answer review"},
+                ],
+                "diagrams": ["D-001"],
+            }
+        },
+    }
+
+    payload = builder.build_project_intelligence_payload(repo_root=tmp_path, shell_payload={"greenfield_proposal": proposal})
+    html = presenter.render_project_html({"project_intelligence": payload})
+
+    assert "one article from upload" in payload["scenario"][4].casefold()
+    assert "accept the answer-review path" not in payload["product_story"]["headline"].casefold()
+    assert "prove one article" in payload["product_story"]["headline"].casefold()
+    assert payload["governance_titles"]["B-002"] == "Prove article ingestion and answer review"
+    assert 'href="?tab=radar&amp;workstream=B-002" data-tooltip="Prove article ingestion and answer review"' in html
+
+
+def test_project_intelligence_greenfield_title_drops_operator_instructions(tmp_path: Path) -> None:
+    proposal = _apply_ready_greenfield_fixture(
+        tmp_path,
+        prompt=(
+            "Draft a product-first greenfield proposal for a robot that checks the status of my plants "
+            "and provides water and nutrients in a timely fashion. "
+            "The goal is to keep my plants healthy, optimal and alive. "
+            "Show the interpretation and direction choices first. Do not write records until I confirm."
+        ),
+    )
+
+    payload = builder.build_project_intelligence_payload(repo_root=tmp_path, shell_payload={"greenfield_proposal": proposal})
+
+    assert "draft a product" not in payload["title"].casefold()
+    assert "show the interpretation" not in payload["title"].casefold()
+    assert "do not write" not in payload["title"].casefold()
 
 
 def test_greenfield_workstream_body_does_not_repeat_full_project_title(tmp_path: Path) -> None:

@@ -140,6 +140,7 @@ def _product_story(value: object) -> str:
     standfirst = story.get("standfirst")
     paragraphs = [str(item).strip() for item in _sequence(story.get("paragraphs")) if str(item or "").strip()]
     supporting_records = [str(item).strip() for item in _sequence(story.get("supporting_records")) if str(item or "").strip()]
+    release_contract = _mappings(story.get("release_contract"))
     if not paragraphs and str(standfirst or "").strip():
         paragraphs.append(str(standfirst).strip())
     narrative = _mappings(story.get("narrative"))
@@ -152,12 +153,28 @@ def _product_story(value: object) -> str:
         for row in narrative
         if str(row.get("body") or "").strip()
     )
-    return _product_story_narrative(headline=headline, paragraphs=paragraphs, supporting_records=supporting_records)
+    return _product_story_narrative(
+        headline=headline,
+        paragraphs=paragraphs,
+        release_contract=release_contract,
+        supporting_records=supporting_records,
+    )
 
 
-def _product_story_narrative(*, headline: object, paragraphs: Sequence[str], supporting_records: Sequence[str]) -> str:
+def _product_story_narrative(
+    *,
+    headline: object,
+    paragraphs: Sequence[str],
+    release_contract: Sequence[Mapping[str, Any]],
+    supporting_records: Sequence[str],
+) -> str:
     headline_html = f"<h3>{_d(headline)}</h3>" if str(headline or "").strip() else ""
-    paragraphs_html = "".join(f"<p>{_d(paragraph)}</p>" for paragraph in paragraphs if str(paragraph or "").strip())
+    paragraph_rows = [paragraph for paragraph in paragraphs if str(paragraph or "").strip()]
+    first_paragraph = paragraph_rows[:1]
+    remaining_paragraphs = paragraph_rows[1:]
+    first_html = "".join(f"<p>{_d(paragraph)}</p>" for paragraph in first_paragraph)
+    remaining_html = "".join(f"<p>{_d(paragraph)}</p>" for paragraph in remaining_paragraphs)
+    contract_html = _product_story_contract(release_contract)
     records_html = (
         '<ul class="project-story-records">'
         + "".join(f"<li>{_d(row)}</li>" for row in supporting_records if str(row or "").strip())
@@ -167,9 +184,21 @@ def _product_story_narrative(*, headline: object, paragraphs: Sequence[str], sup
     )
     return (
         '<article class="project-story-narrative">'
-        f"{headline_html}{paragraphs_html}{records_html}"
+        f"{headline_html}{first_html}{contract_html}{remaining_html}{records_html}"
         "</article>"
     )
+
+
+def _product_story_contract(rows: Sequence[Mapping[str, Any]]) -> str:
+    items = [
+        (str(row.get("label") or "").strip(), str(row.get("body") or "").strip())
+        for row in rows
+        if str(row.get("label") or row.get("body") or "").strip()
+    ]
+    if not items:
+        return ""
+    cells = "".join(f"<div><dt>{_d(label)}</dt><dd>{_d(body)}</dd></div>" for label, body in items)
+    return f'<dl class="project-story-contract">{cells}</dl>'
 
 
 def _render_blank_actions(items: object) -> str:

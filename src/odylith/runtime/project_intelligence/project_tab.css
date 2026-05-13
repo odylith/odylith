@@ -444,6 +444,48 @@
   line-height: 1.45;
 }
 
+.project-story-contract {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0;
+  margin: 4px 0 2px;
+  border: 1px solid #dbeafe;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(248, 251, 255, 0.94), rgba(255, 255, 255, 0.98));
+  overflow: hidden;
+}
+
+.project-story-contract div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px 14px;
+  border-left: 1px solid #dbeafe;
+}
+
+.project-story-contract div:first-child {
+  border-left: 0;
+}
+
+.project-story-contract dt {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+.project-story-contract dd {
+  margin: 0;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.38;
+  overflow-wrap: anywhere;
+}
+
 .project-story-records {
   display: grid;
   gap: 8px;
@@ -853,6 +895,18 @@
   .project-empty-preview-grid {
     grid-template-columns: 1fr;
   }
+  .project-story-contract {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .project-story-contract div {
+    border-top: 1px solid #dbeafe;
+  }
+  .project-story-contract div:nth-child(-n + 2) {
+    border-top: 0;
+  }
+  .project-story-contract div:nth-child(odd) {
+    border-left: 0;
+  }
   .project-answer-card {
     min-height: 0;
   }
@@ -878,6 +932,7 @@
   .project-actor-grid,
   .project-job-grid,
   .project-signal-grid,
+  .project-story-contract,
   .project-scenario-body,
   .project-boundary-grid,
   .project-state-grid,
@@ -897,6 +952,15 @@
   .project-scenario-copy p {
     grid-template-columns: 1fr;
     gap: 4px;
+  }
+  .project-story-contract div {
+    border-left: 0;
+  }
+  .project-story-contract div:nth-child(n) {
+    border-top: 1px solid #dbeafe;
+  }
+  .project-story-contract div:first-child {
+    border-top: 0;
   }
   .project-state-grid strong {
     margin: 0 auto;

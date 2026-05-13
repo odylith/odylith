@@ -117,16 +117,19 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
         """(node) => {
             const paragraph = node.querySelector("p");
             const list = node.querySelector(".project-story-records");
+            const contract = node.querySelector(".project-story-contract dd");
             return {
               paragraphFontSize: paragraph ? window.getComputedStyle(paragraph).fontSize : "",
               paragraphLineHeight: paragraph ? window.getComputedStyle(paragraph).lineHeight : "",
               listFontSize: list ? window.getComputedStyle(list).fontSize : "",
+              contractFontSize: contract ? window.getComputedStyle(contract).fontSize : "",
               scrollDelta: node.scrollWidth - node.clientWidth,
             };
         }"""
     )
     assert story_layout["paragraphFontSize"] == "14px"
     assert story_layout["listFontSize"] == "14px"
+    assert story_layout["contractFontSize"] == "14px"
     assert int(story_layout["scrollDelta"]) <= 4
 
     scenario_layout = page.locator(".project-scenario").evaluate(

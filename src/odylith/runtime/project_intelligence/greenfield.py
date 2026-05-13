@@ -210,7 +210,7 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
         "known_label": "Known from proposal",
         "unknown_label": "Unproven before build",
         "confidence_label": "Confidence",
-        "governance_titles": _governance_titles(backlog=backlog, diagrams=diagrams),
+        "governance_titles": _governance_titles(backlog=backlog, diagrams=diagrams, accepted=accepted),
         "sources": {
             "proposal": sentence(accepted.get("source_path"))
             or str(Path(repo_root) / ".odylith/runtime/greenfield/active-proposal.v1.json")
@@ -271,8 +271,16 @@ def _text_rows(value: object, *, keys: Sequence[str] = ("statement", "question",
     return rows
 
 
-def _governance_titles(*, backlog: Sequence[Mapping[str, Any]], diagrams: Sequence[Mapping[str, Any]]) -> dict[str, str]:
+def _governance_titles(
+    *,
+    backlog: Sequence[Mapping[str, Any]],
+    diagrams: Sequence[Mapping[str, Any]],
+    accepted: Mapping[str, Any] | None = None,
+) -> dict[str, str]:
     titles: dict[str, str] = {}
+    created = dict_value((accepted or {}).get("created"))
+    created_workstreams = [dict(row) for row in list_value(created.get("workstreams")) if isinstance(row, Mapping)]
+    created_diagrams = list_value(created.get("diagrams"))
 
     def add(reference: object, title: object) -> None:
         ref = sentence(reference).upper()
@@ -280,10 +288,21 @@ def _governance_titles(*, backlog: Sequence[Mapping[str, Any]], diagrams: Sequen
         if ref and label and re.fullmatch(r"(?:B|D)-\d+", ref):
             titles[ref] = label
 
-    for row in backlog:
-        add(row.get("idea_id") or row.get("id"), row.get("title") or row.get("name"))
-    for row in diagrams:
-        add(row.get("diagram_id") or row.get("id"), row.get("title") or row.get("name") or row.get("slug"))
+    for index, row in enumerate(backlog):
+        created_row = created_workstreams[index] if index < len(created_workstreams) else {}
+        add(row.get("idea_id") or row.get("id") or created_row.get("idea_id"), row.get("title") or row.get("name") or created_row.get("title"))
+    for index, row in enumerate(diagrams):
+        created_row = created_diagrams[index] if index < len(created_diagrams) else {}
+        if isinstance(created_row, Mapping):
+            ref = created_row.get("diagram_id") or created_row.get("id")
+            label = created_row.get("title") or created_row.get("name")
+        else:
+            ref = created_row
+            label = ""
+        add(
+            row.get("diagram_id") or row.get("id") or ref,
+            row.get("title") or row.get("name") or row.get("slug") or label,
+        )
     return titles
 
 
@@ -313,7 +332,7 @@ def _first_path(*, program: Mapping[str, Any], release_plan: Mapping[str, Any], 
         if title.lower().startswith("govern "):
             continue
         first_slice = sentence(item.get("recommended_first_slice"))
-        if first_slice:
+        if first_slice and not _is_meta_first_path(title=title, first_slice=first_slice):
             return first_slice
     waves = [dict(row) for row in list_value(program.get("waves")) if isinstance(row, Mapping)]
     if waves:
@@ -326,6 +345,28 @@ def _first_path(*, program: Mapping[str, Any], release_plan: Mapping[str, Any], 
     if backlog:
         return sentence(backlog[0].get("recommended_first_slice") or backlog[0].get("title"), "First proposed workstream")
     return "One accepted path moves from proposal intent to validated first slice."
+
+
+def _is_meta_first_path(*, title: str, first_slice: str) -> bool:
+    text = f"{title} {first_slice}".casefold()
+    if not text.strip():
+        return False
+    if sentence(title).casefold().startswith(("guide ", "shape ", "govern ")):
+        return True
+    return any(
+        marker in text
+        for marker in (
+            "accept or revise",
+            "accept the",
+            "component boundaries",
+            "proof gates",
+            "before implementation planning",
+            "coding-readiness",
+            "project shape",
+            "project direction",
+            "proposal review",
+        )
+    )
 
 
 def _project_intro(*, title: str, intent: Mapping[str, Any], project: Mapping[str, Any]) -> str:
@@ -390,7 +431,7 @@ def _display_title(*, raw_title: str, intro: str) -> str:
 
 
 def _project_name_candidate(value: str) -> str:
-    text = sentence(value)
+    text = _strip_prompt_directives(sentence(value))
     lowered = text.casefold()
     if any(
         marker in lowered
@@ -406,6 +447,7 @@ def _project_name_candidate(value: str) -> str:
     for prefix in (
         "draft a greenfield proposal for ",
         "draft a product-first greenfield proposal for ",
+        "draft a product first greenfield proposal for ",
         "build an ",
         "build a ",
         "build ",
@@ -421,11 +463,74 @@ def _project_name_candidate(value: str) -> str:
 
 def _title_head(value: str) -> str:
     text = sentence(value)
+    that_head, that_sep, that_tail = _partition_casefold(text, " that ")
+    if that_sep and _is_generic_product_noun(that_head):
+        tail_head = _clause_head(that_tail)
+        if tail_head:
+            return f"{that_head.strip()} that {tail_head}".strip(" .")
     for marker in (" that ", " around ", " before ", " with ", " by ", " to "):
-        head, sep, _ = text.partition(marker)
+        head, sep, _ = _partition_casefold(text, marker)
         if sep:
             return head.strip(" .")
     return text.strip(" .")
+
+
+def _strip_prompt_directives(value: str) -> str:
+    text = sentence(value)
+    if not text:
+        return ""
+    command_starts = (
+        "show ",
+        "do not ",
+        "don't ",
+        "please ",
+        "think of ",
+        "make sure ",
+        "use ",
+    )
+    kept: list[str] = []
+    for raw in re.split(r"(?<=[.!?])\s+", text):
+        clause = raw.strip()
+        if not clause:
+            continue
+        lowered = clause.casefold()
+        if kept and lowered.startswith(command_starts):
+            continue
+        kept.append(clause)
+    return " ".join(kept) or text
+
+
+def _is_generic_product_noun(value: str) -> bool:
+    normalized = sentence(value).casefold().strip(" .")
+    normalized = re.sub(r"^(?:a|an|the)\s+", "", normalized)
+    return normalized in {
+        "app",
+        "application",
+        "assistant",
+        "platform",
+        "product",
+        "robot",
+        "service",
+        "system",
+        "tool",
+        "workflow",
+    }
+
+
+def _clause_head(value: str) -> str:
+    text = sentence(value).strip(" .")
+    for marker in (",", ";", ". ", " and ", " while ", " so ", " before "):
+        head, sep, _tail = _partition_casefold(text, marker)
+        if sep and head.strip():
+            return head.strip(" .")
+    return text
+
+
+def _partition_casefold(value: str, marker: str) -> tuple[str, str, str]:
+    index = value.casefold().find(marker.casefold())
+    if index < 0:
+        return value, "", ""
+    return value[:index], value[index : index + len(marker)], value[index + len(marker) :]
 
 
 def _title_case(value: str) -> str:

@@ -96,15 +96,15 @@ def _tooltip_for_token(token: str, titles: Mapping[str, object] | None = None) -
     artifact_title = title_index.get(canonical) or title_index.get(value)
     if re.fullmatch(_BUG_RE, value, re.IGNORECASE):
         if artifact_title:
-            return f"{canonical}: {artifact_title}"
+            return artifact_title
         return f"Casebook bug {canonical}. Open Casebook context."
     if re.fullmatch(_WORKSTREAM_RE, value, re.IGNORECASE):
         if artifact_title:
-            return f"{canonical}: {artifact_title}"
+            return artifact_title
         return f"Workstream {canonical}. Open Radar context."
     if re.fullmatch(_DIAGRAM_RE, value, re.IGNORECASE):
         if artifact_title:
-            return f"{canonical}: {artifact_title}"
+            return artifact_title
         return f"Diagram {canonical}. Open Atlas context."
     return ""
 

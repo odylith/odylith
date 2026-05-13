@@ -38,7 +38,22 @@ def build_greenfield_product_story(
     workstream_items = _workstream_story_items(created=created, backlog=backlog)
     component_items = _component_story_items(created=created, components=components)
     diagram_items = _diagram_story_items(created=created, diagrams=diagrams)
-    headline = _greenfield_headline(first_path=first_path, title=title)
+    product_line = _greenfield_product_line(objective=objective, intro=intro, outcome=outcome)
+    headline = _greenfield_headline(
+        first_path=first_path,
+        title=title,
+        product_line=product_line,
+        release=release,
+    )
+    release_contract = _greenfield_release_contract(
+        product_line=product_line,
+        first_path=first_path,
+        release=release,
+        release_text=release_text,
+        success=success,
+        non_goals=non_goals,
+        components=components,
+    )
     paragraphs = _greenfield_paragraphs(
         objective=objective,
         intro=intro,
@@ -49,7 +64,6 @@ def build_greenfield_product_story(
         first_path=first_path,
         release=release,
         release_text=release_text,
-        actors=actors,
         workstreams=workstream_items,
         components=component_items,
         diagrams=diagram_items,
@@ -65,6 +79,7 @@ def build_greenfield_product_story(
         "standfirst": "",
         "paragraphs": paragraphs,
         "supporting_records": supporting_records,
+        "release_contract": release_contract,
         "actors": _story_actor_items(actors),
     }
 
@@ -139,17 +154,21 @@ def project_intent_line(project: Mapping[str, Any], prefix: str) -> str:
     return ""
 
 
-def _greenfield_headline(*, first_path: str, title: str) -> str:
-    path = _first_path_subject(first_path)
+def _greenfield_headline(*, first_path: str, title: str, product_line: str, release: str) -> str:
+    release_label = sentence(release)
+    release_prefix = f"Release {release_label}: " if release_label else ""
+    path = _story_subject(first_path)
     if path:
         subject = _lower_first(path).strip()
-        if subject.lower().startswith(("one ", "a ", "an ")):
-            return f"{_capitalize_first(subject)} the team can prove"
-        if subject.lower().startswith("the "):
-            return f"One {subject[4:].strip()} the team can prove"
-        return f"One {subject} the team can prove"
+        if subject.startswith(("one ", "a ", "an ")):
+            return short(f"{release_prefix}prove {subject} before expanding the product", limit=120)
+        return short(f"{release_prefix}prove {subject} before expanding the product", limit=120)
+    promise = sentence(product_line).rstrip(".")
+    if promise and not _is_meta_project_line(promise):
+        return short(f"{release_prefix}{promise}", limit=120)
     clean_title = sentence(title, "Project").rstrip(".")
-    return f"{clean_title} starts with one accepted path"
+    suffix = f" release {release_label}" if release_label else " first release"
+    return short(f"{clean_title}{suffix} starts with one provable path", limit=120)
 
 
 def _source_headline(
@@ -351,7 +370,6 @@ def _greenfield_paragraphs(
     first_path: str,
     release: str,
     release_text: str,
-    actors: Sequence[tuple[str, str, str]],
     workstreams: Sequence[Mapping[str, str]],
     components: Sequence[Mapping[str, str]],
     diagrams: Sequence[Mapping[str, str]],
@@ -359,32 +377,23 @@ def _greenfield_paragraphs(
     paragraphs: list[str] = []
     release_label = sentence(release, "0.0.1")
     product_line = _greenfield_product_line(objective=objective, intro=intro, outcome=outcome)
-    path_subject = _first_path_subject(first_path)
-    boundary = _risk_boundary(failure=failure, non_goals=non_goals)
+    path_subject = _story_subject(first_path)
     if not product_line and first_path:
-        product_line = f"Release {release_label} starts with {_lower_first(first_path).rstrip('.')}."
+        product_line = f"Release {release_label} starts with {_lower_first(_story_sentence(first_path)).rstrip('.')}."
     if product_line:
         paragraph = product_line
         if path_subject:
-            paragraph += f" For release {release_label}, the product narrows to {path_subject}."
-        if boundary:
-            if boundary.startswith("the failure mode: "):
-                paragraph += (
-                    " It also names the failure mode before implementation turns it into a product claim: "
-                    f"{boundary.removeprefix('the failure mode: ')}."
-                )
-            else:
-                paragraph += f" It also keeps {boundary} outside the first proof until the team chooses those obligations deliberately."
+            paragraph += f" Release {release_label} narrows that promise to {_lower_first(path_subject).rstrip('.')}."
         paragraphs.append(paragraph)
     first_path_clause = _first_path_clause(first_path)
-    actor_line = _actor_narrative(actors)
-    release_line = _story_sentence(release_text)
     if first_path_clause:
         paragraphs.append(
-            f"The first slice {first_path_clause}. "
-            f"{actor_line + ' ' if actor_line else ''}"
-            f"{release_line or _story_sentence(success) or f'Release {release_label} proves this path before the project expands.'}"
+            f"The first path {first_path_clause}. "
+            f"{_greenfield_proof_sentence(success=success, release_text=release_text, first_path=first_path)}"
         )
+    deferred = _deferred_scope_sentence(non_goals=non_goals, failure=failure, release=release_label, subject=path_subject)
+    if deferred:
+        paragraphs.append(deferred)
     artifact_line = _greenfield_artifact_line(workstreams=workstreams, components=components, diagrams=diagrams, release=release_label)
     if artifact_line:
         paragraphs.append(artifact_line)
@@ -409,19 +418,71 @@ def _greenfield_product_line(*, objective: str, intro: str, outcome: str) -> str
     return promise
 
 
+def _greenfield_release_contract(
+    *,
+    product_line: str,
+    first_path: str,
+    release: str,
+    release_text: str,
+    success: str,
+    non_goals: str,
+    components: Sequence[Mapping[str, Any]],
+) -> list[dict[str, str]]:
+    release_label = sentence(release, "0.0.1")
+    rows: list[dict[str, str]] = []
+    user_value = _contract_body(product_line)
+    first_path_body = _contract_body(first_path)
+    proof = _greenfield_proof_sentence(success=success, release_text=release_text, first_path=first_path)
+    component_text = _join(
+        [
+            sentence(component.get("label") or component.get("name") or component.get("component_id"))
+            for component in components[:4]
+        ]
+    )
+    excluded = _contract_body(non_goals)
+    if user_value:
+        rows.append({"label": "User value", "body": user_value})
+    if first_path_body:
+        rows.append({"label": "Core loop", "body": first_path_body})
+    if component_text:
+        rows.append({"label": "Owned pieces", "body": component_text})
+    if proof:
+        rows.append({"label": "Proof", "body": proof})
+    if excluded:
+        rows.append({"label": "Excluded for now", "body": excluded})
+    if not rows:
+        rows.append({"label": f"Release {release_label} contract", "body": "One accepted path, one proof boundary, and no source-backed implementation claim until validation exists."})
+    return rows[:5]
+
+
+def _contract_body(value: str) -> str:
+    text = _story_sentence(value).rstrip(".")
+    if not text or _is_meta_project_line(text):
+        return ""
+    return short(text, limit=190)
+
+
 def _is_meta_project_line(value: str) -> bool:
     text = sentence(value).casefold()
     if not text:
         return False
     meta_markers = (
+        "accept or revise",
+        "accept the",
         "accepted product truth",
         "accepted project truth",
         "before backlog",
         "before any generated artifact",
+        "before implementation planning",
+        "component boundaries",
+        "coding-readiness",
         "governance artifact",
         "governance records",
         "governable as one product spine",
+        "implementation planning",
+        "proof gates",
         "project spine",
+        "project shape",
         "proposal expansion",
         "source boundary",
     )
@@ -445,6 +506,45 @@ def _risk_boundary(*, failure: str, non_goals: str) -> str:
     return "the later scope: broad automation, live integrations, and irreversible decisions"
 
 
+def _deferred_scope_sentence(*, non_goals: str, failure: str, release: str, subject: str) -> str:
+    excluded = _contract_body(non_goals)
+    reason_subject = _lower_first(subject).rstrip(".") if subject else "one bounded first path"
+    if excluded:
+        return (
+            f"Release {release} deliberately excludes {excluded}. "
+            f"Those items stay out because the product must prove {reason_subject} before scope expands."
+        )
+    boundary = _risk_boundary(failure=failure, non_goals=non_goals)
+    if boundary.startswith("the failure mode: "):
+        return (
+            "The first release names the failure mode before implementation turns it into a product claim: "
+            f"{boundary.removeprefix('the failure mode: ')}."
+        )
+    return (
+        f"Release {release} keeps broader automation, live integrations, and irreversible decisions outside the first slice "
+        f"until the product proves {reason_subject}."
+    )
+
+
+def _greenfield_proof_sentence(*, success: str, release_text: str, first_path: str) -> str:
+    proof = next(
+        (
+            _story_sentence(candidate).rstrip(".")
+            for candidate in (success, release_text)
+            if _story_sentence(candidate) and not _is_meta_project_line(_story_sentence(candidate))
+        ),
+        "",
+    )
+    if proof:
+        if proof.casefold().startswith(("promote ", "release ", "only ")):
+            return f"{proof}."
+        return f"Proof must show {proof[0].lower() + proof[1:] if proof else proof}."
+    path = _story_subject(first_path)
+    if path:
+        return f"Proof must show that {_lower_first(path).rstrip('.')} happened inside the accepted boundary and left reviewer-visible evidence."
+    return "Proof must show the first path happened, stayed inside its accepted boundary, and left reviewer-visible evidence."
+
+
 def _greenfield_artifact_line(
     *,
     workstreams: Sequence[Mapping[str, str]],
@@ -452,19 +552,19 @@ def _greenfield_artifact_line(
     diagrams: Sequence[Mapping[str, str]],
     release: str,
 ) -> str:
-    workstream_text = _first_titles(workstreams[:2], fallback="")
+    workstream_text = _first_product_titles(workstreams, fallback="")
     component_text = _first_titles(components[:2], fallback="")
     diagram_text = _first_titles(diagrams[:2], fallback="")
     clauses: list[str] = []
     if workstream_text:
-        clauses.append(f"Radar turns the story into {workstream_text}")
+        clauses.append(f"Radar carries the backlog and proof work in {workstream_text}")
     if component_text:
-        clauses.append(f"Registry gives ownership to {component_text}")
+        clauses.append(f"Registry assigns ownership to {component_text}")
     if diagram_text:
         clauses.append(f"Atlas gives reviewers {diagram_text}")
     if not clauses:
         return ""
-    return f"{_join(clauses)}. Together, those records keep release {release} tied to one promise, one first path, and one proof boundary."
+    return f"After the product path is clear, Odylith decomposes it into governed work: {_join(clauses)}. Together, those records keep release {release} tied to one product promise, one first path, and one proof boundary."
 
 
 def _greenfield_supporting_records(
@@ -474,15 +574,15 @@ def _greenfield_supporting_records(
     diagrams: Sequence[Mapping[str, str]],
     release: str,
 ) -> list[str]:
-    workstream_text = _first_titles(workstreams[:3], fallback="the first workstream sequence")
+    workstream_text = _first_product_titles(workstreams, fallback="the first workstream sequence", limit=3)
     component_text = _first_titles(components[:3], fallback="the first component boundaries")
     diagram_text = _first_titles(diagrams[:3], fallback="the first architecture views")
     release_label = sentence(release, "0.0.1")
     return [
-        f"Radar carries {workstream_text}.",
-        f"Registry gives ownership to {component_text}.",
-        f"Atlas gives reviewers {diagram_text}.",
-        f"Release {release_label} stays tied to one product promise, one first path, and one proof boundary.",
+        f"Radar: {workstream_text}.",
+        f"Registry: {component_text}.",
+        f"Atlas: {diagram_text}.",
+        f"Proof: release {release_label} stays tied to one product promise, one first path, and one evidence boundary.",
     ]
 
 
@@ -509,40 +609,19 @@ def _story_actor_items(actors: Sequence[tuple[str, str, str]]) -> list[dict[str,
     ]
 
 
-def _actor_story(actors: Sequence[tuple[str, str, str]]) -> str:
-    names = [sentence(title) for _, title, _ in actors[:4] if sentence(title)]
-    if not names:
-        return ""
-    if len(names) == 1:
-        return f"{names[0]} is the first accountable actor."
-    return f"{', '.join(names[:-1])}, and {names[-1]} keep the first path accountable."
-
-
-def _actor_narrative(actors: Sequence[tuple[str, str, str]]) -> str:
-    rows: list[str] = []
-    for _role, title, body in actors[:4]:
-        actor = sentence(title)
-        action = _lower_first(body).rstrip(".")
-        if actor and action:
-            rows.append(f"{actor} {action}")
-        elif actor:
-            rows.append(actor)
-    if not rows:
-        return ""
-    if len(rows) == 1:
-        return f"In this first slice, {rows[0]}."
-    return f"In this first slice, {'; '.join(rows[:-1])}; and {rows[-1]}."
-
-
 def _first_path_subject(value: str) -> str:
     text = sentence(value).strip().rstrip(".")
     if not text:
         return ""
     lowered = text.lower()
-    for prefix in ("prove ", "validate ", "show ", "build ", "create ", "define "):
+    if _is_meta_project_line(text):
+        return ""
+    for prefix in ("prove ", "validate ", "show ", "build ", "create ", "define ", "accept ", "guide ", "shape "):
         if lowered.startswith(prefix):
             text = text[len(prefix) :]
             break
+    if _is_meta_project_line(text):
+        return ""
     for marker in (" from ", " through ", " with ", " before "):
         head, sep, _tail = text.partition(marker)
         if sep and 8 <= len(head) <= 96:
@@ -554,12 +633,21 @@ def _first_path_clause(value: str) -> str:
     text = sentence(value).strip().rstrip(".")
     if not text:
         return "proves the first journey"
+    if _is_meta_project_line(text):
+        return "proves the first usable product path"
     lowered = text.lower()
     for verb in ("prove", "validate", "show", "build", "create", "define"):
         prefix = f"{verb} "
         if lowered.startswith(prefix):
             return f"{verb}s {text[len(prefix):]}"
-    return f"follows {_lower_first(text).rstrip('.')}"
+    return f"moves through {_lower_first(text).rstrip('.')}"
+
+
+def _story_subject(value: str) -> str:
+    text = _first_path_subject(value)
+    if not text or _is_meta_project_line(text):
+        return ""
+    return text
 
 
 def _workstream_story_items(*, created: Mapping[str, Any], backlog: Sequence[Mapping[str, Any]]) -> list[dict[str, str]]:
@@ -613,6 +701,32 @@ def _first_titles(values: Sequence[Mapping[str, str]], *, fallback: str) -> str:
     if not titles:
         return fallback
     return _join(titles)
+
+
+def _first_product_titles(values: Sequence[Mapping[str, str]], *, fallback: str, limit: int = 2) -> str:
+    titles = [
+        title
+        for row in values
+        if (title := sentence(row.get("title"))) and not _is_meta_record_title(title)
+    ][:limit]
+    if not titles:
+        titles = [sentence(row.get("title")) for row in values[:limit] if sentence(row.get("title"))]
+    if not titles:
+        return fallback
+    return _join(titles)
+
+
+def _is_meta_record_title(value: str) -> bool:
+    text = sentence(value).casefold()
+    return text.startswith(("govern project direction", "guide ", "shape ")) or any(
+        marker in text
+        for marker in (
+            "project spine",
+            "project direction",
+            "project shape",
+            "program boundary",
+        )
+    )
 
 
 def _join(values: Sequence[str]) -> str:
