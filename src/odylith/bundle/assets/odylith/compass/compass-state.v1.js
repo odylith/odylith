@@ -920,11 +920,15 @@
         : "";
       const requestedWindow = state && state.window === "24h" ? "24h" : "48h";
       const windows = standupBriefWindowOrder(requestedWindow);
-      const todayToken = runtimeSnapshotDayToken(payload) || toLocalDateToken(new Date());
+      const snapshotToken = runtimeSnapshotDayToken(payload);
+      const browserToken = toLocalDateToken(new Date());
+      const todayToken = snapshotToken || browserToken;
+      const liveToken = calendarMaxDateToken(payload);
       const dates = await loadAvailableHistoryDates();
       for (const dateToken of dates) {
         if (!DATE_RE.test(dateToken)) continue;
         if (dateToken === todayToken) continue;
+        if (dateToken === liveToken && (dateToken === snapshotToken || dateToken === browserToken)) continue;
         const history = await loadHistorySnapshot(dateToken, { allowUnknownDirectFetch: false });
         const historyPayload = history && history.payload && typeof history.payload === "object" ? history.payload : null;
         if (!historyPayload || historyPayload === payload) continue;

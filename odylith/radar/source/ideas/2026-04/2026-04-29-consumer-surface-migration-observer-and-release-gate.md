@@ -1680,3 +1680,25 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   not require migration; upgrade adoption is limited to managed guidance,
   runtime behavior, regenerated browser assets, and install-managed bundle
   mirrors.
+- The final installed-guidance byte-budget and bundled asset settlement is
+  covered by `migration-observer:0.1.15:guidance-and-skills:623ced2366da`
+  and `migration-observer:0.1.15:install-managed-assets:bdc675d57366`. The
+  pass keeps installed guidance below the root managed-block size ceiling,
+  preserves the greenfield Product Intent and proposal-stdout contracts, and
+  keeps the source and bundled Odylith guidance mirrors byte-aligned. Existing
+  consumer governance source truth does not require migration; upgrade adoption
+  is limited to managed guidance text and install-managed bundle assets.
+- The Compass browser fallback and cross-surface link settlement is covered by
+  `migration-observer:0.1.15:browser-surfaces:d5dc5871d9a4` and
+  `migration-observer:0.1.15:install-managed-assets:7d7402d27244`. The pass
+  prevents Compass from probing a missing active-day history shard, preserves
+  retained-history fallback brief rendering, and keeps current-workstream Radar
+  links on the `view=plan` deep-link contract while proving the shell round trip.
+  Existing consumer source truth does not need a custom migration; upgraded
+  repos receive regenerated browser assets and bundled managed runtime mirrors.
+- The post-Radar-refresh settlement for that same pass is covered by
+  `migration-observer:0.1.15:browser-surfaces:c71a968ac15c` and
+  `migration-observer:0.1.15:install-managed-assets:1c3e51706d04`. These
+  fingerprints bind the regenerated Radar outputs and install-managed mirrors
+  after the migration assessment itself was refreshed. Existing consumer repos
+  still need no bespoke data migration beyond normal dashboard/runtime refresh.
