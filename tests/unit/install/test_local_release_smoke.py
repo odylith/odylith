@@ -260,13 +260,13 @@ def test_release_smoke_requires_installed_greenfield_guidance_uses_host_apply(tm
     repo_root.mkdir()
     _write_greenfield_guidance(
         repo_root,
-        "Use Product Intent Confirmation before proposal expansion. Include the product story. Use odylith greenfield apply after host-authored proposal JSON is reviewed. Do not use prompt-only greenfield create.\n",
+        "Use Product Intent Confirmation before proposal expansion. Include the product story. Use odylith greenfield apply after host-authored proposal JSON is reviewed. Do not inspect Odylith source after confirmation. Do not use prompt-only greenfield create.\n",
     )
 
     module._require_greenfield_guidance_uses_host_apply(repo_root=repo_root, label="unit")
 
     (repo_root / "AGENTS.md").write_text(
-        "Use Product Intent Confirmation before proposal expansion. Include the product story. Use odylith greenfield apply after host-authored proposal JSON is reviewed. host model drafts\n",
+        "Use Product Intent Confirmation before proposal expansion. Include the product story. Use odylith greenfield apply after host-authored proposal JSON is reviewed. Do not inspect Odylith source after confirmation. host model drafts\n",
         encoding="utf-8",
     )
     try:

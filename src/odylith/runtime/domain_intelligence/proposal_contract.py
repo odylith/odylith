@@ -99,6 +99,37 @@ def build_proposal_contract() -> dict[str, Any]:
             "Use odylith_assumption for useful architecture choices that need confirmation.",
             "Never mark source-backed ownership or scientific/math correctness from prompt text alone.",
         ],
+        "post_confirmation_handoff": {
+            "complete_authoring_surface": True,
+            "contract_use": [
+                "Use this CLI response as the complete host-facing proposal contract.",
+                "If the host needs machine-readable detail, rerun the same command with --format json and read that output.",
+                "Do not inspect Odylith source files, Python modules, local examples, or generated runtime files to discover schema fields.",
+            ],
+            "forbidden_host_steps": [
+                "Do not search src/odylith, .odylith, odylith/skills, or installed bundle files for greenfield schema after intent confirmation.",
+                "Do not create a proposal by copying local examples or template fixtures.",
+                "Do not run prompt-only greenfield create.",
+                "Do not write governed records before the operator accepts the proposal.",
+            ],
+            "allowed_host_steps": [
+                "Author odylith-greenfield-proposal.json from the confirmed product intent, observed source posture, and this contract.",
+                "Keep product story, actors, systems, workstreams, components, diagrams, risks, proof, and release gates project-specific.",
+                "Ask the operator to review or accept the proposal before apply.",
+                "Apply only with greenfield apply --proposal-file odylith-greenfield-proposal.json --confirm.",
+            ],
+            "canonical_files": [
+                {
+                    "path": "odylith-greenfield-proposal.json",
+                    "purpose": "host-authored proposal for operator review and greenfield apply",
+                    "governed_record": False,
+                }
+            ],
+            "canonical_commands": [
+                "odylith greenfield propose --repo-root . --prompt \"<confirmed request>\" --confirm-intent --format json",
+                "odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm --release 0.0.1",
+            ],
+        },
         "minimum_content": {
             "backlog": (
                 "an explicit parent/umbrella program workstream plus child workstreams when the project has multiple meaningful boundaries; "

@@ -243,6 +243,13 @@ def test_greenfield_guidance_uses_product_intent_then_host_authored_apply_path()
         compact_text = " ".join(text.split())
         assert "Product Intent Confirmation" in text, path
         assert "greenfield apply" in text, path
+        assert (
+            "do not inspect Odylith source" in text
+            or "Do not search `src/odylith`" in text
+            or "do not search Odylith source" in text
+            or "rather than searching Odylith source" in text
+            or "do not search odylith source" in compact_text.casefold()
+        ), path
         lowered = text.casefold()
         assert "prompt-only `greenfield create`" in lowered or "prompt-only greenfield create" in lowered, path
         assert (
@@ -254,8 +261,10 @@ def test_greenfield_guidance_uses_product_intent_then_host_authored_apply_path()
         assert (
             "host authors" in compact_text
             or "host then authors" in compact_text
+            or "the host authors" in compact_text.casefold()
             or "host-authored proposal JSON" in compact_text
             or "author the project-specific proposal JSON" in compact_text
+            or "Author the project-specific proposal JSON" in compact_text
             or "write the short Product Intent Confirmation yourself" in compact_text
         ), path
         for token in forbidden:

@@ -42,8 +42,10 @@ placeholder products in response to a show-me request.
    the interpreted product story, actors, systems, assumptions, ambiguities,
    and confirm/edit/reject gate. After the operator confirms the
    interpretation, rerun with `--confirm-intent` for the proposal schema and
-   proof contract; the host authors the proposal JSON from the confirmed intent,
-   and applies it with `greenfield apply --proposal-file ... --confirm`.
+   proof contract; treat that output as the complete handoff and do not search
+   Odylith source, `.odylith`, bundle files, or local examples for schema. The
+   host authors the proposal JSON from the confirmed intent, and applies it
+   with `greenfield apply --proposal-file ... --confirm`.
    Do not use prompt-only `greenfield create`, canned domain scaffolds, dumped
    tool internals, or code before the product gates are accepted. When the CLI
    returns proposal stdout directly, do not hide it behind collapsed tool output

@@ -196,6 +196,13 @@ _GREENFIELD_PROJECT_FIRST_GUARDS = (
     "coding-readiness gates",
     "direction options",
 )
+_GREENFIELD_NO_SOURCE_SPELUNKING_GUARDS = (
+    "Do not inspect Odylith source",
+    "do not inspect Odylith source",
+    "Do not search `src/odylith`",
+    "do not search Odylith source",
+    "rather than searching Odylith source",
+)
 
 
 def _require_no_greenfield_schema_loop(*, output: str, label: str) -> None:
@@ -230,6 +237,8 @@ def _require_greenfield_guidance_uses_host_apply(*, repo_root: Path, label: str)
             raise RuntimeError(f"{label} guidance omits manual proposal JSON guard: {relative_path}")
         if not any(token in compact_text for token in _GREENFIELD_PROJECT_FIRST_GUARDS):
             raise RuntimeError(f"{label} guidance omits project-first greenfield guard: {relative_path}")
+        if not any(token in text for token in _GREENFIELD_NO_SOURCE_SPELUNKING_GUARDS):
+            raise RuntimeError(f"{label} guidance omits post-confirmation no-source-spelunking guard: {relative_path}")
         for token in _STALE_GREENFIELD_GUIDANCE_TOKENS:
             if token in text:
                 raise RuntimeError(f"{label} guidance still teaches stale greenfield schema-repair flow: {relative_path}: {token}")

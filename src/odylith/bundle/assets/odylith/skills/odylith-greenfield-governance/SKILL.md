@@ -25,9 +25,13 @@ architect a new project before source code exists.
    replace it with a thin host-written summary; surface the actual confirmation
    or proposal content that matters.
 5. After the operator confirms or edits the intent, use
-   `greenfield propose --confirm-intent` for the proposal schema and proof
-   contract. The host authors the proposal JSON from the confirmed intent and
-   source posture, usually as `odylith-greenfield-proposal.json`. This is the only point where
+   `greenfield propose --confirm-intent` for the complete proposal schema and
+   proof contract. Treat that stdout or its `--format json` output as the
+   full host-facing handoff. Do not search `src/odylith`, `.odylith`,
+   `odylith/skills`, installed bundle files, local examples, or Python modules
+   to discover schema fields after confirmation. The host authors the proposal
+   JSON from the confirmed intent and source posture, usually as
+   `odylith-greenfield-proposal.json`. This is the only point where
    every workstream, component, architecture view, wave, risk, validation
    obligation, memory prior, and transfer prior should exist.
 6. Do not write records until the operator confirms the host-authored

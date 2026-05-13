@@ -108,9 +108,12 @@ Odylith returns a no-write reasoning request. The host must write the short
 Product Intent Confirmation in chat from live reasoning before any proposal
 records exist: product story, actors, systems, assumptions, ambiguities, and the
 proceed/edit/reject gate. After the operator confirms that intent,
-`--confirm-intent` returns the proposal schema and proof contract; the host then
-authors the project-specific proposal JSON, and `greenfield apply` validates it,
-runs the Tribunal write gate, and writes records only with explicit
+`--confirm-intent` returns the complete host-facing proposal schema and proof
+contract. If the host needs machine-readable detail, use the same command with
+`--format json`; do not inspect Odylith source files, `.odylith`, bundle files,
+Python modules, or local examples to discover schema fields. The host then
+authors the project-specific proposal JSON, and `greenfield apply` validates
+it, runs the Tribunal write gate, and writes records only with explicit
 confirmation:
 
 ```bash

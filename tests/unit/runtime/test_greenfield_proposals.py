@@ -1173,7 +1173,13 @@ def test_greenfield_prompt_returns_host_reasoning_contract(tmp_path) -> None:
     assert "Default the first greenfield release target to exactly 0.0.1" in " ".join(
         proposal["reasoning_contract"]["quality_bar"]
     )
+    handoff = proposal["post_confirmation_handoff"]
+    assert handoff["complete_authoring_surface"] is True
+    assert "Do not inspect Odylith source files" in " ".join(handoff["contract_use"])
+    assert "src/odylith" in " ".join(handoff["forbidden_host_steps"])
+    assert "odylith-greenfield-proposal.json" in handoff["canonical_files"][0]["path"]
     assert "live from the confirmed Product Intent Confirmation" in proposal["host_instruction"]
+    assert "do not inspect Odylith source files" in proposal["host_instruction"]
     assert "canned domain buckets" in proposal["host_instruction"]
     assert "proposal_template" not in proposal
     assert "canonical_proposal" not in proposal
@@ -1247,6 +1253,11 @@ def test_greenfield_confirm_intent_shows_proposal_review_gate(tmp_path, capsys) 
     assert "- files changed: none" in output
     assert "- generated governance artifacts: none" in output
     assert "Host task" in output
+    assert "Host handoff" in output
+    assert "complete host-facing proposal contract" in output
+    assert "do not search Odylith source" in output
+    assert "Stop: Do not search src/odylith" in output
+    assert "Allowed next steps" in output
     assert "Required proposal sections" in output
     assert "Apply" in output
     assert "Product workstreams:" not in output

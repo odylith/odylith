@@ -212,6 +212,7 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
     intent_title = _intent_title(prompt)
     project_slug = slugify(intent_title)
     evidence = _source_evidence(root)
+    reasoning_contract = build_proposal_contract()
     proposal: dict[str, Any] = {
         "schema_version": "odylith.greenfield.reasoning_request.v1",
         "mode": "host_reasoned_proposal_request",
@@ -244,7 +245,8 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
             "write_guardrail": "This contract writes nothing and contains no generated governance artifacts.",
             "next_best_action": f"Author the full proposal for {intent_title} only after the operator confirms the live Product Intent Confirmation.",
         },
-        "reasoning_contract": build_proposal_contract(),
+        "reasoning_contract": reasoning_contract,
+        "post_confirmation_handoff": reasoning_contract.get("post_confirmation_handoff", {}),
         "accepted_aliases": {
             "mode": ["greenfield", "host_reasoned_proposal"],
             "component_id": ["id", "name"],
@@ -256,6 +258,7 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
         },
         "host_instruction": (
             "Author the proposal live from the confirmed Product Intent Confirmation and observed source posture. "
+            "Use this CLI contract as the complete schema/proof surface; do not inspect Odylith source files, Python modules, local examples, or generated runtime files to discover what to do next. "
             "Do not use canned domain buckets, family templates, or prompt-title repetition. "
             "Label observed_source, user_intent, and odylith_assumption separately. "
             "Create only workstreams, component boundaries, diagrams, proof gates, and release waves that a product owner would recognize as directly relevant to the assignment. "

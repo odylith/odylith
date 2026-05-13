@@ -53,6 +53,12 @@ def format_proposal_text(proposal: Mapping[str, Any], *, detail: str = "brief") 
         source = proposal.get("observed_source", {}) if isinstance(proposal.get("observed_source"), Mapping) else {}
         ux = proposal.get("greenfield_ux", {}) if isinstance(proposal.get("greenfield_ux"), Mapping) else {}
         contract = proposal.get("reasoning_contract", {}) if isinstance(proposal.get("reasoning_contract"), Mapping) else {}
+        handoff = (
+            contract.get("post_confirmation_handoff", {})
+            if isinstance(contract.get("post_confirmation_handoff"), Mapping)
+            else {}
+        )
+        commands = proposal.get("apply_commands", [])
         lines = [
             f"Greenfield Proposal Contract: {title}",
             f"- source posture: {source.get('source_posture', 'unknown')}",
@@ -62,29 +68,57 @@ def format_proposal_text(proposal: Mapping[str, Any], *, detail: str = "brief") 
             f"- provider calls by Odylith CLI: {proposal.get('provider_calls', 0)}",
             "- write gate: `greenfield apply --confirm` validates a host-authored proposal and runs Tribunal before records are written",
             "",
+            "Host handoff",
+        ]
+        for rule in _contract_rows(handoff.get("contract_use"), limit=3):
+            lines.append(f"- {rule}")
+        for rule in _contract_rows(handoff.get("forbidden_host_steps"), limit=2):
+            lines.append(f"- Stop: {rule}")
+        lines.extend(
+            [
+                "- If more detail is needed, use `odylith greenfield propose --repo-root . --prompt \"<confirmed request>\" --confirm-intent --format json`; do not search Odylith source.",
+                "",
+                "Allowed next steps",
+            ]
+        )
+        for step in _contract_rows(handoff.get("allowed_host_steps"), limit=4):
+            lines.append(f"- {step}")
+        lines.extend(
+            [
+                "",
             "Host task",
             f"- {proposal.get('host_instruction', 'Draft a concrete proposal from prompt and repo evidence.')}",
             f"- next: {ux.get('next_best_action', 'draft the proposal, then ask for confirmation before writes')}",
             "",
             "Required proposal sections",
-        ]
-        for key in contract.get("required_top_level_keys", []) if isinstance(contract.get("required_top_level_keys"), list) else []:
-            lines.append(f"- {key}")
+            ]
+        )
+        required_keys = contract.get("required_top_level_keys", []) if isinstance(contract.get("required_top_level_keys"), list) else []
+        if detail == "full":
+            for key in required_keys:
+                lines.append(f"- {key}")
+        else:
+            lines.append("- " + ", ".join(str(key) for key in required_keys))
         lines.extend(["", "Evidence rules"])
         for rule in contract.get("evidence_rules", []) if isinstance(contract.get("evidence_rules"), list) else []:
             lines.append(f"- {rule}")
-        lines.extend(["", "Quality bar"])
-        for rule in contract.get("quality_bar", []) if isinstance(contract.get("quality_bar"), list) else []:
-            lines.append(f"- {rule}")
+        if detail == "full":
+            lines.extend(["", "Quality bar"])
+            for rule in contract.get("quality_bar", []) if isinstance(contract.get("quality_bar"), list) else []:
+                lines.append(f"- {rule}")
         lines.extend(["", "Apply"])
         lines.append("After Product Intent is confirmed, the host writes host-authored proposal JSON from live reasoning. Review it, then run:")
-        commands = proposal.get("apply_commands", [])
         if isinstance(commands, list):
             for command in commands:
                 lines.append("  " + str(command))
         return "\n".join(lines).rstrip() + "\n"
 
     return _format_apply_ready_proposal_text(proposal)
+
+
+def _contract_rows(value: Any, *, limit: int) -> list[str]:
+    rows = value if isinstance(value, list) else []
+    return [" ".join(str(item).split()).strip() for item in rows[:limit] if str(item).strip()]
 
 
 def _format_proposal_preview_text(
