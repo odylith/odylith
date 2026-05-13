@@ -185,12 +185,14 @@ _STALE_GREENFIELD_GUIDANCE_TOKENS = (
     "greenfield apply --repo-root . --proposal-file <proposal.json>",
 )
 _GREENFIELD_MANUAL_JSON_GUARDS = (
-    "hand-author proposal JSON",
-    "hand-authoring proposal JSON",
-    "hand-build `odylith-greenfield-proposal.json`",
+    "host authors",
+    "host-authored proposal JSON",
+    "proposal JSON from the confirmed intent",
+    "proposal JSON from the confirmed product shape",
 )
 _GREENFIELD_PROJECT_FIRST_GUARDS = (
     "project-first",
+    "product story",
     "coding-readiness gates",
     "direction options",
 )
@@ -213,15 +215,17 @@ def _require_greenfield_surfaces(*, repo_root: Path, label: str) -> None:
             raise RuntimeError(f"{label} did not render {relative_path}")
 
 
-def _require_greenfield_guidance_uses_create(*, repo_root: Path, label: str) -> None:
+def _require_greenfield_guidance_uses_host_apply(*, repo_root: Path, label: str) -> None:
     for relative_path in _GREENFIELD_GUIDANCE_FILES:
         path = repo_root / relative_path
         if not path.is_file():
             raise RuntimeError(f"{label} did not install greenfield guidance file: {relative_path}")
         text = path.read_text(encoding="utf-8")
         compact_text = " ".join(text.split())
-        if "greenfield create" not in text:
-            raise RuntimeError(f"{label} guidance omits one-command greenfield create path: {relative_path}")
+        if "greenfield apply" not in text:
+            raise RuntimeError(f"{label} guidance omits host-authored greenfield apply path: {relative_path}")
+        if "Product Intent Confirmation" not in text:
+            raise RuntimeError(f"{label} guidance omits live Product Intent confirmation path: {relative_path}")
         if not any(token in compact_text for token in _GREENFIELD_MANUAL_JSON_GUARDS):
             raise RuntimeError(f"{label} guidance omits manual proposal JSON guard: {relative_path}")
         if not any(token in compact_text for token in _GREENFIELD_PROJECT_FIRST_GUARDS):
@@ -322,7 +326,7 @@ def _require_compass_history_layout(*, repo_root: Path) -> None:
 
 def _install_and_smoke(*, repo_root: Path, install_script: Path, env: dict[str, str]) -> None:
     _run(cwd=_install_cwd(repo_root), env=env, command=["bash", str(install_script)])
-    _require_greenfield_guidance_uses_create(repo_root=repo_root, label="fresh install")
+    _require_greenfield_guidance_uses_host_apply(repo_root=repo_root, label="fresh install")
     odylith = repo_root / ".odylith" / "bin" / "odylith"
     version = _run(cwd=repo_root, env=env, command=[str(odylith), "version", "--repo-root", "."]).stdout
     _require_output_contains(output=version, expected=f"Active: {env['ODYLITH_VERSION']}", label="odylith version")
@@ -334,17 +338,10 @@ def _install_and_smoke(*, repo_root: Path, install_script: Path, env: dict[str, 
     _run(cwd=repo_root, env=env, command=[str(odylith), "sync", "--repo-root", ".", "--force"])
 
 
-def _install_and_create_smoke(*, repo_root: Path, install_script: Path, env: dict[str, str]) -> None:
-    _run(cwd=_install_cwd(repo_root), env=env, command=["bash", str(install_script)])
-    _require_greenfield_guidance_uses_create(repo_root=repo_root, label="greenfield create install")
-    odylith = repo_root / ".odylith" / "bin" / "odylith"
-    _greenfield_create_smoke(repo_root=repo_root, odylith=odylith, env=env)
-
-
 def _greenfield_propose_apply_smoke(*, repo_root: Path, odylith: Path, env: dict[str, str]) -> None:
     show = _run(cwd=repo_root, env=env, command=[str(odylith), "show", "--repo-root", "."]).stdout
     _require_output_contains(output=show, expected="Odylith read this repo", label="odylith show")
-    proposal = _run(
+    intent = _run(
         cwd=repo_root,
         env=env,
         command=[
@@ -360,70 +357,48 @@ def _greenfield_propose_apply_smoke(*, repo_root: Path, odylith: Path, env: dict
         ],
     ).stdout
     _require_output_contains(
-        output=proposal,
-        expected='"mode": "host_reasoned_greenfield_proposal"',
-        label="greenfield propose json",
+        output=intent,
+        expected='"mode": "product_intent_reasoning_request"',
+        label="greenfield intent json",
     )
-    _require_output_contains(output=proposal, expected='"backlog": [', label="greenfield propose json")
-    _require_output_contains(output=proposal, expected='"components": [', label="greenfield propose json")
-    _require_output_contains(output=proposal, expected='"diagrams": [', label="greenfield propose json")
-    _require_no_greenfield_schema_loop(output=proposal, label="greenfield propose json")
-    proposal_path = repo_root / "odylith-greenfield-proposal.json"
-    proposal_path.write_text(proposal, encoding="utf-8")
-    apply = _run(
+    _require_output_contains(
+        output=intent,
+        expected='"write_policy": "host_reason_product_intent_before_greenfield_proposal"',
+        label="greenfield intent json",
+    )
+    _require_output_contains(output=intent, expected='"host_reasoning_task"', label="greenfield intent json")
+    _require_output_contains(output=intent, expected='"must_not"', label="greenfield intent json")
+
+    proposal = _run(
         cwd=repo_root,
         env=env,
         command=[
             str(odylith),
             "greenfield",
-            "apply",
-            "--repo-root",
-            ".",
-            "--proposal-file",
-            proposal_path.name,
-            "--release",
-            "0.0.1",
-            "--confirm",
-        ],
-    ).stdout
-    _require_output_contains(output=apply, expected="odylith greenfield apply wrote confirmed proposal", label="greenfield apply")
-    _require_output_contains(output=apply, expected="- tribunal: passed", label="greenfield apply")
-    _require_output_contains(output=apply, expected="- project-first workstream: B-", label="greenfield apply")
-    _require_output_contains(output=apply, expected="- future first implementation lane after gates: B-", label="greenfield apply")
-    _require_output_contains(output=apply, expected="- validation already run:", label="greenfield apply")
-    _require_no_greenfield_schema_loop(output=apply, label="greenfield apply")
-    refresh = _run(cwd=repo_root, env=env, command=[str(odylith), "dashboard", "refresh", "--repo-root", "."]).stdout
-    _require_output_contains(output=refresh, expected="dashboard refresh completed", label="greenfield dashboard refresh")
-    _require_output_contains(output=refresh, expected="outcome: passed", label="greenfield dashboard refresh")
-    _require_greenfield_surfaces(repo_root=repo_root, label="greenfield propose/apply smoke")
-
-
-def _greenfield_create_smoke(*, repo_root: Path, odylith: Path, env: dict[str, str]) -> None:
-    show = _run(cwd=repo_root, env=env, command=[str(odylith), "show", "--repo-root", "."]).stdout
-    _require_output_contains(output=show, expected="Odylith read this repo", label="odylith show")
-    create = _run(
-        cwd=repo_root,
-        env=env,
-        command=[
-            str(odylith),
-            "greenfield",
-            "create",
+            "propose",
             "--repo-root",
             ".",
             "--prompt",
             "robot swarm logistics app",
-            "--release",
-            "0.0.1",
-            "--confirm",
+            "--confirm-intent",
+            "--format",
+            "json",
         ],
     ).stdout
-    _require_output_contains(output=create, expected="odylith greenfield create wrote confirmed proposal", label="greenfield create")
-    _require_output_contains(output=create, expected="- tribunal: passed", label="greenfield create")
-    _require_output_contains(output=create, expected="- project-first workstream: B-", label="greenfield create")
-    _require_output_contains(output=create, expected="- future first implementation lane after gates: B-", label="greenfield create")
-    _require_output_contains(output=create, expected="- validation already run:", label="greenfield create")
-    _require_no_greenfield_schema_loop(output=create, label="greenfield create smoke")
-    _require_greenfield_surfaces(repo_root=repo_root, label="greenfield create smoke")
+    _require_output_contains(
+        output=proposal,
+        expected='"mode": "host_reasoned_proposal_request"',
+        label="greenfield propose json",
+    )
+    _require_output_contains(output=proposal, expected='"reasoning_contract"', label="greenfield propose json")
+    _require_output_contains(output=proposal, expected='"host_instruction"', label="greenfield propose json")
+    if any(token in proposal for token in ('"backlog": [', '"components": [', '"diagrams": [')):
+        raise RuntimeError("greenfield propose contract generated governance artifacts before host-authored proposal")
+    _require_no_greenfield_schema_loop(output=proposal, label="greenfield propose json")
+    refresh = _run(cwd=repo_root, env=env, command=[str(odylith), "dashboard", "refresh", "--repo-root", "."]).stdout
+    _require_output_contains(output=refresh, expected="dashboard refresh completed", label="greenfield dashboard refresh")
+    _require_output_contains(output=refresh, expected="outcome: passed", label="greenfield dashboard refresh")
+    _require_greenfield_surfaces(repo_root=repo_root, label="greenfield propose contract smoke")
 
 
 def _install_previous_release(*, repo_root: Path, install_script: Path, previous_version: str) -> None:
@@ -443,6 +418,33 @@ def _install_clean_previous_release(*, repo_root: Path, install_script: Path, pr
     )
 
 
+def _dist_manifest_requires_migration(*, install_script: Path) -> bool:
+    manifest_path = install_script.parent / "release-manifest.json"
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    return bool(manifest.get("migration_required"))
+
+
+def _run_upgrade_rehearsal(
+    *,
+    repo_root: Path,
+    install_script: Path,
+    target_version: str,
+    local_env: dict[str, str],
+) -> None:
+    odylith = repo_root / ".odylith" / "bin" / "odylith"
+    if _dist_manifest_requires_migration(install_script=install_script):
+        _run(cwd=_install_cwd(repo_root), env=local_env, command=["bash", str(install_script)])
+        return
+    _run(
+        cwd=repo_root,
+        env=local_env,
+        command=[str(odylith), "upgrade", "--repo-root", ".", "--to", target_version, "--write-pin"],
+    )
+
+
 def _upgrade_cycle(
     *,
     repo_root: Path,
@@ -456,13 +458,14 @@ def _upgrade_cycle(
         install_script=install_script,
         previous_version=previous_version,
     )
-    odylith = repo_root / ".odylith" / "bin" / "odylith"
     _seed_legacy_compass_archive_fixture(repo_root=repo_root)
-    _run(
-        cwd=repo_root,
-        env=local_env,
-        command=[str(odylith), "upgrade", "--repo-root", ".", "--to", target_version, "--write-pin"],
+    _run_upgrade_rehearsal(
+        repo_root=repo_root,
+        install_script=install_script,
+        target_version=target_version,
+        local_env=local_env,
     )
+    odylith = repo_root / ".odylith" / "bin" / "odylith"
     _run(cwd=repo_root, env=local_env, command=[str(odylith), "dashboard", "refresh", "--repo-root", "."])
     _require_compass_history_layout(repo_root=repo_root)
     _install_clean_previous_release(
@@ -480,11 +483,13 @@ def _upgrade_cycle(
         previous_version=previous_version,
     )
     _seed_legacy_compass_archive_fixture(repo_root=repo_root)
-    _run(
-        cwd=repo_root,
-        env=local_env,
-        command=[str(odylith), "upgrade", "--repo-root", ".", "--to", target_version, "--write-pin"],
+    _run_upgrade_rehearsal(
+        repo_root=repo_root,
+        install_script=install_script,
+        target_version=target_version,
+        local_env=local_env,
     )
+    odylith = repo_root / ".odylith" / "bin" / "odylith"
     _run(cwd=repo_root, env=local_env, command=[str(odylith), "dashboard", "refresh", "--repo-root", "."])
     _require_compass_history_layout(repo_root=repo_root)
 
@@ -558,8 +563,8 @@ def main(argv: list[str] | None = None) -> int:
         local_env = _local_release_env(base_url=base_url, version=args.version)
         fresh_repo = _repo_root(temp_root, "fresh-install")
         _install_and_smoke(repo_root=fresh_repo, install_script=install_script, env=local_env)
-        create_repo = _repo_root(temp_root, "greenfield-create")
-        _install_and_create_smoke(repo_root=create_repo, install_script=install_script, env=local_env)
+        # Prompt-only create is intentionally disabled; the install smoke covers
+        # the no-write intent and proposal-contract path.
 
         previous_versions = tuple(str(version).strip() for version in args.previous_version if str(version).strip())
         if not previous_versions:

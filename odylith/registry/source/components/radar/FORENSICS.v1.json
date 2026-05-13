@@ -55,18 +55,19 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md"
+        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md"
       ],
       "confidence": "high",
-      "event_index": 471,
+      "event_index": 470,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "radar"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-      "ts_iso": "2026-05-09T19:13:22-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md, odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
+      "ts_iso": "2026-05-12T18:58:25-07:00",
       "workstreams": []
     },
     {

@@ -771,6 +771,24 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `migration-observer:0.1.13:browser-surfaces:7ca3752b114d`,
   `migration-observer:0.1.13:install-managed-assets:877351c7e794`,
   `migration-observer:0.1.13:install-managed-assets:378a6ed807cc`.
+- Product Intent and host-authored greenfield proposal contract refresh:
+  v0.1.15 changes the empty-repo greenfield path so prompt-only create is
+  disabled, `greenfield propose` returns a no-write Product Intent reasoning
+  contract, `greenfield propose --confirm-intent` returns the host-authored
+  proposal schema/proof contract, and `greenfield apply --proposal-file
+  --confirm` remains the first governed write. Existing consumer installs need
+  no source-truth migration; upgrade refreshes managed guidance, operator CLI
+  output, generated browser surfaces, and install-managed assets so new
+  greenfield projects start from a confirmed product story instead of an
+  Odylith-authored domain scaffold. Consumer governance records stay owned by
+  the consumer repo, and generated surfaces can be refreshed normally after
+  upgrade.
+  Migration observer markers:
+  `migration-observer:0.1.15:guidance-and-skills:2ee98214e48c`,
+  `migration-observer:0.1.15:operator-cli-contracts:240d131eabdb`,
+  `migration-observer:0.1.15:public-docs-and-release-guidance:33c17025aa88`,
+  `migration-observer:0.1.15:browser-surfaces:925f55279c54`,
+  `migration-observer:0.1.15:install-managed-assets:da15e38a0afa`.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.
@@ -1473,7 +1491,7 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   updates generated Radar/Registry/Casebook browser surfaces and managed HTML
   bundle copies after B-142/CB-184/CB-187 source truth recorded structured
   greenfield risk, ontology de-duplication, ownership-phrase validation, and
-  component-specific DeFi proof. Existing consumer governance source remains
+  component-specific greenfield proof. Existing consumer governance source remains
   unchanged; upgrades receive refreshed generated surfaces and future
   greenfield proposal/create runs apply the stricter validation before writes.
 - The v0.1.15 engine activation contract hardening pass is covered by
@@ -1527,7 +1545,7 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   Radar, Casebook, Registry, Compass, shell, and bundle HTML refreshes are
   generated from product-requirements source truth; existing consumer source is
   not overwritten by those browser artifacts.
-- The mockrepo-derived greenfield hardening pass is covered by
+- The consumer-fixture-derived greenfield hardening pass is covered by
   `migration-observer:0.1.15:guidance-and-skills:4e1cbbef93d2`,
   `migration-observer:0.1.15:operator-cli-contracts:778c1bb05cdd`,
   `migration-observer:0.1.15:operator-cli-contracts:d48cd7f8f9c7`,
@@ -1574,7 +1592,7 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   stale runtime snapshots. The final closeout copy now tells the operator to
   apply as-is, revise Gate 2 choices, or export and apply JSON after review;
   source records describe the failure class generically rather than echoing
-  the mockrepo prompt as product backlog truth. Neither change requires a
+  a consumer fixture prompt as product backlog truth. Neither change requires a
   consumer source-truth migration beyond normal upgrade adoption and dashboard
   refresh. The diagram-title hardening only changes future generated titles and
   regenerated rendered surfaces: existing slugs, source paths, and consumer
@@ -1622,3 +1640,36 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   hygiene tests while keeping the managed root block below the install byte
   ceiling. Existing consumer governance truth does not require migration; only
   managed guidance text and bundle assets refresh on upgrade.
+- The Product Intent stdout visibility settlement is covered by
+  `migration-observer:0.1.15:guidance-and-skills:2a34d210d24a` and
+  `migration-observer:0.1.15:install-managed-assets:b84dfc75a382`. The pass
+  requires hosts to surface proposal stdout directly instead of hiding the
+  meaningful confirmation or proposal content behind collapsed tool output or
+  replacing it with a thin host-written summary. Existing consumer governance
+  truth does not require migration; only managed guidance text, skills, and
+  install-managed bundle assets refresh on upgrade.
+- The live Codex skill-shim cleanup is covered by
+  `migration-observer:0.1.15:guidance-and-skills:f0af5b08aa90`. The pass
+  removes untracked product-root skill shims that were not part of the curated
+  shipped command surface, so local proof matches the bundle install surface.
+  Existing consumer governance truth does not require migration; upgrade keeps
+  the same curated managed skill set.
+- The Project tab and Radar browser-surface hardening pass is covered by
+  `migration-observer:0.1.15:browser-surfaces:eef320678cdc`. The pass adds
+  headless browser proof for accepted greenfield Project Story rendering,
+  verifies the Radar execution-wave summary does not leave dead side space on
+  desktop or compact viewports, and closes the recorded Casebook regression.
+  Existing consumer source truth does not require migration; upgrade adoption
+  is limited to regenerated browser surfaces and managed runtime assets.
+- The settled Project Intelligence and greenfield Product Intent release pass is
+  covered by `migration-observer:0.1.15:guidance-and-skills:57a4c9060dd5`,
+  `migration-observer:0.1.15:browser-surfaces:48a4a8c8eb57`, and
+  `migration-observer:0.1.15:install-managed-assets:2cc36b6c4011`. The pass
+  removes deterministic domain-family scaffolds, requires host-authored Product
+  Intent Confirmation before any greenfield proposal expansion, renders blank
+  first-install Project state until accepted project truth exists, and refreshes
+  generated browser surfaces plus bundle mirrors after the Project Story and
+  Radar execution-wave layout proof. Existing consumer governance source does
+  not require migration; upgrade adoption is limited to managed guidance,
+  runtime behavior, regenerated browser assets, and install-managed bundle
+  mirrors.

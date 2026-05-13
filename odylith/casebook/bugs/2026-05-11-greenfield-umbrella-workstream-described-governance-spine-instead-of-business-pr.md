@@ -16,11 +16,11 @@
 
 - Components Affected: domain-intelligence
 
-- Environment(s): Odylith product repo greenfield proposal/apply path; observed in local consumer mockrepo after applying an SMB merchant-capital greenfield proposal.
+- Environment(s): Odylith product repo greenfield proposal/apply path; observed in an empty consumer repo after applying an external-domain greenfield proposal.
 
-- Detected By: User screenshot of mockrepo Radar B-001 plus source inspection of proposal_scaffold umbrella row generation.
+- Detected By: User screenshot of consumer Radar B-001 plus source inspection of proposal_scaffold umbrella row generation.
 
-- Failure Signature: B-001 Problem said the project needs an accepted execution spine before source exists instead of explaining the merchant funding problem, customer, risk, and proof path.
+- Failure Signature: B-001 Problem said the project needs an accepted execution spine before source exists instead of explaining the business-domain problem, customer, risk, and proof path.
 
 - Trigger Path: odylith greenfield create --repo-root <empty repo> --prompt '<greenfield project intent>' --release 0.0.1 --confirm, then open Radar B-001.
 

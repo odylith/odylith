@@ -34,7 +34,7 @@
 
 - Data Risk: No production data mutation, but consumer governance source could be written from misunderstood confirmation because preview text over-implied internal readiness.
 
-- Security/Compliance: Security posture assessed: no direct secret or production-data exposure, but regulated prompts can bury compliance, KYB/AML, custody, money-movement, and approval decisions under internal topology language; preview must keep those decisions explicit before writes.
+- Security/Compliance: Security posture assessed: no direct secret or production-data exposure, but regulated prompts can bury compliance, approval, operator-boundary, and irreversible-action decisions under internal topology language; preview must keep those decisions explicit before writes.
 
 - Invariant Violated: Propose must be a no-write, product-first clarification gate; confirmed create/apply is the first point where validated records are written.
 
@@ -44,7 +44,7 @@
 
 - Rollback/Forward Fix: Forward fix only; restore old renderer only by explicit rollback if preview gate loses required product requirements, while JSON/apply remains deep.
 
-- Verification: 100 focused greenfield/show/bundle/registry/migration tests pass after the migration-observer update; release migration gate for 0.1.15 reports zero blocked migrations and zero ungated lifecycle paths; casebook validation passes across 193 records; plan-workstream binding and plan traceability validators pass; Atlas render reports 44 fresh diagrams and zero stale; Radar refresh completes in 3.4s after replacing the regex guard and leaves the product Registry at 30 source components with no SMB mock components; live propose repro emits compact product-first gates, an explicit apply/revise/export next-action choice, and no Radar/Registry/Atlas/Compass terms; headless browser matrix passes Radar, Registry, Atlas, Casebook, and Compass on desktop and mobile with zero console warnings/errors and zero horizontal overflow.
+- Verification: 100 focused greenfield/show/bundle/registry/migration tests pass after the migration-observer update; release migration gate for 0.1.15 reports zero blocked migrations and zero ungated lifecycle paths; casebook validation passes across 193 records; plan-workstream binding and plan traceability validators pass; Atlas render reports 44 fresh diagrams and zero stale; Radar refresh completes in 3.4s after replacing the regex guard and leaves the product Registry at 30 source components with no external mock components; live propose repro emits compact product-first gates, an explicit apply/revise/export next-action choice, and no Radar/Registry/Atlas/Compass terms; headless browser matrix passes Radar, Registry, Atlas, Casebook, and Compass on desktop and mobile with zero console warnings/errors and zero horizontal overflow.
 
 - Prevention: Tests assert compact default text, explicit next-action guidance, ASCII `--format json` export command, no provider/mode/shared-artifact chatter, no workstream-domain-intelligence dump, preserved prompt title terms, product-first show guidance, consumer legacy repair isolation from product repos, and standalone Registry source-manifest precedence.
 

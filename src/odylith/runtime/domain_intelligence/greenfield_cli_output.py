@@ -73,7 +73,8 @@ def _print_next_steps(next_steps: Mapping[str, Any]) -> None:
     project_prompt = str(next_steps.get("project_first_prompt", "")).strip()
     if project_id:
         print(f"- project-first workstream: {project_id} {project_title}".rstrip())
-        print(f"- project brief: odylith/radar/radar.html?view=plan&workstream={project_id}")
+        print("- project story: odylith/index.html?tab=project")
+        print(f"- radar gate: odylith/radar/radar.html?view=plan&workstream={project_id}")
         print("- project gate: review direction choices and readiness gates before opening a technical plan; do not edit source from this closeout")
     if project_prompt:
         print(f"- next project prompt: {project_prompt}")

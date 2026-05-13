@@ -16,9 +16,9 @@
 
 - Components Affected: domain-intelligence
 
-- Environment(s): Odylith greenfield create/apply against empty consumer repo with merchant-capital prompt; observed in /Users/freedom/mock/mockrepo.
+- Environment(s): Odylith greenfield create/apply against an empty consumer repo with an external-domain prompt.
 
-- Detected By: Operator screenshot review and source audit of mockrepo Radar B-002, Registry specs, Atlas slugs, and accepted-project state.
+- Detected By: Operator screenshot review and source audit of a consumer Radar B-002, Registry specs, Atlas slugs, and accepted-project state.
 
 - Failure Signature: Radar B-002 used generic Decision Basis lines such as created as a new queued workstream and deeper scope decomposition waits; Registry and Atlas inherited the full prompt slug instead of a compact domain artifact identity.
 
@@ -34,7 +34,7 @@
 
 - Data Risk: No production data loss; affected consumer repos may retain low-quality generated governance records until regenerated or repaired.
 
-- Security/Compliance: In regulated domains, vague prep language and prompt-shaped IDs can obscure custody, loss, compliance, proof, and release-boundary responsibilities.
+- Security/Compliance: In regulated domains, vague prep language and prompt-shaped IDs can obscure ownership, compliance, proof, and release-boundary responsibilities.
 
 - Invariant Violated: A confirmed greenfield proposal must produce product-relevant artifacts shaped by project intelligence, not raw prompt repetition or generic governance preparation text.
 

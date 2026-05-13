@@ -215,7 +215,7 @@ def test_capabilities_command_prints_host_agnostic_engine_inventory(capsys) -> N
     assert "Topology Integrity" in output
     assert "Taxonomies and FSMs" in output
     assert "Operator Experience" in output
-    assert "odylith greenfield create" in output
+    assert "odylith greenfield apply" in output
     assert "Activation:" in output
     assert "attach the normalized execution handshake" in output
     assert "deterministic proposal Tribunal" in output
@@ -354,6 +354,7 @@ def test_greenfield_propose_help_forwards_backend_flags(capsys) -> None:
     assert "usage: odylith greenfield propose" in output
     assert "--prompt" in output
     assert "--format" in output
+    assert "--confirm-intent" in output
 
 
 def test_greenfield_apply_help_forwards_backend_flags(capsys) -> None:
@@ -397,12 +398,44 @@ def test_greenfield_propose_command_is_provider_free(tmp_path: Path, capsys) -> 
     payload = json.loads(capsys.readouterr().out)
     assert rc == 0
     assert payload["provider_calls"] == 0
-    assert payload["mode"] == "host_reasoned_greenfield_proposal"
-    assert payload["intent"]["reasoning_mode"] == "odylith_apply_ready_scaffold"
-    assert payload["release_plan"]["selector"] == "0.0.1"
-    assert payload["backlog"]
-    assert payload["components"]
-    assert payload["diagrams"]
+    assert payload["mode"] == "product_intent_reasoning_request"
+    assert payload["write_policy"] == "host_reason_product_intent_before_greenfield_proposal"
+    assert payload["host_reasoning_task"]["must_include"]
+    assert payload["host_reasoning_task"]["must_not"]
+    assert "echo command instructions" in " ".join(payload["host_reasoning_task"]["must_not"])
+    assert "backlog" not in payload
+    assert "components" not in payload
+    assert "diagrams" not in payload
+
+
+def test_greenfield_propose_confirm_intent_json_is_provider_free(tmp_path: Path, capsys) -> None:
+    rc = cli.main(
+        [
+            "greenfield",
+            "propose",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Build an ecommerce site",
+            "--confirm-intent",
+            "--format",
+            "json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert rc == 0
+    assert payload["provider_calls"] == 0
+    assert payload["mode"] == "host_reasoned_proposal_request"
+    assert payload["intent"]["reasoning_mode"] == "host_model_required"
+    assert payload["write_policy"] == "host_reason_first_confirm_before_apply"
+    assert payload["reasoning_contract"]
+    assert payload["host_instruction"]
+    assert "canonical_proposal" not in payload
+    assert "proposal_template" not in payload
+    assert "backlog" not in payload
+    assert "components" not in payload
+    assert "diagrams" not in payload
 
 
 def test_component_register_help_forwards_backend_flags(capsys) -> None:

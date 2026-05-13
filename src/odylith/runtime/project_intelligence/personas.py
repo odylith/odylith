@@ -70,7 +70,7 @@ def _fallback_role(repo_role: str) -> str:
     token = str(repo_role or "").strip().lower().replace("-", "_")
     if token == "repo" or token.endswith("_repo"):
         return "Repository operator"
-    return humanize(repo_role, "Project operator")
+    return humanize(repo_role, "Project owner")
 
 
 def _evidence_phrase(evidence_sources: Sequence[str]) -> str:

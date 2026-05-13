@@ -13,10 +13,10 @@
     "empty_reasons": [],
     "explicit_event_count": 25,
     "mapped_workstream_evidence_count": 24,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 10,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 26
+    "timeline_event_count": 25
   },
   "name": "Migration Runtime",
   "path_prefixes": [
@@ -24,23 +24,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md",
-        "src/odylith/install/migration_runtime.py"
-      ],
-      "confidence": "high",
-      "event_index": 469,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "migration-runtime"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md, src/odylith/install/migration_runtime.py",
-      "ts_iso": "2026-05-09T13:25:24-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",

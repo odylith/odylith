@@ -29,7 +29,8 @@ def build_apply_commands(proposal: Mapping[str, Any]) -> list[str]:
     commands = [
         "odylith greenfield propose --repo-root . --prompt "
         + shell_quote(str(proposal.get("intent", {}).get("prompt", "new project")))
-        + " --format json > odylith-greenfield-proposal.json",
+        + " --confirm-intent",
+        "# after Product Intent is confirmed, the host writes odylith-greenfield-proposal.json from live reasoning",
         "odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm"
         + release_arg,
     ]
@@ -43,29 +44,25 @@ def build_apply_commands(proposal: Mapping[str, Any]) -> list[str]:
     return commands
 
 
-def format_proposal_text(proposal: Mapping[str, Any]) -> str:
-    """Render a concise operator-facing proposal from the apply-ready object."""
+def format_proposal_text(proposal: Mapping[str, Any], *, detail: str = "brief") -> str:
+    """Render a concise operator-facing proposal or no-write host contract."""
 
     intent = proposal.get("intent", {}) if isinstance(proposal.get("intent"), Mapping) else {}
     title = str(intent.get("title", "Greenfield Project")).strip()
     if proposal.get("mode") == "host_reasoned_proposal_request":
-        canonical = proposal.get("canonical_proposal")
-        if isinstance(canonical, Mapping):
-            return _format_proposal_preview_text(canonical, request_context=proposal)
         source = proposal.get("observed_source", {}) if isinstance(proposal.get("observed_source"), Mapping) else {}
         ux = proposal.get("greenfield_ux", {}) if isinstance(proposal.get("greenfield_ux"), Mapping) else {}
         contract = proposal.get("reasoning_contract", {}) if isinstance(proposal.get("reasoning_contract"), Mapping) else {}
         lines = [
-            f"Odylith greenfield reasoning brief: {title}",
-            f"- source evidence: {source.get('source_posture', 'unknown')}; writes stay confirmation-gated",
-            "- proposal authorship: active host reasoning required",
-            f"- provider_calls_by_odylith_cli: {proposal.get('provider_calls', 0)}",
-            f"- default_release_selector: {DEFAULT_GREENFIELD_RELEASE_SELECTOR} unless the operator supplies another target",
-            f"- canonical_proposal_gate: {proposal.get('canonical_proposal_gate', {}).get('status', 'unknown') if isinstance(proposal.get('canonical_proposal_gate'), Mapping) else 'unknown'}",
-            "- apply gate: deterministic proposal validation before writes",
-            "- visibility: accepted product records refresh after accepted artifacts are written",
+            f"Greenfield Proposal Contract: {title}",
+            f"- source posture: {source.get('source_posture', 'unknown')}",
+            "- files changed: none",
+            "- generated governance artifacts: none",
+            "- proposal authorship: host reasoning required after confirmed Product Intent",
+            f"- provider calls by Odylith CLI: {proposal.get('provider_calls', 0)}",
+            "- write gate: `greenfield apply --confirm` validates a host-authored proposal and runs Tribunal before records are written",
             "",
-            "Host reasoning task",
+            "Host task",
             f"- {proposal.get('host_instruction', 'Draft a concrete proposal from prompt and repo evidence.')}",
             f"- next: {ux.get('next_best_action', 'draft the proposal, then ask for confirmation before writes')}",
             "",
@@ -76,31 +73,15 @@ def format_proposal_text(proposal: Mapping[str, Any]) -> str:
         lines.extend(["", "Evidence rules"])
         for rule in contract.get("evidence_rules", []) if isinstance(contract.get("evidence_rules"), list) else []:
             lines.append(f"- {rule}")
-        template = proposal.get("proposal_template", {}) if isinstance(proposal.get("proposal_template"), Mapping) else {}
-        release_plan = template.get("release_plan", {}) if isinstance(template.get("release_plan"), Mapping) else {}
-        lines.extend(
-            [
-                "",
-                "Canonical apply JSON shape",
-                f"- mode: {template.get('mode', 'host_reasoned_greenfield_proposal')} (not greenfield and not host_reasoned_proposal_request)",
-                f"- release_plan.selector: {release_plan.get('selector', DEFAULT_GREENFIELD_RELEASE_SELECTOR)}",
-                f"- release_plan.label: {release_plan.get('label', DEFAULT_GREENFIELD_RELEASE_SELECTOR)}",
-                "- components[].qualification: candidate; use components[].validation for proof expectations",
-                "- diagrams[].kind plus diagrams[].mermaid_source; related_workstreams may use proposal-local WS ids",
-                "- apply normalizes common aliases, but canonical fields avoid review-loop churn",
-            ]
-        )
         lines.extend(["", "Quality bar"])
         for rule in contract.get("quality_bar", []) if isinstance(contract.get("quality_bar"), list) else []:
             lines.append(f"- {rule}")
         lines.extend(["", "Apply"])
-        lines.append("No files changed. To use the built proposal, validation, apply, refresh, and handoff path, run:")
+        lines.append("After Product Intent is confirmed, the host writes host-authored proposal JSON from live reasoning. Review it, then run:")
         commands = proposal.get("apply_commands", [])
-        if isinstance(commands, list) and commands:
-            lines.append("  " + str(commands[0]))
-        lines.append("After the operator accepts a host-reasoned proposal file, run:")
-        if isinstance(commands, list) and len(commands) > 1:
-            lines.append("  " + str(commands[1]))
+        if isinstance(commands, list):
+            for command in commands:
+                lines.append("  " + str(command))
         return "\n".join(lines).rstrip() + "\n"
 
     return _format_apply_ready_proposal_text(proposal)
@@ -125,25 +106,9 @@ def _format_proposal_preview_text(
     )
     project_brief = proposal.get("project_brief", {}) if isinstance(proposal.get("project_brief"), Mapping) else {}
     commands = request_context.get("apply_commands", [])
-    create_command = ""
-    json_command = ""
     apply_json_command = ""
     if isinstance(commands, list):
-        create_command = next((str(item) for item in commands if str(item).startswith("odylith greenfield create")), "")
-        json_command = next((str(item) for item in commands if " --format json" in str(item)), "")
         apply_json_command = next((str(item) for item in commands if str(item).startswith("odylith greenfield apply")), "")
-    if not create_command:
-        create_command = (
-            "odylith greenfield create --repo-root . --prompt "
-            + shell_quote(str(intent.get("prompt", "new project")))
-            + f" --release {shell_quote(release_selector)} --confirm"
-        )
-    if not json_command:
-        json_command = (
-            "odylith greenfield propose --repo-root . --prompt "
-            + shell_quote(str(intent.get("prompt", "new project")))
-            + " --format json > odylith-greenfield-proposal.json"
-        )
     if not apply_json_command:
         apply_json_command = (
             "odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm"
@@ -154,7 +119,7 @@ def _format_proposal_preview_text(
         f"Greenfield proposal preview: {title}",
         f"- source evidence: {source_posture}; No files changed.",
         "- gate: preview only; product records are written only after explicit confirmation",
-        "- full record: use --format json when a reviewer needs every workstream, component, diagram, wave, risk, and validation field",
+        "- proposal authorship: after this confirmation, the host writes the full proposal JSON from live reasoning",
         "",
         "Gate 1 - Interpretation",
     ]
@@ -183,13 +148,9 @@ def _format_proposal_preview_text(
     lines.extend(["", "Gate 4 - Choose Next Action"])
     lines.append("- Recommended next step: say `Apply this proposal as-is` if Gate 1 and Gate 2 look right.")
     lines.append("- Revise before apply: answer the Gate 2 choices that are wrong, then rerun `greenfield propose` with the sharper intent.")
-    lines.append("- First write point: `greenfield create/apply --confirm`; no product records are written before that.")
-    lines.append("- Full-record review: export JSON first when a reviewer needs every workstream, component, diagram, wave, risk, and validation field.")
-    lines.append("- Confirm as-is:")
-    lines.append(f"  {create_command}")
-    lines.append("- Export full JSON before apply:")
-    lines.append(f"  {json_command}")
-    lines.append("- Apply exported JSON after review:")
+    lines.append("- First write point: `greenfield apply --confirm`; no product records are written before that.")
+    lines.append("- Proposal JSON: after confirmation, the host writes `odylith-greenfield-proposal.json` from the confirmed intent and source posture.")
+    lines.append("- Apply host-authored JSON after review:")
     lines.append(f"  {apply_json_command}")
     return "\n".join(lines).rstrip() + "\n"
 
@@ -311,7 +272,7 @@ def _format_apply_ready_proposal_text(
     title = str(intent.get("title", "Greenfield Project")).strip()
     source = proposal.get("observed_source", {}) if isinstance(proposal.get("observed_source"), Mapping) else {}
     source_posture = str(source.get("source_posture", "unknown")).strip()
-    gate = request_context.get("canonical_proposal_gate", {})
+    gate = request_context.get("proposal_gate", {})
     gate_status = str(gate.get("status", "not-run")).strip() if isinstance(gate, Mapping) else "not-run"
     lines = [
         f"Odylith greenfield proposal: {title}",
@@ -457,24 +418,24 @@ def _format_apply_ready_proposal_text(
         if rendered:
             lines.append(f"- {rendered}")
     lines.extend(["", "Apply"])
-    lines.append("No files changed. One-command confirmed path:")
+    lines.append("No files changed. Confirmed write path:")
     request_commands = request_context.get("apply_commands", [])
-    create_command = ""
+    apply_command = ""
     if isinstance(request_commands, list):
-        create_command = next((str(item) for item in request_commands if str(item).startswith("odylith greenfield create")), "")
-    if not create_command:
+        apply_command = next((str(item) for item in request_commands if str(item).startswith("odylith greenfield apply")), "")
+    if not apply_command:
         release_selector = _release_selector(release_plan)
-        create_command = (
-            "odylith greenfield create --repo-root . --prompt "
-            + shell_quote(str(intent.get("prompt", "new project")))
-            + f" --release {shell_quote(release_selector)} --confirm"
+        apply_command = (
+            "odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm"
+            + f" --release {shell_quote(release_selector)}"
         )
-    lines.append("  " + create_command)
+    lines.append("  # host writes odylith-greenfield-proposal.json from the confirmed intent")
+    lines.append("  " + apply_command)
     commands = proposal.get("apply_commands", [])
-    if isinstance(commands, list) and len(commands) >= 2:
-        lines.append("Or review/apply the canonical JSON explicitly:")
-        lines.append("  " + str(commands[0]))
-        lines.append("  " + str(commands[1]))
+    if isinstance(commands, list) and commands:
+        lines.append("Review/apply commands from the proposal:")
+        for command in commands:
+            lines.append("  " + str(command))
     return "\n".join(lines).rstrip() + "\n"
 
 

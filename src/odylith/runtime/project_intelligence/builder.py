@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Any
 
 from odylith.runtime.project_intelligence.answers import source_answer_cards as _source_answer_cards
+from odylith.runtime.project_intelligence.blank_state import build_blank_project_payload
+from odylith.runtime.project_intelligence.blank_state import should_render_blank_project
 from odylith.runtime.project_intelligence.focus import backlog_rows_by_id as _backlog_rows_by_id
 from odylith.runtime.project_intelligence.focus import project_focus_text as _project_focus_text
 from odylith.runtime.project_intelligence.greenfield import build_greenfield_payload
@@ -22,6 +24,7 @@ from odylith.runtime.project_intelligence.narration import (
     table_columns as _table_columns,
 )
 from odylith.runtime.project_intelligence.personas import source_persona_cards as _source_persona_cards
+from odylith.runtime.project_intelligence.product_story import build_source_product_story as _build_source_product_story
 from odylith.runtime.project_intelligence.summary import concise_text as _concise_text
 from odylith.runtime.project_intelligence.summary import project_intro as _project_intro
 from odylith.runtime.project_intelligence.utils import (
@@ -198,6 +201,49 @@ def _atlas_snapshot(repo_root: Path) -> dict[str, Any]:
         "active": active,
         "active_count": len(active),
     }
+
+
+def _governance_titles(
+    *,
+    backlog: Mapping[str, Any],
+    casebook: Mapping[str, Any],
+    atlas: Mapping[str, Any],
+) -> dict[str, str]:
+    titles: dict[str, str] = {}
+
+    def add(reference: object, title: object) -> None:
+        ref = _sentence(reference).upper()
+        label = _sentence(title)
+        if not ref or not label:
+            return
+        if re.fullmatch(r"(?:B|CB|D)-\d+", ref):
+            titles[ref] = label
+
+    for collection in ("execution", "queued", "finished"):
+        for row in _list(backlog.get(collection)):
+            if not isinstance(row, Mapping):
+                continue
+            add(row.get("idea_id") or row.get("Idea ID"), row.get("title") or row.get("Title"))
+
+    for collection in ("critical", "open", "bugs"):
+        for row in _list(casebook.get(collection)):
+            if not isinstance(row, Mapping):
+                continue
+            add(
+                row.get("bug_id") or row.get("id") or row.get("Bug") or row.get("bug") or row.get("case_id"),
+                row.get("title") or row.get("Title") or row.get("summary") or row.get("Summary"),
+            )
+
+    for collection in ("active", "diagrams"):
+        for row in _list(atlas.get(collection)):
+            if not isinstance(row, Mapping):
+                continue
+            add(
+                row.get("diagram_id") or row.get("id") or row.get("Diagram") or row.get("diagram"),
+                row.get("title") or row.get("name") or row.get("slug") or row.get("label"),
+            )
+
+    return titles
 
 
 def _compass_snapshot(repo_root: Path) -> dict[str, Any]:
@@ -482,7 +528,7 @@ def _visible_sections(
     included: Sequence[str],
     excluded: Sequence[str],
 ) -> list[str]:
-    sections = ["scenario"]
+    sections = ["product_story", "scenario"]
     if actors:
         sections.append("participants")
     if jobs:
@@ -523,6 +569,15 @@ def build_project_intelligence_payload(
     plans = _plan_snapshot(root)
     atlas = _atlas_snapshot(root)
     casebook = _casebook_snapshot(root, compass)
+    if should_render_blank_project(
+        components=components,
+        backlog=backlog,
+        plans=plans,
+        atlas=atlas,
+        casebook=casebook,
+        compass=compass,
+    ):
+        return build_blank_project_payload(repo_root=root, shell_payload=shell)
     self_host = _dict(shell.get("self_host"))
     live_refresh = _dict(shell.get("live_refresh"))
     worktree = _dict(live_refresh.get("worktree"))
@@ -549,8 +604,8 @@ def build_project_intelligence_payload(
         release_label=release_label,
         fallback=f"{_status_count_label(int(backlog.get('execution_count', 0) or 0), 'implementation workstream')} and {_status_count_label(int(plans.get('active_count', 0) or 0), 'active plan')} are recorded.",
     )
-    next_action_text = _concise_text(next_action.get("action"), limit=145, fallback="Create or accept project truth before implementation starts.")
-    next_title = _concise_text(next_action.get("title"), limit=90, fallback="Create or accept project truth")
+    next_action_text = _concise_text(next_action.get("action"), limit=145, fallback="Define the project before implementation starts.")
+    next_title = _concise_text(next_action.get("title"), limit=90, fallback="Define the project first")
     primary_lens = _primary_lens(root_component, components=components, fallback=_humanize(repo, "Project"))
     origin = _origin_label(self_host)
     evidence = _evidence_state(components=components, backlog=backlog, compass=compass, atlas=atlas, casebook=casebook)
@@ -656,6 +711,21 @@ def build_project_intelligence_payload(
         release_label=release_label,
     )
     excluded = _boundary_unresolved(graph=graph, blockers=blockers)
+    product_story = _build_source_product_story(
+        project_title=project_title,
+        project_intro=project_intro,
+        release_label=release_label,
+        work_mode=work_mode,
+        current_focus=current_focus,
+        next_title=next_title,
+        next_action_text=next_action_text,
+        active_workstreams=active_workstreams,
+        backlog=backlog,
+        components=components,
+        atlas=atlas,
+        evidence_sources=evidence_sources,
+        blockers=blockers,
+    )
     return {
         "eyebrow": f"Project type: {primary_lens}",
         "title": project_title,
@@ -669,6 +739,9 @@ def build_project_intelligence_payload(
         "focus": current_focus,
         "open_label": f"Open {project_title} risks",
         "open": [row[0] for row in blockers[:4]],
+        "product_story_title": "Product Story",
+        "product_story_note": "",
+        "product_story": product_story,
         "answers": _source_answer_cards(
             project_title=project_title,
             repo_role=repo_role,
@@ -720,7 +793,7 @@ def build_project_intelligence_payload(
             ("A", _sentence(action.get("title"), f"Action {index + 1}"), _sentence(action.get("action"), "Advance this source-backed action."))
             for index, action in enumerate(actions[:3])
         ]
-        or [("A", "Create or accept project truth", "Draft a greenfield proposal or refresh source-backed project records.")],
+        or [("A", "Define the project first", "Draft a greenfield proposal or refresh source-backed project records.")],
         "next": [
             next_title,
             next_action_text,
@@ -763,6 +836,7 @@ def build_project_intelligence_payload(
         ),
         **section_copy,
         **_table_columns(),
+        "governance_titles": _governance_titles(backlog=backlog, casebook=casebook, atlas=atlas),
         "sources": {
             "registry": "odylith/registry/source/component_registry.v1.json",
             "radar": "odylith/radar/source/INDEX.md",

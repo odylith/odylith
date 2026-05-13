@@ -48,6 +48,10 @@ _OWNED_SURFACE_REFRESH_POLICIES: dict[str, OwnedSurfaceRefreshPolicy] = {
         surface="compass",
         retry_command=("compass", "refresh", "--repo-root", ".", "--wait"),
     ),
+    "tooling_shell": OwnedSurfaceRefreshPolicy(
+        surface="tooling_shell",
+        retry_command=("dashboard", "refresh", "--repo-root", ".", "--surfaces", "shell"),
+    ),
 }
 
 

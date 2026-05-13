@@ -7,6 +7,7 @@ UIs by embedding each page in an iframe and switching via query-driven tabs.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import shutil
@@ -26,6 +27,9 @@ from odylith.runtime.context_engine import odylith_control_state
 from odylith.runtime.governance import agent_governance_intelligence
 from odylith.runtime.governance import workstream_inference as ws_inference
 from odylith.runtime.project_intelligence import builder as project_intelligence_builder
+from odylith.runtime.project_intelligence import greenfield as project_intelligence_greenfield
+from odylith.runtime.project_intelligence import product_story as project_intelligence_product_story
+from odylith.runtime.project_intelligence import presenter as project_intelligence_presenter
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import dashboard_shell_links
 from odylith.runtime.surfaces import dashboard_surface_bundle
@@ -60,6 +64,29 @@ _LIVE_REFRESH_POLICY_ALIASES = {
 _TOOLING_REFRESH_GUARD_KEY = "tooling-dashboard-render"
 
 
+def _refresh_guard_code_fingerprint() -> str:
+    """Tie shell cache reuse to the renderer and Project-tab code that produced it."""
+    digest = hashlib.sha256()
+    module_paths = (
+        Path(__file__),
+        Path(str(project_intelligence_builder.__file__ or "")),
+        Path(str(project_intelligence_greenfield.__file__ or "")),
+        Path(str(project_intelligence_product_story.__file__ or "")),
+        Path(str(project_intelligence_presenter.__file__ or "")),
+        Path(str(Path(project_intelligence_presenter.__file__ or "").with_name("project_tab.css"))),
+        Path(str(tooling_dashboard_runtime_builder.__file__ or "")),
+        Path(str(tooling_dashboard_shell_presenter.__file__ or "")),
+        Path(str(dashboard_shell_links.__file__ or "")),
+    )
+    for path in module_paths:
+        digest.update(str(path.name).encode("utf-8", errors="replace"))
+        if path.is_file():
+            digest.update(path.read_bytes())
+        else:
+            digest.update(b"<missing>")
+    return digest.hexdigest()
+
+
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="odylith sync",
@@ -88,6 +115,10 @@ def _refresh_guard_watched_paths(
     return (
         _SHELL_SOURCE_PATH,
         "odylith/runtime/source/product-version.v1.json",
+        "odylith/runtime/source/accepted-project.v1.json",
+        "odylith/runtime/source/greenfield-project.v1.json",
+        "odylith-greenfield-proposal.json",
+        "greenfield-proposal.json",
         "odylith/runtime/delivery_intelligence.v4.json",
         "odylith/compass/runtime/current.v1.json",
         "odylith/radar/source/INDEX.md",
@@ -424,7 +455,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             asset_prefix="tooling",
             key=_TOOLING_REFRESH_GUARD_KEY,
             watched_paths=_refresh_guard_watched_paths(surface_paths=surface_paths),
-            extra={"runtime_mode": str(args.runtime_mode).strip().lower() or "auto"},
+            extra={
+                "runtime_mode": str(args.runtime_mode).strip().lower() or "auto",
+                "renderer_code_fingerprint": _refresh_guard_code_fingerprint(),
+            },
         )
     )
     if skip_rebuild:

@@ -111,6 +111,7 @@ def collect_host_reasoned_proposal_issues(proposal: Mapping[str, Any]) -> list[s
     components = capture(lambda: _require_nonempty_sequence(proposal, "components"))
     diagrams = capture(lambda: _require_nonempty_sequence(proposal, "diagrams"))
     if isinstance(backlog, list):
+        issues.extend(_backlog_program_parent_issues(backlog, proposal))
         for index, row in enumerate(backlog, start=1):
             capture(lambda row=row, index=index: _validate_backlog_row(row, index))
     if isinstance(components, list):
@@ -166,6 +167,22 @@ def _risk_text(value: Any) -> str:
     if isinstance(value, Mapping):
         return " ".join(str(nested or "") for nested in value.values())
     return str(value or "")
+
+
+def _backlog_program_parent_issues(backlog: list[Any], proposal: Mapping[str, Any]) -> list[str]:
+    mapping_rows = [row for row in backlog if isinstance(row, Mapping)]
+    program = proposal.get("program", {}) if isinstance(proposal.get("program"), Mapping) else {}
+    waves = [row for row in program.get("waves", []) if isinstance(row, Mapping)] if isinstance(program.get("waves"), list) else []
+    if len(mapping_rows) < 2 or not waves:
+        return []
+    first = mapping_rows[0]
+    row_type = str(first.get("workstream_type", "")).strip().casefold()
+    if row_type in {"umbrella", "program", "parent", "program_parent"}:
+        return []
+    return [
+        "proposal backlog must include a host-authored program parent as the first row; "
+        "Odylith will not synthesize an umbrella workstream from child rows"
+    ]
 
 
 def _first_content_line(source: str) -> str:

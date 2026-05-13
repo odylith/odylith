@@ -53,7 +53,7 @@ def test_engine_integrity_covers_operator_requested_engine_set() -> None:
         assert row["activation_backed"], row["area"]
         assert row["integration_backed"], row["area"]
         assert row["handoff_in"] or row["handoff_out"], row["area"]
-    assert "odylith greenfield create" in areas["Domain Intelligence"]["commands"]
+    assert "odylith greenfield apply" in areas["Domain Intelligence"]["commands"]
     assert areas["Subagent Router"]["inventory_names"] == ["Subagent Router"]
     assert areas["Subagent Orchestrator"]["inventory_names"] == ["Subagent Orchestrator"]
     assert "odylith doctor" in areas["Security and Trust"]["commands"]
@@ -70,7 +70,7 @@ def test_engine_integrity_text_report_is_operator_readable() -> None:
     assert "Engine handshakes" in text
     assert "all requested engine areas are inventory-backed" in text
     assert "Engine spine" in text
-    assert "Domain Intelligence - greenfield and project-shape intelligence before governed writes" in text
+    assert "Domain Intelligence - greenfield/project-shape reasoning contracts plus validated host-authored governed writes" in text
 
 
 def test_engine_integrity_rejects_command_only_activation(monkeypatch) -> None:

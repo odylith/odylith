@@ -7,6 +7,7 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.project_intelligence.deeplinks import deeplink_title_context
 from odylith.runtime.project_intelligence.deeplinks import inline_deeplink_html as _d
 from odylith.runtime.project_intelligence.narration import table_columns as _default_table_columns
 
@@ -75,7 +76,7 @@ def _scenario_details(items: object, fallback: object) -> str:
             continue
         rows.append(f"<p><b>{_d(label)}</b><span>{_d(body)}</span></p>")
     if not rows and str(fallback or "").strip():
-        rows.append(f"<p><span>{_d(fallback)}</span></p>")
+        rows.append(f'<p class="project-scenario-prose">{_d(fallback)}</p>')
     return "".join(rows)
 
 
@@ -137,104 +138,104 @@ def _product_story(value: object) -> str:
     story = value if isinstance(value, Mapping) else {}
     headline = story.get("headline")
     standfirst = story.get("standfirst")
+    paragraphs = [str(item).strip() for item in _sequence(story.get("paragraphs")) if str(item or "").strip()]
+    supporting_records = [str(item).strip() for item in _sequence(story.get("supporting_records")) if str(item or "").strip()]
+    if not paragraphs and str(standfirst or "").strip():
+        paragraphs.append(str(standfirst).strip())
     narrative = _mappings(story.get("narrative"))
-    actors = _mappings(story.get("actors"))
-    artifacts = _mappings(story.get("artifacts"))
-    topology = _mappings(story.get("topology_spine"))
-    legacy_paragraphs = [_d(item) for item in _sequence(story.get("paragraphs")) if str(item or "").strip()]
-
-    headline_html = f"<h3>{_d(headline)}</h3>" if str(headline or "").strip() else ""
-    standfirst_html = f"<p>{_d(standfirst)}</p>" if str(standfirst or "").strip() else ""
-    legacy_html = "".join(f"<p>{paragraph}</p>" for paragraph in legacy_paragraphs)
-    narrative_html = "".join(
-        '<article class="project-story-point">'
-        f"<span>{_d(row.get('label'))}</span>"
-        f"<h4>{_d(row.get('title'))}</h4>"
-        f"<p>{_d(row.get('body'))}</p>"
-        "</article>"
+    paragraphs.extend(
+        " ".join(
+            part
+            for part in (str(row.get("title") or "").strip(), str(row.get("body") or "").strip())
+            if part
+        )
         for row in narrative
         if str(row.get("body") or "").strip()
     )
-    actor_html = "".join(
-        "<li>"
-        f"<b>{_d(row.get('title'))}</b>"
-        f"<span>{_d(row.get('body'))}</span>"
-        "</li>"
-        for row in actors
-        if str(row.get("title") or "").strip()
-    )
-    actors_markup = f'<aside class="project-story-actors"><h4>Actors in the story</h4><ul>{actor_html}</ul></aside>' if actor_html else ""
-    topology_markup = _story_topology_spine(
-        topology,
-        title=story.get("topology_title"),
-        note=story.get("topology_note"),
-    )
-    artifact_intro = story.get("artifact_intro")
-    artifact_html = "".join(_story_artifact(row) for row in artifacts)
-    artifact_markup = (
-        '<div class="project-story-artifacts">'
-        f"<p>{_d(artifact_intro)}</p>"
-        f'<div class="project-story-artifact-grid">{artifact_html}</div>'
-        "</div>"
-        if artifact_html
+    return _product_story_narrative(headline=headline, paragraphs=paragraphs, supporting_records=supporting_records)
+
+
+def _product_story_narrative(*, headline: object, paragraphs: Sequence[str], supporting_records: Sequence[str]) -> str:
+    headline_html = f"<h3>{_d(headline)}</h3>" if str(headline or "").strip() else ""
+    paragraphs_html = "".join(f"<p>{_d(paragraph)}</p>" for paragraph in paragraphs if str(paragraph or "").strip())
+    records_html = (
+        '<ul class="project-story-records">'
+        + "".join(f"<li>{_d(row)}</li>" for row in supporting_records if str(row or "").strip())
+        + "</ul>"
+        if supporting_records
         else ""
     )
     return (
-        '<div class="project-story-lede">'
-        f'<div class="project-story-body">{headline_html}{standfirst_html}{legacy_html}</div>'
-        f"{actors_markup}"
-        "</div>"
-        f"{topology_markup}"
-        f'<div class="project-story-points">{narrative_html}</div>'
-        f"{artifact_markup}"
+        '<article class="project-story-narrative">'
+        f"{headline_html}{paragraphs_html}{records_html}"
+        "</article>"
     )
 
 
-def _story_topology_spine(rows: Sequence[Mapping[str, Any]], *, title: object, note: object) -> str:
+def _render_blank_actions(items: object) -> str:
+    rows: list[str] = []
+    for row in _mappings(items):
+        command = str(row.get("command") or "").strip()
+        command_html = f"<code>{_e(command)}</code>" if command else ""
+        rows.append(
+            '<article class="project-empty-action">'
+            f"<h3>{_d(row.get('title'))}</h3>"
+            f"<p>{_d(row.get('body'))}</p>"
+            f"{command_html}"
+            "</article>"
+        )
+    return "".join(rows)
+
+
+def _render_blank_preview(items: object) -> str:
+    rows = _mappings(items)
     if not rows:
         return ""
-    title_html = f"<h3>{_d(title)}</h3>" if str(title or "").strip() else ""
-    note_html = f"<p>{_d(note)}</p>" if str(note or "").strip() else ""
-    nodes = "".join(
-        '<article class="project-story-spine-node">'
-        f"<em>{index}</em>"
-        f"<span>{_d(row.get('label'))}</span>"
-        f"<h4>{_d(row.get('title'))}</h4>"
+    return "".join(
+        '<article class="project-empty-preview-card">'
+        f"<h3>{_d(row.get('title'))}</h3>"
         f"<p>{_d(row.get('body'))}</p>"
         "</article>"
-        for index, row in enumerate(rows, start=1)
+        for row in rows
         if str(row.get("title") or row.get("body") or "").strip()
     )
-    if not nodes:
-        return ""
-    return (
-        '<div class="project-story-spine">'
-        f'<div class="project-story-spine-head">{title_html}{note_html}</div>'
-        f'<div class="project-story-spine-rail">{nodes}</div>'
-        "</div>"
-    )
 
 
-def _story_artifact(group: Mapping[str, Any]) -> str:
-    items = _mappings(group.get("items"))
-    item_html = "".join(
-        "<li>"
-        f"<b>{_d(item.get('title'))}</b>"
-        f"<span>{_d(item.get('body'))}</span>"
-        "</li>"
-        for item in items[:5]
-        if str(item.get("title") or "").strip()
-    )
-    if not item_html:
+def _render_blank_readout(items: object) -> str:
+    values = [_d(item) for item in _sequence(items) if str(item or "").strip()]
+    if not values:
         return ""
-    return (
-        "<article>"
-        f"<span>{_d(group.get('label'))}</span>"
-        f"<h3>{_d(group.get('title'))}</h3>"
-        f"<p>{_d(group.get('body'))}</p>"
-        f"<ul>{item_html}</ul>"
-        "</article>"
-    )
+    return '<ul class="project-empty-readout">' + "".join(f"<li>{item}</li>" for item in values) + "</ul>"
+
+
+def _render_blank_project(project: Mapping[str, Any]) -> str:
+    chips = "".join(f"<span>{_d(chip)}</span>" for chip in _sequence(project.get("chips")))
+    return f"""
+<div class="project-surface project-surface-empty">
+  <header class="project-hero project-hero-empty">
+    <div class="project-hero-main project-hero-main-empty">
+      <div class="project-hero-copy">
+        <p class="project-eyebrow"><span></span>{_d(project.get("eyebrow"))}</p>
+        <h1>{_d(project.get("title"))}</h1>
+        <p class="project-intro">{_d(project.get("intro"))}</p>
+        <div class="project-chips">{chips}</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="project-main">
+    <section class="project-panel project-empty-panel">
+      <div class="project-panel-head"><h2>{_d(project.get("blank_title"))}</h2><p>{_d(project.get("blank_note"))}</p></div>
+      <div class="project-empty-action-grid">{_render_blank_actions(project.get("blank_actions"))}</div>
+      {_render_blank_readout(project.get("blank_readout"))}
+    </section>
+    <section class="project-panel project-empty-preview">
+      <div class="project-panel-head"><h2>{_d(project.get("blank_preview_title"))}</h2></div>
+      <div class="project-empty-preview-grid">{_render_blank_preview(project.get("blank_preview"))}</div>
+    </section>
+  </main>
+</div>
+""".strip()
 
 
 def _enabled(project: Mapping[str, Any], key: str) -> bool:
@@ -337,6 +338,13 @@ def render_project_html(payload: Mapping[str, Any]) -> str:
     project = payload.get("project_intelligence")
     if not isinstance(project, Mapping):
         project = _fallback_payload()
+    with deeplink_title_context(project.get("governance_titles")):
+        return _render_project_html_project(project)
+
+
+def _render_project_html_project(project: Mapping[str, Any]) -> str:
+    if str(project.get("mode") or "").strip().lower() == "blank":
+        return _render_blank_project(project)
     default_columns = _default_table_columns()
     claim_columns = _columns(project, "claim_evidence_columns", default_columns["claim_evidence_columns"])
     scenario = _sequence(project.get("scenario"))
@@ -363,7 +371,7 @@ def render_project_html(payload: Mapping[str, Any]) -> str:
     )
     product_story_html = (
         f"""      <section class="project-panel project-product-story">
-        <div class="project-panel-head"><h2>{_d(project.get("product_story_title"))}</h2><p>{_d(project.get("product_story_note"))}</p></div>
+        <div class="project-panel-head"><h2>{_d(project.get("product_story_title"))}</h2>{f'<p>{_d(project.get("product_story_note"))}</p>' if str(project.get("product_story_note") or "").strip() else ''}</div>
         {_product_story(project.get("product_story"))}
       </section>
 """

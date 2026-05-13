@@ -42,7 +42,6 @@ from odylith.runtime.domain_intelligence.proposal_contract import build_proposal
 from odylith.runtime.domain_intelligence.proposal_memory import record_greenfield_acceptance
 from odylith.runtime.domain_intelligence.proposal_normalization import normalize_host_reasoned_proposal
 from odylith.runtime.domain_intelligence.proposal_rendering import format_proposal_text
-from odylith.runtime.domain_intelligence.proposal_scaffold import build_apply_ready_proposal
 from odylith.runtime.domain_intelligence.proposal_tribunal import raise_for_failed_greenfield_tribunal
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
@@ -52,6 +51,8 @@ from odylith.runtime.governance import component_authoring
 from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import release_planning_authoring
 from odylith.runtime.governance import release_planning_contract
+from odylith.runtime.project_intelligence.intent_confirmation import build_product_intent_confirmation
+from odylith.runtime.project_intelligence.intent_confirmation import format_product_intent_confirmation_text
 from odylith.runtime.surfaces import scaffold_mermaid_diagram
 
 def _prompt_text(prompt: str) -> str:
@@ -161,21 +162,19 @@ def _source_evidence(repo_root: Path) -> dict[str, Any]:
 
 
 def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]:
-    """Return the greenfield reasoning envelope with a validated canonical proposal."""
+    """Return the no-write greenfield proposal contract for host reasoning.
+
+    The CLI deliberately does not infer arbitrary domains or manufacture
+    backlog, Registry, Atlas, release, or validation records from prompt text.
+    The host model authors the product proposal live after the operator confirms
+    intent; this envelope supplies the schema, proof rules, aliases, and apply
+    command that Odylith can validate deterministically before writing records.
+    """
 
     root = Path(repo_root).expanduser().resolve()
     intent_title = _intent_title(prompt)
     project_slug = slugify(intent_title)
     evidence = _source_evidence(root)
-    canonical_proposal = _build_apply_ready_greenfield_proposal(
-        repo_root=root,
-        prompt=prompt,
-        release_selector=greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR,
-    )
-    canonical_tribunal = run_greenfield_tribunal(
-        canonical_proposal,
-        release_selector=greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR,
-    )
     proposal: dict[str, Any] = {
         "schema_version": "odylith.greenfield.reasoning_request.v1",
         "mode": "host_reasoned_proposal_request",
@@ -199,19 +198,16 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
             "mode": "consumer_greenfield_host_reasoned_proposal",
             "source_posture": evidence.get("source_posture", "unknown"),
             "operator_sequence": [
-                "Odylith interprets the prompt and shows a compact product-first preview before any records are written",
-                "the operator reviews domain fit, direction choices, non-goals, first release ambition, and proof threshold",
-                "confirmed create/apply validates the accepted proposal and writes project records only after explicit confirmation",
-                "implementation planning starts only after the accepted records name the first slice, boundaries, states, and proof gates",
-                "use --format json when a reviewer needs the full proposal object before apply",
+                "the host writes a compact Product Intent Confirmation in chat before any records are generated",
+                "the operator confirms, edits, or rejects the interpretation",
+                "the host authors the full proposal from the confirmed product intent, source posture, and reasoning contract",
+                "greenfield apply validates the accepted proposal, runs the Tribunal write gate, and writes governed records only after explicit confirmation",
+                "implementation planning starts only after accepted records name the first slice, boundaries, states, owners, and proof gates",
             ],
-            "write_guardrail": "This preview writes nothing. Confirmed create/apply is the first point where project records are written.",
-            "next_best_action": f"Review the interpretation and direction choices for {intent_title}; revise them before create/apply if they would change architecture or proof.",
+            "write_guardrail": "This contract writes nothing and contains no generated governance artifacts.",
+            "next_best_action": f"Author the full proposal for {intent_title} only after the operator confirms the live Product Intent Confirmation.",
         },
         "reasoning_contract": build_proposal_contract(),
-        "proposal_template": canonical_proposal,
-        "canonical_proposal": canonical_proposal,
-        "canonical_proposal_gate": canonical_tribunal.to_dict(),
         "accepted_aliases": {
             "mode": ["greenfield", "host_reasoned_proposal"],
             "component_id": ["id", "name"],
@@ -222,60 +218,23 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
             "project_intelligence": ["project_control_surface", "project_domain_intelligence"],
         },
         "host_instruction": (
-            "Draft a concrete product proposal for the operator now. Be specific to the prompt; "
-            "do not use canned domain buckets. Label observed_source, user_intent, "
-            "and odylith_assumption separately. Ask only the questions that materially "
-            "change the project direction, first slice, or correctness gates. Include project-first "
-            "customization options that work the same from CLI, Codex, and Claude Code. For every child backlog item, "
-            "include topology hints such as component_focus and related_diagram_slugs, "
-            "plus first-slice validation. For every component, include enough boundary, "
-            "responsibility, dependencies, interfaces, and validation expectations to seed "
-            "a useful component CURRENT_SPEC.md. Default the provisional release selector "
-            "and release label to exactly 0.0.1 unless the operator explicitly asks for another release target; "
-            "do not add project names or descriptive words to release targets, "
-            "and identify the first-wave workstreams that should target that release."
-            " The confirmed proposal will run through deterministic validation "
-            "before writes and will refresh accepted product records after "
-            "the accepted artifacts are written. The preview must stay compact and product-first; "
-            "the full JSON can carry the deeper record details. Include a domain-appropriate security, "
-            "privacy, compliance, abuse, accessibility, data retention, and operational "
-            "risk posture; keep it proportional, specific, and host-model agnostic."
+            "Author the proposal live from the confirmed Product Intent Confirmation and observed source posture. "
+            "Do not use canned domain buckets, family templates, or prompt-title repetition. "
+            "Label observed_source, user_intent, and odylith_assumption separately. "
+            "Create only workstreams, component boundaries, diagrams, proof gates, and release waves that a product owner would recognize as directly relevant to the assignment. "
+            "Ask or encode only the choices that materially change the first path, actors, risk posture, topology, or proof bar. "
+            "Default the provisional release selector and release label to exactly 0.0.1 unless the operator explicitly asks for another release target. "
+            "The accepted proposal will run through deterministic schema validation and the Tribunal write gate before any records are written."
         ),
         "apply_commands": [
-            "odylith greenfield create --repo-root . --prompt "
-            + json.dumps(_prompt_text(prompt))
-            + " --release 0.0.1 --confirm",
             "odylith greenfield propose --repo-root . --prompt "
             + json.dumps(_prompt_text(prompt))
-            + " --format json > odylith-greenfield-proposal.json",
+            + " --confirm-intent",
+            "# host writes odylith-greenfield-proposal.json from the confirmed Product Intent and source posture",
             "odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm --release 0.0.1",
         ],
     }
     return proposal
-
-
-def _build_apply_ready_greenfield_proposal(
-    *,
-    repo_root: Path,
-    prompt: str,
-    release_selector: str = "",
-) -> dict[str, Any]:
-    root = Path(repo_root).expanduser().resolve()
-    raw = build_apply_ready_proposal(
-        prompt=_prompt_text(prompt),
-        intent_title=_intent_title(prompt),
-        project_slug=slugify(_intent_title(prompt)),
-        observed_source=_source_evidence(root),
-        release_selector=release_selector,
-    )
-    normalized = normalize_host_reasoned_proposal(raw)
-    validate_host_reasoned_proposal(normalized)
-    tribunal = run_greenfield_tribunal(
-        normalized,
-        release_selector=greenfield_programs.proposal_release_selector(normalized, release_selector),
-    )
-    raise_for_failed_greenfield_tribunal(tribunal)
-    return normalized
 
 
 def _load_proposal(args: argparse.Namespace) -> dict[str, Any]:
@@ -601,7 +560,7 @@ def _ensure_release_target(*, repo_root: Path, proposal: Mapping[str, Any], sele
     )
 
 
-_GREENFIELD_VISIBLE_SURFACES = ("radar", "registry", "atlas", "compass")
+_GREENFIELD_VISIBLE_SURFACES = ("radar", "registry", "atlas", "compass", "tooling_shell")
 _COMPONENT_RISK_TOKENS = ("risk", "failure", "fallback", "mitigation", "recovery", "degraded", "operational")
 _COMPONENT_SECURITY_TOKENS = (
     "security",
@@ -643,7 +602,7 @@ def _refresh_greenfield_dashboard(*, repo_root: Path) -> dict[str, Any]:
     return {
         "status": "passed",
         "surfaces": list(_GREENFIELD_VISIBLE_SURFACES),
-        "view": owned_surface_refresh.dashboard_handoff(surface="compass"),
+        "view": owned_surface_refresh.dashboard_handoff(surface="project"),
     }
 
 
@@ -933,6 +892,17 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     propose.add_argument("--repo-root", default=".")
     propose.add_argument("--prompt", required=True)
     propose.add_argument("--format", choices=("text", "json"), default="text", dest="output_format")
+    propose.add_argument(
+        "--detail",
+        choices=("brief", "full"),
+        default="brief",
+        help="Text preview depth after intent is confirmed. Default propose shows only Product Intent Confirmation.",
+    )
+    propose.add_argument(
+        "--confirm-intent",
+        action="store_true",
+        help="Build the full proposal preview or JSON after the operator confirms the Product Intent Confirmation.",
+    )
     apply = subparsers.add_parser("apply", help="Apply a confirmed greenfield product proposal.")
     apply.add_argument("--repo-root", default=".")
     apply.add_argument("--proposal-file", default="")
@@ -940,7 +910,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     apply.add_argument("--confirm", action="store_true")
     apply.add_argument("--release", default="")
     apply.add_argument("--json", action="store_true", dest="as_json")
-    create = subparsers.add_parser("create", help="Build and apply a validated greenfield product proposal in one confirmed command.")
+    create = subparsers.add_parser("create", help="Reject prompt-only greenfield writes; use propose, host-authored JSON, then apply.")
     create.add_argument("--repo-root", default=".")
     create.add_argument("--prompt", required=True)
     create.add_argument("--confirm", action="store_true")
@@ -1003,12 +973,23 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
     if args.command == "propose":
+        if not bool(args.confirm_intent):
+            confirmation = build_product_intent_confirmation(
+                prompt=str(args.prompt),
+                title=_intent_title(str(args.prompt)),
+                repo_name=repo_root.name,
+                observed_source=_source_evidence(repo_root),
+            )
+            if args.output_format == "json":
+                print(json.dumps(confirmation, indent=2, sort_keys=True))
+            else:
+                print(format_product_intent_confirmation_text(confirmation), end="")
+            return 0
         proposal = build_greenfield_proposal(repo_root=repo_root, prompt=str(args.prompt))
         if args.output_format == "json":
-            canonical = proposal.get("canonical_proposal") if isinstance(proposal.get("canonical_proposal"), Mapping) else proposal
-            print(json.dumps(canonical, indent=2, sort_keys=True))
+            print(json.dumps(proposal, indent=2, sort_keys=True))
         else:
-            print(format_proposal_text(proposal), end="")
+            print(format_proposal_text(proposal, detail=str(args.detail)), end="")
         return 0
     if args.command == "apply":
         try:
@@ -1032,29 +1013,29 @@ def main(argv: Sequence[str] | None = None) -> int:
             print_apply_result(result, verb="apply")
         return 0
     if args.command == "create":
-        try:
-            result, captured = _run_with_optional_stdout_capture(
-                enabled=bool(args.as_json),
-                action=lambda: apply_greenfield_proposal(
-                    repo_root=repo_root,
-                    proposal=_build_apply_ready_greenfield_proposal(
-                        repo_root=repo_root,
-                        prompt=str(args.prompt),
-                        release_selector=str(args.release),
-                    ),
-                    confirm=bool(args.confirm),
-                    release_selector=str(args.release),
-                ),
-            )
-        except (ValueError, RuntimeError, json.JSONDecodeError) as exc:
-            _print_greenfield_error(exc, as_json=bool(args.as_json))
-            return 2
+        message = (
+            "Prompt-only greenfield create is disabled. First run `odylith greenfield propose --repo-root . --prompt "
+            + json.dumps(_prompt_text(str(args.prompt)))
+            + "` and write the Product Intent Confirmation in chat. After the operator confirms, author the proposal JSON from live reasoning and run "
+            "`odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm --release "
+            + (str(args.release).strip() or greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR)
+            + "`."
+        )
         if args.as_json:
-            result = _with_operator_output(result, captured)
-            print(json.dumps(result, indent=2, sort_keys=True))
+            print(
+                json.dumps(
+                    {
+                        "mode": "error",
+                        "write_policy": "host_reason_product_intent_before_greenfield_apply",
+                        "error": message,
+                    },
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
         else:
-            print_apply_result(result, verb="create")
-        return 0
+            print(message)
+        return 2
     return 2
 
 

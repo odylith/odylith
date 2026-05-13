@@ -4,13 +4,76 @@ import ast
 import json
 from pathlib import Path
 
-from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.project_intelligence import assets, builder, deeplinks, focus, presenter
+from tests.unit.runtime.test_greenfield_proposals import _apply_ready_greenfield_fixture as _host_greenfield_fixture
 
 
 def _write_json(path: Path, payload: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+
+def _apply_ready_greenfield_fixture(repo_root: Path, prompt: str) -> dict[str, object]:
+    return _host_greenfield_fixture(repo_root, prompt)
+
+
+def test_project_intelligence_blank_install_starts_with_minimal_project_state(tmp_path: Path) -> None:
+    payload = builder.build_project_intelligence_payload(
+        repo_root=tmp_path,
+        shell_payload={
+            "shell_repo_name": "mockrepo",
+            "welcome_state": {
+                "starter_prompt": "Odylith, show me what you can do.",
+                "repo_readout": ["Odylith has not inferred one grounded slice yet."],
+            },
+        },
+    )
+    html = presenter.render_project_html({"project_intelligence": payload})
+
+    assert payload["mode"] == "blank"
+    assert payload["sections"] == ["empty_state"]
+    assert payload["title"] == "Mockrepo"
+    assert payload.get("answers", []) == []
+    assert "Project not defined yet" in html
+    assert "Start with the project" in html
+    assert "odylith greenfield propose --repo-root ." in html
+    assert "Odylith, show me what you can do." in html
+    assert "Product story" in html
+    assert "Governance spine" in html
+    assert "Execution boundary" in html
+    assert "Who participates" not in html
+    assert "Current orienting work" not in html
+    assert "No active release detected" not in html
+    assert "State evidence" not in html
+    assert "Evidence gap" not in html
+    assert "Compass shows state" not in html
+    assert "Operator" not in html
+    assert "Maintainer" not in html
+    assert "Reviewer" not in html
+
+
+def test_project_intelligence_blank_install_ignores_generic_orienting_next_action(tmp_path: Path) -> None:
+    _write_json(
+        tmp_path / "odylith" / "compass" / "runtime" / "current.v1.json",
+        {
+            "generated_utc": "2026-05-11T17:13:00Z",
+            "next_actions": [
+                {
+                    "title": "Define the project first",
+                    "action": "Define the project before implementation starts.",
+                    "source": "compass",
+                }
+            ],
+        },
+    )
+
+    payload = builder.build_project_intelligence_payload(repo_root=tmp_path, shell_payload={"shell_repo_name": "mockrepo"})
+    html = presenter.render_project_html({"project_intelligence": payload})
+
+    assert payload["mode"] == "blank"
+    assert "Project not defined yet" in html
+    assert "Current orienting work" not in html
+    assert "Define the project first" not in html
 
 
 def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path: Path) -> None:
@@ -81,7 +144,7 @@ def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path:
     )
     _write_json(
         tmp_path / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json",
-        {"version": "v1", "diagrams": [{"diagram_id": "D-001", "status": "active"}]},
+        {"version": "v1", "diagrams": [{"diagram_id": "D-001", "title": "Human Project Entry Map", "status": "active"}]},
     )
     _write_json(
         tmp_path / "odylith" / "compass" / "runtime" / "current.v1.json",
@@ -162,6 +225,19 @@ def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path:
     assert "Project tab now compiles from source records" in payload["focus"]
     assert payload["chips"][:2] == ["coding-agent governance", "Source-backed runtime"]
     assert payload["chips"][2].endswith("complexity")
+    assert payload["sections"][0] == "product_story"
+    assert payload["governance_titles"]["B-201"] == "Dynamic Project intelligence"
+    assert payload["governance_titles"]["D-001"] == "Human Project Entry Map"
+    assert payload["product_story_title"] == "Product Story"
+    assert payload["product_story_note"] == ""
+    assert payload["product_story"]["headline"].startswith("How Odylith helps")
+    assert payload["product_story"]["standfirst"] == ""
+    assert any("Odylith is in implementing mode" in row for row in payload["product_story"]["paragraphs"])
+    assert any("Evidence stays bounded" in row for row in payload["product_story"]["paragraphs"])
+    source_records = payload["product_story"]["supporting_records"]
+    assert any("Radar carries" in row and "B-201" in row for row in source_records)
+    assert any("Registry names the owned boundaries" in row for row in source_records)
+    assert any("Atlas gives reviewers" in row for row in source_records)
     assert payload["answers"][0] == (
         "Who uses Odylith?",
         "repository operators and coding agents",
@@ -262,7 +338,11 @@ def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path:
     assert "Current focus:" not in html
     assert "Evidence boundary:" not in html
     assert '<div class="project-prose-lines"><p>Project tab now compiles from source records.</p><p>Current release: 0.2.0: Human Project Entry.</p><p>Worktree: mixed with 2 meaningful and 1 generated changed paths.</p></div>' in html
-    assert '<a class="project-deeplink" target="_top" href="?tab=radar&amp;workstream=B-201">B-201</a>' in html
+    assert (
+        '<a class="project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-201" '
+        'data-tooltip="B-201: Dynamic Project intelligence" aria-label="B-201: Dynamic Project intelligence" '
+        'title="B-201: Dynamic Project intelligence">B-201</a>'
+    ) in html
     assert '<a class="project-deeplink" target="_top" href="?tab=casebook">Casebook</a>' in html
     assert '<a class="project-deeplink" target="_top" href="?tab=registry">Registry</a>' in html
     assert "<b>Active work</b>" in html
@@ -273,13 +353,14 @@ def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path:
     assert "How does Odylith move work from request to proof?" not in html
     assert "Ground request" not in html
     assert "Replacing Radar, Registry, Atlas, Compass, or Casebook" not in html
+    assert "<h3>Odylith helps repository operators" not in html
     assert "Showing a generic intake template" not in html
     assert "Running background sync from the Project page" not in html
     assert "Systems and evidence surfaces" not in html
     assert "Maintainer" in html
     assert "AUDIENCE" not in html
     assert "Systems and evidence surfaces" not in html
-    assert "Context Engine" not in html
+    assert "Context Engine" in html
     assert "Summarized from 0.2.0: Human Project Entry, 1 active workstream, 1 runtime action, and 5 evidence sources." in html
     assert "project-projection-strip" not in html
     assert '<article class="project-card"><p></p>' not in html
@@ -313,15 +394,22 @@ def test_project_intelligence_presenter_renders_fallback_without_payload() -> No
 
 def test_project_intelligence_deeplink_renderer_links_governance_references() -> None:
     html = deeplinks.inline_deeplink_html(
-        "Use B-321, CB-654, D-987, Registry, radar, and odylith/technical-plans/in-progress/demo.md."
+        "Use B-321, CB-654, D-987, Registry, radar, and odylith/technical-plans/in-progress/demo.md.",
+        titles={
+            "B-321": "Customer intake workflow",
+            "CB-654": "Rollback owner missing",
+            "D-987": "First slice flow",
+        },
     )
 
-    assert 'href="?tab=radar&amp;workstream=B-321">B-321</a>' in html
-    assert 'href="?tab=casebook&amp;bug=CB-654">CB-654</a>' in html
-    assert 'href="?tab=atlas&amp;diagram=D-987">D-987</a>' in html
+    assert 'href="?tab=radar&amp;workstream=B-321" data-tooltip="B-321: Customer intake workflow"' in html
+    assert 'href="?tab=casebook&amp;bug=CB-654" data-tooltip="CB-654: Rollback owner missing"' in html
+    assert 'href="?tab=atlas&amp;diagram=D-987" data-tooltip="D-987: First slice flow"' in html
+    assert 'title="B-321: Customer intake workflow"' in html
     assert 'href="?tab=registry">Registry</a>' in html
     assert 'href="?tab=radar">radar</a>' in html
     assert 'href="technical-plans/in-progress/demo.md"' in html
+    assert 'href="?tab=registry" data-tooltip=' not in html
 
 
 def test_project_intelligence_presenter_uses_payload_narration_labels() -> None:
@@ -419,11 +507,7 @@ def test_project_intelligence_presenter_uses_payload_narration_labels() -> None:
 
 
 def test_project_intelligence_renders_greenfield_origin_from_proposal(tmp_path: Path) -> None:
-    envelope = greenfield_proposals.build_greenfield_proposal(
-        repo_root=tmp_path,
-        prompt="Build an ecommerce site with checkout recovery",
-    )
-    proposal = envelope["proposal_template"]
+    proposal = _apply_ready_greenfield_fixture(tmp_path, "Build an ecommerce site with checkout recovery")
 
     payload = builder.build_project_intelligence_payload(
         repo_root=tmp_path,
@@ -439,46 +523,42 @@ def test_project_intelligence_renders_greenfield_origin_from_proposal(tmp_path: 
     assert "What evidence state does" in html
     assert "Unproven before build" in html
     assert "Source-backed runtime" not in payload["chips"]
-    assert "accepted project truth" in payload["desired"].lower()
+    assert "accepted project direction" in payload["desired"].lower()
     assert any(row["evidence"] in {"user-stated", "inferred", "needs validation"} for row in payload["claim_evidence"])
     assert payload["sections"][0] == "product_story"
     assert payload["product_story_title"] == "Product Story"
     story = payload["product_story"]
     assert isinstance(story, dict)
-    assert "provable journey" in story["headline"]
-    assert any(row["label"] == "First proof" for row in story["narrative"])
-    assert story["topology_title"] == "Topology spine"
-    assert [row["label"] for row in story["topology_spine"]] == [
-        "Story root",
-        "First path",
-        "Radar",
-        "Registry",
-        "Atlas",
-        "Release proof",
-    ]
-    assert "topology spine ties" in story["artifact_intro"].lower()
-    assert any(group["label"] == "Workstreams" and group["items"] for group in story["artifacts"])
-    assert any(group["label"] == "Workstreams" for group in story["groups"])
+    assert "the team can prove" in story["headline"]
+    assert len(story["paragraphs"]) >= 3
+    assert any("the product narrows to" in row for row in story["paragraphs"])
+    assert any("outside the first proof" in row for row in story["paragraphs"])
+    assert any("Together, those records keep release" in row for row in story["paragraphs"])
+    source_records = story["supporting_records"]
+    assert any("Radar carries" in row for row in source_records)
+    assert any("Registry gives ownership" in row for row in source_records)
+    assert any("Atlas gives reviewers" in row for row in source_records)
+    assert any("Release 0.0.1 stays tied" in row for row in source_records)
     assert "Product Story" in html
-    assert "Topology spine" in html
-    assert "Story root" in html
-    assert "Release proof" in html
-    assert "Workstreams" in html
-    assert "Registry</a> components" in html
-    assert "Atlas</a> views" in html
+    assert "the team can prove" in html
+    assert "Radar" in html
+    assert "Registry" in html
+    assert "Atlas" in html
+    assert "Topology spine" not in html
+    assert "Story root" not in html
+    assert "How the story becomes governance" not in html
 
 
 def test_greenfield_workstream_body_does_not_repeat_full_project_title(tmp_path: Path) -> None:
-    envelope = greenfield_proposals.build_greenfield_proposal(
-        repo_root=tmp_path,
-        prompt="SMB lending application pulling stable coins from DeFi protocols into a merchant on Shopify",
+    proposal = _apply_ready_greenfield_fixture(
+        tmp_path,
+        "Build an ecommerce site with checkout recovery",
     )
-    proposal = envelope["proposal_template"]
     title = proposal["intent"]["title"]
     payload = builder.build_project_intelligence_payload(repo_root=tmp_path, shell_payload={"greenfield_proposal": proposal})
 
     assert title
-    assert payload["title"] == "Merchant Capital Product"
+    assert payload["title"]
     assert payload["title"] != title
     for row in proposal["backlog"]:
         assert row["title"]
@@ -487,29 +567,28 @@ def test_greenfield_workstream_body_does_not_repeat_full_project_title(tmp_path:
         assert not row["problem"].startswith(title)
 
     problems = [row["problem"] for row in proposal["backlog"]]
-    assert any(problem.startswith("Merchants need a trustworthy path") for problem in problems)
-    assert any(problem.startswith("Merchants cannot trust a capital product") for problem in problems)
-    assert any(problem.startswith("Funding offers cannot be trustworthy") for problem in problems)
+    assert any("ecommerce site" in problem for problem in problems)
+    assert any("browse and checkout UI" in problem for problem in problems)
+    assert any("Product, price, and inventory rules" in problem for problem in problems)
     assert all("accepted execution spine" not in problem for problem in problems)
-    assert any("Merchant advocate" == row[1] for row in payload["actors"])
-    assert any("Underwriting operator" == row[1] for row in payload["actors"])
+    assert any("Shopper advocate" == row[1] for row in payload["actors"])
+    assert any("Commerce operator" == row[1] for row in payload["actors"])
     assert not any("Project tooling" in row[1] for row in payload["actors"])
-    project_owners = "\n".join(proposal["project_intelligence"]["owners"])
-    assert "Merchant advocate" in project_owners
-    assert "Project tooling owns" not in project_owners
+    project_actors = "\n".join(proposal["backlog"][1]["domain_intelligence"]["actors"])
+    assert "Shopper advocate" in project_actors
+    assert "Project tooling owns" not in project_actors
     component_ids = {row["component_id"] for row in proposal["components"]}
     diagram_slugs = {row["slug"] for row in proposal["diagrams"]}
-    assert "merchant-capital-merchant-funding-workspace" in component_ids
-    assert "merchant-capital-first-slice-flow" in diagram_slugs
-    assert all("smb-lending-application" not in item for item in component_ids | diagram_slugs)
+    assert "commerce-storefront" in component_ids
+    assert any(slug.endswith("commerce-launch-system-context") for slug in diagram_slugs)
+    assert all("an-ecommerce-site-with-checkout-recovery" not in item for item in component_ids)
 
 
 def test_project_intelligence_source_does_not_embed_demo_project_language() -> None:
     source_root = Path(__file__).resolve().parents[3] / "src" / "odylith" / "runtime" / "project_intelligence"
     banned = {
         "AI agent governance",
-        "Shopify",
-        "merchant lending",
+        "demo lending",
         "Human-first comprehension",
         "Product scenario journey",
         "A maintainer opens",
@@ -549,6 +628,10 @@ def test_project_intelligence_css_uses_shared_surface_typography() -> None:
     assert ".project-next-grid" not in css
     assert ".project-scenario .project-panel-head h2" in css
     assert ".project-scenario-cover strong" in css
+    assert ".project-scenario-copy .project-scenario-prose" in css
+    assert ".project-hero-main-empty" in css
+    assert ".project-empty-action-grid" in css
+    assert ".project-empty-preview-grid" in css
     assert ".project-prose-lines" in css
     assert "font-size: 22px;" in css
     assert "font-size: 18px;" in css

@@ -1494,6 +1494,69 @@ def test_compass_governance_summaries_use_phrasing_content_in_compact_browser(co
     _assert_compass_governance_summaries_use_phrasing_content(*compact_browser_context)
 
 
+def _assert_radar_execution_wave_summary_avoids_dead_side_lane(  # noqa: ANN001
+    base_url: str,
+    context,
+) -> None:
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=radar", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    radar, _idea_id = _select_radar_workstream_with_detail_selector(
+        page,
+        detail_selector=".execution-wave-section",
+        failure_message="expected a Radar workstream with execution-wave detail for layout proof",
+        selector_timeout=1500,
+    )
+    section = radar.locator("#detail .execution-wave-section").first
+    section.wait_for(timeout=15000)
+    if section.get_attribute("open") is None:
+        section.evaluate("node => { node.open = true; }")
+    section.locator(".execution-wave-focus").first.wait_for(timeout=15000)
+
+    layout = section.evaluate(
+        """(node) => {
+            const focus = node.querySelector(".execution-wave-focus");
+            const focusGrid = node.querySelector(".execution-wave-focus-grid");
+            const focusCopy = node.querySelector(".execution-wave-focus-copy");
+            const rail = node.querySelector(".execution-wave-focus-stat-rail");
+            const sectionBox = node.getBoundingClientRect();
+            const focusBox = focus ? focus.getBoundingClientRect() : null;
+            const copyBox = focusCopy ? focusCopy.getBoundingClientRect() : null;
+            const railStyle = rail ? window.getComputedStyle(rail) : null;
+            return {
+              sectionWidth: sectionBox.width,
+              sectionScrollDelta: node.scrollWidth - node.clientWidth,
+              focusWidth: focusBox ? focusBox.width : 0,
+              copyWidth: copyBox ? copyBox.width : 0,
+              focusGridDisplay: focusGrid ? window.getComputedStyle(focusGrid).display : "",
+              railFloat: railStyle ? railStyle.cssFloat : "",
+              railMaxWidth: railStyle ? railStyle.maxWidth : "",
+            };
+        }"""
+    )
+
+    assert int(layout["sectionScrollDelta"]) <= 4
+    assert float(layout["focusWidth"]) >= float(layout["sectionWidth"]) * 0.88
+    assert float(layout["copyWidth"]) >= float(layout["sectionWidth"]) * 0.58
+    if float(layout["sectionWidth"]) < 760:
+        assert layout["focusGridDisplay"] in {"block", "grid"}
+    else:
+        assert layout["focusGridDisplay"] == "block"
+    if layout["railFloat"] and float(layout["sectionWidth"]) >= 760:
+        assert layout["railFloat"] == "right"
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_radar_execution_wave_summary_avoids_dead_side_lane_in_browser(browser_context) -> None:  # noqa: ANN001
+    _assert_radar_execution_wave_summary_avoids_dead_side_lane(*browser_context)
+
+
+def test_radar_execution_wave_summary_avoids_dead_side_lane_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
+    _assert_radar_execution_wave_summary_avoids_dead_side_lane(*compact_browser_context)
+
+
 def _assert_compass_release_targets_start_collapsed(  # noqa: ANN001
     base_url: str,
     context,

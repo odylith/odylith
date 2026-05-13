@@ -5,6 +5,7 @@ from pathlib import Path
 import time
 
 from odylith.install.state import write_install_state, write_upgrade_spotlight, write_version_pin
+from tests.unit.runtime.test_greenfield_proposals import _apply_ready_greenfield_fixture as _host_greenfield_fixture
 from odylith.runtime.surfaces import render_tooling_dashboard as renderer
 from odylith.runtime.surfaces import tooling_dashboard_shell_presenter
 
@@ -848,7 +849,11 @@ def test_render_tooling_dashboard_uses_tab_local_state_for_shell_surface_switche
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
     assert 'id="tab-project"' in html
     assert 'id="pane-project"' in html
-    assert "project-scenario" in html
+    assert "Project not defined yet" in html
+    assert "Start with the project" in html
+    assert '<section class="project-panel project-scenario">' not in html
+    assert "Current orienting work" not in html
+    assert "Who participates in" not in html
     assert "Product scenario journey" not in html
     assert 'id="upgradeReopen"' in html
     assert 'id="runtimeStatusReopen"' not in html
@@ -1347,6 +1352,51 @@ def test_render_tooling_dashboard_skips_noop_writes_when_bundle_is_unchanged(
 
     second_mtimes = {path: path.stat().st_mtime_ns for path in tracked_paths}
     assert second_mtimes == first_mtimes
+
+
+def test_render_tooling_dashboard_rebuilds_when_greenfield_project_is_accepted(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    _seed_inputs(tmp_path)
+    _seed_compass_runtime_snapshot(tmp_path, generated_utc="2026-04-07T17:06:12Z")
+    monkeypatch.setattr(
+        renderer.delivery_surface_payload_runtime,
+        "load_delivery_surface_payload",
+        lambda **kwargs: {},
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+    assert rc == 0
+    first_html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
+    assert "Project not defined yet" in first_html
+
+    proposal = _host_greenfield_fixture(tmp_path, "Build an ecommerce site with checkout recovery")
+    accepted_path = tmp_path / "odylith" / "runtime" / "source" / "accepted-project.v1.json"
+    accepted_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "odylith.accepted_project.v1",
+                "origin": "greenfield",
+                "evidence_tier": "user_intent",
+                "accepted_at": "2026-05-11T10:20:00-07:00",
+                "proposal": proposal,
+                "tribunal": {"status": "passed", "visible_actors": []},
+                "created": {},
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+    assert rc == 0
+    html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
+
+    assert "Product Story" in html
+    assert "Ecommerce Site With Checkout Recovery" in html
+    assert "Project not defined yet" not in html
 
 
 def test_render_tooling_dashboard_warns_but_renders_with_missing_child_surfaces(

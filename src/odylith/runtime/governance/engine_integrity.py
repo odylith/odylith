@@ -49,8 +49,8 @@ ENGINE_AREAS: tuple[EngineArea, ...] = (
     EngineArea(
         "Domain Intelligence",
         ("Domain Intelligence",),
-        ("odylith greenfield propose", "odylith greenfield create"),
-        "greenfield and project-shape intelligence before governed writes",
+        ("odylith greenfield propose", "odylith greenfield apply"),
+        "greenfield/project-shape reasoning contracts plus validated host-authored governed writes",
     ),
     EngineArea(
         "Delivery Intelligence",

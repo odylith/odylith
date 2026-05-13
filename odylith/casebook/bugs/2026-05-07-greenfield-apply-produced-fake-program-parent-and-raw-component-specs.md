@@ -18,7 +18,7 @@
 
 - Components Affected: domain-intelligence
 
-- Environment(s): Odylith product repo local release v0.1.15 installed into empty consumer repo /Users/freedom/mock/mockrepo, exercised from Claude Code on May 6, 2026.
+- Environment(s): Odylith product repo local release v0.1.15 installed into an empty consumer repo, exercised from Claude Code on May 6, 2026.
 
 - Detected By: Operator manual release testing with screenshots and Claude CLI trace.
 

@@ -290,7 +290,11 @@ def _select_radar_row_with_link(
         idea_id = str(button.get_attribute("data-idea-id") or "").strip()
         if not idea_id:
             continue
-        button.click()
+        button.scroll_into_view_if_needed()
+        try:
+            button.click(timeout=3000)
+        except Exception:
+            button.click(force=True)
         radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=idea_id).wait_for(timeout=15000)
         links = radar.locator(f"#detail {link_selector}")
         if links.count():
@@ -371,7 +375,11 @@ def _select_radar_workstream_with_detail_selector(
         idea_id = str(button.get_attribute("data-idea-id") or "").strip()
         if not idea_id:
             continue
-        button.click()
+        button.scroll_into_view_if_needed()
+        try:
+            button.click(timeout=3000)
+        except Exception:
+            button.click(force=True)
         _wait_for_shell_query_param(page, tab="radar", key="workstream", value=idea_id)
         radar.locator(detail_ready_selector).wait_for(timeout=15000)
         if _locator_appears(radar.locator(f"#detail {detail_selector}"), timeout=selector_timeout):

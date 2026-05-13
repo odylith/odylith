@@ -107,20 +107,23 @@ greenfield proposal lane before source-backed governance exists:
 ./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<project intent>"
 ```
 
-Odylith shows a compact project-first/product-first preview with the interpreted product,
-direction choices, non-goals, first release ambition, candidate boundaries, and
-proof gates. In chat, the proposal stdout should be visible directly, not only
-inside collapsed tool output. The full proposal object is still available with `--format json`;
-confirmed create/apply validates that full object, runs the Tribunal write gate,
-and writes records only with explicit confirmation:
+Odylith returns a no-write reasoning request. The host must write the short
+Product Intent Confirmation in chat from live reasoning before any proposal
+records exist: product story, actors, systems, assumptions, ambiguities, and the
+proceed/edit/reject gate. After the operator confirms that intent,
+`--confirm-intent` returns the proposal schema and proof contract; the host then
+authors the project-specific proposal JSON, and `greenfield apply` validates it,
+runs the Tribunal write gate, and writes records only with explicit
+confirmation:
 
 ```bash
-./.odylith/bin/odylith greenfield create --repo-root . --prompt "<project intent>" --release 0.0.1 --confirm
+./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<project intent>" --confirm-intent
+./.odylith/bin/odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm --release 0.0.1
 ```
 
-If a workflow needs a proposal file, emit it with `greenfield propose --format
-json` and pass that file to `greenfield apply`; do not hand-author proposal
-JSON. Do not start coding until the product gates are accepted.
+Do not use prompt-only `greenfield create`, canned domain families, or
+scaffolds as product truth. Do not start coding until the product gates are
+accepted.
 
 For the common governance authoring fast paths, use:
 

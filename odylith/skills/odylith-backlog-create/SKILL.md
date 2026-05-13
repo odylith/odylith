@@ -9,9 +9,10 @@ or asks to create one or more Radar backlog workstreams.
    Opportunity, Product View, and Success Metrics. Do not use title-derived
    boilerplate, `TBD`, `Details.`, or other placeholders.
    Exception: when the user asks for a new greenfield project from intent
-   only, use `odylith greenfield propose` first. That proposal may draft the
-   missing fields, program waves, and release plan with labeled assumptions,
-   but final backlog writes still require confirmation.
+   only, use `odylith greenfield propose` first for Product Intent
+   Confirmation. Only after the operator confirms the interpretation should
+   `odylith greenfield propose --confirm-intent` or confirmed create/apply
+   draft missing fields, program waves, and release planning.
 3. Run `./.odylith/bin/odylith backlog create --repo-root .` with `--title`,
    `--problem`, `--customer`, `--opportunity`, `--product-view`, and
    `--success-metrics`.

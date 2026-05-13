@@ -3,22 +3,23 @@
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
 from odylith.runtime.domain_intelligence.artifact_enrichment import domain_graph_from_workstream
 from odylith.runtime.domain_intelligence.artifact_enrichment import tribunal_actor_projection
-from odylith.runtime.project_intelligence.greenfield_story import build_product_story, project_intent_line
+from odylith.runtime.project_intelligence.product_story import build_greenfield_product_story, project_intent_line
 from odylith.runtime.project_intelligence.utils import dict_value, list_value, sentence, short, strings
 
 
 def proposal_from_sources(*, repo_root: Path, shell_payload: Mapping[str, Any]) -> dict[str, Any]:
     """Return a greenfield proposal carried by runtime payload or local proposal JSON."""
 
-    for key in ("greenfield_proposal", "proposal_template", "canonical_proposal", "proposal"):
+    for key in ("greenfield_proposal", "accepted_proposal", "proposal"):
         value = shell_payload.get(key)
-        proposal = _canonical_proposal(value)
+        proposal = _accepted_proposal(value)
         if proposal:
             return proposal
     for path in (
@@ -53,6 +54,7 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
     questions = _text_rows(proposal.get("open_questions"), keys=("question", "statement"))
     risks = _text_rows(proposal.get("risks"), keys=("statement", "risk", "trigger"))
     validation = _text_rows(proposal.get("validation_strategy"))
+    non_goals = _non_goal_rows(project)
     accepted = dict_value(proposal.get("_accepted_project"))
     raw_title = sentence(intent.get("title"), "Greenfield project")
     lens = _lens(proposal=proposal, backlog=backlog, components=components)
@@ -60,7 +62,7 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
     first_path = _first_path(program=program, release_plan=release_plan, backlog=backlog)
     intro = _project_intro(title=raw_title, intent=intent, project=project)
     title = _display_title(raw_title=raw_title, intro=intro)
-    purpose = short(project.get("purpose") or intro, limit=180)
+    purpose = _change_body(project=project, intro=intro, first_path=first_path)
     focus = sentence(release_plan.get("strategy")) or sentence(first_path) or "Review the proposed first path before implementation starts."
     open_items = [*questions[:3], *risks[:2]] or ["No open proposal question found."]
     evidence_state = "User-stated and inferred"
@@ -74,10 +76,10 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
         accepted=accepted,
     )
     known = _known(title=title, first_path=first_path, release=release, components=components, diagrams=diagrams)
-    unknown = _unknown(questions=questions, assumptions=assumptions, risks=risks)
+    unknown = _unknown(questions=questions, assumptions=assumptions, risks=risks, non_goals=non_goals)
     actors = _actors(project, proposal=proposal)
     jobs = _jobs(backlog=backlog, program=program)
-    product_story = build_product_story(
+    product_story = build_greenfield_product_story(
         title=title,
         intro=intro,
         project=project,
@@ -108,11 +110,11 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
         "open_label": f"Open {title} questions",
         "open": open_items[:5],
         "product_story_title": "Product Story",
-        "product_story_note": "The accepted project story, with the topology spine that turns it into workstreams, Registry ownership, Atlas views, and proof.",
+        "product_story_note": "",
         "product_story": product_story,
         "answers": [
             (f"Who uses {title}?", _owner_title(project), _owner_body(project)),
-            (f"What changes in {title}?", _state_change(project), purpose),
+            (f"What changes in {title}?", _state_change(project, first_path=first_path), purpose),
             (f"What matters now for {title}?", "Accept or revise the project shape", "Implementation should wait until assumptions, first path, and proof gates are reviewed."),
             (f"What risk matters for {title}?", _risk_title(risks), risks[0] if risks else "No explicit proposal risk found."),
             (f"What proves {title}?", _proof_title(validation), validation[0] if validation else "Validation path must be confirmed before source-backed claims."),
@@ -140,7 +142,7 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
         "included": _included(first_path=first_path, components=components, diagrams=diagrams, validation=validation),
         "excluded": unknown,
         "current": f"{title} is a greenfield proposal with {observed.get('source_posture', 'unknown source posture')}; claims are not source-backed implementation evidence yet.",
-        "desired": "Accepted project truth with first path, component boundary, topology, and validation obligations ready for a technical plan.",
+        "desired": "Accepted project direction with first path, component boundary, topology, and validation obligations ready for a technical plan.",
         "question": f"Should {title} be accepted as the first project shape?",
         "recommendation": "Review and either accept or revise the proposed first path before coding starts.",
         "options": [
@@ -207,19 +209,20 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
         "known_label": "Known from proposal",
         "unknown_label": "Unproven before build",
         "confidence_label": "Confidence",
+        "governance_titles": _governance_titles(backlog=backlog, diagrams=diagrams),
         "sources": {
             "proposal": sentence(accepted.get("source_path")) or str(Path(repo_root) / "odylith-greenfield-proposal.json")
         },
     }
 
 
-def _canonical_proposal(value: object) -> dict[str, Any]:
+def _accepted_proposal(value: object) -> dict[str, Any]:
     if not isinstance(value, Mapping):
         return {}
     mode = str(value.get("mode", "")).strip()
     if "greenfield" in mode and isinstance(value.get("project_intelligence"), Mapping):
         return dict(value)
-    for key in ("canonical_proposal", "proposal_template"):
+    for key in ("greenfield_proposal", "accepted_proposal", "proposal"):
         nested = value.get(key)
         if isinstance(nested, Mapping) and "greenfield" in str(nested.get("mode", "")).strip():
             return dict(nested)
@@ -235,9 +238,9 @@ def _proposal_from_file(path: Path) -> dict[str, Any]:
         return {}
     if not isinstance(raw, Mapping):
         return {}
-    proposal = _canonical_proposal(raw.get("proposal"))
+    proposal = _accepted_proposal(raw.get("proposal"))
     if not proposal:
-        proposal = _canonical_proposal(raw)
+        proposal = _accepted_proposal(raw)
     if not proposal:
         return {}
     if raw.get("schema_version") == "odylith.accepted_project.v1":
@@ -264,6 +267,22 @@ def _text_rows(value: object, *, keys: Sequence[str] = ("statement", "question",
         if text and text not in rows:
             rows.append(text)
     return rows
+
+
+def _governance_titles(*, backlog: Sequence[Mapping[str, Any]], diagrams: Sequence[Mapping[str, Any]]) -> dict[str, str]:
+    titles: dict[str, str] = {}
+
+    def add(reference: object, title: object) -> None:
+        ref = sentence(reference).upper()
+        label = sentence(title)
+        if ref and label and re.fullmatch(r"(?:B|D)-\d+", ref):
+            titles[ref] = label
+
+    for row in backlog:
+        add(row.get("idea_id") or row.get("id"), row.get("title") or row.get("name"))
+    for row in diagrams:
+        add(row.get("diagram_id") or row.get("id"), row.get("title") or row.get("name") or row.get("slug"))
+    return titles
 
 
 def _lens(*, proposal: Mapping[str, Any], backlog: Sequence[Mapping[str, Any]], components: Sequence[Mapping[str, Any]]) -> str:
@@ -308,17 +327,37 @@ def _first_path(*, program: Mapping[str, Any], release_plan: Mapping[str, Any], 
 
 
 def _project_intro(*, title: str, intent: Mapping[str, Any], project: Mapping[str, Any]) -> str:
-    objective = project_intent_line(project, "project objective")
-    outcome = project_intent_line(project, "user or stakeholder outcome")
-    if objective:
-        return _clean_objective_sentence(objective)
-    if outcome:
-        return _clean_objective_sentence(outcome)
-    return sentence(intent.get("summary")) or short(
-        project.get("purpose"),
-        limit=220,
-        fallback=f"Proposed project shape for {title}.",
-    )
+    candidates = [
+        project_intent_line(project, "project objective"),
+        project_intent_line(project, "user or stakeholder outcome"),
+        sentence(intent.get("summary")),
+        short(project.get("purpose"), limit=220),
+    ]
+    for candidate in candidates:
+        cleaned = _clean_objective_sentence(candidate)
+        if cleaned and not _looks_meta_project_line(cleaned):
+            return cleaned
+    display = _title_case(_project_name_candidate(title) or sentence(title, "Project"))
+    return f"{display} is a proposed product; the first path, actors, systems, and proof boundary need operator confirmation."
+
+
+def _looks_meta_project_line(value: str) -> bool:
+    lowered = sentence(value).casefold()
+    if not lowered:
+        return False
+    return any(
+        marker in lowered
+        for marker in (
+            "accepted product truth",
+            "accepted project truth",
+            "before backlog",
+            "before any generated artifact",
+            "governable as one product spine",
+            "governance artifact",
+            "proposal expansion",
+            "source boundary",
+        )
+    ) or lowered.startswith(("make ", "capture ", "turn the operator request into"))
 
 def _clean_objective_sentence(value: str) -> str:
     text = sentence(value)
@@ -340,11 +379,42 @@ def _display_title(*, raw_title: str, intro: str) -> str:
             candidates.append(intro_text[len(article):].strip())
             break
     candidates.append(intro_text)
+    candidates.append(raw_title)
     for candidate in candidates:
-        head = _title_head(candidate)
+        head = _project_name_candidate(candidate)
         if 8 <= len(head) <= 64:
             return _title_case(head)
     return sentence(raw_title, "Greenfield project")
+
+
+def _project_name_candidate(value: str) -> str:
+    text = sentence(value)
+    lowered = text.casefold()
+    if any(
+        marker in lowered
+        for marker in (
+            "accepted product story",
+            "accepted project",
+            "source boundary",
+            "governable",
+            "before any generated artifact",
+        )
+    ):
+        return ""
+    for prefix in (
+        "draft a greenfield proposal for ",
+        "draft a product-first greenfield proposal for ",
+        "build an ",
+        "build a ",
+        "build ",
+        "create an ",
+        "create a ",
+        "create ",
+    ):
+        if lowered.startswith(prefix):
+            text = text[len(prefix) :].strip()
+            break
+    return _title_head(text)
 
 
 def _title_head(value: str) -> str:
@@ -369,34 +439,132 @@ def _owner_title(project: Mapping[str, Any]) -> str:
     owners = strings(project.get("owners"))
     if not owners:
         return "Operator"
-    return short(owners[0].split(":", 1)[0], limit=70)
+    head = owners[0].split(":", 1)[0]
+    for marker in (" owns ", " is responsible for ", " reviews "):
+        before, sep, _after = head.partition(marker)
+        if sep and before.strip():
+            head = before
+            break
+    return short(head, limit=70)
 
 
 def _owner_body(project: Mapping[str, Any]) -> str:
     owners = strings(project.get("owners"))
-    return short(owners[0] if owners else "Owner is user-stated or still unresolved.", limit=135)
+    if not owners:
+        return "Owner is user-stated or still unresolved."
+    text = owners[0]
+    for marker in (" owns ", " is responsible for ", " reviews "):
+        before, sep, after = text.partition(marker)
+        if sep and after.strip():
+            verb = marker.strip().split()[0].capitalize()
+            return short(f"{verb} {after.strip()}", limit=135)
+    return short(text, limit=135)
 
 
-def _state_change(project: Mapping[str, Any]) -> str:
+def _state_change(project: Mapping[str, Any], *, first_path: str) -> str:
+    first_path_text = sentence(first_path)
+    if first_path_text:
+        natural = _first_path_title(first_path_text)
+        if natural:
+            return natural
+        before, sep, _after = first_path_text.partition(" through ")
+        if sep and before.strip():
+            return short(before.strip(), limit=80)
+        return short(first_path_text, limit=80)
     rows = strings(project.get("state"))
     for row in rows:
         if row.lower().startswith("desired state"):
             return short(row.split(":", 1)[-1], limit=80)
-    return "Proposal becomes accepted project truth"
+    return "Proposal becomes accepted project direction"
+
+
+def _first_path_title(value: str) -> str:
+    text = sentence(value).strip(" .")
+    lowered = text.casefold()
+    if lowered.startswith("prove one "):
+        text = "One " + text[len("Prove one ") :]
+    elif lowered.startswith("prove a "):
+        text = "A " + text[len("Prove a ") :]
+    elif lowered.startswith("prove an "):
+        text = "An " + text[len("Prove an ") :]
+    else:
+        return ""
+    for marker in (" through ", " with ", " before ", " so ", " while "):
+        head, sep, _tail = text.partition(marker)
+        if sep and head.strip():
+            text = head.strip()
+            break
+    from_head, sep, _tail = text.partition(" from ")
+    if sep and from_head.strip():
+        text = from_head.strip()
+    return short(text, limit=80)
+
+
+def _change_body(*, project: Mapping[str, Any], intro: str, first_path: str) -> str:
+    path = sentence(first_path)
+    if path:
+        return short(path, limit=180)
+    clean_purpose = _clean_project_purpose(project.get("purpose"))
+    if clean_purpose:
+        return short(clean_purpose, limit=180)
+    return short(intro, limit=180)
+
+
+def _clean_project_purpose(value: object) -> str:
+    text = sentence(value)
+    lowered = text.casefold()
+    if lowered.startswith("make ") and "concrete product program before implementation starts" in lowered:
+        return ""
+    if "project object captures intent" in lowered:
+        return ""
+    return text
+
+
+def _non_goal_rows(project: Mapping[str, Any]) -> list[str]:
+    raw = project_intent_line(project, "non-goals")
+    if not raw:
+        return []
+    pieces = [piece.strip(" .") for piece in raw.split(",") if piece.strip(" .")]
+    if len(pieces) <= 1:
+        pieces = [raw.strip(" .")]
+    return [f"Not in the first release: {piece}." for piece in pieces[:4]]
 
 
 def _risk_title(risks: Sequence[str]) -> str:
-    return short(risks[0], limit=70, fallback="Unvalidated assumptions")
+    text = sentence(risks[0] if risks else "")
+    for marker in (" can ", " may ", " will "):
+        _before, sep, after = text.partition(marker)
+        if sep and after.strip():
+            text = after.strip()
+            break
+    for marker in (" if ", " before ", " when ", " because "):
+        head, sep, _tail = text.partition(marker)
+        if sep and head.strip():
+            text = head.strip()
+            break
+    text = text.strip(" .")
+    if text:
+        text = text[:1].upper() + text[1:]
+    return short(text, limit=70, fallback="Unvalidated assumptions")
 
 
 def _proof_title(validation: Sequence[str]) -> str:
-    return short(validation[0], limit=70, fallback="First validation path")
+    text = sentence(validation[0] if validation else "")
+    if "implementation-backed behavior proof" in text.casefold():
+        return "First-slice behavior proof"
+    return short(text, limit=70, fallback="First validation path")
 
 
 def _scenario_body(*, project: Mapping[str, Any], first_path: str, validation: Sequence[str]) -> str:
-    purpose = short(project.get("purpose"), limit=170, fallback="The proposal names the first project shape.")
+    purpose = short(
+        _clean_project_purpose(project.get("purpose")) or _clean_objective_sentence(project_intent_line(project, "project objective")),
+        limit=260,
+        fallback="The proposal names the first project shape.",
+    )
     proof = validation[0] if validation else "validation obligations must be confirmed before source-backed claims."
-    return f"{purpose} First path: {first_path}. Proof needed: {short(proof, limit=170)}"
+    path = sentence(first_path).rstrip(".")
+    proof_text = short(proof, limit=220).rstrip(".")
+    return f"{purpose} First path: {path}. Proof needed: {proof_text}."
 
 
 def _actors(project: Mapping[str, Any], *, proposal: Mapping[str, Any]) -> list[tuple[str, str, str]]:
@@ -406,11 +574,16 @@ def _actors(project: Mapping[str, Any], *, proposal: Mapping[str, Any]) -> list[
     if not visible_actors:
         visible_actors = [dict(row) for row in tribunal_actor_projection(proposal)]
     if visible_actors:
+        owner_responsibilities = {**_proposal_actor_responsibility_map(proposal), **_owner_responsibility_map(project)}
         rows = [
             (
                 sentence(row.get("stable_role"), "Tribunal role").replace("_", " ").title(),
                 sentence(row.get("visible_actor"), "Project actor"),
-                short(row.get("responsibility"), limit=145),
+                short(
+                    owner_responsibilities.get(sentence(row.get("visible_actor")).casefold())
+                    or row.get("responsibility"),
+                    limit=145,
+                ),
             )
             for row in visible_actors[:6]
         ]
@@ -424,6 +597,38 @@ def _actors(project: Mapping[str, Any], *, proposal: Mapping[str, Any]) -> list[
         head, _, body = value.partition(":")
         rows.append(("Operator", sentence(head, "Operator"), short(body or value, limit=145)))
     return rows[:6] or [("Owner", "Operator", "Reviews and accepts or revises the proposal before implementation.")]
+
+
+def _proposal_actor_responsibility_map(proposal: Mapping[str, Any]) -> dict[str, str]:
+    rows: dict[str, str] = {}
+    for item in list_value(proposal.get("backlog")):
+        if not isinstance(item, Mapping):
+            continue
+        intelligence = dict_value(item.get("domain_intelligence"))
+        for value in strings(intelligence.get("actors")):
+            actor, sep, body = sentence(value).partition(":")
+            if sep and actor.strip() and body.strip():
+                rows.setdefault(actor.strip().casefold(), body.strip()[:1].upper() + body.strip()[1:])
+    return rows
+
+
+def _owner_responsibility_map(project: Mapping[str, Any]) -> dict[str, str]:
+    rows: dict[str, str] = {}
+    for value in strings(project.get("owners")):
+        text = sentence(value)
+        if not text:
+            continue
+        actor = text
+        body = text
+        for marker in (" owns ", " is responsible for ", " reviews "):
+            before, sep, after = text.partition(marker)
+            if sep and before.strip() and after.strip():
+                actor = before.strip()
+                verb = marker.strip().split()[0].capitalize()
+                body = f"{verb} {after.strip()}"
+                break
+        rows[actor.casefold()] = body
+    return rows
 
 
 def _jobs(*, backlog: Sequence[Mapping[str, Any]], program: Mapping[str, Any]) -> list[tuple[str, str, str]]:
@@ -454,17 +659,24 @@ def _included(*, first_path: str, components: Sequence[Mapping[str, Any]], diagr
 
 
 def _known(*, title: str, first_path: str, release: str, components: Sequence[Mapping[str, Any]], diagrams: Sequence[Mapping[str, Any]]) -> list[str]:
+    clean_path = sentence(first_path).rstrip(".")
     return [
         f"Project intent: {title}.",
-        f"First proposed path: {first_path}.",
+        f"First proposed path: {clean_path}.",
         f"Release target: {release}.",
         f"Planned components: {len(components)}.",
         f"Planned architecture views: {len(diagrams)}.",
     ]
 
 
-def _unknown(*, questions: Sequence[str], assumptions: Sequence[str], risks: Sequence[str]) -> list[str]:
-    rows = [*questions[:3], *assumptions[:2], *risks[:2]]
+def _unknown(
+    *,
+    questions: Sequence[str],
+    assumptions: Sequence[str],
+    risks: Sequence[str],
+    non_goals: Sequence[str],
+) -> list[str]:
+    rows = [*questions[:2], *non_goals[:2], *assumptions[:2], *risks[:2]]
     return [short(row, limit=150) for row in rows if row][:6] or ["No explicit unresolved proposal item found."]
 
 

@@ -33,14 +33,18 @@ spawn-policy note, or follow-up question.
    feature after an empty/thin show result, do not refuse because source is
    absent. Run the project-first proposal path instead:
    `./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<their request>"`.
-   Print the full proposal stdout directly in your response so the operator
-   sees the interpretation, direction choices, non-goals, first release
-   ambition, and coding-readiness gates in chat. Do not leave the preview only
-   inside collapsed tool output, and do not replace it with a short host-written
-   "apply or revise" summary. On confirmation, use
-   `./.odylith/bin/odylith greenfield create --repo-root . --prompt "<their request>" --release 0.0.1 --confirm`
-   instead of hand-authoring proposal JSON, dumping tool internals, or starting
-   code before the product gates are accepted.
+   Treat that output as a no-write host reasoning request. Write the short
+   Product Intent Confirmation in chat from live reasoning so the operator sees
+   the interpreted product story, actors, systems, assumptions, ambiguities,
+   and confirm/edit/reject gate. After the operator confirms the
+   interpretation, rerun with `--confirm-intent` for the proposal schema and
+   proof contract; the host authors the proposal JSON from the confirmed intent,
+   and applies it with `greenfield apply --proposal-file ... --confirm`.
+   Do not use prompt-only `greenfield create`, canned domain scaffolds, dumped
+   tool internals, or code before the product gates are accepted. When the CLI
+   returns proposal stdout directly, do not hide it behind collapsed tool output
+   or replace it with a thin host-written summary; surface the actual
+   confirmation or proposal content that matters.
 6. Do not create governance records unless the operator explicitly asks.
    The default posture is advisory — show what's possible and let the operator
    choose.

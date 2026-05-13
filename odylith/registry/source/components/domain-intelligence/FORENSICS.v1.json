@@ -21,18 +21,34 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
+        "src/odylith/runtime/domain_intelligence/artifact_enrichment.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_cli_output.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_profile.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_project_brief.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_project_intelligence.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_quality_gate.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_workstream_intelligence.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_workstream_rows.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_workstream_terms.py",
+        "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+        "src/odylith/runtime/domain_intelligence/proposal_normalization.py",
+        "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
+        "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
+        "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+        "src/odylith/runtime/domain_intelligence/robot_swarm_profile.py",
+        "src/odylith/runtime/domain_intelligence/proposal_review_card.py"
       ],
       "confidence": "high",
-      "event_index": 468,
+      "event_index": 467,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-      "ts_iso": "2026-05-09T19:12:54-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/artifact_enrichment.py +16 more",
+      "ts_iso": "2026-05-12T17:49:36-07:00",
       "workstreams": []
     },
     {

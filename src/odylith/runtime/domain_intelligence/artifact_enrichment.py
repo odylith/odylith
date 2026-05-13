@@ -86,6 +86,7 @@ def domain_graph_from_workstream(
     glossary = _layer(data, "ontology")
     proof = unique_text([*_layer(data, "evidence_model"), *_layer(data, "evidence")])
     validation = _layer(data, "validation_obligations")
+    explicit_actors = _layer(data, "actors")
     owners = _layer(data, "owners")
     authority = _layer(data, "authority")
     risks = _layer(data, "risks")
@@ -101,7 +102,7 @@ def domain_graph_from_workstream(
         family=family,
         primary_lens=_primary_lens(family=family, title=title, glossary=glossary),
         state_objects=tuple(_pick_state_objects(glossary, state)),
-        actors=tuple(_pick_actor_rows([*owners, *authority, *operators, *glossary])),
+        actors=tuple(unique_text([*explicit_actors, *_pick_actor_rows([*owners, *authority, *operators, *glossary])])[:8]),
         operators=tuple(operators),
         approvers=tuple(_pick_approval_rows([*authority, *operators, *validation])),
         risk_owners=tuple(unique_text([*risks, *authority, *owners])[:8]),
@@ -270,87 +271,38 @@ _TRIBUNAL_STABLE_ROLES = (
 
 
 def _domain_actor_names(graph: DomainIntelligenceGraph) -> dict[str, str]:
-    family = graph.family
-    if family == "defi_risk":
-        return {
-            "beneficiary_advocate": "Analyst advocate",
-            "domain_operator": "Risk signal operator",
-            "risk_owner": "Compliance risk owner",
-            "evidence_owner": "Scenario proof owner",
-            "implementation_owner": "Risk engine owner",
-            "release_owner": "Release owner",
-        }
-    if family == "capital_merchant_lending":
-        return {
-            "beneficiary_advocate": "Merchant advocate",
-            "domain_operator": "Underwriting operator",
-            "risk_owner": "Treasury and credit risk owner",
-            "evidence_owner": "Funding evidence owner",
-            "implementation_owner": "Facility core owner",
-            "release_owner": "Release owner",
-        }
-    if family == "commerce":
-        return {
-            "beneficiary_advocate": "Shopper advocate",
-            "domain_operator": "Checkout operator",
-            "risk_owner": "Payment risk owner",
-            "evidence_owner": "Recovery proof owner",
-            "implementation_owner": "Checkout implementation owner",
-            "release_owner": "Release owner",
-        }
-    if family == "clinical_trial_matching":
-        return {
-            "beneficiary_advocate": "Patient advocate",
-            "domain_operator": "Trial coordinator",
-            "risk_owner": "Clinical safety owner",
-            "evidence_owner": "Eligibility evidence owner",
-            "implementation_owner": "Protocol engine owner",
-            "release_owner": "Release owner",
-        }
-    if family == "legal_intake":
-        return {
-            "beneficiary_advocate": "Client advocate",
-            "domain_operator": "Intake operator",
-            "risk_owner": "Attorney review owner",
-            "evidence_owner": "Document evidence owner",
-            "implementation_owner": "Case workflow owner",
-            "release_owner": "Release owner",
-        }
-    if family == "bioinformatics":
-        return {
-            "beneficiary_advocate": "Scientist advocate",
-            "domain_operator": "Analysis operator",
-            "risk_owner": "Validity owner",
-            "evidence_owner": "Reproducibility owner",
-            "implementation_owner": "Pipeline owner",
-            "release_owner": "Release owner",
-        }
     compact = _compact_lens_name(graph)
+    actors = _role_candidates(graph.actors)
+    operators = _role_specific_candidates([*graph.operators, *graph.actors], ("operator", "ops", "workflow"))
+    approvers = _role_candidates(graph.approvers)
+    risk_owners = _role_specific_candidates([*graph.risk_owners, *graph.actors], ("risk", "safety", "compliance", "loss"))
+    evidence_owners = _role_specific_candidates(
+        [*graph.evidence_types, *graph.proof_standards, *graph.actors],
+        ("proof", "evidence", "validation"),
+    )
+    implementation_owners = _role_specific_candidates(
+        [*graph.invariants, *graph.validation_obligations, *graph.actors],
+        ("build", "implementation", "source", "engineer"),
+    )
     return {
-        "beneficiary_advocate": f"{compact} user advocate",
-        "domain_operator": f"{compact} operator",
-        "risk_owner": f"{compact} risk owner",
-        "evidence_owner": f"{compact} proof owner",
-        "implementation_owner": f"{compact} implementation owner",
+        "beneficiary_advocate": _actor_label(actors, fallback=f"{compact} beneficiary advocate"),
+        "domain_operator": _actor_label(operators, fallback=f"{compact} operator"),
+        "risk_owner": _actor_label(risk_owners, fallback=f"{compact} risk owner"),
+        "evidence_owner": _actor_label(evidence_owners, fallback=f"{compact} proof owner"),
+        "implementation_owner": _actor_label(implementation_owners, fallback=f"{compact} build owner"),
         "release_owner": "Release owner",
     }
 
 
 def _primary_lens(*, family: str, title: str, glossary: Sequence[str]) -> str:
-    if family == "defi_risk":
-        return "capital and protocol risk"
-    if family == "capital_merchant_lending":
-        return "merchant capital"
-    if family == "commerce":
-        return "commerce checkout"
-    if family == "clinical_trial_matching":
-        return "clinical matching"
-    if family == "legal_intake":
-        return "legal intake"
-    if family == "bioinformatics":
-        return "bioinformatics workflow"
-    first = clean_text(glossary[0] if glossary else "")
-    return clean_text(first.split(":", 1)[0]) or slugify(title).replace("-", " ") or "project workflow"
+    family_label = clean_text(family).replace("_", " ")
+    if family_label and family_label not in {"general project", "host reasoned project"}:
+        return family_label
+    for row in glossary:
+        first = clean_text(row).split(":", 1)[0].strip()
+        if first and first.casefold() not in {"actor", "state object", "evidence record", "release gate"}:
+            return first
+    return slugify(title).replace("-", " ") or "project workflow"
 
 
 def _compact_lens_name(graph: DomainIntelligenceGraph) -> str:
@@ -359,6 +311,47 @@ def _compact_lens_name(graph: DomainIntelligenceGraph) -> str:
         return "Project"
     words = label.replace("_", " ").split()
     return " ".join(word[:1].upper() + word[1:] for word in words[:3])
+
+
+def _role_candidates(values: Sequence[str]) -> list[str]:
+    rows: list[str] = []
+    for value in values:
+        label = clean_text(value).split(":", 1)[0].strip()
+        if label:
+            rows.append(label)
+    return unique_text(rows)
+
+
+def _ownerish_candidates(values: Sequence[str]) -> list[str]:
+    candidates = []
+    for value in values:
+        label = clean_text(value).split(":", 1)[0].strip()
+        if not label:
+            continue
+        lowered = label.casefold()
+        if any(token in lowered for token in ("owner", "reviewer", "operator", "maintainer", "lead")):
+            candidates.append(label)
+    return unique_text(candidates)
+
+
+def _role_specific_candidates(values: Sequence[str], tokens: Sequence[str]) -> list[str]:
+    candidates = []
+    for value in values:
+        label = clean_text(value).split(":", 1)[0].strip()
+        if not label:
+            continue
+        lowered = label.casefold()
+        if any(token in lowered for token in tokens):
+            candidates.append(label)
+    return unique_text(candidates) or _ownerish_candidates(values)
+
+
+def _actor_label(values: Sequence[str], *, fallback: str) -> str:
+    for value in values:
+        label = clean_text(value)
+        if label and label.casefold() not in {"actor", "state object", "evidence record", "release gate"} and len(label.split()) <= 5:
+            return label
+    return fallback
 
 
 def _pick_state_objects(glossary: Sequence[str], state: Sequence[str]) -> list[str]:
@@ -370,13 +363,10 @@ def _pick_state_objects(glossary: Sequence[str], state: Sequence[str]) -> list[s
             for token in (
                 "object",
                 "state",
-                "cart",
-                "risk subject",
-                "case",
-                "snapshot",
-                "funding request",
-                "facility",
-                "offer trace",
+                "subject",
+                "record",
+                "workflow item",
+                "tracked item",
             )
         ):
             rows.append(value)
@@ -390,19 +380,15 @@ def _pick_actor_rows(values: Sequence[str]) -> list[str]:
         if any(
             token in value.casefold()
             for token in (
+                "actor",
+                "advocate",
                 "operator",
                 "owner",
-                "analyst",
-                "merchant",
-                "underwriting",
-                "treasury",
-                "shopper",
-                "patient",
-                "client",
-                "scientist",
+                "lead",
+                "maintainer",
                 "reviewer",
-                "attorney",
                 "coordinator",
+                "approver",
             )
         )
     ]

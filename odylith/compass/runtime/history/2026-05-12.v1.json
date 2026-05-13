@@ -42,10 +42,10 @@
   },
   "digest": {
     "24h": [
-      "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
+      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
     ],
     "48h": [
-      "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
+      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
     ]
   },
   "digest_scoped": {
@@ -84,7 +84,7 @@
         "Nothing moved in this window: B-071 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-083": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-084": [
         "Nothing moved in this window: B-084 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -126,7 +126,7 @@
         "Nothing moved in this window: B-141 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-142": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-001": [
         "Nothing moved in this window: B-001 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -135,13 +135,13 @@
         "Nothing moved in this window: B-002 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-003": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-004": [
         "Nothing moved in this window: B-004 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-005": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-006": [
         "Nothing moved in this window: B-006 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -563,19 +563,19 @@
         "Nothing moved in this window: B-002 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-003": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-004": [
         "Nothing moved in this window: B-004 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-005": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-006": [
         "Nothing moved in this window: B-006 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-007": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-008": [
         "Nothing moved in this window: B-008 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -731,7 +731,7 @@
         "Nothing moved in this window: B-068 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-069": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-070": [
         "Nothing moved in this window: B-070 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -914,20 +914,14 @@
       "fingerprint": "5bf456d46cf6c6ed1433bb8091fd479b8ee9c26ca5fb0e8fca46132a98a80ff8",
       "substrate_fingerprint": "5bf456d46cf6c6ed1433bb8091fd479b8ee9c26ca5fb0e8fca46132a98a80ff8",
       "bundle_fingerprint": "",
-      "provider_decision": "provider_error",
+      "provider_decision": "provider_deferred",
       "last_successful_narration_fingerprint": "",
       "generated_utc": "2026-05-13T02:08:50Z",
       "sections": [],
       "diagnostics": {
-        "reason": "provider_error",
-        "title": "Brief unavailable right now",
-        "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
-        "provider": "codex-cli",
-        "provider_failure_code": "provider_error",
-        "provider_failure_detail": "Codex CLI exited with status 1. WARNING: proceeding, even though we could not update PATH: Operation not permitted (os error 1) 2026-05-13T02:38:53.108829Z WARN codex_state ... 8) attempt to write a readonly database Error: failed to initialize in-process app-server client: Operation not permitted (os error 1)",
-        "provider_model": "gpt-5.3-codex-spark",
-        "provider_reasoning_effort": "medium",
-        "next_retry_utc": "2026-05-13T03:38:53Z"
+        "reason": "provider_deferred",
+        "title": "Fresh brief still warming",
+        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       },
       "evidence_lookup": {}
     },
@@ -938,20 +932,14 @@
       "fingerprint": "e9cde752f5c1e7d39fc047f6c98ee749345a6d2f3824c2e999ba3350862cf54e",
       "substrate_fingerprint": "e9cde752f5c1e7d39fc047f6c98ee749345a6d2f3824c2e999ba3350862cf54e",
       "bundle_fingerprint": "",
-      "provider_decision": "provider_error",
+      "provider_decision": "provider_deferred",
       "last_successful_narration_fingerprint": "",
       "generated_utc": "2026-05-13T02:08:50Z",
       "sections": [],
       "diagnostics": {
-        "reason": "provider_error",
-        "title": "Brief unavailable right now",
-        "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
-        "provider": "codex-cli",
-        "provider_failure_code": "provider_error",
-        "provider_failure_detail": "Codex CLI exited with status 1. WARNING: proceeding, even though we could not update PATH: Operation not permitted (os error 1) 2026-05-13T02:38:53.108829Z WARN codex_state ... 8) attempt to write a readonly database Error: failed to initialize in-process app-server client: Operation not permitted (os error 1)",
-        "provider_model": "gpt-5.3-codex-spark",
-        "provider_reasoning_effort": "medium",
-        "next_retry_utc": "2026-05-13T03:38:53Z"
+        "reason": "provider_deferred",
+        "title": "Fresh brief still warming",
+        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       },
       "evidence_lookup": {}
     }
@@ -1105,19 +1093,17 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "233cf29d77c65bbcbca4b78d87de2c64d14039ab3b14b742f7bb46590c372481",
+        "substrate_fingerprint": "233cf29d77c65bbcbca4b78d87de2c64d14039ab3b14b742f7bb46590c372481",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-05-13T02:08:50Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
         },
         "evidence_lookup": {}
       },
@@ -1294,19 +1280,17 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "e01139bf6db2c9833bec788ed0d25000f2fc69f4c4e68f957b7e83c65cf7cb48",
+        "substrate_fingerprint": "e01139bf6db2c9833bec788ed0d25000f2fc69f4c4e68f957b7e83c65cf7cb48",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-05-13T02:08:50Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
         },
         "evidence_lookup": {}
       },
@@ -1340,19 +1324,17 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "049f3b916411561e9b4e9564cfa829af9941eedfd227b1e52115ffb337606bd3",
+        "substrate_fingerprint": "049f3b916411561e9b4e9564cfa829af9941eedfd227b1e52115ffb337606bd3",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-05-13T02:08:50Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
         },
         "evidence_lookup": {}
       },
@@ -1373,19 +1355,17 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "163e3b18d8a70f84b3961e977e605f97e01fc58f802c691f40a08df4fc3956e1",
+        "substrate_fingerprint": "163e3b18d8a70f84b3961e977e605f97e01fc58f802c691f40a08df4fc3956e1",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-05-13T02:08:50Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
         },
         "evidence_lookup": {}
       },
@@ -3270,19 +3250,17 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "60292f386a7f30184550212c6bb476d521906c567d725229df10f022daa98974",
+        "substrate_fingerprint": "60292f386a7f30184550212c6bb476d521906c567d725229df10f022daa98974",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-05-13T02:08:50Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
         },
         "evidence_lookup": {}
       },
@@ -3303,19 +3281,17 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "9db214e509d5db88edb5d65702b681078c1eaba0593720b9e277150fcbe84990",
+        "substrate_fingerprint": "9db214e509d5db88edb5d65702b681078c1eaba0593720b9e277150fcbe84990",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-05-13T02:08:50Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
         },
         "evidence_lookup": {}
       },
@@ -3336,19 +3312,17 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "c45e2cc50786095dd7409212f9adffb0d947e307f407135edcd592c903fdc2d7",
+        "substrate_fingerprint": "c45e2cc50786095dd7409212f9adffb0d947e307f407135edcd592c903fdc2d7",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-05-13T02:08:50Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
         },
         "evidence_lookup": {}
       },
@@ -4019,19 +3993,17 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "bbf5edd4b6b97574bbd60a446e3be2c54f29eb9955101a98989108651cc25468",
+        "substrate_fingerprint": "bbf5edd4b6b97574bbd60a446e3be2c54f29eb9955101a98989108651cc25468",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-05-13T02:08:50Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
         },
         "evidence_lookup": {}
       },

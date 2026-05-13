@@ -44,16 +44,16 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                 layer="analysis",
                 kind="engine",
                 owns=(
-                    "provider-free greenfield project classification, backlog proposals, program "
-                    "waves, provisional release plans, planned Registry components, draft Atlas "
-                    "topology, assumptions, risks, validation obligations, deterministic proposal "
-                    "Tribunal gating, and final visible surface refresh before source exists"
+                    "greenfield/project-shape contracts, host-authored Product Intent and proposal "
+                    "reasoning gates, project-specific artifact enrichment, deterministic proposal "
+                    "validation, deterministic proposal Tribunal gating, and final visible surface "
+                    "refresh before source exists"
                 ),
-                commands=("odylith greenfield propose", "odylith greenfield apply", "odylith greenfield create"),
+                commands=("odylith greenfield propose", "odylith greenfield apply"),
                 anchors=("src/odylith/runtime/domain_intelligence/",),
                 activation=(
-                    "greenfield propose/create run the provider-free proposal builder, deterministic "
-                    "proposal Tribunal, owned writer transaction, and final governed-surface refresh"
+                    "greenfield propose returns no-write reasoning contracts; greenfield apply validates "
+                    "host-authored proposal JSON, runs Tribunal, writes records, and refreshes surfaces"
                 ),
             ),
             InventoryItem(

@@ -651,7 +651,7 @@ Related Bugs:
       `python3 -m py_compile` for touched greenfield UX modules and release
       smoke script.
 - [x] Applied-Radar sludge proof:
-      source-local `greenfield propose` for `DeFi risk sentinel app` rendered
+      source-local `greenfield propose` for an external-domain fixture rendered
       270 lines with a project design board, no-code posture, three intact
       customization prompts, and 24 project-intelligence layers; source-local
       apply into a seeded temp repo wrote B-001..B-004 without shallow fragments
@@ -665,7 +665,7 @@ Related Bugs:
       renders per-diagram summary/review/question/gate guidance; default
       Mermaid sources include evidence-boundary, code-gate, decision-lens,
       proposal-state, unresolved-risk, and surface-agreement annotations inside
-      the diagrams. Source-local DeFi propose rendered 290 lines with those
+      the diagrams. Source-local external-domain propose rendered 290 lines with those
       diagram explanations. `python3 -m pytest
       tests/unit/runtime/test_greenfield_atlas_contract.py
       tests/unit/runtime/test_greenfield_proposals.py
@@ -691,7 +691,7 @@ Related Bugs:
       standalone Registry source-manifest precedence test, and live
       `radar refresh --runtime-mode standalone` leaving
       `odylith/registry/source/component_registry.v1.json` at 30 source
-      components with zero SMB mock components. Rendered surface proof then
+      components with zero external mock components. Rendered surface proof then
       covered Radar, Registry, Atlas, Casebook, and Compass in desktop and
       mobile headless browser viewports with no console warnings/errors and no
       horizontal overflow.

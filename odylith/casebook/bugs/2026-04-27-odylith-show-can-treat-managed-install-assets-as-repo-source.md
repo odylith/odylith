@@ -24,7 +24,7 @@
 
 - Components Affected: odylith
 
-- Environment(s): Consumer repo with Odylith installed or migrated; reproduced with mockrepo containing only odylith/compass/runtime files and empty governance directories.
+- Environment(s): Consumer repo with Odylith installed or migrated; reproduced with an empty consumer fixture containing only odylith/compass/runtime files and empty governance directories.
 
 - Detected By: Operator feedback on odylith show output
 

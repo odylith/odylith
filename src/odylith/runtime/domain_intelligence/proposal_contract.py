@@ -5,9 +5,6 @@ from __future__ import annotations
 from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_programs
-from odylith.runtime.domain_intelligence.greenfield_domain_profile import infer_greenfield_domain_profile
-from odylith.runtime.domain_intelligence.greenfield_project_brief import build_project_brief
-from odylith.runtime.domain_intelligence.greenfield_project_intelligence import build_project_intelligence
 
 DEFAULT_GREENFIELD_RELEASE_SELECTOR = greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR
 
@@ -124,7 +121,7 @@ def build_proposal_contract() -> dict[str, Any]:
             "program": "wave plan with goals, validation gates, component focus, and evidence tier",
             "project_brief": (
                 "a project-first blueprint with customization options, pre-coding checkpoints, coding readiness gates, "
-                "and host-independent commands; it must make clear that greenfield apply creates project truth before "
+                "and host-independent commands; it must make clear that greenfield apply accepts project direction before "
                 "the first source-backed implementation plan starts"
             ),
             "project_intelligence": (
@@ -235,196 +232,7 @@ def build_proposal_contract() -> dict[str, Any]:
     }
 
 
-def build_proposal_template(*, intent_title: str, project_slug: str, source_posture: str) -> dict[str, Any]:
-    component_id = f"{project_slug}-core"
-    diagram_slug = f"{project_slug}-system-context"
-    domain_profile = infer_greenfield_domain_profile(prompt=intent_title, title=intent_title, slug=project_slug)
-    project_brief = build_project_brief(
-        prompt=intent_title,
-        title=intent_title,
-        slug=project_slug,
-        domain_profile=domain_profile,
-        release_selector=DEFAULT_GREENFIELD_RELEASE_SELECTOR,
-    )
-    components = [
-        {
-            "component_id": component_id,
-            "label": "Primary Component",
-            "kind": "service",
-            "intended_path": f"src/{component_id}",
-            "responsibility": "Replace with the component-specific responsibility.",
-            "boundary": "Replace with the component-specific boundary.",
-        }
-    ]
-    diagrams = [
-        {
-            "slug": diagram_slug,
-            "title": "System Context",
-            "kind": "flowchart",
-        }
-    ]
-    project_intelligence = build_project_intelligence(
-        prompt=intent_title,
-        title=intent_title,
-        slug=project_slug,
-        release_selector=DEFAULT_GREENFIELD_RELEASE_SELECTOR,
-        domain_profile=domain_profile,
-        project_brief=project_brief,
-        components=components,
-        diagrams=diagrams,
-        observed_source={"source_posture": source_posture},
-    )
-    return {
-        "schema_version": "odylith.greenfield.host_reasoned.v1",
-        "mode": "host_reasoned_greenfield_proposal",
-        "intent": {
-            "title": intent_title,
-            "project_slug": project_slug,
-            "summary": "Replace with the host-reasoned project summary.",
-        },
-        "observed_source": {
-            "evidence_tier": "observed_source",
-            "summary": f"Repo source posture: {source_posture}.",
-        },
-        "assumptions": [
-            {
-                "id": "A1",
-                "evidence_tier": "odylith_assumption",
-                "statement": "Replace with a first-slice assumption.",
-            },
-        ],
-        "open_questions": [
-            {
-                "id": "Q1",
-                "evidence_tier": "user_intent",
-                "question": "Replace with a question that changes the first slice.",
-            },
-        ],
-        "risks": [
-            {
-                "id": "R1",
-                "evidence_tier": "odylith_assumption",
-                "statement": "Replace with a concrete risk.",
-                "mitigation": "Replace with the mitigation.",
-            },
-        ],
-        "security_compliance": {
-            "domain": "Replace with the domain and data sensitivity assessment.",
-            "security": "Replace with auth, access-control, abuse, secrets, and AI-agent guardrail posture.",
-            "policy": "Replace with privacy, retention, accessibility, regulatory, or safety posture.",
-        },
-        "validation_strategy": [
-            {
-                "id": "V1",
-                "evidence_tier": "odylith_assumption",
-                "scope": "first_slice",
-                "obligation": "Replace with focused behavior proof.",
-            },
-        ],
-        "project_brief": project_brief,
-        "project_intelligence": project_intelligence,
-        "program": {
-            "name": intent_title,
-            "waves": [
-                {
-                    "wave_id": "W1",
-                    "label": "First release slice",
-                    "goal": "Replace with the first release goal.",
-                    "validation_gate": "Replace with the first release gate.",
-                    "workstreams": ["WS-01"],
-                },
-            ],
-        },
-        "release_plan": {
-            "selector": DEFAULT_GREENFIELD_RELEASE_SELECTOR,
-            "label": DEFAULT_GREENFIELD_RELEASE_SELECTOR,
-            "provisional_release_id": f"release-{project_slug}-0-0-1",
-            "target_workstreams": ["WS-01"],
-            "release_stages": [
-                {
-                    "release": DEFAULT_GREENFIELD_RELEASE_SELECTOR,
-                    "label": "First release slice",
-                    "exit_criteria": "Replace with promotion criteria.",
-                },
-            ],
-            "promotion_criteria": ["Replace with the release promotion proof."],
-        },
-        "backlog": [
-            {
-                "id": "WS-00",
-                "title": f"{intent_title} program",
-                "problem": "Replace with the grounded problem.",
-                "customer": "Replace with the target customer.",
-                "opportunity": "Replace with the opportunity.",
-                "product_view": "Replace with the product view.",
-                "recommended_first_slice": "Replace with the first slice.",
-                "success_metrics": [
-                    "Replace with a measurable success metric.",
-                    "Replace with a second measurable success metric.",
-                ],
-                "evidence_tier": "user_intent",
-            },
-            {
-                "id": "WS-01",
-                "title": "First slice boundary",
-                "problem": "Replace with the child workstream problem.",
-                "customer": "Replace with the target customer.",
-                "opportunity": "Replace with the child opportunity.",
-                "product_view": "Replace with the child product view.",
-                "recommended_first_slice": "Replace with the child first-slice proof.",
-                "success_metrics": [
-                    "Replace with a measurable child metric.",
-                    "Replace with a second measurable child metric.",
-                ],
-                "component_focus": [component_id],
-                "related_diagram_slugs": [diagram_slug],
-                "dependencies": ["Replace with a dependency expectation."],
-                "interfaces": ["Replace with an interface expectation."],
-                "validation": ["Replace with validation proof."],
-                "evidence_tier": "user_intent",
-            },
-        ],
-        "components": [
-            {
-                "component_id": component_id,
-                "label": "Core Boundary",
-                "kind": "service",
-                "intended_path": f"src/{component_id}",
-                "status": "planned",
-                "qualification": "candidate",
-                "responsibility": "Replace with responsibility, boundary, and ownership summary.",
-                "boundary": "Replace with what this component owns and excludes.",
-                "interfaces": ["Replace with planned interfaces."],
-                "dependencies": ["Replace with dependencies."],
-                "validation": ["Replace with proof expectations."],
-                "evidence_tier": "user_intent",
-            },
-        ],
-        "diagrams": [
-            {
-                "slug": diagram_slug,
-                "title": f"{intent_title} system context",
-                "kind": "flowchart",
-                "summary": "Replace with what the diagram clarifies.",
-                "link_state": "atlas_first_draft",
-                "components": [{"name": component_id, "description": "Replace with the component role."}],
-                "related_workstreams": ["WS-00", "WS-01"],
-                "evidence_tier": "user_intent",
-                "mermaid_source": (
-                    "flowchart LR\n"
-                    "  User[User] --> Core[Core<br/>boundary]\n"
-                    "  classDef actor fill:#EFF6FF,stroke:#BFD7FE,color:#17233A;\n"
-                    "  classDef service fill:#ECFDFB,stroke:#A7E9E3,color:#17233A;\n"
-                    "  class User actor;\n"
-                    "  class Core service;"
-                ),
-            },
-        ],
-    }
-
-
 __all__ = [
     "GREENFIELD_ENGINE_ACTIVATION_LAYERS",
     "build_proposal_contract",
-    "build_proposal_template",
 ]

@@ -31,6 +31,13 @@ _STALE_GENERIC_TERMS: tuple[str, ...] = (
     "Experience Boundary",
     "Domain Core",
     "Verification Harness",
+    "Project intelligence renderer",
+    "Create or accept project truth",
+    "Primary user",
+    "Project operator",
+    "Domain reviewer",
+    "Implementation owner",
+    "Evidence owner",
 )
 
 _STALE_GENERIC_TITLES = {
@@ -42,6 +49,14 @@ _STALE_GENERIC_TITLES = {
     "prove release harness",
 }
 
+_SCAFFOLD_MARKERS: tuple[str, ...] = (
+    "odylith_apply_ready_scaffold",
+    "apply_ready_scaffold",
+    "proposal_template",
+    "canonical_proposal",
+    "GreenfieldDomainProfile",
+)
+
 _EXCLUDED_PUBLIC_KEYS = {
     "accepted_aliases",
     "apply_commands",
@@ -49,6 +64,7 @@ _EXCLUDED_PUBLIC_KEYS = {
     "component_id",
     "evidence_tier",
     "host_instruction",
+    "host_independent_paths",
     "id",
     "intended_path",
     "kind",
@@ -57,6 +73,8 @@ _EXCLUDED_PUBLIC_KEYS = {
     "observed_source",
     "priority",
     "provider_calls",
+    "artifact_derivation",
+    "project_intelligence_binding",
     "qualification",
     "reasoning_contract",
     "reasoning_mode",
@@ -131,8 +149,10 @@ def greenfield_quality_issues(proposal: Mapping[str, Any]) -> list[str]:
     prompt_terms = _prompt_terms(proposal)
     issues.extend(_control_plane_leak_issues(public_leaves, prompt_terms=prompt_terms))
     issues.extend(_stale_generic_issues(public_leaves))
+    issues.extend(_scaffold_marker_issues(public_leaves))
     if prompt_terms:
         issues.extend(_prompt_grounding_issues(proposal, prompt_terms=prompt_terms))
+        issues.extend(_prompt_echo_issues(proposal, public_leaves=public_leaves))
     return _dedupe(issues)
 
 
@@ -155,6 +175,15 @@ def _stale_generic_issues(public_leaves: list[tuple[str, str]]) -> list[str]:
         paths = [path for path, text in public_leaves if term in text]
         if paths:
             issues.append(f"greenfield public product content reuses stale generic label `{term}` at {_path_preview(paths)}")
+    return issues
+
+
+def _scaffold_marker_issues(public_leaves: list[tuple[str, str]]) -> list[str]:
+    issues: list[str] = []
+    for marker in _SCAFFOLD_MARKERS:
+        paths = [path for path, text in public_leaves if marker in text]
+        if paths:
+            issues.append(f"greenfield public product content exposes scaffold marker `{marker}` at {_path_preview(paths)}")
     return issues
 
 
@@ -189,6 +218,40 @@ def _prompt_grounding_issues(proposal: Mapping[str, Any], *, prompt_terms: tuple
                     f"such as {_term_preview(prompt_terms)}"
                 )
     return issues
+
+
+def _prompt_echo_issues(
+    proposal: Mapping[str, Any],
+    *,
+    public_leaves: list[tuple[str, str]],
+) -> list[str]:
+    intent = proposal.get("intent")
+    if not isinstance(intent, Mapping):
+        return []
+    raw_prompt = clean_text(intent.get("prompt"))
+    raw_title = clean_text(intent.get("title"))
+    issues: list[str] = []
+    for label, value, max_hits in (("prompt", raw_prompt, 0), ("title", raw_title, 3)):
+        needle = value.casefold()
+        if len(needle) < 32:
+            continue
+        paths = [
+            path
+            for path, text in public_leaves
+            if needle
+            and needle in text.casefold()
+            and not path.startswith("intent.")
+            and _is_artifact_content_path(path)
+        ]
+        if len(paths) > max_hits:
+            issues.append(
+                f"greenfield public product content repeats the raw {label} instead of authoring natural project language at {_path_preview(paths)}"
+            )
+    return issues
+
+
+def _is_artifact_content_path(path: str) -> bool:
+    return path.startswith(("backlog.", "components.", "diagrams.", "program.", "release_plan."))
 
 
 def _public_text_leaves(value: Any, *, path: tuple[str, ...] = ()) -> tuple[tuple[str, str], ...]:

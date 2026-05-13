@@ -215,7 +215,7 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   tests/unit/runtime/test_greenfield_proposals.py` (`33 passed`). Casebook bug
   `CB-187` captures the fixed-pending-release UX regression.
 - 2026-05-08 component-spec topology tightening moved broad project links back
-  to Radar/Atlas and kept Registry dossiers component-local: DeFi generated
+  to Radar/Atlas and kept Registry dossiers component-local: external-domain generated
   specs now bind Risk Console to `B-002` and `D-002,D-003`, Risk Signal Engine
   to `B-003` and `D-002,D-003,D-004`, Scenario Replay Harness to `B-004` and
   `D-005`; host-authored components without component-level diagram refs no
@@ -237,13 +237,13 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   `python3 -m py_compile` passed for the touched greenfield UX modules and
   release smoke script.
 - 2026-05-08 traceability writer hardening fixed the remaining applied-Radar
-  sludge discovered by fresh DeFi temp-repo proof: structured risks,
+  sludge discovered by fresh external-domain temp-repo proof: structured risks,
   questions, dependencies, and release stages now render as complete governed
   bullets instead of fragments like `R1.`, `Q1.`, `domain contract.`, or
-  `command.`; question punctuation is preserved; DeFi customization prompts no
+  `command.`; question punctuation is preserved; external-domain customization prompts no
   longer split into lowercase fragments. Proof: source-local `greenfield
   propose` produced 270-line project-first text with 24 project-intelligence
-  layers, source-local apply wrote all four DeFi Radar workstreams with no
+  layers, source-local apply wrote all four external-domain Radar workstreams with no
   shallow-fragment hits, `python3 -m pytest
   tests/unit/runtime/test_greenfield_proposals.py
   tests/unit/runtime/test_greenfield_intelligence_schema.py
@@ -257,7 +257,7 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   the generated Mermaid sources include evidence-boundary, code-gate,
   decision-lens, state-note, unresolved-risk, and surface-agreement annotations
   directly inside the diagrams. Proof: source-local `greenfield propose` for
-  `DeFi risk sentinel app` rendered 290 lines with per-diagram summary/review/
+  an external-domain fixture rendered 290 lines with per-diagram summary/review/
   question/gate guidance, canonical JSON carried five annotated Atlas rows, and
   `python3 -m pytest tests/unit/runtime/test_greenfield_atlas_contract.py
   tests/unit/runtime/test_greenfield_proposals.py
@@ -266,7 +266,7 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   tests/unit/install/test_local_release_smoke.py -q` passed (`69 passed`) plus
   `python3 -m py_compile` for the touched proposal rendering/scaffold modules.
 - 2026-05-08 greenfield anti-slop hardening removed the residual applied-Radar
-  weak spots found by a fresh DeFi audit: proposal-level risks are now
+  weak spots found by a fresh external-domain audit: proposal-level risks are now
   domain-specific structured records with class, severity, trigger,
   early-warning signal, and mitigation; old generic greenfield risk boilerplate
   is rejected before apply; workstream ontology labels are deduplicated and
@@ -278,7 +278,7 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   tests/unit/runtime/test_greenfield_host_routing.py
   tests/unit/runtime/test_greenfield_intelligence_schema.py
   tests/unit/runtime/test_greenfield_proposals.py -q` passed (`49 passed`);
-  source-local `greenfield propose/create` for `DeFi risk sentinel app`
+  source-local `greenfield propose/create` for an external-domain fixture
   produced 4 workstreams, 3 components, 5 diagrams, 27 domain-intelligence
   fields per workstream, unique ontology labels, project-gated closeout, no
   old boilerplate, no malformed ownership phrase, and component specs with
@@ -303,7 +303,7 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   rendering ignores stale runtime snapshots so the browser payload reflects the
   governed source manifest. Proof: a product-repo guard regression test,
   standalone Registry source-manifest precedence test, real `radar refresh`
-  proving the source Registry stays at 30 product components with zero SMB mock
+  proving the source Registry stays at 30 product components with zero external mock
   components, a refreshed migration-observer pass for `operator-cli-contracts`
   plus `browser-surfaces`, and a regenerated Radar, Registry, Atlas, Casebook,
   and Compass shell surface matrix across desktop/mobile headless browser

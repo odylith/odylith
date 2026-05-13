@@ -1,6 +1,6 @@
 - Bug ID: CB-196
 
-- Status: Open
+- Status: Closed
 
 - Created: 2026-05-11
 
@@ -22,11 +22,11 @@
 
 - Failure Signature: Execution Waves summary shows a long program title and status badges at the top right, with large blank space under the badge column instead of a compact full-width summary.
 
-- Trigger Path: Open Radar workstream detail for a greenfield umbrella workstream with execution waves, for example B-001 in the local mockrepo dashboard.
+- Trigger Path: Open Radar workstream detail for a greenfield umbrella workstream with execution waves, for example B-001 in a local consumer dashboard.
 
 - Ownership: Shared execution-wave UI renderer for Radar and Compass surfaces
 
-- Timeline: Captured 2026-05-11 through `odylith bug capture`.
+- Timeline: Captured 2026-05-11 through `odylith bug capture`; closed 2026-05-12 after the shared execution-wave summary renderer moved the status rail out of the dead side-lane posture and browser proof passed in desktop and compact Radar views.
 
 - Blast Radius: Radar workstream detail pages that render umbrella-owned execution-wave programs; shared primitive must avoid regressing Compass.
 
@@ -37,3 +37,5 @@
 - Security/Compliance: None; no security or compliance data exposure.
 
 - Invariant Violated: Execution-wave summaries must use the panel width efficiently and make program, status, and progress readable without dead layout space.
+
+- Fix Evidence: `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_layout_audit.py::test_radar_execution_wave_summary_avoids_dead_side_lane_in_browser tests/integration/runtime/test_surface_browser_layout_audit.py::test_radar_execution_wave_summary_avoids_dead_side_lane_in_compact_browser` passed on 2026-05-12.

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import os
 from pathlib import Path
@@ -8,11 +9,13 @@ from pathlib import Path
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence.greenfield_project_intelligence import PROJECT_INTELLIGENCE_LAYERS
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import build_traceability_graph
 from odylith.runtime.governance import release_planning_view_model
 from odylith.runtime.project_intelligence import builder as project_intelligence_builder
+from odylith.runtime.project_intelligence import presenter as project_intelligence_presenter
 
 
 def _write(path: Path, text: str) -> None:
@@ -57,8 +60,32 @@ def _seed_empty_governance_repo(repo_root: Path) -> None:
     )
 
 
+def _apply_ready_greenfield_fixture(repo_root: Path, prompt: str) -> dict[str, object]:
+    _ = repo_root
+    proposal = copy.deepcopy(_host_reasoned_ecommerce_proposal())
+    title = " ".join(part[:1].upper() + part[1:] for part in greenfield_proposals.slugify(prompt).split("-"))
+    title = title or "Host Authored Greenfield Project"
+    slug = greenfield_proposals.slugify(title)
+    intent = proposal["intent"]
+    assert isinstance(intent, dict)
+    intent.update({"prompt": prompt, "title": title, "project_slug": slug})
+    proposal["project_brief"] = _host_project_brief(title=title, prompt=prompt, release="0.0.1")
+    proposal["project_intelligence"] = _host_project_intelligence(title=title, release="0.0.1")
+    backlog = proposal.get("backlog")
+    if isinstance(backlog, list):
+        actor_lines = _host_actor_lines_for_prompt(prompt)
+        for row in backlog:
+            if isinstance(row, dict):
+                row["domain_intelligence"] = _host_domain_intelligence(
+                    title=title,
+                    row_title=str(row.get("title") or title),
+                    actors=actor_lines,
+                )
+    return greenfield_proposals.normalize_host_reasoned_proposal(proposal)
+
+
 def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
-    return {
+    proposal: dict[str, object] = {
         "schema_version": "odylith.greenfield.proposal.v1",
         "mode": "host_reasoned_greenfield_proposal",
         "provider_calls": 0,
@@ -148,7 +175,7 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
             {
                 "title": "Govern Commerce Launch System",
                 "problem": "The operator wants to build an ecommerce site, but the repo has no confirmed plan, boundaries, topology, or validation spine.",
-                "customer": "Builders",
+                "customer": "Commerce builders and shoppers",
                 "opportunity": "Create a confirmed commerce launch plan with a checkout-first implementation spine and explicit recovery gates.",
                 "product_view": "The product plan should turn broad commerce intent into reviewable workstreams, components, topology, and release gates without claiming source exists.",
                 "success_metrics": [
@@ -165,7 +192,7 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
             {
                 "title": "Define Storefront boundary",
                 "problem": "The user-facing browse and checkout UI needs a named owner before implementation.",
-                "customer": "Builders",
+                "customer": "Shoppers and commerce builders",
                 "opportunity": "Keep storefront behavior independently reviewable and testable.",
                 "product_view": "Storefront should own browse, cart entry, checkout entry, and user-visible errors.",
                 "success_metrics": [
@@ -175,7 +202,7 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                 "priority": "P1",
                 "sizing": "M",
                 "complexity": "Medium",
-                "recommended_first_slice": "Define the route and state contract for browse-to-cart.",
+                "recommended_first_slice": "Define the checkout route and state contract for browse-to-cart.",
                 "component_focus": ["commerce-storefront", "commerce-checkout"],
                 "related_diagram_slugs": ["commerce-launch-system-context", "commerce-launch-program-waves"],
                 "dependencies": [
@@ -338,6 +365,313 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                     "    Operational hardening : Observability : Release gate\n"
                 ),
             },
+        ],
+    }
+    return _complete_host_reasoned_proposal(proposal)
+
+
+def _complete_host_reasoned_proposal(proposal: dict[str, object]) -> dict[str, object]:
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), dict) else {}
+    title = str(intent.get("title") or "Host Authored Greenfield Project")
+    prompt = str(intent.get("prompt") or title)
+    release = "0.0.1"
+    proposal["project_brief"] = _host_project_brief(title=title, prompt=prompt, release=release)
+    proposal["project_intelligence"] = _host_project_intelligence(title=title, release=release)
+    backlog = proposal.get("backlog")
+    if isinstance(backlog, list):
+        actor_lines = _host_actor_lines_for_prompt(prompt)
+        for index, row in enumerate(backlog):
+            if not isinstance(row, dict):
+                continue
+            if index == 0:
+                row.setdefault("workstream_type", "program_parent")
+            row.setdefault(
+                "domain_intelligence",
+                _host_domain_intelligence(
+                    title=title,
+                    row_title=str(row.get("title") or title),
+                    actors=actor_lines,
+                ),
+            )
+    return proposal
+
+
+def _host_actor_lines_for_prompt(prompt: str) -> list[str]:
+    if "ecommerce" in prompt.casefold() or "checkout" in prompt.casefold():
+        return [
+            "Shopper advocate: represents the buyer moving through browse, cart, checkout, failure recovery, and order confirmation.",
+            "Commerce operator: owns catalog readiness, checkout handoff, and day-to-day order workflow movement.",
+            "Payment risk reviewer: owns payment failure, duplicate order, retry abuse, and provider-policy exposure.",
+            "Checkout proof reviewer: decides whether browser, contract, and recovery proof are strong enough to advance release.",
+            "Build owner: owns storefront, checkout, catalog, source paths, implementation sequence, and validation commands after planning.",
+        ]
+    return [
+        "End-user advocate: represents the person who receives value from the first path.",
+        "Workflow operator: owns day-to-day movement through the proposed workflow.",
+        "Risk reviewer: owns the unresolved harm, loss, compliance, or operational exposure.",
+        "Proof reviewer: decides whether evidence is strong enough to advance the release.",
+        "Build owner: owns source paths, implementation sequence, and validation commands after planning.",
+    ]
+
+
+def _host_project_brief(*, title: str, prompt: str, release: str) -> dict[str, object]:
+    return {
+        "schema_version": "odylith.greenfield.project_brief.v1",
+        "purpose": f"Capture {title} as accepted product truth before backlog, component, diagram, release, or validation records drive source work.",
+        "operating_principle": "The host must reason from confirmed product intent; Odylith only validates and applies records that already carry project-specific truth.",
+        "project_outcome": f"{title} turns the operator request into a clear first journey, accountable actors, source boundaries, proof gates, and release scope.",
+        "blueprint_sections": [
+            {
+                "section": "Product story",
+                "must_capture": "The user outcome, first path, business value, boundaries, and excluded production claims.",
+                "why_it_matters": "It keeps the project understandable before expert records and implementation details appear.",
+            },
+            {
+                "section": "Actors and systems",
+                "must_capture": "Human actors, external systems, internal systems, owners, and approval responsibilities.",
+                "why_it_matters": "It prevents arbitrary personas and clarifies who changes or absorbs risk.",
+            },
+            {
+                "section": "Topology and artifacts",
+                "must_capture": "How workstreams, component records, diagrams, and release proof all connect.",
+                "why_it_matters": "It keeps governance artifacts derived from one product spine instead of disconnected records.",
+            },
+            {
+                "section": "Proof boundary",
+                "must_capture": "Evidence tiers, validation commands, failure modes, unresolved assumptions, and promotion gates.",
+                "why_it_matters": "It prevents proposal prose from becoming source-backed implementation evidence.",
+            },
+        ],
+        "customization_options": [
+            {
+                "id": "D1",
+                "decision": "First user and job",
+                "recommended": "Name the first person who must succeed and the single job that proves value.",
+                "choices": ["end user", "operator", "reviewer", "administrator"],
+                "impact": "Changes the first path, actors, UI or command surface, access model, and proof target.",
+            },
+            {
+                "id": "D2",
+                "decision": "Source and integration boundary",
+                "recommended": "Keep integrations fixture-backed until credentials, contracts, and proof requirements are explicit.",
+                "choices": ["fixture only", "sandbox provider", "read-only live source", "production integration later"],
+                "impact": "Changes security posture, validation harness, architecture diagrams, and release risk.",
+            },
+            {
+                "id": "D3",
+                "decision": "Runtime and delivery shape",
+                "recommended": "Choose the smallest runtime that can prove the first product journey honestly.",
+                "choices": ["local CLI", "web app", "API service", "hybrid surface"],
+                "impact": "Changes source paths, validation commands, deployment assumptions, and operator experience.",
+            },
+            {
+                "id": "D4",
+                "decision": "Proof bar",
+                "recommended": "Require concrete behavior proof before any source-backed or release-ready claim.",
+                "choices": ["unit proof", "contract proof", "browser proof", "scenario replay"],
+                "impact": "Changes validation obligations, evidence maturity, and release promotion criteria.",
+            },
+            {
+                "id": "D5",
+                "decision": "First release ambition",
+                "recommended": f"Keep {release} focused on one complete journey and defer broad platform capability.",
+                "choices": ["one path", "one path plus audit", "one vertical slice", "multi-lane program"],
+                "impact": "Changes backlog depth, component boundaries, wave count, and delivery risk.",
+            },
+        ],
+        "customization_prompts": [
+            f"Confirm the primary actor, first journey, and proof bar for the accepted project before writing records.",
+            "Revise the external systems, source boundary, or release ambition before proposal apply if any assumption is wrong.",
+            "Reject this proposal when the story does not match the business problem or first value path.",
+        ],
+        "pre_coding_checkpoints": [
+            {
+                "checkpoint": "Product story accepted",
+                "operator_question": "Does the story match the business problem, first user, and first journey?",
+                "done_when": "The accepted proposal names the product promise, first path, actors, systems, and non-goals.",
+            },
+            {
+                "checkpoint": "Governance topology aligned",
+                "operator_question": "Do workstreams, components, diagrams, release plan, and proof all describe the same project?",
+                "done_when": "Workstreams, components, diagrams, release, and validation records share one topology spine.",
+            },
+            {
+                "checkpoint": "Evidence boundary explicit",
+                "operator_question": "Which claims are user intent, assumptions, source backed, validated, or operational?",
+                "done_when": "Every major claim has a visible evidence tier and unresolved claims remain blocked.",
+            },
+            {
+                "checkpoint": "Implementation lane ready",
+                "operator_question": "Which child workstream can start source work without broadening the project?",
+                "done_when": "The first child lane has source paths, owners, tests, rollback or recovery posture, and proof commands.",
+            },
+        ],
+        "coding_readiness_gates": [
+            f"{title} has an accepted product story with actors, systems, first path, and unresolved assumptions.",
+            "The first implementation lane maps to one workstream, one component boundary, one diagram path, and one proof gate.",
+            "Every external dependency is fixture-backed, sandboxed, source-backed, or explicitly deferred before source edits start.",
+            "The release plan names promotion criteria and does not claim production readiness beyond the accepted first path.",
+        ],
+        "host_independent_paths": [
+            {
+                "path": "Confirm product intent",
+                "command": f"odylith greenfield propose --repo-root . --prompt {json.dumps(prompt)}",
+                "works_in": "shell, Codex, Claude Code",
+                "use_when": "Use before proposal expansion so the operator can confirm, edit, or reject the interpretation.",
+            },
+            {
+                "path": "Review full proposal",
+                "command": f"odylith greenfield propose --repo-root . --prompt {json.dumps(prompt)} --confirm-intent",
+                "works_in": "shell, Codex, Claude Code",
+                "use_when": "Use after intent confirmation to author and review the full host-reasoned proposal object.",
+            },
+            {
+                "path": "Apply accepted proposal",
+                "command": f"odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm --release {release}",
+                "works_in": "shell, Codex, Claude Code",
+                "use_when": "Use only after the proposal object is reviewed and accepted by the operator.",
+            },
+        ],
+    }
+
+
+def _host_project_intelligence(*, title: str, release: str) -> dict[str, object]:
+    layers = {
+        key: [
+            f"{key.replace('_', ' ').title()} row one keeps {title} tied to the accepted product story and source boundary.",
+            f"{key.replace('_', ' ').title()} row two names the owner, evidence tier, and invalidation trigger for the release.",
+        ]
+        for key in PROJECT_INTELLIGENCE_LAYERS
+    }
+    layers["intent"].append(f"Intent row three states the first complete path for the accepted project before broad platform scope.")
+    layers["ontology"].append(f"Ontology row three keeps user, state object, evidence record, and release gate distinct for the accepted project.")
+    layers["operators"].append(f"Operators row three allows promotion only after validation proof and topology refresh pass.")
+    layers["validation_obligations"].append(f"Validation row three blocks release movement when source, fixture, or diagram proof is missing.")
+    layers["topology"].append(f"Topology row three links backlog, components, diagrams, release plan, and proof artifacts together.")
+    return {
+        "schema_version": "odylith.greenfield.project_intelligence.v1",
+        "purpose": f"Make {title} readable and governable as one product spine before any generated artifact drives implementation.",
+        "coding_posture": "Coding starts only after the accepted project story, first child workstream, component boundary, source paths, and validation commands agree.",
+        "control_surface_summary": [
+            f"{title} begins as user intent and must not claim source-backed behavior until implementation proof exists.",
+            "Backlog records carry product workstreams and the first implementation lane.",
+            "Component records carry ownership, interfaces, invariants, and proof obligations.",
+            "Diagram records carry topology, state movement, handoffs, controls, and evidence boundaries.",
+            f"Release {release} carries only the first path that has accepted validation criteria.",
+        ],
+        "customization_flow": [
+            "Confirm the product story and material ambiguities before proposal expansion.",
+            "Review the host-authored proposal for actors, systems, topology, risks, and proof.",
+            "Apply the accepted proposal only after deterministic validation and the governed write gate pass.",
+            "Start source work only from the accepted child lane with source paths and proof commands.",
+        ],
+        **layers,
+    }
+
+
+def _host_domain_intelligence(*, title: str, row_title: str, actors: list[str] | None = None) -> dict[str, object]:
+    return {
+        "schema_version": "odylith.greenfield.workstream_intelligence.v1",
+        "family": "host_reasoned_project",
+        "summary": f"{row_title} is host-authored from the accepted project story, with proof and topology kept explicit.",
+        "actors": actors or _host_actor_lines_for_prompt(title),
+        "intent": [
+            f"{row_title} expresses a specific part of the accepted product story for the accepted project.",
+            "The row must preserve user value, source boundary, proof gate, and unresolved assumptions.",
+        ],
+        "scope": [
+            f"{row_title} owns its named project slice and does not expand into unrelated implementation scope.",
+            "The boundary stays user-intent until source paths, tests, and refreshed evidence exist.",
+        ],
+        "ontology": [
+            f"Actor: the person or team whose job this workstream must make successful for the accepted project.",
+            "State object: the project object that changes through the first accepted journey.",
+            "Evidence record: the proof artifact that decides whether the claim can advance.",
+            "Release gate: the condition that blocks promotion when proof or ownership is missing.",
+        ],
+        "state": [
+            f"Current state is accepted proposal intent for {row_title}, not implementation evidence.",
+            "Desired state is source-backed proof with matching workstream, component, diagram, and release records.",
+        ],
+        "operators": [
+            "Accept product intent only after the operator confirms story, actors, systems, and assumptions.",
+            "Open implementation work only after the child lane names source paths and proof commands.",
+            "Promote evidence only after validation passes and generated surfaces refresh from source truth.",
+        ],
+        "constraints": [
+            "Do not claim production readiness, operational maturity, or source-backed behavior from proposal prose.",
+            "Do not let diagrams, components, or releases drift away from the accepted product story.",
+        ],
+        "source_of_truth_map": [
+            "Backlog records own workstream intent, priority, dependencies, risks, and success metrics for this row.",
+            "Component records own boundaries, interfaces, invariants, and proof obligations connected to this row.",
+            "Diagram records own topology views and must stay linked to the row and component ownership.",
+        ],
+        "evidence_model": [
+            "User intent supports proposal truth but not source-backed implementation claims.",
+            "Source-backed evidence requires files, tests, renders, or explicit operational records.",
+        ],
+        "decisions": [
+            "The first decision is whether the operator accepts the story and first path.",
+            "The next decision is which child workstream can safely start implementation planning.",
+        ],
+        "assumptions": [
+            "Unanswered product choices remain visible and cannot silently become implementation facts.",
+            "External systems are deferred or fixture-backed unless the proposal explicitly proves otherwise.",
+        ],
+        "topology": [
+            f"{row_title} must connect to the project story, component ownership, diagram views, and release proof.",
+            "Workstream, component, diagram, validation, and release records form one topology spine.",
+        ],
+        "invariants": [
+            "Every source-backed claim must name its source path or proof artifact.",
+            "Every component boundary must have owner, interface, failure mode, and validation obligation.",
+        ],
+        "risks": [
+            "Generic workstream language can hide the real business problem and confuse implementation owners.",
+            "Unbound artifacts can make implementation appear ready while the first path remains unproven.",
+        ],
+        "validation_obligations": [
+            "Validate that the story, workstreams, components, diagrams, and release plan describe the same first path.",
+            "Validate that missing proof blocks promotion instead of becoming a dashboard claim.",
+            "Validate that source edits start only after a child technical plan names paths and tests.",
+        ],
+        "artifacts": [
+            "Backlog row captures the native workstream contract for this slice.",
+            "Component records capture ownership, interfaces, and proof obligations for this slice.",
+            "Diagram records capture topology and flow claims that reviewers can inspect.",
+        ],
+        "authority": [
+            "The operator owns accepted product intent and any correction to assumptions.",
+            "The implementation owner owns source paths only after technical planning is accepted.",
+        ],
+        "owners": [
+            "Product owner owns whether this row still matches the project story.",
+            "Proof owner owns whether validation evidence is strong enough to promote the claim.",
+        ],
+        "execution_memory": [
+            "Future agents must start from the accepted story and topology before editing source.",
+            "Past proposal prose does not outrank source-backed proof or explicit operator corrections.",
+        ],
+        "metrics": [
+            "Zero orphaned workstreams, components, diagrams, or release gates after apply.",
+            "Every first-path claim has a visible evidence tier and validation obligation.",
+        ],
+        "change_model": [
+            "Changing the first path invalidates dependent workstreams, components, diagrams, and release criteria.",
+            "Changing an external dependency invalidates source boundary, risk, proof, and topology claims.",
+        ],
+        "invalidation_rules": [
+            "If source proof is missing, the claim stays user-intent or assumption rather than source-backed.",
+            "If operator corrections contradict the proposal, governance artifacts must be regenerated or repaired.",
+        ],
+        "conflict_model": [
+            "Operator-confirmed product intent beats generated fallback language.",
+            "Source-backed tests beat generated dashboard projections when they disagree.",
+        ],
+        "transfer_priors": [
+            "Keep the first path small enough to prove with concrete validation.",
+            "Prefer artifact-native enrichment over dumping generic domain-intelligence sections everywhere.",
         ],
     }
 
@@ -746,7 +1080,7 @@ def test_greenfield_prompt_returns_host_reasoning_contract(tmp_path) -> None:
     assert "components" not in proposal
     assert "diagrams" not in proposal
     assert proposal["observed_source"]["source_posture"] == "empty_or_no_app_source"
-    assert "do not use canned domain buckets" in proposal["host_instruction"]
+    assert "Do not use canned domain buckets" in proposal["host_instruction"]
     assert "backlog" in proposal["reasoning_contract"]["required_top_level_keys"]
     assert "security_compliance" in proposal["reasoning_contract"]["required_top_level_keys"]
     assert "project_brief" in proposal["reasoning_contract"]["required_top_level_keys"]
@@ -780,26 +1114,23 @@ def test_greenfield_prompt_returns_host_reasoning_contract(tmp_path) -> None:
     assert "Surface DAGs" in quality_bar
     assert "security, privacy, abuse, accessibility" in quality_bar
     assert "project-first" in quality_bar
-    assert "odylith greenfield propose" in proposal["apply_commands"][1]
+    assert "odylith greenfield propose" in proposal["apply_commands"][0]
+    assert "host writes odylith-greenfield-proposal.json" in proposal["apply_commands"][1]
+    assert "odylith greenfield apply" in proposal["apply_commands"][2]
     assert "--release 0.0.1" in proposal["apply_commands"][2]
     assert "Default the first greenfield release target to exactly 0.0.1" in " ".join(
         proposal["reasoning_contract"]["quality_bar"]
     )
-    assert "do not add project names or descriptive words to release targets" in proposal["host_instruction"]
-    assert proposal["proposal_template"]["mode"] == "host_reasoned_greenfield_proposal"
-    assert proposal["proposal_template"]["release_plan"]["label"] == "0.0.1"
-    assert proposal["proposal_template"]["project_brief"]["customization_options"]
-    assert proposal["proposal_template"]["project_intelligence"]["control_surface_summary"]
-    assert "Do not start coding" in proposal["proposal_template"]["project_intelligence"]["coding_posture"]
-    assert "Do not treat greenfield apply as permission to code immediately" in proposal["proposal_template"]["project_brief"]["operating_principle"]
-    assert proposal["canonical_proposal_gate"]["status"] == "passed"
-    greenfield_proposals.validate_host_reasoned_proposal(proposal["proposal_template"])
-    assert greenfield_proposals.run_greenfield_tribunal(proposal["proposal_template"], release_selector="0.0.1").passed
+    assert "live from the confirmed Product Intent Confirmation" in proposal["host_instruction"]
+    assert "canned domain buckets" in proposal["host_instruction"]
+    assert "proposal_template" not in proposal
+    assert "canonical_proposal" not in proposal
+    assert "canonical_proposal_gate" not in proposal
     assert proposal["accepted_aliases"]["validation"] == ["proof_expectations", "test_strategy"]
     assert "project_control_surface" in proposal["accepted_aliases"]["project_intelligence"]
 
 
-def test_greenfield_text_is_compact_product_preview_before_confirmed_write(tmp_path, capsys) -> None:
+def test_greenfield_text_starts_with_product_intent_confirmation(tmp_path, capsys) -> None:
     rc = greenfield_proposals.main(
         [
             "propose",
@@ -812,45 +1143,99 @@ def test_greenfield_text_is_compact_product_preview_before_confirmed_write(tmp_p
 
     assert rc == 0
     output = capsys.readouterr().out
-    assert "Greenfield proposal preview: A Mathematics Research Workspace For Spectral Graph Theory" in output
+    assert "Product Intent Confirmation needed" in output
     assert "No files changed." in output
-    assert "Gate 1 - Interpretation" in output
-    assert "Gate 2 - Clarify Before Apply" in output
-    assert "Gate 3 - Proposal Preview" in output
-    assert "Gate 4 - Choose Next Action" in output
-    assert "product records are written only after explicit confirmation" in output
-    assert "Recommended next step: say `Apply this proposal as-is`" in output
-    assert "Revise before apply: answer the Gate 2 choices" in output
-    assert "First write point: `greenfield create/apply --confirm`" in output
-    assert "Export full JSON before apply:" in output
-    assert "--format json > odylith-greenfield-proposal.json" in output
-    assert "Apply exported JSON after review:" in output
-    assert "odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm" in output
+    assert "Host reasoning task" in output
+    assert "Write in chat" in output
+    assert "Do not" in output
+    assert "echo command instructions as the product name" in output
+    assert "generate backlog, Registry, Atlas, release waves, validation obligations, or proposal JSON before confirmation" in output
+    assert "Original user intent" in output
+    assert "Confirm" in output
+    assert "--confirm-intent" in output
     assert "дж" not in output
     assert "soн" not in output
-    assert "Product workstreams:" in output
-    assert "Candidate product boundaries:" in output
-    assert "Architecture review views:" in output
-    assert "System Overview:" in output
+    assert "..." not in output
+    assert "Gate 1 - Interpretation" not in output
+    assert "Product workstreams:" not in output
+    assert "Candidate product boundaries:" not in output
+    assert "Architecture review views:" not in output
+    assert "Records after confirmation" not in output
     assert "A Mathematics Research Workspace For Spectral Graph Theory System Overview" not in output
     assert "A Mathematics Research Workspace For Spectral Graph Theory First Slice Flow" not in output
-    assert "odylith greenfield create --repo-root ." in output
-    assert "odylith greenfield propose --repo-root ." in output
-    assert "What breaks if it fails" in output
     assert "apply-ready JSON" not in output
     assert "provider_calls_by_odylith_cli" not in output
     assert "mode: host_reasoned_greenfield_proposal" not in output
     assert "shared artifact:" not in output
     assert "Project-first blueprint" not in output
     assert "Workstream domain intelligence" not in output
-    assert len(output.splitlines()) <= 80
+    assert len(output.splitlines()) <= 35
+    assert len(output) <= 3200
+
+
+def test_greenfield_confirm_intent_shows_proposal_review_gate(tmp_path, capsys) -> None:
+    rc = greenfield_proposals.main(
+        [
+            "propose",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Design a mathematics research workspace for spectral graph theory",
+            "--confirm-intent",
+        ]
+    )
+
+    assert rc == 0
+    output = capsys.readouterr().out
+    assert "Greenfield Proposal Contract: A Mathematics Research Workspace For Spectral Graph Theory" in output
+    assert "- files changed: none" in output
+    assert "- generated governance artifacts: none" in output
+    assert "Host task" in output
+    assert "Required proposal sections" in output
+    assert "Apply" in output
+    assert "Product workstreams:" not in output
+    assert "Candidate product boundaries:" not in output
+    assert "Architecture review views:" not in output
+    assert "Greenfield proposal preview:" not in output
+
+
+def test_greenfield_text_full_detail_keeps_review_gate_available_after_intent_confirmed(tmp_path, capsys) -> None:
+    rc = greenfield_proposals.main(
+        [
+            "propose",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Design a mathematics research workspace for spectral graph theory",
+            "--confirm-intent",
+            "--detail",
+            "full",
+        ]
+    )
+
+    assert rc == 0
+    output = capsys.readouterr().out
+    assert "Greenfield Proposal Contract: A Mathematics Research Workspace For Spectral Graph Theory" in output
+    assert "Gate 1 - Interpretation" not in output
+    assert "Gate 2 - Clarify Before Apply" not in output
+    assert "Gate 3 - Proposal Preview" not in output
+    assert "Gate 4 - Choose Next Action" not in output
+    assert "Product workstreams:" not in output
+    assert "Candidate product boundaries:" not in output
+    assert "Architecture review views:" not in output
+    assert "odylith greenfield propose --repo-root ." in output
+    assert "--confirm-intent" in output
+    assert "host writes odylith-greenfield-proposal.json" in output
+    assert "--confirm-intent --format json > odylith-greenfield-proposal.json" not in output
+    assert "odylith greenfield apply --repo-root ." in output
+    assert len(output.splitlines()) <= 90
 
 
 def test_greenfield_title_preserves_meaningful_trailing_domain_terms(tmp_path) -> None:
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
         prompt="field inspection evidence workspace for municipal building permits",
-    )["proposal_template"]
+    )
 
     assert proposal["intent"]["title"] == (
         "Field Inspection Evidence Workspace For Municipal Building Permits"
@@ -858,7 +1243,7 @@ def test_greenfield_title_preserves_meaningful_trailing_domain_terms(tmp_path) -
     assert not proposal["intent"]["title"].endswith(" To")
 
 
-def test_greenfield_cli_json_is_apply_ready_proposal(tmp_path, capsys) -> None:
+def test_greenfield_cli_json_defaults_to_intent_confirmation(tmp_path, capsys) -> None:
     rc = greenfield_proposals.main(
         [
             "propose",
@@ -873,74 +1258,90 @@ def test_greenfield_cli_json_is_apply_ready_proposal(tmp_path, capsys) -> None:
 
     assert rc == 0
     payload = json.loads(capsys.readouterr().out)
-    assert payload["mode"] == "host_reasoned_greenfield_proposal"
+    assert payload["mode"] == "product_intent_reasoning_request"
     assert payload["provider_calls"] == 0
-    assert payload["release_plan"]["selector"] == "0.0.1"
-    assert payload["project_brief"]["customization_options"]
-    assert payload["project_brief"]["customization_prompts"]
-    assert payload["project_brief"]["coding_readiness_gates"]
-    assert payload["project_intelligence"]["operators"]
-    assert payload["project_intelligence"]["validation_obligations"]
-    assert payload["project_intelligence"]["transfer_priors"]
-    greenfield_proposals.validate_host_reasoned_proposal(payload)
-    assert greenfield_proposals.run_greenfield_tribunal(payload, release_selector="0.0.1").passed
+    assert payload["write_policy"] == "host_reason_product_intent_before_greenfield_proposal"
+    assert payload["host_reasoning_task"]["must_include"]
+    assert payload["host_reasoning_task"]["must_not"]
+    assert "dump a generic template or domain catalog" in payload["host_reasoning_task"]["must_not"]
+    assert "backlog" not in payload
+    assert "components" not in payload
+    assert "diagrams" not in payload
+
+
+def test_greenfield_cli_json_is_apply_ready_after_intent_confirmation(tmp_path, capsys) -> None:
+    rc = greenfield_proposals.main(
+        [
+            "propose",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Build a statistics notebook repo",
+            "--confirm-intent",
+            "--format",
+            "json",
+        ]
+    )
+
+    assert rc == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["mode"] == "host_reasoned_proposal_request"
+    assert payload["provider_calls"] == 0
+    assert payload["intent"]["reasoning_mode"] == "host_model_required"
+    assert payload["reasoning_contract"]
+    assert payload["host_instruction"]
+    assert "canonical_proposal" not in payload
+    assert "proposal_template" not in payload
+    assert "backlog" not in payload
+    assert "components" not in payload
+    assert "diagrams" not in payload
 
 
 def test_greenfield_validation_rejects_old_generic_risk_boilerplate(tmp_path) -> None:
-    proposal = greenfield_proposals.build_greenfield_proposal(
-        repo_root=tmp_path,
-        prompt="DeFi risk sentinel app",
-    )["proposal_template"]
-    proposal["risks"][0]["statement"] = (
-        "Starting implementation without a named product spine, component ownership, and proof gates can create "
-        "disconnected source slices."
-    )
+    proposal = _host_reasoned_ecommerce_proposal()
+    proposal["risks"][0] = {
+        "statement": (
+            "Starting implementation without a named product spine, component ownership, and proof gates can create "
+            "disconnected source slices."
+        )
+    }
 
     with pytest.raises(ValueError, match="generic greenfield boilerplate"):
         greenfield_proposals.validate_host_reasoned_proposal(proposal)
 
 
-def test_defi_greenfield_workstreams_capture_domain_intelligence(tmp_path) -> None:
-    proposal = greenfield_proposals.build_greenfield_proposal(
-        repo_root=tmp_path,
-        prompt="DeFi risk sentinel app",
-    )["proposal_template"]
+def test_greenfield_workstreams_require_host_authored_intelligence(tmp_path) -> None:
+    proposal = _apply_ready_greenfield_fixture(tmp_path, "plant robot")
     brief = proposal["project_brief"]
 
-    workflow = next(row for row in proposal["backlog"] if row["title"] == "Prove analyst watchlist and alert triage workflow")
+    workflow = next(row for row in proposal["backlog"] if row["title"] == "Define Storefront boundary")
     intelligence = workflow["domain_intelligence"]
     rendered = greenfield_proposals.render_domain_intelligence_section(intelligence)
     project_intelligence = proposal["project_intelligence"]
     project_rendered = greenfield_proposals.render_project_intelligence_section(project_intelligence)
 
-    assert "non-custodial DeFi risk sentinel" in project_rendered
-    assert "No custody" in project_rendered
-    assert intelligence["family"] == "defi_risk"
-    assert "Risk subject" in rendered
-    assert "Exposure snapshot" in rendered
-    assert "stale oracle" in rendered
-    assert "missing-indexer" in rendered
-    assert "No live RPC" in rendered
-    assert "financial advice" in rendered
-    assert "idempotent acknowledgement" in rendered
+    assert "Host Authored Greenfield Project" not in project_rendered
+    assert "Make Plant Robot" in project_rendered
+    assert intelligence["family"] == "host_reasoned_project"
+    assert "Actor:" in rendered
+    assert "State object:" in rendered
+    assert "Evidence record:" in rendered
+    assert "Release gate:" in rendered
     assert "source_of_truth_map" in intelligence
     assert "validation_obligations" in intelligence
     assert "conflict_model" in intelligence
     assert "transfer_priors" in intelligence
-    assert "non-custodial" in json.dumps(brief)
-    assert "strict regulated posture" in json.dumps(brief)
+    assert "Product story" in json.dumps(brief)
+    assert "Actors and systems" in json.dumps(brief)
     assert not any(prompt.startswith("defer ") for prompt in brief["customization_prompts"])
     assert all(prompt[:1].isupper() for prompt in brief["customization_prompts"])
-    assert "first implementation plan" in " ".join(brief["coding_readiness_gates"]).casefold()
-    assert "first operator-visible workflow" not in rendered.lower()
+    assert "first implementation lane" in " ".join(brief["coding_readiness_gates"]).casefold()
+    assert "prompt title" not in rendered.lower()
     risk_text = json.dumps(proposal["risks"])
     assert "Starting implementation without a named product spine" not in risk_text
     assert "under-modeled in broad greenfield prompts" not in risk_text
-    assert "oracle/indexer freshness" in risk_text
-    assert "risk_class" in risk_text
-    assert "early_warning" in risk_text
     proposal_text = greenfield_proposals.format_proposal_text(proposal)
-    assert "Trigger: watchlist, risk-signal, scenario-replay" in proposal_text
+    assert "Product Story" not in proposal_text
     for row in proposal["backlog"]:
         row_rendered = greenfield_proposals.render_domain_intelligence_section(row["domain_intelligence"])
         labels = _ontology_term_labels(row["domain_intelligence"]["ontology"])
@@ -951,29 +1352,27 @@ def test_defi_greenfield_workstreams_capture_domain_intelligence(tmp_path) -> No
 
 
 def test_greenfield_tribunal_uses_domain_specific_visible_actors(tmp_path) -> None:
-    proposal = greenfield_proposals.build_greenfield_proposal(
-        repo_root=tmp_path,
-        prompt="DeFi risk sentinel app",
-    )["proposal_template"]
+    proposal = _apply_ready_greenfield_fixture(tmp_path, "plant robot")
 
     decision = greenfield_proposals.run_greenfield_tribunal(proposal, release_selector="0.0.1")
     actor_labels = {row["visible_actor"] for row in decision.to_dict()["visible_actors"]}
     stable_roles = {row["stable_role"] for row in decision.to_dict()["visible_actors"]}
 
     assert decision.passed
-    assert "Analyst advocate" in actor_labels
-    assert "Risk signal operator" in actor_labels
-    assert "Scenario proof owner" in actor_labels
     assert "beneficiary_advocate" in stable_roles
+    assert "End-user advocate" in actor_labels
+    assert "Workflow operator" in actor_labels
+    assert "Risk reviewer" in actor_labels
+    assert "Proof reviewer" in actor_labels
+    assert "Build owner" in actor_labels
     assert "beneficiary advocate" not in actor_labels
+    assert not any("Host Reasoned Project" in label for label in actor_labels)
+    assert not any(label in {"Actor", "State object", "Evidence record", "Release gate"} for label in actor_labels)
     assert "stable judgment roles render as domain-specific actors" in decision.dimensions["tribunal"]
 
 
 def test_greenfield_artifacts_are_bound_to_project_intelligence_root(tmp_path) -> None:
-    proposal = greenfield_proposals.build_greenfield_proposal(
-        repo_root=tmp_path,
-        prompt="DeFi risk sentinel app",
-    )["proposal_template"]
+    proposal = _apply_ready_greenfield_fixture(tmp_path, "DeFi risk sentinel app")
     schema = proposal["project_intelligence"]["schema_version"]
     keys = list(proposal)
 
@@ -997,10 +1396,7 @@ def test_greenfield_artifacts_are_bound_to_project_intelligence_root(tmp_path) -
 
 
 def test_greenfield_validation_rejects_artifacts_without_project_intelligence_binding(tmp_path) -> None:
-    proposal = greenfield_proposals.build_greenfield_proposal(
-        repo_root=tmp_path,
-        prompt="DeFi risk sentinel app",
-    )["proposal_template"]
+    proposal = _apply_ready_greenfield_fixture(tmp_path, "DeFi risk sentinel app")
     proposal["components"][0].pop("project_intelligence_binding")
 
     with pytest.raises(ValueError, match="project_intelligence_binding"):
@@ -1008,10 +1404,7 @@ def test_greenfield_validation_rejects_artifacts_without_project_intelligence_bi
 
 
 def test_greenfield_tribunal_rejects_unbound_artifact_projection(tmp_path) -> None:
-    proposal = greenfield_proposals.build_greenfield_proposal(
-        repo_root=tmp_path,
-        prompt="DeFi risk sentinel app",
-    )["proposal_template"]
+    proposal = _apply_ready_greenfield_fixture(tmp_path, "DeFi risk sentinel app")
     proposal["diagrams"][0].pop("project_intelligence_binding")
 
     decision = greenfield_proposals.run_greenfield_tribunal(proposal, release_selector="0.0.1")
@@ -1023,11 +1416,8 @@ def test_greenfield_tribunal_rejects_unbound_artifact_projection(tmp_path) -> No
 def test_artifact_enrichment_projects_domain_graph_into_native_artifact_shapes(tmp_path) -> None:
     from odylith.runtime.domain_intelligence.artifact_enrichment import build_artifact_enrichment
 
-    proposal = greenfield_proposals.build_greenfield_proposal(
-        repo_root=tmp_path,
-        prompt="DeFi risk sentinel app",
-    )["proposal_template"]
-    row = next(item for item in proposal["backlog"] if item["title"] == "Define exposure, freshness, and alert contract")
+    proposal = _apply_ready_greenfield_fixture(tmp_path, "plant robot")
+    row = next(item for item in proposal["backlog"] if item["title"] == "Define Storefront boundary")
 
     enrichment = build_artifact_enrichment(row=row, proposal=proposal)
 
@@ -1045,10 +1435,7 @@ def test_greenfield_apply_shapes_radar_specs_with_domain_intelligence_substrate(
     monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    proposal = greenfield_proposals.build_greenfield_proposal(
-        repo_root=tmp_path,
-        prompt="DeFi risk sentinel app",
-    )["proposal_template"]
+    proposal = _apply_ready_greenfield_fixture(tmp_path, "plant robot")
 
     result = greenfield_proposals.apply_greenfield_proposal(
         repo_root=tmp_path,
@@ -1060,7 +1447,7 @@ def test_greenfield_apply_shapes_radar_specs_with_domain_intelligence_substrate(
     child_specs = [
         Path(row["idea_path"]).read_text(encoding="utf-8")
         for row in result["backlog"]
-        if not row["title"].startswith("Shape DeFi risk sentinel")
+        if not row["title"].startswith("Govern Commerce Launch System")
     ]
     joined = "\n".join(child_specs)
 
@@ -1069,14 +1456,13 @@ def test_greenfield_apply_shapes_radar_specs_with_domain_intelligence_substrate(
     assert "## Domain Model" not in joined
     assert "## Proof And Acceptance Gates" in joined
     assert "## Ownership And Risk" in joined
-    assert "No live RPC" in joined
-    assert "stale oracle" in joined
-    assert "liquidity shock" in joined
-    assert "financial advice" in joined
+    assert "Proof:" in joined
+    assert "Gate:" in joined
+    assert "source-backed implementation claims" in joined
     parent_spec = next(
         Path(row["idea_path"]).read_text(encoding="utf-8")
         for row in result["backlog"]
-        if row["title"].startswith("Shape DeFi risk sentinel")
+        if row["title"].startswith("Govern Commerce Launch System")
     )
     all_radar_text = parent_spec + "\n" + joined
     assert "## Project Intelligence" not in all_radar_text
@@ -1085,16 +1471,10 @@ def test_greenfield_apply_shapes_radar_specs_with_domain_intelligence_substrate(
     assert "Do not start coding from the proposal closeout" not in all_radar_text
     assert "Starting implementation without a named product spine" not in all_radar_text
     assert "under-modeled in broad greenfield prompts" not in all_radar_text
-    assert "DeFi risk sentinel implementation can create false confidence" in all_radar_text
-    assert "Class: data_integrity" in all_radar_text
-    assert "Early warning: risk cards show numeric confidence" in all_radar_text
+    assert "Combining cart, payment, and order state would hide failure recovery" in all_radar_text
     assert "owns Own" not in all_radar_text
     assert "owns owns" not in all_radar_text.casefold()
-    assert "Which runtime, deployment target, and user role should constrain the first implementation slice?" in all_radar_text
-    assert (
-        "First product slice: Product workflow, domain contract, architecture diagrams, component specs, "
-        "and release records all agree." in all_radar_text
-    )
+    assert "Which stack owns the storefront?" in all_radar_text
     assert "- R1." not in all_radar_text
     assert "- Q1." not in all_radar_text
     assert "- domain contract.\n" not in all_radar_text
@@ -1115,11 +1495,8 @@ def test_greenfield_apply_feeds_project_tab_from_accepted_project_and_tribunal(t
     monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    prompt = "SMB lending application pulling stable coins from DeFi protocols into a merchant on Shopify"
-    proposal = greenfield_proposals.build_greenfield_proposal(
-        repo_root=tmp_path,
-        prompt=prompt,
-    )["proposal_template"]
+    prompt = "Build an ecommerce site with checkout recovery"
+    proposal = _apply_ready_greenfield_fixture(tmp_path, prompt)
 
     greenfield_proposals.apply_greenfield_proposal(
         repo_root=tmp_path,
@@ -1131,53 +1508,55 @@ def test_greenfield_apply_feeds_project_tab_from_accepted_project_and_tribunal(t
         repo_root=tmp_path,
         shell_payload={},
     )
+    html = project_intelligence_presenter.render_project_html({"project_intelligence": payload})
     accepted = json.loads((tmp_path / "odylith" / "runtime" / "source" / "accepted-project.v1.json").read_text(encoding="utf-8"))
     backlog_index = (tmp_path / "odylith" / "radar" / "source" / "INDEX.md").read_text(encoding="utf-8")
-    b002 = next(row for row in accepted["proposal"]["backlog"] if row["title"] == "Prove merchant funding request and offer review workflow")
+    b002 = accepted["proposal"]["backlog"][1]
     text = json.dumps(payload, sort_keys=True).casefold()
 
-    assert accepted["proposal"]["project_intelligence"]["domain_family"] == "capital_merchant_lending"
-    assert accepted["proposal"]["intent"]["title"] == "SMB Lending Application Pulling Stable Coins From DeFi Protocols Into A Merchant On Shopify"
-    assert accepted["proposal"]["intent"]["project_slug"] == "merchant-capital"
-    assert b002["problem"].startswith("Merchants cannot trust a capital product")
+    assert accepted["proposal"]["intent"]["title"] == "Build An Ecommerce Site With Checkout Recovery"
+    assert accepted["proposal"]["intent"]["project_slug"] == "build-an-ecommerce-site-with-checkout-recovery"
+    assert b002["title"] == "Define Storefront boundary"
+    assert b002["problem"].startswith("The user-facing browse and checkout UI")
     assert "created as a new queued workstream" not in backlog_index
     assert "deeper scope decomposition waits" not in backlog_index
-    assert "Turn broad capital intent into a merchant request" in backlog_index
-    assert "merchant-capital-merchant-funding-workspace" in text
-    assert "smb-lending-application-pulling-stable-coins" not in text
-    assert payload["title"] == "Merchant Capital Product"
+    assert "Define Storefront boundary" in backlog_index
+    assert "checkout orchestrator" in text
+    assert "an-ecommerce-site-with-checkout-recovery" not in text
+    assert payload["title"] == "Ecommerce Site With Checkout Recovery"
     assert payload["projection"]["origin"] == "greenfield proposal"
-    assert "merchant capital" in payload["eyebrow"]
     assert "greenfield proposal" in payload["chips"]
     story = payload["product_story"]
-    artifact_groups = {group["label"]: group for group in story["artifacts"]}
-    assert story["headline"].startswith("A merchant-capital product")
-    assert "merchant can request capital" in story["standfirst"]
-    assert "topology spine ties" in story["artifact_intro"].casefold()
-    assert {row["label"] for row in story["topology_spine"]} == {
-        "Story root",
-        "First path",
-        "Radar",
-        "Registry",
-        "Atlas",
-        "Release proof",
-    }
-    assert artifact_groups["Workstreams"]["items"]
-    assert artifact_groups["Registry components"]["items"]
-    assert artifact_groups["Atlas views"]["items"]
-    assert all(prompt not in json.dumps(item, sort_keys=True) for group in story["artifacts"] for item in group["items"])
-    assert "merchant" in text
-    assert "funding" in text
-    assert "underwriting" in text
-    assert "treasury" in text
-    assert "repayment" in text
-    assert "stable coins" in text or "stablecoin" in text
-    assert "checkout" not in text
-    assert "shopper" not in text
-    assert "storefront" not in text
-    assert any("Merchant advocate" == row[1] for row in payload["actors"])
-    assert any("Underwriting operator" == row[1] for row in payload["actors"])
-    assert any("Treasury and credit risk owner" == row[1] for row in payload["actors"])
+    assert "checkout" in story["headline"].lower()
+    assert "the team can prove" in story["headline"]
+    assert "Make Build" not in " ".join(story["paragraphs"])
+    assert len(story["paragraphs"]) >= 3
+    assert any("In this first slice" in paragraph for paragraph in story["paragraphs"])
+    assert any("Together, those records keep release" in paragraph for paragraph in story["paragraphs"])
+    source_records = story["supporting_records"]
+    assert any("Radar carries" in row and "B-" in row for row in source_records)
+    assert any("Registry gives ownership" in row for row in source_records)
+    assert any("Atlas gives reviewers" in row for row in source_records)
+    assert any("Release 0.0.1 stays tied" in row for row in source_records)
+    assert "Product Story" in html
+    assert "Storefront" in html
+    assert "Checkout Orchestrator" in html
+    assert "Catalog Boundary" in html
+    assert "How the story becomes governance" not in html
+    assert "Topology spine" not in html
+    assert "Story root" not in html
+    assert "Project not defined yet" not in html
+    assert "Current orienting work" not in html
+    assert "No active release detected" not in html
+    assert prompt not in json.dumps(story, sort_keys=True)
+    assert "checkout" in text
+    assert "shopper" in text
+    assert "storefront" in text
+    assert "funding" not in text
+    assert "underwriting" not in text
+    assert any("Shopper advocate" == row[1] for row in payload["actors"])
+    assert any("Commerce operator" == row[1] for row in payload["actors"])
+    assert any("Payment risk reviewer" == row[1] for row in payload["actors"])
     assert any(
         row["claim"] == "Greenfield Tribunal" and row["value"] == "passed" and row["source"].endswith("accepted-project.v1.json")
         for row in payload["claim_evidence"]
@@ -1189,10 +1568,7 @@ def test_greenfield_apply_runs_artifact_tribunal_for_each_atlas_diagram(tmp_path
     monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    proposal = greenfield_proposals.build_greenfield_proposal(
-        repo_root=tmp_path,
-        prompt="DeFi risk sentinel app",
-    )["proposal_template"]
+    proposal = _apply_ready_greenfield_fixture(tmp_path, "DeFi risk sentinel app")
     original = greenfield_proposals.scaffold_mermaid_diagram.artifact_tribunal.run_governed_artifact_tribunal
     diagram_payloads: list[dict[str, object]] = []
 
@@ -1218,7 +1594,7 @@ def test_greenfield_apply_runs_artifact_tribunal_for_each_atlas_diagram(tmp_path
     assert all(payload["watch_paths"] for payload in diagram_payloads)
 
 
-def test_greenfield_normalization_enriches_legacy_proposals_with_domain_intelligence() -> None:
+def test_greenfield_normalization_preserves_host_authored_intelligence() -> None:
     proposal = greenfield_proposals.normalize_host_reasoned_proposal(_host_reasoned_ecommerce_proposal())
     child = next(row for row in proposal["backlog"] if row["title"] == "Define Storefront boundary")
     intelligence = child["domain_intelligence"]
@@ -1226,36 +1602,40 @@ def test_greenfield_normalization_enriches_legacy_proposals_with_domain_intellig
     brief = proposal["project_brief"]
     project_intelligence = proposal["project_intelligence"]
 
-    assert intelligence["family"] == "commerce"
-    assert "Shopper" in rendered
-    assert "Payment callback" in rendered
-    assert "idempotent" in rendered
-    assert "failed payment" in rendered
-    assert "Payment and order recovery model" in json.dumps(brief)
-    assert "payment sandbox only" in json.dumps(brief)
-    assert len(brief["customization_options"]) >= 6
+    assert intelligence["family"] == "host_reasoned_project"
+    actor_text = json.dumps(intelligence["actors"])
+    assert "Shopper advocate" in actor_text
+    assert "Commerce operator" in actor_text
+    assert "Payment risk reviewer" in actor_text
+    assert "Checkout proof reviewer" in actor_text
+    assert "commerce" not in intelligence["family"]
+    assert "Payment callback" not in rendered
+    assert "Product story" in json.dumps(brief)
+    assert "Actors and systems" in json.dumps(brief)
+    assert len(brief["customization_options"]) >= 5
     assert len(brief["customization_prompts"]) >= 3
     assert len(brief["coding_readiness_gates"]) >= 4
-    assert "Payment callback" in "\n".join(project_intelligence["ontology"])
+    assert "Payment callback" not in "\n".join(project_intelligence["ontology"])
+    assert set(PROJECT_INTELLIGENCE_LAYERS).issubset(project_intelligence.keys())
     assert len(project_intelligence["change_model"]) >= 2
     greenfield_proposals.validate_host_reasoned_proposal(proposal)
 
 
-def test_greenfield_normalization_enriches_transcript_dependency_gaps() -> None:
-    proposal = _host_reasoned_crispr_without_parent()
-    proposal["backlog"][0].pop("dependencies")
-    proposal["backlog"][0].pop("interfaces")
+def test_greenfield_normalization_does_not_invent_dependency_gaps() -> None:
+    proposal = _host_reasoned_ecommerce_proposal()
+    proposal["backlog"][1].pop("dependencies")
+    proposal["backlog"][1].pop("interfaces")
     proposal["components"][0]["dependencies"] = []
 
     normalized = greenfield_proposals.normalize_host_reasoned_proposal(proposal)
-    identity = next(row for row in normalized["backlog"] if row.get("id") == "WS-IA")
-    component = next(row for row in normalized["components"] if row.get("component_id") == "identity-access")
+    child = next(row for row in normalized["backlog"] if row["title"] == "Define Storefront boundary")
+    component = next(row for row in normalized["components"] if row["component_id"] == "commerce-storefront")
 
-    assert identity["dependencies"]
-    assert identity["interfaces"]
-    assert "planned boundary" in identity["dependencies"][0]
-    assert component["dependencies"]
-    assert "No upstream component dependency is claimed" in component["dependencies"][0]
+    assert "dependencies" not in child
+    assert "interfaces" not in child
+    assert component["dependencies"] == []
+    assert "planned boundary" not in json.dumps(normalized)
+    assert "No upstream component dependency is claimed" not in json.dumps(normalized)
 
 
 def test_greenfield_normalization_compacts_verbose_release_plan_label_to_selector() -> None:
@@ -1266,40 +1646,40 @@ def test_greenfield_normalization_compacts_verbose_release_plan_label_to_selecto
 
 
 def test_greenfield_normalization_splits_scalar_quality_fields() -> None:
-    proposal = _host_reasoned_crispr_without_parent()
-    identity = proposal["backlog"][0]
+    proposal = _host_reasoned_ecommerce_proposal()
+    identity = proposal["backlog"][1]
     identity["success_metrics"] = (
-        "Authorization coverage measured by endpoint instrumentation; "
-        "COI access blocking measured by role-matrix integration tests"
+        "Checkout recovery measured by browser proof; "
+        "Order idempotency measured by replay contract tests"
     )
     identity.pop("recommended_first_slice")
     identity["validation"] = [
-        "Role matrix proof passes at the API boundary.",
-        "COI negative proof blocks conflicted reads.",
+        "Browser proof passes for failed-checkout recovery.",
+        "Replay proof blocks duplicate order creation.",
     ]
-    proposal["release_plan"]["target_workstreams"] = "WS-IA, WS-WORKFLOW"
-    proposal["program"]["waves"][0].pop("validation_gate")
+    proposal["release_plan"]["target_workstreams"] = "Define Storefront boundary, Define Catalog boundary"
+    proposal["program"]["waves"][0].pop("validation_gate", None)
     proposal["program"]["waves"][0]["validation"] = [
-        "End-to-end protocol proof passes",
-        "Audit completeness proof passes",
+        "Browse-to-cart proof passes",
+        "Failed-payment recovery proof passes",
     ]
 
     normalized = greenfield_proposals.normalize_host_reasoned_proposal(proposal)
     normalized_identity = next(
-        row for row in normalized["backlog"] if row.get("id") == "WS-IA"
+        row for row in normalized["backlog"] if row["title"] == "Define Storefront boundary"
     )
     tribunal = greenfield_proposals.run_greenfield_tribunal(normalized, release_selector="0.0.1")
 
     assert normalized_identity["success_metrics"] == [
-        "Authorization coverage measured by endpoint instrumentation",
-        "COI access blocking measured by role-matrix integration tests",
+        "Checkout recovery measured by browser proof",
+        "Order idempotency measured by replay contract tests",
     ]
     assert normalized_identity["recommended_first_slice"] == (
-        "Role matrix proof passes at the API boundary. COI negative proof blocks conflicted reads."
+        "Browser proof passes for failed-checkout recovery. Replay proof blocks duplicate order creation."
     )
-    assert normalized["release_plan"]["target_workstreams"] == ["WS-IA", "WS-WORKFLOW"]
+    assert normalized["release_plan"]["target_workstreams"] == ["Define Storefront boundary", "Define Catalog boundary"]
     assert normalized["program"]["waves"][0]["validation_gate"] == (
-        "End-to-end protocol proof passes; Audit completeness proof passes"
+        "Browse-to-cart proof passes; Failed-payment recovery proof passes"
     )
     assert "['" not in normalized_identity["recommended_first_slice"]
     assert "['" not in normalized["program"]["waves"][0]["validation_gate"]
@@ -1312,21 +1692,21 @@ def test_greenfield_apply_scalar_wave_validation_dedupes_handoff_gates(tmp_path,
     monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    proposal = _host_reasoned_crispr_without_parent()
-    identity = proposal["backlog"][0]
+    proposal = _host_reasoned_ecommerce_proposal()
+    identity = proposal["backlog"][1]
     identity["success_metrics"] = (
-        "Authorization coverage measured by endpoint instrumentation; "
-        "COI access blocking measured by role-matrix integration tests"
+        "Checkout recovery measured by browser proof; "
+        "Order idempotency measured by replay contract tests"
     )
     identity.pop("recommended_first_slice")
     identity["validation"] = [
-        "Role matrix proof passes at the API boundary",
-        "COI negative proof blocks conflicted reads",
+        "Browser proof passes for failed-checkout recovery",
+        "Replay proof blocks duplicate order creation",
     ]
-    proposal["program"]["waves"][0].pop("validation_gate")
+    proposal["program"]["waves"][0].pop("validation_gate", None)
     proposal["program"]["waves"][0]["validation"] = [
-        "End-to-end protocol proof passes",
-        "Audit completeness proof passes",
+        "Browse-to-cart proof passes",
+        "Failed-payment recovery proof passes",
     ]
 
     result = greenfield_proposals.apply_greenfield_proposal(
@@ -1336,12 +1716,12 @@ def test_greenfield_apply_scalar_wave_validation_dedupes_handoff_gates(tmp_path,
         release_selector="0.0.1",
     )
     first_wave = result["program"]["waves"][0]
-    joined_wave_gate = "End-to-end protocol proof passes; Audit completeness proof passes"
+    joined_wave_gate = "Browse-to-cart proof passes; Failed-payment recovery proof passes"
 
     assert first_wave["exit_gate"] == joined_wave_gate
     assert first_wave["validation"] == [
-        "End-to-end protocol proof passes",
-        "Audit completeness proof passes",
+        "Browse-to-cart proof passes",
+        "Failed-payment recovery proof passes",
     ]
     assert joined_wave_gate not in result["next_steps"]["validation_gates"]
     assert result["next_steps"]["validation_gates"][-2:] == first_wave["validation"]
@@ -1393,10 +1773,7 @@ def test_greenfield_apply_reports_validation_issues_in_one_batch(tmp_path) -> No
 
 
 def test_greenfield_validation_rejects_missing_project_first_brief(tmp_path) -> None:
-    proposal = greenfield_proposals.build_greenfield_proposal(
-        repo_root=tmp_path,
-        prompt="robot swarm logistics app",
-    )["proposal_template"]
+    proposal = _apply_ready_greenfield_fixture(tmp_path, "robot swarm logistics app")
     proposal.pop("project_brief")
 
     with pytest.raises(ValueError) as excinfo:
@@ -1406,10 +1783,7 @@ def test_greenfield_validation_rejects_missing_project_first_brief(tmp_path) -> 
 
 
 def test_greenfield_validation_rejects_missing_project_intelligence(tmp_path) -> None:
-    proposal = greenfield_proposals.build_greenfield_proposal(
-        repo_root=tmp_path,
-        prompt="robot swarm logistics app",
-    )["proposal_template"]
+    proposal = _apply_ready_greenfield_fixture(tmp_path, "robot swarm logistics app")
     proposal.pop("project_intelligence")
 
     with pytest.raises(ValueError) as excinfo:
@@ -1418,21 +1792,18 @@ def test_greenfield_validation_rejects_missing_project_intelligence(tmp_path) ->
     assert "proposal `project_intelligence` must be an object" in str(excinfo.value)
 
 
-def test_robot_swarm_project_brief_blocks_coding_rush(tmp_path) -> None:
-    proposal = greenfield_proposals.build_greenfield_proposal(
-        repo_root=tmp_path,
-        prompt="robot swarm logistics app",
-    )["proposal_template"]
+def test_project_brief_blocks_coding_rush_without_domain_scaffold(tmp_path) -> None:
+    proposal = _apply_ready_greenfield_fixture(tmp_path, "robot swarm logistics app")
     brief = proposal["project_brief"]
     rendered = greenfield_proposals.format_proposal_text(proposal)
 
-    assert "Simulation and hardware boundary" in json.dumps(brief)
-    assert "safety envelope" in json.dumps(brief)
+    assert "Simulation and hardware boundary" not in json.dumps(brief)
+    assert "safety envelope" not in json.dumps(brief)
     assert "Project requirements" in rendered
-    assert "Do not treat greenfield apply as permission to code immediately" in rendered
-    assert rendered.index("Project requirements") < rendered.index("Project-first blueprint")
-    assert rendered.index("Project-first blueprint") < rendered.index("Backlog proposal")
-    assert "host-independent customization paths" in rendered
+    assert "Coding starts only after the accepted project story" in rendered
+    assert rendered.index("Project requirements") < rendered.index("Backlog proposal")
+    assert "greenfield apply --repo-root ." in rendered
+    assert "Robot Swarm Logistics App Operator Workspace" not in rendered
 
 
 def test_greenfield_apply_rejects_shallow_component_responsibility(tmp_path) -> None:
@@ -1532,11 +1903,12 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert len(result["components"]) == 3
     assert len(result["diagrams"]) == 2
     assert result["tribunal"]["status"] == "passed"
-    assert result["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass"]
+    assert result["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "tooling_shell"]
+    assert result["dashboard_refresh"]["view"] == "odylith/index.html?tab=project"
     assert refresh_calls == [
         {
             "repo_root": tmp_path.resolve(),
-            "surfaces": ("radar", "registry", "atlas", "compass"),
+            "surfaces": ("radar", "registry", "atlas", "compass", "tooling_shell"),
             "operation_label": "Greenfield apply dashboard visibility",
         }
     ]
@@ -1593,117 +1965,49 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert '"release_id": "release-commerce-launch-first"' in events
 
 
-def test_greenfield_apply_normalizes_common_host_authored_recipe_shape(tmp_path, monkeypatch) -> None:
+def test_greenfield_apply_rejects_legacy_recipe_shape_without_host_authored_project_intelligence(tmp_path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
     monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
-    result = greenfield_proposals.apply_greenfield_proposal(
-        repo_root=tmp_path,
-        proposal=_host_reasoned_recipe_legacy_shape(),
-        confirm=True,
-        release_selector="0.0.1",
-    )
+    with pytest.raises(ValueError, match="project_intelligence|domain_intelligence|program parent"):
+        greenfield_proposals.apply_greenfield_proposal(
+            repo_root=tmp_path,
+            proposal=_host_reasoned_recipe_legacy_shape(),
+            confirm=True,
+            release_selector="0.0.1",
+        )
 
-    component_registry = json.loads(
-        (tmp_path / "odylith/registry/source/component_registry.v1.json").read_text(encoding="utf-8")
-    )
-    atlas_catalog = json.loads((tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json").read_text(encoding="utf-8"))
-    assert result["tribunal"]["status"] == "passed"
-    assert len(result["backlog"]) == 5
-    assert result["program"]["waves"][0]["primary_workstreams"] == ["B-002", "B-003", "B-004"]
-    assert result["release_target"]["workstream_ids"] == ["B-001", "B-002", "B-003", "B-004"]
-    assert all(row["qualification"] == "candidate" for row in component_registry["components"])
-    assert (tmp_path / "odylith/atlas/source/recipe-sharing-app-system-context.mmd").is_file()
-    assert not (tmp_path / "odylith/atlas/source/system-context.mmd").exists()
-    auth_sequence = (tmp_path / "odylith/atlas/source/recipe-sharing-app-auth-sequence.mmd").read_text(
-        encoding="utf-8"
-    )
-    assert "Set-Cookie session and 302 /" in auth_sequence
-    assert "Set-Cookie session; 302 /" not in auth_sequence
-    assert {row["slug"] for row in atlas_catalog["diagrams"]} >= {
-        "recipe-sharing-app-system-context",
-        "recipe-sharing-app-auth-sequence",
-        "recipe-sharing-app-recipe-domain-er",
-    }
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
+    assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
 
 
-def test_greenfield_apply_synthesizes_parent_and_polishes_component_specs(tmp_path, monkeypatch) -> None:
+def test_greenfield_apply_rejects_missing_host_authored_program_parent(tmp_path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
     monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
-    result = greenfield_proposals.apply_greenfield_proposal(
-        repo_root=tmp_path,
-        proposal=_host_reasoned_crispr_without_parent(),
-        confirm=True,
-        release_selector="0.0.1",
-    )
+    with pytest.raises(ValueError, match="program parent|project_intelligence|domain_intelligence"):
+        greenfield_proposals.apply_greenfield_proposal(
+            repo_root=tmp_path,
+            proposal=_host_reasoned_crispr_without_parent(),
+            confirm=True,
+            release_selector="0.0.1",
+        )
 
-    spec = (tmp_path / "odylith/registry/source/components/identity-access/CURRENT_SPEC.md").read_text(
-        encoding="utf-8"
-    )
-    workflow_spec = (
-        tmp_path / "odylith/registry/source/components/review-workflow-engine/CURRENT_SPEC.md"
-    ).read_text(encoding="utf-8")
-    execution_program = json.loads(
-        (tmp_path / "odylith/radar/source/programs/B-001.execution-waves.v1.json").read_text(encoding="utf-8")
-    )
-
-    assert result["backlog"][0]["title"] == "Govern CRISPR Ethics Review App"
-    assert result["program"]["umbrella_id"] == "B-001"
-    assert result["program"]["waves"][0]["primary_workstreams"] == ["B-002"]
-    assert result["program"]["waves"][1]["primary_workstreams"] == ["B-003"]
-    assert execution_program["waves"][0]["primary_workstreams"] == ["B-002"]
-    assert execution_program["waves"][0]["exit_gate"]
-    assert execution_program["waves"][0]["validation"]
-    assert result["release_target"]["workstream_ids"] == ["B-001", "B-002"]
-    assert result["next_steps"]["project_workstream_id"] == "B-001"
-    assert result["next_steps"]["start_workstream_id"] == "B-002"
-    assert result["next_steps"]["first_wave"] == "Foundations"
-    assert "Deepen B-001" in result["next_steps"]["project_first_prompt"]
-    assert result["next_steps"]["customization_options"]
-    assert result["next_steps"]["coding_readiness_gates"]
-    assert "After project-first gates pass" in result["next_steps"]["implementation_prompt"]
-    assert "Treat `Identity, sessions, and COI-aware authorization` as the first coding scope" in result["next_steps"]["implementation_prompt"]
-    assert "## Component Snapshot" in spec
-    assert "## Identity Access Runtime Boundary" in spec
-    assert "## Identity Access First Runtime Slice" in spec
-    assert "Use `B-002` (Identity, sessions, and COI-aware authorization) as the implementation-plan anchor" in spec
-    assert (
-        "Use `B-003` (Review workflow phase state machine) as the implementation-plan anchor"
-        in workflow_spec
-    )
-    assert (
-        "Use `B-002` (Identity, sessions, and COI-aware authorization) as the implementation-plan anchor"
-        not in workflow_spec
-    )
-    assert "./.odylith/bin/odylith context --repo-root . B-003" in workflow_spec
-    assert "First coding slice:" in spec
-    assert "Definition Of Done" in spec
-    assert "Operator Verification" in spec
-    assert "Runtime Failure Modes" in spec
-    assert "Authorization enforced at API read boundary, not UI" in spec
-    assert "NIH Guidelines for nucleic acid research" not in spec
-    assert "USG DURC oversight policy" not in spec
-    assert "CRISPR Ethics Review App" not in spec
-    assert "['" not in spec
-    assert "']" not in spec
-    assert "['" not in workflow_spec
-    assert "']" not in workflow_spec
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
+    assert not (tmp_path / "odylith/radar/source/programs").exists()
+    assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
 
 
-def test_greenfield_apply_writes_bespoke_domain_component_specs(tmp_path, monkeypatch) -> None:
+def test_greenfield_apply_writes_host_authored_component_specs(tmp_path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
     monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    proposal = greenfield_proposals.build_greenfield_proposal(
-        repo_root=tmp_path,
-        prompt="DeFi risk sentinel app",
-    )["canonical_proposal"]
+    proposal = _apply_ready_greenfield_fixture(tmp_path, "Build an ecommerce checkout recovery product")
 
     result = greenfield_proposals.apply_greenfield_proposal(
         repo_root=tmp_path,
@@ -1713,47 +2017,30 @@ def test_greenfield_apply_writes_bespoke_domain_component_specs(tmp_path, monkey
     )
 
     spec_root = tmp_path / "odylith/registry/source/components"
-    console_spec = (spec_root / "defi-risk-sentinel-risk-console/CURRENT_SPEC.md").read_text(encoding="utf-8")
-    engine_spec = (spec_root / "defi-risk-sentinel-risk-signal-engine/CURRENT_SPEC.md").read_text(
-        encoding="utf-8"
-    )
-    harness_spec = (spec_root / "defi-risk-sentinel-scenario-replay-harness/CURRENT_SPEC.md").read_text(
-        encoding="utf-8"
-    )
+    storefront_spec = (spec_root / "commerce-storefront/CURRENT_SPEC.md").read_text(encoding="utf-8")
+    checkout_spec = (spec_root / "commerce-checkout/CURRENT_SPEC.md").read_text(encoding="utf-8")
+    catalog_spec = (spec_root / "commerce-catalog/CURRENT_SPEC.md").read_text(encoding="utf-8")
     atlas_catalog = json.loads((tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json").read_text(encoding="utf-8"))
 
     assert result["tribunal"]["status"] == "passed"
     assert [row["label"] for row in proposal["components"]] == [
-        "Risk Sentinel Console",
-        "Risk Signal Engine",
-        "Scenario Replay Harness",
+        "Storefront",
+        "Checkout Orchestrator",
+        "Catalog Boundary",
     ]
-    assert "wallet/protocol watchlist setup" in console_spec
-    assert "stale oracle" in console_spec
-    assert "| Workstreams | `B-002` |" in console_spec
-    assert "| Diagrams | `D-002`, `D-003` |" in console_spec
-    assert "Exposure snapshot query" in engine_spec
-    assert "liquidity" in engine_spec
-    assert "| Workstreams | `B-003` |" in engine_spec
-    assert "| Diagrams | `D-002`, `D-003`, `D-004` |" in engine_spec
-    assert "Use `B-003` (Define exposure, freshness, and alert contract) as the implementation-plan anchor" in engine_spec
-    assert "Use `B-002` (Prove analyst watchlist and alert triage workflow) as the implementation-plan anchor" not in engine_spec
-    assert "Scenario runner command" in harness_spec
-    assert "live chain calls" in harness_spec
-    assert "| Workstreams | `B-004` |" in harness_spec
-    assert "| Diagrams | `D-005` |" in harness_spec
-    assert "Use `B-004` (Prove scenario replay and risk release harness) as the implementation-plan anchor" in harness_spec
-    assert "## Risk Sentinel Console Interaction Boundary" in console_spec
-    assert "## Risk Signal Engine Runtime Boundary" in engine_spec
-    assert "## Scenario Replay Harness Proof Harness Boundary" not in harness_spec
-    assert "## Scenario Replay Harness Proof Boundary" in harness_spec
-    assert "Risk scoring math" in console_spec
-    assert "Chain indexing" in console_spec
-    assert "Presentation" in engine_spec
-    assert "External notification delivery" in engine_spec
-    assert "Production keys" in harness_spec
-    assert "Real trade execution" in harness_spec
-    for text in (console_spec, engine_spec, harness_spec):
+    assert "Browse, cart entry, checkout entry, and user-facing errors" in storefront_spec
+    assert "Payment handoff, order draft, idempotency, and recovery boundaries" in checkout_spec
+    assert "Product facts, price snapshots, inventory visibility, and merchandising review" in catalog_spec
+    assert "| Workstreams | `B-002` |" in storefront_spec
+    assert "| Workstreams | `B-002` |" in checkout_spec
+    assert "| Workstreams | `B-003` |" in catalog_spec
+    assert "Use `B-002` (Define Storefront boundary) as the implementation-plan anchor" in storefront_spec
+    assert "Use `B-003` (Define Catalog boundary) as the implementation-plan anchor" in catalog_spec
+    assert "Use `B-002` (Define Storefront boundary) as the implementation-plan anchor" not in catalog_spec
+    assert "## Storefront Interaction Boundary" in storefront_spec
+    assert "## Checkout Orchestrator Runtime Boundary" in checkout_spec
+    assert "## Catalog Boundary Runtime Boundary" in catalog_spec
+    for text in (storefront_spec, checkout_spec, catalog_spec):
         assert "Experience Boundary" not in text
         assert "registered through `odylith component register`" not in text
         assert "first operator-visible workflow, view or command entrypoint" not in text
@@ -1768,9 +2055,9 @@ def test_greenfield_apply_writes_bespoke_domain_component_specs(tmp_path, monkey
         assert "| Diagrams | `D-001`" not in text
         assert "R1." not in text
         assert "odylith_assumption" not in text
-    assert console_spec != engine_spec
-    assert engine_spec != harness_spec
-    assert {row["link_state"] for row in atlas_catalog["diagrams"]} == {"architecture_first_draft"}
+    assert storefront_spec != checkout_spec
+    assert checkout_spec != catalog_spec
+    assert {row["link_state"] for row in atlas_catalog["diagrams"]} == {"atlas_first_draft"}
 
 
 def test_greenfield_apply_cli_prints_operator_handoff(tmp_path, monkeypatch, capsys) -> None:
@@ -1779,7 +2066,7 @@ def test_greenfield_apply_cli_prints_operator_handoff(tmp_path, monkeypatch, cap
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     proposal_path = tmp_path / "proposal.json"
-    proposal_path.write_text(json.dumps(_host_reasoned_crispr_without_parent()), encoding="utf-8")
+    proposal_path.write_text(json.dumps(_host_reasoned_ecommerce_proposal()), encoding="utf-8")
 
     rc = greenfield_proposals.main(
         ["apply", "--repo-root", str(tmp_path), "--proposal-file", str(proposal_path), "--confirm", "--release", "0.0.1"]
@@ -1787,17 +2074,56 @@ def test_greenfield_apply_cli_prints_operator_handoff(tmp_path, monkeypatch, cap
 
     out = capsys.readouterr().out
     assert rc == 0
-    assert "- project-first workstream: B-001 Govern CRISPR Ethics Review App" in out
+    assert "- project-first workstream: B-001 Govern Commerce Launch System" in out
+    assert "- project story: odylith/index.html?tab=project" in out
+    assert "- radar gate: odylith/radar/radar.html?view=plan&workstream=B-001" in out
     assert "- project gate: review direction choices and readiness gates before opening a technical plan; do not edit source from this closeout" in out
-    assert "- current project lane: wave Foundations | release 0.0.1" in out
+    assert "- current project lane: wave Checkout spine | release 0.0.1" in out
     assert "- choose before coding:" in out
     assert "- coding readiness gates:" in out
-    assert "- future first implementation lane after gates: B-002 Identity, sessions, and COI-aware authorization" in out
+    assert "- future first implementation lane after gates: B-002 Define Storefront boundary" in out
     assert "- operator handoff:" in out
     assert "./.odylith/bin/odylith validate plan-workstream-binding --repo-root ." in out
 
 
-def test_greenfield_create_cli_owns_apply_ready_path(tmp_path, monkeypatch, capsys) -> None:
+def test_greenfield_prompt_paths_do_not_expose_legacy_apply_ready_scaffold(tmp_path, capsys) -> None:
+    _seed_empty_governance_repo(tmp_path)
+
+    rc = greenfield_proposals.main(
+        [
+            "propose",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Draft a greenfield proposal for a home automation product with a physical device and a care outcome.",
+        ]
+    )
+    out = capsys.readouterr().out
+
+    assert rc == 0
+    assert "Product Intent Confirmation needed" in out
+    assert "Host reasoning task" in out
+    assert "raw greenfield intent" not in out
+
+    rc = greenfield_proposals.main(
+        [
+            "propose",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Draft a greenfield proposal for a home automation product with a physical device and a care outcome.",
+            "--confirm-intent",
+        ]
+    )
+    out = capsys.readouterr().out
+
+    assert rc == 0
+    assert "Greenfield Proposal Contract" in out
+    assert "host-authored proposal JSON" in out
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
+
+
+def test_greenfield_create_cli_rejects_prompt_only_writes(tmp_path, monkeypatch, capsys) -> None:
     _seed_empty_governance_repo(tmp_path)
     monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
@@ -1817,20 +2143,11 @@ def test_greenfield_create_cli_owns_apply_ready_path(tmp_path, monkeypatch, caps
     )
 
     out = capsys.readouterr().out
-    assert rc == 0
-    assert "odylith greenfield create wrote confirmed proposal" in out
-    assert "- tribunal: passed" in out
-    assert "- project-first workstream: B-001 Shape Robot Swarm Logistics program" in out
-    assert "- next project prompt: Deepen B-001" in out
-    assert "- future first implementation lane after gates: B-002 Dispatch and observe one simulated logistics task" in out
-    assert "- choose before coding:" in out
-    assert "- coding readiness gates:" in out
-    assert "Simulation and hardware boundary" in out
-    assert "- validation already run:" in out
-    assert "- created governance files:" in out
-    assert "greenfield proposal validation failed" not in out
-    assert "greenfield proposal Tribunal failed" not in out
-    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
+    assert rc == 2
+    assert "Prompt-only greenfield create is disabled" in out
+    assert "Product Intent Confirmation in chat" in out
+    assert "greenfield apply --repo-root ." in out
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
 
 
 def test_greenfield_create_cli_requires_confirmation_before_writes(tmp_path, capsys) -> None:
@@ -1850,7 +2167,7 @@ def test_greenfield_create_cli_requires_confirmation_before_writes(tmp_path, cap
 
     out = capsys.readouterr().out
     assert rc == 2
-    assert "--confirm is required before greenfield apply writes accepted product records" in out
+    assert "Prompt-only greenfield create is disabled" in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
     assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
     assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))
@@ -1863,7 +2180,7 @@ def test_greenfield_apply_namespaces_partial_project_diagram_slugs_before_scaffo
         json.dumps(
             {
                 "schema_version": "odylith.diagrams.v1",
-                "diagrams": [{"diagram_id": "D-001", "slug": "recipe-domain-er"}],
+                "diagrams": [{"diagram_id": "D-001", "slug": "checkout-flow"}],
             }
         ),
         encoding="utf-8",
@@ -1871,19 +2188,27 @@ def test_greenfield_apply_namespaces_partial_project_diagram_slugs_before_scaffo
     monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    proposal = _host_reasoned_ecommerce_proposal()
+    proposal["diagrams"][0]["slug"] = "checkout-flow"
+    for row in proposal["backlog"]:
+        if "related_diagram_slugs" in row:
+            row["related_diagram_slugs"] = [
+                "checkout-flow" if value == "commerce-launch-system-context" else value
+                for value in row["related_diagram_slugs"]
+            ]
 
     result = greenfield_proposals.apply_greenfield_proposal(
         repo_root=tmp_path,
-        proposal=_host_reasoned_recipe_legacy_shape(),
+        proposal=proposal,
         confirm=True,
         release_selector="0.0.1",
     )
 
     atlas_catalog = json.loads(atlas_catalog_path.read_text(encoding="utf-8"))
     assert result["tribunal"]["status"] == "passed"
-    assert "recipe-domain-er" in {row["slug"] for row in atlas_catalog["diagrams"]}
-    assert "recipe-sharing-app-recipe-domain-er" in {row["slug"] for row in atlas_catalog["diagrams"]}
-    assert (tmp_path / "odylith/atlas/source/recipe-sharing-app-recipe-domain-er.mmd").is_file()
+    assert "checkout-flow" in {row["slug"] for row in atlas_catalog["diagrams"]}
+    assert "commerce-launch-system-checkout-flow" in {row["slug"] for row in atlas_catalog["diagrams"]}
+    assert (tmp_path / "odylith/atlas/source/commerce-launch-system-checkout-flow.mmd").is_file()
 
 
 def test_greenfield_apply_rolls_back_partial_writes_when_late_step_fails(tmp_path, monkeypatch) -> None:
@@ -2026,7 +2351,8 @@ def test_greenfield_apply_json_output_is_machine_clean(tmp_path, monkeypatch, ca
     assert payload["memory"]["recorded"] is True
     assert payload["memory"]["event"]["source"] == "domain-intelligence"
     assert payload["tribunal"]["status"] == "passed"
-    assert payload["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass"]
+    assert payload["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "tooling_shell"]
+    assert payload["dashboard_refresh"]["view"] == "odylith/index.html?tab=project"
     assert payload["release_target"]["release_id"] == "release-commerce-launch-first"
     assert payload["operator_output"] == [
         "refresh progress that must not contaminate JSON stdout",

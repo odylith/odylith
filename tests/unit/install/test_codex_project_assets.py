@@ -199,7 +199,7 @@ def test_claude_backlog_skill_shim_carries_exact_cli_enum_guard() -> None:
         assert "moderate" in text
 
 
-def test_greenfield_guidance_uses_canonical_create_path_not_host_json_authoring() -> None:
+def test_greenfield_guidance_uses_product_intent_then_host_authored_apply_path() -> None:
     guidance_paths = (
         REPO_ROOT / "AGENTS.md",
         REPO_ROOT / "odylith" / "AGENTS.md",
@@ -234,23 +234,29 @@ def test_greenfield_guidance_uses_canonical_create_path_not_host_json_authoring(
     forbidden = (
         "host drafts backlog",
         "host model drafts",
-        "active host model authors the project-specific proposal in chat",
         "greenfield apply --repo-root . --proposal-file <proposal.json>",
+        "Use odylith greenfield create after confirmation",
     )
 
     for path in (*guidance_paths, *source_paths):
         text = path.read_text(encoding="utf-8")
         compact_text = " ".join(text.split())
-        assert "greenfield create" in text, path
+        assert "Product Intent Confirmation" in text, path
+        assert "greenfield apply" in text, path
+        lowered = text.casefold()
+        assert "prompt-only `greenfield create`" in lowered or "prompt-only greenfield create" in lowered, path
         assert (
             "project-first" in compact_text
+            or "product story" in compact_text
             or "coding-readiness gates" in compact_text
             or path.name == "SKILL.md"
         ), path
         assert (
-            "hand-author proposal JSON" in compact_text
-            or "hand-authoring proposal JSON" in compact_text
-            or "hand-build `odylith-greenfield-proposal.json`" in compact_text
+            "host authors" in compact_text
+            or "host then authors" in compact_text
+            or "host-authored proposal JSON" in compact_text
+            or "author the project-specific proposal JSON" in compact_text
+            or "write the short Product Intent Confirmation yourself" in compact_text
         ), path
         for token in forbidden:
             assert token not in text, f"{path} still carries stale greenfield guidance: {token}"

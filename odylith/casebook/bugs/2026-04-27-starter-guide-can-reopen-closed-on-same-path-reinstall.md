@@ -28,7 +28,7 @@
 
 - Environment(s): Consumer dashboard first-run shell, file-served or static-served index.html, same repo path reused after reinstall.
 
-- Detected By: Operator screenshot of /Users/freedom/mock/mockrepo/odylith/index.html showing Compass with only the Starter Guide recovery pill.
+- Detected By: Operator screenshot of a consumer dashboard showing Compass with only the Starter Guide recovery pill.
 
 - Failure Signature: #shellWelcomeState is hidden and #welcomeReopen is visible on first install because odylith.welcome.dismissed:<pathname>:welcome-v2|... matched stale browser storage.
 
