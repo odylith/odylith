@@ -572,16 +572,16 @@ def _host_project_brief(*, title: str, prompt: str, release: str) -> dict[str, o
                 "use_when": "Use before proposal expansion so the operator can confirm, edit, or reject the interpretation.",
             },
             {
-                "path": "Review full proposal",
+                "path": "Build internal proposal payload",
                 "command": f"odylith greenfield propose --repo-root . --prompt {json.dumps(prompt)} --confirm-intent",
                 "works_in": "shell, Codex, Claude Code",
-                "use_when": "Use after intent confirmation to author and review the full host-reasoned proposal object.",
+                "use_when": "Use after intent confirmation to author the full host-reasoned payload without asking the operator to inspect proposal JSON.",
             },
             {
-                "path": "Apply accepted proposal",
-                "command": f"odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm --release {release}",
+                "path": "Apply confirmed intent",
+                "command": f"odylith greenfield apply --repo-root . --proposal-file .odylith/runtime/greenfield/active-proposal.v1.json --confirm --release {release}",
                 "works_in": "shell, Codex, Claude Code",
-                "use_when": "Use only after the proposal object is reviewed and accepted by the operator.",
+                "use_when": "Use after Product Intent confirmation; validation and Tribunal decide whether records can be written.",
             },
         ],
     }
@@ -1167,8 +1167,10 @@ def test_greenfield_prompt_returns_host_reasoning_contract(tmp_path) -> None:
     assert "security, privacy, abuse, accessibility" in quality_bar
     assert "project-first" in quality_bar
     assert "odylith greenfield propose" in proposal["apply_commands"][0]
-    assert "host writes odylith-greenfield-proposal.json" in proposal["apply_commands"][1]
+    assert "--format json" in proposal["apply_commands"][0]
+    assert "internal apply payload" in proposal["apply_commands"][1]
     assert "odylith greenfield apply" in proposal["apply_commands"][2]
+    assert ".odylith/runtime/greenfield/active-proposal.v1.json" in proposal["apply_commands"][2]
     assert "--release 0.0.1" in proposal["apply_commands"][2]
     assert "Default the first greenfield release target to exactly 0.0.1" in " ".join(
         proposal["reasoning_contract"]["quality_bar"]
@@ -1177,9 +1179,14 @@ def test_greenfield_prompt_returns_host_reasoning_contract(tmp_path) -> None:
     assert handoff["complete_authoring_surface"] is True
     assert "Do not inspect Odylith source files" in " ".join(handoff["contract_use"])
     assert "src/odylith" in " ".join(handoff["forbidden_host_steps"])
-    assert "odylith-greenfield-proposal.json" in handoff["canonical_files"][0]["path"]
+    assert handoff["intent_confirmation_authorizes_apply_attempt"] is True
+    assert "inspect proposal JSON" in " ".join(handoff["forbidden_host_steps"])
+    assert "active-proposal.v1.json" in handoff["canonical_files"][0]["path"]
+    assert "validation or Tribunal rejects" in " ".join(handoff["failure_policy"])
     assert "live from the confirmed Product Intent Confirmation" in proposal["host_instruction"]
+    assert "confirm-intent contract internally" in proposal["host_instruction"]
     assert "do not inspect Odylith source files" in proposal["host_instruction"]
+    assert "do not ask for a second JSON-review confirmation" in proposal["host_instruction"]
     assert "canned domain buckets" in proposal["host_instruction"]
     assert "proposal_template" not in proposal
     assert "canonical_proposal" not in proposal
@@ -1235,7 +1242,7 @@ def test_greenfield_text_starts_with_product_intent_confirmation(tmp_path, capsy
     assert len(output) <= 3200
 
 
-def test_greenfield_confirm_intent_shows_proposal_review_gate(tmp_path, capsys) -> None:
+def test_greenfield_confirm_intent_shows_direct_apply_handoff(tmp_path, capsys) -> None:
     rc = greenfield_proposals.main(
         [
             "propose",
@@ -1254,10 +1261,14 @@ def test_greenfield_confirm_intent_shows_proposal_review_gate(tmp_path, capsys) 
     assert "- generated governance artifacts: none" in output
     assert "Host task" in output
     assert "Host handoff" in output
-    assert "complete host-facing proposal contract" in output
+    assert "complete internal host-facing proposal contract" in output
     assert "do not search Odylith source" in output
     assert "Stop: Do not search src/odylith" in output
-    assert "Allowed next steps" in output
+    assert "Apply path after intent confirmation" in output
+    assert "Run greenfield apply immediately after Product Intent confirmation" in output
+    assert "inspect proposal JSON" in output
+    assert "second approval step" in output
+    assert "validation/Tribunal issues" in output
     assert "Required proposal sections" in output
     assert "Apply" in output
     assert "Product workstreams:" not in output
@@ -1266,7 +1277,7 @@ def test_greenfield_confirm_intent_shows_proposal_review_gate(tmp_path, capsys) 
     assert "Greenfield proposal preview:" not in output
 
 
-def test_greenfield_text_full_detail_keeps_review_gate_available_after_intent_confirmed(tmp_path, capsys) -> None:
+def test_greenfield_text_full_detail_keeps_apply_path_available_after_intent_confirmed(tmp_path, capsys) -> None:
     rc = greenfield_proposals.main(
         [
             "propose",
@@ -1292,7 +1303,9 @@ def test_greenfield_text_full_detail_keeps_review_gate_available_after_intent_co
     assert "Architecture review views:" not in output
     assert "odylith greenfield propose --repo-root ." in output
     assert "--confirm-intent" in output
-    assert "host writes odylith-greenfield-proposal.json" in output
+    assert "--format json" in output
+    assert "internal apply payload" in output
+    assert ".odylith/runtime/greenfield/active-proposal.v1.json" in output
     assert "--confirm-intent --format json > odylith-greenfield-proposal.json" not in output
     assert "odylith greenfield apply --repo-root ." in output
     assert len(output.splitlines()) <= 90
@@ -2186,7 +2199,8 @@ def test_greenfield_prompt_paths_do_not_expose_legacy_apply_ready_scaffold(tmp_p
 
     assert rc == 0
     assert "Greenfield Proposal Contract" in out
-    assert "host-authored proposal JSON" in out
+    assert "internal apply payload" in out
+    assert "inspect proposal JSON" in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
 
 
@@ -2214,6 +2228,7 @@ def test_greenfield_create_cli_rejects_prompt_only_writes(tmp_path, monkeypatch,
     assert "Prompt-only greenfield create is disabled" in out
     assert "Product Intent Confirmation in chat" in out
     assert "greenfield apply --repo-root ." in out
+    assert ".odylith/runtime/greenfield/active-proposal.v1.json" in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
 
 

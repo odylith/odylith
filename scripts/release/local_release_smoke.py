@@ -183,12 +183,14 @@ _STALE_GREENFIELD_GUIDANCE_TOKENS = (
     "host model drafts",
     "active host model authors the project-specific proposal in chat",
     "greenfield apply --repo-root . --proposal-file <proposal.json>",
+    "host-authored proposal JSON is reviewed",
 )
-_GREENFIELD_MANUAL_JSON_GUARDS = (
+_GREENFIELD_INTERNAL_APPLY_GUARDS = (
     "host authors",
-    "host-authored proposal JSON",
-    "proposal JSON from the confirmed intent",
-    "proposal JSON from the confirmed product shape",
+    "internal proposal payload",
+    "same confirmation",
+    "inspect proposal JSON",
+    ".odylith/runtime/greenfield/active-proposal.v1.json",
 )
 _GREENFIELD_PROJECT_FIRST_GUARDS = (
     "project-first",
@@ -233,8 +235,8 @@ def _require_greenfield_guidance_uses_host_apply(*, repo_root: Path, label: str)
             raise RuntimeError(f"{label} guidance omits host-authored greenfield apply path: {relative_path}")
         if "Product Intent Confirmation" not in text:
             raise RuntimeError(f"{label} guidance omits live Product Intent confirmation path: {relative_path}")
-        if not any(token in compact_text for token in _GREENFIELD_MANUAL_JSON_GUARDS):
-            raise RuntimeError(f"{label} guidance omits manual proposal JSON guard: {relative_path}")
+        if not any(token in compact_text for token in _GREENFIELD_INTERNAL_APPLY_GUARDS):
+            raise RuntimeError(f"{label} guidance omits internal apply guard: {relative_path}")
         if not any(token in compact_text for token in _GREENFIELD_PROJECT_FIRST_GUARDS):
             raise RuntimeError(f"{label} guidance omits project-first greenfield guard: {relative_path}")
         if not any(token in text for token in _GREENFIELD_NO_SOURCE_SPELUNKING_GUARDS):

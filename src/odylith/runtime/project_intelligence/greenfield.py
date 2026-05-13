@@ -30,6 +30,7 @@ def proposal_from_sources(*, repo_root: Path, shell_payload: Mapping[str, Any]) 
         if proposal:
             return proposal
     for path in (
+        Path(repo_root) / ".odylith" / "runtime" / "greenfield" / "active-proposal.v1.json",
         Path(repo_root) / "odylith-greenfield-proposal.json",
         Path(repo_root) / "greenfield-proposal.json",
     ):
@@ -211,7 +212,8 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
         "confidence_label": "Confidence",
         "governance_titles": _governance_titles(backlog=backlog, diagrams=diagrams),
         "sources": {
-            "proposal": sentence(accepted.get("source_path")) or str(Path(repo_root) / "odylith-greenfield-proposal.json")
+            "proposal": sentence(accepted.get("source_path"))
+            or str(Path(repo_root) / ".odylith/runtime/greenfield/active-proposal.v1.json")
         },
     }
 

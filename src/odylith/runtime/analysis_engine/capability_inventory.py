@@ -53,7 +53,7 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                 anchors=("src/odylith/runtime/domain_intelligence/",),
                 activation=(
                     "greenfield propose returns no-write reasoning contracts; greenfield apply validates "
-                    "host-authored proposal JSON, runs Tribunal, writes records, and refreshes surfaces"
+                    "the internal host-authored apply payload, runs Tribunal, writes records, and refreshes surfaces"
                 ),
             ),
             InventoryItem(

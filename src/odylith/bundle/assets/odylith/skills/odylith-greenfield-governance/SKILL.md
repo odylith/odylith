@@ -20,27 +20,28 @@ architect a new project before source code exists.
 4. In chat, do not rely on collapsed Bash/tool output as the only visible
    confirmation. Do not replace live product reasoning with a generic
    "apply as-is, revise, or export JSON" menu. If the transcript collapses,
-   write the short Product Intent Confirmation yourself. When the CLI returns
-   proposal stdout directly, do not hide it behind collapsed tool output or
-   replace it with a thin host-written summary; surface the actual confirmation
-   or proposal content that matters.
+   write the short Product Intent Confirmation yourself. After the operator
+   confirms that intent, keep the proposal contract internal and surface only
+   created records or validation/Tribunal blockers.
 5. After the operator confirms or edits the intent, use
-   `greenfield propose --confirm-intent` for the complete proposal schema and
-   proof contract. Treat that stdout or its `--format json` output as the
-   full host-facing handoff. Do not search `src/odylith`, `.odylith`,
+   `greenfield propose --confirm-intent --format json` internally for the
+   complete proposal schema and proof contract. Do not show that contract as a
+   second approval step. Do not search `src/odylith`, `.odylith`,
    `odylith/skills`, installed bundle files, local examples, or Python modules
    to discover schema fields after confirmation. The host authors the proposal
-   JSON from the confirmed intent and source posture, usually as
-   `odylith-greenfield-proposal.json`. This is the only point where
+   as an internal apply payload from the confirmed intent and source posture,
+   usually under `.odylith/runtime/greenfield/active-proposal.v1.json`. This is the only point where
    every workstream, component, architecture view, wave, risk, validation
    obligation, memory prior, and transfer prior should exist.
-6. Do not write records until the operator confirms the host-authored
-   proposal. Prompt-only `greenfield create` is not the path for greenfield
-   truth. Apply the accepted proposal with
-   `./.odylith/bin/odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm --release 0.0.1`.
+6. The operator's Product Intent confirmation authorizes one governed apply
+   attempt. Do not ask the operator to inspect proposal JSON or confirm a
+   second time by default. Prompt-only `greenfield create` is not the path for
+   greenfield truth. Apply the internally authored proposal with
+   `./.odylith/bin/odylith greenfield apply --repo-root . --proposal-file .odylith/runtime/greenfield/active-proposal.v1.json --confirm --release 0.0.1`.
    `greenfield apply` runs deterministic validation, the Tribunal write gate,
    project-record writes, and the batched visibility refresh before printing
-   the handoff.
+   the handoff. If validation or Tribunal rejects the proposal, show the
+   blocking issues in product language and write no records.
 7. Preserve the evidence boundary: observed source, user intent, and Odylith
    assumptions must stay distinct. For consumer apps, include proportional
    security, privacy, abuse, accessibility, data-retention, compliance, and

@@ -108,17 +108,19 @@ Odylith returns a no-write reasoning request. The host must write the short
 Product Intent Confirmation in chat from live reasoning before any proposal
 records exist: product story, actors, systems, assumptions, ambiguities, and the
 proceed/edit/reject gate. After the operator confirms that intent,
-`--confirm-intent` returns the complete host-facing proposal schema and proof
-contract. If the host needs machine-readable detail, use the same command with
-`--format json`; do not inspect Odylith source files, `.odylith`, bundle files,
-Python modules, or local examples to discover schema fields. The host then
-authors the project-specific proposal JSON, and `greenfield apply` validates
-it, runs the Tribunal write gate, and writes records only with explicit
-confirmation:
+the host uses `--confirm-intent --format json` internally for the complete
+proposal schema and proof contract; it should not show that contract as a
+second approval step; do not inspect Odylith source files, `.odylith`, bundle
+files, Python modules, or local examples to discover schema fields. The host
+then authors an internal project-specific apply payload, and `greenfield apply`
+validates it, runs the Tribunal write gate, and writes records from that same
+Product Intent confirmation. The operator does not need to inspect proposal JSON
+unless they explicitly ask for an export:
+Do not ask the operator to inspect proposal JSON as a normal approval step.
 
 ```bash
-./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<project intent>" --confirm-intent
-./.odylith/bin/odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm --release 0.0.1
+./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<project intent>" --confirm-intent --format json
+./.odylith/bin/odylith greenfield apply --repo-root . --proposal-file .odylith/runtime/greenfield/active-proposal.v1.json --confirm --release 0.0.1
 ```
 
 Do not use prompt-only `greenfield create`, canned domain families, or

@@ -41,16 +41,18 @@ placeholder products in response to a show-me request.
    Product Intent Confirmation in chat from live reasoning so the operator sees
    the interpreted product story, actors, systems, assumptions, ambiguities,
    and confirm/edit/reject gate. After the operator confirms the
-   interpretation, rerun with `--confirm-intent` for the proposal schema and
-   proof contract; treat that output as the complete handoff and do not search
-   Odylith source, `.odylith`, bundle files, or local examples for schema. The
-   host authors the proposal JSON from the confirmed intent, and applies it
-   with `greenfield apply --proposal-file ... --confirm`.
+   interpretation, rerun with `--confirm-intent --format json` internally for
+   the proposal schema and proof contract; do not show that contract as a second
+   approval step and do not search Odylith source, `.odylith`, bundle files, or
+   local examples for schema. The host authors an internal apply payload from
+   the confirmed intent, then immediately runs
+   `greenfield apply --proposal-file ... --confirm`.
+   Do not ask the operator to inspect proposal JSON or confirm a second time unless they explicitly request a review artifact.
    Do not use prompt-only `greenfield create`, canned domain scaffolds, dumped
    tool internals, or code before the product gates are accepted. When the CLI
-   returns proposal stdout directly, do not hide it behind collapsed tool output
-   or replace it with a thin host-written summary; surface the actual
-   confirmation or proposal content that matters.
+   returns proposal stdout directly before confirmation, do not hide the
+   confirmation behind collapsed tool output. After confirmation, surface only
+   created records or validation/Tribunal blockers.
 6. Do not create governance records unless the operator explicitly asks.
    The default posture is advisory — show what's possible and let the operator
    choose.

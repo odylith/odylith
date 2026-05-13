@@ -29,9 +29,9 @@ def build_apply_commands(proposal: Mapping[str, Any]) -> list[str]:
     commands = [
         "odylith greenfield propose --repo-root . --prompt "
         + shell_quote(str(proposal.get("intent", {}).get("prompt", "new project")))
-        + " --confirm-intent",
-        "# after Product Intent is confirmed, the host writes odylith-greenfield-proposal.json from live reasoning",
-        "odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm"
+        + " --confirm-intent --format json",
+        "# after Product Intent is confirmed, the host writes an internal apply payload from live reasoning",
+        "odylith greenfield apply --repo-root . --proposal-file .odylith/runtime/greenfield/active-proposal.v1.json --confirm"
         + release_arg,
     ]
     if backlog:
@@ -76,12 +76,14 @@ def format_proposal_text(proposal: Mapping[str, Any], *, detail: str = "brief") 
             lines.append(f"- Stop: {rule}")
         lines.extend(
             [
-                "- If more detail is needed, use `odylith greenfield propose --repo-root . --prompt \"<confirmed request>\" --confirm-intent --format json`; do not search Odylith source.",
+                "- Use `odylith greenfield propose --repo-root . --prompt \"<confirmed request>\" --confirm-intent --format json` internally after confirmation; do not show it as a second approval step and do not search Odylith source.",
                 "",
-                "Allowed next steps",
+                "Apply path after intent confirmation",
             ]
         )
         for step in _contract_rows(handoff.get("allowed_host_steps"), limit=4):
+            lines.append(f"- {step}")
+        for step in _contract_rows(handoff.get("failure_policy"), limit=2):
             lines.append(f"- {step}")
         lines.extend(
             [
@@ -107,7 +109,7 @@ def format_proposal_text(proposal: Mapping[str, Any], *, detail: str = "brief") 
             for rule in contract.get("quality_bar", []) if isinstance(contract.get("quality_bar"), list) else []:
                 lines.append(f"- {rule}")
         lines.extend(["", "Apply"])
-        lines.append("After Product Intent is confirmed, the host writes host-authored proposal JSON from live reasoning. Review it, then run:")
+        lines.append("After Product Intent is confirmed, the host uses this contract internally, writes the apply payload, and runs apply; do not ask the operator to inspect proposal JSON.")
         if isinstance(commands, list):
             for command in commands:
                 lines.append("  " + str(command))
@@ -145,7 +147,7 @@ def _format_proposal_preview_text(
         apply_json_command = next((str(item) for item in commands if str(item).startswith("odylith greenfield apply")), "")
     if not apply_json_command:
         apply_json_command = (
-            "odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm"
+            "odylith greenfield apply --repo-root . --proposal-file .odylith/runtime/greenfield/active-proposal.v1.json --confirm"
             + f" --release {shell_quote(release_selector)}"
         )
 
@@ -153,7 +155,7 @@ def _format_proposal_preview_text(
         f"Greenfield proposal preview: {title}",
         f"- source evidence: {source_posture}; No files changed.",
         "- gate: preview only; product records are written only after explicit confirmation",
-        "- proposal authorship: after this confirmation, the host writes the full proposal JSON from live reasoning",
+        "- proposal authorship: after this confirmation, the host writes an internal apply payload from live reasoning",
         "",
         "Gate 1 - Interpretation",
     ]
@@ -183,8 +185,8 @@ def _format_proposal_preview_text(
     lines.append("- Recommended next step: say `Apply this proposal as-is` if Gate 1 and Gate 2 look right.")
     lines.append("- Revise before apply: answer the Gate 2 choices that are wrong, then rerun `greenfield propose` with the sharper intent.")
     lines.append("- First write point: `greenfield apply --confirm`; no product records are written before that.")
-    lines.append("- Proposal JSON: after confirmation, the host writes `odylith-greenfield-proposal.json` from the confirmed intent and source posture.")
-    lines.append("- Apply host-authored JSON after review:")
+    lines.append("- Apply payload: after confirmation, the host writes an internal payload from the confirmed intent and source posture.")
+    lines.append("- Apply after Product Intent confirmation:")
     lines.append(f"  {apply_json_command}")
     return "\n".join(lines).rstrip() + "\n"
 
@@ -460,10 +462,10 @@ def _format_apply_ready_proposal_text(
     if not apply_command:
         release_selector = _release_selector(release_plan)
         apply_command = (
-            "odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm"
+            "odylith greenfield apply --repo-root . --proposal-file .odylith/runtime/greenfield/active-proposal.v1.json --confirm"
             + f" --release {shell_quote(release_selector)}"
         )
-    lines.append("  # host writes odylith-greenfield-proposal.json from the confirmed intent")
+    lines.append("  # host writes an internal apply payload from the confirmed intent")
     lines.append("  " + apply_command)
     commands = proposal.get("apply_commands", [])
     if isinstance(commands, list) and commands:

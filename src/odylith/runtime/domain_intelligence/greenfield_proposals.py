@@ -238,8 +238,8 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
             "operator_sequence": [
                 "the host writes a compact Product Intent Confirmation in chat before any records are generated",
                 "the operator confirms, edits, or rejects the interpretation",
-                "the host authors the full proposal from the confirmed product intent, source posture, and reasoning contract",
-                "greenfield apply validates the accepted proposal, runs the Tribunal write gate, and writes governed records only after explicit confirmation",
+                "on confirmation, the host retrieves the proposal contract internally, authors the apply payload, and immediately runs greenfield apply",
+                "greenfield apply validates the internal payload, runs the Tribunal write gate, and writes governed records from that same confirmation",
                 "implementation planning starts only after accepted records name the first slice, boundaries, states, owners, and proof gates",
             ],
             "write_guardrail": "This contract writes nothing and contains no generated governance artifacts.",
@@ -258,20 +258,21 @@ def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]
         },
         "host_instruction": (
             "Author the proposal live from the confirmed Product Intent Confirmation and observed source posture. "
-            "Use this CLI contract as the complete schema/proof surface; do not inspect Odylith source files, Python modules, local examples, or generated runtime files to discover what to do next. "
+            "Use the confirm-intent CLI contract internally as the complete schema/proof surface; do not show it as a second user approval step and do not inspect Odylith source files, Python modules, local examples, or generated runtime files to discover what to do next. "
             "Do not use canned domain buckets, family templates, or prompt-title repetition. "
             "Label observed_source, user_intent, and odylith_assumption separately. "
             "Create only workstreams, component boundaries, diagrams, proof gates, and release waves that a product owner would recognize as directly relevant to the assignment. "
             "Ask or encode only the choices that materially change the first path, actors, risk posture, topology, or proof bar. "
             "Default the provisional release selector and release label to exactly 0.0.1 unless the operator explicitly asks for another release target. "
+            "After the operator confirms Product Intent, run the confirm-intent contract internally, author the internal payload, run greenfield apply, and show either created records or validation/Tribunal blockers; do not ask for a second JSON-review confirmation. "
             "The accepted proposal will run through deterministic schema validation and the Tribunal write gate before any records are written."
         ),
         "apply_commands": [
             "odylith greenfield propose --repo-root . --prompt "
             + json.dumps(_prompt_text(prompt))
-            + " --confirm-intent",
-            "# host writes odylith-greenfield-proposal.json from the confirmed Product Intent and source posture",
-            "odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm --release 0.0.1",
+            + " --confirm-intent --format json",
+            "# host writes the proposal as an internal apply payload from the confirmed Product Intent and source posture",
+            "odylith greenfield apply --repo-root . --proposal-file .odylith/runtime/greenfield/active-proposal.v1.json --confirm --release 0.0.1",
         ],
     }
     return proposal
@@ -1045,8 +1046,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         message = (
             "Prompt-only greenfield create is disabled. First run `odylith greenfield propose --repo-root . --prompt "
             + json.dumps(_prompt_text(str(args.prompt)))
-            + "` and write the Product Intent Confirmation in chat. After the operator confirms, author the proposal JSON from live reasoning and run "
-            "`odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm --release "
+            + "` and write the Product Intent Confirmation in chat. After the operator confirms, author the internal proposal payload from live reasoning and run "
+            "`odylith greenfield apply --repo-root . --proposal-file .odylith/runtime/greenfield/active-proposal.v1.json --confirm --release "
             + (str(args.release).strip() or greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR)
             + "`."
         )

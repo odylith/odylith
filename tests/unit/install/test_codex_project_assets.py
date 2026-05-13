@@ -236,6 +236,7 @@ def test_greenfield_guidance_uses_product_intent_then_host_authored_apply_path()
         "host model drafts",
         "greenfield apply --repo-root . --proposal-file <proposal.json>",
         "Use odylith greenfield create after confirmation",
+        "host-authored proposal JSON is reviewed",
     )
 
     for path in (*guidance_paths, *source_paths):
@@ -262,16 +263,21 @@ def test_greenfield_guidance_uses_product_intent_then_host_authored_apply_path()
             "host authors" in compact_text
             or "host then authors" in compact_text
             or "the host authors" in compact_text.casefold()
-            or "host-authored proposal JSON" in compact_text
-            or "author the project-specific proposal JSON" in compact_text
-            or "Author the project-specific proposal JSON" in compact_text
+            or "internal proposal payload" in compact_text
+            or "active-proposal.v1.json" in compact_text
             or "write the short Product Intent Confirmation yourself" in compact_text
+        ), path
+        assert (
+            "Do not ask the operator to inspect JSON" in text
+            or "does not need to inspect proposal JSON" in text
+            or "without a second confirmation" in text
+            or "Do not ask the operator to inspect proposal JSON" in text
         ), path
         for token in forbidden:
             assert token not in text, f"{path} still carries stale greenfield guidance: {token}"
 
 
-def test_greenfield_guidance_requires_visible_proposal_stdout() -> None:
+def test_greenfield_guidance_keeps_post_confirmation_contract_internal() -> None:
     guidance_paths = (
         REPO_ROOT / "AGENTS.md",
         REPO_ROOT / "odylith" / "AGENTS.md",
@@ -303,10 +309,19 @@ def test_greenfield_guidance_requires_visible_proposal_stdout() -> None:
     for path in guidance_paths:
         text = path.read_text(encoding="utf-8")
         normalized = " ".join(text.split())
-        assert "proposal stdout directly" in normalized, path
-        assert "collapsed" in normalized, path
-        assert "tool output" in normalized, path
-        assert "host-written" in normalized, path
+        assert "Product Intent Confirmation" in normalized, path
+        assert "greenfield apply" in normalized, path
+        assert "internal" in normalized.casefold(), path
+        assert (
+            "surface only" in normalized.casefold()
+            or "show either created records" in normalized.casefold()
+            or "created-record summary" in normalized.casefold()
+        ), path
+        assert (
+            "second approval step" in normalized
+            or "second confirmation" in normalized
+            or "confirm a second time" in normalized
+        ), path
 
 
 def test_claude_output_style_keeps_observation_rare_and_assist_concrete() -> None:

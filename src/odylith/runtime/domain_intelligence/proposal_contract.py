@@ -101,33 +101,39 @@ def build_proposal_contract() -> dict[str, Any]:
         ],
         "post_confirmation_handoff": {
             "complete_authoring_surface": True,
+            "intent_confirmation_authorizes_apply_attempt": True,
             "contract_use": [
-                "Use this CLI response as the complete host-facing proposal contract.",
-                "If the host needs machine-readable detail, rerun the same command with --format json and read that output.",
+                "Use this CLI response as the complete internal host-facing proposal contract, not as a user-facing approval artifact.",
+                "For the normal post-confirmation path, call this command with --format json internally, then run greenfield apply.",
                 "Do not inspect Odylith source files, Python modules, local examples, or generated runtime files to discover schema fields.",
             ],
             "forbidden_host_steps": [
                 "Do not search src/odylith, .odylith, odylith/skills, or installed bundle files for greenfield schema after intent confirmation.",
                 "Do not create a proposal by copying local examples or template fixtures.",
                 "Do not run prompt-only greenfield create.",
-                "Do not write governed records before the operator accepts the proposal.",
+                "Do not ask the operator to inspect proposal JSON as the normal approval step.",
+                "Do not write governed records unless greenfield apply passes validation and Tribunal.",
             ],
             "allowed_host_steps": [
-                "Author odylith-greenfield-proposal.json from the confirmed product intent, observed source posture, and this contract.",
+                "Author an internal proposal payload from the confirmed product intent, observed source posture, and this contract.",
                 "Keep product story, actors, systems, workstreams, components, diagrams, risks, proof, and release gates project-specific.",
-                "Ask the operator to review or accept the proposal before apply.",
-                "Apply only with greenfield apply --proposal-file odylith-greenfield-proposal.json --confirm.",
+                "Run greenfield apply immediately after Product Intent confirmation; the apply command is the validation and Tribunal gate.",
+                "Surface only the human-readable created-record summary or the validation/Tribunal issues.",
             ],
             "canonical_files": [
                 {
-                    "path": "odylith-greenfield-proposal.json",
-                    "purpose": "host-authored proposal for operator review and greenfield apply",
+                    "path": ".odylith/runtime/greenfield/active-proposal.v1.json",
+                    "purpose": "ephemeral host-authored apply payload; not a user-facing review artifact",
                     "governed_record": False,
                 }
             ],
             "canonical_commands": [
                 "odylith greenfield propose --repo-root . --prompt \"<confirmed request>\" --confirm-intent --format json",
-                "odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm --release 0.0.1",
+                "odylith greenfield apply --repo-root . --proposal-file .odylith/runtime/greenfield/active-proposal.v1.json --confirm --release 0.0.1",
+            ],
+            "failure_policy": [
+                "If validation or Tribunal rejects the proposal, do not write records; summarize the blocking issues in product language.",
+                "If the operator explicitly asks for a review artifact, export the proposal JSON; otherwise keep it internal.",
             ],
         },
         "minimum_content": {

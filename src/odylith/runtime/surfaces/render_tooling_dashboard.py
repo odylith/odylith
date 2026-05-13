@@ -117,6 +117,7 @@ def _refresh_guard_watched_paths(
         "odylith/runtime/source/product-version.v1.json",
         "odylith/runtime/source/accepted-project.v1.json",
         "odylith/runtime/source/greenfield-project.v1.json",
+        ".odylith/runtime/greenfield/active-proposal.v1.json",
         "odylith-greenfield-proposal.json",
         "greenfield-proposal.json",
         "odylith/runtime/delivery_intelligence.v4.json",

@@ -68,7 +68,7 @@ def build_product_intent_confirmation(
         },
         "confirmation_gate": {
             "status": "waiting_for_host_authored_product_intent",
-            "proceed": "If the interpretation is right, ask the operator to confirm so Odylith can expand it into the full proposal contract.",
+            "proceed": "If the interpretation is right, ask the operator to confirm so Odylith can build the internal proposal payload, run Tribunal, and apply governed records.",
             "edit": "If anything is wrong or missing, ask the operator to reply with corrections before proposal expansion.",
             "reject": "If this is not the intended product, stop and write no records.",
         },
@@ -76,10 +76,10 @@ def build_product_intent_confirmation(
             "proposal_contract_after_confirmation": (
                 "odylith greenfield propose --repo-root . --prompt "
                 + _shell_quote(clean_prompt)
-                + " --confirm-intent"
+                + " --confirm-intent --format json"
             ),
-            "apply_after_host_authored_proposal": (
-                "odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm --release 0.0.1"
+            "apply_after_internal_payload": (
+                "odylith greenfield apply --repo-root . --proposal-file .odylith/runtime/greenfield/active-proposal.v1.json --confirm --release 0.0.1"
             ),
         },
     }
@@ -118,13 +118,13 @@ def format_product_intent_confirmation_text(confirmation: Mapping[str, Any]) -> 
             prompt,
             "",
             "Next step",
-            "- Confirm: if the interpretation is right, ask the operator to say so; only then expand it into the full proposal contract. No records are written yet.",
+            "- Confirm: if the interpretation is right, use the proposal contract internally, build the apply payload, run Tribunal, and apply governed project records. Do not ask the operator to inspect proposal JSON.",
             "- Edit: if the product story, actors, systems, assumptions, first path, or proof boundary is wrong, ask for corrections and rerun this confirmation.",
             "- Reject: if this is not the intended product, stop here and write nothing.",
         ]
     )
     if proposal_contract:
-        lines.append(f"CLI after confirmation: {proposal_contract}")
+        lines.append(f"Internal CLI after confirmation: {proposal_contract}")
     return "\n".join(line for line in lines if line is not None).rstrip() + "\n"
 
 
