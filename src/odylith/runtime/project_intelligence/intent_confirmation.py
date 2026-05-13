@@ -49,7 +49,7 @@ def build_product_intent_confirmation(
                 "the critical assumptions you are making about origin, maturity, safety, money, data, runtime, or integrations",
                 "the few ambiguities that would materially change the first path, risk posture, topology, or proof bar",
                 "the proof boundary: what would count as evidence and what must not be claimed yet",
-                "a proceed, edit, or reject confirmation gate",
+                "a clear Next step block with Confirm, Edit, and Reject choices; each choice must say exactly what happens next",
             ],
             "must_not": [
                 "echo command instructions as the product name",
@@ -68,9 +68,9 @@ def build_product_intent_confirmation(
         },
         "confirmation_gate": {
             "status": "waiting_for_host_authored_product_intent",
-            "proceed": "After the operator confirms the host-authored intent, build the full greenfield proposal.",
-            "edit": "If the interpretation is off, rerun with the corrected product intent.",
-            "reject": "If the product shape is wrong, stop without writing records.",
+            "proceed": "If the interpretation is right, ask the operator to confirm so Odylith can expand it into the full proposal contract.",
+            "edit": "If anything is wrong or missing, ask the operator to reply with corrections before proposal expansion.",
+            "reject": "If this is not the intended product, stop and write no records.",
         },
         "commands": {
             "proposal_contract_after_confirmation": (
@@ -117,8 +117,10 @@ def format_product_intent_confirmation_text(confirmation: Mapping[str, Any]) -> 
             "Original user intent",
             prompt,
             "",
-            "Confirm",
-            "Ask the operator to proceed, edit, or reject the interpretation. Do not write governance records until they confirm.",
+            "Next step",
+            "- Confirm: if the interpretation is right, ask the operator to say so; only then expand it into the full proposal contract. No records are written yet.",
+            "- Edit: if the product story, actors, systems, assumptions, first path, or proof boundary is wrong, ask for corrections and rerun this confirmation.",
+            "- Reject: if this is not the intended product, stop here and write nothing.",
         ]
     )
     if proposal_contract:

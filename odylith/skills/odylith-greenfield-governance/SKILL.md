@@ -11,7 +11,9 @@ architect a new project before source code exists.
    interpretation itself. The host must write the Product Intent Confirmation
    in chat from live reasoning: what the product is, who the human actors are,
    which external and internal systems matter, what assumptions are being made,
-   which ambiguities change the proposal, and how to proceed, edit, or reject.
+   which ambiguities change the proposal, and a clear next-step block:
+   confirm to expand into the proposal contract, edit to correct the
+   interpretation, or reject to stop with no records written.
    It must not generate backlog, Registry, Atlas, release waves, validation
    obligations, or proposal JSON before the operator confirms the
    interpretation.

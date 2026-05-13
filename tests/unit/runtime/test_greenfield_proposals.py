@@ -1203,7 +1203,11 @@ def test_greenfield_text_starts_with_product_intent_confirmation(tmp_path, capsy
     assert "echo command instructions as the product name" in output
     assert "generate backlog, Registry, Atlas, release waves, validation obligations, or proposal JSON before confirmation" in output
     assert "Original user intent" in output
-    assert "Confirm" in output
+    assert "Next step" in output
+    assert "Confirm: if the interpretation is right" in output
+    assert "Edit: if the product story, actors, systems, assumptions, first path, or proof boundary is wrong" in output
+    assert "Reject: if this is not the intended product" in output
+    assert "No records were written. Confirm, edit, or reject this interpretation." not in output
     assert "--confirm-intent" in output
     assert "дж" not in output
     assert "soн" not in output
