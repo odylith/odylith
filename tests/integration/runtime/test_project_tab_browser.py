@@ -110,8 +110,35 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
     assert "Mockrepo" not in surface_text
     assert "Proposed first-path scenario" in surface_text
     assert "Checkout" in surface_text or "checkout" in surface_text
+    assert "How to continue in the host chat" in surface_text
+    assert "Odylith, apply this greenfield proposal" in surface_text
+    assert "Revise it" in surface_text
+    assert "Reject it" in surface_text
+    assert "Paste the chosen prompt into the same host chat" in surface_text
     assert "Topology spine" not in surface_text
     assert "How the story becomes governance" not in surface_text
+
+    handoff_layout = page.locator(".project-host-handoff").evaluate(
+        """(node) => {
+            const cards = Array.from(node.querySelectorAll(".project-host-prompt"));
+            const code = node.querySelector("code");
+            const steps = Array.from(node.querySelectorAll("ol li"));
+            return {
+              cardCount: cards.length,
+              stepCount: steps.length,
+              codeFontSize: code ? window.getComputedStyle(code).fontSize : "",
+              scrollDelta: node.scrollWidth - node.clientWidth,
+              maxCardOverflow: cards.reduce((max, card) => Math.max(max, card.scrollWidth - card.clientWidth), 0),
+              maxStepOverflow: steps.reduce((max, step) => Math.max(max, step.scrollWidth - step.clientWidth), 0),
+            };
+        }"""
+    )
+    assert handoff_layout["cardCount"] == 3
+    assert handoff_layout["stepCount"] == 4
+    assert handoff_layout["codeFontSize"] == "14px"
+    assert int(handoff_layout["scrollDelta"]) <= 4
+    assert int(handoff_layout["maxCardOverflow"]) <= 4
+    assert int(handoff_layout["maxStepOverflow"]) <= 4
 
     story_layout = page.locator(".project-story-narrative").evaluate(
         """(node) => {

@@ -947,6 +947,120 @@
   margin-top: 14px;
 }
 
+.project-host-handoff {
+  margin-top: 14px;
+  border: 1px solid rgba(59, 130, 246, 0.24);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--panel) 90%, #dbeafe 10%);
+  padding: 16px;
+}
+
+.project-host-handoff > h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--project-type-card-title-size);
+  font-weight: var(--project-type-card-title-weight);
+  line-height: 1.2;
+}
+
+.project-host-handoff > p {
+  margin: 6px 0 0;
+  color: var(--ink-soft);
+  font-size: var(--project-type-content-size);
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.project-host-handoff ol {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: host-step;
+}
+
+.project-host-handoff li {
+  position: relative;
+  min-width: 0;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #f8fbff;
+  padding: 10px 10px 10px 36px;
+  color: var(--ink-soft);
+  font-size: var(--project-type-content-size);
+  font-weight: 400;
+  line-height: 1.32;
+  counter-increment: host-step;
+}
+
+.project-host-handoff li::before {
+  content: counter(host-step);
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.project-host-prompt-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.project-host-prompt {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--panel);
+  padding: 12px;
+}
+
+.project-host-prompt h4 {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--project-type-card-title-size);
+  font-weight: var(--project-type-card-title-weight);
+  line-height: 1.2;
+}
+
+.project-host-prompt p,
+.project-host-prompt span {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: var(--project-type-content-size);
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+.project-host-prompt code {
+  display: block;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #f8fbff;
+  padding: 10px;
+  color: #1d4ed8;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: var(--project-type-content-size);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
 .project-proof-grid {
   grid-template-columns: 1fr 1fr 190px;
 }
@@ -1029,6 +1143,8 @@
   .project-boundary-grid,
   .project-state-grid,
   .project-proof-grid,
+  .project-host-prompt-grid,
+  .project-host-handoff ol,
   .project-empty-action-grid,
   .project-empty-preview-grid {
     grid-template-columns: 1fr;

@@ -87,6 +87,40 @@ def _bullets(items: object) -> str:
     return "<ul>" + "".join(f"<li>{item}</li>" for item in values) + "</ul>"
 
 
+def _host_handoff(project: Mapping[str, Any]) -> str:
+    rows = _mappings(project.get("host_handoff_prompts"))
+    if not rows:
+        return ""
+    steps = [_d(item) for item in _sequence(project.get("host_handoff_steps")) if str(item or "").strip()]
+    steps_html = f'<ol>{"".join(f"<li>{item}</li>" for item in steps)}</ol>' if steps else ""
+    cards: list[str] = []
+    for row in rows:
+        label = row.get("label")
+        when = row.get("when")
+        prompt = row.get("prompt")
+        result = row.get("result")
+        if not str(prompt or "").strip():
+            continue
+        cards.append(
+            '<article class="project-host-prompt">'
+            f"<h4>{_d(label)}</h4>"
+            f"<p>{_d(when)}</p>"
+            f"<code>{_e(prompt)}</code>"
+            f"<span>{_d(result)}</span>"
+            "</article>"
+        )
+    if not cards:
+        return ""
+    return (
+        '<div class="project-host-handoff">'
+        f"<h3>{_d(project.get('host_handoff_title'))}</h3>"
+        f"<p>{_d(project.get('host_handoff_note'))}</p>"
+        f"{steps_html}"
+        f'<div class="project-host-prompt-grid">{"".join(cards)}</div>'
+        "</div>"
+    )
+
+
 def _table(items: object, columns: Sequence[tuple[str, str]]) -> str:
     rows = _mappings(items)
     if not rows:
@@ -597,7 +631,7 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
         else ""
     )
     next_html = (
-        f"""      <section class="project-panel"><div class="project-panel-head"><h2>{_d(project.get("next_title"))}</h2><p>{_d(project.get("next_note"))}</p></div><article class="project-next-card project-next-card-full"><h3>{_d(next_title)}</h3><p>{_d(next_detail)}</p><div><span><b>{_d(project.get("next_owner_label"))}</b>{_d(next_owner)}</span><span><b>{_d(project.get("next_output_label"))}</b>{_d(next_output)}</span><span><b>{_d(project.get("next_precondition_label"))}</b>{_d(next_precondition)}</span><span><b>{_d(project.get("next_risk_label"))}</b>{_d(next_risk)}</span></div></article></section>
+        f"""      <section class="project-panel"><div class="project-panel-head"><h2>{_d(project.get("next_title"))}</h2><p>{_d(project.get("next_note"))}</p></div><article class="project-next-card project-next-card-full"><h3>{_d(next_title)}</h3><p>{_d(next_detail)}</p><div><span><b>{_d(project.get("next_owner_label"))}</b>{_d(next_owner)}</span><span><b>{_d(project.get("next_output_label"))}</b>{_d(next_output)}</span><span><b>{_d(project.get("next_precondition_label"))}</b>{_d(next_precondition)}</span><span><b>{_d(project.get("next_risk_label"))}</b>{_d(next_risk)}</span></div></article>{_host_handoff(project)}</section>
 """
         if _enabled(project, "next")
         else ""

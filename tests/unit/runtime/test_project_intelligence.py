@@ -553,6 +553,12 @@ def test_project_intelligence_renders_greenfield_origin_from_proposal(tmp_path: 
     assert "Product Story" in html
     assert "the team can prove" not in html
     assert "project-story-contract" in html
+    assert payload["host_handoff_title"] == "How to continue in the host chat"
+    assert "Odylith, apply this greenfield proposal" in html
+    assert "Revise it" in html
+    assert "Reject it" in html
+    assert "Paste the chosen prompt into the same host chat" in html
+    assert "proposal JSON" in html
     assert "Radar" in html
     assert "Registry" in html
     assert "Atlas" in html

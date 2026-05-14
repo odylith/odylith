@@ -159,6 +159,18 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
             "Direction choices reviewed",
             "Implementation starts from unstable assumptions",
         ],
+        "host_handoff_title": "How to continue in the host chat",
+        "host_handoff_note": (
+            "Use one of these prompts in Codex, Claude, or another Odylith host. Odylith should handle the proposal "
+            "workflow; the operator should not inspect or edit proposal JSON by hand."
+        ),
+        "host_handoff_steps": [
+            "Review the Product Story, first path, open questions, and risks on this page.",
+            "Choose Accept, Revise, or Reject below.",
+            "Paste the chosen prompt into the same host chat that runs Odylith.",
+            "Refresh the dashboard after Odylith finishes to see the accepted or revised project state.",
+        ],
+        "host_handoff_prompts": _host_handoff_prompts(title=title),
         "projection": {
             "refreshed_at": "proposal time",
             "origin": "greenfield proposal",
@@ -662,6 +674,34 @@ def _risk_title(risks: Sequence[str]) -> str:
     if not risks:
         return "Unvalidated assumptions"
     return _risk_label(_risk_meaning(risks[0]), used=set())
+
+
+def _host_handoff_prompts(*, title: str) -> list[dict[str, str]]:
+    project_name = short(title, limit=90, fallback="this project")
+    return [
+        {
+            "label": "Accept it",
+            "when": "Use this when the story, first path, actors, open questions, and proof boundary look right.",
+            "prompt": f"Odylith, apply this greenfield proposal for {project_name} as-is and write the governed project records.",
+            "result": "Writes the accepted project record, Radar workstreams, Registry components, Atlas diagrams, release boundary, and proof gates.",
+        },
+        {
+            "label": "Revise it",
+            "when": "Use this when the project is close, but the first path, actor, system boundary, proof bar, or exclusions need correction.",
+            "prompt": (
+                "Odylith, revise this greenfield proposal before applying it: change <what is wrong> to <what should be true>. "
+                "Keep the product story, first path, components, risks, and proof gates aligned with the correction. "
+                "Do not write governed records until I confirm."
+            ),
+            "result": "Produces a revised proposal for review without mutating governed records.",
+        },
+        {
+            "label": "Reject it",
+            "when": "Use this when the interpretation is the wrong product or the user intent is not clear enough.",
+            "prompt": f"Odylith, reject this greenfield proposal for {project_name}. Do not write governed records.",
+            "result": "Leaves the repo in proposal or blank state so a new intent can be supplied.",
+        },
+    ]
 
 
 def _proof_title(validation: Sequence[str]) -> str:
