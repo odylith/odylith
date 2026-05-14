@@ -665,10 +665,13 @@ def test_atlas_diagram_intelligence_preserves_useful_authored_migration_copy() -
             '  gate -->|"missing definition, missing fixture, direct bypass"| block',
         ]
     )
-    summary = "Shows how install, upgrade, reinstall, doctor, and release gates flow through the migration runtime before mutation."
+    summary = (
+        "Install, upgrade, reinstall, doctor, and release gate commands all resolve to one migration plan "
+        "before any runtime mutation."
+    )
     read_guide = (
-        "Read the center column from top to bottom first. It shows how Odylith turns a command into one shared "
-        "migration plan. Then read the branches from MigrationPlan: dry-run previews the plan, upgrade applies it, "
+        "Read the center column from top to bottom first. It turns an operator command into one shared "
+        "MigrationPlan. Then read the branches from MigrationPlan: dry-run previews the plan, upgrade applies it, "
         "doctor explains current health, the release gate checks release readiness, and any unsafe state stops before "
         "runtime files change."
     )
@@ -731,11 +734,69 @@ def test_atlas_diagram_intelligence_generates_human_flow_copy_without_label_soup
     assert narrative.generated is True
     assert "This diagram follows" not in copy
     assert "none named" not in copy
-    assert "Operator command reaches MigrationPlan" in narrative.summary
+    assert "This view shows" not in copy
+    assert "This diagram shows" not in copy
+    assert "shows how" not in copy.casefold()
+    assert "Operator command to MigrationPlan" in narrative.summary
     assert "Resolve target release" in narrative.summary
     assert "Fail closed before runtime mutation" in narrative.summary
+    assert "Durable migration ledger" in narrative.summary
     assert "Read the main spine first" in narrative.read_guide
+    assert "Read Durable migration ledger as the evidence boundary" in narrative.read_guide
+    assert "Read Resolve target release as the evidence boundary" not in narrative.read_guide
     assert "selected, skipped, blocked, satisfied-unrecorded" not in narrative.summary
+
+
+def test_atlas_diagram_intelligence_explains_surface_dag_control_and_proof_boundary() -> None:
+    source = "\n".join(
+        [
+            "flowchart TB",
+            '  sync["Selective sync or owned-surface refresh"]',
+            '  order["Surface order"]',
+            '  fingerprint["Surface fingerprint DAG"]',
+            '  reusable{"Outputs reusable?"}',
+            '  reuse["Reuse current rendered bytes"]',
+            '  workers["Per-surface workers"]',
+            '  compass["Compass DAG"]',
+            '  radar["Radar DAG"]',
+            '  atlasChoice{"Atlas refresh mode?"}',
+            '  atlasSync["Atlas sync"]',
+            '  atlasRender["Atlas render"]',
+            '  registry["Registry DAG"]',
+            '  accountability["Public accountability"]',
+            '  browser["Surface browser matrix"]',
+            '  check["Selective sync + sync --check-only"]',
+            "  sync --> order --> fingerprint --> reusable",
+            '  reusable -- "yes" --> reuse',
+            '  reusable -- "no" --> workers',
+            "  workers --> compass",
+            "  workers --> radar",
+            "  workers --> atlasChoice",
+            "  workers --> registry",
+            '  atlasChoice -- "--atlas-sync" --> atlasSync --> accountability',
+            '  atlasChoice -- "render only" --> atlasRender --> browser',
+            "  registry --> check",
+        ]
+    )
+
+    narrative = atlas_diagram_intelligence.build_diagram_narrative(
+        title="Discipline Surface DAGs And Release Proof",
+        kind="flowchart",
+        summary="This view shows how Odylith Discipline state reaches workers.",
+        read_guide="Read from Odylith Discipline state through the arrows.",
+        source_text=source,
+    )
+
+    copy = f"{narrative.summary}\n{narrative.read_guide}"
+    assert narrative.generated is True
+    assert "This view shows" not in copy
+    assert "Outputs reusable?" in narrative.summary
+    assert "Per-surface workers is the fan-out point" in narrative.summary
+    assert "Public accountability" in narrative.summary
+    assert "Surface browser matrix" in narrative.summary
+    assert "--atlas-sync\" --> atlasSync" not in copy
+    assert "Use the labeled edges as gates" in narrative.read_guide
+    assert "those nodes explain why the final outcome can be trusted" in narrative.read_guide
 
 
 def test_atlas_box_explanations_infer_common_governance_surface_actions() -> None:

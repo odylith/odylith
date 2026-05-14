@@ -3882,7 +3882,7 @@
         {
           "label": "Generated parity and owned mirrors",
           "role": "Container",
-          "description": "This group shows how canonical guidance is copied into generated assets and mirrored host files without becoming a second source of truth."
+          "description": "Canonical guidance is copied into generated assets and mirrored host files while the checked-in source remains the single source of truth."
         },
         {
           "label": "Atlas catalog + Mermaid source",
