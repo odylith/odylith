@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from odylith.runtime.project_intelligence import assets, builder, deeplinks, focus, presenter
+from odylith.runtime.project_intelligence.greenfield import _risk_classes
 from tests.unit.runtime.test_greenfield_proposals import _apply_ready_greenfield_fixture as _host_greenfield_fixture
 
 
@@ -558,6 +559,27 @@ def test_project_intelligence_renders_greenfield_origin_from_proposal(tmp_path: 
     assert "Topology spine" not in html
     assert "Story root" not in html
     assert "How the story becomes governance" not in html
+
+
+def test_greenfield_risk_posture_uses_readable_categories() -> None:
+    risks = [
+        "Overwatering can harm the plant if pump actuation is not volume-limited and followed by sensor recheck.",
+        "Nutrient concentration can damage roots if the reservoir mix is too strong or dosing is repeated too often.",
+        "Sensor drift or poor probe placement can make a healthy plant appear dry or a dry plant appear stable.",
+        "Water, electricity, and unattended operation create household safety risk even when data sensitivity is low.",
+    ]
+
+    rows = _risk_classes(risks)
+
+    assert [row["risk"] for row in rows] == [
+        "Physical operation safety",
+        "Control limits",
+        "Measurement reliability",
+        "Operating environment",
+    ]
+    for row, risk in zip(rows, risks, strict=True):
+        assert row["meaning"] == risk
+        assert row["risk"] not in row["meaning"]
 
 
 def test_project_intelligence_greenfield_story_skips_meta_acceptance_path(tmp_path: Path) -> None:

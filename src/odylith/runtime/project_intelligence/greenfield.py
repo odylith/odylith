@@ -173,8 +173,16 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
         "delta": ["No previous source-backed project state is available; this projection starts from proposal intent."],
         "risk_classes": _risk_classes(risks),
         "validation_posture": [
-            {"posture": "Project understanding", "level": "Medium", "meaning": "The proposal shape is explicit, but source behavior is not proven."},
-            {"posture": "Recommendation proof", "level": "Low", "meaning": "Next action is a review/acceptance gate, not implementation approval."},
+            {
+                "posture": "Project shape",
+                "level": "Medium",
+                "meaning": "The proposal is clear enough to review, but it is still intent and planning evidence.",
+            },
+            {
+                "posture": "Implementation readiness",
+                "level": "Low",
+                "meaning": "Do not start building until the first path, proof bar, and risk controls are accepted.",
+            },
         ],
         "audience_emphasis": [],
         "degraded_state": ["Greenfield claims are not source-backed until accepted records, implementation, and validation exist."],
@@ -190,10 +198,10 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
         "delta_label": "Proposal state",
         "contradictions_label": "Source-backed gap",
         "degraded_label": "Validation gap",
-        "posture_title": f"What risk and validation posture matters for {title}?",
-        "posture_note": "The first gate is proposal review; implementation proof does not exist yet.",
-        "validation_label": "Validation posture",
-        "risk_label": "Risk classes",
+        "posture_title": f"What must be controlled before {title} moves forward?",
+        "posture_note": "Takeaway: this is safe to review as a proposal, not safe to treat as working behavior until proof gates and risk controls are accepted.",
+        "validation_label": "Current gate",
+        "risk_label": "Risks to control first",
         "work_state_kicker": f"{title} status now",
         "state_title": f"Where does {title} stand?",
         "state_note": "This separates proposed truth from source-backed implementation.",
@@ -651,21 +659,9 @@ def _non_goal_rows(project: Mapping[str, Any]) -> list[str]:
 
 
 def _risk_title(risks: Sequence[str]) -> str:
-    text = sentence(risks[0] if risks else "")
-    for marker in (" can ", " may ", " will "):
-        _before, sep, after = text.partition(marker)
-        if sep and after.strip():
-            text = after.strip()
-            break
-    for marker in (" if ", " before ", " when ", " because "):
-        head, sep, _tail = text.partition(marker)
-        if sep and head.strip():
-            text = head.strip()
-            break
-    text = text.strip(" .")
-    if text:
-        text = text[:1].upper() + text[1:]
-    return short(text, limit=70, fallback="Unvalidated assumptions")
+    if not risks:
+        return "Unvalidated assumptions"
+    return _risk_label(_risk_meaning(risks[0]), used=set())
 
 
 def _proof_title(validation: Sequence[str]) -> str:
@@ -984,6 +980,45 @@ def _claim_evidence(
 
 
 def _risk_classes(risks: Sequence[str]) -> list[dict[str, str]]:
-    return [{"risk": short(risk, limit=70), "meaning": short(risk, limit=145)} for risk in risks[:4]] or [
-        {"risk": "Unvalidated proposal", "meaning": "No implementation proof exists yet."}
+    rows = []
+    used: set[str] = set()
+    for risk in risks[:4]:
+        meaning = _risk_meaning(risk)
+        label = _risk_label(meaning, used=used)
+        used.add(label.casefold())
+        rows.append({"risk": label, "meaning": meaning})
+    return rows or [{"risk": "Unvalidated proposal", "meaning": "No implementation proof exists yet."}]
+
+
+def _risk_meaning(value: object) -> str:
+    text = sentence(value)
+    if text and not text.endswith((".", "!", "?")):
+        text += "."
+    return short(text, limit=190, fallback="The proposal has a risk that needs an owner and proof gate.")
+
+
+def _risk_label(value: str, *, used: set[str]) -> str:
+    lowered = value.casefold()
+    checks = [
+        (("electricity", "unattended", "household", "environment"), "Operating environment"),
+        (("pump", "motor", "actuation", "robot", "autonomous", "automation", "unattended", "electricity"), "Physical operation safety"),
+        (("dose", "dosing", "concentration", "threshold", "limit", "volume", "capped", "bounded"), "Control limits"),
+        (("sensor", "signal", "reading", "calibration", "drift", "measurement", "sample"), "Measurement reliability"),
+        (("custody", "treasury", "funding", "payment", "repayment", "settlement", "ledger", "capital", "credit", "lender", "liquidity"), "Money movement"),
+        (("compliance", "privacy", "security", "jurisdiction", "kyc", "kyb", "aml", "regulated", "legal"), "Compliance boundary"),
+        (("integration", "external", "api", "provider", "dependency", "webhook", "connector"), "External dependency"),
+        (("owner", "approval", "handoff", "review", "responsibility", "operator"), "Ownership clarity"),
+        (("rollback", "retry", "recovery", "blocked", "fail", "fault"), "Recovery path"),
+        (("claim", "mislead", "status", "confidence", "trust"), "User trust"),
+        (("harm", "damage", "loss", "safety", "unsafe", "hazard"), "Safety boundary"),
     ]
+    for needles, label in checks:
+        if any(needle in lowered for needle in needles):
+            return _dedupe_label(label, used=used)
+    return _dedupe_label("Proposal risk", used=used)
+
+
+def _dedupe_label(label: str, *, used: set[str]) -> str:
+    if label.casefold() not in used:
+        return label
+    return f"Additional {label.casefold()}"
