@@ -104,6 +104,146 @@ def _table(items: object, columns: Sequence[tuple[str, str]]) -> str:
     return f'<div class="project-table"><table><thead><tr>{headers}</tr></thead><tbody>{"".join(body)}</tbody></table></div>'
 
 
+def _claim_evidence(project: Mapping[str, Any], columns: Sequence[tuple[str, str]]) -> str:
+    rows = _mappings(project.get("claim_evidence"))
+    if not rows:
+        return _table(rows, columns)
+    grouped = _claim_evidence_groups(rows, project=project)
+    cards = "".join(
+        _claim_evidence_card(title=title, body=body, rows=items)
+        for title, body, items in grouped
+        if items
+    )
+    if not cards:
+        cards = _claim_evidence_card(
+            title="Evidence needs review",
+            body="The current projection has claim rows, but none could be placed into a readable trust group.",
+            rows=rows,
+        )
+    audit = (
+        '<details class="project-evidence-audit">'
+        '<summary>View claim audit</summary>'
+        f"{_table(rows, columns)}"
+        "</details>"
+    )
+    return f'<div class="project-evidence-readout">{cards}</div>{audit}'
+
+
+def _claim_evidence_groups(
+    rows: Sequence[Mapping[str, Any]], *, project: Mapping[str, Any]
+) -> list[tuple[str, str, list[Mapping[str, Any]]]]:
+    known: list[Mapping[str, Any]] = []
+    proposed: list[Mapping[str, Any]] = []
+    proof: list[Mapping[str, Any]] = []
+    source_posture = str(project.get("source_posture") or "").strip().casefold()
+    origin = " ".join(str(item or "") for item in _sequence(project.get("chips"))).casefold()
+    greenfield = "greenfield" in origin or source_posture in {"docs_only", "metadata_only", "empty_or_no_app_source"}
+    for row in rows:
+        evidence = str(row.get("evidence") or "").strip().casefold()
+        claim = str(row.get("claim") or "").strip().casefold()
+        if any(token in claim for token in ("question", "risk", "blocker", "unknown", "gap")):
+            proof.append(row)
+        elif evidence in {"needs validation", "stale", "contradicted", "missing", "unproven"}:
+            proof.append(row)
+        elif evidence in {"inferred", "assumed", "proposal", "proposed"}:
+            proposed.append(row)
+        else:
+            known.append(row)
+    if greenfield:
+        return [
+            (
+                "Accepted intent",
+                "These are the parts of the project the current proposal is allowed to use as direction.",
+                known,
+            ),
+            (
+                "Proposed shape",
+                "These choices guide planning, but they are not built software or source-backed behavior yet.",
+                proposed,
+            ),
+            (
+                "Proof still required",
+                "These checks, questions, or weak claims must be resolved before confidence can increase.",
+                proof,
+            ),
+        ]
+    return [
+        (
+            "Observed now",
+            "These are the current project facts supported by source, runtime, validation, or accepted records.",
+            known,
+        ),
+        (
+            "Working hypothesis",
+            "These claims may guide the next move, but they need stronger source, owner, or validation evidence.",
+            proposed,
+        ),
+        (
+            "Proof gaps",
+            "These validation gaps, open questions, or weak claims block stronger confidence.",
+            proof,
+        ),
+    ]
+
+
+def _claim_evidence_card(*, title: str, body: str, rows: Sequence[Mapping[str, Any]]) -> str:
+    items = []
+    for row in rows:
+        claim = _claim_label(str(row.get("claim") or "").strip() or "Claim")
+        value = str(row.get("value") or "").strip() or "No value recorded."
+        evidence = str(row.get("evidence") or "").strip()
+        owner = str(row.get("owner") or "").strip()
+        meta_parts = [
+            part
+            for part in (_evidence_phrase(evidence) if evidence else "", f"Owner: {owner}" if owner else "")
+            if part
+        ]
+        meta = " · ".join(meta_parts)
+        meta_html = f"<small>{_d(meta)}</small>" if meta else ""
+        items.append(f"<li><b>{_d(claim)}</b><span>{_d(value)}</span>{meta_html}</li>")
+    return (
+        '<article class="project-evidence-card">'
+        f"<h3>{_d(title)}</h3>"
+        f"<p>{_d(body)}</p>"
+        "<ul>"
+        + "".join(items)
+        + "</ul>"
+        "</article>"
+    )
+
+
+def _claim_label(value: str) -> str:
+    labels = {
+        "project identity": "Project",
+        "greenfield tribunal": "Tribunal result",
+        "project explanation": "Project promise",
+        "first path": "First path",
+        "validation path": "Proof required",
+        "open questions": "Open questions",
+    }
+    return labels.get(value.strip().casefold(), value)
+
+
+def _evidence_phrase(value: str) -> str:
+    labels = {
+        "user-stated": "Stated by operator",
+        "inferred": "Inferred from proposal",
+        "assumed": "Assumption",
+        "proposal": "Proposal claim",
+        "proposed": "Proposal claim",
+        "needs validation": "Needs validation",
+        "governed": "Accepted by governance",
+        "source-backed": "Source-backed",
+        "validated": "Validated",
+        "operational": "Observed in runtime",
+        "stale": "Stale evidence",
+        "contradicted": "Conflicting evidence",
+        "missing": "Missing evidence",
+        "unproven": "Unproven",
+    }
+    return labels.get(value.strip().casefold(), f"Evidence: {value}")
+
+
 def _columns(project: Mapping[str, Any], key: str, fallback: Sequence[tuple[str, str]]) -> list[tuple[str, str]]:
     rows: list[tuple[str, str]] = []
     for raw in _sequence(project.get(key)):
@@ -426,7 +566,7 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
         else ""
     )
     claim_html = (
-        f"""      <section class="project-panel"><div class="project-panel-head"><h2>{_d(project.get("claim_evidence_title"))}</h2><p>{_d(project.get("claim_evidence_note"))}</p></div>{_table(project.get("claim_evidence"), claim_columns)}</section>
+        f"""      <section class="project-panel project-evidence-panel"><div class="project-panel-head"><h2>{_d(project.get("claim_evidence_title"))}</h2><p>{_d(project.get("claim_evidence_note"))}</p></div>{_claim_evidence(project, claim_columns)}</section>
 """
         if _enabled(project, "claim_evidence")
         else ""

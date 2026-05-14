@@ -724,6 +724,97 @@
   border-bottom: 0;
 }
 
+.project-evidence-readout {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.project-evidence-card {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: linear-gradient(180deg, #f8fbff, #ffffff);
+  padding: 14px 15px;
+}
+
+.project-evidence-card h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--project-type-card-title-size);
+  font-weight: var(--project-type-card-title-weight);
+  line-height: 1.18;
+}
+
+.project-evidence-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--project-type-content-size);
+  font-weight: 400;
+  line-height: 1.42;
+}
+
+.project-evidence-card ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.project-evidence-card li {
+  display: grid;
+  gap: 3px;
+  border-top: 1px solid #e8f1ff;
+  padding-top: 9px;
+}
+
+.project-evidence-card li:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.project-evidence-card b {
+  color: var(--ink);
+  font-size: var(--project-type-card-title-size);
+  font-weight: var(--project-type-card-title-weight);
+  line-height: 1.18;
+}
+
+.project-evidence-card span {
+  color: var(--ink-soft);
+  font-size: var(--project-type-content-size);
+  font-weight: 400;
+  line-height: 1.38;
+}
+
+.project-evidence-card small {
+  color: var(--muted);
+  font-size: var(--project-type-caption-size);
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+.project-evidence-audit {
+  margin-top: 12px;
+}
+
+.project-evidence-audit summary {
+  cursor: pointer;
+  color: var(--chip-active-ink);
+  font-size: var(--project-type-content-size);
+  font-weight: var(--project-type-card-title-weight);
+  line-height: 1.25;
+}
+
+.project-evidence-audit .project-table {
+  margin-top: 10px;
+}
+
 .project-boundary-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -931,6 +1022,7 @@
   .project-card-grid.four,
   .project-actor-grid,
   .project-job-grid,
+  .project-evidence-readout,
   .project-signal-grid,
   .project-story-contract,
   .project-scenario-body,

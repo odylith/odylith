@@ -208,10 +208,10 @@ def section_narration(
             f"Summarized from {release}, {_count_phrase(active_workstream_count, 'active workstream')}, "
             f"{_count_phrase(action_count, 'runtime action')}, and {_count_phrase(len(evidence_sources), 'evidence source')}."
         ),
-        "claim_evidence_title": f"What supports the current {title} claims?",
+        "claim_evidence_title": f"What can be trusted about {title} right now?",
         "claim_evidence_note": (
-            f"Claims are projected from {evidence_phrase}; every row carries evidence maturity, "
-            "freshness, owner, and source boundary."
+            f"This separates current facts projected from {evidence_phrase} from stale records, conflicts, "
+            "and proof gaps."
         ),
         "topology_spine_title": "Topology spine",
         "topology_spine_note": (

@@ -305,7 +305,7 @@ def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path:
     assert payload["scenario_title"] == "Current implementing work"
     assert payload["jobs_title"] == "What is active for 0.2.0: Human Project Entry?"
     assert payload["boundary_title"] == "What is inside the current implementing boundary?"
-    assert payload["claim_evidence_title"] == "What supports the current Odylith claims?"
+    assert payload["claim_evidence_title"] == "What can be trusted about Odylith right now?"
     assert payload["state_title"] == "Where does Odylith stand?"
     assert payload["next_title"] == "What should move next for Odylith?"
     assert payload["included_label"] == "In current slice"
@@ -320,7 +320,10 @@ def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path:
     assert "Decision now" not in html
     assert "What must be decided?" not in html
     assert "What should move next for Odylith?" in html
-    assert "What supports the current Odylith claims?" in html
+    assert "What can be trusted about Odylith right now?" in html
+    assert "Observed now" in html
+    assert "Proof gaps" in html
+    assert "View claim audit" in html
     assert "Is the Odylith governance spine healthy?" not in html
     assert "What source coverage exists for Odylith?" not in html
     assert "What changed or conflicts in Odylith?" in html
@@ -520,7 +523,11 @@ def test_project_intelligence_renders_greenfield_origin_from_proposal(tmp_path: 
     assert "User-stated and inferred" in payload["chips"]
     assert "claim_evidence" in payload["sections"]
     assert "Proposed first-path scenario" in html
-    assert "What evidence state does" in html
+    assert "What can be trusted about" in html
+    assert "Accepted intent" in html
+    assert "Proposed shape" in html
+    assert "Proof still required" in html
+    assert "View claim audit" in html
     assert "Unproven before build" in html
     assert "Source-backed runtime" not in payload["chips"]
     assert "accepted project direction" in payload["desired"].lower()
