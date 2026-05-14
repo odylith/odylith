@@ -469,10 +469,23 @@ def _title_head(value: str) -> str:
         if tail_head:
             return f"{that_head.strip()} that {tail_head}".strip(" .")
     for marker in (" that ", " around ", " before ", " with ", " by ", " to "):
-        head, sep, _ = _partition_casefold(text, marker)
+        head, sep, tail = _partition_casefold(text, marker)
         if sep:
+            if marker == " with " and _should_keep_with_clause(head, tail):
+                return f"{head.strip(' .')} with {_clause_head(tail)}".strip(" .")
             return head.strip(" .")
     return text.strip(" .")
+
+
+def _should_keep_with_clause(head: str, tail: str) -> bool:
+    """Keep short product names specific when their differentiator follows ``with``."""
+
+    head_words = sentence(head).split()
+    tail_head = _clause_head(tail)
+    if not tail_head or len(head_words) > 3:
+        return False
+    generic_terms = {"app", "application", "platform", "product", "robot", "service", "site", "system", "tool"}
+    return bool(head_words and head_words[-1].casefold() in generic_terms)
 
 
 def _strip_prompt_directives(value: str) -> str:
@@ -675,6 +688,10 @@ def _scenario_body(*, project: Mapping[str, Any], first_path: str, validation: S
 
 
 def _actors(project: Mapping[str, Any], *, proposal: Mapping[str, Any]) -> list[tuple[str, str, str]]:
+    project_rows = _project_actor_rows(project=project, proposal=proposal)
+    if project_rows:
+        return project_rows[:6]
+
     accepted = dict_value(proposal.get("_accepted_project"))
     tribunal = dict_value(accepted.get("tribunal"))
     visible_actors = [dict(row) for row in list_value(tribunal.get("visible_actors")) if isinstance(row, Mapping)]
@@ -684,7 +701,7 @@ def _actors(project: Mapping[str, Any], *, proposal: Mapping[str, Any]) -> list[
         owner_responsibilities = {**_proposal_actor_responsibility_map(proposal), **_owner_responsibility_map(project)}
         rows = [
             (
-                sentence(row.get("stable_role"), "Tribunal role").replace("_", " ").title(),
+                "",
                 sentence(row.get("visible_actor"), "Project actor"),
                 short(
                     owner_responsibilities.get(sentence(row.get("visible_actor")).casefold())
@@ -693,17 +710,161 @@ def _actors(project: Mapping[str, Any], *, proposal: Mapping[str, Any]) -> list[
                 ),
             )
             for row in visible_actors[:6]
+            if _is_project_actor_label(sentence(row.get("visible_actor")))
         ]
         if rows:
-            return rows
+            return _dedupe_actor_rows(rows)[:6]
     rows = []
     for value in strings(project.get("owners"))[:6]:
         head, _, body = value.partition(":")
-        rows.append(("Owner", sentence(head, "Owner"), short(body or value, limit=145)))
+        title = sentence(head, "Owner")
+        if _is_project_actor_label(title):
+            rows.append(("", title, short(body or value, limit=145)))
     for value in strings(project.get("operators"))[:3]:
         head, _, body = value.partition(":")
-        rows.append(("Operator", sentence(head, "Operator"), short(body or value, limit=145)))
-    return rows[:6] or [("Owner", "Operator", "Reviews and accepts or revises the proposal before implementation.")]
+        title = sentence(head, "Operator")
+        if _is_project_actor_label(title):
+            rows.append(("", title, short(body or value, limit=145)))
+    return _dedupe_actor_rows(rows)[:6] or [
+        ("", "Project operator", "Reviews and accepts or revises the proposal before implementation.")
+    ]
+
+
+def _project_actor_rows(
+    *,
+    project: Mapping[str, Any],
+    proposal: Mapping[str, Any],
+) -> list[tuple[str, str, str]]:
+    """Return Project-facing actors before internal Tribunal role projections."""
+
+    rows: list[tuple[str, str, str]] = []
+    for value in [*strings(project.get("owners")), *strings(project.get("operators"))]:
+        title, body = _actor_title_and_body(value)
+        if _is_project_actor_label(title):
+            rows.append(("", title, short(body, limit=145)))
+    for item in list_value(proposal.get("backlog")):
+        if not isinstance(item, Mapping):
+            continue
+        intelligence = dict_value(item.get("domain_intelligence"))
+        for value in strings(intelligence.get("actors")):
+            title, body = _actor_title_and_body(value)
+            if _is_project_actor_label(title):
+                rows.append(("", title, short(body, limit=145)))
+    return _dedupe_actor_rows(rows)
+
+
+def _actor_title_and_body(value: object) -> tuple[str, str]:
+    text = sentence(value)
+    if not text:
+        return "", ""
+    head, sep, body = text.partition(":")
+    title = sentence(head)
+    detail = sentence(body if sep else text)
+    if not detail or detail.casefold() == title.casefold():
+        detail = _default_actor_body(title)
+    elif detail:
+        detail = detail[:1].upper() + detail[1:]
+    return title, detail
+
+
+def _default_actor_body(title: str) -> str:
+    lowered = title.casefold()
+    if any(token in lowered for token in ("owner", "advocate", "user", "customer", "merchant", "patient", "client")):
+        return "Receives the value of the first project path and decides whether it is acceptable."
+    if any(token in lowered for token in ("operator", "coordinator", "caretaker", "maintainer")):
+        return "Moves the first path through the real workflow and handles day-to-day exceptions."
+    if any(token in lowered for token in ("risk", "safety", "compliance", "privacy")):
+        return "Owns the harm, policy, or operational exposure that can block the first release."
+    if any(token in lowered for token in ("proof", "evidence", "quality", "validation", "reviewer")):
+        return "Decides whether the evidence is strong enough to trust the first path."
+    if any(token in lowered for token in ("build", "implementation", "engineer", "developer")):
+        return "Owns the implementation path after the project direction is accepted."
+    return "Participates in the first project path and keeps its responsibility explicit."
+
+
+def _is_project_actor_label(value: str) -> bool:
+    label = sentence(value)
+    if not label:
+        return False
+    if len(label.split()) > 6:
+        return False
+    lowered = label.casefold().replace("_", " ")
+    if lowered in {
+        "actor",
+        "beneficiary advocate",
+        "domain operator",
+        "risk owner",
+        "evidence owner",
+        "implementation owner",
+        "release owner",
+        "project actor",
+        "primary user",
+    }:
+        return False
+    internal_markers = (
+        "program boundary",
+        "safety envelope",
+        "project intelligence",
+        "governance artifact",
+        "release gate",
+        "proof gate",
+        "source boundary",
+        "topology spine",
+    )
+    if any(marker in lowered for marker in internal_markers):
+        return False
+    system_markers = (
+        "unit",
+        "core",
+        "controller",
+        "engine",
+        "harness",
+        "interface",
+        "registry",
+        "atlas",
+        "radar",
+        "compass",
+        "casebook",
+        "diagram",
+    )
+    human_markers = (
+        "advocate",
+        "analyst",
+        "approver",
+        "caretaker",
+        "client",
+        "coordinator",
+        "customer",
+        "engineer",
+        "maintainer",
+        "merchant",
+        "operator",
+        "owner",
+        "patient",
+        "person",
+        "reviewer",
+        "scientist",
+        "team",
+        "user",
+    )
+    if any(marker in lowered for marker in system_markers) and not any(
+        marker in lowered for marker in human_markers
+    ):
+        return False
+    return True
+
+
+def _dedupe_actor_rows(rows: Sequence[tuple[str, str, str]]) -> list[tuple[str, str, str]]:
+    result: list[tuple[str, str, str]] = []
+    seen: set[str] = set()
+    for role, title, body in rows:
+        clean_title = sentence(title)
+        key = clean_title.casefold()
+        if not clean_title or key in seen:
+            continue
+        seen.add(key)
+        result.append((sentence(role), clean_title, sentence(body)))
+    return result
 
 
 def _proposal_actor_responsibility_map(proposal: Mapping[str, Any]) -> dict[str, str]:

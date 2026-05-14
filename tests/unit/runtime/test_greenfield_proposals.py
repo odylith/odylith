@@ -15,6 +15,7 @@ from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import build_traceability_graph
 from odylith.runtime.governance import release_planning_view_model
 from odylith.runtime.project_intelligence import builder as project_intelligence_builder
+from odylith.runtime.project_intelligence import greenfield as project_intelligence_greenfield
 from odylith.runtime.project_intelligence import presenter as project_intelligence_presenter
 
 
@@ -1608,16 +1609,16 @@ def test_greenfield_apply_feeds_project_tab_from_accepted_project_and_tribunal(t
     assert "greenfield proposal" in payload["chips"]
     story = payload["product_story"]
     assert "checkout" in story["headline"].lower()
-    assert "the team can prove" in story["headline"]
+    assert "before expanding the product" in story["headline"]
     assert "Make Build" not in " ".join(story["paragraphs"])
     assert len(story["paragraphs"]) >= 3
-    assert any("In this first slice" in paragraph for paragraph in story["paragraphs"])
+    assert any("The first path defines" in paragraph for paragraph in story["paragraphs"])
     assert any("Together, those records keep release" in paragraph for paragraph in story["paragraphs"])
     source_records = story["supporting_records"]
-    assert any("Radar carries" in row and "B-" in row for row in source_records)
-    assert any("Registry gives ownership" in row for row in source_records)
-    assert any("Atlas gives reviewers" in row for row in source_records)
-    assert any("Release 0.0.1 stays tied" in row for row in source_records)
+    assert any(row.startswith("Radar:") and "B-" in row for row in source_records)
+    assert any(row.startswith("Registry:") for row in source_records)
+    assert any(row.startswith("Atlas:") for row in source_records)
+    assert any(row.startswith("Proof: release 0.0.1 stays tied") for row in source_records)
     assert "Product Story" in html
     assert "Storefront" in html
     assert "Checkout Orchestrator" in html
@@ -1641,6 +1642,46 @@ def test_greenfield_apply_feeds_project_tab_from_accepted_project_and_tribunal(t
         row["claim"] == "Greenfield Tribunal" and row["value"] == "passed" and row["source"].endswith("accepted-project.v1.json")
         for row in payload["claim_evidence"]
     )
+
+
+def test_greenfield_project_tab_participants_prefer_project_actors_over_internal_tribunal_concepts(
+    tmp_path,
+) -> None:
+    proposal = _apply_ready_greenfield_fixture(tmp_path, "plant robot")
+    proposal["_accepted_project"] = {
+        "tribunal": {
+            "visible_actors": [
+                {
+                    "stable_role": "beneficiary_advocate",
+                    "visible_actor": "Safety envelope",
+                    "responsibility": "Protects the person receiving the value.",
+                },
+                {
+                    "stable_role": "domain_operator",
+                    "visible_actor": "Program Boundary operator",
+                    "responsibility": "Checks workflow coherence.",
+                },
+                {
+                    "stable_role": "evidence_owner",
+                    "visible_actor": "Program Boundary proof owner",
+                    "responsibility": "Decides proof strength.",
+                },
+            ]
+        }
+    }
+
+    payload = project_intelligence_greenfield.build_greenfield_payload(proposal=proposal, repo_root=tmp_path)
+    participants = list(payload["participants"])
+    titles = [row[1] for row in participants]
+    kickers = [row[0] for row in participants]
+
+    assert "Plant owner advocate" in titles
+    assert "Care routine operator" in titles
+    assert "Plant safety reviewer" in titles
+    assert "Safety envelope" not in titles
+    assert "Program Boundary operator" not in titles
+    assert "Program Boundary proof owner" not in titles
+    assert all(kicker == "" for kicker in kickers)
 
 
 def test_greenfield_apply_runs_artifact_tribunal_for_each_atlas_diagram(tmp_path, monkeypatch) -> None:
