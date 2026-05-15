@@ -355,6 +355,7 @@ def test_greenfield_propose_help_forwards_backend_flags(capsys) -> None:
     assert "--prompt" in output
     assert "--format" in output
     assert "--confirm-intent" in output
+    assert "--intent-file" in output
 
 
 def test_greenfield_apply_help_forwards_backend_flags(capsys) -> None:
@@ -377,6 +378,7 @@ def test_greenfield_create_help_forwards_backend_flags(capsys) -> None:
     assert excinfo.value.code == 0
     assert "usage: odylith greenfield create" in output
     assert "--prompt" in output
+    assert "--intent-file" in output
     assert "--confirm" in output
     assert "--release" in output
 
@@ -409,6 +411,41 @@ def test_greenfield_propose_command_is_provider_free(tmp_path: Path, capsys) -> 
 
 
 def test_greenfield_propose_confirm_intent_json_is_provider_free(tmp_path: Path, capsys) -> None:
+    intent_file = tmp_path / ".odylith/runtime/greenfield/confirmed-intent.md"
+    intent_file.parent.mkdir(parents=True, exist_ok=True)
+    intent_file.write_text(
+        """Permit Review Workspace — Product Intent Confirmation
+
+Product story
+A city permitting team uses the Permit Review Workspace to review building applications without losing the connection between submitted documents, zoning checks, applicant revisions, reviewer comments, and final decisions. The product gives coordinators and supervisors one place to see what changed, what still blocks approval, and why a permit decision is defensible.
+
+State object that changes through the first journey
+A Permit Review File tracks the active application, submitted documents, zoning check status, applicant revisions, reviewer comments, unresolved blockers, decision state, and evidence supporting each approval or rejection.
+
+First complete path Odylith should prove before broader scope
+A coordinator imports one application, a reviewer records a zoning check, the applicant submits one revision, and a supervisor reviews the decision package.
+
+Human actors
+- Coordinator — intakes applications, keeps review work moving, and routes blockers to the right reviewer.
+- Zoning reviewer — records zoning checks, code references, comments, and pass or block outcomes.
+- Applicant — submits revised documents that respond to reviewer comments and unresolved blockers.
+- Supervisor — reviews the decision package and approves, blocks, or rejects the permit.
+
+External systems
+- Document portal — supplies application documents.
+- Parcel data source — supplies zoning context.
+
+Internal product systems
+- Permit file registry — owns permit identity, applicant metadata, active submitted documents, unresolved blockers, and decision state.
+- Zoning check ledger — records zoning checks, reviewer comments, rule references, and pass or block outcomes.
+- Revision tracker — links applicant revisions to the documents, comments, and checks they are meant to address.
+- Decision package review — assembles source documents, reviewer evidence, unresolved blockers, supervisor decision, and final approval state.
+
+Proof boundary
+Release 0.0.1 succeeds when a supervisor can inspect one permit review file, see the active documents, zoning result, applicant revision, reviewer comments, unresolved blockers, and final decision state, and trace every decision back to source documents and reviewer evidence.
+""",
+        encoding="utf-8",
+    )
     rc = cli.main(
         [
             "greenfield",
@@ -416,7 +453,9 @@ def test_greenfield_propose_confirm_intent_json_is_provider_free(tmp_path: Path,
             "--repo-root",
             str(tmp_path),
             "--prompt",
-            "Build an ecommerce site",
+            "Build a permit review workspace",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
             "--confirm-intent",
             "--format",
             "json",

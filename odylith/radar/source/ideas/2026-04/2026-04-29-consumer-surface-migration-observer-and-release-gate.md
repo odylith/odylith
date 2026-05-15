@@ -1744,3 +1744,27 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   payloads no longer carry stale path/branch filler. Existing consumer-owned
   diagram source truth does not require migration; upgraded repos receive the
   stricter renderer and refreshed managed browser assets.
+- The confirmed greenfield product-narrative preservation pass is covered by
+  `migration-observer:0.1.15:guidance-and-skills:abed448d6309`,
+  `migration-observer:0.1.15:public-docs-and-release-guidance:103ddeb275f7`,
+  `migration-observer:0.1.15:browser-surfaces:29459cdc19ba`, and
+  `migration-observer:0.1.15:install-managed-assets:7a716e2451f2`, with the
+  managed-block wording refresh covered by
+  `migration-observer:0.1.15:guidance-and-skills:df99fa0c3665` and
+  `migration-observer:0.1.15:install-managed-assets:647e3b9c3618`. The pass
+  makes the accepted Product Intent Confirmation a required confirmed-create
+  input, blocks prompt-only or meta-scaffold confirmed writes, and regenerates
+  consumer-visible managed guidance, public docs, browser surfaces, and
+  install-managed mirrors around that contract. Existing consumer-owned source
+  truth does not require migration; upgraded repos receive fail-closed
+  confirmed greenfield writes that preserve the accepted product story, actors,
+  systems, first workflow, non-goals, and proof boundary before governance
+  records are produced.
+- The post-refresh browser and install-managed settlement for that same
+  confirmed greenfield product-narrative preservation pass is covered by
+  `migration-observer:0.1.15:browser-surfaces:98749c161c23` and
+  `migration-observer:0.1.15:install-managed-assets:56ad991c2eaf`. These
+  fingerprints bind the regenerated Radar/browser payloads and bundled managed
+  mirrors after the migration assessment itself was refreshed. Existing
+  consumer-owned source truth still does not require migration beyond normal
+  dashboard/runtime refresh.

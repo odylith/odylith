@@ -41,12 +41,14 @@ placeholder products in response to a show-me request.
    Product Intent Confirmation in chat from live reasoning so the operator sees
    the interpreted product story, actors, systems, assumptions, ambiguities,
    and confirm/edit/reject gate. After the operator confirms the same
-   interpretation, run the confirmed create path from the same confirmation:
-   `greenfield create --repo-root . --prompt "<their request>" --confirm --release 0.0.1`.
-   Odylith builds the apply-ready proposal, validates it, runs Tribunal, writes
-   records, and refreshes surfaces from that confirmation; do not show JSON as
-   a second approval step and do not search Odylith source, `.odylith`, bundle
-   files, or local examples for schema.
+   interpretation, write that same visible confirmation to
+   `.odylith/runtime/greenfield/confirmed-intent.md`, then run the confirmed
+   create path from the same confirmation:
+   `greenfield create --repo-root . --prompt "<their request>" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1`.
+   Odylith builds the apply-ready proposal from the accepted narrative,
+   validates it, runs Tribunal, writes records, and refreshes surfaces; do not
+   show JSON as a second approval step and do not search Odylith source,
+   `.odylith`, bundle files, or local examples for schema.
    Do not ask the operator to inspect proposal JSON or confirm a second time unless they explicitly request a review artifact.
    Do not hand-author or repair proposal JSON, use canned domain scaffolds, dump
    tool internals, or write code before the product gates are accepted. When the CLI

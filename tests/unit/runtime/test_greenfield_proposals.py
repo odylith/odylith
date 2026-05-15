@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import PROJECT_INTELLIGENCE_LAYERS
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 from odylith.runtime.governance import backlog_authoring
@@ -22,6 +23,91 @@ from odylith.runtime.project_intelligence import presenter as project_intelligen
 def _write(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
+
+
+CONFIRMED_INTENT_TEXT = """Municipal Permit Review Workspace — Product Intent Confirmation
+
+Product story
+A city permitting team uses the Municipal Permit Review Workspace to review building permit submissions without losing the connection between applicant documents, zoning checks, reviewer comments, and approval decisions. The product gives permit coordinators and reviewers one place to see what was submitted, what changed, which checks passed, and why a permit is ready, blocked, or rejected.
+
+State object that changes through the first journey
+A Permit Review File tracks the permit application, submitted documents, zoning status, reviewer comments, applicant revisions, decision state, and evidence that supports each approval or rejection.
+
+First complete path Odylith should prove before broader scope
+A permit coordinator imports one permit application, a zoning reviewer records a zoning check, the applicant submits one revision, and a supervisor reviews the decision package with traceable documents, comments, checks, and final status.
+
+Human actors
+- Permit coordinator — intakes applications and keeps review work moving.
+- Zoning reviewer — evaluates parcel, use, setback, and code-check evidence.
+- Applicant — submits documents and revisions.
+- Review supervisor — approves, blocks, or rejects a decision package.
+
+External systems
+- Document intake portal — supplies application packets and revision uploads.
+- Parcel zoning data — supplies zoning district, parcel attributes, and rule references.
+- Payment ledger — supplies fee status without owning review decisions.
+
+Internal product systems
+- Permit file registry — owns permit identity, applicant metadata, submitted documents, and decision state.
+- Zoning check ledger — records zoning checks, reviewer comments, rule references, and pass or block outcomes.
+- Revision tracker — links applicant revisions to the documents and checks they are meant to address.
+- Decision package review — assembles evidence, reviewer notes, unresolved blockers, and final approval state.
+
+Critical assumptions
+- Release 0.0.1 is an internal reviewer workspace, not a public application portal.
+- Payment status can be referenced but does not decide review readiness.
+- Review evidence must remain understandable to permitting staff and applicants.
+
+Ambiguities that would change the first path
+1. Does the first release need applicant self-service, or only internal staff review?
+2. Are zoning rules imported from a live GIS source, or referenced manually by reviewers?
+3. Does final approval require one supervisor or multiple department sign-offs?
+
+Proof boundary
+Release 0.0.1 succeeds when a supervisor can inspect one permit review file, see the active submitted documents, zoning check result, applicant revision, reviewer comments, unresolved blockers, and final decision state, and trace every decision back to source documents and reviewer evidence.
+"""
+
+
+def _confirmed_intent() -> dict[str, object]:
+    return parse_confirmed_intent_text(
+        CONFIRMED_INTENT_TEXT,
+        prompt="Draft a greenfield proposal for a municipal permit review workspace",
+    )
+
+
+def _write_confirmed_intent(repo_root: Path) -> Path:
+    path = repo_root / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
+    _write(path, CONFIRMED_INTENT_TEXT)
+    return path
+
+
+def test_confirmed_intent_rejects_meta_scaffold_instead_of_product_story() -> None:
+    bad_intent = """Community Archive — Product Intent Confirmation
+
+Product story
+Turn the community archive intent into a clear product narrative, first workflow, state object, and proof boundary before implementation begins. Release 0.0.1 narrows that promise to one first slice and keeps the project readable as one product story.
+
+State object that changes through the first journey
+A Community Archive state record stores the workflow result, owner, validation output, reviewer decision, and evidence packet so the release claim can be trusted later.
+
+First complete path Odylith should prove before broader scope
+Start with the community archive first workflow, then replay community archive record and review community archive evidence packet before source work starts.
+
+Human actors
+- Community Archive workflow lead and beneficiary — prove one journey from intake to visible completion.
+- Community Archive proof lead — decides whether evidence is strong enough to trust the release claim.
+
+Internal product systems
+- Community Archive Workflow Service — owns the first workflow.
+- Community Archive State Store — owns the state record.
+- Community Archive Evidence Review — owns the evidence packet.
+
+Proof boundary
+The community archive first workflow passes end to end with fixture-backed inputs and documented non-goals, and every release claim maps to state, validation output, reviewer decision, and evidence packet.
+"""
+
+    with pytest.raises(ValueError, match="missing or too thin"):
+        parse_confirmed_intent_text(bad_intent, prompt="Create a community archive")
 
 
 def _ontology_term_labels(rows: object) -> list[str]:
@@ -574,13 +660,13 @@ def _host_project_brief(*, title: str, prompt: str, release: str) -> dict[str, o
             },
             {
                 "path": "Create confirmed records",
-                "command": f"odylith greenfield create --repo-root . --prompt {json.dumps(prompt)} --confirm --release {release}",
+                "command": f"odylith greenfield create --repo-root . --prompt {json.dumps(prompt)} --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release {release}",
                 "works_in": "shell, Codex, Claude Code",
                 "use_when": "Use after intent confirmation so Odylith builds, validates, gates, writes, and refreshes the proposal-owned records.",
             },
             {
                 "path": "Optional proposal review",
-                "command": f"odylith greenfield propose --repo-root . --prompt {json.dumps(prompt)} --confirm-intent --format json",
+                "command": f"odylith greenfield propose --repo-root . --prompt {json.dumps(prompt)} --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json",
                 "works_in": "shell, Codex, Claude Code",
                 "use_when": "Use only when a reviewer explicitly asks to inspect the apply-ready JSON before apply.",
             },
@@ -1120,7 +1206,8 @@ def _host_reasoned_crispr_without_parent() -> dict[str, object]:
 def test_greenfield_prompt_returns_apply_ready_confirmed_proposal(tmp_path) -> None:
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
-        prompt="Odylith, build an ecommerce site for me",
+        prompt="Draft a greenfield proposal for a municipal permit review workspace",
+        confirmed_intent=_confirmed_intent(),
     )
 
     greenfield_proposals.validate_host_reasoned_proposal(proposal)
@@ -1130,15 +1217,20 @@ def test_greenfield_prompt_returns_apply_ready_confirmed_proposal(tmp_path) -> N
     assert proposal["host_agnostic"] is True
     assert proposal["intent"]["reasoning_mode"] == "odylith_confirmed_apply_ready"
     assert proposal["classification"]["method"] == "confirmed_open_world_product_shape"
-    assert proposal["intent"]["title"] == "Ecommerce Site"
+    assert proposal["intent"]["title"] == "Municipal Permit Review Workspace"
     assert "catalog" not in proposal
     assert len(proposal["backlog"]) >= 4
-    assert len(proposal["components"]) >= 3
+    assert len(proposal["components"]) >= 4
     assert len(proposal["diagrams"]) >= 3
+    assert "Permit file registry" in encoded
+    assert "Zoning check ledger" in encoded
+    assert "Release 0.0.1 succeeds when a supervisor can inspect one permit review file" in encoded
+    assert "Municipal Permit Review Workspace Workflow Service" not in encoded
     assert proposal["project_brief"]["blueprint_sections"]
     assert proposal["project_intelligence"]["intent"]
     assert proposal["observed_source"]["source_posture"] == "empty_or_no_app_source"
     assert "greenfield create" in proposal["apply_commands"][0]
+    assert "--intent-file .odylith/runtime/greenfield/confirmed-intent.md" in proposal["apply_commands"][0]
     assert "--confirm" in proposal["apply_commands"][0]
     assert "--release '0.0.1'" in proposal["apply_commands"][0]
     assert "review-only" in proposal["apply_commands"][1]
@@ -1149,6 +1241,15 @@ def test_greenfield_prompt_returns_apply_ready_confirmed_proposal(tmp_path) -> N
     assert "proposal_template" not in proposal
     assert "canonical_proposal" not in proposal
     assert "canonical_proposal_gate" not in proposal
+
+
+def test_greenfield_confirmed_builder_rejects_shallow_confirmed_intent(tmp_path) -> None:
+    with pytest.raises(ValueError, match="requires product story"):
+        greenfield_proposals.build_greenfield_proposal(
+            repo_root=tmp_path,
+            prompt="Create a community archive",
+            confirmed_intent={"title": "Community Archive"},
+        )
 
 
 def test_greenfield_text_starts_with_product_intent_confirmation(tmp_path, capsys) -> None:
@@ -1180,6 +1281,7 @@ def test_greenfield_text_starts_with_product_intent_confirmation(tmp_path, capsy
     assert "greenfield create --repo-root ." in output
     assert "--confirm" in output
     assert "Confirmed CLI after confirmation" in output
+    assert "--intent-file .odylith/runtime/greenfield/confirmed-intent.md" in output
     assert "дж" not in output
     assert "soн" not in output
     assert "..." not in output
@@ -1196,25 +1298,28 @@ def test_greenfield_text_starts_with_product_intent_confirmation(tmp_path, capsy
     assert "shared artifact:" not in output
     assert "Project-first blueprint" not in output
     assert "Workstream domain intelligence" not in output
-    assert len(output.splitlines()) <= 35
+    assert len(output.splitlines()) <= 38
     assert len(output) <= 3200
 
 
 def test_greenfield_confirm_intent_shows_direct_apply_handoff(tmp_path, capsys) -> None:
+    _write_confirmed_intent(tmp_path)
     rc = greenfield_proposals.main(
         [
             "propose",
             "--repo-root",
             str(tmp_path),
             "--prompt",
-            "Design a mathematics research workspace for spectral graph theory",
+            "Draft a greenfield proposal for a municipal permit review workspace",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
             "--confirm-intent",
         ]
     )
 
     assert rc == 0
     output = capsys.readouterr().out
-    assert "Odylith greenfield proposal: Mathematics Research Workspace For Spectral Graph Theory" in output
+    assert "Odylith greenfield proposal: Municipal Permit Review Workspace" in output
     assert "No files changed" in output
     assert "- apply-ready JSON: built, normalized, validated" in output
     assert "- mode: host_reasoned_greenfield_proposal" in output
@@ -1224,20 +1329,42 @@ def test_greenfield_confirm_intent_shows_direct_apply_handoff(tmp_path, capsys) 
     assert "Planned components" in output
     assert "Draft architecture diagrams" in output
     assert "greenfield create --repo-root ." in output
+    assert "--intent-file .odylith/runtime/greenfield/confirmed-intent.md" in output
     assert "internal apply payload" not in output
     assert "active-proposal.v1.json" not in output
     assert "host_instruction" not in output
     assert "reasoning_contract" not in output
 
 
-def test_greenfield_text_full_detail_keeps_apply_path_available_after_intent_confirmed(tmp_path, capsys) -> None:
+def test_greenfield_confirm_intent_without_intent_file_fails_closed(tmp_path, capsys) -> None:
     rc = greenfield_proposals.main(
         [
             "propose",
             "--repo-root",
             str(tmp_path),
             "--prompt",
-            "Design a mathematics research workspace for spectral graph theory",
+            "Draft a greenfield proposal for a municipal permit review workspace",
+            "--confirm-intent",
+        ]
+    )
+
+    assert rc == 2
+    output = capsys.readouterr().out
+    assert "requires --intent-file" in output
+    assert "will not write records from a thin prompt" in output
+
+
+def test_greenfield_text_full_detail_keeps_apply_path_available_after_intent_confirmed(tmp_path, capsys) -> None:
+    _write_confirmed_intent(tmp_path)
+    rc = greenfield_proposals.main(
+        [
+            "propose",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Draft a greenfield proposal for a municipal permit review workspace",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
             "--confirm-intent",
             "--detail",
             "full",
@@ -1246,7 +1373,7 @@ def test_greenfield_text_full_detail_keeps_apply_path_available_after_intent_con
 
     assert rc == 0
     output = capsys.readouterr().out
-    assert "Odylith greenfield proposal: Mathematics Research Workspace For Spectral Graph Theory" in output
+    assert "Odylith greenfield proposal: Municipal Permit Review Workspace" in output
     assert "Gate 1 - Interpretation" not in output
     assert "Gate 2 - Clarify Before Apply" not in output
     assert "Gate 3 - Proposal Preview" not in output
@@ -1255,6 +1382,7 @@ def test_greenfield_text_full_detail_keeps_apply_path_available_after_intent_con
     assert "Planned components" in output
     assert "Draft architecture diagrams" in output
     assert "odylith greenfield create --repo-root ." in output
+    assert "--intent-file .odylith/runtime/greenfield/confirmed-intent.md" in output
     assert "--confirm" in output
     assert "internal apply payload" not in output
     assert ".odylith/runtime/greenfield/active-proposal.v1.json" not in output
@@ -1265,11 +1393,10 @@ def test_greenfield_title_preserves_meaningful_trailing_domain_terms(tmp_path) -
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
         prompt="field inspection evidence workspace for municipal building permits",
+        confirmed_intent=_confirmed_intent(),
     )
 
-    assert proposal["intent"]["title"] == (
-        "Field Inspection Evidence Workspace For Municipal Building Permits"
-    )
+    assert proposal["intent"]["title"] == "Municipal Permit Review Workspace"
     assert not proposal["intent"]["title"].endswith(" To")
 
 
@@ -1300,13 +1427,16 @@ def test_greenfield_cli_json_defaults_to_intent_confirmation(tmp_path, capsys) -
 
 
 def test_greenfield_cli_json_is_apply_ready_after_intent_confirmation(tmp_path, capsys) -> None:
+    _write_confirmed_intent(tmp_path)
     rc = greenfield_proposals.main(
         [
             "propose",
             "--repo-root",
             str(tmp_path),
             "--prompt",
-            "Build a statistics notebook repo",
+            "Draft a greenfield proposal for a municipal permit review workspace",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
             "--confirm-intent",
             "--format",
             "json",
@@ -1318,6 +1448,10 @@ def test_greenfield_cli_json_is_apply_ready_after_intent_confirmation(tmp_path, 
     assert payload["mode"] == "host_reasoned_greenfield_proposal"
     assert payload["provider_calls"] == 0
     assert payload["intent"]["reasoning_mode"] == "odylith_confirmed_apply_ready"
+    encoded = json.dumps(payload)
+    assert "Permit file registry" in encoded
+    assert "Zoning check ledger" in encoded
+    assert "Municipal Permit Review Workspace Workflow Service" not in encoded
     assert "reasoning_contract" not in payload
     assert "host_instruction" not in payload
     assert "canonical_proposal" not in payload
@@ -2248,10 +2382,9 @@ def test_greenfield_prompt_paths_do_not_expose_legacy_apply_ready_scaffold(tmp_p
     )
     out = capsys.readouterr().out
 
-    assert rc == 0
-    assert "Odylith greenfield proposal" in out
-    assert "apply-ready JSON" in out
-    assert "greenfield create --repo-root ." in out
+    assert rc == 2
+    assert "requires --intent-file" in out
+    assert "will not write records from a thin prompt" in out
     assert "internal apply payload" not in out
     assert "active-proposal.v1.json" not in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
@@ -2259,6 +2392,7 @@ def test_greenfield_prompt_paths_do_not_expose_legacy_apply_ready_scaffold(tmp_p
 
 def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, capsys) -> None:
     _seed_empty_governance_repo(tmp_path)
+    _write_confirmed_intent(tmp_path)
     monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
@@ -2269,7 +2403,9 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
             "--repo-root",
             str(tmp_path),
             "--prompt",
-            "robot swarm logistics app",
+            "Draft a greenfield proposal for a municipal permit review workspace",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
             "--release",
             "0.0.1",
             "--confirm",
@@ -2282,6 +2418,9 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
     assert "- tribunal: passed" in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
     assert (tmp_path / "odylith/runtime/source/accepted-project.v1.json").is_file()
+    accepted = (tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8")
+    assert "Permit file registry" in accepted
+    assert "Municipal Permit Review Workspace Workflow Service" not in accepted
     assert (tmp_path / "odylith/registry/source/component_registry.v1.json").is_file()
     assert list((tmp_path / "odylith/atlas/source").glob("*.mmd"))
 
@@ -2304,6 +2443,31 @@ def test_greenfield_create_cli_requires_confirmation_before_writes(tmp_path, cap
     out = capsys.readouterr().out
     assert rc == 2
     assert "greenfield create requires --confirm" in out
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
+    assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
+    assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))
+
+
+def test_greenfield_create_cli_requires_confirmed_intent_file_before_writes(tmp_path, capsys) -> None:
+    _seed_empty_governance_repo(tmp_path)
+
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Draft a greenfield proposal for a municipal permit review workspace",
+            "--release",
+            "0.0.1",
+            "--confirm",
+        ]
+    )
+
+    out = capsys.readouterr().out
+    assert rc == 2
+    assert "requires --intent-file" in out
+    assert "will not write records from a thin prompt" in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
     assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
     assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))

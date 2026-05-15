@@ -298,9 +298,9 @@ def test_component_register_refreshes_registry_surface(tmp_path: Path, monkeypat
     assert entry["category"] == "governance_engine"
     assert entry["qualification"] == "candidate"
     assert entry["sources"] == ["manifest"]
-    assert "component that owns Registry refresh authoring proof" in entry["what_it_is"]
-    assert "Initial evidence anchor: `src/odylith/runtime/governance`." in entry["what_it_is"]
-    assert "path prefixes seed the intended boundary" in entry["why_tracked"]
+    assert "owns Registry refresh authoring proof" in entry["what_it_is"]
+    assert "Initial source boundary: src/odylith/runtime/governance." in entry["what_it_is"]
+    assert "named ownership boundary" in entry["why_tracked"]
     spec_path = (
         tmp_path
         / "odylith"
@@ -311,7 +311,8 @@ def test_component_register_refreshes_registry_surface(tmp_path: Path, monkeypat
         / "CURRENT_SPEC.md"
     )
     spec_text = spec_path.read_text(encoding="utf-8")
-    assert "## Registry Refresh Runtime Boundary" in spec_text
+    assert "## Component Snapshot" in spec_text
+    assert "## Runtime Boundary" in spec_text
     assert "Registry authoring boundary for this test component" in spec_text
     assert "| First source boundary | `src/odylith/runtime/governance` |" in spec_text
     assert (

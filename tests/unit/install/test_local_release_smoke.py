@@ -250,6 +250,8 @@ def test_greenfield_propose_apply_smoke_runs_exact_release_journey(monkeypatch, 
             ".",
             "--prompt",
             "robot swarm logistics app",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
             "--confirm-intent",
             "--format",
             "json",
@@ -262,6 +264,8 @@ def test_greenfield_propose_apply_smoke_runs_exact_release_journey(monkeypatch, 
             ".",
             "--prompt",
             "robot swarm logistics app",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
             "--confirm",
             "--release",
             "0.0.1",
@@ -284,7 +288,7 @@ def test_release_smoke_requires_installed_greenfield_guidance_uses_confirmed_cre
     repo_root.mkdir()
     _write_greenfield_guidance(
         repo_root,
-        "Use Product Intent Confirmation before confirmed create. Include the product story. Run odylith greenfield create --repo-root . --prompt '<request>' --confirm --release 0.0.1 from the same confirmation. Odylith builds an apply-ready proposal. Do not inspect Odylith source after confirmation. Do not ask the operator to inspect proposal JSON.\n",
+        "Use Product Intent Confirmation before confirmed create. Include the product story. Write the accepted Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md. Run odylith greenfield create --repo-root . --prompt '<request>' --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1 from the same confirmation. Odylith builds an apply-ready proposal. Do not inspect Odylith source after confirmation. Do not ask the operator to inspect proposal JSON.\n",
     )
 
     module._require_greenfield_guidance_uses_confirmed_create(repo_root=repo_root, label="unit")

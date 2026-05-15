@@ -547,7 +547,11 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `migration-observer:0.1.15:operator-cli-contracts:778c1bb05cdd`,
   `migration-observer:0.1.15:operator-cli-contracts:d48cd7f8f9c7`,
   `migration-observer:0.1.15:browser-surfaces:08249609bf09`, and
-  `migration-observer:0.1.15:install-managed-assets:a15f59f7ee85`.
+  `migration-observer:0.1.15:install-managed-assets:a15f59f7ee85`,
+  `migration-observer:0.1.15:guidance-and-skills:abed448d6309`,
+  `migration-observer:0.1.15:public-docs-and-release-guidance:103ddeb275f7`,
+  `migration-observer:0.1.15:browser-surfaces:29459cdc19ba`, and
+  `migration-observer:0.1.15:install-managed-assets:7a716e2451f2`.
   These markers cover the deepened greenfield skill guidance, refreshed
   Domain Intelligence Atlas/Registry/Radar browser surfaces, updated managed
   security-and-trust guidance, updated public README/operator/release-note/security
@@ -567,6 +571,10 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   activation contract that keeps Greenfield Domain Intelligence command-backed,
   source-anchored, and activation-described in the product capability map, and
   bundled install-managed dashboard copies.
+  The latest markers cover the confirmed-intent artifact requirement, the
+  prompt-only confirmed-create fail-closed path, and the consumer-facing
+  browser/install asset refresh needed so accepted product narration survives
+  into generated governance records.
   Existing consumer governance truth remains unchanged; upgrades
   refresh managed guidance/assets and keep proposal writes explicit through
   `odylith greenfield create --confirm`.

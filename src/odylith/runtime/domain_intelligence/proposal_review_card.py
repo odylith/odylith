@@ -174,4 +174,4 @@ def _visible_apply_command(
         command = next((str(item) for item in commands if str(item).startswith("odylith greenfield create")), "")
         if command:
             return command
-    return "odylith greenfield create --repo-root . --prompt '<confirmed request>' --confirm" + f" --release {shell_quote(release_selector)}"
+    return "odylith greenfield create --repo-root . --prompt '<confirmed request>' --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm" + f" --release {shell_quote(release_selector)}"

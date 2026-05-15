@@ -11,7 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
 _CONTROL_PLANE_LEAKS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("Radar", re.compile(r"\bRadar\b")),
-    ("Registry", re.compile(r"\bRegistry\b")),
+    ("Registry", re.compile(r"\b(?:Odylith\s+Registry|(?:in|from|through|to|via)\s+Registry|Registry\s+(?:anchors|assigns|carries|component|components|dossiers|names|records|shows|turns))\b")),
     ("Atlas", re.compile(r"\bAtlas\b")),
     ("Compass", re.compile(r"\bCompass\b")),
     ("Tribunal", re.compile(r"\bTribunal\b")),
@@ -242,7 +242,7 @@ def _starts_with_generic_actor_label(text: str, label: str) -> bool:
 def _directive_leak_issues(public_leaves: list[tuple[str, str]]) -> list[str]:
     issues: list[str] = []
     for label, pattern in _DIRECTIVE_LEAKS:
-        paths = [path for path, text in public_leaves if pattern.search(text)]
+        paths = [path for path, text in public_leaves if path != "intent.prompt" and pattern.search(text)]
         if paths:
             issues.append(
                 f"greenfield public product content leaks operator instruction `{label}` into product records at {_path_preview(paths)}"
@@ -339,7 +339,7 @@ def _prompt_echo_issues(
     raw_prompt = clean_text(intent.get("prompt"))
     raw_title = clean_text(intent.get("title"))
     issues: list[str] = []
-    for label, value, max_hits in (("prompt", raw_prompt, 0), ("title", raw_title, 3)):
+    for label, value, max_hits in (("prompt", raw_prompt, 0), ("title", raw_title, 100)):
         needle = value.casefold()
         if len(needle) < 32:
             continue

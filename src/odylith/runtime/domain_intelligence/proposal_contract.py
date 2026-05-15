@@ -104,7 +104,7 @@ def build_proposal_contract() -> dict[str, Any]:
             "intent_confirmation_authorizes_apply_attempt": True,
             "contract_use": [
                 "Use greenfield create --confirm as the normal post-confirmation path.",
-                "Use --confirm-intent --format json only when an explicit review artifact is requested.",
+                "Use --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json only when an explicit review artifact is requested.",
                 "Do not inspect Odylith source files, Python modules, local examples, or generated runtime files to discover schema fields.",
             ],
             "forbidden_host_steps": [
@@ -127,8 +127,8 @@ def build_proposal_contract() -> dict[str, Any]:
                 }
             ],
             "canonical_commands": [
-                "odylith greenfield create --repo-root . --prompt \"<confirmed request>\" --confirm --release 0.0.1",
-                "odylith greenfield propose --repo-root . --prompt \"<confirmed request>\" --confirm-intent --format json > odylith-greenfield-proposal.json",
+                "odylith greenfield create --repo-root . --prompt \"<confirmed request>\" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1",
+                "odylith greenfield propose --repo-root . --prompt \"<confirmed request>\" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json > odylith-greenfield-proposal.json",
                 "odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm --release 0.0.1",
             ],
             "failure_policy": [

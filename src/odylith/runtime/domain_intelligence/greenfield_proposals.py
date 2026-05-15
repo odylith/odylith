@@ -26,6 +26,7 @@ from odylith.runtime.analysis_engine import repo_analysis
 from odylith.runtime.analysis_engine.types import SourceSummary, slugify
 from odylith.runtime.domain_intelligence import greenfield_component_registry_scope
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import load_confirmed_intent_file
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_traceability
@@ -200,6 +201,7 @@ def build_greenfield_proposal(
     repo_root: Path,
     prompt: str,
     release_selector: str = "",
+    confirmed_intent: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Return the apply-ready proposal after Product Intent is confirmed.
 
@@ -211,13 +213,19 @@ def build_greenfield_proposal(
     """
 
     root = Path(repo_root).expanduser().resolve()
+    if not isinstance(confirmed_intent, Mapping):
+        raise ValueError(
+            "confirmed greenfield proposal requires accepted Product Intent Confirmation data; "
+            "prompt-only confirmed proposal construction is disabled."
+        )
     intent_title = _intent_title(prompt)
     evidence = _source_evidence(root)
     proposal = build_confirmed_greenfield_proposal(
-        prompt=intent_title,
+        prompt=_prompt_text(prompt),
         title=intent_title,
         observed_source=evidence,
         release_selector=release_selector,
+        confirmed_intent=confirmed_intent,
     )
     proposal = normalize_host_reasoned_proposal(proposal)
     validate_host_reasoned_proposal(proposal)
@@ -234,6 +242,22 @@ def _load_proposal(args: argparse.Namespace) -> dict[str, Any]:
     if raw:
         return json.loads(raw)
     raise ValueError("provide --proposal-file or --proposal-json")
+
+
+def _load_confirmed_intent_args(args: argparse.Namespace, *, repo_root: Path) -> dict[str, Any]:
+    intent_file = str(getattr(args, "intent_file", "") or "").strip()
+    if not intent_file:
+        raise ValueError(
+            "confirmed greenfield create requires --intent-file with the host-written Product Intent Confirmation. "
+            "Write the same product story, actors, systems, first path, assumptions, ambiguities, and proof boundary "
+            "that the operator confirmed to .odylith/runtime/greenfield/confirmed-intent.md, then rerun with "
+            "--intent-file .odylith/runtime/greenfield/confirmed-intent.md. Odylith will not write records from a thin prompt."
+        )
+    path = Path(intent_file).expanduser()
+    if not path.is_absolute():
+        path = repo_root / path
+    prompt = str(getattr(args, "prompt", "") or "")
+    return load_confirmed_intent_file(path, prompt=prompt, fallback_title=_intent_title(prompt))
 
 
 def _next_diagram_id(repo_root: Path) -> str:
@@ -1001,6 +1025,13 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         action="store_true",
         help="Build the full proposal preview or JSON after the operator confirms the Product Intent Confirmation.",
     )
+    propose.add_argument(
+        "--intent-file",
+        "--confirmed-intent-file",
+        default="",
+        dest="intent_file",
+        help="Markdown/text/JSON file containing the host-written Product Intent Confirmation that the operator accepted.",
+    )
     apply = subparsers.add_parser("apply", help="Apply a confirmed greenfield product proposal.")
     apply.add_argument("--repo-root", default=".")
     apply.add_argument("--proposal-file", default="")
@@ -1011,6 +1042,13 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     create = subparsers.add_parser("create", help="Create confirmed greenfield records from Product Intent.")
     create.add_argument("--repo-root", default=".")
     create.add_argument("--prompt", required=True)
+    create.add_argument(
+        "--intent-file",
+        "--confirmed-intent-file",
+        default="",
+        dest="intent_file",
+        help="Markdown/text/JSON file containing the host-written Product Intent Confirmation that the operator accepted.",
+    )
     create.add_argument("--confirm", action="store_true")
     create.add_argument("--release", default="")
     create.add_argument("--json", action="store_true", dest="as_json")
@@ -1084,9 +1122,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                 print(format_product_intent_confirmation_text(confirmation), end="")
             return 0
         try:
+            confirmed_intent = _load_confirmed_intent_args(args, repo_root=repo_root)
             proposal = build_greenfield_proposal(
                 repo_root=repo_root,
                 prompt=str(args.prompt),
+                confirmed_intent=confirmed_intent,
             )
         except (ValueError, RuntimeError) as exc:
             _print_greenfield_error(exc, as_json=args.output_format == "json")
@@ -1131,10 +1171,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                 print(message)
             return 2
         try:
+            confirmed_intent = _load_confirmed_intent_args(args, repo_root=repo_root)
             proposal = build_greenfield_proposal(
                 repo_root=repo_root,
                 prompt=str(args.prompt),
                 release_selector=str(args.release),
+                confirmed_intent=confirmed_intent,
             )
             result, captured = _run_with_optional_stdout_capture(
                 enabled=bool(args.as_json),

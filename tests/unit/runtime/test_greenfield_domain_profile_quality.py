@@ -8,7 +8,9 @@ import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
+from tests.unit.runtime.test_greenfield_proposals import _confirmed_intent
 from tests.unit.runtime.test_greenfield_proposals import _host_reasoned_ecommerce_proposal
+from tests.unit.runtime.test_greenfield_proposals import _write_confirmed_intent
 
 
 PRODUCT_INTENTS = [
@@ -18,10 +20,18 @@ PRODUCT_INTENTS = [
     "draft a greenfield proposal for a quantum chemistry catalyst screening platform",
 ]
 
+CONFIRMED_PRODUCT_INTENTS = [
+    "draft a greenfield proposal for a city zoning permit review app",
+    "draft a greenfield proposal for a municipal permit review workspace",
+]
 
-@pytest.mark.parametrize("prompt", PRODUCT_INTENTS)
+@pytest.mark.parametrize("prompt", CONFIRMED_PRODUCT_INTENTS)
 def test_confirmed_greenfield_proposal_is_apply_ready_without_domain_profiles(tmp_path: Path, prompt: str) -> None:
-    request = greenfield_proposals.build_greenfield_proposal(repo_root=tmp_path, prompt=prompt)
+    request = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        confirmed_intent=_confirmed_intent(),
+    )
 
     greenfield_proposals.validate_host_reasoned_proposal(request)
     assert request["mode"] == "host_reasoned_greenfield_proposal"
@@ -62,24 +72,28 @@ def test_greenfield_title_strips_operator_directives(tmp_path: Path) -> None:
     request = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
         prompt=(
-            "Draft a product-first greenfield proposal for a robot that can keep my plants alive. "
+            "Draft a product-first greenfield proposal for a municipal permit review workspace. "
             "Show the interpretation and direction choices first. Do not write records until I confirm."
         ),
+        confirmed_intent=_confirmed_intent(),
     )
 
-    assert request["intent"]["title"] == "Robot That Can Keep My Plants Alive"
+    assert request["intent"]["title"] == "Municipal Permit Review Workspace"
     assert "Show The Interpretation" not in request["intent"]["title"]
     assert "Do Not Write" not in request["intent"]["title"]
 
 
 def test_confirm_intent_returns_apply_ready_governance(tmp_path: Path, capsys) -> None:
+    _write_confirmed_intent(tmp_path)
     rc = greenfield_proposals.main(
         [
             "propose",
             "--repo-root",
             str(tmp_path),
             "--prompt",
-            "draft a greenfield proposal for a plant-care robot that waters and monitors houseplants",
+            "draft a greenfield proposal for a municipal permit review workspace",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
             "--confirm-intent",
             "--format",
             "json",
@@ -150,18 +164,18 @@ def test_validation_rejects_missing_host_authored_rationale_lines() -> None:
         greenfield_proposals.validate_host_reasoned_proposal(proposal)
 
 
-def test_project_title_echo_is_rejected_inside_artifact_content() -> None:
+def test_project_prompt_echo_is_rejected_inside_artifact_content() -> None:
     proposal = _host_reasoned_ecommerce_proposal()
-    title = "Commerce Launch Recovery Workflow For Independent Merchants"
-    proposal["intent"]["title"] = title
-    proposal["backlog"][1]["problem"] = f"{title} needs implementation planning before the product is clear."
-    proposal["components"][1]["responsibility"] = f"{title} component owns everything."
-    proposal["diagrams"][0]["summary"] = f"{title} diagram summary repeats the title."
-    proposal["release_plan"]["strategy"] = f"{title} release strategy repeats the title."
+    prompt = "Build a commerce launch recovery workflow for independent merchants with order retry proof"
+    proposal["intent"]["prompt"] = prompt
+    proposal["backlog"][1]["problem"] = f"{prompt} needs implementation planning before the product is clear."
+    proposal["components"][1]["responsibility"] = f"{prompt} component owns everything."
+    proposal["diagrams"][0]["summary"] = f"{prompt} diagram summary repeats the prompt."
+    proposal["release_plan"]["strategy"] = f"{prompt} release strategy repeats the prompt."
 
     issues = greenfield_quality_issues(proposal)
 
-    assert any("repeats the raw title" in issue for issue in issues)
+    assert any("repeats the raw prompt" in issue for issue in issues)
 
 
 def test_runtime_source_does_not_contain_canned_greenfield_domain_families() -> None:

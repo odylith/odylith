@@ -50,6 +50,7 @@ def build_product_intent_confirmation(
                 "the few ambiguities that would materially change the first path, risk posture, topology, or proof bar",
                 "the proof boundary: what would count as evidence and what must not be claimed yet",
                 "a clear Next step block with Confirm, Edit, and Reject choices; each choice must say exactly what happens next",
+                "after confirmation, write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md so create can preserve it",
             ],
             "must_not": [
                 "echo command instructions as the product name",
@@ -76,12 +77,12 @@ def build_product_intent_confirmation(
             "confirmed_create_after_confirmation": (
                 "odylith greenfield create --repo-root . --prompt "
                 + _shell_quote(clean_prompt)
-                + " --confirm --release 0.0.1"
+                + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1"
             ),
             "optional_review_json_after_confirmation": (
                 "odylith greenfield propose --repo-root . --prompt "
                 + _shell_quote(clean_prompt)
-                + " --confirm-intent --format json"
+                + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json"
             ),
         },
     }
@@ -120,7 +121,7 @@ def format_product_intent_confirmation_text(confirmation: Mapping[str, Any]) -> 
             prompt,
             "",
             "Next step",
-            "- Confirm: if the interpretation is right, run greenfield create --confirm so Odylith builds the apply-ready proposal, runs Tribunal, and applies governed project records. Do not ask the operator to inspect proposal JSON.",
+            "- Confirm: if the interpretation is right, write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md, then run greenfield create with --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm so Odylith builds from the accepted narrative, runs Tribunal, and applies governed project records. Do not ask the operator to inspect proposal JSON.",
             "- Edit: if the product story, actors, systems, assumptions, first path, or proof boundary is wrong, ask for corrections and rerun this confirmation.",
             "- Reject: if this is not the intended product, stop here and write nothing.",
         ]

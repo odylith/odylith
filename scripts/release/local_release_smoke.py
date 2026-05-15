@@ -223,10 +223,11 @@ _STALE_GREENFIELD_GUIDANCE_TOKENS = (
     "host authors an internal proposal payload",
     "the host authors the proposal",
     ".odylith/runtime/greenfield/active-proposal.v1.json",
-    "Prompt-only greenfield create is disabled",
 )
 _GREENFIELD_CONFIRMED_CREATE_GUARDS = (
     "greenfield create",
+    "--intent-file",
+    ".odylith/runtime/greenfield/confirmed-intent.md",
     "--confirm",
     "same confirmation",
     "apply-ready",
@@ -525,6 +526,7 @@ def _greenfield_propose_apply_smoke(*, repo_root: Path, odylith: Path, env: dict
     )
     _require_output_contains(output=intent, expected='"host_reasoning_task"', label="greenfield intent json")
     _require_output_contains(output=intent, expected='"must_not"', label="greenfield intent json")
+    intent_file = _write_greenfield_confirmed_intent(repo_root=repo_root)
 
     proposal = _run(
         cwd=repo_root,
@@ -537,6 +539,8 @@ def _greenfield_propose_apply_smoke(*, repo_root: Path, odylith: Path, env: dict
             ".",
             "--prompt",
             "robot swarm logistics app",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
             "--confirm-intent",
             "--format",
             "json",
@@ -563,6 +567,8 @@ def _greenfield_propose_apply_smoke(*, repo_root: Path, odylith: Path, env: dict
             ".",
             "--prompt",
             "robot swarm logistics app",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
             "--confirm",
             "--release",
             "0.0.1",
@@ -575,12 +581,64 @@ def _greenfield_propose_apply_smoke(*, repo_root: Path, odylith: Path, env: dict
     _require_no_greenfield_schema_loop(output=create, label="greenfield create json")
     _require_greenfield_surfaces(repo_root=repo_root, label="greenfield create smoke")
     for relative_path in (
+        intent_file.relative_to(repo_root).as_posix(),
         "odylith/runtime/source/accepted-project.v1.json",
         "odylith/runtime/delivery_intelligence.v4.json",
         "odylith/radar/traceability-graph.v1.json",
     ):
         if not (repo_root / relative_path).is_file():
             raise RuntimeError(f"greenfield create smoke did not write {relative_path}")
+
+
+def _write_greenfield_confirmed_intent(*, repo_root: Path) -> Path:
+    path = repo_root / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        """Robot Swarm Logistics App — Product Intent Confirmation
+
+Product story
+A warehouse operations team uses the Robot Swarm Logistics App to coordinate autonomous robots moving inventory between receiving, storage, picking, packing, and charging zones. The product keeps dispatch decisions understandable by tying every robot assignment to current robot availability, job priority, zone constraints, and operator override history.
+
+State object that changes through the first journey
+A Dispatch Plan tracks a set of jobs, available robots, assigned routes, robot status, exception state, and the evidence that explains why a job was assigned, delayed, or blocked.
+
+First complete path Odylith should prove before broader scope
+A shift coordinator imports a small batch of warehouse jobs, views available robots, assigns jobs to robots, sees one blocked assignment explained by a zone or battery constraint, and reviews the final dispatch plan with evidence for each assignment.
+
+Human actors
+- Shift coordinator — starts the dispatch run, reviews robot availability, and accepts or overrides assignments.
+- Warehouse operator — needs to understand why work is assigned, delayed, or escalated.
+- Fleet technician — reviews robot health, battery state, and blocked movement causes.
+- Operations reviewer — checks whether dispatch decisions were safe, explainable, and consistent with warehouse policy.
+
+External systems
+- Warehouse management system — supplies inbound jobs, pick tasks, and priority information.
+- Robot fleet API — supplies robot position, battery state, capacity, and health.
+- Zone map service — supplies warehouse zones, blocked aisles, charging areas, and route constraints.
+
+Internal product systems
+- Dispatch planner — assigns jobs to available robots while respecting priority, capacity, and constraints.
+- Robot state ledger — records robot availability, battery, health, current job, and recent status changes.
+- Job queue — stores imported warehouse tasks, priority, due window, and completion state.
+- Constraint evaluator — explains why a robot can or cannot take a job.
+- Dispatch evidence review — packages assignment rationale, blocked-job reasons, operator overrides, and validation output.
+
+Critical assumptions
+- The first release is decision support for a small warehouse pilot, not fully autonomous live control.
+- Robot commands remain sandboxed or simulated until source-backed fleet contracts are accepted.
+- Dispatch evidence must be readable by operations staff, not only developers.
+
+Ambiguities that would change the first path
+1. Does release 0.0.1 need to issue live robot commands, or only produce an operator-reviewed dispatch plan?
+2. Are route constraints static from a zone map, or streamed from live facility sensors?
+3. Does the first release optimize for throughput, safety, energy use, or SLA priority?
+
+Proof boundary
+Release 0.0.1 succeeds when a reviewer can inspect a dispatch plan, see each robot-job assignment, understand any blocked assignment, trace the decision to robot state, job priority, constraints, and operator override evidence, and confirm that no live robot command is claimed unless the fleet integration has source-backed validation.
+""",
+        encoding="utf-8",
+    )
+    return path
 
 
 def _install_previous_release(*, repo_root: Path, install_script: Path, previous_version: str) -> None:

@@ -240,7 +240,6 @@ def test_greenfield_guidance_uses_product_intent_then_host_authored_apply_path()
         "host-authored proposal JSON is reviewed",
         "host authors an internal proposal payload",
         "active-proposal.v1.json",
-        "Prompt-only greenfield create is disabled",
     )
 
     for path in (*guidance_paths, *source_paths):
@@ -248,6 +247,8 @@ def test_greenfield_guidance_uses_product_intent_then_host_authored_apply_path()
         compact_text = " ".join(text.split())
         assert "Product Intent Confirmation" in text, path
         assert "greenfield create" in text, path
+        assert "--intent-file" in text, path
+        assert ".odylith/runtime/greenfield/confirmed-intent.md" in text, path
         assert "--confirm" in text, path
         assert (
             "Do not inspect Odylith source" in text
@@ -310,6 +311,8 @@ def test_greenfield_guidance_keeps_post_confirmation_contract_internal() -> None
         normalized = " ".join(text.split())
         assert "Product Intent Confirmation" in normalized, path
         assert "greenfield create" in normalized, path
+        assert "--intent-file" in normalized, path
+        assert ".odylith/runtime/greenfield/confirmed-intent.md" in normalized, path
         assert "--confirm" in normalized, path
         assert "apply-ready" in normalized, path
         assert "hand-author" in normalized.casefold() or "hand author" in normalized.casefold(), path
