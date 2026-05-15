@@ -573,16 +573,16 @@ def _host_project_brief(*, title: str, prompt: str, release: str) -> dict[str, o
                 "use_when": "Use before proposal expansion so the operator can confirm, edit, or reject the interpretation.",
             },
             {
-                "path": "Build internal proposal payload",
-                "command": f"odylith greenfield propose --repo-root . --prompt {json.dumps(prompt)} --confirm-intent",
+                "path": "Create confirmed records",
+                "command": f"odylith greenfield create --repo-root . --prompt {json.dumps(prompt)} --confirm --release {release}",
                 "works_in": "shell, Codex, Claude Code",
-                "use_when": "Use after intent confirmation to author the full host-reasoned payload without asking the operator to inspect proposal JSON.",
+                "use_when": "Use after intent confirmation so Odylith builds, validates, gates, writes, and refreshes the proposal-owned records.",
             },
             {
-                "path": "Apply confirmed intent",
-                "command": f"odylith greenfield apply --repo-root . --proposal-file .odylith/runtime/greenfield/active-proposal.v1.json --confirm --release {release}",
+                "path": "Optional proposal review",
+                "command": f"odylith greenfield propose --repo-root . --prompt {json.dumps(prompt)} --confirm-intent --format json",
                 "works_in": "shell, Codex, Claude Code",
-                "use_when": "Use after Product Intent confirmation; validation and Tribunal decide whether records can be written.",
+                "use_when": "Use only when a reviewer explicitly asks to inspect the apply-ready JSON before apply.",
             },
         ],
     }
@@ -614,7 +614,7 @@ def _host_project_intelligence(*, title: str, release: str) -> dict[str, object]
         ],
         "customization_flow": [
             "Confirm the product story and material ambiguities before proposal expansion.",
-            "Review the host-authored proposal for actors, systems, topology, risks, and proof.",
+            "Review the confirmed proposal for actors, systems, topology, risks, and proof.",
             "Apply the accepted proposal only after deterministic validation and the governed write gate pass.",
             "Start source work only from the accepted child lane with source paths and proof commands.",
         ],
@@ -626,7 +626,7 @@ def _host_domain_intelligence(*, title: str, row_title: str, actors: list[str] |
     return {
         "schema_version": "odylith.greenfield.workstream_intelligence.v1",
         "family": "host_reasoned_project",
-        "summary": f"{row_title} is host-authored from the accepted project story, with proof and topology kept explicit.",
+        "summary": f"{row_title} comes from the accepted project story, with proof and topology kept explicit.",
         "actors": actors or _host_actor_lines_for_prompt(title),
         "intent": [
             f"{row_title} expresses a specific part of the accepted product story for the accepted project.",
@@ -1117,83 +1117,38 @@ def _host_reasoned_crispr_without_parent() -> dict[str, object]:
     }
 
 
-def test_greenfield_prompt_returns_host_reasoning_contract(tmp_path) -> None:
+def test_greenfield_prompt_returns_apply_ready_confirmed_proposal(tmp_path) -> None:
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
         prompt="Odylith, build an ecommerce site for me",
     )
 
-    assert proposal["mode"] == "host_reasoned_proposal_request"
+    greenfield_proposals.validate_host_reasoned_proposal(proposal)
+    encoded = json.dumps(proposal)
+    assert proposal["mode"] == "host_reasoned_greenfield_proposal"
     assert proposal["provider_calls"] == 0
     assert proposal["host_agnostic"] is True
-    assert proposal["intent"]["reasoning_mode"] == "host_model_required"
-    assert proposal["classification"]["method"] == "open_world_host_reasoning"
+    assert proposal["intent"]["reasoning_mode"] == "odylith_confirmed_apply_ready"
+    assert proposal["classification"]["method"] == "confirmed_open_world_product_shape"
+    assert proposal["intent"]["title"] == "Ecommerce Site"
     assert "catalog" not in proposal
-    assert "backlog" not in proposal
-    assert "components" not in proposal
-    assert "diagrams" not in proposal
+    assert len(proposal["backlog"]) >= 4
+    assert len(proposal["components"]) >= 3
+    assert len(proposal["diagrams"]) >= 3
+    assert proposal["project_brief"]["blueprint_sections"]
+    assert proposal["project_intelligence"]["intent"]
     assert proposal["observed_source"]["source_posture"] == "empty_or_no_app_source"
-    assert "Do not use canned domain buckets" in proposal["host_instruction"]
-    assert "backlog" in proposal["reasoning_contract"]["required_top_level_keys"]
-    assert "security_compliance" in proposal["reasoning_contract"]["required_top_level_keys"]
-    assert "project_brief" in proposal["reasoning_contract"]["required_top_level_keys"]
-    assert "project_intelligence" in proposal["reasoning_contract"]["required_top_level_keys"]
-    activation_layers = [
-        row["layer"]
-        for row in proposal["reasoning_contract"]["engine_activation_layers"]
-    ]
-    assert activation_layers == [
-        "context_engine",
-        "execution_engine",
-        "tribunal",
-        "intervention_engine",
-        "governance",
-        "subagent_orchestration",
-        "discipline",
-        "surface_dags",
-        "delivery",
-        "analysis",
-        "memory_substrate",
-        "topology",
-        "taxonomies_fsms",
-        "greenfield_domain_intelligence",
-        "overall_ux",
-    ]
-    assert "mermaid_source" in " ".join(proposal["reasoning_contract"]["quality_bar"])
-    quality_bar = " ".join(proposal["reasoning_contract"]["quality_bar"])
-    assert "Atlas semantic classDef/style color language" in quality_bar
-    assert "never rely on viewer background treatment" in quality_bar
-    assert "Tribunal gate" in quality_bar
-    assert "Surface DAGs" in quality_bar
-    assert "security, privacy, abuse, accessibility" in quality_bar
-    assert "project-first" in quality_bar
-    assert "odylith greenfield propose" in proposal["apply_commands"][0]
-    assert "--format json" in proposal["apply_commands"][0]
-    assert "internal apply payload" in proposal["apply_commands"][1]
-    assert "odylith greenfield apply" in proposal["apply_commands"][2]
-    assert ".odylith/runtime/greenfield/active-proposal.v1.json" in proposal["apply_commands"][2]
-    assert "--release 0.0.1" in proposal["apply_commands"][2]
-    assert "Default the first greenfield release target to exactly 0.0.1" in " ".join(
-        proposal["reasoning_contract"]["quality_bar"]
-    )
-    handoff = proposal["post_confirmation_handoff"]
-    assert handoff["complete_authoring_surface"] is True
-    assert "Do not inspect Odylith source files" in " ".join(handoff["contract_use"])
-    assert "src/odylith" in " ".join(handoff["forbidden_host_steps"])
-    assert handoff["intent_confirmation_authorizes_apply_attempt"] is True
-    assert "inspect proposal JSON" in " ".join(handoff["forbidden_host_steps"])
-    assert "active-proposal.v1.json" in handoff["canonical_files"][0]["path"]
-    assert "validation or Tribunal rejects" in " ".join(handoff["failure_policy"])
-    assert "live from the confirmed Product Intent Confirmation" in proposal["host_instruction"]
-    assert "confirm-intent contract internally" in proposal["host_instruction"]
-    assert "do not inspect Odylith source files" in proposal["host_instruction"]
-    assert "do not ask for a second JSON-review confirmation" in proposal["host_instruction"]
-    assert "canned domain buckets" in proposal["host_instruction"]
+    assert "greenfield create" in proposal["apply_commands"][0]
+    assert "--confirm" in proposal["apply_commands"][0]
+    assert "--release '0.0.1'" in proposal["apply_commands"][0]
+    assert "review-only" in proposal["apply_commands"][1]
+    assert "internal apply payload" not in encoded
+    assert "active-proposal.v1.json" not in encoded
+    assert "host_instruction" not in proposal
+    assert "reasoning_contract" not in proposal
     assert "proposal_template" not in proposal
     assert "canonical_proposal" not in proposal
     assert "canonical_proposal_gate" not in proposal
-    assert proposal["accepted_aliases"]["validation"] == ["proof_expectations", "test_strategy"]
-    assert "project_control_surface" in proposal["accepted_aliases"]["project_intelligence"]
 
 
 def test_greenfield_text_starts_with_product_intent_confirmation(tmp_path, capsys) -> None:
@@ -1222,7 +1177,9 @@ def test_greenfield_text_starts_with_product_intent_confirmation(tmp_path, capsy
     assert "Edit: if the product story, actors, systems, assumptions, first path, or proof boundary is wrong" in output
     assert "Reject: if this is not the intended product" in output
     assert "No records were written. Confirm, edit, or reject this interpretation." not in output
-    assert "--confirm-intent" in output
+    assert "greenfield create --repo-root ." in output
+    assert "--confirm" in output
+    assert "Confirmed CLI after confirmation" in output
     assert "дж" not in output
     assert "soн" not in output
     assert "..." not in output
@@ -1257,25 +1214,20 @@ def test_greenfield_confirm_intent_shows_direct_apply_handoff(tmp_path, capsys) 
 
     assert rc == 0
     output = capsys.readouterr().out
-    assert "Greenfield Proposal Contract: A Mathematics Research Workspace For Spectral Graph Theory" in output
-    assert "- files changed: none" in output
-    assert "- generated governance artifacts: none" in output
-    assert "Host task" in output
-    assert "Host handoff" in output
-    assert "complete internal host-facing proposal contract" in output
-    assert "do not search Odylith source" in output
-    assert "Stop: Do not search src/odylith" in output
-    assert "Apply path after intent confirmation" in output
-    assert "Run greenfield apply immediately after Product Intent confirmation" in output
-    assert "inspect proposal JSON" in output
-    assert "second approval step" in output
-    assert "validation/Tribunal issues" in output
-    assert "Required proposal sections" in output
-    assert "Apply" in output
-    assert "Product workstreams:" not in output
-    assert "Candidate product boundaries:" not in output
-    assert "Architecture review views:" not in output
-    assert "Greenfield proposal preview:" not in output
+    assert "Odylith greenfield proposal: Mathematics Research Workspace For Spectral Graph Theory" in output
+    assert "No files changed" in output
+    assert "- apply-ready JSON: built, normalized, validated" in output
+    assert "- mode: host_reasoned_greenfield_proposal" in output
+    assert "Project requirements" in output
+    assert "Project-first blueprint" in output
+    assert "Backlog proposal" in output
+    assert "Planned components" in output
+    assert "Draft architecture diagrams" in output
+    assert "greenfield create --repo-root ." in output
+    assert "internal apply payload" not in output
+    assert "active-proposal.v1.json" not in output
+    assert "host_instruction" not in output
+    assert "reasoning_contract" not in output
 
 
 def test_greenfield_text_full_detail_keeps_apply_path_available_after_intent_confirmed(tmp_path, capsys) -> None:
@@ -1294,22 +1246,19 @@ def test_greenfield_text_full_detail_keeps_apply_path_available_after_intent_con
 
     assert rc == 0
     output = capsys.readouterr().out
-    assert "Greenfield Proposal Contract: A Mathematics Research Workspace For Spectral Graph Theory" in output
+    assert "Odylith greenfield proposal: Mathematics Research Workspace For Spectral Graph Theory" in output
     assert "Gate 1 - Interpretation" not in output
     assert "Gate 2 - Clarify Before Apply" not in output
     assert "Gate 3 - Proposal Preview" not in output
     assert "Gate 4 - Choose Next Action" not in output
-    assert "Product workstreams:" not in output
-    assert "Candidate product boundaries:" not in output
-    assert "Architecture review views:" not in output
-    assert "odylith greenfield propose --repo-root ." in output
-    assert "--confirm-intent" in output
-    assert "--format json" in output
-    assert "internal apply payload" in output
-    assert ".odylith/runtime/greenfield/active-proposal.v1.json" in output
-    assert "--confirm-intent --format json > odylith-greenfield-proposal.json" not in output
-    assert "odylith greenfield apply --repo-root ." in output
-    assert len(output.splitlines()) <= 90
+    assert "Backlog proposal" in output
+    assert "Planned components" in output
+    assert "Draft architecture diagrams" in output
+    assert "odylith greenfield create --repo-root ." in output
+    assert "--confirm" in output
+    assert "internal apply payload" not in output
+    assert ".odylith/runtime/greenfield/active-proposal.v1.json" not in output
+    assert len(output.splitlines()) <= 240
 
 
 def test_greenfield_title_preserves_meaningful_trailing_domain_terms(tmp_path) -> None:
@@ -1341,7 +1290,7 @@ def test_greenfield_cli_json_defaults_to_intent_confirmation(tmp_path, capsys) -
     payload = json.loads(capsys.readouterr().out)
     assert payload["mode"] == "product_intent_reasoning_request"
     assert payload["provider_calls"] == 0
-    assert payload["write_policy"] == "host_reason_product_intent_before_greenfield_proposal"
+    assert payload["write_policy"] == "host_reason_product_intent_before_confirmed_greenfield_create"
     assert payload["host_reasoning_task"]["must_include"]
     assert payload["host_reasoning_task"]["must_not"]
     assert "dump a generic template or domain catalog" in payload["host_reasoning_task"]["must_not"]
@@ -1366,16 +1315,16 @@ def test_greenfield_cli_json_is_apply_ready_after_intent_confirmation(tmp_path, 
 
     assert rc == 0
     payload = json.loads(capsys.readouterr().out)
-    assert payload["mode"] == "host_reasoned_proposal_request"
+    assert payload["mode"] == "host_reasoned_greenfield_proposal"
     assert payload["provider_calls"] == 0
-    assert payload["intent"]["reasoning_mode"] == "host_model_required"
-    assert payload["reasoning_contract"]
-    assert payload["host_instruction"]
+    assert payload["intent"]["reasoning_mode"] == "odylith_confirmed_apply_ready"
+    assert "reasoning_contract" not in payload
+    assert "host_instruction" not in payload
     assert "canonical_proposal" not in payload
     assert "proposal_template" not in payload
-    assert "backlog" not in payload
-    assert "components" not in payload
-    assert "diagrams" not in payload
+    assert len(payload["backlog"]) >= 4
+    assert len(payload["components"]) >= 3
+    assert len(payload["diagrams"]) >= 3
 
 
 def test_greenfield_validation_rejects_old_generic_risk_boilerplate(tmp_path) -> None:
@@ -1605,8 +1554,8 @@ def test_greenfield_apply_feeds_project_tab_from_accepted_project_and_tribunal(t
     assert "checkout orchestrator" in text
     assert "an-ecommerce-site-with-checkout-recovery" not in text
     assert payload["title"] == "Ecommerce Site With Checkout Recovery"
-    assert payload["projection"]["origin"] == "greenfield proposal"
-    assert "greenfield proposal" in payload["chips"]
+    assert payload["projection"]["origin"] == "accepted greenfield project"
+    assert "accepted greenfield project" in payload["chips"]
     story = payload["product_story"]
     assert "checkout" in story["headline"].lower()
     assert "before expanding the product" in story["headline"]
@@ -1869,6 +1818,27 @@ def test_greenfield_apply_rejects_shallow_child_backlog_metrics(tmp_path) -> Non
         )
 
 
+def test_greenfield_apply_rejects_control_plane_terms_in_consumer_product_fields(tmp_path) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    proposal = _host_reasoned_ecommerce_proposal()
+    proposal["backlog"][1]["success_metrics"][0] = "The checkout boundary appears in Registry and Atlas."
+    proposal["components"][0]["description"] = "The storefront succeeds when Radar and Compass expose the work."
+
+    with pytest.raises(ValueError) as excinfo:
+        greenfield_proposals.apply_greenfield_proposal(
+            repo_root=tmp_path,
+            proposal=proposal,
+            confirm=True,
+            release_selector="0.0.1",
+        )
+
+    message = str(excinfo.value)
+    assert "greenfield public product content leaks Odylith control-plane term `Radar`" in message
+    assert "greenfield public product content leaks Odylith control-plane term `Registry`" in message
+    assert "greenfield public product content leaks Odylith control-plane term `Atlas`" in message
+    assert "greenfield public product content leaks Odylith control-plane term `Compass`" in message
+
+
 def test_greenfield_apply_reports_validation_issues_in_one_batch(tmp_path) -> None:
     _seed_empty_governance_repo(tmp_path)
     proposal = _host_reasoned_ecommerce_proposal()
@@ -1923,7 +1893,7 @@ def test_project_brief_blocks_coding_rush_without_domain_scaffold(tmp_path) -> N
     assert "Project requirements" in rendered
     assert "Coding starts only after the accepted project story" in rendered
     assert rendered.index("Project requirements") < rendered.index("Backlog proposal")
-    assert "greenfield apply --repo-root ." in rendered
+    assert "greenfield create --repo-root ." in rendered
     assert "Robot Swarm Logistics App Operator Workspace" not in rendered
 
 
@@ -2076,8 +2046,10 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     storefront = next(row for row in component_registry["components"] if row["component_id"] == "commerce-storefront")
     assert storefront["workstreams"] == ["B-002"]
     assert storefront["diagrams"] == []
-    assert "responsible for Browse, cart entry, checkout entry, and user-facing errors" in storefront["what_it_is"]
-    assert "Browse, cart entry, checkout entry, and user-facing errors" in storefront_spec
+    assert storefront["what_it_is"].startswith("Storefront is planned as an application boundary")
+    assert "It owns browse, cart entry, checkout entry, and user-facing errors" in storefront["what_it_is"]
+    assert "responsible for" not in storefront["what_it_is"]
+    assert "It owns browse, cart entry, checkout entry, and user-facing errors" in storefront_spec
     assert "| Workstreams | `B-002` |" in storefront_spec
     assert "| Diagrams | none yet |" in storefront_spec
     assert "Browser smoke proof for browse-to-cart and failed-checkout messaging" in storefront_spec
@@ -2149,18 +2121,22 @@ def test_greenfield_apply_writes_host_authored_component_specs(tmp_path, monkeyp
         "Checkout Orchestrator",
         "Catalog Boundary",
     ]
-    assert "Browse, cart entry, checkout entry, and user-facing errors" in storefront_spec
-    assert "Payment handoff, order draft, idempotency, and recovery boundaries" in checkout_spec
-    assert "Product facts, price snapshots, inventory visibility, and merchandising review" in catalog_spec
+    assert "It owns browse, cart entry, checkout entry, and user-facing errors" in storefront_spec
+    assert "It owns payment handoff, order draft, idempotency, and recovery boundaries" in checkout_spec
+    assert "It owns product facts, price snapshots, inventory visibility, and merchandising review" in catalog_spec
     assert "| Workstreams | `B-002` |" in storefront_spec
     assert "| Workstreams | `B-002` |" in checkout_spec
     assert "| Workstreams | `B-003` |" in catalog_spec
     assert "Use `B-002` (Define Storefront boundary) as the implementation-plan anchor" in storefront_spec
     assert "Use `B-003` (Define Catalog boundary) as the implementation-plan anchor" in catalog_spec
     assert "Use `B-002` (Define Storefront boundary) as the implementation-plan anchor" not in catalog_spec
-    assert "## Storefront Interaction Boundary" in storefront_spec
-    assert "## Checkout Orchestrator Runtime Boundary" in checkout_spec
-    assert "## Catalog Boundary Runtime Boundary" in catalog_spec
+    assert "## Component Role" in storefront_spec
+    assert "## Interaction Boundary" in storefront_spec
+    assert "## Runtime Boundary" in checkout_spec
+    assert "## Runtime Boundary" in catalog_spec
+    assert "## Storefront Interaction Boundary" not in storefront_spec
+    assert "## Checkout Orchestrator Runtime Boundary" not in checkout_spec
+    assert "## Catalog Boundary Runtime Boundary" not in catalog_spec
     for text in (storefront_spec, checkout_spec, catalog_spec):
         assert "Experience Boundary" not in text
         assert "registered through `odylith component register`" not in text
@@ -2173,12 +2149,46 @@ def test_greenfield_apply_writes_host_authored_component_specs(tmp_path, monkeyp
         assert "Policy posture tracks privacy, retention, accessibility" not in text
         assert "The first workstream has a technical plan" not in text
         assert "The workflow boundary appears in Registry and Atlas" not in text
+        assert "Registry spec" not in text
+        assert "Compass projection" not in text
+        assert "Radar lane" not in text
         assert "| Diagrams | `D-001`" not in text
         assert "R1." not in text
         assert "odylith_assumption" not in text
     assert storefront_spec != checkout_spec
     assert checkout_spec != catalog_spec
     assert {row["link_state"] for row in atlas_catalog["diagrams"]} == {"atlas_first_draft"}
+
+
+def test_greenfield_component_dependency_lines_are_grammatical_from_component_rows() -> None:
+    lookup = greenfield_proposals._component_dependency_lookup(
+        [
+            {
+                "component_id": "observation-ledger",
+                "label": "Observation Ledger",
+                "responsibility": "Capture and serve append-only observations.",
+            },
+            {
+                "component_id": "evidence-linker",
+                "label": "Evidence Linker",
+                "responsibility": "Bind observations to claims and produce signed evidence bundles.",
+            },
+            {
+                "component_id": "condition-deriver",
+                "label": "Condition Deriver",
+                "responsibility": "Compute the current condition from the evidence trail.",
+            },
+        ]
+    )
+
+    lines = greenfield_proposals._component_dependency_lines(
+        ["observation-ledger", "evidence-linker", "condition-deriver"],
+        lookup=lookup,
+    )
+
+    assert "Depends on Observation Ledger for capturing and serving append-only observations" in lines
+    assert "Depends on Evidence Linker for binding observations to claims and producing signed evidence bundles" in lines
+    assert "Depends on Condition Deriver for computing the current condition from the evidence trail" in lines
 
 
 def test_greenfield_apply_cli_prints_operator_handoff(tmp_path, monkeypatch, capsys) -> None:
@@ -2239,13 +2249,15 @@ def test_greenfield_prompt_paths_do_not_expose_legacy_apply_ready_scaffold(tmp_p
     out = capsys.readouterr().out
 
     assert rc == 0
-    assert "Greenfield Proposal Contract" in out
-    assert "internal apply payload" in out
-    assert "inspect proposal JSON" in out
+    assert "Odylith greenfield proposal" in out
+    assert "apply-ready JSON" in out
+    assert "greenfield create --repo-root ." in out
+    assert "internal apply payload" not in out
+    assert "active-proposal.v1.json" not in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
 
 
-def test_greenfield_create_cli_rejects_prompt_only_writes(tmp_path, monkeypatch, capsys) -> None:
+def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, capsys) -> None:
     _seed_empty_governance_repo(tmp_path)
     monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
@@ -2265,12 +2277,13 @@ def test_greenfield_create_cli_rejects_prompt_only_writes(tmp_path, monkeypatch,
     )
 
     out = capsys.readouterr().out
-    assert rc == 2
-    assert "Prompt-only greenfield create is disabled" in out
-    assert "Product Intent Confirmation in chat" in out
-    assert "greenfield apply --repo-root ." in out
-    assert ".odylith/runtime/greenfield/active-proposal.v1.json" in out
-    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
+    assert rc == 0
+    assert "greenfield create wrote confirmed proposal" in out
+    assert "- tribunal: passed" in out
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
+    assert (tmp_path / "odylith/runtime/source/accepted-project.v1.json").is_file()
+    assert (tmp_path / "odylith/registry/source/component_registry.v1.json").is_file()
+    assert list((tmp_path / "odylith/atlas/source").glob("*.mmd"))
 
 
 def test_greenfield_create_cli_requires_confirmation_before_writes(tmp_path, capsys) -> None:
@@ -2290,7 +2303,7 @@ def test_greenfield_create_cli_requires_confirmation_before_writes(tmp_path, cap
 
     out = capsys.readouterr().out
     assert rc == 2
-    assert "Prompt-only greenfield create is disabled" in out
+    assert "greenfield create requires --confirm" in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
     assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
     assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))

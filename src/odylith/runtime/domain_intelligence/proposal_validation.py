@@ -45,12 +45,12 @@ _LONG_LABEL_RE = re.compile(r'\["([^"]{72,})"\]|\[([^\]]{72,})\]|\|([^|]{72,})\|
 
 
 def validated_mermaid_source(diagram: Mapping[str, Any]) -> str:
-    """Return a checked host-authored Mermaid source string for one diagram."""
+    """Return a checked proposal Mermaid source string for one diagram."""
 
     raw = str(diagram.get("mermaid_source", "") or diagram.get("source", "")).strip()
     slug = str(diagram.get("slug", "<unknown>")).strip() or "<unknown>"
     if not raw:
-        raise ValueError(f"diagram `{slug}` is missing host-authored mermaid_source")
+        raise ValueError(f"diagram `{slug}` is missing proposal mermaid_source")
     if len(raw) > 16000:
         raise ValueError(f"diagram `{slug}` mermaid_source is too large")
     lowered = raw.casefold()
@@ -180,7 +180,7 @@ def _backlog_program_parent_issues(backlog: list[Any], proposal: Mapping[str, An
     if row_type in {"umbrella", "program", "parent", "program_parent"}:
         return []
     return [
-        "proposal backlog must include a host-authored program parent as the first row; "
+        "proposal backlog must include a proposal-authored program parent as the first row; "
         "Odylith will not synthesize an umbrella workstream from child rows"
     ]
 
@@ -268,7 +268,7 @@ def _validate_rationale_lines(row: Mapping[str, Any], index: int) -> None:
         lines = [str(item).strip() for item in raw_lines if str(item).strip()] if isinstance(raw_lines, list) else []
     if not lines:
         raise ValueError(
-            f"backlog row {index} must include host-authored rationale_lines; Odylith will not synthesize ranking rationale"
+            f"backlog row {index} must include proposal-authored rationale_lines; Odylith will not synthesize ranking rationale"
         )
     joined = "\n".join(line.casefold() for line in lines)
     for marker in (

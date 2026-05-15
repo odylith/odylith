@@ -1,4 +1,4 @@
-"""Project-intelligence contracts for host-authored greenfield proposals."""
+"""Project-intelligence contracts for confirmed greenfield proposals."""
 
 from __future__ import annotations
 
@@ -101,7 +101,7 @@ def normalize_project_intelligence(
     diagrams: Sequence[Any] = (),
     observed_source: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Normalize host-authored project intelligence without inferring content."""
+    """Normalize proposal project intelligence without inferring content."""
 
     _ = intent, release_selector, domain_profile, project_brief, program, release_plan, components, diagrams, observed_source
     if not isinstance(value, Mapping):
@@ -116,7 +116,7 @@ def normalize_project_intelligence(
 
 
 def project_intelligence_issues(value: Any) -> list[str]:
-    """Return validation issues for the host-authored project intelligence object."""
+    """Return validation issues for the proposal project intelligence object."""
 
     if not isinstance(value, Mapping):
         return ["proposal `project_intelligence` must be an object"]

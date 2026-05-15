@@ -28,6 +28,7 @@ def source_answer_cards(
     critical_count: int,
     blockers: Sequence[tuple[str, str, str]],
     evidence_sources: Sequence[str],
+    consumer_lane: bool = False,
 ) -> list[tuple[str, str, str]]:
     """Build concise project-answer cards from source-backed project facts."""
 
@@ -42,7 +43,11 @@ def source_answer_cards(
         (f"What changes in {project_title}?", state, _change_body(source, current_focus)),
         (f"What matters now for {project_title}?", _next_title(next_title), _next_body(next_action_text)),
         (f"What risk matters for {project_title}?", _risk_title(project_title, blockers), _risk_body(critical_count, blockers)),
-        (f"What proves {project_title}?", _proof_title(evidence_sources), _proof_body(evidence_sources)),
+        (
+            f"What proves {project_title}?",
+            _proof_title(evidence_sources, consumer_lane=consumer_lane),
+            _proof_body(evidence_sources, consumer_lane=consumer_lane),
+        ),
     ]
 
 
@@ -111,14 +116,21 @@ def _risk_body(critical_count: int, blockers: Sequence[tuple[str, str, str]]) ->
     return "No current blocker is recorded."
 
 
-def _proof_title(evidence_sources: Sequence[str]) -> str:
+def _proof_title(evidence_sources: Sequence[str], *, consumer_lane: bool = False) -> str:
+    if consumer_lane:
+        return "Reviewer-visible product evidence"
     roles = _proof_roles(evidence_sources)
     if roles:
         return _capitalize(f"{_join_lower(roles)} evidence")
     return "Available evidence"
 
 
-def _proof_body(evidence_sources: Sequence[str]) -> str:
+def _proof_body(evidence_sources: Sequence[str], *, consumer_lane: bool = False) -> str:
+    if consumer_lane:
+        return (
+            "A reviewer can follow the current state, active workflow, ownership boundary, risks, "
+            "and validation evidence without relying on implementation-only context."
+        )
     if not evidence_sources:
         return "Claims are limited to available project records."
     clauses = _proof_clauses(evidence_sources)

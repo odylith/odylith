@@ -7,6 +7,25 @@ from odylith.runtime.governance import sync_session
 from odylith.runtime.surfaces import compass_dashboard_base as renderer
 
 
+def test_git_identity_uses_repo_local_config_not_global_fallback(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    calls: list[tuple[str, ...]] = []
+
+    def _fake_run_git(repo_root: Path, args: list[str]):  # noqa: ANN001, ANN202
+        _ = repo_root
+        calls.append(tuple(args))
+        if tuple(args) == ("config", "--local", "--get", "user.name"):
+            return 1, ""
+        if tuple(args) == ("config", "--local", "--get", "user.email"):
+            return 1, ""
+        raise AssertionError(f"unexpected git args: {args}")
+
+    monkeypatch.setattr(renderer, "_run_git", _fake_run_git)
+
+    assert renderer._git_identity(tmp_path) == ("", "")  # noqa: SLF001
+    assert ("config", "user.name") not in calls
+    assert ("config", "user.email") not in calls
+
+
 def test_collect_git_local_changes_skips_deleted_deindexed_casebook_bug(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     bug_dir = tmp_path / "odylith" / "casebook" / "bugs"
     bug_dir.mkdir(parents=True, exist_ok=True)

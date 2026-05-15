@@ -399,7 +399,7 @@ def test_greenfield_propose_command_is_provider_free(tmp_path: Path, capsys) -> 
     assert rc == 0
     assert payload["provider_calls"] == 0
     assert payload["mode"] == "product_intent_reasoning_request"
-    assert payload["write_policy"] == "host_reason_product_intent_before_greenfield_proposal"
+    assert payload["write_policy"] == "host_reason_product_intent_before_confirmed_greenfield_create"
     assert payload["host_reasoning_task"]["must_include"]
     assert payload["host_reasoning_task"]["must_not"]
     assert "echo command instructions" in " ".join(payload["host_reasoning_task"]["must_not"])
@@ -426,16 +426,16 @@ def test_greenfield_propose_confirm_intent_json_is_provider_free(tmp_path: Path,
     payload = json.loads(capsys.readouterr().out)
     assert rc == 0
     assert payload["provider_calls"] == 0
-    assert payload["mode"] == "host_reasoned_proposal_request"
-    assert payload["intent"]["reasoning_mode"] == "host_model_required"
-    assert payload["write_policy"] == "host_reason_first_confirm_before_apply"
-    assert payload["reasoning_contract"]
-    assert payload["host_instruction"]
+    assert payload["mode"] == "host_reasoned_greenfield_proposal"
+    assert payload["intent"]["reasoning_mode"] == "odylith_confirmed_apply_ready"
+    assert payload["write_policy"] == "proposal_first_confirm_before_apply"
+    assert "reasoning_contract" not in payload
+    assert "host_instruction" not in payload
     assert "canonical_proposal" not in payload
     assert "proposal_template" not in payload
-    assert "backlog" not in payload
-    assert "components" not in payload
-    assert "diagrams" not in payload
+    assert len(payload["backlog"]) >= 4
+    assert len(payload["components"]) >= 3
+    assert len(payload["diagrams"]) >= 3
 
 
 def test_component_register_help_forwards_backend_flags(capsys) -> None:

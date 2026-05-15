@@ -76,6 +76,84 @@ def _clean_sequence(values: Sequence[str] | str) -> tuple[str, ...]:
     return tuple(str(item).strip() for item in values if str(item).strip())
 
 
+def _responsibility_clause(value: str) -> str:
+    text = component_spec_rendering.sentence_fragment(value)
+    if not text:
+        return ""
+    clauses = [
+        _finite_responsibility_clause(part)
+        for part in re.split(r"\s*;\s*", text)
+        if part.strip()
+    ]
+    clauses = [clause for clause in clauses if clause]
+    if not clauses:
+        return ""
+    if len(clauses) == 1:
+        return clauses[0]
+    if len(clauses) == 2:
+        return f"{clauses[0]} and {clauses[1]}"
+    return f"{', '.join(clauses[:-1])}, and {clauses[-1]}"
+
+
+def _finite_responsibility_clause(value: str) -> str:
+    text = component_spec_rendering.sentence_fragment(value)
+    if not text:
+        return ""
+    head, separator, tail = text.partition(" ")
+    verb = head.strip(",:;").casefold()
+    replacements = {
+        "own": "owns",
+        "serve": "serves",
+        "provide": "provides",
+        "track": "tracks",
+        "validate": "validates",
+        "render": "renders",
+        "refresh": "refreshes",
+        "capture": "captures",
+        "coordinate": "coordinates",
+        "derive": "derives",
+        "enforce": "enforces",
+        "hold": "holds",
+        "manage": "manages",
+        "map": "maps",
+        "write": "writes",
+    }
+    if verb in replacements and separator:
+        return f"{replacements[verb]} {tail.strip()}"
+    finite_verbs = {
+        "accepts",
+        "binds",
+        "captures",
+        "connects",
+        "coordinates",
+        "derives",
+        "enforces",
+        "handles",
+        "holds",
+        "manages",
+        "maps",
+        "owns",
+        "provides",
+        "refreshes",
+        "renders",
+        "serves",
+        "supports",
+        "tracks",
+        "validates",
+        "writes",
+    }
+    if verb in finite_verbs:
+        return f"{text[:1].lower()}{text[1:]}" if text else ""
+    if separator:
+        return f"owns {text[:1].lower()}{text[1:]}"
+    return f"{text[:1].lower()}{text[1:]}" if text else ""
+
+
+def _kind_article(kind: str) -> str:
+    token = str(kind or "").strip().lower()
+    return "an" if token[:1] in {"a", "e", "i", "o", "u"} else "a"
+
+
 def _build_registry_entry(
     *,
     component_id: str,
@@ -92,19 +170,21 @@ def _build_registry_entry(
     diagrams: Sequence[str],
     responsibility: str = "",
 ) -> dict[str, Any]:
-    anchor_phrase = f" with `{path}` as its initial evidence anchor" if path else ""
     normalized_sources = [str(item).strip() for item in sources if str(item).strip()]
     evidence_phrase = (
         "user-stated intent"
         if "user_intent" in normalized_sources
-        else "the initial evidence anchor"
+        else "the initial source boundary"
     )
-    responsibility_text = component_spec_rendering.sentence_fragment(responsibility)
+    responsibility_text = _responsibility_clause(responsibility)
+    article = _kind_article(kind)
     what_it_is = (
-        f"{label} is a `{kind}` component responsible for {responsibility_text}{anchor_phrase}."
+        f"{label} is planned as {article} {kind} boundary. It {responsibility_text}."
         if responsibility_text
-        else f"{label} is a `{kind}` component awaiting a concrete responsibility summary{anchor_phrase}."
+        else f"{label} is planned as {article} {kind} boundary awaiting a concrete responsibility summary."
     )
+    if path:
+        what_it_is += f" Initial source boundary: {path}."
     return {
         "component_id": component_id,
         "name": label,
@@ -119,8 +199,8 @@ def _build_registry_entry(
         "status": status,
         "what_it_is": what_it_is,
         "why_tracked": (
-            f"Registered so agent sessions can see {label} as a named ownership boundary from {evidence_phrase}; "
-            "path prefixes seed the intended boundary and can be tightened as the contract becomes clearer."
+            f"Tracked from {evidence_phrase} as a named ownership boundary so implementation and review can see "
+            "what it owns, what it depends on, which interfaces it exposes, and which proof promotes it."
         ),
         "spec_ref": f"odylith/registry/source/components/{component_id}/CURRENT_SPEC.md",
         "sources": normalized_sources or ["manifest"],

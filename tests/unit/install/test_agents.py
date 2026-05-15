@@ -110,7 +110,7 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     for snippet in forbidden:
         assert snippet not in block
 
-    assert len(block.encode("utf-8")) < 11000
+    assert len(block.encode("utf-8")) < 11600
 
 
 def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
@@ -124,7 +124,7 @@ def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
     assert "rerender only the owned surface" in block
     assert "Claude direct-edit and Bash PostToolUse hooks stay silent on success" in block
     assert "Claude Stop is memory/logging only" in block
-    assert len(block.encode("utf-8")) < 11000
+    assert len(block.encode("utf-8")) < 11600
 
 
 def test_managed_block_matches_repo_root_product_scope_truth() -> None:
@@ -146,6 +146,16 @@ def test_managed_claude_bridge_stays_lean_and_imports_agents() -> None:
     assert "@AGENTS.md" in rendered
     assert "Treat AI slop as a regression." not in scope_block
     assert len(scope_block.encode("utf-8")) < 2200
+
+
+def test_managed_claude_bridge_consumer_does_not_pin_maintainer_identity() -> None:
+    scope_block = managed_claude_bridge_block()
+
+    assert "Use the consumer repo's Git identity and commit policy" in scope_block
+    assert "freedom-research" not in scope_block
+    assert "sole canonical contributor identity" not in scope_block
+    assert "Commit messages must use only" not in scope_block
+    assert "coding-assistant trailers" not in scope_block
 
 
 def test_managed_claude_bridge_matches_repo_root_scope_truth() -> None:

@@ -67,12 +67,13 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-09: Hardened greenfield child backlog row generation so domain-profiled proposals produce product-requirement workstreams instead of generic B-002/B-003/B-004 shells. Domain profiles now receive family-specific child workstream titles, problem statements, interfaces, and validation gates without forcing one example domain into product-level governance truth. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-05-09: Split the default greenfield proposal UX into staged review gates instead of dumping the deep accepted record. `greenfield propose` now renders interpretation, clarify-before-apply choices, a compact product preview, and an explicit choose-next-action gate; `--format json` and `greenfield create/apply --confirm` retain the deep project, workstream, component, architecture, release, risk, validation, memory, and Tribunal-gated apply contract. The same pass preserved domain-bearing trailing title terms, removed surface-first show/guidance wording, guarded product-repo source truth from stale consumer repair paths, and made standalone Registry rendering prefer source manifest truth over stale runtime snapshots. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-194`)
 - 2026-05-09: Tightened greenfield architecture view naming so generated diagram titles are concise view names rather than full prompt-prefixed labels. Generic and robot-swarm profiles now emit titles such as `System Overview`, `First Slice Flow`, and `Telemetry Contract And Data Flow`; slugs and summaries retain project identity. The Tribunal rejects confirmed proposals whose diagram titles repeat the project title prefix. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-195`)
+- 2026-05-14: Replaced the v0.1.15 host-authored JSON repair path with an Odylith-owned confirmed create path. `greenfield propose --confirm-intent --format json` now emits the same apply-ready proposal that `greenfield create --confirm` applies, release smoke runs the confirmed create path against a fresh repo, and installed guidance forbids hand-authored proposal repair loops across hosts. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-173`, `CB-181`)
 
 ## Contract
 
-- `greenfield_proposals.py` owns the host-reasoning request contract and the
-  confirmed apply path. It must not infer final project boundaries from a fixed
-  in-code domain list.
+- `greenfield_proposals.py` owns the no-write Product Intent request and the
+  confirmed create/apply path. It must not infer final project boundaries from a
+  fixed in-code domain list or push private schema repair onto the host.
 - `proposal_normalization.py` owns compatibility normalization for reasonable
   host-authored proposal shapes before strict validation. It may repair field
   spelling, release-plan shape, component proof-field aliases, generic diagram
@@ -85,31 +86,31 @@ This section captures synchronized requirement and contract signals derived from
   stale component dossiers, or release events from a rejected apply.
 - `proposal_rendering.py` owns operator-facing text and apply-command rendering
   so proposal compilation, planning, and presentation stay decoupled.
-- Default `greenfield propose` text is a no-write review gate, not the durable
-  record dump. It must show the product interpretation, material clarification
-  choices, compact first-release/workstream/component/architecture preview, and
-  the exact confirmed write command. The deep record remains available through
-  `--format json` and is the object confirmed create/apply validates before
-  Tribunal-gated writes.
+- Default `greenfield propose` text is a no-write Product Intent Confirmation
+  request, not the durable record dump. It must prompt the host to narrate the
+  product, user, problem, first workflow, proof boundary, and confirm/edit/reject
+  gate before any writes. After confirmation, `greenfield create --confirm`
+  builds and applies the durable record; `propose --confirm-intent --format json`
+  is the optional review artifact for the same apply-ready object.
 - Installed greenfield guidance must not ask Codex or Claude hosts to hand-author
   or reconstruct proposal JSON. Proposal review uses the canonical object from
   `greenfield propose`; confirmation uses `greenfield create --confirm` unless an
   explicit file workflow is needed, in which case the file comes from
   `greenfield propose --format json`.
-- `proposal_validation.py` owns host-reasoned proposal validation, required
+- `proposal_validation.py` owns confirmed proposal validation, required
   Mermaid source checks, evidence-tier checks, and duplicate-topology rejection.
   Generic Atlas scaffold remains the low-level catalog/source writer; Domain
-  Intelligence validates host-authored topology instead of inventing it.
+  Intelligence validates proposal topology instead of inventing source-backed
+  implementation evidence.
 - `proposal_tribunal.py` owns deterministic pre-write adjudication. It fails
   proposals whose child workstreams lack component/diagram/dependency/proof
   topology, whose components lack boundary/interface/dependency/proof
   expectations, whose diagrams do not connect to backlog and Registry
   components, or whose release/program structure cannot make Compass visibly
   useful.
-- Host-reasoned proposal output must include observed source posture, user
-  intent, Odylith assumptions, backlog candidates, program formation, program
-  waves, release plan, planned Registry components, host-authored draft Atlas
-  Mermaid sources,
+- Apply-ready proposal output must include observed source posture, user intent,
+  Odylith assumptions, backlog candidates, program formation, program waves,
+  release plan, planned Registry components, proposal draft Atlas Mermaid sources,
   validation strategy, risks, open questions, exact apply commands, and
   domain-proportional security, privacy, compliance, abuse, accessibility,
   data-retention, and operational risk posture.

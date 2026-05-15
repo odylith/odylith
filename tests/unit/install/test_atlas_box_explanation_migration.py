@@ -100,7 +100,7 @@ def test_atlas_box_explanation_migration_applies_from_each_supported_prior_relea
         assert (repo_root / result.ledger_path).is_file()
         assert [box["label"] for box in diagram["diagram_boxes"]] == ["Source truth", "Catalog", "Renderer"]
         assert "Catalog stores the source information" in diagram["diagram_boxes"][1]["description"]
-        assert "hands off to Renderer" in diagram["diagram_boxes"][1]["description"]
+        assert "hands off" not in diagram["diagram_boxes"][1]["description"]
 
 
 def test_atlas_box_explanation_migration_is_idempotent_after_verified_ledger(tmp_path: Path) -> None:

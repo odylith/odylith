@@ -108,6 +108,7 @@ def build_component_handoffs(
     first_release_ids = [str(item).strip().upper() for item in first_release_workstreams if str(item).strip()]
     handoffs: dict[str, dict[str, Any]] = {}
     components = [row for row in proposal.get("components", []) if isinstance(row, Mapping)]
+    project_context = _project_context(proposal)
     for row in components:
         key = greenfield_traceability.component_key(row)
         focused_child_ids = _component_focused_child_ids(
@@ -136,6 +137,7 @@ def build_component_handoffs(
         wave = _wave_for_workstream(program_result=program_result, workstream_id=start_id)
         title = str(by_id.get(start_id, {}).get("title", "")).strip()
         handoffs[key] = {
+            **project_context,
             "workstream_id": start_id,
             "workstream_title": title,
             "wave_id": str(wave.get("wave_id", "")).strip(),
@@ -147,6 +149,26 @@ def build_component_handoffs(
             "verification_commands": verification_commands(start_id),
         }
     return handoffs
+
+
+def _project_context(proposal: Mapping[str, Any]) -> dict[str, str]:
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    project_brief = proposal.get("project_brief") if isinstance(proposal.get("project_brief"), Mapping) else {}
+    validation = proposal.get("validation_strategy") if isinstance(proposal.get("validation_strategy"), Mapping) else {}
+    return {
+        "project_title": str(intent.get("title", "") or "").strip(),
+        "project_purpose": str(
+            project_brief.get("purpose")
+            or project_brief.get("summary")
+            or project_brief.get("operator_value")
+            or ""
+        ).strip(),
+        "project_outcome": str(
+            project_brief.get("project_outcome")
+            or validation.get("first_slice_proof")
+            or ""
+        ).strip(),
+    }
 
 
 def verification_commands(start_workstream_id: str) -> list[str]:

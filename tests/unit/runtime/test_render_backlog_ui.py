@@ -426,6 +426,16 @@ def test_render_backlog_ui_uses_diagram_owner_aware_atlas_links() -> None:
     assert 'owners.includes(workstreamId)' in html
 
 
+def test_render_backlog_ui_id_chips_use_only_custom_tooltip_not_browser_title() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert 'class="chip chip-link entity-id-chip ${escapeHtml(tone)}"' in html
+    assert 'data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(tooltip)}"' in html
+    assert 'title="${escapeHtml(tooltip)}"' not in html
+    assert 'title="${escapeHtml(token)}"' not in html
+    assert 'title="${escapeHtml(row.idea_id)}"' not in html
+
+
 def test_render_backlog_ui_uses_meaningful_hero_kicker() -> None:
     html = render_backlog_ui._render_html(payload={"entries": []})
 
@@ -524,6 +534,14 @@ def test_render_backlog_ui_places_product_view_below_problem() -> None:
 
     assert problem_idx < product_idx < customer_idx
     assert problem_idx < decision_idx < customer_idx
+
+
+def test_render_backlog_ui_keeps_decision_basis_labeling_self_contained() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert "function humanizeToken(token)" in html
+    assert 'return humanizeToken(label);' in html
+    assert 'replace(/^[-*]\\s+/, "")' in html
 
 
 def test_render_backlog_ui_includes_release_filters_summary_cards_and_release_chips() -> None:

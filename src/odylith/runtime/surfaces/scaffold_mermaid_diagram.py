@@ -224,7 +224,7 @@ def _default_read_guide(*, title: str, kind: str, components: list[dict[str, str
     if "sequence" in kind_token:
         return (
             f"Read {title_token} from top to bottom. Each lane is an actor or component; "
-            f"arrows are calls, handoffs, or proof events; notes and failure branches show block or recovery points."
+            f"messages are calls, handoffs, or proof events; notes and failure branches show block or recovery points."
             f"{component_hint}"
         )
     if "state" in kind_token:
@@ -233,8 +233,8 @@ def _default_read_guide(*, title: str, kind: str, components: list[dict[str, str
             f"blocked or rejected states require proof before advancement.{component_hint}"
         )
     return (
-        f"Read {title_token} from the named entrypoint through the arrows. Boxes are the governing components, "
-        f"states, decisions, or proof obligations; grouped lanes show ownership or phase boundaries.{component_hint}"
+        f"Read {title_token} from the named entrypoint through each connected responsibility. Boxes name the actors, "
+        f"records, systems, decisions, or proof obligations; grouped lanes show ownership or phase boundaries.{component_hint}"
     )
 
 

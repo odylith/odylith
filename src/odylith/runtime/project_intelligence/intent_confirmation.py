@@ -7,7 +7,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 
-INTENT_CONFIRMATION_SCHEMA_VERSION = "odylith.greenfield.product_intent_confirmation.v2"
+INTENT_CONFIRMATION_SCHEMA_VERSION = "odylith.greenfield.product_intent_confirmation.v3"
 
 
 def build_product_intent_confirmation(
@@ -27,7 +27,7 @@ def build_product_intent_confirmation(
         "mode": "product_intent_reasoning_request",
         "provider_calls": 0,
         "host_agnostic": True,
-        "write_policy": "host_reason_product_intent_before_greenfield_proposal",
+        "write_policy": "host_reason_product_intent_before_confirmed_greenfield_create",
         "intent": {
             "prompt": clean_prompt,
             "working_title": _clean(title),
@@ -68,18 +68,20 @@ def build_product_intent_confirmation(
         },
         "confirmation_gate": {
             "status": "waiting_for_host_authored_product_intent",
-            "proceed": "If the interpretation is right, ask the operator to confirm so Odylith can build the internal proposal payload, run Tribunal, and apply governed records.",
+            "proceed": "If the interpretation is right, ask the operator to confirm so Odylith can build the apply-ready proposal, run Tribunal, and apply governed records.",
             "edit": "If anything is wrong or missing, ask the operator to reply with corrections before proposal expansion.",
             "reject": "If this is not the intended product, stop and write no records.",
         },
         "commands": {
-            "proposal_contract_after_confirmation": (
+            "confirmed_create_after_confirmation": (
+                "odylith greenfield create --repo-root . --prompt "
+                + _shell_quote(clean_prompt)
+                + " --confirm --release 0.0.1"
+            ),
+            "optional_review_json_after_confirmation": (
                 "odylith greenfield propose --repo-root . --prompt "
                 + _shell_quote(clean_prompt)
                 + " --confirm-intent --format json"
-            ),
-            "apply_after_internal_payload": (
-                "odylith greenfield apply --repo-root . --proposal-file .odylith/runtime/greenfield/active-proposal.v1.json --confirm --release 0.0.1"
             ),
         },
     }
@@ -93,7 +95,7 @@ def format_product_intent_confirmation_text(confirmation: Mapping[str, Any]) -> 
     task = _mapping(confirmation.get("host_reasoning_task"))
     commands = _mapping(confirmation.get("commands"))
     prompt = _clean(intent.get("prompt"))
-    proposal_contract = _clean(commands.get("proposal_contract_after_confirmation"))
+    confirmed_create = _clean(commands.get("confirmed_create_after_confirmation"))
     lines = [
         "Product Intent Confirmation needed",
         f"No files changed. Source posture: {source_posture}.",
@@ -118,13 +120,13 @@ def format_product_intent_confirmation_text(confirmation: Mapping[str, Any]) -> 
             prompt,
             "",
             "Next step",
-            "- Confirm: if the interpretation is right, use the proposal contract internally, build the apply payload, run Tribunal, and apply governed project records. Do not ask the operator to inspect proposal JSON.",
+            "- Confirm: if the interpretation is right, run greenfield create --confirm so Odylith builds the apply-ready proposal, runs Tribunal, and applies governed project records. Do not ask the operator to inspect proposal JSON.",
             "- Edit: if the product story, actors, systems, assumptions, first path, or proof boundary is wrong, ask for corrections and rerun this confirmation.",
             "- Reject: if this is not the intended product, stop here and write nothing.",
         ]
     )
-    if proposal_contract:
-        lines.append(f"Internal CLI after confirmation: {proposal_contract}")
+    if confirmed_create:
+        lines.append(f"Confirmed CLI after confirmation: {confirmed_create}")
     return "\n".join(line for line in lines if line is not None).rstrip() + "\n"
 
 

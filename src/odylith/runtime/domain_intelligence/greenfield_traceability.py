@@ -99,7 +99,7 @@ def build_traceability_plan(
     created_backlog: Sequence[Mapping[str, Any]],
     diagram_ids: Sequence[str],
 ) -> GreenfieldTraceabilityPlan:
-    """Map host-authored proposal topology onto newly created governance IDs."""
+    """Map confirmed proposal topology onto newly created governance IDs."""
 
     workstreams = _created_workstreams(proposal=proposal, created_backlog=created_backlog)
     components = [row for row in proposal.get("components", []) if isinstance(row, Mapping)]

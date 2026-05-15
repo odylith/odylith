@@ -26,13 +26,10 @@ def build_apply_commands(proposal: Mapping[str, Any]) -> list[str]:
     release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
     release_selector = _release_selector(release_plan)
     release_arg = f" --release {shell_quote(release_selector)}"
+    prompt_arg = shell_quote(str(proposal.get("intent", {}).get("prompt", "new project")))
     commands = [
-        "odylith greenfield propose --repo-root . --prompt "
-        + shell_quote(str(proposal.get("intent", {}).get("prompt", "new project")))
-        + " --confirm-intent --format json",
-        "# after Product Intent is confirmed, the host writes an internal apply payload from live reasoning",
-        "odylith greenfield apply --repo-root . --proposal-file .odylith/runtime/greenfield/active-proposal.v1.json --confirm"
-        + release_arg,
+        "odylith greenfield create --repo-root . --prompt " + prompt_arg + " --confirm" + release_arg,
+        "# optional review artifact: `greenfield propose --confirm-intent --format json` emits the same apply-ready proposal",
     ]
     if backlog:
         commands.append("# apply will create project workstream records after validation")
@@ -64,9 +61,9 @@ def format_proposal_text(proposal: Mapping[str, Any], *, detail: str = "brief") 
             f"- source posture: {source.get('source_posture', 'unknown')}",
             "- files changed: none",
             "- generated governance artifacts: none",
-            "- proposal authorship: host reasoning required after confirmed Product Intent",
+            "- proposal authorship: legacy reasoning-request mode; prefer confirmed create path",
             f"- provider calls by Odylith CLI: {proposal.get('provider_calls', 0)}",
-            "- write gate: `greenfield apply --confirm` validates a host-authored proposal and runs Tribunal before records are written",
+            "- write gate: `greenfield create --confirm` builds, validates, gates, writes, and refreshes records",
             "",
             "Host handoff",
         ]
@@ -76,7 +73,7 @@ def format_proposal_text(proposal: Mapping[str, Any], *, detail: str = "brief") 
             lines.append(f"- Stop: {rule}")
         lines.extend(
             [
-                "- Use `odylith greenfield propose --repo-root . --prompt \"<confirmed request>\" --confirm-intent --format json` internally after confirmation; do not show it as a second approval step and do not search Odylith source.",
+                "- Use `odylith greenfield create --repo-root . --prompt \"<confirmed request>\" --confirm --release 0.0.1` after confirmation; do not search Odylith source.",
                 "",
                 "Apply path after intent confirmation",
             ]
@@ -109,7 +106,7 @@ def format_proposal_text(proposal: Mapping[str, Any], *, detail: str = "brief") 
             for rule in contract.get("quality_bar", []) if isinstance(contract.get("quality_bar"), list) else []:
                 lines.append(f"- {rule}")
         lines.extend(["", "Apply"])
-        lines.append("After Product Intent is confirmed, the host uses this contract internally, writes the apply payload, and runs apply; do not ask the operator to inspect proposal JSON.")
+        lines.append("After Product Intent is confirmed, run the confirmed create path; do not ask the operator to inspect proposal JSON.")
         if isinstance(commands, list):
             for command in commands:
                 lines.append("  " + str(command))
@@ -144,18 +141,15 @@ def _format_proposal_preview_text(
     commands = request_context.get("apply_commands", [])
     apply_json_command = ""
     if isinstance(commands, list):
-        apply_json_command = next((str(item) for item in commands if str(item).startswith("odylith greenfield apply")), "")
+        apply_json_command = next((str(item) for item in commands if str(item).startswith("odylith greenfield create")), "")
     if not apply_json_command:
-        apply_json_command = (
-            "odylith greenfield apply --repo-root . --proposal-file .odylith/runtime/greenfield/active-proposal.v1.json --confirm"
-            + f" --release {shell_quote(release_selector)}"
-        )
+        apply_json_command = "odylith greenfield create --repo-root . --prompt '<confirmed request>' --confirm" + f" --release {shell_quote(release_selector)}"
 
     lines = [
         f"Greenfield proposal preview: {title}",
         f"- source evidence: {source_posture}; No files changed.",
         "- gate: preview only; product records are written only after explicit confirmation",
-        "- proposal authorship: after this confirmation, the host writes an internal apply payload from live reasoning",
+        "- proposal authorship: Odylith built the apply-ready proposal from confirmed intent",
         "",
         "Gate 1 - Interpretation",
     ]
@@ -184,8 +178,8 @@ def _format_proposal_preview_text(
     lines.extend(["", "Gate 4 - Choose Next Action"])
     lines.append("- Recommended next step: say `Apply this proposal as-is` if Gate 1 and Gate 2 look right.")
     lines.append("- Revise before apply: answer the Gate 2 choices that are wrong, then rerun `greenfield propose` with the sharper intent.")
-    lines.append("- First write point: `greenfield apply --confirm`; no product records are written before that.")
-    lines.append("- Apply payload: after confirmation, the host writes an internal payload from the confirmed intent and source posture.")
+    lines.append("- First write point: `greenfield create --confirm`; no product records are written before that.")
+    lines.append("- Apply payload: Odylith builds the apply-ready proposal from the confirmed intent.")
     lines.append("- Apply after Product Intent confirmation:")
     lines.append(f"  {apply_json_command}")
     return "\n".join(lines).rstrip() + "\n"
@@ -458,14 +452,11 @@ def _format_apply_ready_proposal_text(
     request_commands = request_context.get("apply_commands", [])
     apply_command = ""
     if isinstance(request_commands, list):
-        apply_command = next((str(item) for item in request_commands if str(item).startswith("odylith greenfield apply")), "")
+        apply_command = next((str(item) for item in request_commands if str(item).startswith("odylith greenfield create")), "")
     if not apply_command:
         release_selector = _release_selector(release_plan)
-        apply_command = (
-            "odylith greenfield apply --repo-root . --proposal-file .odylith/runtime/greenfield/active-proposal.v1.json --confirm"
-            + f" --release {shell_quote(release_selector)}"
-        )
-    lines.append("  # host writes an internal apply payload from the confirmed intent")
+        apply_command = "odylith greenfield create --repo-root . --prompt '<confirmed request>' --confirm" + f" --release {shell_quote(release_selector)}"
+    lines.append("  # Odylith builds the apply-ready proposal from the confirmed intent")
     lines.append("  " + apply_command)
     commands = proposal.get("apply_commands", [])
     if isinstance(commands, list) and commands:

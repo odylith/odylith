@@ -180,6 +180,9 @@ def test_greenfield_propose_apply_smoke_runs_exact_release_journey(monkeypatch, 
         "odylith/registry/registry.html",
         "odylith/atlas/atlas.html",
         "odylith/compass/compass.html",
+        "odylith/runtime/source/accepted-project.v1.json",
+        "odylith/runtime/delivery_intelligence.v4.json",
+        "odylith/radar/traceability-graph.v1.json",
     ):
         path = repo_root / relative_path
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -196,16 +199,25 @@ def test_greenfield_propose_apply_smoke_runs_exact_release_journey(monkeypatch, 
                 stdout = (
                     '{\n'
                     '  "mode": "product_intent_reasoning_request",\n'
-                    '  "write_policy": "host_reason_product_intent_before_greenfield_proposal",\n'
+                    '  "write_policy": "host_reason_product_intent_before_confirmed_greenfield_create",\n'
                     '  "host_reasoning_task": {"must_not": []}\n'
                     '}\n'
                 )
             elif "propose" in command:
                 stdout = (
                     '{\n'
-                    '  "mode": "host_reasoned_proposal_request",\n'
-                    '  "reasoning_contract": {},\n'
-                    '  "host_instruction": "reason live"\n'
+                    '  "mode": "host_reasoned_greenfield_proposal",\n'
+                    '  "backlog": [],\n'
+                    '  "components": [],\n'
+                    '  "diagrams": []\n'
+                    '}\n'
+                )
+            elif "create" in command:
+                stdout = (
+                    '{\n'
+                    '  "mode": "applied",\n'
+                    '  "tribunal": {"passed": true},\n'
+                    '  "dashboard_refresh": {"status": "passed"}\n'
                     '}\n'
                 )
             else:
@@ -242,7 +254,19 @@ def test_greenfield_propose_apply_smoke_runs_exact_release_journey(monkeypatch, 
             "--format",
             "json",
         ),
-        (str(odylith), "dashboard", "refresh", "--repo-root", "."),
+        (
+            str(odylith),
+            "greenfield",
+            "create",
+            "--repo-root",
+            ".",
+            "--prompt",
+            "robot swarm logistics app",
+            "--confirm",
+            "--release",
+            "0.0.1",
+            "--json",
+        ),
     ]
 
 
@@ -254,27 +278,91 @@ def _write_greenfield_guidance(repo_root: Path, text: str) -> None:
         path.write_text(text, encoding="utf-8")
 
 
-def test_release_smoke_requires_installed_greenfield_guidance_uses_host_apply(tmp_path: Path) -> None:
+def test_release_smoke_requires_installed_greenfield_guidance_uses_confirmed_create(tmp_path: Path) -> None:
     module = _module()
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
     _write_greenfield_guidance(
         repo_root,
-        "Use Product Intent Confirmation before proposal expansion. Include the product story. The host authors an internal proposal payload and uses odylith greenfield apply from the same confirmation. Do not inspect Odylith source after confirmation. Do not ask the operator to inspect proposal JSON. Do not use prompt-only greenfield create.\n",
+        "Use Product Intent Confirmation before confirmed create. Include the product story. Run odylith greenfield create --repo-root . --prompt '<request>' --confirm --release 0.0.1 from the same confirmation. Odylith builds an apply-ready proposal. Do not inspect Odylith source after confirmation. Do not ask the operator to inspect proposal JSON.\n",
     )
 
-    module._require_greenfield_guidance_uses_host_apply(repo_root=repo_root, label="unit")
+    module._require_greenfield_guidance_uses_confirmed_create(repo_root=repo_root, label="unit")
 
     (repo_root / "AGENTS.md").write_text(
         "Use Product Intent Confirmation before proposal expansion. Include the product story. The host authors an internal proposal payload and uses odylith greenfield apply from the same confirmation. Do not inspect Odylith source after confirmation. Do not ask the operator to inspect proposal JSON. host model drafts\n",
         encoding="utf-8",
     )
     try:
-        module._require_greenfield_guidance_uses_host_apply(repo_root=repo_root, label="unit")
+        module._require_greenfield_guidance_uses_confirmed_create(repo_root=repo_root, label="unit")
     except RuntimeError as exc:
         assert "stale greenfield schema-repair flow" in str(exc)
     else:  # pragma: no cover - assertion branch
         raise AssertionError("stale installed guidance should fail release smoke")
+
+
+def test_release_smoke_rejects_maintainer_restrictions_in_consumer_guidance(tmp_path: Path) -> None:
+    module = _module()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    for relative_path in module._CONSUMER_GUIDANCE_FILES:
+        path = repo_root / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("Consumer guidance follows this repo's own Git identity.\n", encoding="utf-8")
+    for relative_dir in module._CONSUMER_GUIDANCE_DIRECTORIES:
+        path = repo_root / relative_dir / "README.md"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("Consumer guidance follows this repo's own Git policy and native validation.\n", encoding="utf-8")
+
+    module._require_no_maintainer_restrictions_in_consumer_guidance(repo_root=repo_root, label="unit")
+
+    (repo_root / "CLAUDE.md").write_text(
+        "Commit messages must use only the `freedom-research` contributor identity and must not include coding-assistant trailers.\n",
+        encoding="utf-8",
+    )
+    try:
+        module._require_no_maintainer_restrictions_in_consumer_guidance(repo_root=repo_root, label="unit")
+    except RuntimeError as exc:
+        assert "consumer surface leaks maintainer-only restriction" in str(exc)
+        assert "CLAUDE.md" in str(exc)
+    else:  # pragma: no cover - assertion branch
+        raise AssertionError("consumer guidance with maintainer identity should fail release smoke")
+
+    (repo_root / "CLAUDE.md").write_text("Consumer guidance follows this repo's own Git identity.\n", encoding="utf-8")
+    leak = repo_root / "odylith" / "agents-guidelines" / "VALIDATION_AND_TESTING.md"
+    leak.write_text("In this repo, never work directly on `main`; run make release-preflight before release.\n", encoding="utf-8")
+    try:
+        module._require_no_maintainer_restrictions_in_consumer_guidance(repo_root=repo_root, label="unit")
+    except RuntimeError as exc:
+        assert "consumer surface leaks maintainer-only restriction" in str(exc)
+        assert "odylith/agents-guidelines/VALIDATION_AND_TESTING.md" in str(exc)
+    else:  # pragma: no cover - assertion branch
+        raise AssertionError("consumer guidance with maintainer branch or release rule should fail release smoke")
+
+    leak.write_text("Consumer guidance follows this repo's own Git policy and native validation.\n", encoding="utf-8")
+    (repo_root / "odylith" / "runtime" / "source").mkdir(parents=True, exist_ok=True)
+    (repo_root / "odylith" / "runtime" / "source" / "release-metadata.v1.json").write_text(
+        '{"owner": "freedom-research"}\n',
+        encoding="utf-8",
+    )
+    try:
+        module._require_no_maintainer_restrictions_in_consumer_guidance(repo_root=repo_root, label="unit")
+    except RuntimeError as exc:
+        assert "consumer surface leaks maintainer-only restriction" in str(exc)
+        assert "odylith/runtime/source/release-metadata.v1.json" in str(exc)
+    else:  # pragma: no cover - assertion branch
+        raise AssertionError("consumer runtime source with maintainer identity should fail release smoke")
+
+
+def test_bundled_consumer_guidance_has_no_maintainer_restrictions(tmp_path: Path) -> None:
+    module = _module()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    shutil.copytree(REPO_ROOT / "src" / "odylith" / "bundle" / "assets" / "project-root", repo_root, dirs_exist_ok=True)
+    bundled_odylith = REPO_ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith"
+    shutil.copytree(bundled_odylith, repo_root / "odylith", dirs_exist_ok=True)
+
+    module._require_no_maintainer_restrictions_in_consumer_guidance(repo_root=repo_root, label="bundle")
 
 
 def test_main_skips_upgrade_cycle_when_previous_release_missing(monkeypatch, tmp_path: Path) -> None:

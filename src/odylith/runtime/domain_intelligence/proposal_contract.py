@@ -1,4 +1,4 @@
-"""Host-facing schema contract for greenfield proposal authoring."""
+"""Schema contract notes for confirmed greenfield proposal construction."""
 
 from __future__ import annotations
 
@@ -63,7 +63,7 @@ GREENFIELD_ENGINE_ACTIVATION_LAYERS: tuple[dict[str, str], ...] = (
     },
     {
         "layer": "greenfield_domain_intelligence",
-        "activation": "Let the host author domain content while Odylith owns normalization, validation, Tribunal, rollback, and apply.",
+        "activation": "Let the host narrate product intent while Odylith owns confirmed proposal construction, normalization, validation, Tribunal, rollback, and apply.",
     },
     {
         "layer": "overall_ux",
@@ -103,33 +103,33 @@ def build_proposal_contract() -> dict[str, Any]:
             "complete_authoring_surface": True,
             "intent_confirmation_authorizes_apply_attempt": True,
             "contract_use": [
-                "Use this CLI response as the complete internal host-facing proposal contract, not as a user-facing approval artifact.",
-                "For the normal post-confirmation path, call this command with --format json internally, then run greenfield apply.",
+                "Use greenfield create --confirm as the normal post-confirmation path.",
+                "Use --confirm-intent --format json only when an explicit review artifact is requested.",
                 "Do not inspect Odylith source files, Python modules, local examples, or generated runtime files to discover schema fields.",
             ],
             "forbidden_host_steps": [
                 "Do not search src/odylith, .odylith, odylith/skills, or installed bundle files for greenfield schema after intent confirmation.",
                 "Do not create a proposal by copying local examples or template fixtures.",
-                "Do not run prompt-only greenfield create.",
                 "Do not ask the operator to inspect proposal JSON as the normal approval step.",
-                "Do not write governed records unless greenfield apply passes validation and Tribunal.",
+                "Do not write governed records unless confirmed create/apply passes validation and Tribunal.",
             ],
             "allowed_host_steps": [
-                "Author an internal proposal payload from the confirmed product intent, observed source posture, and this contract.",
+                "Run greenfield create --confirm from the confirmed product intent and observed source posture.",
                 "Keep product story, actors, systems, workstreams, components, diagrams, risks, proof, and release gates project-specific.",
-                "Run greenfield apply immediately after Product Intent confirmation; the apply command is the validation and Tribunal gate.",
+                "Let Odylith build the apply-ready proposal; the create/apply command is the validation and Tribunal gate.",
                 "Surface only the human-readable created-record summary or the validation/Tribunal issues.",
             ],
             "canonical_files": [
                 {
-                    "path": ".odylith/runtime/greenfield/active-proposal.v1.json",
-                    "purpose": "ephemeral host-authored apply payload; not a user-facing review artifact",
+                    "path": "odylith-greenfield-proposal.json",
+                    "purpose": "optional exported apply-ready review artifact when explicitly requested",
                     "governed_record": False,
                 }
             ],
             "canonical_commands": [
-                "odylith greenfield propose --repo-root . --prompt \"<confirmed request>\" --confirm-intent --format json",
-                "odylith greenfield apply --repo-root . --proposal-file .odylith/runtime/greenfield/active-proposal.v1.json --confirm --release 0.0.1",
+                "odylith greenfield create --repo-root . --prompt \"<confirmed request>\" --confirm --release 0.0.1",
+                "odylith greenfield propose --repo-root . --prompt \"<confirmed request>\" --confirm-intent --format json > odylith-greenfield-proposal.json",
+                "odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm --release 0.0.1",
             ],
             "failure_policy": [
                 "If validation or Tribunal rejects the proposal, do not write records; summarize the blocking issues in product language.",
@@ -191,7 +191,7 @@ def build_proposal_contract() -> dict[str, Any]:
                 "Choose diagram types because they clarify the project, and for greenfield architecture favor a "
                 "multi-view suite that covers topology, sequence, ownership, state/data, validation, and operational risk."
             ),
-            "Each diagram must include host-authored mermaid_source; Odylith validates it but does not invent topology.",
+                "Each diagram must include proposal-supplied mermaid_source; Odylith validates it but does not invent topology.",
             (
                 "For flowchart mermaid_source, use the Atlas semantic classDef/style color language for node state "
                 "and restrained neutral containers, plus <br/> to wrap long labels so text stays readable. Use "

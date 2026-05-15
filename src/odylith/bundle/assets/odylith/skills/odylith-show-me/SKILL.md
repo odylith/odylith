@@ -37,19 +37,19 @@ placeholder products in response to a show-me request.
    feature after an empty/thin show result, do not refuse because source is
    absent. Run the project-first proposal path instead:
    `./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<their request>"`.
-   Treat that output as a no-write host reasoning request. Write the short
+   Treat that output as a no-write Product Intent request. Write the short
    Product Intent Confirmation in chat from live reasoning so the operator sees
    the interpreted product story, actors, systems, assumptions, ambiguities,
-   and confirm/edit/reject gate. After the operator confirms the
-   interpretation, rerun with `--confirm-intent --format json` internally for
-   the proposal schema and proof contract; do not show that contract as a second
-   approval step and do not search Odylith source, `.odylith`, bundle files, or
-   local examples for schema. The host authors an internal apply payload from
-   the confirmed intent, then immediately runs
-   `greenfield apply --proposal-file ... --confirm`.
+   and confirm/edit/reject gate. After the operator confirms the same
+   interpretation, run the confirmed create path from the same confirmation:
+   `greenfield create --repo-root . --prompt "<their request>" --confirm --release 0.0.1`.
+   Odylith builds the apply-ready proposal, validates it, runs Tribunal, writes
+   records, and refreshes surfaces from that confirmation; do not show JSON as
+   a second approval step and do not search Odylith source, `.odylith`, bundle
+   files, or local examples for schema.
    Do not ask the operator to inspect proposal JSON or confirm a second time unless they explicitly request a review artifact.
-   Do not use prompt-only `greenfield create`, canned domain scaffolds, dumped
-   tool internals, or code before the product gates are accepted. When the CLI
+   Do not hand-author or repair proposal JSON, use canned domain scaffolds, dump
+   tool internals, or write code before the product gates are accepted. When the CLI
    returns proposal stdout directly before confirmation, do not hide the
    confirmation behind collapsed tool output. After confirmation, surface only
    created records or validation/Tribunal blockers.

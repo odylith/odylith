@@ -6,35 +6,35 @@
       "version": "0.1.9",
       "mode": "skip_proof_and_compare",
       "reason": "Maintainer special request. Full benchmark audit and proof refresh move to the next release.",
-      "owner": "freedom-research",
+      "owner": "release-maintainer",
       "updated_utc": "2026-04-07T22:05:00Z"
     },
     {
       "version": "0.1.10",
       "mode": "skip_proof_and_compare",
       "reason": "Pinned-dogfood proof benchmark wedged mid-corpus during release prep. Track the blocker in Casebook and restore full proof next release.",
-      "owner": "freedom-research",
+      "owner": "release-maintainer",
       "updated_utc": "2026-04-08T08:59:56Z"
     },
     {
       "version": "0.1.11",
       "mode": "reuse_existing_proof_report",
       "reason": "Maintainer release decision on 2026-04-26: reuse proof report 44f2a3d83d2c9975 from commit 1cfca107 after later release-UX-only commits were covered by targeted regression and browser tests instead of rerunning the full benchmark.",
-      "owner": "freedom-research",
+      "owner": "release-maintainer",
       "updated_utc": "2026-04-26T22:37:05Z"
     },
     {
       "version": "0.1.12",
       "mode": "skip_proof_and_compare",
       "reason": "Maintainer release decision on 2026-05-01: skip full benchmark proof and benchmark compare for the v0.1.12 recovery release after candidate proof passed 3373 tests and built the release wheel, while benchmark compare correctly failed closed because no current-tree authoritative proof candidate exists (CB-116). Release remains benchmark-advisory; full proof restoration stays in the benchmark workstream.",
-      "owner": "freedom-research",
+      "owner": "release-maintainer",
       "updated_utc": "2026-05-01T06:39:42Z"
     },
     {
       "version": "0.1.14",
       "mode": "skip_proof_and_compare",
       "reason": "Maintainer release decision on 2026-05-04: skip full benchmark proof and benchmark compare for the v0.1.14 GA release at operator request. Release remains benchmark-advisory; Product Governed Harness Turn Gate formal-model truth, migration-gate coverage, browser-surface proof, install and runtime migration tests, topology/guidance/discipline validation, and release-candidate proof carry this GA lane without claiming fresh benchmark proof (CB-116).",
-      "owner": "freedom-research",
+      "owner": "release-maintainer",
       "updated_utc": "2026-05-04T06:03:01Z"
     }
   ]

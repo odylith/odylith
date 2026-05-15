@@ -22,8 +22,8 @@ def format_visible_proposal_card_text(
 
     This is intentionally short enough to stay visible in Claude/Codex tool
     transcripts after product intent is confirmed. The longer text gate stays
-    behind ``--confirm-intent --detail full``. The apply-ready payload is
-    host-authored internally, then accepted through ``greenfield apply``.
+    behind ``--confirm-intent --detail full``. The apply-ready proposal is built
+    by Odylith from confirmed intent, then accepted through ``greenfield create``.
     """
 
     intent = proposal.get("intent", {}) if isinstance(proposal.get("intent"), Mapping) else {}
@@ -171,10 +171,7 @@ def _visible_apply_command(
 ) -> str:
     commands = request_context.get("apply_commands", [])
     if isinstance(commands, list):
-        command = next((str(item) for item in commands if str(item).startswith("odylith greenfield apply")), "")
+        command = next((str(item) for item in commands if str(item).startswith("odylith greenfield create")), "")
         if command:
             return command
-    return (
-        "odylith greenfield apply --repo-root . --proposal-file .odylith/runtime/greenfield/active-proposal.v1.json --confirm"
-        + f" --release {shell_quote(release_selector)}"
-    )
+    return "odylith greenfield create --repo-root . --prompt '<confirmed request>' --confirm" + f" --release {shell_quote(release_selector)}"

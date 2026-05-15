@@ -20,19 +20,20 @@ PRODUCT_INTENTS = [
 
 
 @pytest.mark.parametrize("prompt", PRODUCT_INTENTS)
-def test_greenfield_propose_is_only_a_host_reasoning_request(tmp_path: Path, prompt: str) -> None:
+def test_confirmed_greenfield_proposal_is_apply_ready_without_domain_profiles(tmp_path: Path, prompt: str) -> None:
     request = greenfield_proposals.build_greenfield_proposal(repo_root=tmp_path, prompt=prompt)
 
-    assert request["mode"] == "host_reasoned_proposal_request"
-    assert request["schema_version"] == "odylith.greenfield.reasoning_request.v1"
+    greenfield_proposals.validate_host_reasoned_proposal(request)
+    assert request["mode"] == "host_reasoned_greenfield_proposal"
+    assert request["schema_version"] == "odylith.greenfield.proposal.v1"
     assert request["provider_calls"] == 0
-    assert "reasoning_contract" in request
-    assert "host_instruction" in request
-    assert "backlog" not in request
-    assert "components" not in request
-    assert "diagrams" not in request
-    assert "project_intelligence" not in request
-    assert "project_brief" not in request
+    assert "reasoning_contract" not in request
+    assert "host_instruction" not in request
+    assert len(request["backlog"]) >= 4
+    assert len(request["components"]) >= 3
+    assert len(request["diagrams"]) >= 3
+    assert request["project_intelligence"]["intent"]
+    assert request["project_brief"]["blueprint_sections"]
     assert "Product Model" not in json.dumps(request)
     assert "Operator Workspace" not in json.dumps(request)
 
@@ -71,7 +72,7 @@ def test_greenfield_title_strips_operator_directives(tmp_path: Path) -> None:
     assert "Do Not Write" not in request["intent"]["title"]
 
 
-def test_confirm_intent_returns_contract_not_generated_governance(tmp_path: Path, capsys) -> None:
+def test_confirm_intent_returns_apply_ready_governance(tmp_path: Path, capsys) -> None:
     rc = greenfield_proposals.main(
         [
             "propose",
@@ -88,11 +89,11 @@ def test_confirm_intent_returns_contract_not_generated_governance(tmp_path: Path
     request = json.loads(output)
 
     assert rc == 0
-    assert request["mode"] == "host_reasoned_proposal_request"
-    assert "reasoning_contract" in request
-    assert "backlog" not in request
-    assert "components" not in request
-    assert "diagrams" not in request
+    assert request["mode"] == "host_reasoned_greenfield_proposal"
+    assert "reasoning_contract" not in request
+    assert len(request["backlog"]) >= 4
+    assert len(request["components"]) >= 3
+    assert len(request["diagrams"]) >= 3
 
 
 def test_quality_gate_rejects_profile_scaffold_and_generic_persona_leaks() -> None:

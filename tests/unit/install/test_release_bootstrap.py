@@ -1402,7 +1402,7 @@ def test_release_candidate_benchmark_override_is_version_scoped() -> None:
     rows = {row["version"]: row for row in overrides["benchmark_proof_overrides"]}
     bundled_rows = {row["version"]: row for row in bundled_overrides["benchmark_proof_overrides"]}
     assert rows["0.1.12"]["mode"] == "skip_proof_and_compare"
-    assert rows["0.1.12"]["owner"] == "freedom-research"
+    assert rows["0.1.12"]["owner"] == "release-maintainer"
     assert "CB-116" in rows["0.1.12"]["reason"]
     assert bundled_rows["0.1.12"] == rows["0.1.12"]
 

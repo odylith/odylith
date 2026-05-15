@@ -41,10 +41,14 @@ def build_component_spec(
     wave_label = _handoff_text(handoff, "wave_label")
     wave_status = _handoff_text(handoff, "wave_status")
     release_selector = _handoff_text(handoff, "release_selector")
+    project_title = _handoff_text(handoff, "project_title")
+    project_purpose = _handoff_text(handoff, "project_purpose")
+    project_outcome = _handoff_text(handoff, "project_outcome")
     handoff_validation = _handoff_list(handoff, "validation_gates")
     handoff_commands = _handoff_list(handoff, "verification_commands")
 
     responsibility_text = sentence_fragment(responsibility)
+    responsibility_line = _responsibility_sentence(responsibility_text, default_verb=profile["default_verb"])
     boundary_text = sentence_fragment(boundary) or responsibility_text
     evidence_text = _evidence_text(normalized_sources=normalized_sources, path=path)
     plan_link = _plan_link(first_workstream)
@@ -55,24 +59,36 @@ def build_component_spec(
         handoff_validation=handoff_validation,
         label=label,
         boundary=boundary_text,
-        responsibility=responsibility_text,
+        responsibility=responsibility_line or responsibility_text,
     )
     interface_lines = _unique_lines(interfaces or (profile["default_interface"],))
-    dependency_lines = _unique_lines(dependencies or (profile["default_dependency"],))
+    dependency_lines = _dependency_lines(dependencies or (profile["default_dependency"],))
     risk_lines = _unique_lines(risks or (profile["default_risk"],))
     outside_boundary = _outside_boundary_lines(boundary=boundary_text, profile=profile)
     contract_summary = _contract_summary(
         label=label,
-        responsibility=responsibility_text,
+        responsibility=responsibility_line or responsibility_text,
         boundary=boundary_text,
         profile=profile,
+    )
+    role_paragraphs = _component_role_paragraphs(
+        label=label,
+        profile=profile,
+        project_title=project_title,
+        project_purpose=project_purpose,
+        project_outcome=project_outcome,
+        release_selector=release_selector,
+        first_slice=first_slice,
+        responsibility=responsibility_line or responsibility_text,
+        boundary=boundary_text,
+        validation=proof_lines,
     )
 
     return "\n".join(
         [
             f"# {label}",
             "",
-            f"> Component-specific Registry dossier for `{component_id}`. {evidence_text}",
+            f"> Component planning record for `{component_id}`. {evidence_text}",
             "",
             "## Component Snapshot",
             "",
@@ -87,7 +103,11 @@ def build_component_spec(
             f"| Workstreams | {related_workstreams} |",
             f"| Diagrams | {related_diagrams} |",
             "",
-            f"## {_component_heading(label, profile['boundary_heading'])}",
+            "## Component Role",
+            "",
+            "\n\n".join(role_paragraphs),
+            "",
+            f"## {profile['boundary_heading']}",
             "",
             _paragraph(
                 boundary_text
@@ -96,13 +116,13 @@ def build_component_spec(
             "",
             "### Owns",
             "",
-            _bullet_lines((responsibility_text,) if responsibility_text else (profile["default_owns"],)),
+            _bullet_lines((responsibility_line,) if responsibility_line else (profile["default_owns"],)),
             "",
             "### Outside Boundary",
             "",
             _bullet_lines(outside_boundary),
             "",
-            f"## {_component_heading(label, profile['contract_heading'])}",
+            f"## {profile['contract_heading']}",
             "",
             _paragraph(contract_summary),
             "",
@@ -114,15 +134,15 @@ def build_component_spec(
             "",
             _bullet_lines(dependency_lines),
             "",
-            f"## {_component_heading(label, profile['proof_heading'])}",
+            f"## {profile['proof_heading']}",
             "",
             _proof_table(proof_lines or (profile["default_validation"],), commands=handoff_commands),
             "",
-            f"## {_component_heading(label, profile['risk_heading'])}",
+            f"## {profile['risk_heading']}",
             "",
             _bullet_lines(risk_lines),
             "",
-            f"## {_component_heading(label, profile['runway_heading'])}",
+            f"## {profile['runway_heading']}",
             "",
             _runway_lines(
                 path=path,
@@ -152,7 +172,7 @@ def build_component_spec(
 
 def _kind_profile(kind: str) -> dict[str, str]:
     token = str(kind or "").casefold()
-    if token in {"application", "ui", "frontend", "web"}:
+    if token in {"application", "client", "surface", "ui", "frontend", "web"}:
         return {
             "boundary_heading": "Interaction Boundary",
             "contract_heading": "Interaction Contract",
@@ -160,13 +180,15 @@ def _kind_profile(kind: str) -> dict[str, str]:
             "proof_heading": "User-State Proof Matrix",
             "risk_heading": "Experience Failure Modes",
             "runway_heading": "First Interaction Slice",
+            "role_noun": "human-facing interaction surface",
+            "default_verb": "owns",
             "contract_intro": "This component owns what a human can initiate, inspect, recover from, and trust in the first slice.",
             "default_owns": "The first user-visible path, including normal, empty, degraded, and error states.",
             "default_interface": "A route, command, or view contract selected by the first implementation plan.",
             "default_dependency": "The domain contract that supplies state and the verification harness that proves visible behavior.",
             "default_validation": "Behavior proof covers the normal path plus at least one empty or degraded state.",
             "default_risk": "A misleading visible state can make an incomplete or unsafe workflow look production-ready.",
-            "default_outside": "Domain calculations, persistence, provider adapters, and release proof unless the Registry assigns them here.",
+            "default_outside": "Domain calculations, persistence, provider adapters, and release proof unless this component boundary explicitly owns them.",
         }
     if token in {"tooling", "test", "harness"}:
         return {
@@ -176,6 +198,8 @@ def _kind_profile(kind: str) -> dict[str, str]:
             "proof_heading": "Release Proof Matrix",
             "risk_heading": "Harness Failure Modes",
             "runway_heading": "First Proof Slice",
+            "role_noun": "proof and validation boundary",
+            "default_verb": "proves",
             "contract_intro": "This component owns deterministic evidence that the first release claim is repeatable.",
             "default_owns": "Local fixtures, proof commands, evidence output, and release-readiness checks.",
             "default_interface": "A smoke, test, or validation command with deterministic inputs and readable output.",
@@ -191,14 +215,146 @@ def _kind_profile(kind: str) -> dict[str, str]:
         "proof_heading": "Contract Proof Matrix",
         "risk_heading": "Runtime Failure Modes",
         "runway_heading": "First Runtime Slice",
+        "role_noun": "runtime ownership boundary",
+        "default_verb": "owns",
         "contract_intro": "This component owns the state, invariants, and integration contract other slices depend on.",
         "default_owns": "The first domain state model, commands, queries, invariants, and integration handoff.",
         "default_interface": "A command, query, schema, module, or event contract selected by the first technical plan.",
         "default_dependency": "Confirmed first-workflow semantics; external providers stay outside the boundary until planned.",
         "default_validation": "Contract proof covers valid state transition, invalid input rejection, and retry behavior.",
         "default_risk": "A loose runtime boundary can couple adjacent slices or hide invariant failures.",
-        "default_outside": "Presentation, deployment, proof harnesses, and external providers unless the component spec assigns them here.",
+        "default_outside": "Presentation, deployment, proof harnesses, and external providers unless this component boundary explicitly owns them.",
     }
+
+
+def _component_role_paragraphs(
+    *,
+    label: str,
+    profile: Mapping[str, str],
+    project_title: str,
+    project_purpose: str,
+    project_outcome: str,
+    release_selector: str,
+    first_slice: str,
+    responsibility: str,
+    boundary: str,
+    validation: Sequence[str],
+) -> tuple[str, ...]:
+    role = profile.get("role_noun", "ownership boundary")
+    project_suffix = f" in {project_title}" if project_title else ""
+    paragraphs = [
+        _paragraph(
+            f"{label} is a {role}{project_suffix}. "
+            + (
+                f"It {_lower_first(responsibility)}"
+                if responsibility
+                else "It needs the first implementation plan to name the concrete responsibility it owns"
+            )
+        )
+    ]
+    context_bits = []
+    if project_purpose:
+        context_bits.append(f"Product context: {project_purpose}")
+    if boundary:
+        context_bits.append(f"Boundary: {boundary}")
+    if context_bits:
+        paragraphs.append(_paragraph(" ".join(context_bits)))
+    release_bits = []
+    if release_selector and first_slice:
+        release_bits.append(
+            f"For release {release_selector}, this component matters because {sentence_fragment(first_slice)}"
+        )
+    elif release_selector:
+        release_bits.append(f"For release {release_selector}, this component must stay inside its accepted boundary")
+    elif first_slice:
+        release_bits.append(f"The first usable slice depends on {sentence_fragment(first_slice)}")
+    if project_outcome:
+        release_bits.append(f"The project outcome it supports is {sentence_fragment(project_outcome)}")
+    if validation:
+        release_bits.append(f"First proof must show {sentence_fragment(validation[0])}")
+    if release_bits:
+        paragraphs.append(" ".join(_paragraph(bit) for bit in release_bits if sentence_fragment(bit)))
+    return tuple(paragraphs)
+
+
+def _responsibility_sentence(value: str, *, default_verb: str) -> str:
+    text = sentence_fragment(value)
+    if not text:
+        return ""
+    clauses = [
+        _responsibility_clause(part, default_verb=default_verb)
+        for part in re.split(r"\s*;\s*", text)
+        if part.strip()
+    ]
+    clauses = [clause for clause in clauses if clause]
+    if not clauses:
+        return ""
+    if len(clauses) == 1:
+        return _sentence_case(clauses[0])
+    if len(clauses) == 2:
+        return _sentence_case(f"{clauses[0]} and {clauses[1]}")
+    return _sentence_case(f"{', '.join(clauses[:-1])}, and {clauses[-1]}")
+
+
+def _responsibility_clause(value: str, *, default_verb: str) -> str:
+    text = sentence_fragment(value)
+    if not text:
+        return ""
+    head, separator, tail = text.partition(" ")
+    verb = head.strip(",:;").casefold()
+    replacements = {
+        "assemble": "assembles",
+        "bind": "binds",
+        "capture": "captures",
+        "connect": "connects",
+        "coordinate": "coordinates",
+        "derive": "derives",
+        "enforce": "enforces",
+        "fetch": "fetches",
+        "hold": "holds",
+        "manage": "manages",
+        "map": "maps",
+        "own": "owns",
+        "present": "presents",
+        "provide": "provides",
+        "record": "records",
+        "render": "renders",
+        "serve": "serves",
+        "track": "tracks",
+        "validate": "validates",
+        "write": "writes",
+    }
+    finite_verbs = set(replacements.values()) | {
+        "accepts",
+        "checks",
+        "handles",
+        "protects",
+        "reviews",
+        "supports",
+    }
+    if verb in replacements and separator:
+        return f"{replacements[verb]} {tail.strip()}"
+    if verb in finite_verbs:
+        return f"{text[:1].lower()}{text[1:]}"
+    default = str(default_verb or "owns").strip().lower() or "owns"
+    return f"{default} {text[:1].lower()}{text[1:]}"
+
+
+def _dependency_lines(values: Sequence[str]) -> tuple[str, ...]:
+    rows: list[str] = []
+    for value in values:
+        text = sentence_fragment(str(value))
+        if not text:
+            continue
+        if _looks_like_sentence(text):
+            rows.append(text)
+        else:
+            rows.append(f"Depends on {text} for state, behavior, evidence, or access this component does not own")
+    return _unique_lines(rows)
+
+
+def _looks_like_sentence(value: str) -> bool:
+    return bool(re.search(r"\s", value)) and bool(re.search(r"\b(depends|reads|writes|calls|receives|produces|provides|requires|owns|uses)\b", value, re.I))
 
 
 def _component_heading(label: str, heading: str) -> str:
@@ -236,7 +392,7 @@ def _component_heading(label: str, heading: str) -> str:
 def _contract_summary(*, label: str, responsibility: str, boundary: str, profile: Mapping[str, str]) -> str:
     if responsibility:
         return (
-            f"{label} exists to {responsibility[0].lower() + responsibility[1:]}. "
+            f"{label} {_lower_first(responsibility)}. "
             "Its contract is limited to the interfaces, dependencies, and proof obligations below."
         )
     if boundary:
@@ -276,6 +432,13 @@ def _sentence_case(value: str) -> str:
     return text[0].upper() + text[1:]
 
 
+def _lower_first(value: str) -> str:
+    text = sentence_fragment(str(value))
+    if not text:
+        return ""
+    return text[:1].lower() + text[1:]
+
+
 def _promotion_bar_lines(
     *,
     label: str,
@@ -284,12 +447,12 @@ def _promotion_bar_lines(
     proof_lines: Sequence[str],
 ) -> tuple[str, ...]:
     source = f"`{path}`" if path else "the source boundary named by the first technical plan"
-    anchor = f"`{first_workstream}`" if first_workstream else "the first Radar-linked implementation plan"
+    anchor = f"`{first_workstream}`" if first_workstream else "the first implementation plan"
     proof = " and ".join(proof_lines[:2]) if proof_lines else "the listed component proof"
     return (
         f"{label} remains candidate until {anchor} lands source-backed behavior inside {source}.",
         f"Promotion requires {proof} to pass against real source, not proposal text.",
-        "This component's Registry spec, linked Radar lane, Atlas view, and Compass projection must refresh from that proof before active status.",
+        "The component record, implementation plan, architecture view, and project status must refresh from that proof before active status.",
     )
 
 
@@ -326,8 +489,15 @@ def _first_command_hint(commands: Sequence[str]) -> str:
     for command in commands:
         text = " ".join(str(command).split()).strip()
         if text:
+            if _is_odylith_context_or_sync_command(text):
+                continue
             return f"`{text}`" if not text.startswith("run ") else text
-    return "Repo-native proof named by the first technical plan"
+    return "Source-backed proof named by the first implementation plan"
+
+
+def _is_odylith_context_or_sync_command(value: str) -> bool:
+    text = value.casefold()
+    return "odylith context" in text or "odylith sync" in text or "odylith validate plan-" in text
 
 
 def _component_proof_lines(
@@ -412,7 +582,7 @@ def _runway_lines(
         lines.append(f"Release target: {release_selector}.")
     if first_slice:
         lines.append(f"First coding slice: {sentence_fragment(first_slice)}.")
-    lines.append("Promote this component from candidate only after source-backed proof refreshes Registry and Compass.")
+    lines.append("Promote this component from candidate only after source-backed proof refreshes the component record and project status.")
     return _bullet_lines(lines)
 
 

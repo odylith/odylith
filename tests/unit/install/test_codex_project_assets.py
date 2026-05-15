@@ -108,6 +108,8 @@ def test_claude_project_bridge_and_hooks_stay_low_surface() -> None:
         text = path.read_text(encoding="utf-8")
         assert "@../AGENTS.md" in text
         assert "Treat AI slop as a regression." not in text
+        assert "freedom-research" not in text
+        assert "Commit messages must use only" not in text
         assert len(text.encode("utf-8")) < 1600
 
     settings_paths = (
@@ -235,41 +237,38 @@ def test_greenfield_guidance_uses_product_intent_then_host_authored_apply_path()
         "host drafts backlog",
         "host model drafts",
         "greenfield apply --repo-root . --proposal-file <proposal.json>",
-        "Use odylith greenfield create after confirmation",
         "host-authored proposal JSON is reviewed",
+        "host authors an internal proposal payload",
+        "active-proposal.v1.json",
+        "Prompt-only greenfield create is disabled",
     )
 
     for path in (*guidance_paths, *source_paths):
         text = path.read_text(encoding="utf-8")
         compact_text = " ".join(text.split())
         assert "Product Intent Confirmation" in text, path
-        assert "greenfield apply" in text, path
+        assert "greenfield create" in text, path
+        assert "--confirm" in text, path
         assert (
-            "do not inspect Odylith source" in text
+            "Do not inspect Odylith source" in text
+            or "do not inspect Odylith source" in text
             or "Do not search `src/odylith`" in text
             or "do not search Odylith source" in text
             or "rather than searching Odylith source" in text
             or "do not search odylith source" in compact_text.casefold()
         ), path
-        lowered = text.casefold()
-        assert "prompt-only `greenfield create`" in lowered or "prompt-only greenfield create" in lowered, path
+        assert "apply-ready" in text, path
         assert (
             "project-first" in compact_text
             or "product story" in compact_text
             or "coding-readiness gates" in compact_text
             or path.name == "SKILL.md"
         ), path
-        assert (
-            "host authors" in compact_text
-            or "host then authors" in compact_text
-            or "the host authors" in compact_text.casefold()
-            or "internal proposal payload" in compact_text
-            or "active-proposal.v1.json" in compact_text
-            or "write the short Product Intent Confirmation yourself" in compact_text
-        ), path
+        assert "greenfield create" in compact_text, path
+        assert "hand-author" in compact_text or "hand author" in compact_text or "Do not hand-author" in text, path
         assert (
             "Do not ask the operator to inspect JSON" in text
-            or "does not need to inspect proposal JSON" in text
+            or "does not need to inspect proposal JSON" in compact_text
             or "without a second confirmation" in text
             or "Do not ask the operator to inspect proposal JSON" in text
         ), path
@@ -310,8 +309,10 @@ def test_greenfield_guidance_keeps_post_confirmation_contract_internal() -> None
         text = path.read_text(encoding="utf-8")
         normalized = " ".join(text.split())
         assert "Product Intent Confirmation" in normalized, path
-        assert "greenfield apply" in normalized, path
-        assert "internal" in normalized.casefold(), path
+        assert "greenfield create" in normalized, path
+        assert "--confirm" in normalized, path
+        assert "apply-ready" in normalized, path
+        assert "hand-author" in normalized.casefold() or "hand author" in normalized.casefold(), path
         assert (
             "surface only" in normalized.casefold()
             or "show either created records" in normalized.casefold()

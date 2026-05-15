@@ -45,6 +45,7 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
 
     intent = dict_value(proposal.get("intent"))
     project = dict_value(proposal.get("project_intelligence"))
+    project_brief = dict_value(proposal.get("project_brief"))
     program = dict_value(proposal.get("program"))
     release_plan = dict_value(proposal.get("release_plan"))
     observed = dict_value(proposal.get("observed_source"))
@@ -53,14 +54,16 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
     diagrams = [dict(row) for row in list_value(proposal.get("diagrams")) if isinstance(row, Mapping)]
     assumptions = _text_rows(proposal.get("assumptions"), keys=("statement", "assumption"))
     questions = _text_rows(proposal.get("open_questions"), keys=("question", "statement"))
-    risks = _text_rows(proposal.get("risks"), keys=("statement", "risk", "trigger"))
-    validation = _text_rows(proposal.get("validation_strategy"))
+    risks = _text_rows(proposal.get("risks"), keys=("statement", "risk", "title", "description", "trigger"))
+    raw_validation = _text_rows(proposal.get("validation_strategy"))
+    validation = [_clean_labeled_text(row) for row in raw_validation]
     non_goals = _non_goal_rows(project)
     accepted = dict_value(proposal.get("_accepted_project"))
+    accepted_project = bool(accepted)
     raw_title = sentence(intent.get("title"), "Greenfield project")
     lens = _lens(proposal=proposal, backlog=backlog, components=components)
     release = sentence(release_plan.get("label") or release_plan.get("selector"), "first proposed release")
-    first_path = _first_path(program=program, release_plan=release_plan, backlog=backlog)
+    first_path = _first_path(program=program, release_plan=release_plan, backlog=backlog, validation=raw_validation)
     intro = _project_intro(title=raw_title, intent=intent, project=project)
     title = _display_title(raw_title=raw_title, intro=intro)
     purpose = _change_body(project=project, intro=intro, first_path=first_path)
@@ -76,17 +79,28 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
         observed=observed,
         accepted=accepted,
     )
-    known = _known(title=title, first_path=first_path, release=release, components=components, diagrams=diagrams)
+    known = _known(
+        title=title,
+        first_path=first_path,
+        release=release,
+        components=components,
+        diagrams=diagrams,
+        accepted=accepted_project,
+    )
     unknown = _unknown(questions=questions, assumptions=assumptions, risks=risks, non_goals=non_goals)
     actors = _actors(project, proposal=proposal)
+    user_title = _user_title(project=project, project_brief=project_brief, actors=actors)
+    user_body = _user_body(project=project, project_brief=project_brief, actors=actors)
     jobs = _jobs(backlog=backlog, program=program)
     product_story = build_greenfield_product_story(
         title=title,
         intro=intro,
         project=project,
+        project_brief=project_brief,
         first_path=first_path,
         release=release,
         release_plan=release_plan,
+        validation=validation,
         accepted=accepted,
         backlog=backlog,
         components=components,
@@ -105,8 +119,8 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
         "eyebrow": f"Project type: {lens}",
         "title": title,
         "intro": intro,
-        "chips": [lens, "greenfield proposal", evidence_state],
-        "focus_label": f"Proposed {title} focus",
+        "chips": [lens, "accepted greenfield project" if accepted_project else "greenfield proposal", evidence_state],
+        "focus_label": f"{'Accepted' if accepted_project else 'Proposed'} {title} focus",
         "focus": focus,
         "open_label": f"Open {title} questions",
         "open": open_items[:5],
@@ -114,9 +128,15 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
         "product_story_note": "",
         "product_story": product_story,
         "answers": [
-            (f"Who uses {title}?", _owner_title(project), _owner_body(project)),
+            (f"Who uses {title}?", user_title, user_body),
             (f"What changes in {title}?", _state_change(project, first_path=first_path), purpose),
-            (f"What matters now for {title}?", "Accept or revise the project shape", "Implementation should wait until assumptions, first path, and proof gates are reviewed."),
+            (
+                f"What matters now for {title}?",
+                f"Release {release} proof boundary" if accepted_project else "Accept or revise the project shape",
+                "Review the accepted first path, coding-readiness gates, and first child workstream before source implementation starts."
+                if accepted_project
+                else "Implementation should wait until assumptions, first path, and proof gates are reviewed.",
+            ),
             (f"What risk matters for {title}?", _risk_title(risks), risks[0] if risks else "No explicit proposal risk found."),
             (f"What proves {title}?", _proof_title(validation), validation[0] if validation else "Validation path must be confirmed before source-backed claims."),
         ],
@@ -127,8 +147,12 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
             "Evidence is user-stated or inferred; source validation has not happened yet.",
             _scenario_body(project=project, first_path=first_path, validation=validation),
         ],
-        "scenario_title": "Proposed first-path scenario",
-        "scenario_note": "Generated from the greenfield proposal; this is not yet source-backed implementation evidence.",
+        "scenario_title": "Accepted first-path scenario" if accepted_project else "Proposed first-path scenario",
+        "scenario_note": (
+            "Generated from the accepted greenfield project; implementation claims still require source and validation evidence."
+            if accepted_project
+            else "Generated from the greenfield proposal; this is not yet source-backed implementation evidence."
+        ),
         "actors": actors,
         "participants": actors,
         "participants_title": f"Who participates in {title}?",
@@ -136,16 +160,38 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
         "jobs": jobs,
         "jobs_title": f"What is proposed for {release}?",
         "jobs_note": "Jobs come from proposal workstreams and wave order.",
-        "boundary_title": "What is inside the proposed first boundary?",
-        "boundary_note": "This boundary is proposed; it must be accepted or revised before implementation.",
-        "included_label": "Proposed first path",
+        "boundary_title": "What is inside the accepted first boundary?"
+        if accepted_project
+        else "What is inside the proposed first boundary?",
+        "boundary_note": (
+            "This boundary is accepted as project direction; implementation still needs source-backed proof."
+            if accepted_project
+            else "This boundary is proposed; it must be accepted or revised before implementation."
+        ),
+        "included_label": "Accepted first path" if accepted_project else "Proposed first path",
         "excluded_label": "Still unresolved",
         "included": _included(first_path=first_path, components=components, diagrams=diagrams, validation=validation),
         "excluded": unknown,
-        "current": f"{title} is a greenfield proposal with {observed.get('source_posture', 'unknown source posture')}; claims are not source-backed implementation evidence yet.",
-        "desired": "Accepted project direction with first path, component boundary, topology, and validation obligations ready for a technical plan.",
-        "question": f"Should {title} be accepted as the first project shape?",
-        "recommendation": "Review and either accept or revise the proposed first path before coding starts.",
+        "current": (
+            f"{title} is an accepted greenfield project with {observed.get('source_posture', 'unknown source posture')}; claims are not source-backed implementation evidence yet."
+            if accepted_project
+            else f"{title} is a greenfield proposal with {observed.get('source_posture', 'unknown source posture')}; claims are not source-backed implementation evidence yet."
+        ),
+        "desired": _desired_state(
+            title=title,
+            project=project,
+            project_brief=project_brief,
+            first_path=first_path,
+            validation=validation,
+            risks=risks,
+            release=release,
+        ),
+        "question": f"What should move next for {title}?",
+        "recommendation": (
+            "Review the accepted first path, proof gates, and first child workstream before coding starts."
+            if accepted_project
+            else "Review and either accept or revise the proposed first path before coding starts."
+        ),
         "options": [
             ("A", "Accept proposed path", "Write governed project records, then open the first technical plan."),
             ("B", "Revise assumptions", "Update open questions, proof bar, owner, or first path before any write."),
@@ -164,17 +210,25 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
             "Use one of these prompts in Codex, Claude, or another Odylith host. Odylith should handle the proposal "
             "workflow; the operator should not inspect or edit proposal JSON by hand."
         ),
-        "host_handoff_steps": [
+        "host_handoff_steps": (
+            [
+                "Review the Product Story, first path, release boundary, and coding-readiness gates on this page.",
+                "Open the first child workstream or revise the accepted project story if it is wrong.",
+                "Refresh the dashboard after Odylith updates governed records.",
+            ]
+            if accepted_project
+            else [
             "Review the Product Story, first path, open questions, and risks on this page.",
             "Choose Accept, Revise, or Reject below.",
             "Paste the chosen prompt into the same host chat that runs Odylith.",
             "Refresh the dashboard after Odylith finishes to see the accepted or revised project state.",
-        ],
-        "host_handoff_prompts": _host_handoff_prompts(title=title),
+            ]
+        ),
+        "host_handoff_prompts": _host_handoff_prompts(title=title, accepted=accepted_project),
         "projection": {
             "refreshed_at": "proposal time",
-            "origin": "greenfield proposal",
-            "maturity": "greenfield or thin evidence",
+            "origin": "accepted greenfield project" if accepted_project else "greenfield proposal",
+            "maturity": "accepted greenfield direction" if accepted_project else "greenfield or thin evidence",
             "work_mode": "orienting",
             "topology_profile": "proposal-first",
         },
@@ -188,7 +242,11 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
             {
                 "posture": "Project shape",
                 "level": "Medium",
-                "meaning": "The proposal is clear enough to review, but it is still intent and planning evidence.",
+                "meaning": (
+                    "The accepted project direction is clear enough to plan, but implementation claims still need source evidence."
+                    if accepted_project
+                    else "The proposal is clear enough to review, but it is still intent and planning evidence."
+                ),
             },
             {
                 "posture": "Implementation readiness",
@@ -207,33 +265,49 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
         "claim_evidence_note": "This separates accepted project intent from proposal assumptions and proof that still has to be earned.",
         "trust_title": f"What is still not source-backed for {title}?",
         "trust_note": "Greenfield uncertainty stays visible until accepted project records and validation exist.",
-        "delta_label": "Proposal state",
+        "delta_label": "Accepted project state" if accepted_project else "Proposal state",
         "contradictions_label": "Source-backed gap",
         "degraded_label": "Validation gap",
         "posture_title": f"What must be controlled before {title} moves forward?",
-        "posture_note": "Takeaway: this is safe to review as a proposal, not safe to treat as working behavior until proof gates and risk controls are accepted.",
+        "posture_note": (
+            "Takeaway: this is accepted planning direction, not working behavior until proof gates and risk controls pass."
+            if accepted_project
+            else "Takeaway: this is safe to review as a proposal, not safe to treat as working behavior until proof gates and risk controls are accepted."
+        ),
         "validation_label": "Current gate",
         "risk_label": "Risks to control first",
         "work_state_kicker": f"{title} status now",
         "state_title": f"Where does {title} stand?",
-        "state_note": "This separates proposed truth from source-backed implementation.",
+        "state_note": (
+            "This separates accepted project direction from source-backed implementation."
+            if accepted_project
+            else "This separates proposed truth from source-backed implementation."
+        ),
         "current_state_label": "Current state",
         "desired_state_label": "Desired state",
         "next_title": f"What should move next for {title}?",
-        "next_note": "No implementation should start until the proposed path is accepted or revised.",
+        "next_note": (
+            "No implementation should start until the accepted path has a child workstream plan and proof gates."
+            if accepted_project
+            else "No implementation should start until the proposed path is accepted or revised."
+        ),
         "next_owner_label": "Owner",
         "next_output_label": "Expected output",
         "next_precondition_label": "Precondition",
         "next_risk_label": "Risk if delayed",
         "proof_title": f"What is known and unproven for {title}?",
-        "proof_note": "Known items are proposal facts; unproven items are questions, assumptions, and risks.",
-        "known_label": "Known from proposal",
+        "proof_note": (
+            "Known items are accepted project facts; unproven items are questions, assumptions, and risks."
+            if accepted_project
+            else "Known items are proposal facts; unproven items are questions, assumptions, and risks."
+        ),
+        "known_label": "Known from accepted project" if accepted_project else "Known from proposal",
         "unknown_label": "Unproven before build",
         "confidence_label": "Confidence",
         "governance_titles": _governance_titles(backlog=backlog, diagrams=diagrams, accepted=accepted),
         "sources": {
             "proposal": sentence(accepted.get("source_path"))
-            or str(Path(repo_root) / ".odylith/runtime/greenfield/active-proposal.v1.json")
+            or str(Path(repo_root) / "odylith/runtime/source/accepted-project.v1.json")
         },
     }
 
@@ -242,12 +316,21 @@ def _accepted_proposal(value: object) -> dict[str, Any]:
     if not isinstance(value, Mapping):
         return {}
     mode = str(value.get("mode", "")).strip()
-    if "greenfield" in mode and isinstance(value.get("project_intelligence"), Mapping):
+    schema = str(value.get("schema_version", "")).strip()
+    if (
+        isinstance(value.get("project_intelligence"), Mapping)
+        and (
+            "greenfield" in mode
+            or schema == "odylith.greenfield.proposal.v1"
+            or mode in {"host_reasoned_proposal", "host_reasoned_greenfield_proposal"}
+        )
+    ):
         return dict(value)
     for key in ("greenfield_proposal", "accepted_proposal", "proposal"):
         nested = value.get(key)
-        if isinstance(nested, Mapping) and "greenfield" in str(nested.get("mode", "")).strip():
-            return dict(nested)
+        proposal = _accepted_proposal(nested)
+        if proposal:
+            return proposal
     return {}
 
 
@@ -346,7 +429,16 @@ def _lens(*, proposal: Mapping[str, Any], backlog: Sequence[Mapping[str, Any]], 
     return "greenfield"
 
 
-def _first_path(*, program: Mapping[str, Any], release_plan: Mapping[str, Any], backlog: Sequence[Mapping[str, Any]]) -> str:
+def _first_path(
+    *,
+    program: Mapping[str, Any],
+    release_plan: Mapping[str, Any],
+    backlog: Sequence[Mapping[str, Any]],
+    validation: Sequence[str] = (),
+) -> str:
+    validation_first_path = _first_slice_from_validation(validation)
+    if validation_first_path:
+        return validation_first_path
     for item in backlog:
         title = sentence(item.get("title"))
         if title.lower().startswith("govern "):
@@ -365,6 +457,42 @@ def _first_path(*, program: Mapping[str, Any], release_plan: Mapping[str, Any], 
     if backlog:
         return sentence(backlog[0].get("recommended_first_slice") or backlog[0].get("title"), "First proposed workstream")
     return "One accepted path moves from proposal intent to validated first slice."
+
+
+def _first_slice_from_validation(rows: Sequence[str]) -> str:
+    for row in rows:
+        label, body = _labeled_text_parts(row)
+        normalized = label.replace("_", " ").replace("-", " ").casefold()
+        if body and normalized in {
+            "first slice proof",
+            "first path proof",
+            "first slice",
+            "first path",
+        }:
+            return body
+    return ""
+
+
+def _labeled_text_parts(value: object) -> tuple[str, str]:
+    text = sentence(value)
+    label, sep, body = text.partition(":")
+    if not sep:
+        return "", text
+    return sentence(label), sentence(body)
+
+
+def _clean_labeled_text(value: object) -> str:
+    label, body = _labeled_text_parts(value)
+    normalized = label.replace("_", " ").replace("-", " ").casefold()
+    if body and normalized in {
+        "first slice proof",
+        "first path proof",
+        "proof",
+        "validation",
+        "success condition",
+    }:
+        return body
+    return sentence(value)
 
 
 def _is_meta_first_path(*, title: str, first_slice: str) -> bool:
@@ -394,7 +522,7 @@ def _project_intro(*, title: str, intent: Mapping[str, Any], project: Mapping[st
         project_intent_line(project, "project objective"),
         project_intent_line(project, "user or stakeholder outcome"),
         sentence(intent.get("summary")),
-        short(project.get("purpose"), limit=220),
+        sentence(project.get("purpose")),
     ]
     for candidate in candidates:
         cleaned = _clean_objective_sentence(candidate)
@@ -408,7 +536,7 @@ def _looks_meta_project_line(value: str) -> bool:
     lowered = sentence(value).casefold()
     if not lowered:
         return False
-    return any(
+    if any(
         marker in lowered
         for marker in (
             "accepted product truth",
@@ -420,7 +548,19 @@ def _looks_meta_project_line(value: str) -> bool:
             "proposal expansion",
             "source boundary",
         )
-    ) or lowered.startswith(("make ", "capture ", "turn the operator request into"))
+    ):
+        return True
+    if lowered.startswith("make ") and any(
+        marker in lowered
+        for marker in (
+            "readable and governable",
+            "before any generated artifact",
+            "governable as one product spine",
+            "source boundary",
+        )
+    ):
+        return True
+    return lowered.startswith(("capture ", "turn the operator request into"))
 
 def _clean_objective_sentence(value: str) -> str:
     text = sentence(value)
@@ -435,6 +575,8 @@ def _clean_objective_sentence(value: str) -> str:
 def _display_title(*, raw_title: str, intro: str) -> str:
     intro_text = sentence(intro)
     candidates = []
+    if raw_title:
+        candidates.append(raw_title)
     if intro_text.lower().startswith("govern "):
         candidates.append(intro_text[len("govern "):].strip())
     for article in ("A ", "An ", "The "):
@@ -575,6 +717,10 @@ def _title_case(value: str) -> str:
     return " ".join(tokens)
 
 
+def _capitalize_first(value: str) -> str:
+    return f"{value[:1].upper()}{value[1:]}" if value else value
+
+
 def _owner_title(project: Mapping[str, Any]) -> str:
     owners = strings(project.get("owners"))
     if not owners:
@@ -599,6 +745,44 @@ def _owner_body(project: Mapping[str, Any]) -> str:
             verb = marker.strip().split()[0].capitalize()
             return short(f"{verb} {after.strip()}", limit=135)
     return short(text, limit=135)
+
+
+def _user_title(
+    *,
+    project: Mapping[str, Any],
+    project_brief: Mapping[str, Any],
+    actors: Sequence[tuple[str, str, str]],
+) -> str:
+    actor_titles = [sentence(row[1]) for row in actors if sentence(row[1])]
+    if actor_titles:
+        return _join_titles(actor_titles[:3])
+    return _owner_title(project)
+
+
+def _user_body(
+    *,
+    project: Mapping[str, Any],
+    project_brief: Mapping[str, Any],
+    actors: Sequence[tuple[str, str, str]],
+) -> str:
+    operator_value = sentence(project_brief.get("operator_value"))
+    if operator_value:
+        return short(operator_value, limit=180)
+    actor_bodies = [sentence(row[2]) for row in actors if sentence(row[2])]
+    if actor_bodies:
+        return short("; ".join(actor_bodies[:2]), limit=180)
+    return _owner_body(project)
+
+
+def _join_titles(values: Sequence[str]) -> str:
+    items = [sentence(value) for value in values if sentence(value)]
+    if not items:
+        return ""
+    if len(items) == 1:
+        return items[0]
+    if len(items) == 2:
+        return f"{items[0]} and {items[1]}"
+    return f"{', '.join(items[:-1])}, and {items[-1]}"
 
 
 def _state_change(project: Mapping[str, Any], *, first_path: str) -> str:
@@ -650,6 +834,94 @@ def _change_body(*, project: Mapping[str, Any], intro: str, first_path: str) -> 
     return short(intro, limit=180)
 
 
+def _desired_state(
+    *,
+    title: str,
+    project: Mapping[str, Any],
+    project_brief: Mapping[str, Any],
+    first_path: str,
+    validation: Sequence[str],
+    risks: Sequence[str],
+    release: str,
+) -> str:
+    product_reality = _desired_reality(title=title, project=project, project_brief=project_brief)
+    capability = _desired_capability(project_brief=project_brief, first_path=first_path)
+    risk = _desired_risk(risks=risks, project=project)
+    proof = _desired_proof(validation=validation, first_path=first_path, release=release)
+    return " ".join(row for row in (product_reality, capability, risk, proof) if row)
+
+
+def _desired_reality(*, title: str, project: Mapping[str, Any], project_brief: Mapping[str, Any]) -> str:
+    explicit = _clean_desired_state(strings(project.get("state")))
+    if explicit:
+        return explicit
+    purpose = sentence(project_brief.get("purpose") or project_brief.get("summary") or project.get("purpose"))
+    if purpose and not _looks_meta_project_line(purpose):
+        body = purpose.rstrip(".")
+        body = _purpose_as_reality(body)
+        return f"The desired operational reality is that {body[0].lower() + body[1:] if body else body}."
+    return (
+        f"The desired operational reality is that people using {title} can understand the current product state "
+        "without reconstructing context from scattered files, stale records, informal claims, and partial observations."
+    )
+
+
+def _purpose_as_reality(value: str) -> str:
+    text = sentence(value).rstrip(".")
+    if not text.casefold().startswith("make "):
+        return text
+    remainder = text[5:].strip()
+    head, sep, tail = _partition_casefold(remainder, " by ")
+    if sep and head.strip() and tail.strip():
+        words = head.strip().split()
+        if len(words) >= 2:
+            subject = " ".join(words[:-1])
+            predicate = words[-1]
+            return f"{_capitalize_first(subject)} is {predicate} through {tail.strip()}"
+    return f"the team can {text[0].lower() + text[1:] if text else text}"
+
+
+def _clean_desired_state(rows: Sequence[str]) -> str:
+    for row in rows:
+        label, body = _labeled_text_parts(row)
+        if label.replace("_", " ").replace("-", " ").casefold() == "desired state" and body:
+            cleaned = sentence(body).rstrip(".")
+            if cleaned and not _looks_meta_project_line(cleaned):
+                return f"{cleaned}."
+    return ""
+
+
+def _desired_capability(*, project_brief: Mapping[str, Any], first_path: str) -> str:
+    operator_value = sentence(project_brief.get("operator_value") or project_brief.get("project_outcome"))
+    if operator_value:
+        return operator_value if operator_value.endswith((".", "?", "!")) else f"{operator_value}."
+    path = sentence(first_path).rstrip(".")
+    if path:
+        return f"The first usable capability is this workflow: {path}."
+    return "The user can see the relevant object, its current state, the supporting evidence, and the next decision in one place."
+
+
+def _desired_risk(*, risks: Sequence[str], project: Mapping[str, Any]) -> str:
+    risk = sentence(risks[0] if risks else "")
+    if risk:
+        return f"The system reduces this domain risk first: {risk.rstrip('.')}."
+    failure = project_intent_line(project, "what breaks if it fails")
+    if failure:
+        return f"The system reduces the failure mode where {failure[0].lower() + failure[1:] if failure else failure}."
+    return "The system reduces the risk that product claims drift away from their source, time, owner, and evidence."
+
+
+def _desired_proof(*, validation: Sequence[str], first_path: str, release: str) -> str:
+    evidence = sentence(validation[0] if validation else first_path).rstrip(".")
+    release_label = sentence(release, "the first release")
+    if evidence:
+        return f"Release {release_label} succeeds when a reviewer can follow the evidence needed to trust that first release: {evidence}."
+    return (
+        f"Release {release_label} succeeds when a reviewer can see the active object, current state, source evidence, "
+        "changes since the prior state, and the audit trail that explains the result."
+    )
+
+
 def _clean_project_purpose(value: object) -> str:
     text = sentence(value)
     lowered = text.casefold()
@@ -676,8 +948,32 @@ def _risk_title(risks: Sequence[str]) -> str:
     return _risk_label(_risk_meaning(risks[0]), used=set())
 
 
-def _host_handoff_prompts(*, title: str) -> list[dict[str, str]]:
+def _host_handoff_prompts(*, title: str, accepted: bool = False) -> list[dict[str, str]]:
     project_name = short(title, limit=90, fallback="this project")
+    if accepted:
+        return [
+            {
+                "label": "Open first plan",
+                "when": "Use this when the accepted story and first path are right and implementation planning can begin.",
+                "prompt": f"Odylith, open the first implementation lane for {project_name}. Show the first child workstream, proof gates, and coding-readiness blockers before source edits.",
+                "result": "Moves from accepted product direction into the first bounded planning lane.",
+            },
+            {
+                "label": "Revise story",
+                "when": "Use this when the accepted product story, actor, first path, or proof boundary is wrong.",
+                "prompt": (
+                    f"Odylith, revise the accepted greenfield project for {project_name}: change <what is wrong> "
+                    "to <what should be true>. Keep Radar, Registry, Atlas, release gates, and Project Story aligned."
+                ),
+                "result": "Updates governed project records so the dashboard tells the corrected product story.",
+            },
+            {
+                "label": "Pause",
+                "when": "Use this when the accepted project should not proceed into planning yet.",
+                "prompt": f"Odylith, pause implementation planning for {project_name}; keep the accepted project visible but do not start source work.",
+                "result": "Keeps project direction visible without implying implementation readiness.",
+            },
+        ]
     return [
         {
             "label": "Accept it",
@@ -774,6 +1070,7 @@ def _project_actor_rows(
     """Return Project-facing actors before internal Tribunal role projections."""
 
     rows: list[tuple[str, str, str]] = []
+    rows.extend(_customer_actor_rows(proposal=proposal))
     for value in [*strings(project.get("owners")), *strings(project.get("operators"))]:
         title, body = _actor_title_and_body(value)
         if _is_project_actor_label(title):
@@ -787,6 +1084,65 @@ def _project_actor_rows(
             if _is_project_actor_label(title):
                 rows.append(("", title, short(body, limit=145)))
     return _dedupe_actor_rows(rows)
+
+
+def _customer_actor_rows(*, proposal: Mapping[str, Any]) -> list[tuple[str, str, str]]:
+    rows: list[tuple[str, str, str]] = []
+    backlog_items = [item for item in list_value(proposal.get("backlog")) if isinstance(item, Mapping)]
+    backlog_items.sort(key=lambda item: 1 if sentence(item.get("title")).casefold().startswith("govern ") else 0)
+    for item in backlog_items:
+        customer = sentence(item.get("customer"))
+        if not customer:
+            continue
+        context = sentence(item.get("opportunity") or item.get("problem") or item.get("product_view"))
+        for segment in _customer_segments(customer):
+            title = _customer_actor_title(segment)
+            if not _is_project_actor_label(title):
+                continue
+            body = _customer_actor_body(segment=segment, context=context)
+            rows.append(("", title, body))
+    return rows
+
+
+def _customer_segments(value: str) -> list[str]:
+    text = sentence(value)
+    pieces = [piece.strip(" .") for piece in re.split(r";|\s+;\s+", text) if piece.strip(" .")]
+    return pieces or ([text] if text else [])
+
+
+def _customer_actor_title(value: str) -> str:
+    text = sentence(value).strip(" .")
+    text = re.sub(r"^(?:the|a|an)\s+", "", text, flags=re.IGNORECASE)
+    for marker in (
+        " asking ",
+        " auditing ",
+        " authorizing ",
+        " filing ",
+        " integrating ",
+        " producing ",
+        " reading ",
+        " registering ",
+        " running ",
+        " using ",
+        " who ",
+        " at ",
+    ):
+        head, sep, _tail = _partition_casefold(text, marker)
+        if sep and head.strip():
+            text = head.strip(" .")
+            break
+    return short(_capitalize_first(text), limit=70)
+
+
+def _customer_actor_body(*, segment: str, context: str) -> str:
+    text = sentence(segment).strip(" .")
+    title = _customer_actor_title(text)
+    detail = text
+    if title and text.casefold().startswith(title.casefold()):
+        detail = text[len(title) :].strip(" .")
+    if detail:
+        return short(f"{title} {detail}".strip(), limit=145)
+    return short(context or _default_actor_body(title), limit=145)
 
 
 def _actor_title_and_body(value: object) -> tuple[str, str]:
@@ -878,10 +1234,14 @@ def _is_project_actor_label(value: str) -> bool:
         "owner",
         "patient",
         "person",
+        "observer",
         "reviewer",
         "scientist",
+        "steward",
         "team",
         "user",
+        "verifier",
+        "funder",
     )
     if any(marker in lowered for marker in system_markers) and not any(
         marker in lowered for marker in human_markers
@@ -962,11 +1322,20 @@ def _included(*, first_path: str, components: Sequence[Mapping[str, Any]], diagr
     return [short(row, limit=150) for row in rows if sentence(row)][:6]
 
 
-def _known(*, title: str, first_path: str, release: str, components: Sequence[Mapping[str, Any]], diagrams: Sequence[Mapping[str, Any]]) -> list[str]:
+def _known(
+    *,
+    title: str,
+    first_path: str,
+    release: str,
+    components: Sequence[Mapping[str, Any]],
+    diagrams: Sequence[Mapping[str, Any]],
+    accepted: bool = False,
+) -> list[str]:
     clean_path = sentence(first_path).rstrip(".")
+    path_label = "First accepted path" if accepted else "First proposed path"
     return [
         f"Project intent: {title}.",
-        f"First proposed path: {clean_path}.",
+        f"{path_label}: {clean_path}.",
         f"Release target: {release}.",
         f"Planned components: {len(components)}.",
         f"Planned architecture views: {len(diagrams)}.",

@@ -13,7 +13,7 @@ def _apply_ready_fixture(tmp_path, prompt: str) -> dict[str, object]:  # noqa: A
 
 
 def test_project_intelligence_requires_explicit_invalidation_rules(tmp_path) -> None:
-    proposal = _apply_ready_fixture(tmp_path, "host-authored project")
+    proposal = _apply_ready_fixture(tmp_path, "confirmed project")
 
     intelligence = proposal["project_intelligence"]
 
@@ -28,7 +28,7 @@ def test_project_intelligence_requires_explicit_invalidation_rules(tmp_path) -> 
 
 
 def test_workstream_intelligence_captures_scope_owners_and_invalidation_rules(tmp_path) -> None:
-    proposal = _apply_ready_fixture(tmp_path, "host-authored project")
+    proposal = _apply_ready_fixture(tmp_path, "confirmed project")
     workflow = next(row for row in proposal["backlog"] if row["title"] == "Define Storefront boundary")
 
     intelligence = workflow["domain_intelligence"]

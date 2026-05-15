@@ -577,8 +577,8 @@ def _run_git(repo_root: Path, args: Sequence[str]) -> tuple[int, str]:
 
 
 def _git_identity(repo_root: Path) -> tuple[str, str]:
-    _, name_out = _run_git(repo_root, ["config", "user.name"])
-    _, email_out = _run_git(repo_root, ["config", "user.email"])
+    _, name_out = _run_git(repo_root, ["config", "--local", "--get", "user.name"])
+    _, email_out = _run_git(repo_root, ["config", "--local", "--get", "user.email"])
     return name_out.strip(), email_out.strip()
 
 

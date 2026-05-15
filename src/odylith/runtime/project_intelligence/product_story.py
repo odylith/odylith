@@ -16,9 +16,11 @@ def build_greenfield_product_story(
     title: str,
     intro: str,
     project: Mapping[str, Any],
+    project_brief: Mapping[str, Any] | None = None,
     first_path: str,
     release: str,
     release_plan: Mapping[str, Any],
+    validation: Sequence[str] = (),
     accepted: Mapping[str, Any],
     backlog: Sequence[Mapping[str, Any]],
     components: Sequence[Mapping[str, Any]],
@@ -27,9 +29,18 @@ def build_greenfield_product_story(
 ) -> dict[str, Any]:
     """Build proposal-origin story prose from the accepted project graph."""
 
-    objective = project_intent_line(project, "project objective")
-    outcome = project_intent_line(project, "user or stakeholder outcome")
-    success = project_intent_line(project, "success condition")
+    brief = dict_value(project_brief)
+    objective = (
+        project_intent_line(project, "project objective")
+        or _brief_story_line(brief.get("summary"))
+        or _brief_story_line(brief.get("purpose"))
+    )
+    outcome = (
+        project_intent_line(project, "user or stakeholder outcome")
+        or _brief_story_line(brief.get("operator_value"))
+        or _brief_story_line(brief.get("project_outcome"))
+    )
+    success = project_intent_line(project, "success condition") or _brief_story_line((validation or [""])[0])
     failure = project_intent_line(project, "what breaks if it fails")
     non_goals = project_intent_line(project, "non-goals")
     first_release = sentence(release_plan.get("strategy"))
@@ -52,6 +63,7 @@ def build_greenfield_product_story(
         release_text=release_text,
         success=success,
         non_goals=non_goals,
+        operating_principle=_brief_story_line(brief.get("operating_principle")),
         components=components,
     )
     paragraphs = _greenfield_paragraphs(
@@ -89,7 +101,6 @@ def build_source_product_story(
     project_title: str,
     project_intro: str,
     release_label: str,
-    work_mode: str,
     current_focus: str,
     next_title: str,
     next_action_text: str,
@@ -110,12 +121,13 @@ def build_source_product_story(
         active_workstreams=active_workstreams,
         backlog=backlog,
     )
-    current = _source_current_paragraph(
+    narrative = _source_narrative_paragraphs(
         title=title,
         project_intro=project_intro,
         release_label=release_label,
-        work_mode=work_mode,
         current_focus=current_focus,
+        active_workstreams=active_workstreams,
+        backlog=backlog,
         next_action_text=next_action_text,
         blockers=blockers,
     )
@@ -133,7 +145,7 @@ def build_source_product_story(
         atlas=atlas,
         evidence_sources=evidence_sources,
     )
-    paragraphs = [row for row in (current, artifact) if row]
+    paragraphs = [*narrative, *([artifact] if artifact else [])]
     return {
         "headline": headline,
         "standfirst": "",
@@ -152,6 +164,13 @@ def project_intent_line(project: Mapping[str, Any], prefix: str) -> str:
         if sep and head.strip().lower() == needle:
             return sentence(body)
     return ""
+
+
+def _brief_story_line(value: object) -> str:
+    text = sentence(value)
+    if not text:
+        return ""
+    return "" if _is_meta_project_line(text) else text
 
 
 def _greenfield_headline(*, first_path: str, title: str, product_line: str, release: str) -> str:
@@ -191,33 +210,9 @@ def _source_headline(
     return f"{title} has one current project story"
 
 
-def _source_current_paragraph(
-    *,
-    title: str,
-    project_intro: str,
-    release_label: str,
-    work_mode: str,
-    current_focus: str,
-    next_action_text: str,
-    blockers: Sequence[tuple[str, str, str]],
-) -> str:
-    release = sentence(release_label, "current release")
-    mode = sentence(work_mode, "current").lower()
-    focus = _lower_first(concise_text(current_focus, limit=170, fallback="the current project focus is not available"))
-    next_move = _lower_first(action_sentence(next_action_text).rstrip("."))
-    risk = _risk_sentence(blockers)
-    body = f"{title} is in {mode} mode for {release}."
-    body += f" The active work is {focus}."
-    if next_move:
-        body += f" The next move is to {next_move.removeprefix('to ')}."
-    if risk:
-        body += f" {risk}"
-    return body
-
-
 def _headline_from_intro(*, title: str, intro: str) -> str:
     text = sentence(intro).rstrip(".")
-    if not text:
+    if not text or _is_component_inventory_line(text):
         return ""
     lowered = text.casefold()
     title_lower = title.casefold()
@@ -232,6 +227,118 @@ def _headline_from_intro(*, title: str, intro: str) -> str:
     if lowered.startswith(f"{title_lower} is "):
         return short(text, limit=92)
     return ""
+
+
+def _source_narrative_paragraphs(
+    *,
+    title: str,
+    project_intro: str,
+    release_label: str,
+    current_focus: str,
+    active_workstreams: Sequence[str],
+    backlog: Mapping[str, Any],
+    next_action_text: str,
+    blockers: Sequence[tuple[str, str, str]],
+) -> list[str]:
+    intro = _source_product_intro(title=title, project_intro=project_intro)
+    workflow = _source_workflow_paragraph(
+        release_label=release_label,
+        current_focus=current_focus,
+        active_workstreams=active_workstreams,
+        backlog=backlog,
+        next_action_text=next_action_text,
+    )
+    proof = _source_proof_paragraph(release_label=release_label, blockers=blockers)
+    return [row for row in (intro, workflow, proof) if row]
+
+
+def _source_product_intro(*, title: str, project_intro: str) -> str:
+    intro = sentence(project_intro).rstrip(".")
+    if intro and not _is_component_inventory_line(intro):
+        return f"{intro}."
+    return (
+        f"{title} is a product with a source-backed governance view, but its product story still needs "
+        "a clearer user, problem, workflow, and proof boundary before implementation claims move forward."
+    )
+
+
+def _source_workflow_paragraph(
+    *,
+    release_label: str,
+    current_focus: str,
+    active_workstreams: Sequence[str],
+    backlog: Mapping[str, Any],
+    next_action_text: str,
+) -> str:
+    release = sentence(release_label, "current release")
+    workflow = _source_workflow_phrase(active_workstreams=active_workstreams, backlog=backlog)
+    focus = concise_text(current_focus, limit=120)
+    if _is_acceptance_headline(focus):
+        focus = ""
+    next_move = _lower_first(action_sentence(next_action_text).rstrip("."))
+    if workflow:
+        body = f"The first usable workflow for {release} is {workflow}."
+    elif focus:
+        body = f"The first usable workflow for {release} is the current focus: {_lower_first(focus).rstrip('.')}."
+    else:
+        body = f"The first usable workflow for {release} still needs to be named in source records."
+    if next_move:
+        body += f" The next move is to {next_move.removeprefix('to ')}."
+    return body
+
+
+def _source_proof_paragraph(*, release_label: str, blockers: Sequence[tuple[str, str, str]]) -> str:
+    release = sentence(release_label, "current release")
+    body = (
+        f"Release {release} is coherent when the product workflow, owned boundaries, topology, "
+        "and validation evidence agree before implementation readiness is claimed."
+    )
+    risk = _risk_sentence(blockers)
+    if risk:
+        body += f" {risk}"
+    return body
+
+
+def _source_workflow_phrase(*, active_workstreams: Sequence[str], backlog: Mapping[str, Any]) -> str:
+    rows_by_id = backlog_rows_by_id(backlog)
+    titles: list[str] = []
+    for workstream_id in active_workstreams:
+        token = sentence(workstream_id)
+        row = rows_by_id.get(token, {})
+        title = sentence(row.get("title"))
+        if not title or _is_meta_record_title(title):
+            continue
+        titles.append(_lower_first(title).rstrip("."))
+        if len(titles) >= 2:
+            break
+    if not titles:
+        for row in list(backlog.get("execution", []))[:3] + list(backlog.get("queued", []))[:2]:
+            if not isinstance(row, Mapping):
+                continue
+            title = sentence(row.get("title") or row.get("idea_id"))
+            if not title or _is_meta_record_title(title):
+                continue
+            titles.append(_lower_first(title).rstrip("."))
+            if len(titles) >= 2:
+                break
+    return _join(titles)
+
+
+def _is_acceptance_headline(value: str) -> bool:
+    text = sentence(value).casefold()
+    return text.startswith(("greenfield proposal accepted for ", "accepted greenfield proposal for "))
+
+
+def _is_component_inventory_line(value: str) -> bool:
+    text = sentence(value).casefold()
+    if not text:
+        return False
+    return (
+        (" component responsible for " in text)
+        or (" component that " in text and "initial evidence anchor" in text)
+        or (" with `" in text and " as its initial" in text)
+        or ("responsible for own " in text)
+    )
 
 
 def _source_artifact_paragraph(
@@ -259,7 +366,7 @@ def _source_artifact_paragraph(
         return "The story is still thin: source records exist, but no connected workstream, component, diagram, or proof boundary is strong enough to narrate yet."
     parts: list[str] = []
     if work:
-        parts.append(f"Radar turns the active work into {work}.")
+        parts.append(f"After the product story is clear, Radar turns the active work into {work}.")
     if component_text:
         parts.append(f"Registry anchors that work in {component_text}.")
     if diagram_text:
@@ -267,22 +374,6 @@ def _source_artifact_paragraph(
     if proof:
         parts.append(f"Evidence stays bounded to {proof}, so the story does not outrun the source records.")
     return " ".join(parts)
-
-
-def _project_purpose_clause(value: object) -> str:
-    text = sentence(value).rstrip(".")
-    if not text:
-        return ""
-    lowered = text.lower()
-    for prefix in (f"{word} helps " for word in ("Odylith", "Project")):
-        if lowered.startswith(prefix.lower()):
-            return f"help {_lower_first(text[len(prefix) :])}"
-    for marker in (" helps ", " enables ", " lets "):
-        before, sep, after = text.partition(marker)
-        if sep and after.strip():
-            verb = {"helps": "help", "enables": "enable", "lets": "let"}[marker.strip()]
-            return f"{verb} {after.strip()}"
-    return _lower_first(text)
 
 
 def _source_supporting_records(
@@ -383,7 +474,7 @@ def _greenfield_paragraphs(
     if product_line:
         paragraph = product_line
         if path_subject:
-            paragraph += f" Release {release_label} narrows that promise to {_lower_first(path_subject).rstrip('.')}."
+            paragraph += f" Release {release_label} narrows that promise to one first slice: {_lower_first(path_subject).rstrip('.')}."
         paragraphs.append(paragraph)
     first_path_clause = _first_path_clause(first_path)
     if first_path_clause:
@@ -404,7 +495,7 @@ def _greenfield_product_line(*, objective: str, intro: str, outcome: str) -> str
     promise = next(
         (
             candidate
-            for candidate in (_story_sentence(outcome), _story_sentence(objective), _story_sentence(intro))
+            for candidate in (_story_sentence(objective), _story_sentence(intro), _story_sentence(outcome))
             if candidate and not _is_meta_project_line(candidate)
         ),
         "",
@@ -426,6 +517,7 @@ def _greenfield_release_contract(
     release_text: str,
     success: str,
     non_goals: str,
+    operating_principle: str,
     components: Sequence[Mapping[str, Any]],
 ) -> list[dict[str, str]]:
     release_label = sentence(release, "0.0.1")
@@ -444,6 +536,9 @@ def _greenfield_release_contract(
         rows.append({"label": "User value", "body": user_value})
     if first_path_body:
         rows.append({"label": "Core loop", "body": first_path_body})
+    principle = _contract_body(operating_principle)
+    if principle:
+        rows.append({"label": "Operating rule", "body": principle})
     if component_text:
         rows.append({"label": "Owned pieces", "body": component_text})
     if proof:
@@ -488,7 +583,17 @@ def _is_meta_project_line(value: str) -> bool:
     )
     if any(marker in text for marker in meta_markers):
         return True
-    return text.startswith(("make ", "capture ", "turn the operator request into"))
+    if text.startswith("make ") and any(
+        marker in text
+        for marker in (
+            "readable and governable",
+            "before any generated artifact",
+            "governable as one product spine",
+            "source boundary",
+        )
+    ):
+        return True
+    return text.startswith(("capture ", "turn the operator request into"))
 
 
 def _risk_boundary(*, failure: str, non_goals: str) -> str:
@@ -512,7 +617,7 @@ def _deferred_scope_sentence(*, non_goals: str, failure: str, release: str, subj
     if excluded:
         return (
             f"Release {release} deliberately excludes {excluded}. "
-            f"Those items stay out because the product must prove {reason_subject} before scope expands."
+            f"Those items stay out because the product must prove this first slice: {reason_subject} before scope expands."
         )
     boundary = _risk_boundary(failure=failure, non_goals=non_goals)
     if boundary.startswith("the failure mode: "):
@@ -522,7 +627,7 @@ def _deferred_scope_sentence(*, non_goals: str, failure: str, release: str, subj
         )
     return (
         f"Release {release} keeps broader automation, live integrations, and irreversible decisions outside the first slice "
-        f"until the product proves {reason_subject}."
+        f"until the product proves this first slice: {reason_subject}."
     )
 
 
@@ -536,6 +641,8 @@ def _greenfield_proof_sentence(*, success: str, release_text: str, first_path: s
         "",
     )
     if proof:
+        if _normalized_story_text(proof) == _normalized_story_text(first_path):
+            return "Proof must show the first path happened, stayed inside its accepted boundary, and left reviewer-visible evidence."
         if proof.casefold().startswith(("promote ", "release ", "only ")):
             return f"{proof}."
         return f"Proof must show {proof[0].lower() + proof[1:] if proof else proof}."
@@ -543,6 +650,10 @@ def _greenfield_proof_sentence(*, success: str, release_text: str, first_path: s
     if path:
         return f"Proof must show that {_lower_first(path).rstrip('.')} happened inside the accepted boundary and left reviewer-visible evidence."
     return "Proof must show the first path happened, stayed inside its accepted boundary, and left reviewer-visible evidence."
+
+
+def _normalized_story_text(value: str) -> str:
+    return " ".join(sentence(value).casefold().strip(" .").split())
 
 
 def _greenfield_artifact_line(
@@ -640,7 +751,7 @@ def _first_path_clause(value: str) -> str:
         prefix = f"{verb} "
         if lowered.startswith(prefix):
             return f"{verb}s {text[len(prefix):]}"
-    return f"moves through {_lower_first(text).rstrip('.')}"
+    return f"is straightforward: {_lower_first(text).rstrip('.')}"
 
 
 def _story_subject(value: str) -> str:

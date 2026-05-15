@@ -233,7 +233,9 @@ def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path:
     assert payload["product_story_note"] == ""
     assert payload["product_story"]["headline"].startswith("How Odylith helps")
     assert payload["product_story"]["standfirst"] == ""
-    assert any("Odylith is in implementing mode" in row for row in payload["product_story"]["paragraphs"])
+    assert payload["product_story"]["paragraphs"][0].startswith("Odylith helps repository operators")
+    assert any("first usable workflow" in row for row in payload["product_story"]["paragraphs"])
+    assert any("Release 0.2.0: Human Project Entry is coherent" in row for row in payload["product_story"]["paragraphs"])
     assert any("Evidence stays bounded" in row for row in payload["product_story"]["paragraphs"])
     source_records = payload["product_story"]["supporting_records"]
     assert any("Radar carries" in row and "B-201" in row for row in source_records)
@@ -344,8 +346,7 @@ def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path:
     assert '<div class="project-prose-lines"><p>Project tab now compiles from source records.</p><p>Current release: 0.2.0: Human Project Entry.</p><p>Worktree: mixed with 2 meaningful and 1 generated changed paths.</p></div>' in html
     assert (
         '<a class="project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-201" '
-        'data-tooltip="Dynamic Project intelligence" aria-label="Dynamic Project intelligence" '
-        'title="Dynamic Project intelligence">B-201</a>'
+        'data-tooltip="Dynamic Project intelligence" aria-label="Dynamic Project intelligence">B-201</a>'
     ) in html
     assert '<a class="project-deeplink" target="_top" href="?tab=casebook">Casebook</a>' in html
     assert '<a class="project-deeplink" target="_top" href="?tab=registry">Registry</a>' in html
@@ -387,6 +388,288 @@ def test_project_focus_uses_release_workstreams_when_runtime_headline_is_generic
     ) == "Discharge checklist review; Follow-up ownership proof"
 
 
+def test_project_intelligence_source_greenfield_story_uses_product_identity_before_artifacts(tmp_path: Path) -> None:
+    _write_json(
+        tmp_path / "odylith" / "registry" / "source" / "component_registry.v1.json",
+        {
+            "version": "v1",
+            "components": [
+                {
+                    "component_id": "parcel-records",
+                    "name": "Forest Parcel Records Service",
+                    "kind": "service",
+                    "category": "developer_tooling",
+                    "status": "active",
+                    "what_it_is": (
+                        "Forest Parcel Records Service is a `service` component that owns forest parcel records "
+                        "and versioned boundary geometry. Initial evidence anchor: `src/parcel_records/`."
+                    ),
+                },
+                {
+                    "component_id": "observation-ledger",
+                    "name": "Forest Observation Ledger",
+                    "kind": "service",
+                    "category": "developer_tooling",
+                    "status": "active",
+                    "what_it_is": "Append-only observations for field and remote-sensing evidence.",
+                },
+                {
+                    "component_id": "evidence-linker",
+                    "name": "Forest Evidence Linker",
+                    "kind": "service",
+                    "category": "developer_tooling",
+                    "status": "active",
+                    "what_it_is": "Connects observations to parcel condition claims.",
+                },
+                {
+                    "component_id": "condition-deriver",
+                    "name": "Forest Condition State Deriver",
+                    "kind": "service",
+                    "category": "developer_tooling",
+                    "status": "active",
+                    "what_it_is": "Derives condition state from cited evidence.",
+                },
+            ],
+        },
+    )
+    (tmp_path / "odylith" / "radar" / "source").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "odylith" / "radar" / "source" / "INDEX.md").write_text(
+        "\n".join(
+            (
+                "# Backlog Index",
+                "## Ranked Active Backlog",
+                "| rank | idea_id | title | priority | status | link |",
+                "| --- | --- | --- | --- | --- | --- |",
+                "",
+                "## In Planning/Implementation",
+                "| rank | idea_id | title | priority | status | link |",
+                "| --- | --- | --- | --- | --- | --- |",
+                "| - | B-001 | Govern Forest Preservation Tracker Program | P0 | implementation | [item](b001.md) |",
+                "| - | B-002 | Forest Parcel Records Service with Versioned Boundary | P0 | implementation | [item](b002.md) |",
+                "| - | B-003 | Append-Only Forest Observation Ledger | P0 | implementation | [item](b003.md) |",
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    _write_json(
+        tmp_path / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json",
+        {
+            "version": "v1",
+            "diagrams": [
+                {"diagram_id": "D-001", "title": "Forest Tracker System Context", "status": "active"},
+                {"diagram_id": "D-002", "title": "Forest First Slice Sequence", "status": "active"},
+            ],
+        },
+    )
+    _write_json(
+        tmp_path / "odylith" / "compass" / "runtime" / "current.v1.json",
+        {
+            "generated_utc": "2026-05-14T15:53:00Z",
+            "execution_focus": {
+                "global": {
+                    "headline": "Greenfield proposal accepted for Forest Preservation Tracker",
+                    "workstreams": ["B-001", "B-002", "B-003"],
+                }
+            },
+            "release_summary": {
+                "current_release": {
+                    "version": "0.0.1",
+                    "display_label": "0.0.1",
+                    "effective_name": "Forest core evidence primitive",
+                    "active_workstreams": ["B-001", "B-002", "B-003"],
+                }
+            },
+            "next_actions": [
+                {
+                    "idea_id": "B-002",
+                    "title": "Forest Parcel Records Service with Versioned Boundary",
+                    "action": "Prepare promotion plan and implementation breakdown.",
+                    "source": "radar",
+                }
+            ],
+        },
+    )
+
+    payload = builder.build_project_intelligence_payload(repo_root=tmp_path, shell_payload={"shell_repo_name": "save-forest"})
+    html = presenter.render_project_html({"project_intelligence": payload})
+    story = payload["product_story"]
+    leading_story = " ".join(story["paragraphs"][:3])
+
+    assert payload["title"] == "Forest Preservation Tracker"
+    assert payload["intro"].startswith("Forest Preservation Tracker helps product owners")
+    assert "responsible for Own" not in html
+    assert "as its initial" not in html
+    assert story["paragraphs"][0].startswith("Forest Preservation Tracker helps product owners")
+    assert "forest parcel records service" in story["paragraphs"][0].casefold()
+    assert "first usable workflow" in story["paragraphs"][1].casefold()
+    assert "Radar" not in leading_story
+    assert "Registry" not in leading_story
+    assert "Atlas" not in leading_story
+    assert "operational state" in payload["desired"]
+    assert "implementation-only context" in payload["desired"]
+    assert all(term not in payload["desired"] for term in ("Radar", "Registry", "Atlas", "Compass", "Casebook"))
+    assert payload["answers"][4] == (
+        "What proves Forest Preservation Tracker?",
+        "Reviewer-visible product evidence",
+        "A reviewer can follow the current state, active workflow, ownership boundary, risks, and validation evidence without relying on implementation-only context.",
+    )
+    assert any(row.startswith("After the product story is clear, Radar") for row in story["paragraphs"])
+    assert 'data-tooltip="Forest Parcel Records Service with Versioned Boundary"' in html
+    assert 'title="Forest Parcel Records Service with Versioned Boundary"' not in html
+
+
+def test_project_intelligence_accepted_greenfield_story_uses_product_narrative_before_artifacts(tmp_path: Path) -> None:
+    _write_json(
+        tmp_path / "odylith" / "runtime" / "source" / "accepted-project.v1.json",
+        {
+            "schema_version": "odylith.accepted_project.v1",
+            "origin": "greenfield",
+            "created": {
+                "workstreams": [
+                    {"idea_id": "B-001", "title": "Govern Forest Preservation Tracker Program"},
+                    {"idea_id": "B-002", "title": "Forest Parcel Records Service with Versioned Boundary"},
+                    {"idea_id": "B-003", "title": "Append-Only Forest Observation Ledger"},
+                ],
+                "components": [
+                    {"component_id": "parcel-records", "label": "Forest Parcel Records Service"},
+                    {"component_id": "observation-ledger", "label": "Forest Observation Ledger"},
+                ],
+                "diagrams": [
+                    {"diagram_id": "D-001", "title": "System Context View"},
+                    {"diagram_id": "D-002", "title": "First Slice Sequence View"},
+                ],
+            },
+            "proposal": {
+                "schema_version": "odylith.greenfield.proposal.v1",
+                "mode": "host_reasoned_proposal",
+                "intent": {
+                    "title": "Forest Preservation Tracker",
+                    "project_slug": "forest-preservation-tracker",
+                    "prompt": "Draft a greenfield proposal for a forest preservation tracker",
+                    "evidence_tier": "user_intent",
+                },
+                "observed_source": {"source_posture": "docs_only"},
+                "project_brief": {
+                    "summary": (
+                        "Forest Preservation Tracker is a record-keeping and evidence-derivation product for "
+                        "conservation stewards. It binds parcels, field observations, and remote-sensing snapshots "
+                        "into one auditable timeline so threats can be defended against in court, with funders, and "
+                        "with regulators."
+                    ),
+                    "operator_value": (
+                        "Stewards get one place to record what is standing today, watch for changes, and produce "
+                        "defensible evidence when a parcel is challenged. Program coordinators see across many parcels."
+                    ),
+                    "project_outcome": (
+                        "Stewards can produce a signed, replayable evidence bundle for any parcel on any date, "
+                        "with provenance for every observation."
+                    ),
+                    "operating_principle": (
+                        "Every condition assertion about a forest parcel cites the specific observations that produced it."
+                    ),
+                },
+                "project_intelligence": {
+                    "purpose": (
+                        "Make forest preservation defensible by binding parcels, observations, and imagery into one "
+                        "auditable timeline."
+                    ),
+                    "intent": [
+                        "Make every parcel-condition claim defensible by tying it to dated, source-attributed observations."
+                    ],
+                },
+                "validation_strategy": [
+                    (
+                        "first_slice_proof: A steward registers a forest parcel with boundary and baseline condition, "
+                        "files one field observation with source attribution, ingests one remote-sensing snapshot for "
+                        "the same date range, and the tracker renders a single dated current-state view that cites both observations."
+                    )
+                ],
+                "risks": [
+                    {
+                        "title": "Observer safety leakage",
+                        "description": "Parcel coordinates and observer identity can endanger land defenders if leaked.",
+                    }
+                ],
+                "backlog": [
+                    {
+                        "title": "Govern Forest Preservation Tracker Program",
+                        "customer": "Program coordinator running a conservation monitoring program.",
+                        "recommended_first_slice": "Confirm the first path and release proof gates.",
+                    },
+                    {
+                        "title": "Forest Parcel Records Service with Versioned Boundary",
+                        "customer": "Steward registering and maintaining forest parcels at the conservation organization.",
+                        "recommended_first_slice": "Steward registers a forest parcel with a closed-polygon boundary.",
+                    },
+                    {
+                        "title": "Append-Only Forest Observation Ledger",
+                        "customer": "Field observer and community monitor filing forest observations; verifier reading them later.",
+                        "recommended_first_slice": "Field observer files one source-attributed observation for the parcel.",
+                    },
+                ],
+                "components": [
+                    {"component_id": "parcel-records", "label": "Forest Parcel Records Service"},
+                    {"component_id": "observation-ledger", "label": "Forest Observation Ledger"},
+                ],
+                "diagrams": [
+                    {"diagram_id": "D-001", "title": "System Context View"},
+                    {"diagram_id": "D-002", "title": "First Slice Sequence View"},
+                ],
+                "release_plan": {
+                    "label": "0.0.1",
+                    "strategy": "Release 0.0.1 proves the first forest parcel evidence path before broader buildout.",
+                },
+                "program": {
+                    "waves": [
+                        {
+                            "label": "Forest evidence primitive",
+                            "validation": "Release proof reproduces the current-state view from cited observations.",
+                        }
+                    ]
+                },
+            },
+        },
+    )
+
+    payload = builder.build_project_intelligence_payload(repo_root=tmp_path, shell_payload={"shell_repo_name": "save-forest"})
+    html = presenter.render_project_html({"project_intelligence": payload})
+    story = payload["product_story"]
+    leading_story = " ".join(story["paragraphs"][:3])
+
+    assert payload["title"] == "Forest Preservation Tracker"
+    assert payload["projection"]["origin"] == "accepted greenfield project"
+    assert "accepted greenfield project" in payload["chips"]
+    assert story["paragraphs"][0].startswith("Forest Preservation Tracker is a record-keeping")
+    assert "conservation stewards" in story["paragraphs"][0]
+    assert "The first path is straightforward: a steward registers a forest parcel" in story["paragraphs"][1]
+    assert "current-state view that cites both observations" in story["paragraphs"][1]
+    assert "Radar" not in leading_story
+    assert "Registry" not in leading_story
+    assert "Atlas" not in leading_story
+    assert "The desired operational reality" in payload["desired"]
+    assert "Stewards get one place" in payload["desired"]
+    assert "Observer safety leakage" in payload["desired"]
+    assert "Release 0.0.1 succeeds when a reviewer can follow the evidence" in payload["desired"]
+    assert all(term not in payload["desired"] for term in ("Radar", "Registry", "Atlas", "Compass", "Casebook"))
+    assert any(row.startswith("After the product path is clear") for row in story["paragraphs"])
+    assert "Who uses Forest Preservation Tracker?" in html
+    assert "Steward" in html
+    assert "Field observer and community monitor" in html
+    assert "Verifier" in html
+    assert "Observer safety leakage" in html
+    assert "Release 0.0.1 proof boundary" in html
+    assert "Open first plan" in html
+    assert "Revise story" in html
+    assert "Forest Parcel Records Service is a `service`" not in html
+    assert "Who uses Forest Parcel Records Service" not in html
+    assert "repository operators" not in html
+    assert "responsible for Own" not in html
+    assert "Odylith, apply this greenfield proposal" not in html
+    assert "Accept it" not in html
+    assert 'title="Forest Parcel Records Service with Versioned Boundary"' not in html
+
+
 def test_project_intelligence_presenter_renders_fallback_without_payload() -> None:
     html = presenter.render_project_html({})
 
@@ -409,7 +692,7 @@ def test_project_intelligence_deeplink_renderer_links_governance_references() ->
     assert 'href="?tab=radar&amp;workstream=B-321" data-tooltip="Customer intake workflow"' in html
     assert 'href="?tab=casebook&amp;bug=CB-654" data-tooltip="Rollback owner missing"' in html
     assert 'href="?tab=atlas&amp;diagram=D-987" data-tooltip="First slice flow"' in html
-    assert 'title="Customer intake workflow"' in html
+    assert 'title="Customer intake workflow"' not in html
     assert 'href="?tab=registry">Registry</a>' in html
     assert 'href="?tab=radar">radar</a>' in html
     assert 'href="technical-plans/in-progress/demo.md"' in html
@@ -531,7 +814,9 @@ def test_project_intelligence_renders_greenfield_origin_from_proposal(tmp_path: 
     assert "View claim audit" in html
     assert "Unproven before build" in html
     assert "Source-backed runtime" not in payload["chips"]
-    assert "accepted project direction" in payload["desired"].lower()
+    assert "The desired operational reality" in payload["desired"]
+    assert "Release" in payload["desired"]
+    assert all(term not in payload["desired"] for term in ("Radar", "Registry", "Atlas", "Compass", "Casebook"))
     assert any(row["evidence"] in {"user-stated", "inferred", "needs validation"} for row in payload["claim_evidence"])
     assert payload["sections"][0] == "product_story"
     assert payload["product_story_title"] == "Product Story"

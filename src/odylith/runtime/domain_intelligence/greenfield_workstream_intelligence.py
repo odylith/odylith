@@ -1,4 +1,4 @@
-"""Workstream-intelligence contracts for host-authored greenfield proposals."""
+"""Workstream-intelligence contracts for confirmed greenfield proposals."""
 
 from __future__ import annotations
 
@@ -76,7 +76,7 @@ def enrich_backlog_rows(
     diagrams: Sequence[Any],
     domain_profile: Any | None = None,
 ) -> list[Any]:
-    """Preserve host-authored workstream intelligence without synthesis."""
+    """Preserve proposal workstream intelligence without synthesis."""
 
     _ = intent, program, release_plan, validation_strategy, security_compliance, components, diagrams, domain_profile
     return [dict(row) if isinstance(row, Mapping) else row for row in rows]
@@ -103,7 +103,7 @@ def render_domain_intelligence_section(value: Any) -> str:
 
 
 def domain_intelligence_issues(value: Any, *, owner: str) -> list[str]:
-    """Return actionable validation issues for one host-authored payload."""
+    """Return actionable validation issues for one proposal payload."""
 
     if not isinstance(value, Mapping):
         return [f"{owner} must include domain_intelligence object"]

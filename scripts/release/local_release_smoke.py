@@ -178,19 +178,59 @@ _GREENFIELD_GUIDANCE_FILES = (
     "odylith/skills/odylith-greenfield-governance/SKILL.md",
     "odylith/skills/odylith-show-me/SKILL.md",
 )
+_CONSUMER_GUIDANCE_FILES = (
+    "AGENTS.md",
+    "CLAUDE.md",
+    ".claude/CLAUDE.md",
+    "odylith/AGENTS.md",
+    "odylith/CLAUDE.md",
+)
+_CONSUMER_GUIDANCE_DIRECTORIES = (
+    ".agents/skills",
+    ".claude",
+    ".codex",
+    "odylith/agents-guidelines",
+    "odylith/skills",
+)
+_CONSUMER_MANAGED_SURFACE_DIRECTORIES = (
+    ".agents",
+    ".claude",
+    ".codex",
+    "odylith",
+)
+_CONSUMER_GUIDANCE_TEXT_SUFFIXES = (
+    ".css",
+    ".html",
+    ".js",
+    ".json",
+    ".md",
+    ".mjs",
+    ".toml",
+    ".txt",
+    ".yaml",
+    ".yml",
+)
+_CONSUMER_SURFACE_SKIP_DIRS = {
+    ".git",
+    "__pycache__",
+}
 _STALE_GREENFIELD_GUIDANCE_TOKENS = (
     "host drafts backlog",
     "host model drafts",
     "active host model authors the project-specific proposal in chat",
     "greenfield apply --repo-root . --proposal-file <proposal.json>",
     "host-authored proposal JSON is reviewed",
-)
-_GREENFIELD_INTERNAL_APPLY_GUARDS = (
-    "host authors",
-    "internal proposal payload",
-    "same confirmation",
-    "inspect proposal JSON",
+    "host authors an internal proposal payload",
+    "the host authors the proposal",
     ".odylith/runtime/greenfield/active-proposal.v1.json",
+    "Prompt-only greenfield create is disabled",
+)
+_GREENFIELD_CONFIRMED_CREATE_GUARDS = (
+    "greenfield create",
+    "--confirm",
+    "same confirmation",
+    "apply-ready",
+    "inspect proposal JSON",
 )
 _GREENFIELD_PROJECT_FIRST_GUARDS = (
     "project-first",
@@ -204,6 +244,38 @@ _GREENFIELD_NO_SOURCE_SPELUNKING_GUARDS = (
     "Do not search `src/odylith`",
     "do not search Odylith source",
     "rather than searching Odylith source",
+)
+_FORBIDDEN_CONSUMER_MAINTAINER_RESTRICTION_TOKENS = (
+    "freedom-research",
+    "sole canonical contributor identity",
+    "Commit messages must use only",
+    "coding-assistant trailers",
+    "main branch is read-only",
+    "never work directly on `main`",
+    "current branch is `main`, create",
+    "New branches must use",
+    "<year>/freedom/<tag>",
+    "branch prefix",
+    "dev-validate",
+    "release-preflight",
+    "release-candidate",
+    "make dev-validate",
+    "make release-preflight",
+    "make release-candidate",
+    "release migration-gate",
+    "GitHub actor:",
+    "canonical release authority",
+)
+_FORBIDDEN_CONSUMER_MAINTAINER_TREE_TOKENS = (
+    "freedom-research",
+    "sole canonical contributor identity",
+    "Commit messages must use only",
+    "coding-assistant trailers",
+    "main branch is read-only",
+    "never work directly on `main`",
+    "current branch is `main`, create",
+    "New branches must use",
+    "<year>/freedom/<tag>",
 )
 
 
@@ -224,26 +296,99 @@ def _require_greenfield_surfaces(*, repo_root: Path, label: str) -> None:
             raise RuntimeError(f"{label} did not render {relative_path}")
 
 
-def _require_greenfield_guidance_uses_host_apply(*, repo_root: Path, label: str) -> None:
+def _require_greenfield_guidance_uses_confirmed_create(*, repo_root: Path, label: str) -> None:
     for relative_path in _GREENFIELD_GUIDANCE_FILES:
         path = repo_root / relative_path
         if not path.is_file():
             raise RuntimeError(f"{label} did not install greenfield guidance file: {relative_path}")
         text = path.read_text(encoding="utf-8")
         compact_text = " ".join(text.split())
-        if "greenfield apply" not in text:
-            raise RuntimeError(f"{label} guidance omits host-authored greenfield apply path: {relative_path}")
+        for token in _STALE_GREENFIELD_GUIDANCE_TOKENS:
+            if token in text:
+                raise RuntimeError(f"{label} guidance still teaches stale greenfield schema-repair flow: {relative_path}: {token}")
+        if "greenfield create" not in text or "--confirm" not in text:
+            raise RuntimeError(f"{label} guidance omits confirmed greenfield create path: {relative_path}")
         if "Product Intent Confirmation" not in text:
             raise RuntimeError(f"{label} guidance omits live Product Intent confirmation path: {relative_path}")
-        if not any(token in compact_text for token in _GREENFIELD_INTERNAL_APPLY_GUARDS):
-            raise RuntimeError(f"{label} guidance omits internal apply guard: {relative_path}")
+        for token in _GREENFIELD_CONFIRMED_CREATE_GUARDS:
+            if token not in compact_text:
+                raise RuntimeError(f"{label} guidance omits confirmed create guard: {relative_path}: {token}")
         if not any(token in compact_text for token in _GREENFIELD_PROJECT_FIRST_GUARDS):
             raise RuntimeError(f"{label} guidance omits project-first greenfield guard: {relative_path}")
         if not any(token in text for token in _GREENFIELD_NO_SOURCE_SPELUNKING_GUARDS):
             raise RuntimeError(f"{label} guidance omits post-confirmation no-source-spelunking guard: {relative_path}")
-        for token in _STALE_GREENFIELD_GUIDANCE_TOKENS:
+
+
+def _iter_consumer_guidance_files(repo_root: Path) -> tuple[Path, ...]:
+    root = Path(repo_root)
+    paths: dict[str, Path] = {}
+    for relative_path in _CONSUMER_GUIDANCE_FILES:
+        path = root / relative_path
+        if path.is_file():
+            paths[path.relative_to(root).as_posix()] = path
+    for relative_dir in _CONSUMER_GUIDANCE_DIRECTORIES:
+        directory = root / relative_dir
+        if not directory.is_dir():
+            continue
+        for path in directory.rglob("*"):
+            if not path.is_file():
+                continue
+            relative_parts = path.relative_to(root).parts
+            if len(relative_parts) >= 2 and relative_parts[:2] == (".claude", "worktrees"):
+                continue
+            if path.suffix not in _CONSUMER_GUIDANCE_TEXT_SUFFIXES:
+                continue
+            paths[path.relative_to(root).as_posix()] = path
+    return tuple(paths[key] for key in sorted(paths))
+
+
+def _iter_consumer_managed_surface_files(repo_root: Path) -> tuple[Path, ...]:
+    root = Path(repo_root)
+    paths: dict[str, Path] = {}
+    for relative_path in _CONSUMER_GUIDANCE_FILES:
+        path = root / relative_path
+        if path.is_file():
+            paths[path.relative_to(root).as_posix()] = path
+    for relative_dir in _CONSUMER_MANAGED_SURFACE_DIRECTORIES:
+        directory = root / relative_dir
+        if not directory.is_dir():
+            continue
+        for path in directory.rglob("*"):
+            if not path.is_file():
+                continue
+            relative_path = path.relative_to(root)
+            if _CONSUMER_SURFACE_SKIP_DIRS.intersection(relative_path.parts):
+                continue
+            if len(relative_path.parts) >= 2 and relative_path.parts[:2] == (".claude", "worktrees"):
+                continue
+            if path.suffix not in _CONSUMER_GUIDANCE_TEXT_SUFFIXES:
+                continue
+            paths[relative_path.as_posix()] = path
+    return tuple(paths[key] for key in sorted(paths))
+
+
+def _require_no_maintainer_restrictions_in_consumer_guidance(*, repo_root: Path, label: str) -> None:
+    _require_no_maintainer_restrictions_in_consumer_tree(repo_root=repo_root, label=label)
+
+
+def _require_no_maintainer_restrictions_in_consumer_tree(*, repo_root: Path, label: str) -> None:
+    root = Path(repo_root)
+    for path in _iter_consumer_guidance_files(root):
+        relative_path = path.relative_to(root).as_posix()
+        text = path.read_text(encoding="utf-8")
+        for token in _FORBIDDEN_CONSUMER_MAINTAINER_RESTRICTION_TOKENS:
             if token in text:
-                raise RuntimeError(f"{label} guidance still teaches stale greenfield schema-repair flow: {relative_path}: {token}")
+                raise RuntimeError(f"{label} consumer surface leaks maintainer-only restriction: {relative_path}: {token}")
+    for path in _iter_consumer_managed_surface_files(root):
+        relative_path = path.relative_to(root).as_posix()
+        text = path.read_text(encoding="utf-8")
+        for token in _FORBIDDEN_CONSUMER_MAINTAINER_TREE_TOKENS:
+            if token in text:
+                raise RuntimeError(f"{label} consumer surface leaks maintainer-only restriction: {relative_path}: {token}")
+
+
+def _require_no_maintainer_identity_in_consumer_guidance(*, repo_root: Path, label: str) -> None:
+    _require_no_maintainer_restrictions_in_consumer_guidance(repo_root=repo_root, label=label)
 
 
 def _seed_legacy_compass_archive_fixture(*, repo_root: Path) -> None:
@@ -337,7 +482,8 @@ def _require_compass_history_layout(*, repo_root: Path) -> None:
 
 def _install_and_smoke(*, repo_root: Path, install_script: Path, env: dict[str, str]) -> None:
     _run(cwd=_install_cwd(repo_root), env=env, command=["bash", str(install_script)])
-    _require_greenfield_guidance_uses_host_apply(repo_root=repo_root, label="fresh install")
+    _require_greenfield_guidance_uses_confirmed_create(repo_root=repo_root, label="fresh install")
+    _require_no_maintainer_restrictions_in_consumer_guidance(repo_root=repo_root, label="fresh install")
     odylith = repo_root / ".odylith" / "bin" / "odylith"
     version = _run(cwd=repo_root, env=env, command=[str(odylith), "version", "--repo-root", "."]).stdout
     _require_output_contains(output=version, expected=f"Active: {env['ODYLITH_VERSION']}", label="odylith version")
@@ -374,7 +520,7 @@ def _greenfield_propose_apply_smoke(*, repo_root: Path, odylith: Path, env: dict
     )
     _require_output_contains(
         output=intent,
-        expected='"write_policy": "host_reason_product_intent_before_greenfield_proposal"',
+        expected='"write_policy": "host_reason_product_intent_before_confirmed_greenfield_create"',
         label="greenfield intent json",
     )
     _require_output_contains(output=intent, expected='"host_reasoning_task"', label="greenfield intent json")
@@ -398,18 +544,43 @@ def _greenfield_propose_apply_smoke(*, repo_root: Path, odylith: Path, env: dict
     ).stdout
     _require_output_contains(
         output=proposal,
-        expected='"mode": "host_reasoned_proposal_request"',
+        expected='"mode": "host_reasoned_greenfield_proposal"',
         label="greenfield propose json",
     )
-    _require_output_contains(output=proposal, expected='"reasoning_contract"', label="greenfield propose json")
-    _require_output_contains(output=proposal, expected='"host_instruction"', label="greenfield propose json")
-    if any(token in proposal for token in ('"backlog": [', '"components": [', '"diagrams": [')):
-        raise RuntimeError("greenfield propose contract generated governance artifacts before host-authored proposal")
+    for expected in ('"backlog": [', '"components": [', '"diagrams": ['):
+        _require_output_contains(output=proposal, expected=expected, label="greenfield propose json")
+    if any(token in proposal for token in ('"reasoning_contract"', '"host_instruction"', "active-proposal.v1.json")):
+        raise RuntimeError("greenfield propose confirmed path still exposes host-side schema-repair contract")
     _require_no_greenfield_schema_loop(output=proposal, label="greenfield propose json")
-    refresh = _run(cwd=repo_root, env=env, command=[str(odylith), "dashboard", "refresh", "--repo-root", "."]).stdout
-    _require_output_contains(output=refresh, expected="dashboard refresh completed", label="greenfield dashboard refresh")
-    _require_output_contains(output=refresh, expected="outcome: passed", label="greenfield dashboard refresh")
-    _require_greenfield_surfaces(repo_root=repo_root, label="greenfield propose contract smoke")
+    create = _run(
+        cwd=repo_root,
+        env=env,
+        command=[
+            str(odylith),
+            "greenfield",
+            "create",
+            "--repo-root",
+            ".",
+            "--prompt",
+            "robot swarm logistics app",
+            "--confirm",
+            "--release",
+            "0.0.1",
+            "--json",
+        ],
+    ).stdout
+    _require_output_contains(output=create, expected='"mode": "applied"', label="greenfield create json")
+    _require_output_contains(output=create, expected='"tribunal"', label="greenfield create json")
+    _require_output_contains(output=create, expected='"dashboard_refresh"', label="greenfield create json")
+    _require_no_greenfield_schema_loop(output=create, label="greenfield create json")
+    _require_greenfield_surfaces(repo_root=repo_root, label="greenfield create smoke")
+    for relative_path in (
+        "odylith/runtime/source/accepted-project.v1.json",
+        "odylith/runtime/delivery_intelligence.v4.json",
+        "odylith/radar/traceability-graph.v1.json",
+    ):
+        if not (repo_root / relative_path).is_file():
+            raise RuntimeError(f"greenfield create smoke did not write {relative_path}")
 
 
 def _install_previous_release(*, repo_root: Path, install_script: Path, previous_version: str) -> None:

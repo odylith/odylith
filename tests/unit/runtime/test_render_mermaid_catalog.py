@@ -551,9 +551,9 @@ def test_load_catalog_derives_container_and_inner_box_explanations(tmp_path: Pat
     assert [box["label"] for box in boxes] == ["Source truth", "Catalog", "Renderer"]
     assert boxes[0]["role"] == "Container"
     assert boxes[1]["role"] == "Source truth"
-    assert "boxes inside it" in boxes[0]["description"]
+    assert "product boundary for Atlas Box Rules" in boxes[0]["description"]
     assert "Catalog stores the source information" in boxes[1]["description"]
-    assert "hands off to Renderer" in boxes[1]["description"]
+    assert "hands off" not in boxes[1]["description"]
     assert "This box represents" not in boxes[1]["description"]
 
 
@@ -574,20 +574,94 @@ def test_atlas_box_explanations_generate_action_oriented_node_copy() -> None:
     )
     by_label = {box.label: box.description for box in boxes}
 
-    assert "makes or accepts the decisions" in by_label["Plant owner"]
-    assert "hands off to One potted plant" in by_label["Plant owner"]
+    assert "owns or manages the potted plants" in by_label["Plant owner"]
+    assert "hands off" not in by_label["Plant owner"]
     assert "object whose state changes" in by_label["One potted plant"]
-    assert "hands off to Plant sensing unit" in by_label["One potted plant"]
+    assert "hands off" not in by_label["One potted plant"]
     assert "measures the current state" in by_label["Plant sensing unit"]
-    assert "hands off to Care decision core" in by_label["Plant sensing unit"]
+    assert "hands off" not in by_label["Plant sensing unit"]
     assert "decides whether the next action is allowed" in by_label["Care decision core"]
-    assert "hands off to Liquid dosing controller" in by_label["Care decision core"]
+    assert "hands off" not in by_label["Care decision core"]
     assert "performs the bounded action" in by_label["Liquid dosing controller"]
-    assert "hands off to Care event log" in by_label["Liquid dosing controller"]
+    assert "hands off" not in by_label["Liquid dosing controller"]
     assert "records the evidence needed" in by_label["Care event log"]
-    assert "hands off to Owner status interface" in by_label["Care event log"]
-    assert "shows the current state" in by_label["Owner status interface"]
+    assert "hands off" not in by_label["Care event log"]
+    assert "primary user surface" in by_label["Owner status interface"]
+    assert "current state" in by_label["Owner status interface"]
     assert all("This box represents" not in description for description in by_label.values())
+
+
+def test_atlas_box_explanations_use_domain_meaning_before_graph_mechanics() -> None:
+    source = "\n".join(
+        [
+            "flowchart LR",
+            "    Steward[\"Land Steward<br/>(owns parcels)\"]:::actor",
+            "    Observer[\"Field Observer /<br/>Community Monitor\"]:::actor",
+            "    Verifier[\"Verifier /<br/>Auditor\"]:::actor",
+            "    Coordinator[\"Program<br/>Coordinator\"]:::actor",
+            "    subgraph FPT [\"Forest Preservation Tracker\"]",
+            "        Web[\"Steward Web Surface\"]:::product",
+            "        Field[\"Field Capture Surface\"]:::product",
+            "        Core[\"Core Services:<br/>parcel records,<br/>observation ledger,<br/>evidence linker,<br/>condition deriver,<br/>audit trail\"]:::product",
+            "        Auth[\"Auth Service\"]:::product",
+            "        RSA[\"Remote Sensing Adapter\"]:::product",
+            "        Privacy[\"Privacy and<br/>Sharing Controls\"]:::product",
+            "    end",
+            "    Imagery[\"Remote-Sensing Providers<br/>(Sentinel-2, Planet, GFW)\"]:::external",
+            "    Cadastral[\"Cadastral and<br/>Boundary Sources\"]:::external",
+            "    IDP[\"Identity Provider\"]:::external",
+            "    Notif[\"Notification Channels<br/>(later wave)\"]:::external",
+            "    Steward --> Web",
+            "    Coordinator --> Web",
+            "    Observer --> Field",
+            "    Verifier --> Web",
+            "    Web --> Core",
+            "    Field --> Core",
+            "    Web --> Auth",
+            "    Field --> Auth",
+            "    Core --> Auth",
+            "    Core --> Privacy",
+            "    RSA --> Core",
+            "    Imagery --> RSA",
+            "    Cadastral --> Core",
+            "    IDP --> Auth",
+            "    Privacy -. later .-> Notif",
+        ]
+    )
+    boxes = atlas_box_explanations.merge_diagram_box_explanations(
+        source_text=source,
+        catalog_boxes=(),
+        component_rows=[
+            {
+                "name": "Forest Parcel Records Service",
+                "description": "Owns forest Parcel and BoundaryRevision; emits audit entries for every state-affecting operator.",
+            },
+            {
+                "name": "Forest Observation Ledger",
+                "description": "Owns the append-only forest observation ledger with content-hashed, source-attributed entries.",
+            },
+        ],
+        diagram_title="System Context View",
+        diagram_summary=(
+            "Boundary view of the Forest Preservation Tracker showing stewards, observers, verifiers, "
+            "program coordinators, remote-sensing providers, cadastral sources, and notification channels."
+        ),
+    )
+    by_label = {box["label"]: box["description"] for box in boxes}
+
+    assert "Field Observer / Community Monitor" in by_label
+    assert "forest parcels" in by_label["Land Steward (owns parcels)"]
+    assert "trustworthy identity, state, evidence, and history" in by_label["Land Steward (owns parcels)"]
+    assert "source, time, location, evidence" in by_label["Field Observer / Community Monitor"]
+    assert "forest parcel claim" in by_label["Verifier / Auditor"]
+    assert "audit history" in by_label["Verifier / Auditor"]
+    assert "trusted record layer" in by_label["Core Services: parcel records, observation ledger, evidence linker, condition deriver, audit trail"]
+    assert "traceable claims" in by_label["Core Services: parcel records, observation ledger, evidence linker, condition deriver, audit trail"]
+    assert "external source of remote signals" in by_label["Remote-Sensing Providers (Sentinel-2, Planet, GFW)"]
+    assert "boundary or ownership reference" in by_label["Cadastral and Boundary Sources"]
+    assert "later-wave communication path" in by_label["Notification Channels (later wave)"]
+    forbidden = ("part of the path", "incoming arrows", "outgoing arrows", "hands off", "branch point")
+    assert all(not any(term in description for term in forbidden) for description in by_label.values())
 
 
 def test_atlas_diagram_intelligence_explains_state_model_transitions() -> None:
@@ -630,10 +704,11 @@ def test_atlas_diagram_intelligence_explains_state_model_transitions() -> None:
     assert "At Monitored" in narrative.read_guide
     assert "moisture below target leads to Needs Water" in narrative.read_guide
     assert "Blocked means the system should stop" in narrative.read_guide
-    assert "starts the path" in by_label["Unknown"]
-    assert "branch point" in by_label["Monitored"]
+    assert "entry responsibility" in by_label["Unknown"]
+    assert "decides between" in by_label["Monitored"]
     assert "performs the bounded action" in by_label["Dosing"]
     assert "stops normal progress" in by_label["Blocked"]
+    assert all("hands off" not in description for description in by_label.values())
     assert all("This box represents" not in description for description in by_label.values())
 
 
@@ -818,20 +893,20 @@ def test_atlas_box_explanations_infer_common_governance_surface_actions() -> Non
     by_label = {box.label: box.description for box in boxes}
 
     assert "defines the product scope" in by_label["Odylith product"]
-    assert "hands off to Radar" in by_label["Odylith product"]
+    assert "hands off" not in by_label["Odylith product"]
     assert "tracks the work choices" in by_label["Radar"]
-    assert "hands off to Technical Plans" in by_label["Radar"]
+    assert "hands off" not in by_label["Radar"]
     assert "turns selected work into an implementation path" in by_label["Technical Plans"]
-    assert "hands off to Atlas topology map" in by_label["Technical Plans"]
+    assert "hands off" not in by_label["Technical Plans"]
     assert "shows the system shape" in by_label["Atlas topology map"]
-    assert "hands off to Compass status" in by_label["Atlas topology map"]
+    assert "hands off" not in by_label["Atlas topology map"]
     assert "summarizes current runtime state" in by_label["Compass status"]
-    assert "hands off to Subagent Router" in by_label["Compass status"]
+    assert "hands off" not in by_label["Compass status"]
     assert "chooses where work should go next" in by_label["Subagent Router"]
-    assert "hands off to Subagent Orchestrator" in by_label["Subagent Router"]
+    assert "hands off" not in by_label["Subagent Router"]
     assert "coordinates bounded work" in by_label["Subagent Orchestrator"]
     assert "passes agreed state across a boundary" in by_label["Context-to-Execution handshake"]
-    assert "reached after Subagent Orchestrator" in by_label["Context-to-Execution handshake"]
+    assert "reached after" not in by_label["Context-to-Execution handshake"]
     assert all("concrete step" not in description for description in by_label.values())
 
 
@@ -887,6 +962,63 @@ def test_load_catalog_rejects_thin_diagram_box_copy(tmp_path: Path) -> None:
     )
 
     assert any("description must explain the box in a complete sentence" in error for error in errors)
+
+
+def test_load_catalog_rejects_mechanical_diagram_box_copy(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
+    mmd_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "mechanical.mmd"
+    svg_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "mechanical.svg"
+    catalog_path = repo_root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    for path in (mmd_path, svg_path, catalog_path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    mmd_path.write_text("flowchart TB\n  Owner[Product owner] --> Core[Record core]\n", encoding="utf-8")
+    svg_path.write_text("<svg viewBox='0 0 1200 800'></svg>\n", encoding="utf-8")
+    catalog_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "diagrams": [
+                    {
+                        "diagram_id": "D-324",
+                        "slug": "mechanical-box-copy",
+                        "title": "Mechanical Box Copy",
+                        "kind": "flowchart",
+                        "status": "active",
+                        "owner": "freedom-research",
+                        "summary": "Shows mechanical box copy rejection.",
+                        "source_mmd": "odylith/atlas/source/diagrams/mechanical.mmd",
+                        "source_svg": "odylith/atlas/source/diagrams/mechanical.svg",
+                        "last_reviewed_utc": dt.date.today().isoformat(),
+                        "change_watch_paths": ["odylith/atlas/source/diagrams/mechanical.mmd"],
+                        "components": [{"name": "atlas", "description": "Atlas surface."}],
+                        "diagram_boxes": [
+                            {
+                                "label": "Product owner",
+                                "role": "Start",
+                                "description": (
+                                    "Product owner is part of the path; incoming arrows show what must "
+                                    "be true before it runs, and outgoing arrows show what it enables next."
+                                ),
+                            }
+                        ],
+                    }
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    _diagrams, errors, _stats = renderer._load_catalog(  # noqa: SLF001
+        repo_root=repo_root,
+        catalog_path=catalog_path,
+        output_path=repo_root / "odylith" / "atlas" / "atlas.html",
+        max_review_age_days=21,
+        component_index={},
+    )
+
+    assert any("description must explain project meaning, not diagram mechanics" in error for error in errors)
 
 
 def test_load_catalog_uses_reviewed_watch_fingerprints_over_mtime_for_freshness(tmp_path: Path) -> None:

@@ -536,6 +536,15 @@ initSharedQuickTooltips();
       return token.charAt(0).toUpperCase() + token.slice(1);
     }
 
+    function humanizeToken(token) {
+      return String(token || "")
+        .replace(/_/g, " ")
+        .replace(/-/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .replace(/\b\w/g, (m) => m.toUpperCase()) || "Unknown";
+    }
+
     function syncParentShellSelection() {
       try {
         if (!window.parent || window.parent === window) return;
@@ -1667,7 +1676,7 @@ initSharedQuickTooltips();
     }
 
     function decisionBasisLabel(label) {
-      const token = String(label || "").trim().toLowerCase();
+      const token = String(label || "").trim().toLowerCase().replace(/^[-*]\s+/, "");
       if (token === "why now" || token === "why this moved") return "Why now";
       if (token === "expected outcome" || token === "expected value capture") return "Expected outcome";
       if (token === "tradeoff" || token === "cost/risk tradeoff") return "Tradeoff";

@@ -1,4 +1,4 @@
-"""Compatibility normalization for host-authored greenfield proposals.
+"""Compatibility normalization for confirmed greenfield proposals.
 
 Host models are expected to author the project reasoning, but they should not
 need to rediscover every internal Odylith field spelling. This module accepts
@@ -71,7 +71,7 @@ _WORKSTREAM_REF_LIST_FIELDS = (
 
 
 def normalize_host_reasoned_proposal(proposal: Mapping[str, Any]) -> dict[str, Any]:
-    """Return a strict-schema proposal from a reasonable host-authored shape."""
+    """Return a strict-schema proposal from a reasonable confirmed shape."""
 
     normalized = copy.deepcopy(dict(proposal))
     if str(normalized.get("mode", "")).strip() not in _VALID_MODES:

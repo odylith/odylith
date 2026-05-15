@@ -70,6 +70,7 @@ _ACTION_RE = re.compile(
 _MECHANICAL_COPY_RE = re.compile(
     r"\b("
     r"this view shows|this diagram shows|this diagram follows|read from .+ through the arrows|"
+    r"through the arrows|arrows are|boxes are the|"
     r"this box represents|none named|shows how|shows the path from|"
     r"generic mermaid|diagram box|follow its arrows|carries a concrete step"
     r")\b",
@@ -266,18 +267,18 @@ def describe_graph_node(*, graph: MermaidGraph, node_id: str) -> str:
         return f"{subject} is the trusted outcome state for this path."
     if not visible_incoming and outgoing:
         if outgoing_conditions:
-            return f"{subject} starts the path and moves forward when {outgoing_conditions} is true."
+            return f"{subject} is the entry responsibility. It produces the next trusted state when {outgoing_conditions} is true."
         if outgoing_targets:
-            return f"{subject} starts the path and hands off to {outgoing_targets}."
-        return f"{subject} starts the path and hands off to {outgoing_targets or 'the next step'}."
+            return f"{subject} is the entry responsibility that creates the input needed by {outgoing_targets}."
+        return f"{subject} is the entry responsibility for this diagram."
     if len(outgoing) > 1:
         branches = outgoing_conditions or "the labeled or visual branches"
-        return f"{subject} is the branch point; it sends the flow toward {outgoing_targets or 'different outcomes'} based on {branches or 'the labeled conditions'}."
+        return f"{subject} decides between {outgoing_targets or 'different outcomes'} using {branches or 'the labeled conditions'}."
     if _ACTION_RE.search(label) and outgoing:
         trigger = incoming_conditions or incoming_sources
         if trigger:
-            return f"{subject} performs the bounded action after {trigger}, then hands off to {outgoing_targets or 'verification'} for proof or recovery."
-        return f"{subject} performs the bounded action, then hands off to {outgoing_targets or 'verification'} for proof or recovery."
+            return f"{subject} performs the bounded action after {trigger} and produces evidence for {outgoing_targets or 'verification'}."
+        return f"{subject} performs the bounded action and produces evidence for {outgoing_targets or 'verification'}."
     if len(incoming) > 1 and outgoing:
         trigger = incoming_conditions or incoming_sources
         return f"{subject} joins inputs from {incoming_sources or 'earlier steps'} and advances when {trigger or outgoing_conditions or 'the next condition'} is satisfied."
@@ -285,7 +286,7 @@ def describe_graph_node(*, graph: MermaidGraph, node_id: str) -> str:
         trigger = incoming_conditions or incoming_sources
         if outgoing_conditions:
             return f"{subject} carries the state forward after {trigger or 'the prerequisite'} and moves next when {outgoing_conditions} is true."
-        return f"{subject} carries the state forward after {trigger or 'the prerequisite'} and hands off to {outgoing_targets or 'the next step'}."
+        return f"{subject} carries the state forward after {trigger or 'the prerequisite'} and produces the input for {outgoing_targets or 'the next step'}."
     if incoming:
         trigger = incoming_conditions or incoming_sources
         return f"{subject} is reached after {trigger or 'the incoming condition'} and closes this path unless another recovery edge is added."
@@ -537,7 +538,7 @@ def _flow_read_guide(
         else:
             lines.append(f"Start at {_primary_label(start)} and read toward {branch_label}.")
         if normal_targets:
-            lines.append(f"At {branch_label}, each outgoing arrow is a choice or condition: {_join_list(normal_targets)}.")
+            lines.append(f"At {branch_label}, the available next responsibilities are {_join_list(normal_targets)}.")
         if stop_targets:
             lines.append(f"The stop or recovery branch is {_join_list(stop_targets)}, which means the flow should not mutate state until the missing proof or unsafe condition is cleared.")
         if fanout:
@@ -556,9 +557,9 @@ def _flow_read_guide(
             lines.append(_proof_boundary_read_sentence(proof_text=proof_text, proof_count=len(proof_nodes)))
         return " ".join(lines)
 
-    lines = [f"Start at {_primary_label(start)}, then follow each arrow to the next decision, action, proof, or recovery point."]
+    lines = [f"Start at {_primary_label(start)}, then read each connected decision, action, proof, or recovery point."]
     if conditions:
-        lines.append(f"Use the arrow labels as the conditions that permit movement: {conditions}.")
+        lines.append(f"Use the connection labels as the conditions that permit movement: {conditions}.")
     success_nodes = _success_nodes(graph)
     exception_nodes = _exception_nodes(graph)
     success_text = _node_label_list([graph.label(node_id) for node_id in success_nodes], limit=2)

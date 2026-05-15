@@ -26,7 +26,11 @@ def test_component_register_entry_can_record_user_intent_candidates() -> None:
     assert entry["sources"] == ["user_intent"]
     assert entry["workstreams"] == ["B-200"]
     assert entry["diagrams"] == ["D-200"]
+    assert entry["what_it_is"].startswith("Payments Boundary is planned as an integration boundary")
+    assert "responsible for" not in entry["what_it_is"]
+    assert "initial evidence anchor" not in entry["what_it_is"]
     assert "user-stated intent" in entry["why_tracked"]
+    assert "agent sessions" not in entry["why_tracked"]
 
 
 def test_component_spec_template_does_not_claim_source_for_user_intent() -> None:
@@ -77,10 +81,12 @@ def test_component_spec_template_uses_greenfield_responsibility_and_links() -> N
     assert "Checkout owns payment handoff and order-draft recovery" in text
     assert "| Workstreams | `B-200`, `B-201` |" in text
     assert "| Diagrams | `D-200` |" in text
-    assert "## Checkout Boundary Runtime Boundary" in text
-    assert "## Checkout Boundary Runtime Contract" in text
+    assert "## Component Role" in text
+    assert "## Runtime Boundary" in text
+    assert "## Runtime Contract" in text
+    assert "## Checkout Boundary Runtime Boundary" not in text
     assert "### Collaborators And Dependencies" in text
-    assert "- Payment sandbox." in text
+    assert "- Depends on Payment sandbox for state, behavior, evidence, or access this component does not own." in text
     assert "- Checkout request contract." in text
     assert "| Payment failure recovery proof |" in text
     assert "- Provider-specific behavior may change the boundary." in text

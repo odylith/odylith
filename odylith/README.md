@@ -110,23 +110,21 @@ greenfield proposal lane before source-backed governance exists:
 Odylith returns a no-write reasoning request. The host must write the short
 Product Intent Confirmation in chat from live reasoning before any proposal
 records exist: product story, actors, systems, assumptions, ambiguities, and the
-proceed/edit/reject gate. After the operator confirms that intent,
-the host uses `--confirm-intent --format json` internally for the complete
-proposal schema and proof contract; it should not show that contract as a
-second approval step; do not inspect Odylith source files, `.odylith`, bundle
-files, Python modules, or local examples to discover schema fields. The host
-then authors an internal project-specific apply payload, and `greenfield apply`
-validates it, runs the Tribunal write gate, and writes records from that same
-Product Intent confirmation. The operator does not need to inspect proposal JSON
-unless they explicitly ask for an export:
-Do not ask the operator to inspect proposal JSON as a normal approval step.
+proceed/edit/reject gate. After the operator confirms that intent, use the
+confirmed create path. Odylith builds the apply-ready proposal, validates it,
+runs the Tribunal write gate, writes records, and refreshes readable views from
+that same Product Intent confirmation. Do not inspect Odylith source files,
+`.odylith`, bundle files, Python modules, or local examples to discover schema
+fields. Do not hand-author or repair proposal JSON. The operator does not need
+to inspect proposal JSON unless they explicitly ask for an export.
 
 ```bash
-./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<project intent>" --confirm-intent --format json
-./.odylith/bin/odylith greenfield apply --repo-root . --proposal-file .odylith/runtime/greenfield/active-proposal.v1.json --confirm --release 0.0.1
+./.odylith/bin/odylith greenfield create --repo-root . --prompt "<project intent>" --confirm --release 0.0.1
 ```
 
-Do not use prompt-only `greenfield create`, canned domain families, or
+If a reviewer explicitly asks for JSON, export the same apply-ready artifact
+with `greenfield propose --confirm-intent --format json` and feed that exact
+generated JSON to `greenfield apply`. Do not use canned domain families or
 scaffolds as product truth. Do not start coding until the product gates are
 accepted.
 

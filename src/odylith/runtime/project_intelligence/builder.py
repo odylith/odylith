@@ -78,6 +78,97 @@ def _component_summary(component: Mapping[str, Any], fallback: str) -> str:
     return _short(component.get("what_it_is") or component.get("why_tracked"), limit=150, fallback=fallback)
 
 
+def _accepted_greenfield_title(*, focus: Mapping[str, Any], backlog: Mapping[str, Any]) -> str:
+    """Recover the project title from accepted-greenfield source records."""
+
+    headline = _sentence(focus.get("headline"))
+    title = _title_from_acceptance_headline(headline)
+    if title:
+        return title
+    for collection in ("execution", "queued", "finished"):
+        for row in _list(backlog.get(collection)):
+            if not isinstance(row, Mapping):
+                continue
+            title = _title_from_program_workstream(row.get("title"))
+            if title:
+                return title
+    return ""
+
+
+def _title_from_acceptance_headline(value: object) -> str:
+    text = _sentence(value).strip()
+    if not text:
+        return ""
+    patterns = (
+        r"^greenfield proposal accepted for (?P<title>.+)$",
+        r"^accepted greenfield proposal for (?P<title>.+)$",
+    )
+    for pattern in patterns:
+        match = re.match(pattern, text, flags=re.IGNORECASE)
+        if not match:
+            continue
+        return _clean_project_title(match.group("title"))
+    return ""
+
+
+def _title_from_program_workstream(value: object) -> str:
+    text = _sentence(value).strip()
+    if not text:
+        return ""
+    match = re.match(r"^govern (?P<title>.+?)(?: program)?$", text, flags=re.IGNORECASE)
+    if match:
+        return _clean_project_title(match.group("title"))
+    return ""
+
+
+def _clean_project_title(value: object) -> str:
+    text = _sentence(value).strip(" .")
+    text = re.sub(r"\s+program$", "", text, flags=re.IGNORECASE).strip(" .")
+    return _humanize(text, "Project") if text else ""
+
+
+def _accepted_greenfield_intro(*, project_title: str, components: Sequence[Mapping[str, Any]]) -> str:
+    surfaces = _component_surface_phrase(project_title=project_title, components=components)
+    if surfaces:
+        return (
+            f"{project_title} helps product owners, implementers, and reviewers keep "
+            f"{surfaces} connected as one traceable product workflow."
+        )
+    return (
+        f"{project_title} helps product owners, implementers, and reviewers turn accepted intent "
+        "into one traceable first workflow with owned boundaries and proof obligations."
+    )
+
+
+def _component_surface_phrase(*, project_title: str, components: Sequence[Mapping[str, Any]]) -> str:
+    rows: list[str] = []
+    seen: set[str] = set()
+    for component in components:
+        name = _sentence(component.get("name") or component.get("label") or component.get("component_id"))
+        if not name or name.casefold() == project_title.casefold():
+            continue
+        phrase = f"{name[:1].lower()}{name[1:]}"
+        key = phrase.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        rows.append(phrase)
+        if len(rows) >= 4:
+            break
+    return _join_phrase(rows)
+
+
+def _join_phrase(values: Sequence[str]) -> str:
+    rows = [str(value).strip() for value in values if str(value).strip()]
+    if not rows:
+        return ""
+    if len(rows) == 1:
+        return rows[0]
+    if len(rows) == 2:
+        return f"{rows[0]} and {rows[1]}"
+    return f"{', '.join(rows[:-1])}, and {rows[-1]}"
+
+
 def _parse_markdown_tables(path: Path) -> dict[str, list[dict[str, str]]]:
     if not path.is_file():
         return {}
@@ -263,6 +354,47 @@ def _evidence_state(*, components: Sequence[Mapping[str, Any]], backlog: Mapping
     if score >= 2:
         return "Source-backed"
     return "Inferred"
+
+
+def _desired_state(
+    *,
+    project_title: str,
+    project_intro: str,
+    current_focus: str,
+    release_label: str,
+    next_action_text: str,
+    evidence_sources: Sequence[str],
+    consumer_lane: bool,
+) -> str:
+    if not consumer_lane:
+        return (
+            f"The Project page explains {project_title} from "
+            f"{', '.join(evidence_sources) or 'available repo evidence'} before users open expert records."
+        )
+    intro = _sentence(project_intro).rstrip(".")
+    focus = _sentence(current_focus).rstrip(".")
+    next_action = _sentence(next_action_text).rstrip(".")
+    release = _sentence(release_label, "the current release")
+    reality = (
+        f"People using {project_title} can understand the current operational state without reconstructing context "
+        "from scattered files, stale records, informal claims, and partial implementation notes."
+    )
+    if intro and project_title.casefold() not in intro.casefold():
+        reality = f"{reality} {intro}."
+    capability = (
+        f"For {release}, they can see what is being evaluated, what changed, who owns the next decision, "
+        "and which evidence makes the current claim trustworthy."
+    )
+    if focus:
+        capability += f" The active capability is {focus[0].lower() + focus[1:] if focus else focus}."
+    risk = "The system reduces the risk that product claims drift away from the state, owner, time, and proof that produced them."
+    proof = (
+        "The release is ready when a reviewer can follow the user-visible workflow, source evidence, changed state, "
+        "open risks, and validation result without relying on implementation-only context."
+    )
+    if next_action:
+        proof += f" The next action is {next_action[0].lower() + next_action[1:] if next_action else next_action}."
+    return " ".join((reality, capability, risk, proof))
 
 
 def _origin_label(self_host: Mapping[str, Any]) -> str:
@@ -588,15 +720,22 @@ def build_project_intelligence_payload(
     active_workstreams = _strings(release.get("active_workstreams")) or _strings(focus.get("workstreams"))
     critical_bugs = [dict(row) for row in casebook.get("critical", []) if isinstance(row, Mapping)]
     open_bugs = [dict(row) for row in casebook.get("open", []) if isinstance(row, Mapping)]
-    project_title = _sentence(root_component.get("name"), _humanize(repo, "Project"))
     repo_role = _sentence(self_host.get("repo_role"), "repo")
-    project_intro = _project_intro(
-        project_title=project_title,
-        root_component=root_component,
-        components=components,
-        repo_role=repo_role,
-    )
     release_label = _release_label(release)
+    accepted_greenfield_title = _accepted_greenfield_title(focus=focus, backlog=backlog)
+    has_product_root_component = bool(_component(component_index, "odylith"))
+    consumer_lane = not has_product_root_component
+    if accepted_greenfield_title and not has_product_root_component:
+        project_title = accepted_greenfield_title
+        project_intro = _accepted_greenfield_intro(project_title=project_title, components=components)
+    else:
+        project_title = _sentence(root_component.get("name"), _humanize(repo, "Project"))
+        project_intro = _project_intro(
+            project_title=project_title,
+            root_component=root_component,
+            components=components,
+            repo_role=repo_role,
+        )
     current_focus = _project_focus_text(
         focus.get("headline"),
         active_workstreams=active_workstreams,
@@ -624,9 +763,14 @@ def build_project_intelligence_payload(
         f"{worktree.get('meaningful_changed_count', 0) or 0} meaningful and "
         f"{worktree.get('generated_changed_count', 0) or 0} generated changed paths."
     )
-    desired_state = (
-        f"The Project page explains {project_title} from "
-        f"{', '.join(evidence_sources) or 'available repo evidence'} before users open expert records."
+    desired_state = _desired_state(
+        project_title=project_title,
+        project_intro=project_intro,
+        current_focus=current_focus,
+        release_label=release_label,
+        next_action_text=next_action_text,
+        evidence_sources=evidence_sources,
+        consumer_lane=consumer_lane,
     )
     blockers = [
         (
@@ -715,7 +859,6 @@ def build_project_intelligence_payload(
         project_title=project_title,
         project_intro=project_intro,
         release_label=release_label,
-        work_mode=work_mode,
         current_focus=current_focus,
         next_title=next_title,
         next_action_text=next_action_text,
@@ -753,6 +896,7 @@ def build_project_intelligence_payload(
             critical_count=int(casebook.get("critical_count", 0) or 0),
             blockers=blockers,
             evidence_sources=evidence_sources,
+            consumer_lane=consumer_lane,
         ),
         "scenario": _scenario(
             project_title=project_title,

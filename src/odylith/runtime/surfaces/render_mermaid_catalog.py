@@ -676,6 +676,9 @@ def _load_catalog(
             atlas_box_explanations.merge_diagram_box_explanations(
                 source_text=source_text,
                 catalog_boxes=catalog_diagram_boxes,
+                component_rows=components,
+                diagram_title=title,
+                diagram_summary=summary,
             )
         )
         diagram_narrative = atlas_diagram_intelligence.build_diagram_narrative(

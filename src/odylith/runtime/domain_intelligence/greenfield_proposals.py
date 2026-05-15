@@ -1,10 +1,10 @@
-"""Host-reasoned greenfield governance contracts for consumer repos.
+"""Confirmed greenfield governance contracts for consumer repos.
 
 Odylith should not pretend a small built-in catalog can understand every
-possible project the operator may ask for. This module gives host models a
-strict evidence, schema, validation, and apply contract; the host model supplies
-the open-world project reasoning, and Odylith validates and writes only after
-explicit confirmation.
+possible project the operator may ask for. This module keeps the no-write
+Product Intent Confirmation separate from the confirmed create/apply path, then
+builds, validates, gates, and writes the apply-ready proposal without pushing
+schema repair back onto the host.
 """
 
 from __future__ import annotations
@@ -25,6 +25,7 @@ from typing import Any, Mapping, Sequence
 from odylith.runtime.analysis_engine import repo_analysis
 from odylith.runtime.analysis_engine.types import SourceSummary, slugify
 from odylith.runtime.domain_intelligence import greenfield_component_registry_scope
+from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_traceability
@@ -38,7 +39,6 @@ from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import render_project_intelligence_section
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import render_domain_intelligence_section
-from odylith.runtime.domain_intelligence.proposal_contract import build_proposal_contract
 from odylith.runtime.domain_intelligence.proposal_memory import record_greenfield_acceptance
 from odylith.runtime.domain_intelligence.proposal_normalization import normalize_host_reasoned_proposal
 from odylith.runtime.domain_intelligence.proposal_rendering import format_proposal_text
@@ -64,7 +64,6 @@ def _prompt_text(prompt: str) -> str:
 def _intent_title(prompt: str) -> str:
     text = _prompt_text(prompt)
     lowered = text.casefold()
-    stripped_greenfield_request = False
     for prefix in (
         "draft a product-first greenfield proposal for ",
         "draft product-first greenfield proposal for ",
@@ -80,7 +79,6 @@ def _intent_title(prompt: str) -> str:
     ):
         if lowered.startswith(prefix):
             text = text[len(prefix):].strip()
-            stripped_greenfield_request = True
             break
     lowered = text.casefold()
     for prefix in (
@@ -95,8 +93,7 @@ def _intent_title(prompt: str) -> str:
         if lowered.startswith(prefix):
             text = text[len(prefix):].strip()
             break
-    if stripped_greenfield_request:
-        text = re.sub(r"^(?:a|an)\s+", "", text, flags=re.IGNORECASE).strip()
+    text = re.sub(r"^(?:a|an)\s+", "", text, flags=re.IGNORECASE).strip()
     text = _strip_greenfield_directives(text).strip(" .")
     if not text or len(text) < 4:
         return "Greenfield Project"
@@ -198,83 +195,34 @@ def _source_evidence(repo_root: Path) -> dict[str, Any]:
     }
 
 
-def build_greenfield_proposal(*, repo_root: Path, prompt: str) -> dict[str, Any]:
-    """Return the no-write greenfield proposal contract for host reasoning.
+def build_greenfield_proposal(
+    *,
+    repo_root: Path,
+    prompt: str,
+    release_selector: str = "",
+) -> dict[str, Any]:
+    """Return the apply-ready proposal after Product Intent is confirmed.
 
-    The CLI deliberately does not infer arbitrary domains or manufacture
-    backlog, Registry, Atlas, release, or validation records from prompt text.
-    The host model authors the product proposal live after the operator confirms
-    intent; this envelope supplies the schema, proof rules, aliases, and apply
-    command that Odylith can validate deterministically before writing records.
+    The no-write ``greenfield propose`` command still asks the host to narrate a
+    human Product Intent Confirmation first. After that confirmation, Odylith
+    owns the schema-shaped proposal artifact itself: it builds a prompt-general
+    proposal, normalizes it, validates it, and runs the deterministic proposal
+    gate before any write command sees it.
     """
 
     root = Path(repo_root).expanduser().resolve()
     intent_title = _intent_title(prompt)
-    project_slug = slugify(intent_title)
     evidence = _source_evidence(root)
-    reasoning_contract = build_proposal_contract()
-    proposal: dict[str, Any] = {
-        "schema_version": "odylith.greenfield.reasoning_request.v1",
-        "mode": "host_reasoned_proposal_request",
-        "provider_calls": 0,
-        "host_agnostic": True,
-        "write_policy": "host_reason_first_confirm_before_apply",
-        "intent": {
-            "prompt": _prompt_text(prompt),
-            "title": intent_title,
-            "project_slug": project_slug,
-            "reasoning_mode": "host_model_required",
-            "evidence_tier": "user_intent",
-        },
-        "classification": {
-            "method": "open_world_host_reasoning",
-            "fit_policy": "The host model must infer the project family, boundaries, topology, validation, and release shape from prompt plus repo evidence.",
-            "provider_calls": 0,
-        },
-        "observed_source": evidence,
-        "greenfield_ux": {
-            "mode": "consumer_greenfield_host_reasoned_proposal",
-            "source_posture": evidence.get("source_posture", "unknown"),
-            "operator_sequence": [
-                "the host writes a compact Product Intent Confirmation in chat before any records are generated",
-                "the operator confirms, edits, or rejects the interpretation",
-                "on confirmation, the host retrieves the proposal contract internally, authors the apply payload, and immediately runs greenfield apply",
-                "greenfield apply validates the internal payload, runs the Tribunal write gate, and writes governed records from that same confirmation",
-                "implementation planning starts only after accepted records name the first slice, boundaries, states, owners, and proof gates",
-            ],
-            "write_guardrail": "This contract writes nothing and contains no generated governance artifacts.",
-            "next_best_action": f"Author the full proposal for {intent_title} only after the operator confirms the live Product Intent Confirmation.",
-        },
-        "reasoning_contract": reasoning_contract,
-        "post_confirmation_handoff": reasoning_contract.get("post_confirmation_handoff", {}),
-        "accepted_aliases": {
-            "mode": ["greenfield", "host_reasoned_proposal"],
-            "component_id": ["id", "name"],
-            "kind": ["type"],
-            "validation": ["proof_expectations", "test_strategy"],
-            "recommended_first_slice": ["first_slice_proof"],
-            "release_plan": ["list of release rows", "default_release plus releases"],
-            "project_intelligence": ["project_control_surface", "project_domain_intelligence"],
-        },
-        "host_instruction": (
-            "Author the proposal live from the confirmed Product Intent Confirmation and observed source posture. "
-            "Use the confirm-intent CLI contract internally as the complete schema/proof surface; do not show it as a second user approval step and do not inspect Odylith source files, Python modules, local examples, or generated runtime files to discover what to do next. "
-            "Do not use canned domain buckets, family templates, or prompt-title repetition. "
-            "Label observed_source, user_intent, and odylith_assumption separately. "
-            "Create only workstreams, component boundaries, diagrams, proof gates, and release waves that a product owner would recognize as directly relevant to the assignment. "
-            "Ask or encode only the choices that materially change the first path, actors, risk posture, topology, or proof bar. "
-            "Default the provisional release selector and release label to exactly 0.0.1 unless the operator explicitly asks for another release target. "
-            "After the operator confirms Product Intent, run the confirm-intent contract internally, author the internal payload, run greenfield apply, and show either created records or validation/Tribunal blockers; do not ask for a second JSON-review confirmation. "
-            "The accepted proposal will run through deterministic schema validation and the Tribunal write gate before any records are written."
-        ),
-        "apply_commands": [
-            "odylith greenfield propose --repo-root . --prompt "
-            + json.dumps(_prompt_text(prompt))
-            + " --confirm-intent --format json",
-            "# host writes the proposal as an internal apply payload from the confirmed Product Intent and source posture",
-            "odylith greenfield apply --repo-root . --proposal-file .odylith/runtime/greenfield/active-proposal.v1.json --confirm --release 0.0.1",
-        ],
-    }
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=intent_title,
+        title=intent_title,
+        observed_source=evidence,
+        release_selector=release_selector,
+    )
+    proposal = normalize_host_reasoned_proposal(proposal)
+    validate_host_reasoned_proposal(proposal)
+    selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
+    raise_for_failed_greenfield_tribunal(run_greenfield_tribunal(proposal, release_selector=selector))
     return proposal
 
 
@@ -431,7 +379,7 @@ def _backlog_apply_args(proposal: Mapping[str, Any], *, release_selector: str) -
 
 
 def _release_assignment_note(*, selector: str) -> str:
-    return f"Target confirmed first-wave greenfield workstream(s) from `odylith greenfield apply --release {selector}`."
+    return f"Target confirmed first-wave greenfield workstream(s) for release `{selector}`."
 
 
 def _component_risk_lines(row: Mapping[str, Any], _proposal: Mapping[str, Any]) -> tuple[str, ...]:
@@ -475,7 +423,7 @@ def _has_component_posture(text: str, tokens: Sequence[str]) -> bool:
 def _component_operational_risk(*, row: Mapping[str, Any], label: str) -> str:
     boundary = str(row.get("boundary", "") or row.get("responsibility", "")).strip()
     boundary_hint = f" its stated boundary ({boundary})" if boundary else " its stated component boundary"
-    return f"Operational risk: {label} must not expand beyond{boundary_hint} without a refreshed component spec and source-backed proof."
+    return f"Operational risk: {label} must not expand beyond{boundary_hint} without owner review and source-backed proof."
 
 
 def _component_security_posture(*, row: Mapping[str, Any], label: str) -> str:
@@ -507,6 +455,121 @@ def _component_policy_posture(*, row: Mapping[str, Any], label: str) -> str:
     return (
         f"Compliance policy: {label} keeps audit, privacy, retention, and safety assumptions explicit in its contract tests."
     )
+
+
+def _component_dependency_lookup(rows: Sequence[Mapping[str, Any]]) -> dict[str, Mapping[str, Any]]:
+    lookup: dict[str, Mapping[str, Any]] = {}
+    for row in rows:
+        for value in (row.get("component_id"), row.get("id"), row.get("label"), row.get("name")):
+            key = slugify(str(value or ""))
+            if key:
+                lookup.setdefault(key, row)
+    return lookup
+
+
+def _component_dependency_lines(
+    values: Sequence[str],
+    *,
+    lookup: Mapping[str, Mapping[str, Any]],
+) -> tuple[str, ...]:
+    rows: list[str] = []
+    for value in values:
+        text = " ".join(str(value or "").split()).strip()
+        if not text:
+            continue
+        dependency = lookup.get(slugify(text))
+        if not dependency:
+            rows.append(text)
+            continue
+        label = str(dependency.get("label") or dependency.get("name") or text).strip()
+        responsibility = str(dependency.get("responsibility") or dependency.get("boundary") or "").strip()
+        if responsibility:
+            rows.append(f"Depends on {label} for {_dependency_responsibility_phrase(responsibility)}")
+        else:
+            rows.append(f"Depends on {label} for the state, behavior, or proof owned by that boundary")
+    return unique_text(rows)
+
+
+def _dependency_responsibility_phrase(value: str) -> str:
+    text = " ".join(str(value or "").split()).strip().rstrip(".")
+    if not text:
+        return "the state, behavior, or proof owned by that boundary"
+    parts = [
+        _dependency_clause_phrase(part)
+        for part in re.split(r"\s*;\s*", text)
+        if part.strip()
+    ]
+    parts = [part for part in parts if part]
+    if len(parts) == 1:
+        return parts[0]
+    if len(parts) == 2:
+        return f"{parts[0]} and {parts[1]}"
+    return f"{', '.join(parts[:-1])}, and {parts[-1]}"
+
+
+def _dependency_clause_phrase(value: str) -> str:
+    text = " ".join(str(value or "").split()).strip().rstrip(".")
+    if not text:
+        return ""
+    head, separator, tail = text.partition(" ")
+    verb = head.strip(",:;").casefold()
+    gerunds = {
+        "assemble": "assembling",
+        "assembles": "assembling",
+        "bind": "binding",
+        "binds": "binding",
+        "capture": "capturing",
+        "captures": "capturing",
+        "compute": "computing",
+        "computes": "computing",
+        "connect": "connecting",
+        "connects": "connecting",
+        "derive": "deriving",
+        "derives": "deriving",
+        "enforce": "enforcing",
+        "enforces": "enforcing",
+        "fetch": "fetching",
+        "fetches": "fetching",
+        "hold": "holding",
+        "holds": "holding",
+        "manage": "managing",
+        "manages": "managing",
+        "own": "owning",
+        "owns": "owning",
+        "produce": "producing",
+        "produces": "producing",
+        "provide": "providing",
+        "provides": "providing",
+        "record": "recording",
+        "records": "recording",
+        "render": "rendering",
+        "renders": "rendering",
+        "serve": "serving",
+        "serves": "serving",
+        "track": "tracking",
+        "tracks": "tracking",
+        "validate": "validating",
+        "validates": "validating",
+    }
+    if verb in gerunds and separator:
+        return f"{gerunds[verb]} {_gerund_joined_verbs(tail.strip(), gerunds)}"
+    return text[:1].lower() + text[1:]
+
+
+def _gerund_joined_verbs(value: str, gerunds: Mapping[str, str]) -> str:
+    pattern = re.compile(
+        r"\b(?P<join>and|or)\s+(?P<verb>"
+        + "|".join(re.escape(verb) for verb in sorted(gerunds, key=len, reverse=True))
+        + r")\b",
+        flags=re.IGNORECASE,
+    )
+
+    def replace(match: re.Match[str]) -> str:
+        joiner = match.group("join")
+        verb = match.group("verb").casefold()
+        return f"{joiner} {gerunds[verb]}"
+
+    return pattern.sub(replace, value)
 
 
 def _posture_lines(row: Mapping[str, Any], *keys: str) -> tuple[str, ...]:
@@ -837,8 +900,10 @@ def _write_greenfield_proposal(
         diagram_ids=diagram_ids,
     )
 
+    component_rows = [row for row in proposal.get("components", []) if isinstance(row, Mapping)]
+    component_dependency_lookup = _component_dependency_lookup(component_rows)
     components_created: list[dict[str, Any]] = []
-    for row in proposal.get("components", []):
+    for row in component_rows:
         if not isinstance(row, Mapping):
             continue
         key = greenfield_traceability.component_key(row)
@@ -866,7 +931,10 @@ def _write_greenfield_proposal(
             ),
             responsibility=str(row.get("responsibility", "")).strip(),
             boundary=str(row.get("boundary", "")).strip(),
-            dependencies=row_text_tuple(row, "dependencies", "depends_on"),
+            dependencies=_component_dependency_lines(
+                row_text_tuple(row, "dependencies", "depends_on"),
+                lookup=component_dependency_lookup,
+            ),
             interfaces=row_text_tuple(row, "interfaces", "interface_changes"),
             validation=row_text_tuple(row, "validation", "test_strategy"),
             risks=_component_risk_lines(row, proposal),
@@ -940,7 +1008,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     apply.add_argument("--confirm", action="store_true")
     apply.add_argument("--release", default="")
     apply.add_argument("--json", action="store_true", dest="as_json")
-    create = subparsers.add_parser("create", help="Reject prompt-only greenfield writes; use propose, host-authored JSON, then apply.")
+    create = subparsers.add_parser("create", help="Create confirmed greenfield records from Product Intent.")
     create.add_argument("--repo-root", default=".")
     create.add_argument("--prompt", required=True)
     create.add_argument("--confirm", action="store_true")
@@ -1015,7 +1083,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             else:
                 print(format_product_intent_confirmation_text(confirmation), end="")
             return 0
-        proposal = build_greenfield_proposal(repo_root=repo_root, prompt=str(args.prompt))
+        try:
+            proposal = build_greenfield_proposal(
+                repo_root=repo_root,
+                prompt=str(args.prompt),
+            )
+        except (ValueError, RuntimeError) as exc:
+            _print_greenfield_error(exc, as_json=args.output_format == "json")
+            return 2
         if args.output_format == "json":
             print(json.dumps(proposal, indent=2, sort_keys=True))
         else:
@@ -1043,29 +1118,42 @@ def main(argv: Sequence[str] | None = None) -> int:
             print_apply_result(result, verb="apply")
         return 0
     if args.command == "create":
-        message = (
-            "Prompt-only greenfield create is disabled. First run `odylith greenfield propose --repo-root . --prompt "
-            + json.dumps(_prompt_text(str(args.prompt)))
-            + "` and write the Product Intent Confirmation in chat. After the operator confirms, author the internal proposal payload from live reasoning and run "
-            "`odylith greenfield apply --repo-root . --proposal-file .odylith/runtime/greenfield/active-proposal.v1.json --confirm --release "
-            + (str(args.release).strip() or greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR)
-            + "`."
-        )
-        if args.as_json:
-            print(
-                json.dumps(
-                    {
-                        "mode": "error",
-                        "write_policy": "host_reason_product_intent_before_greenfield_apply",
-                        "error": message,
-                    },
-                    indent=2,
-                    sort_keys=True,
-                )
+        if not bool(args.confirm):
+            message = (
+                "greenfield create requires --confirm after the Product Intent Confirmation is accepted. "
+                "Run `odylith greenfield propose --repo-root . --prompt "
+                + json.dumps(_prompt_text(str(args.prompt)))
+                + "` first, then rerun create with --confirm when the interpretation is correct."
             )
+            if args.as_json:
+                print(json.dumps({"mode": "error", "error": message}, indent=2, sort_keys=True))
+            else:
+                print(message)
+            return 2
+        try:
+            proposal = build_greenfield_proposal(
+                repo_root=repo_root,
+                prompt=str(args.prompt),
+                release_selector=str(args.release),
+            )
+            result, captured = _run_with_optional_stdout_capture(
+                enabled=bool(args.as_json),
+                action=lambda: apply_greenfield_proposal(
+                    repo_root=repo_root,
+                    proposal=proposal,
+                    confirm=True,
+                    release_selector=str(args.release),
+                ),
+            )
+        except (ValueError, RuntimeError, json.JSONDecodeError) as exc:
+            _print_greenfield_error(exc, as_json=bool(args.as_json))
+            return 2
+        if args.as_json:
+            result = _with_operator_output(result, captured)
+            print(json.dumps(result, indent=2, sort_keys=True))
         else:
-            print(message)
-        return 2
+            print_apply_result(result, verb="create")
+        return 0
     return 2
 
 

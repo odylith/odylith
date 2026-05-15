@@ -26,6 +26,8 @@
 
 - Follow-up Failure Signature: The smoke also did not inspect installed AGENTS/README/skill guidance, so a packaged release could install fixed CLI code while still teaching hosts to hand-author proposal JSON and recreate the schema-repair loop.
 
+- 2026-05-14 Failure Signature: v0.1.15 shipped with smoke coverage that ran `show`, two `greenfield propose` commands, and dashboard refresh, but did not run the confirmed write path. A downstream greenfield run therefore passed release proof while the real host still spent 32m hand-authoring and repairing hidden proposal JSON after confirmation.
+
 - Trigger Path: Run scripts/release/local_release_smoke.py against a fresh local release bundle.
 
 - Ownership: Release smoke harness and greenfield release-readiness proof.
@@ -48,11 +50,17 @@
 
 - Follow-up Solution: Extend local release smoke to inspect installed `AGENTS.md`, `odylith/AGENTS.md`, `odylith/README.md`, `odylith-greenfield-governance`, and `odylith-show-me`; require `greenfield create`, require an explicit no hand-authored JSON guard, and reject stale host-drafts-proposal instructions.
 
+- 2026-05-14 Solution: Make the release smoke prove the current confirmed path instead of the obsolete host-authored file path: show, no-write propose JSON, `propose --confirm-intent --format json` returning an apply-ready proposal with backlog/components/diagrams, `greenfield create --confirm --release 0.0.1 --json`, dashboard/surface proof, accepted-project, delivery-intelligence, traceability artifacts, and explicit rejection of schema-loop strings such as `greenfield proposal validation failed`, `host_instruction`, `reasoning_contract`, and `active-proposal.v1.json`.
+
 - Verification: PYTHONPATH=src python -m pytest -q tests/unit/install/test_local_release_smoke.py; PYTHONPATH=src python scripts/release/local_release_smoke.py --version 0.1.15 --dist-dir /tmp/odylith-local-smoke-current-0.1.15 --previous-version 0.0.0
 
 - Follow-up Verification: `PYTHONPATH=src python -m pytest -q tests/unit/install/test_local_release_smoke.py::test_release_smoke_requires_installed_greenfield_guidance_uses_create tests/unit/install/test_codex_project_assets.py::test_greenfield_guidance_uses_canonical_create_path_not_host_json_authoring`
 
+- 2026-05-14 Verification: `PYTHONPATH=src pytest tests/unit/install/test_local_release_smoke.py::test_greenfield_propose_apply_smoke_runs_exact_release_journey tests/unit/install/test_local_release_smoke.py::test_release_smoke_requires_installed_greenfield_guidance_uses_confirmed_create tests/unit/install/test_codex_project_assets.py::test_greenfield_guidance_uses_product_intent_then_host_authored_apply_path tests/unit/install/test_codex_project_assets.py::test_greenfield_guidance_keeps_post_confirmation_contract_internal -q` passed.
+
 - Prevention: Keep the release smoke tied to the exact install -> show -> propose JSON -> confirmed apply -> surface proof journey for future greenfield releases, while separately testing the one-command create shortcut in its own fresh installed repo.
+
+- Prevention Update: For the current contract, the exact journey is install -> show -> no-write Product Intent JSON -> confirmed apply-ready proposal JSON -> `greenfield create --confirm` -> surface and artifact proof. The optional file apply path is a review/export fallback, not the primary release proof.
 
 - Regression Tests Added: tests/unit/install/test_local_release_smoke.py::test_greenfield_propose_apply_smoke_runs_exact_release_journey, tests/unit/install/test_local_release_smoke.py::test_greenfield_create_smoke_runs_show_create_and_checks_surfaces, tests/unit/install/test_local_release_smoke.py::test_install_and_create_smoke_installs_then_runs_one_command_path, tests/unit/install/test_local_release_smoke.py::test_release_smoke_requires_installed_greenfield_guidance_uses_create, tests/unit/install/test_codex_project_assets.py::test_greenfield_guidance_uses_canonical_create_path_not_host_json_authoring, and tests/unit/install/test_local_release_smoke.py::test_previous_release_is_published_treats_wrapped_404_as_missing
 

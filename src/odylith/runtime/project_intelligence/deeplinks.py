@@ -130,7 +130,6 @@ def inline_deeplink_html(value: object, *, titles: Mapping[str, object] | None =
             tooltip_attrs = (
                 f' data-tooltip="{html.escape(tooltip, quote=True)}"'
                 f' aria-label="{html.escape(tooltip, quote=True)}"'
-                f' title="{html.escape(tooltip, quote=True)}"'
                 if tooltip
                 else ""
             )

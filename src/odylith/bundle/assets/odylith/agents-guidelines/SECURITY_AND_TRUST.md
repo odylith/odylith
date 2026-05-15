@@ -85,19 +85,17 @@
   locking, but it must not weaken the advisory-lock plus atomic-replace
   contract that prevents torn or interleaved local state.
 
-## Release Prep Rules
-- Release-facing security docs, public docs, browser surfaces, and
-  install-managed assets must be covered by `odylith release migration-gate`
-  for the target version before GA.
-- Reuse accepted candidate proof for the same artifact instead of rerunning
-  expensive full-suite or consumer rehearsal gates without new evidence.
+## Product Release Prep Boundary
+- Product release prep rules belong in product-repo maintainer guidance and
+  must not be applied as consumer repo obligations.
+- Consumer repos should use the installed launcher to inspect version, repair
+  local runtime posture, and run consumer-owned validation on the repo's native
+  toolchain.
 
-## Canonical Commands
+## Consumer Diagnostic Commands
 ```bash
 ./.odylith/bin/odylith version --repo-root .
 ./.odylith/bin/odylith doctor --repo-root . --repair
 ./.odylith/bin/odylith reinstall --repo-root . --latest
 ./.odylith/bin/odylith context-engine status --repo-root .
-./.odylith/bin/odylith release migration-gate --repo-root . --target-version 0.1.13
-make release-candidate
 ```

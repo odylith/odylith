@@ -148,7 +148,7 @@ def test_greenfield_apply_rejects_missing_host_authored_diagram_source(tmp_path)
     proposal = _host_reasoned_ecommerce_proposal()
     proposal["diagrams"][0].pop("mermaid_source")
 
-    with pytest.raises(ValueError, match="missing host-authored mermaid_source"):
+    with pytest.raises(ValueError, match="missing proposal mermaid_source"):
         greenfield_proposals.apply_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,

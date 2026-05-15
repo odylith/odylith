@@ -1702,3 +1702,45 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   fingerprints bind the regenerated Radar outputs and install-managed mirrors
   after the migration assessment itself was refreshed. Existing consumer repos
   still need no bespoke data migration beyond normal dashboard/runtime refresh.
+- The confirmed greenfield create hardening is covered by
+  `migration-observer:0.1.15:guidance-and-skills:d2b63cc5cc69`,
+  `migration-observer:0.1.15:operator-cli-contracts:32c4c41dd94b`,
+  `migration-observer:0.1.15:browser-surfaces:dbcb9bd030c4`, and
+  `migration-observer:0.1.15:install-managed-assets:ec464b1b9710`, plus the
+  earlier settled fingerprints
+  `migration-observer:0.1.15:guidance-and-skills:78aaa0882a2c`,
+  `migration-observer:0.1.15:operator-cli-contracts:9be43ea3eb06`,
+  `migration-observer:0.1.15:public-docs-and-release-guidance:3c7b7c554d0d`,
+  `migration-observer:0.1.15:browser-surfaces:18d2b9fbe0b4`, and
+  `migration-observer:0.1.15:install-managed-assets:57572704ff62`, with the
+  settled post-Radar-refresh browser and install-managed fingerprints covered by
+  `migration-observer:0.1.15:browser-surfaces:4413933f62f3` and
+  `migration-observer:0.1.15:install-managed-assets:c1fa43946cca`. The pass
+  changes the installed greenfield contract from host-authored hidden proposal
+  JSON to Odylith-owned `greenfield create --confirm`, updates managed guidance
+  and public docs, proves the exact fresh-repo release-smoke path, and refreshes
+  Casebook, Registry, Atlas, Radar, Compass, and bundled browser assets. Existing
+  consumer source truth does not require migration; upgraded repos receive the
+  safer confirmed CLI/runtime path, refreshed managed guidance, and regenerated
+  surfaces.
+- The consumer-lane maintainer-restriction leak cleanup is covered by
+  `migration-observer:0.1.15:public-docs-and-release-guidance:880a4ef7995f`
+  and `migration-observer:0.1.15:install-managed-assets:dff2c6f61c05`, with the
+  generated runtime-surface follow-up covered by
+  `migration-observer:0.1.15:browser-surfaces:d48562eb2c40`. The pass removes
+  shipped maintainer identity strings from consumer-visible managed runtime
+  metadata, stops generated Compass runtime surfaces from falling back to global
+  Git identity in repos without local identity, and broadens release smoke so
+  installed consumer guidance and managed text surfaces fail closed when
+  product-repo-only commit, branch, actor, or release-runbook restrictions leak
+  into any downstream repo. Existing consumer-owned source truth does not require
+  migration; upgraded repos receive neutral role labels and the same native
+  repository identity remains authoritative.
+- The Atlas box-description enforcement and rendered-payload settlement is
+  covered by `migration-observer:0.1.15:browser-surfaces:f561e5bc4bb8` and
+  `migration-observer:0.1.15:install-managed-assets:aca8fc281b95`. The pass
+  fails authored diagram-box copy that explains arrow mechanics instead of
+  project meaning and forces regenerated Atlas browser assets so existing
+  payloads no longer carry stale path/branch filler. Existing consumer-owned
+  diagram source truth does not require migration; upgraded repos receive the
+  stricter renderer and refreshed managed browser assets.

@@ -1,4 +1,4 @@
-"""Validation and rendering support for host-authored project briefs."""
+"""Validation and rendering support for confirmed project briefs."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ def normalize_project_brief(
     intent: Mapping[str, Any],
     release_selector: str,
 ) -> dict[str, Any]:
-    """Normalize a host-authored project brief without manufacturing content."""
+    """Normalize a proposal project brief without manufacturing content."""
 
     _ = intent, release_selector
     if not isinstance(value, Mapping):
@@ -48,7 +48,7 @@ def normalize_project_brief(
 
 
 def project_brief_issues(value: Any) -> list[str]:
-    """Return validation issues for the host-authored project-first brief."""
+    """Return validation issues for the proposal project-first brief."""
 
     issues: list[str] = []
     if not isinstance(value, Mapping):
