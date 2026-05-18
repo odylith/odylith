@@ -44,7 +44,7 @@ class CreatedComponent:
             "spec_path": str(self.spec_path),
         }
         if self.tribunal is not None:
-            payload["tribunal"] = self.tribunal
+            payload["validation_gate"] = self.tribunal
         return payload
 
 
@@ -61,13 +61,17 @@ def _load_registry(registry_path: Path) -> dict[str, Any]:
 
 
 def _component_exists(registry: dict[str, Any], component_id: str) -> bool:
+    return _component_index(registry, component_id) is not None
+
+
+def _component_index(registry: dict[str, Any], component_id: str) -> int | None:
     components = registry.get("components", [])
     if not isinstance(components, list):
-        return False
-    return any(
-        isinstance(entry, dict) and str(entry.get("component_id", "")).strip() == component_id
-        for entry in components
-    )
+        return None
+    for index, entry in enumerate(components):
+        if isinstance(entry, dict) and str(entry.get("component_id", "")).strip() == component_id:
+            return index
+    return None
 
 
 def _clean_sequence(values: Sequence[str] | str) -> tuple[str, ...]:
@@ -233,13 +237,15 @@ def register_component(
     implementation_handoff: Mapping[str, Any] | None = None,
     dry_run: bool = False,
     refresh: bool = True,
+    update_existing: bool = False,
 ) -> CreatedComponent:
     """Register a new component in the registry and scaffold its spec."""
     registry_path = (repo_root / _REGISTRY_PATH_RELATIVE).resolve()
     components_root = (repo_root / _COMPONENTS_ROOT_RELATIVE).resolve()
 
     registry = _load_registry(registry_path)
-    if _component_exists(registry, component_id):
+    existing_index = _component_index(registry, component_id)
+    if existing_index is not None and not update_existing:
         raise ValueError(f"Component `{component_id}` already exists in the registry")
     sources = _clean_sequence(sources) or ("manifest",)
     workstreams = _clean_sequence(workstreams)
@@ -268,7 +274,10 @@ def register_component(
     components = registry.get("components", [])
     if not isinstance(components, list):
         components = []
-    components.append(entry)
+    if existing_index is None:
+        components.append(entry)
+    else:
+        components[existing_index] = entry
     registry["components"] = components
 
     spec_dir = components_root / component_id
@@ -420,7 +429,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"  component_id: {result.component_id}")
         print(f"  label: {result.label}")
         print(f"  path: {result.path}")
-        print(f"  tribunal: {(result.tribunal or {}).get('status', 'unknown')}")
+        print(f"  validation gate: {(result.tribunal or {}).get('status', 'unknown')}")
         print(f"  registry: {result.registry_path}")
         print(f"  spec: {result.spec_path}")
         owned_surface_refresh.print_dashboard_handoff(

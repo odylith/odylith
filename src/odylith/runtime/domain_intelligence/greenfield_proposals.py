@@ -47,6 +47,7 @@ from odylith.runtime.domain_intelligence.proposal_tribunal import raise_for_fail
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
 from odylith.runtime.domain_intelligence.proposal_validation import validated_mermaid_source
+from odylith.runtime.common import display_text
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import component_authoring
 from odylith.runtime.governance import owned_surface_refresh
@@ -227,7 +228,7 @@ def build_greenfield_proposal(
         release_selector=release_selector,
         confirmed_intent=confirmed_intent,
     )
-    proposal = normalize_host_reasoned_proposal(proposal)
+    proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
     validate_host_reasoned_proposal(proposal)
     selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
     raise_for_failed_greenfield_tribunal(run_greenfield_tribunal(proposal, release_selector=selector))
@@ -275,9 +276,54 @@ def _next_diagram_id(repo_root: Path) -> str:
     return f"D-{max_id + 1:03d}"
 
 
-def _allocated_diagram_ids(repo_root: Path, count: int) -> list[str]:
+def _catalog_diagram_ids_by_slug(repo_root: Path) -> dict[str, str]:
+    catalog = repo_root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    if not catalog.is_file():
+        return {}
+    try:
+        payload = json.loads(catalog.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+    diagrams = payload.get("diagrams") if isinstance(payload, Mapping) else None
+    if not isinstance(diagrams, list):
+        return {}
+    result: dict[str, str] = {}
+    for row in diagrams:
+        if not isinstance(row, Mapping):
+            continue
+        slug = str(row.get("slug", "")).strip()
+        diagram_id = str(row.get("diagram_id", "")).strip()
+        if slug and re.fullmatch(r"D-\d{3,}", diagram_id):
+            result.setdefault(slug, diagram_id)
+    return result
+
+
+def _allocated_diagram_ids(
+    repo_root: Path,
+    count: int,
+    rows: Sequence[Mapping[str, Any]] | None = None,
+) -> list[str]:
+    slug_ids = _catalog_diagram_ids_by_slug(repo_root)
+    if rows is None:
+        rows = ()
     first = int(_next_diagram_id(repo_root).split("-", 1)[1])
-    return [f"D-{value:03d}" for value in range(first, first + max(0, count))]
+    next_number = first
+    used = set(slug_ids.values())
+    allocated: list[str] = []
+    for index in range(max(0, count)):
+        row = rows[index] if index < len(rows) else {}
+        slug = str(row.get("slug", "")).strip() if isinstance(row, Mapping) else ""
+        existing = slug_ids.get(slug)
+        if existing:
+            allocated.append(existing)
+            continue
+        while f"D-{next_number:03d}" in used:
+            next_number += 1
+        diagram_id = f"D-{next_number:03d}"
+        used.add(diagram_id)
+        allocated.append(diagram_id)
+        next_number += 1
+    return allocated
 
 
 def _proposal_posture_text(proposal: Mapping[str, Any], *keys: str) -> str:
@@ -398,6 +444,7 @@ def _backlog_apply_args(proposal: Mapping[str, Any], *, release_selector: str) -
         override_note="",
         override_review_date="",
         release=release_selector,
+        update_existing_titles=True,
         section_overrides_by_title=_backlog_section_overrides(proposal),
     )
 
@@ -734,7 +781,7 @@ def apply_greenfield_proposal(
 
     if not confirm:
         raise ValueError("--confirm is required before greenfield apply writes accepted product records")
-    proposal = normalize_host_reasoned_proposal(proposal)
+    proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
     validate_host_reasoned_proposal(proposal)
     root = Path(repo_root).expanduser().resolve()
     backlog_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
@@ -817,6 +864,23 @@ def _scaffold_proposal_diagram(
     if log_text:
         atlas_scaffold_logs.append(log_text)
     if rc != 0:
+        if _upsert_existing_proposal_diagram(
+            root=root,
+            row=row,
+            diagram_id=diagram_id,
+            components=components,
+            related_backlog=related_backlog,
+            watch_paths=watch_paths,
+            review_date=dt.date.today().isoformat(),
+            log_text=log_text,
+            atlas_scaffold_logs=atlas_scaffold_logs,
+        ):
+            _update_scaffolded_diagram_link_state(
+                root=root,
+                slug=str(row.get("slug", "")).strip(),
+                link_state=str(row.get("link_state", "")).strip(),
+            )
+            return
         detail = f": {log_text}" if log_text else ""
         raise RuntimeError(f"atlas scaffold failed for {row.get('slug')}{detail}")
     _update_scaffolded_diagram_link_state(
@@ -824,6 +888,88 @@ def _scaffold_proposal_diagram(
         slug=str(row.get("slug", "")).strip(),
         link_state=str(row.get("link_state", "")).strip(),
     )
+
+
+def _upsert_existing_proposal_diagram(
+    *,
+    root: Path,
+    row: Mapping[str, Any],
+    diagram_id: str,
+    components: list[dict[str, str]],
+    related_backlog: list[str],
+    watch_paths: list[str],
+    review_date: str,
+    log_text: str,
+    atlas_scaffold_logs: list[str],
+) -> bool:
+    if "already exists" not in log_text:
+        return False
+    slug = str(row.get("slug", "")).strip()
+    if not slug and not diagram_id:
+        return False
+    catalog_path = root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    if not catalog_path.is_file():
+        return False
+    try:
+        payload = json.loads(catalog_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return False
+    diagrams = payload.get("diagrams") if isinstance(payload, Mapping) else None
+    if not isinstance(diagrams, list):
+        return False
+    entry = next(
+        (
+            item
+            for item in diagrams
+            if isinstance(item, dict)
+            and (
+                (slug and str(item.get("slug", "")).strip() == slug)
+                or (diagram_id and str(item.get("diagram_id", "")).strip() == diagram_id)
+            )
+        ),
+        None,
+    )
+    if entry is None:
+        return False
+    source_mmd = str(entry.get("source_mmd") or f"odylith/atlas/source/{slug}.mmd").strip()
+    source_svg = str(entry.get("source_svg") or f"odylith/atlas/source/{slug}.svg").strip()
+    source_png = str(entry.get("source_png") or f"odylith/atlas/source/{slug}.png").strip()
+    entry.update(
+        {
+            "diagram_id": str(entry.get("diagram_id") or diagram_id).strip(),
+            "slug": str(entry.get("slug") or slug).strip(),
+            "title": str(row.get("title", "")).strip(),
+            "kind": str(row.get("kind", "flowchart")).strip() or "flowchart",
+            "owner": str(row.get("owner", "repo")).strip() or "repo",
+            "last_reviewed_utc": review_date,
+            "source_mmd": source_mmd,
+            "source_svg": source_svg,
+            "source_png": source_png,
+            "summary": str(row.get("summary", "")).strip(),
+            "read_guide": str(row.get("read_guide", "")).strip(),
+            "components": components,
+            "related_backlog": _unique_strings(related_backlog),
+            "change_watch_paths": _unique_strings(watch_paths) or [source_mmd],
+        }
+    )
+    catalog_path.write_text(f"{json.dumps(payload, indent=2)}\n", encoding="utf-8")
+    source_path = root / source_mmd
+    source_path.parent.mkdir(parents=True, exist_ok=True)
+    source_path.write_text(validated_mermaid_source(row).rstrip() + "\n", encoding="utf-8")
+    atlas_scaffold_logs.append(f"updated existing diagram: {entry['slug']}")
+    return True
+
+
+def _unique_strings(values: Sequence[str]) -> list[str]:
+    rows: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        text = str(value or "").strip()
+        if not text or text in seen:
+            continue
+        seen.add(text)
+        rows.append(text)
+    return rows
 
 
 def _update_scaffolded_diagram_link_state(*, root: Path, slug: str, link_state: str) -> None:
@@ -862,6 +1008,11 @@ def _write_greenfield_proposal(
 ) -> dict[str, Any]:
     release_bootstrap = None
     release_targeting = None
+    for raw_path in backlog_result.get("stale_idea_files", []):
+        path = Path(str(raw_path))
+        if path.is_file():
+            path.unlink()
+    _remove_stale_workstream_artifacts(root=root, stale_ids=backlog_result.get("stale_idea_ids", []))
     if release_selector:
         release_bootstrap = _ensure_release_target(repo_root=root, proposal=proposal, selector=release_selector)
     for raw_path, text in backlog_result["idea_files"].items():
@@ -884,6 +1035,7 @@ def _write_greenfield_proposal(
             selector=release_selector,
             note=_release_assignment_note(selector=release_selector),
             idea_specs=backlog_result["_candidate_idea_specs"],
+            allow_existing=True,
             dry_run=False,
         )
         if isinstance(release_targeting, dict) and isinstance(release_targeting.get("release"), Mapping):
@@ -891,7 +1043,7 @@ def _write_greenfield_proposal(
     diagrams_created: list[str] = []
     atlas_scaffold_logs: list[str] = []
     diagram_rows = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
-    diagram_ids = _allocated_diagram_ids(root, len(diagram_rows))
+    diagram_ids = _allocated_diagram_ids(root, len(diagram_rows), rows=diagram_rows)
     traceability_plan = greenfield_traceability.build_traceability_plan(
         proposal=proposal,
         created_backlog=backlog_result["created"],
@@ -964,6 +1116,7 @@ def _write_greenfield_proposal(
             risks=_component_risk_lines(row, proposal),
             implementation_handoff=handoff,
             dry_run=False,
+            update_existing=True,
             refresh=False,
         )
         components_created.append(created.as_dict())
@@ -979,7 +1132,7 @@ def _write_greenfield_proposal(
         diagram_ids=diagrams_created,
         release_selector=release_selector,
         release_id=release_id,
-        tribunal=tribunal.to_dict(),
+        validation_gate=tribunal.to_dict(),
     )
     dashboard_refresh = _refresh_greenfield_dashboard(repo_root=root)
     next_steps = greenfield_experience.build_next_steps(
@@ -992,7 +1145,7 @@ def _write_greenfield_proposal(
 
     return {
         "mode": "applied",
-        "tribunal": tribunal.to_dict(),
+        "validation_gate": tribunal.to_dict(),
         "backlog": backlog_result["created"],
         "components": components_created,
         "diagrams": diagrams_created,
@@ -1005,6 +1158,37 @@ def _write_greenfield_proposal(
         "release_bootstrap": release_bootstrap or {"created": False, "release": {}},
         "release_target": release_targeting or {"selector": release_selector, "release_id": "none", "events": []},
     }
+
+
+def _remove_stale_workstream_artifacts(*, root: Path, stale_ids: object) -> None:
+    tokens = {
+        str(value).strip().upper()
+        for value in (stale_ids if isinstance(stale_ids, Sequence) and not isinstance(stale_ids, str) else [])
+        if str(value).strip()
+    }
+    if not tokens:
+        return
+    for token in tokens:
+        program_path = root / "odylith" / "radar" / "source" / "programs" / f"{token}.execution-waves.v1.json"
+        if program_path.is_file():
+            program_path.unlink()
+    release_events = root / "odylith" / "radar" / "source" / "releases" / "release-assignment-events.v1.jsonl"
+    if not release_events.is_file():
+        return
+    kept: list[str] = []
+    changed = False
+    for line in release_events.read_text(encoding="utf-8").splitlines():
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError:
+            kept.append(line)
+            continue
+        if str(payload.get("workstream_id", "")).strip().upper() in tokens:
+            changed = True
+            continue
+        kept.append(line)
+    if changed:
+        release_events.write_text(("\n".join(kept).rstrip() + "\n") if kept else "", encoding="utf-8")
 
 
 def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:

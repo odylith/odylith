@@ -434,6 +434,21 @@ h1 {
       padding-top: 2px;
     }
 
+    .topology-component-strip {
+      border: 1px solid #dbeafe;
+      border-radius: 11px;
+      background: #ffffff;
+      padding: 8px 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .topology-component-strip-label {
+      margin-right: 4px;
+    }
+
     .execution-wave-board {
   display: grid;
   gap: 14px;
@@ -1782,6 +1797,10 @@ h1 {
 }
 
     .row-title {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
     .row-title {
   margin: 0;
@@ -1839,6 +1858,9 @@ h1 {
       margin-left: auto;
       justify-content: flex-end;
     }
+
+    .row-story { margin-top: 9px; padding-top: 9px; border-top: 1px solid #edf2f7; }
+    .row-story-text { color: #475569; font-size: 12px; line-height: 1.42; margin: 0; overflow-wrap: anywhere; }
 
     span.chip {
   --label-bg: #f7faf8;
@@ -2154,6 +2176,23 @@ h1 {
       margin-bottom: 6px;
     }
 
+    .decision-bullets { list-style: none; padding-left: 0; }
+    .decision-bullets li {
+      display: grid; grid-template-columns: minmax(120px, 170px) minmax(0, 1fr);
+      gap: 8px 14px; padding: 8px 0; border-top: 1px solid #e2e8f0; margin: 0;
+    }
+    .decision-bullets li:first-child { border-top: 0; padding-top: 0; }
+    .decision-basis-label {
+      color: #64748b; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .decision-basis-copy { min-width: 0; }
+
+    @media (max-width: 760px) {
+      .decision-bullets li {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .meta-row-val, .block p, .block ul, .block li, .bullets, .bullets li, .detail-copy p, .detail-copy ul, .detail-copy li, .detail-copy .check-text, .analytics-toggle-sub, .graph-sub, .graph-empty {
   font-size: 15px;
   line-height: 1.55;
@@ -2188,6 +2227,32 @@ h1 {
   max-width: 100%;
 }
 
+.detail-pair-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.detail-pair-card {
+  border: 1px solid #dbe7fb;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #f8fbff, #ffffff);
+  padding: 11px 12px;
+}
+
+.detail-pair-card h4 {
+  margin: 0 0 5px;
+  font-size: 0.92rem;
+  line-height: 1.25;
+  color: #172554;
+}
+
+.detail-pair-card p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.45;
+}
+
 .detail-copy ul {
   margin: 0;
   padding-left: 22px;
@@ -2195,7 +2260,22 @@ h1 {
   gap: 10px;
 }
 
+.detail-copy ol {
+  margin: 0;
+  padding-left: 24px;
+  display: grid;
+  gap: 8px;
+}
+
+.detail-copy .inline-steps {
+  list-style-position: outside;
+}
+
 .detail-copy li {
+  margin: 0;
+}
+
+.detail-copy li > p {
   margin: 0;
 }
 
@@ -2527,7 +2607,7 @@ h1 {
   }
 })();
 </script>
-  <script id="backlogData" src="backlog-payload.v1.js?v=eb44ba005c40"></script>
-  <script src="backlog-app.v1.js?v=eb44ba005c40"></script>
+  <script id="backlogData" src="backlog-payload.v1.js?v=87e1e6e98414"></script>
+  <script src="backlog-app.v1.js?v=87e1e6e98414"></script>
 </body>
 </html>

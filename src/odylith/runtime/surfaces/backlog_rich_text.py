@@ -7,12 +7,14 @@ import re
 from pathlib import Path
 
 from odylith.runtime.governance import workstream_inference
+from odylith.runtime.surfaces import display_text
 
 _INLINE_TOKEN_RE = re.compile(r"`([^`\n]+)`|\[([^\]]+)\]\(([^)\s]+)\)")
 _SENTENCE_SPLIT_RE = re.compile(r"(?<=[.!?])\s+(?=(?:[`\"'(\[]*[A-Za-z0-9]))")
 _PARAGRAPH_TRANSITION_RE = re.compile(
     r"^(?:Another|Fresh|Release|Canonical|The same day|Today|Now|Meanwhile|Finally|Instead|Primary:|Secondary:|A \d{4}-\d{2}-\d{2})\b"
 )
+_INLINE_ORDERED_STEP_RE = re.compile(r"(?<![\w.])(?P<number>\d{1,2})\.\s+")
 _CHECKBOX_LINE_RE = re.compile(r"^\[(?P<mark>[xX ])\]\s+(?P<body>.+)$")
 _INLINE_CODE_RE = re.compile(r"`([^`\n]+)`")
 _INLINE_LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)\s]+)\)")
@@ -162,10 +164,18 @@ def _rewrite_section_text(*, repo_root: Path, text: str) -> str:
     return _rewrite_plain_text_tokens(repo_root=repo_root, text=rewritten)
 
 
+def strip_display_markdown_emphasis(value: object) -> str:
+    """Remove emphasis markers that Radar does not render as formatting."""
+
+    return display_text.strip_inline_markdown_emphasis(value)
+
+
 def render_inline_html(*, repo_root: Path, text: str) -> str:
     """Render the small inline markdown subset used in backlog specs."""
 
-    rewritten = _rewrite_section_text(repo_root=repo_root, text=str(text or ""))
+    rewritten = strip_display_markdown_emphasis(
+        _rewrite_section_text(repo_root=repo_root, text=str(text or ""))
+    )
     if not rewritten:
         return ""
 
@@ -203,6 +213,30 @@ def render_section_body(*, repo_root: Path, lines: list[str]) -> str:
     def _render_text_fragment(text: str) -> str:
         return render_inline_html(repo_root=repo_root, text=text)
 
+    def _render_inline_step_blocks(text: str) -> list[str]:
+        parsed = _split_inline_ordered_steps(text)
+        if parsed is None:
+            return []
+        intro, steps, tail = parsed
+        rendered: list[str] = []
+        if intro:
+            rendered.extend(f"<p>{_render_text_fragment(chunk)}</p>" for chunk in _split_dense_paragraph(intro))
+        step_items = "".join(f"<li>{_render_text_fragment(step)}</li>" for step in steps)
+        rendered.append(f'<ol class="inline-steps">{step_items}</ol>')
+        if tail:
+            rendered.extend(f"<p>{_render_text_fragment(chunk)}</p>" for chunk in _split_dense_paragraph(tail))
+        return rendered
+
+    def _render_list_item_body(text: str) -> str:
+        step_blocks = _render_inline_step_blocks(text)
+        if step_blocks:
+            return "".join(step_blocks)
+        normalized = " ".join(str(text or "").split())
+        chunks = _split_dense_paragraph(normalized)
+        if len(chunks) > 1:
+            return "".join(f"<p>{_render_text_fragment(chunk)}</p>" for chunk in chunks)
+        return _render_text_fragment(normalized)
+
     def _render_list_block(items: list[tuple[int, str]]) -> str:
         parsed_checklist: list[tuple[int, bool, str]] = []
         for level, text in items:
@@ -231,7 +265,7 @@ def render_section_body(*, repo_root: Path, lines: list[str]) -> str:
             )
             return f'<div class="checklist">{rows}</div>'
 
-        item_html = "".join(f"<li>{_render_text_fragment(text)}</li>" for _, text in items)
+        item_html = "".join(f"<li>{_render_list_item_body(text)}</li>" for _, text in items)
         return f"<ul>{item_html}</ul>"
 
     def _bullet_level(raw_line: str) -> int:
@@ -359,11 +393,66 @@ def render_section_body(*, repo_root: Path, lines: list[str]) -> str:
             paragraph.append(token_stripped)
             idx += 1
         paragraph_text = " ".join(paragraph)
-        blocks.extend(
-            f'<p>{render_inline_html(repo_root=repo_root, text=chunk)}</p>'
-            for chunk in _split_dense_paragraph(paragraph_text)
-        )
+        step_blocks = _render_inline_step_blocks(paragraph_text)
+        if step_blocks:
+            blocks.extend(step_blocks)
+        else:
+            blocks.extend(
+                f'<p>{render_inline_html(repo_root=repo_root, text=chunk)}</p>'
+                for chunk in _split_dense_paragraph(paragraph_text)
+            )
 
     if not blocks:
         return "<p>Not captured in this section.</p>"
     return "".join(blocks)
+
+
+def _split_inline_ordered_steps(text: str) -> tuple[str, list[str], str] | None:
+    """Split prose that embeds `1. ... 2. ...` into intro, steps, and tail."""
+
+    normalized = " ".join(str(text or "").split())
+    matches = list(_INLINE_ORDERED_STEP_RE.finditer(normalized))
+    if len(matches) < 2:
+        return None
+
+    selected: list[re.Match[str]] = []
+    expected = int(matches[0].group("number"))
+    if expected != 1:
+        return None
+    for match in matches:
+        number = int(match.group("number"))
+        if number != expected:
+            break
+        selected.append(match)
+        expected += 1
+    if len(selected) < 2:
+        return None
+
+    intro = normalized[: selected[0].start()].rstrip(" :")
+    steps: list[str] = []
+    tail = ""
+    for index, match in enumerate(selected):
+        start = match.end()
+        end = selected[index + 1].start() if index + 1 < len(selected) else len(normalized)
+        body = normalized[start:end].strip()
+        if index + 1 == len(selected):
+            step_body, tail_body = _split_last_ordered_step_tail(body)
+            body = step_body
+            tail = tail_body
+        body = body.strip()
+        if body:
+            steps.append(body)
+    if len(steps) < 2:
+        return None
+    return intro, steps, tail
+
+
+def _split_last_ordered_step_tail(text: str) -> tuple[str, str]:
+    sentences = [token.strip() for token in _SENTENCE_SPLIT_RE.split(str(text or "").strip()) if token.strip()]
+    if len(sentences) <= 1:
+        return str(text or "").strip(), ""
+    step_sentence = sentences[0]
+    tail_sentences = sentences[1:]
+    if not any(sentence.startswith(("No ", "If ", "Then ", "After ", "Everything ", "Anything ")) for sentence in tail_sentences):
+        return str(text or "").strip(), ""
+    return step_sentence, " ".join(tail_sentences).strip()

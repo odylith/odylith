@@ -47,7 +47,7 @@ def _write_greenfield_project_page(tmp_path: Path, monkeypatch) -> Path:  # noqa
         repo_root=tmp_path,
         shell_payload={},
     )
-    assert payload["projection"]["origin"] == "greenfield proposal"
+    assert payload["projection"]["origin"] == "accepted greenfield project"
     assert payload["sections"][0] == "product_story"
     assert (tmp_path / "odylith" / "runtime" / "source" / "accepted-project.v1.json").is_file()
 
@@ -102,21 +102,29 @@ def _write_greenfield_project_page(tmp_path: Path, monkeypatch) -> Path:  # noqa
 
 def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # noqa: ANN001
     page.locator(".project-product-story").wait_for(timeout=15000)
-    page.locator(".project-scenario").wait_for(timeout=15000)
+    page.locator(".project-host-handoff").wait_for(timeout=15000)
     surface_text = page.locator(".project-surface").inner_text()
     assert "Product Story" in surface_text
     assert "Project not defined yet" not in surface_text
     assert "Current orienting work" not in surface_text
     assert "Mockrepo" not in surface_text
-    assert "Proposed first-path scenario" in surface_text
+    assert "Accepted first-path scenario" not in surface_text
     assert "Checkout" in surface_text or "checkout" in surface_text
-    assert "How to continue in the host chat" in surface_text
-    assert "Odylith, apply this greenfield proposal" in surface_text
-    assert "Revise it" in surface_text
-    assert "Reject it" in surface_text
-    assert "Paste the chosen prompt into the same host chat" in surface_text
+    assert "Start implementation planning" in surface_text
+    assert "Human " + "takeaway" not in surface_text
+    assert "Prompts to use next" in surface_text
+    assert "Odylith, open the first implementation plan" in surface_text
+    assert "Odylith, implement the first coding slice" in surface_text
+    assert "Revise project direction" in surface_text
+    assert "Pause" in surface_text
+    assert "Use this now when the product story and first release boundary look right" in surface_text
     assert "Topology spine" not in surface_text
     assert "How the story becomes governance" not in surface_text
+    assert "Status now" not in surface_text
+    assert "Where does this stand" not in surface_text
+    assert page.locator(".project-state-grid").count() == 0
+    assert page.locator(".project-scenario").count() == 0
+    assert page.locator('.project-job-card a[href*="tab=radar"][href*="workstream="]').count() >= 1
 
     handoff_layout = page.locator(".project-host-handoff").evaluate(
         """(node) => {
@@ -130,15 +138,19 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
               scrollDelta: node.scrollWidth - node.clientWidth,
               maxCardOverflow: cards.reduce((max, card) => Math.max(max, card.scrollWidth - card.clientWidth), 0),
               maxStepOverflow: steps.reduce((max, step) => Math.max(max, step.scrollWidth - step.clientWidth), 0),
+              promptLefts: cards.map((card) => Math.round(card.getBoundingClientRect().left)),
+              promptTops: cards.map((card) => Math.round(card.getBoundingClientRect().top)),
             };
         }"""
     )
-    assert handoff_layout["cardCount"] == 3
+    assert handoff_layout["cardCount"] == 4
     assert handoff_layout["stepCount"] == 4
     assert handoff_layout["codeFontSize"] == "14px"
     assert int(handoff_layout["scrollDelta"]) <= 4
     assert int(handoff_layout["maxCardOverflow"]) <= 4
     assert int(handoff_layout["maxStepOverflow"]) <= 4
+    assert len(set(handoff_layout["promptLefts"])) == 1
+    assert handoff_layout["promptTops"] == sorted(handoff_layout["promptTops"])
 
     story_layout = page.locator(".project-story-narrative").evaluate(
         """(node) => {
@@ -155,45 +167,9 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
         }"""
     )
     assert story_layout["paragraphFontSize"] == "14px"
-    assert story_layout["listFontSize"] == "14px"
+    assert story_layout["listFontSize"] in {"", "14px"}
     assert story_layout["contractFontSize"] == "14px"
     assert int(story_layout["scrollDelta"]) <= 4
-
-    scenario_layout = page.locator(".project-scenario").evaluate(
-        """(node) => {
-            const body = node.querySelector(".project-scenario-body");
-            const cover = node.querySelector(".project-scenario-cover");
-            const copy = node.querySelector(".project-scenario-copy");
-            const prose = node.querySelector(".project-scenario-prose");
-            const bodyBox = body ? body.getBoundingClientRect() : null;
-            const coverBox = cover ? cover.getBoundingClientRect() : null;
-            const copyBox = copy ? copy.getBoundingClientRect() : null;
-            const proseBox = prose ? prose.getBoundingClientRect() : null;
-            const copyStyle = copy ? window.getComputedStyle(copy) : null;
-            return {
-              bodyDisplay: body ? window.getComputedStyle(body).display : "",
-              bodyColumns: body ? window.getComputedStyle(body).gridTemplateColumns : "",
-              bodyWidth: bodyBox ? bodyBox.width : 0,
-              coverWidth: coverBox ? coverBox.width : 0,
-              copyWidth: copyBox ? copyBox.width : 0,
-              proseWidth: proseBox ? proseBox.width : 0,
-              copyFontSize: copyStyle ? copyStyle.fontSize : "",
-              sectionScrollDelta: node.scrollWidth - node.clientWidth,
-              bodyScrollDelta: body ? body.scrollWidth - body.clientWidth : 0,
-            };
-        }"""
-    )
-    assert scenario_layout["bodyDisplay"] == "grid"
-    assert int(scenario_layout["sectionScrollDelta"]) <= 4
-    assert int(scenario_layout["bodyScrollDelta"]) <= 4
-    assert scenario_layout["copyFontSize"] == "18px"
-    if compact:
-        assert float(scenario_layout["copyWidth"]) >= 330
-        assert abs(float(scenario_layout["proseWidth"]) - float(scenario_layout["copyWidth"])) <= 70
-    else:
-        assert float(scenario_layout["copyWidth"]) >= 640
-        assert float(scenario_layout["coverWidth"]) >= 260
-        assert float(scenario_layout["proseWidth"]) >= 600
 
 
 def _run_greenfield_project_tab_browser_check(tmp_path: Path, monkeypatch, *, compact: bool) -> None:  # noqa: ANN001

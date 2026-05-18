@@ -44,7 +44,7 @@ def route_lock_context(*, host_family: str, prompt: object) -> str:
             "describe install posture, mention impact packets, summarize module counts, "
             "explain spawn policy, or ask what the user wants. You must not write a "
             "hand-authored demonstration summary. You must not create, scaffold, edit, or test "
-            "example application files such as HTML/CSS/JS demos, toy apps, sample robots, or "
+            "example application files such as HTML/CSS/JS demos, toy apps, sample devices, or "
             "placeholder products just because the repo is empty. Use the `odylith-show-me` skill if it is available. "
             "Otherwise run the first command that works from the repo root and capture stdout only: "
             "`./.odylith/bin/odylith show --repo-root .`; `odylith show --repo-root .`. "

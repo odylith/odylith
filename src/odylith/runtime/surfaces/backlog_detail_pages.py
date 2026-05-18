@@ -4,12 +4,116 @@ from __future__ import annotations
 
 import html
 from pathlib import Path
+import re
 
 from odylith.runtime.governance import validate_backlog_contract as contract
 from odylith.runtime.surfaces import backlog_rich_text
 from odylith.runtime.surfaces import backlog_render_support
 from odylith.runtime.surfaces import backlog_traceability_paths
 from odylith.runtime.surfaces import dashboard_ui_primitives
+
+
+def _compact_plain_text(value: object) -> str:
+    text = backlog_rich_text.strip_display_markdown_emphasis(str(value or ""))
+    text = re.sub(r"<[^>]+>", " ", text)
+    text = re.sub(r"`([^`]*)`", r"\1", text)
+    text = re.sub(r"\s+", " ", text).strip(" -*")
+    return text
+
+
+def _sentence(value: str) -> str:
+    text = _compact_plain_text(value).rstrip(".!?")
+    if not text:
+        return ""
+    return f"{text}."
+
+
+def _shorten_readably(value: str, *, limit: int = 280) -> str:
+    text = _compact_plain_text(value)
+    colon_index = text.find(": ")
+    if 20 <= colon_index <= 160:
+        head = text[:colon_index].strip()
+        if len(head) >= 18:
+            return head
+    if len(text) <= limit:
+        return text
+    for boundary in (", but ", ", while ", "; however ", "; meanwhile ", " unless ", " until "):
+        index = text.lower().find(boundary)
+        if 80 <= index <= limit:
+            return text[:index].strip()
+    clipped = text[: max(0, limit - 1)].rstrip(" ,;:")
+    if " " in clipped:
+        clipped = clipped.rsplit(" ", 1)[0].rstrip(" ,;:")
+    return f"{clipped}…"
+
+
+def _compact_detail_text(value: object, *, limit: int = 520) -> str:
+    text = _compact_plain_text(value)
+    if not text or len(text) <= limit:
+        return text
+    sentences = re.findall(r"[^.!?]+[.!?]+|[^.!?]+$", text) or [text]
+    parts: list[str] = []
+    seen: set[str] = set()
+    for sentence in sentences:
+        compact = _sentence(_shorten_readably(sentence))
+        key = re.sub(r"[^a-z0-9]+", "", compact.lower())
+        if not compact or not key or key in seen:
+            continue
+        parts.append(compact)
+        seen.add(key)
+        if len(parts) >= 3:
+            break
+    return " ".join(parts) if parts else _sentence(_shorten_readably(text))
+
+
+def _compact_rationale_line(value: object) -> str:
+    raw = str(value or "").strip()
+    text = _compact_plain_text(value)
+    match = re.match(r"^-?\s*([^:]{2,80}):\s*(.+)$", text)
+    if not match:
+        if len(text) <= 320:
+            return raw
+        return _compact_detail_text(text, limit=300)
+    label, body = match.groups()
+    label = label.strip().lower()
+    label_display = {
+        "why now": "Why now",
+        "expected outcome": "Expected outcome",
+        "tradeoff": "Tradeoff",
+        "deferred for now": "Deferred for now",
+        "ranking basis": "Ranking basis",
+    }.get(label, label[:1].upper() + label[1:])
+    body_text = _compact_plain_text(body).replace("releaseable", "releasable")
+    body_lower = body_text.lower()
+    if label == "tradeoff" and "focused on one" in body_lower and "releasable path" in body_lower:
+        return (
+            "Tradeoff: Keep the first release focused on the accepted path while deferring "
+            "unconfirmed scope."
+        )
+    if label == "deferred for now" and "anything outside this proof boundary waits" in body_lower:
+        return "Deferred for now: Scope outside the accepted proof boundary waits for explicit evidence."
+    if label == "ranking basis" and "release readiness depends" in body_lower:
+        return (
+            "Ranking basis: Release readiness depends on the product story, domain state, "
+            "evidence, and proof boundary staying aligned."
+        )
+    if len(body_text) <= 320:
+        return f"{label_display}: {body_text}"
+    return f"{label_display}: {_compact_detail_text(body_text, limit=300)}"
+
+
+def _render_compact_section_body(*, repo_root: Path, title: str, lines: list[str]) -> str:
+    text = _compact_plain_text(" ".join(line.strip() for line in lines if line.strip()))
+    if len(text) > 420:
+        return backlog_render_support._render_section_body(
+            repo_root=repo_root,
+            lines=[_compact_detail_text(text)],
+        )
+    compacted_lines = [
+        f"- {_compact_detail_text(line[2:], limit=300)}" if line.strip().startswith("- ") else line
+        for line in lines
+    ]
+    return backlog_render_support._render_section_body(repo_root=repo_root, lines=compacted_lines)
 
 
 def _render_idea_spec_html(
@@ -85,6 +189,7 @@ def _render_idea_spec_html(
         fallback = str(metadata.get("ordering_rationale", "")).strip()
         if fallback:
             rationale_bullets = [fallback]
+    rationale_bullets = [_compact_rationale_line(item) for item in rationale_bullets]
     if len(rationale_bullets) > 1:
         rationale_html = backlog_render_support._render_section_body(
             repo_root=repo_root,
@@ -108,7 +213,7 @@ def _render_idea_spec_html(
         (
             f"<section class=\"block\">"
             f"<h2>{html.escape(title)}</h2>"
-            f"{backlog_render_support._render_section_body(repo_root=repo_root, lines=lines)}"
+            f"{_render_compact_section_body(repo_root=repo_root, title=title, lines=lines)}"
             f"</section>"
         )
         for title, lines in sections
@@ -118,7 +223,7 @@ def _render_idea_spec_html(
         (
             f"<section class=\"block\">"
             f"<h2>{html.escape(title)}</h2>"
-            f"{backlog_render_support._render_section_body(repo_root=repo_root, lines=lines)}"
+            f"{_render_compact_section_body(repo_root=repo_root, title=title, lines=lines)}"
             f"</section>"
         )
         for title, lines in sections

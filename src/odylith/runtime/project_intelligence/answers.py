@@ -39,12 +39,12 @@ def source_answer_cards(
         fallback=humanize(root_component.get("category"), "project"),
     )
     return [
-        (f"Who uses {project_title}?", _user_title(source, repo_role), _user_body(project_title, source, repo_role)),
-        (f"What changes in {project_title}?", state, _change_body(source, current_focus)),
-        (f"What matters now for {project_title}?", _next_title(next_title), _next_body(next_action_text)),
-        (f"What risk matters for {project_title}?", _risk_title(project_title, blockers), _risk_body(critical_count, blockers)),
+        ("Who uses it?", _user_title(source, repo_role), _user_body(project_title, source, repo_role)),
+        ("What changes?", state, _change_body(source, current_focus)),
+        ("What matters now?", _next_title(next_title), _next_body(next_action_text)),
+        ("What risk matters?", _risk_title(project_title, blockers), _risk_body(critical_count, blockers)),
         (
-            f"What proves {project_title}?",
+            "What proves it?",
             _proof_title(evidence_sources, consumer_lane=consumer_lane),
             _proof_body(evidence_sources, consumer_lane=consumer_lane),
         ),

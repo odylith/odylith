@@ -208,7 +208,7 @@ def section_narration(
             f"Summarized from {release}, {_count_phrase(active_workstream_count, 'active workstream')}, "
             f"{_count_phrase(action_count, 'runtime action')}, and {_count_phrase(len(evidence_sources), 'evidence source')}."
         ),
-        "claim_evidence_title": f"What can be trusted about {title} right now?",
+        "claim_evidence_title": "What can be trusted right now?",
         "claim_evidence_note": (
             f"This separates current facts projected from {evidence_phrase} from stale records, conflicts, "
             "and proof gaps."
@@ -222,29 +222,25 @@ def section_narration(
         "artifact_coverage_note": (
             f"Coverage is measured against the {len(evidence_sources)} active surfaces backing this projection."
         ),
-        "trust_title": f"What changed or conflicts in {title}?",
+        "trust_title": "What changed or conflicts?",
         "trust_note": "Only material deltas, contradictions, or degraded source conditions appear here.",
         "delta_label": "Delta from previous state",
         "contradictions_label": "Contradictions",
         "degraded_label": "Source problems",
-        "posture_title": f"What risk matters for {title}?",
+        "posture_title": "What risk matters?",
         "posture_note": (
             f"{critical_count} critical blockers shape the recommendation proof."
         ),
         "validation_label": "Validation posture",
         "risk_label": "Risk classes",
-        "work_state_kicker": f"{title} status now",
-        "state_title": f"Where does {title} stand?",
+        "work_state_kicker": "Status now",
+        "state_title": "Where does this stand?",
         "state_note": f"Current state is projected from the {mode} source records.",
         "current_state_label": "Current state",
         "desired_state_label": "Desired state",
-        "next_title": f"What should move next for {title}?",
+        "next_title": "What should move next?",
         "next_note": "The next action comes from runtime state, active workstreams, and open blockers.",
-        "next_owner_label": "Owner",
-        "next_output_label": "Expected output",
-        "next_precondition_label": "Precondition",
-        "next_risk_label": "Risk if delayed",
-        "proof_title": f"What is known and unproven for {title}?",
+        "proof_title": "What is known and unproven?",
         "proof_note": f"Confidence is point-in-time; maturity is {sentence(maturity, 'unknown').lower()}.",
         "known_label": "Known from source records",
         "unknown_label": "Unresolved in current projection",

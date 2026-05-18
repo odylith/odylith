@@ -173,7 +173,7 @@ def run_governed_artifact_tribunal(
     return GovernedArtifactTribunalDecision(
         artifact_kind=kind,
         status=status,
-        version="governed-artifact-tribunal-v1",
+        version="governed-artifact-validation-v1",
         summary=summary,
         dimensions=dimensions,
         issues=tuple(issues),
@@ -185,7 +185,7 @@ def raise_for_failed_artifact_tribunal(decision: GovernedArtifactTribunalDecisio
     if decision.passed:
         return
     detail = "; ".join(decision.issues[:5])
-    raise ValueError(f"governed artifact Tribunal rejected: {detail}")
+    raise ValueError(f"governed artifact validation rejected: {detail}")
 
 
 def _normalize_kind(value: str) -> str:

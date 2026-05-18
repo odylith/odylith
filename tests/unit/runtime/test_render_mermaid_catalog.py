@@ -215,7 +215,11 @@ def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_lis
     assert "function diagramReadGuide(diagram)" in html
     assert "const catalogGuide = String(diagram && diagram.read_guide ? diagram.read_guide : \"\").trim();" in html
     assert "if (catalogGuide) {" in html
-    assert "Start with the named entrypoints, then follow each arrow to the next decision, action, proof, or recovery point." in html
+    assert "Read this as a first-path rehearsal" in html
+    assert "Read this as a boundary map" in html
+    assert "component cards to decode" not in html
+    assert ".summary {" in html
+    assert ".read-guide-body {" in html
     assert "Boxes In This Diagram" in html
     assert 'id="diagramBoxList"' in html
     assert "function renderDiagramBoxes(diagram)" in html
@@ -229,7 +233,11 @@ def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_lis
     assert "Owning Components" in html
     assert "const componentTitleLookup = sanitizeLookupObject(tooltipLookup.component_titles);" in html
     assert "function componentDisplayName(value)" in html
+    assert "function componentResponsibilityText(component, displayName, rawName)" in html
+    assert "For the first release,\\s+this boundary" in html
     assert "component-token" in html
+    assert "component-description" in html
+    assert "grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));" in html
     assert "diagram-guide-grid" in html
     assert ".diagram-box-section[hidden]" in html
     assert '<article class="section linked-context-section">' in html
@@ -367,9 +375,9 @@ def test_load_catalog_enriches_related_backlog_entries_with_front_matter_metadat
                         "read_guide": "Start at Atlas, then follow the freshness checks into the linked implementation paths.",
                         "diagram_boxes": [
                                 {
-                                    "label": "Atlas renderer",
+                                    "label": "**Atlas renderer**",
                                     "role": "Surface",
-                                    "description": "Builds the operator-facing catalog from governed diagram source.",
+                                    "description": "Builds the **operator-facing catalog** from governed diagram source.",
                                 }
                         ],
                         "source_mmd": "odylith/atlas/source/diagrams/sample.mmd",
@@ -487,8 +495,10 @@ def test_atlas_scaffold_default_read_guide_names_diagram_and_components() -> Non
     )
 
     assert "Checkout Settlement Flow" in guide
-    assert "named entrypoint" in guide
-    assert "checkout, settlement" in guide
+    assert "boundary map" in guide
+    assert "product-owned responsibilities" in guide
+    assert "Key owned boundaries: checkout, settlement." in guide
+    assert "component cards to decode" not in guide
 
 
 def test_load_catalog_derives_container_and_inner_box_explanations(tmp_path: Path) -> None:
@@ -555,6 +565,186 @@ def test_load_catalog_derives_container_and_inner_box_explanations(tmp_path: Pat
     assert "Catalog stores the source information" in boxes[1]["description"]
     assert "hands off" not in boxes[1]["description"]
     assert "This box represents" not in boxes[1]["description"]
+
+
+def test_load_catalog_strips_markdown_emphasis_from_visible_payload_fields(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
+    mmd_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "emphasis.mmd"
+    svg_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "emphasis.svg"
+    catalog_path = repo_root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    for path in (mmd_path, svg_path, catalog_path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    mmd_path.write_text(
+        "\n".join(
+            [
+                "flowchart LR",
+                '  A["**Primary actor**"] --> B["__Review record__"]',
+                '  B --> C["Outcome evidence"]',
+            ]
+        ),
+        encoding="utf-8",
+    )
+    svg_path.write_text("<svg viewBox='0 0 1200 800'></svg>\n", encoding="utf-8")
+    catalog_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "diagrams": [
+                    {
+                        "diagram_id": "D-425",
+                        "slug": "emphasis-cleanup",
+                        "title": "**Evidence Flow**",
+                        "kind": "flowchart",
+                        "status": "active",
+                        "owner": "product",
+                        "summary": "**Primary actor** moves a reviewed record into evidence.",
+                        "read_guide": "Read from **Primary actor** to __Outcome evidence__.",
+                        "diagram_boxes": [
+                            {
+                                "label": "**Primary actor**",
+                                "role": "__Actor__",
+                                "description": "**Primary actor** starts with a concrete request and needs a visible outcome.",
+                            }
+                        ],
+                        "source_mmd": "odylith/atlas/source/diagrams/emphasis.mmd",
+                        "source_svg": "odylith/atlas/source/diagrams/emphasis.svg",
+                        "last_reviewed_utc": dt.date.today().isoformat(),
+                        "change_watch_paths": ["odylith/atlas/source/diagrams/emphasis.mmd"],
+                        "components": [
+                            {
+                                "name": "**Review record**",
+                                "description": "__Owns__ the reviewed state and evidence needed for release proof.",
+                            }
+                        ],
+                    }
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    diagrams, errors, _stats = renderer._load_catalog(  # noqa: SLF001
+        repo_root=repo_root,
+        catalog_path=catalog_path,
+        output_path=repo_root / "odylith" / "atlas" / "atlas.html",
+        max_review_age_days=21,
+        component_index={},
+    )
+
+    assert errors == []
+    rendered = json.dumps(diagrams[0])
+    assert "**" not in rendered
+    assert "__" not in rendered
+    assert diagrams[0]["title"] == "Evidence Flow"
+    assert "Primary actor" in diagrams[0]["summary"]
+    assert "Outcome evidence" in diagrams[0]["summary"]
+    assert "Primary actor" in diagrams[0]["read_guide"]
+    assert "connected decision, action, proof, or recovery point" in diagrams[0]["read_guide"]
+    assert diagrams[0]["components"] == [
+        {
+            "name": "Review record",
+            "description": "Owns the reviewed state and evidence needed for release proof.",
+        }
+    ]
+    by_label = {box["label"]: box for box in diagrams[0]["diagram_boxes"]}
+    assert "Primary actor" in by_label
+    assert by_label["Primary actor"]["role"] == "Actor"
+
+
+def test_load_catalog_sanitizes_legacy_greenfield_component_descriptions(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
+    mmd_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "legacy.mmd"
+    svg_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "legacy.svg"
+    catalog_path = repo_root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    for path in (mmd_path, svg_path, catalog_path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    mmd_path.write_text(
+        "\n".join(
+            [
+                "flowchart LR",
+                "  Audio[Audio Capture And Pre-processing Service]",
+                "  Pitch[Pitch And Onset Detection Engine]",
+                "  Proof[Proof boundary]",
+                "  Audio --> Pitch --> Proof",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    svg_path.write_text("<svg viewBox='0 0 1200 800'></svg>\n", encoding="utf-8")
+    long_path = (
+        "For release 0.0.1, it receives or produces the domain information needed by this first path: "
+        "1. User opens the product and starts a take. Reviewers trust it only when the proof boundary is visible."
+    )
+    catalog_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "diagrams": [
+                    {
+                        "diagram_id": "D-424",
+                        "slug": "legacy-greenfield",
+                        "title": "First Path Sequence",
+                        "kind": "flowchart",
+                        "status": "active",
+                        "owner": "repo",
+                        "summary": "Shows the first path.",
+                        "source_mmd": "odylith/atlas/source/diagrams/legacy.mmd",
+                        "source_svg": "odylith/atlas/source/diagrams/legacy.svg",
+                        "last_reviewed_utc": dt.date.today().isoformat(),
+                        "change_watch_paths": ["odylith/atlas/source/diagrams/legacy.mmd"],
+                        "components": [
+                            {
+                                "name": "Audio Capture And Pre-processing Service",
+                                "description": (
+                                    "Audio capture and pre-processing owns microphone or line-in to mono PCM. "
+                                    + long_path
+                                ),
+                            },
+                            {
+                                "name": "Pitch And Onset Detection Engine",
+                                "description": (
+                                    "Pitch and onset detection engine owns performs frame-level pitch tracking. "
+                                    + long_path
+                                ),
+                            },
+                        ],
+                    }
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    diagrams, errors, _stats = renderer._load_catalog(  # noqa: SLF001
+        repo_root=repo_root,
+        catalog_path=catalog_path,
+        output_path=repo_root / "odylith" / "atlas" / "atlas.html",
+        max_review_age_days=21,
+        component_index={},
+    )
+
+    assert errors == []
+    rendered = json.dumps(diagrams[0])
+    assert "User opens the product" not in rendered
+    assert "For release 0.0.1, it receives or produces" not in rendered
+    assert "owns performs" not in rendered
+    assert diagrams[0]["components"] == [
+        {
+            "name": "Audio Capture And Pre-processing Service",
+            "description": "Owns microphone or line-in to mono PCM.",
+        },
+        {
+            "name": "Pitch And Onset Detection Engine",
+            "description": "Performs frame-level pitch tracking.",
+        },
+    ]
+    by_label = {box["label"]: box["description"] for box in diagrams[0]["diagram_boxes"]}
+    assert "Audio Capture And Pre-processing Service owns microphone" in by_label["Audio Capture And Pre-processing Service"]
+    assert "Pitch And Onset Detection Engine performs frame-level pitch tracking" in by_label["Pitch And Onset Detection Engine"]
 
 
 def test_atlas_box_explanations_generate_action_oriented_node_copy() -> None:
@@ -662,6 +852,92 @@ def test_atlas_box_explanations_use_domain_meaning_before_graph_mechanics() -> N
     assert "later-wave communication path" in by_label["Notification Channels (later wave)"]
     forbidden = ("part of the path", "incoming arrows", "outgoing arrows", "hands off", "branch point")
     assert all(not any(term in description for term in forbidden) for description in by_label.values())
+
+
+def test_atlas_box_explanations_sanitize_greenfield_component_and_scope_copy() -> None:
+    source = "\n".join(
+        [
+            "flowchart LR",
+            '  actor1["Solo performer (primary)"] --> component1',
+            '  component1["Rhythm, Tempo, And Meter Estimator Service"]',
+            '  component1 --> export1["Export Service"]',
+            '  export1 --> model1["Score Model Service"]',
+            '  export1 --> proof1["Proof boundary<br/>Recorded take review"]',
+            '  external1["No external account system, no payment processor"] --> component1',
+            "",
+        ]
+    )
+    boxes = atlas_box_explanations.extract_diagram_boxes_from_mermaid(
+        source,
+        component_rows=[
+            {
+                "name": "Rhythm, Tempo, And Meter Estimator Service",
+                "description": (
+                    "Rhythm, tempo, and meter estimator owns beat tracking and quantization grid. "
+                    "For release 0.0.1, it receives or produces the domain information needed by this first path."
+                ),
+            },
+            {
+                "name": "Export Service",
+                "description": "Writes the rendered score to MusicXML, MIDI, and PDF artifacts on local disk.",
+            },
+            {
+                "name": "Score Model Service",
+                "description": "Owns the internal score state that renderers and exporters read.",
+            },
+        ],
+        diagram_title="First Path Sequence",
+        diagram_summary="First release live take path for a musician and reviewed score export.",
+    )
+    by_label = {box.label: box.description for box in boxes}
+    rendered = "\n".join(by_label.values())
+
+    assert "Component1" not in rendered
+    assert "entry responsibility" not in rendered
+    assert "trusted account evidence" not in rendered
+    assert "trusted proof boundary evidence" not in rendered
+    assert "trusted the take evidence" not in rendered
+    assert "the the" not in rendered
+    assert "owns tempo, and meter estimator owns" not in rendered
+    assert "owns beat tracking and quantization grid" in by_label["Rhythm, Tempo, And Meter Estimator Service"]
+    assert "external source of remote signals" not in by_label["Score Model Service"]
+    assert "owns the internal score state" in by_label["Score Model Service"]
+    assert "outside the first-release proof boundary" in by_label[
+        "No external account system, no payment processor"
+    ]
+    assert [box.label for box in boxes].count("Proof boundary") == 1
+
+
+def test_atlas_box_explanations_parse_sequence_participants_without_broken_labels() -> None:
+    boxes = atlas_box_explanations.extract_diagram_boxes_from_mermaid(
+        "\n".join(
+            [
+                "sequenceDiagram",
+                "  autonumber",
+                "  participant A as Solo performer (primary)",
+                "  participant C1 as Audio Capture And Pre-processing…",
+                "  A->>C1: start accepted first path",
+                "  Note over A,C1: recorded take proof",
+                "",
+            ]
+        ),
+        component_rows=[
+            {
+                "name": "Audio Capture And Pre-processing Service",
+                "description": "Owns microphone or line-in to mono PCM, noise gate, optional normalization.",
+            },
+        ],
+        diagram_title="First Path Sequence",
+        diagram_summary="First release live take path for a musician.",
+    )
+    by_label = {box.label: box.description for box in boxes}
+
+    assert "primary" not in by_label
+    assert "Solo performer (primary)" in by_label
+    assert "person this product must serve" in by_label["Solo performer (primary)"]
+    assert "Audio Capture And Pre-processing…" not in by_label
+    assert "Audio Capture And Pre-processing Service" in by_label
+    assert "owns microphone or line-in" in by_label["Audio Capture And Pre-processing Service"]
 
 
 def test_atlas_diagram_intelligence_explains_state_model_transitions() -> None:
@@ -812,14 +1088,91 @@ def test_atlas_diagram_intelligence_generates_human_flow_copy_without_label_soup
     assert "This view shows" not in copy
     assert "This diagram shows" not in copy
     assert "shows how" not in copy.casefold()
-    assert "Operator command to MigrationPlan" in narrative.summary
+    assert "MigrationPlan as the owned boundary" in narrative.summary
     assert "Resolve target release" in narrative.summary
     assert "Fail closed before runtime mutation" in narrative.summary
     assert "Durable migration ledger" in narrative.summary
-    assert "Read the main spine first" in narrative.read_guide
-    assert "Read Durable migration ledger as the evidence boundary" in narrative.read_guide
-    assert "Read Resolve target release as the evidence boundary" not in narrative.read_guide
+    assert "Use this view to separate inputs, owned responsibilities, and release evidence" in narrative.read_guide
+    assert "Check Durable migration ledger" in narrative.read_guide
+    assert "Check Resolve target release" not in narrative.read_guide
     assert "selected, skipped, blocked, satisfied-unrecorded" not in narrative.summary
+
+
+def test_atlas_diagram_intelligence_uses_late_node_labels_in_context_copy() -> None:
+    source = "\n".join(
+        [
+            "flowchart LR",
+            '  actor1["Request owner"] --> component1',
+            '  actor2["Reviewer"] --> component1',
+            '  component1["Input Normalization Adapter"]',
+            '  component2["Candidate Detection Service"]',
+            "  component1 --> component2",
+            '  component3["Review and Approval Flow"]',
+            "  component1 --> component3",
+            '  component4["Audit Record"]',
+            "  component1 --> component4",
+            '  external1["External source"] --> component1',
+        ]
+    )
+
+    narrative = atlas_diagram_intelligence.build_diagram_narrative(
+        title="System Context View",
+        kind="flowchart",
+        summary=(
+            "System Context View moves Request owner to Component1, where the path splits. Component1 sends normal "
+            "work toward Candidate Detection Service, Review and Approval Flow, and Audit Record."
+        ),
+        read_guide=(
+            "Read the main spine first: Request owner -> Component1. At Component1, the available next "
+            "responsibilities are Candidate Detection Service, Review and Approval Flow, and Audit Record. "
+            "Read Audit Record as the evidence boundary."
+        ),
+        source_text=source,
+    )
+
+    copy = f"{narrative.summary}\n{narrative.read_guide}"
+    assert narrative.generated is True
+    assert "Component1" not in copy
+    assert "main spine" not in copy
+    assert "where the path splits" not in copy
+    assert "Input Normalization Adapter as the owned boundary" in narrative.summary
+    assert "Request owner, Reviewer, and External source" in narrative.summary
+    assert "Candidate Detection Service" in narrative.summary
+    assert "Review and Approval Flow" in narrative.summary
+    assert "Audit Record" in narrative.summary
+    assert "Use this view to separate inputs, owned responsibilities, and release evidence" in narrative.read_guide
+    assert "Boxes pointing into Input Normalization Adapter" in narrative.read_guide
+    assert "Boxes leaving Input Normalization Adapter" in narrative.read_guide
+    assert "Check Audit Record before treating the path as release-ready" in narrative.read_guide
+
+
+def test_atlas_diagram_intelligence_replaces_legacy_greenfield_sequence_dump() -> None:
+    narrative = atlas_diagram_intelligence.build_diagram_narrative(
+        title="First Path Sequence",
+        kind="sequenceDiagram",
+        summary=(
+            "Walk the accepted first path in product terms: The first complete path the product must prove is the solo "
+            "monophonic instrument single take, offline analysis flow: 1. User opens LiveScore and taps Record. "
+            "2. User plays a roughly 30-second monophonic line. 3. User taps Stop."
+        ),
+        read_guide=(
+            "Read First Path Sequence from top to bottom. Each lane is an actor or component; messages are calls, "
+            "handoffs, or proof events. Use the component cards to decode Audio Capture before following the links."
+        ),
+        source_text="sequenceDiagram\n  participant A as User\n  participant B as Product\n  A->>B: start\n",
+    )
+
+    copy = f"{narrative.summary}\n{narrative.read_guide}"
+    assert narrative.generated is True
+    assert "Walk the accepted first path" not in copy
+    assert "User opens LiveScore" not in copy
+    assert "component cards to decode" not in copy
+    assert "component handoff" not in copy
+    assert "messages are calls" not in copy
+    assert "First Path Sequence shows what the first release must prove" in narrative.summary
+    assert "solo monophonic instrument single take" in narrative.summary
+    assert narrative.read_guide.startswith("Start with the user action.")
+    assert "named product responsibility" in narrative.read_guide
 
 
 def test_atlas_diagram_intelligence_explains_surface_dag_control_and_proof_boundary() -> None:
@@ -871,7 +1224,7 @@ def test_atlas_diagram_intelligence_explains_surface_dag_control_and_proof_bound
     assert "Surface browser matrix" in narrative.summary
     assert "--atlas-sync\" --> atlasSync" not in copy
     assert "Use the labeled edges as gates" in narrative.read_guide
-    assert "those nodes explain why the final outcome can be trusted" in narrative.read_guide
+    assert "before treating the path as release-ready" in narrative.read_guide
 
 
 def test_atlas_box_explanations_infer_common_governance_surface_actions() -> None:

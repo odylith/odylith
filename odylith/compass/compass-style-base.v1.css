@@ -647,6 +647,36 @@ h1 {
       font-size: 12px;
       line-height: 1.4;
     }
+    .brief-fallback-digest {
+      display: grid;
+      gap: 6px;
+      margin-top: 4px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(124, 45, 18, 0.18);
+    }
+    .brief-status-card--info .brief-fallback-digest {
+      border-top-color: rgba(29, 78, 216, 0.18);
+    }
+    .brief-fallback-title {
+      font-size: 12px;
+      line-height: 1.25;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: inherit;
+      opacity: 0.86;
+    }
+    .brief-fallback-digest ul {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 5px;
+    }
+    .brief-fallback-digest li {
+      margin: 0;
+      line-height: 1.45;
+      color: inherit;
+    }
     .brief-diagnostic-grid {
       display: grid;
       gap: 6px;
@@ -788,20 +818,20 @@ h1 {
       table-layout: fixed;
     }
     .ws-table .ws-col-id {
-      width: 150px;
+      width: 136px;
     }
     .ws-table .ws-col-wave {
-      width: 150px;
+      width: 112px;
     }
     .ws-table .ws-col-phase {
-      width: 154px;
+      width: 122px;
     }
     .ws-table .ws-col-live {
-      width: 98px;
+      width: 84px;
     }
     .ws-table .ws-col-progress {
-      width: 118px;
-      min-width: 118px;
+      width: 128px;
+      min-width: 128px;
       text-align: center;
       white-space: nowrap;
     }
@@ -827,33 +857,35 @@ h1 {
   letter-spacing: 0.07em;
   font-weight: 800;
   text-transform: uppercase;
-}
+    }
     .ws-table th.ws-col-progress {
-      padding-left: 8px;
-      padding-right: 8px;
+      padding-left: 6px;
+      padding-right: 10px;
       letter-spacing: 0.04em;
     }
     .ws-table td.ws-col-progress {
       color: var(--ink-soft);
       font-variant-numeric: tabular-nums;
       font-weight: 500;
+      padding-right: 10px;
+      text-align: right;
     }
     @media (min-width: 960px) {
       .ws-table .ws-col-id {
-        width: 180px;
+        width: 150px;
       }
       .ws-table .ws-col-wave {
-        width: 180px;
+        width: 130px;
       }
       .ws-table .ws-col-phase {
-        width: 160px;
+        width: 130px;
       }
       .ws-table .ws-col-live {
-        width: 110px;
+        width: 90px;
       }
       .ws-table .ws-col-progress {
-        width: 124px;
-        min-width: 124px;
+        width: 132px;
+        min-width: 132px;
       }
     }
     .ws-summary-row {

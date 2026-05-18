@@ -18,7 +18,7 @@ GREENFIELD_ENGINE_ACTIVATION_LAYERS: tuple[dict[str, str], ...] = (
         "activation": "Carry the target component handshake, route readiness, and validation posture into execution planning.",
     },
     {
-        "layer": "tribunal",
+        "layer": "validation_gate",
         "activation": "Adjudicate workstreams, component specs, architecture diagrams, waves, release targeting, and proof topology before source truth changes.",
     },
     {
@@ -63,7 +63,7 @@ GREENFIELD_ENGINE_ACTIVATION_LAYERS: tuple[dict[str, str], ...] = (
     },
     {
         "layer": "greenfield_domain_intelligence",
-        "activation": "Let the host narrate product intent while Odylith owns confirmed proposal construction, normalization, validation, Tribunal, rollback, and apply.",
+        "activation": "Let the host narrate product intent while Odylith owns confirmed proposal construction, normalization, deterministic validation, rollback, and apply.",
     },
     {
         "layer": "overall_ux",
@@ -111,13 +111,13 @@ def build_proposal_contract() -> dict[str, Any]:
                 "Do not search src/odylith, .odylith, odylith/skills, or installed bundle files for greenfield schema after intent confirmation.",
                 "Do not create a proposal by copying local examples or template fixtures.",
                 "Do not ask the operator to inspect proposal JSON as the normal approval step.",
-                "Do not write governed records unless confirmed create/apply passes validation and Tribunal.",
+                "Do not write governed records unless confirmed create/apply passes deterministic validation.",
             ],
             "allowed_host_steps": [
                 "Run greenfield create --confirm from the confirmed product intent and observed source posture.",
                 "Keep product story, actors, systems, workstreams, components, diagrams, risks, proof, and release gates project-specific.",
-                "Let Odylith build the apply-ready proposal; the create/apply command is the validation and Tribunal gate.",
-                "Surface only the human-readable created-record summary or the validation/Tribunal issues.",
+                "Let Odylith build the apply-ready proposal; the create/apply command is the validation gate.",
+                "Surface only the human-readable created-record summary or the validation issues.",
             ],
             "canonical_files": [
                 {
@@ -132,7 +132,7 @@ def build_proposal_contract() -> dict[str, Any]:
                 "odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm --release 0.0.1",
             ],
             "failure_policy": [
-                "If validation or Tribunal rejects the proposal, do not write records; summarize the blocking issues in product language.",
+                "If validation rejects the proposal, do not write records; summarize the blocking issues in product language.",
                 "If the operator explicitly asks for a review artifact, export the proposal JSON; otherwise keep it internal.",
             ],
         },
@@ -179,8 +179,8 @@ def build_proposal_contract() -> dict[str, Any]:
                 "domain-relevant security, privacy, compliance, abuse, data-retention, accessibility, and "
                 "operational risk posture; keep it concrete and proportional to the project"
             ),
-            "tribunal": (
-                "apply runs a deterministic proposal Tribunal before writes; proposals fail if workstreams, components, "
+            "validation_gate": (
+                "apply runs a deterministic proposal validation gate before writes; proposals fail if workstreams, components, "
                 "diagrams, program waves, or release targeting do not form a coherent topology"
             ),
         },
@@ -257,12 +257,12 @@ def build_proposal_contract() -> dict[str, Any]:
                 "titled umbrella such as `Govern <Project>` for the parent and WS-01+ for implementation children."
             ),
             (
-                "Carry the engine activation layers: Context, Execution, Tribunal, Intervention, Governance, "
+                "Carry the engine activation layers: Context, Execution, Validation Gate, Intervention, Governance, "
                 "Subagent Orchestration, Discipline, Surface DAGs, Delivery, Analysis, Memory, Topology, "
                 "Taxonomies/FSMs, Greenfield Domain Intelligence, and Overall UX."
             ),
             (
-                "Expect a Tribunal gate: child workstreams need component and diagram references, components need "
+                "Expect a validation gate: child workstreams need component and diagram references, components need "
                 "boundary/interface/dependency/proof expectations, and diagrams need workstream plus component traceability."
             ),
         ],

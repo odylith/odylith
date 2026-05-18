@@ -13,6 +13,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.common import mermaid_text
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import join_sentence_text
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_text_list
@@ -384,19 +385,7 @@ def _normalize_diagrams(
 
 
 def _normalize_mermaid_source(source: str) -> str:
-    first_line = next(
-        (line.strip() for line in source.splitlines() if line.strip() and not line.strip().startswith("%%")),
-        "",
-    )
-    if first_line != "sequenceDiagram":
-        return source
-    normalized_lines = []
-    for line in source.splitlines():
-        head, separator, message = line.partition(":")
-        if separator and ";" in message:
-            line = f"{head}:{message.replace(';', ' and')}"
-        normalized_lines.append(line)
-    return "\n".join(normalized_lines)
+    return mermaid_text.normalize_mermaid_source(source)
 
 
 __all__ = ["normalize_host_reasoned_proposal"]

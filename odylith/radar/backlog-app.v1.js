@@ -417,7 +417,7 @@ initSharedQuickTooltips();
     const allIdeaIds = new Set(all.map((row) => String(row.idea_id || "").trim().toUpperCase()).filter(Boolean));
     const BACKLOG_LIST_WINDOW_THRESHOLD = 180;
     const BACKLOG_LIST_OVERSCAN = 24;
-    const BACKLOG_LIST_ROW_HEIGHT = 88;
+    const BACKLOG_LIST_ROW_HEIGHT = 214;
     const BACKLOG_LIST_HEADER_HEIGHT = 40;
     let latestRenderedRows = [];
     let latestListWindowKey = "";
@@ -651,6 +651,294 @@ initSharedQuickTooltips();
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+    }
+
+    function compactPlainText(value) {
+      return String(value || "")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&nbsp;/g, " ")
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .replace(/&#039;/g, "'")
+        .replace(/\*\*/g, "")
+        .replace(/__/g, "")
+        .replace(/`([^`]*)`/g, "$1")
+        .replace(/\s+/g, " ")
+        .replace(/^[-*]\s+/, "")
+        .trim();
+    }
+
+    function cleanRenderedHtml(value) {
+      return String(value || "")
+        .replace(/\*\*/g, "")
+        .replace(/__/g, "")
+        .replace(/`([^`]*)`/g, "$1")
+        .replace(/<p>\s*<\/p>/g, "")
+        .trim();
+    }
+
+    function textFromRenderedHtml(value) {
+      return compactPlainText(cleanRenderedHtml(value));
+    }
+
+    function structuredPairListItems(value) {
+      const normalized = compactPlainText(value);
+      if (!normalized || normalized.length > 1800) return [];
+      const parts = normalized
+        .split(/\s*;\s+/)
+        .map((token) => token.trim().replace(/\.$/, ""))
+        .filter(Boolean);
+      if (parts.length < 2) return [];
+      const rows = [];
+      for (const part of parts) {
+        const match = /^([^:.!?]{2,90}):\s+(.{6,})$/.exec(part);
+        if (!match) return [];
+        const label = match[1].replace(/\s+/g, " ").trim();
+        const body = match[2].replace(/\s+/g, " ").trim();
+        if (!label || !body || label.split(/\s+/).length > 8) return [];
+        rows.push({ label, body });
+      }
+      return rows.length >= 2 ? rows : [];
+    }
+
+    function structuredPairListHtml(value) {
+      const rows = structuredPairListItems(value);
+      if (!rows.length) return "";
+      return `
+        <div class="detail-pair-grid">
+          ${rows.map((row) => `
+            <article class="detail-pair-card">
+              <h4>${escapeHtml(row.label)}</h4>
+              <p>${escapeHtml(row.body)}</p>
+            </article>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function firstUsefulSentence(value, maxChars = 150) {
+      const normalized = compactPlainText(value);
+      if (!normalized) return "";
+      const withoutInlineSteps = normalized.replace(/\s+\d{1,2}\.\s+/g, " ");
+      const sentence = (withoutInlineSteps.match(/[^.!?]+[.!?]+|[^.!?]+$/) || [withoutInlineSteps])[0] || "";
+      let compact = String(sentence || withoutInlineSteps).trim();
+      if (compact.length > maxChars) {
+        compact = `${compact.slice(0, Math.max(0, maxChars - 1)).replace(/\s+\S*$/, "")}…`;
+      }
+      return compact;
+    }
+
+    const ROW_STORY_MAX_SENTENCES = 2;
+    const ROW_STORY_MAX_CHARS = 260;
+
+    function rowStorySummary(row) {
+      const story = workstreamStoryParagraph(row);
+      if (!story) return "";
+      return `
+        <div class="row-story" aria-label="Workstream story summary">
+          <p class="row-story-text">${escapeHtml(story)}</p>
+        </div>
+      `;
+    }
+
+    function workstreamStoryParagraph(row) {
+      return fitStorySentences(workstreamStoryLines(row)).join(" ");
+    }
+
+    function workstreamStoryLines(row) {
+      const candidates = [
+        storySentence(row.problem),
+        storySentence(row.founder_pov),
+        titleNarrativeSentence(row),
+        roleNarrativeSentence(row.customer),
+        storySentence(row.success_metrics),
+        storySentence(row.opportunity),
+        storySentence(row.ordering_rationale),
+      ];
+      const lines = [];
+      const seen = new Set();
+      candidates.forEach((candidate) => {
+        const text = normalizeNarrativeSentence(candidate);
+        if (!text) return;
+        const key = text.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+        if (!key || seen.has(key)) return;
+        seen.add(key);
+        lines.push(text);
+      });
+      return lines;
+    }
+
+    function fitStorySentences(lines) {
+      const fitted = [];
+      let totalLength = 0;
+      for (const line of lines) {
+        const compact = conciseStoryLine(line);
+        if (!compact) continue;
+        const nextLength = totalLength + compact.length + (fitted.length ? 1 : 0);
+        if (fitted.length && nextLength > ROW_STORY_MAX_CHARS) break;
+        fitted.push(compact);
+        totalLength = nextLength;
+        if (fitted.length >= ROW_STORY_MAX_SENTENCES) break;
+      }
+      return fitted;
+    }
+
+    function conciseStoryLine(value) {
+      const sentence = normalizeNarrativeSentence(shortenAtReadableBoundary(value, 150));
+      return sentence.length > 180 ? normalizeNarrativeSentence(shortenAtWordBoundary(sentence, 180)) : sentence;
+    }
+
+    function roleNarrativeSentence(value) {
+      const text = firstSemicolonSegment(value);
+      const match = text.match(/^([^:]{2,80}):\s*(.+)$/);
+      if (!match) return conciseNarrativeSentence(text);
+      const actor = match[1].trim();
+      const body = lowerFirst(match[2].trim());
+      return normalizeNarrativeSentence(`${actor} ${body}`);
+    }
+
+    function conciseNarrativeSentence(value) {
+      let text = firstSemicolonSegment(value)
+        .replace(/^(why now|expected outcome|tradeoff|deferred for now|ranking basis):\s*/i, "")
+        .replace(/^the first complete path (the product must prove|to prove should be)\s*:?\s*/i, "")
+        .trim();
+      text = shortenAtReadableBoundary(text, 150);
+      const sentence = (text.match(/[^.!?]+[.!?]+|[^.!?]+$/) || [text])[0] || "";
+      return normalizeNarrativeSentence(sentence);
+    }
+
+    function storySentence(value) {
+      let text = compactPlainText(value)
+        .replace(/^(why now|expected outcome|tradeoff|deferred for now|ranking basis):\s*/i, "")
+        .replace(/^the first complete path (the product must prove|to prove should be)\s*:?\s*/i, "")
+        .replace(/\breleaseable\b/gi, "releasable")
+        .trim();
+      if (!text) return "";
+      const inlineBullets = splitInlineBulletText(text);
+      if (inlineBullets.length) {
+        text = inlineBullets[0];
+      }
+      const firstSentence = (text.match(/[^.!?]+[.!?]+|[^.!?]+$/) || [text])[0] || text;
+      let sentence = String(firstSentence || "").replace(/\s+/g, " ").trim();
+      for (const boundary of [", but ", ", while ", "; however ", "; meanwhile "]) {
+        const index = sentence.toLowerCase().indexOf(boundary);
+        if (index >= 90 && index <= 220) {
+          sentence = sentence.slice(0, index).trim();
+          break;
+        }
+      }
+      sentence = sentence.replace(/(\.\.\.|…)$/g, "").replace(/[,:;]+$/g, "").trim();
+      return normalizeNarrativeSentence(sentence);
+    }
+
+    function shortenAtReadableBoundary(value, maxChars = 180) {
+      const text = compactPlainText(value);
+      if (!text || text.length <= maxChars) return text;
+      const colonIndex = text.indexOf(": ");
+      if (colonIndex >= 24 && colonIndex <= Math.min(140, maxChars)) {
+        const head = text.slice(0, colonIndex).trim();
+        if (head.length >= 18) return head;
+      }
+      const boundaries = [
+        " because ",
+        ", because ",
+        ", but ",
+        ", while ",
+        "; however ",
+        "; meanwhile ",
+        " unless ",
+        " until ",
+        " before ",
+        " after ",
+      ];
+      for (const boundary of boundaries) {
+        const index = text.toLowerCase().indexOf(boundary);
+        if (index >= 70 && index <= maxChars) {
+          return text.slice(0, index).trim();
+        }
+      }
+      return shortenAtWordBoundary(text, maxChars);
+    }
+
+    function shortenAtWordBoundary(value, maxChars) {
+      const text = compactPlainText(value);
+      if (!text || text.length <= maxChars) return text;
+      const commaIndex = text.lastIndexOf(",", maxChars);
+      if (commaIndex >= 70) return text.slice(0, commaIndex).trim();
+      return text.slice(0, Math.max(0, maxChars)).replace(/\s+\S*$/, "").trim();
+    }
+
+    function detailSentenceHead(value) {
+      const text = compactPlainText(value).replace(/[.!?]+$/, "").trim();
+      if (!text) return "";
+      const colonIndex = text.indexOf(": ");
+      if (colonIndex >= 20 && colonIndex <= 160) {
+        const head = text.slice(0, colonIndex).trim();
+        if (head.length >= 18) return normalizeNarrativeSentence(head);
+      }
+      return normalizeNarrativeSentence(shortenAtReadableBoundary(text));
+    }
+
+    function compactNarrativeForDetail(value) {
+      const text = compactPlainText(value);
+      if (!text || text.length <= 420) return text;
+      const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
+      const heads = [];
+      const seen = new Set();
+      sentences.forEach((sentence) => {
+        const head = detailSentenceHead(sentence);
+        const key = normalizeSearchToken(head);
+        if (!head || !key || seen.has(key)) return;
+        seen.add(key);
+        heads.push(head);
+      });
+      if (heads.length) return heads.slice(0, 3).join(" ");
+      return normalizeNarrativeSentence(shortenAtReadableBoundary(text));
+    }
+
+    function firstSemicolonSegment(value) {
+      const text = compactPlainText(value);
+      if (!text) return "";
+      return String(text.split(/\s*;\s*/).find((item) => item.trim()) || text).trim();
+    }
+
+    function titleNarrativeSentence(row) {
+      const title = compactPlainText(row && row.title);
+      const program = title.match(/^(Establish|Govern|Guide|Shape)\s+(.+?)\s+Program$/i);
+      if (program) {
+        return "Sets the first release story, ownership, and proof bar.";
+      }
+      const prove = title.match(/^Prove\s+(.+)$/i);
+      if (prove) {
+        return `${prove[1].trim()} must show source-backed evidence before coding claims are trusted.`;
+      }
+      const boundary = title.match(/^Define\s+(.+?)\s+Boundary$/i);
+      if (boundary) {
+        return `${boundary[1].trim()} decides what this work owns, delegates, and leaves out.`;
+      }
+      const proof = title.match(/^Prepare\s+(.+?)\s+Release Proof$/i);
+      if (proof) {
+        return `${proof[1].trim()} collects the evidence reviewers need before release trust.`;
+      }
+      return title;
+    }
+
+    function normalizeNarrativeSentence(value) {
+      let text = compactPlainText(value)
+        .replace(/^[-*]\s+/, "")
+        .replace(/^:\s*/, "")
+        .trim();
+      if (!text) return "";
+      text = text[0].toUpperCase() + text.slice(1);
+      return /[.!?]$/.test(text) ? text : `${text}.`;
+    }
+
+    function lowerFirst(value) {
+      const text = String(value || "").trim();
+      if (!text) return "";
+      return text[0].toLowerCase() + text.slice(1);
     }
 
     function tooltipLookupPayload() {
@@ -1449,41 +1737,9 @@ initSharedQuickTooltips();
       const activeClass = row.idea_id === state.selectedIdeaId ? "active" : "";
       const ageRaw = String(row.idea_age_days || "-");
       const ageLabel = /^\d+$/.test(ageRaw) ? `${ageRaw}d` : ageRaw;
-      const executionDaysRaw = String(row.execution_duration_days || row.execution_age_days || "-");
-      const executionDays = /^\d+$/.test(executionDaysRaw) ? `${executionDaysRaw}d` : "n/a";
-      const wsType = workstreamTypeInfo(row);
-      const typeChips = (() => {
-        if (wsType.type === "umbrella") {
-          return `<span class="chip ws-umbrella">Umbrella</span>`;
-        }
-        if (wsType.type === "child") {
-          const parentToken = compactWorkstreamId(wsType.parent);
-          const childLabel = parentToken ? `↳ ${parentToken}` : "↳";
-          const parentTooltip = workstreamTooltip(wsType.parent);
-          const tooltip = parentTooltip ? `Parent workstream: ${parentTooltip}` : "";
-          const tooltipAttrs = tooltip
-            ? ` data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(tooltip)}"`
-            : "";
-          return `<span class="chip ws-child"${tooltipAttrs}>${escapeHtml(childLabel)}</span>`;
-        }
-        return "";
-      })();
-      const executionState = String(row.execution_state || "").trim().toLowerCase();
-      const executionMeta = row.execution_state_meta && typeof row.execution_state_meta === "object"
-        ? row.execution_state_meta
-        : {};
-      const activeWindowMinutes = executionActiveWindowMinutes(executionMeta);
-      const stageChip = row.section === "execution" || row.section === "parked"
-        ? `<span class="chip ${escapeHtml(statusChipClass(row.status))}" data-tooltip="Canonical backlog stage for this workstream.">${escapeHtml(executionStageLabel(row.status))}</span>`
-        : "";
-      const executionChip = row.section === "execution"
-        ? `<span class="chip execution-chip ${escapeHtml(executionStateClass(executionState))}" data-tooltip="${escapeHtml(executionSignalTooltip(row.status, executionState, activeWindowMinutes))}">${escapeHtml(executionStateLabel(executionState))}</span>`
-        : "";
       const releaseChip = workstreamActiveReleaseLabel(row)
         ? `<span class="chip" data-tooltip="Active target release for this workstream.">${escapeHtml(workstreamActiveReleaseLabel(row))}</span>`
         : "";
-      const waveChips = executionWaveRoleChips(row);
-      const footerChips = `${waveChips}${typeChips}${stageChip}${executionChip}${releaseChip}`;
       return `
         <button class="row ${activeClass}" data-idea-id="${escapeHtml(row.idea_id)}">
           <div class="row-top">
@@ -1494,12 +1750,10 @@ initSharedQuickTooltips();
             <p class="row-id">${escapeHtml(row.idea_id)}</p>
             <div class="row-chips row-chips-end">
               <span class="chip">Age ${escapeHtml(ageLabel)}</span>
-              <span class="chip">Exec ${escapeHtml(executionDays)}</span>
+              ${releaseChip}
             </div>
           </div>
-          <div class="row-foot">
-            ${footerChips ? `<div class="row-chips row-chips-end">${footerChips}</div>` : ""}
-          </div>
+          ${rowStorySummary(row)}
         </button>
       `;
     }
@@ -1670,9 +1924,9 @@ initSharedQuickTooltips();
       const bullets = Array.isArray(row.rationale_bullets) ? row.rationale_bullets.filter(Boolean) : [];
       const lines = bullets.length ? bullets : [row.ordering_rationale || "No decision basis recorded."];
       if (lines.length === 1) {
-        return `<p>${escapeHtml(lines[0])}</p>`;
+        return `<p>${escapeHtml(compactNarrativeForDetail(lines[0]))}</p>`;
       }
-      return `<ul class="bullets">${lines.map((line) => renderDecisionBasisLine(line)).join("")}</ul>`;
+      return `<ul class="bullets decision-bullets">${lines.map((line) => renderDecisionBasisLine(line)).join("")}</ul>`;
     }
 
     function decisionBasisLabel(label) {
@@ -1688,9 +1942,14 @@ initSharedQuickTooltips();
     function renderDecisionBasisLine(line) {
       const raw = String(line || "").trim();
       const match = raw.match(/^([^:]+):\s*(.+)$/);
-      if (!match) return `<li>${escapeHtml(raw)}</li>`;
+      if (!match) return `<li><span class="decision-basis-copy">${escapeHtml(compactNarrativeForDetail(raw))}</span></li>`;
       const [, label, body] = match;
-      return `<li>${escapeHtml(decisionBasisLabel(label))}: ${escapeHtml(body)}</li>`;
+      return [
+        "<li>",
+        `<span class="decision-basis-label">${escapeHtml(decisionBasisLabel(label))}</span>`,
+        `<span class="decision-basis-copy">${escapeHtml(compactNarrativeForDetail(body))}</span>`,
+        "</li>",
+      ].join("");
     }
 
     function splitInlineBulletText(value) {
@@ -1710,8 +1969,96 @@ initSharedQuickTooltips();
         .filter(Boolean);
     }
 
+    function sentenceChunks(value) {
+      const normalized = String(value || "").replace(/\s+/g, " ").trim();
+      if (!normalized) return [];
+      if (normalized.length < 420) return [normalized];
+      const sentences = normalized.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [normalized];
+      if (sentences.length < 3) return [normalized];
+      const chunks = [];
+      let current = "";
+      sentences.forEach((sentence) => {
+        const token = String(sentence || "").trim();
+        if (!token) return;
+        const startsNewThought = /^(Another|Fresh|Release|Canonical|The same day|Today|Now|Meanwhile|Finally|Instead|Primary:|Secondary:)\b/.test(token);
+        if (current && (startsNewThought || current.length >= 260)) {
+          chunks.push(current.trim());
+          current = token;
+        } else {
+          current = current ? `${current} ${token}` : token;
+        }
+      });
+      if (current) chunks.push(current.trim());
+      return chunks.length > 1 ? chunks : [normalized];
+    }
+
+    function splitInlineOrderedSteps(value) {
+      const normalized = String(value || "").replace(/\s+/g, " ").trim();
+      if (!normalized) return null;
+      const regex = /(^|[^\w.])(\d{1,2})\.\s+/g;
+      const matches = [];
+      let match = null;
+      while ((match = regex.exec(normalized)) !== null) {
+        matches.push({
+          number: Number(match[2]),
+          start: match.index + String(match[1] || "").length,
+          end: regex.lastIndex,
+        });
+      }
+      if (matches.length < 2 || matches[0].number !== 1) return null;
+      const selected = [];
+      let expected = 1;
+      for (const row of matches) {
+        if (row.number !== expected) break;
+        selected.push(row);
+        expected += 1;
+      }
+      if (selected.length < 2) return null;
+      const intro = normalized.slice(0, selected[0].start).replace(/[ :]+$/g, "");
+      const steps = [];
+      let tail = "";
+      selected.forEach((row, index) => {
+        const next = selected[index + 1];
+        let body = normalized.slice(row.end, next ? next.start : normalized.length).trim();
+        if (index + 1 === selected.length) {
+          const sentences = body.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [body];
+          const cleanSentences = sentences.map((sentence) => String(sentence || "").trim()).filter(Boolean);
+          if (cleanSentences.length > 1) {
+            const possibleTail = cleanSentences.slice(1).join(" ").trim();
+            if (/^(No |If |Then |After |Everything |Anything )/.test(possibleTail)) {
+              body = cleanSentences[0];
+              tail = possibleTail;
+            }
+          }
+        }
+        if (body) steps.push(body);
+      });
+      if (steps.length < 2) return null;
+      return { intro, steps, tail };
+    }
+
+    function readableTextHtml(value, fallback = "Not captured in the idea spec yet.") {
+      const raw = compactPlainText(value) || compactPlainText(fallback) || "Not captured in the idea spec yet.";
+      const ordered = splitInlineOrderedSteps(raw);
+      if (ordered) {
+        const intro = ordered.intro
+          ? sentenceChunks(ordered.intro).map((line) => `<p>${escapeHtml(line)}</p>`).join("")
+          : "";
+        const steps = `<ol class="inline-steps">${ordered.steps.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ol>`;
+        const tail = ordered.tail
+          ? sentenceChunks(ordered.tail).map((line) => `<p>${escapeHtml(line)}</p>`).join("")
+          : "";
+        return intro + steps + tail;
+      }
+      const bullets = splitInlineBulletText(raw);
+      if (bullets.length) {
+        return `<ul class="bullets">${bullets.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul>`;
+      }
+      return sentenceChunks(raw).map((line) => `<p>${escapeHtml(line)}</p>`).join("");
+    }
+
     function successMetricsHtml(row) {
-      const renderedHtml = String(row && row.success_metrics_html || "").trim();
+      const renderedHtml = cleanRenderedHtml(row && row.success_metrics_html || "");
       if (renderedHtml) {
         return `<div class="detail-copy">${renderedHtml}</div>`;
       }
@@ -1727,20 +2074,39 @@ initSharedQuickTooltips();
       if (shouldRenderList) {
         return `<div class="detail-copy"><ul class="bullets">${metrics.map((metric) => `<li>${escapeHtml(metric)}</li>`).join("")}</ul></div>`;
       }
-      return `<div class="detail-copy"><p>${escapeHtml(raw || "Not captured in the idea spec yet.")}</p></div>`;
+      return `<div class="detail-copy">${readableTextHtml(raw)}</div>`;
     }
 
     function summarySectionHtml(value, fallback, renderedHtml = "") {
-      const rich = String(renderedHtml || "").trim();
+      const structured = structuredPairListHtml(value);
+      if (structured) {
+        return `<div class="detail-copy">${structured}</div>`;
+      }
+      const rich = cleanRenderedHtml(renderedHtml);
+      const rawValue = compactPlainText(value) || textFromRenderedHtml(rich);
+      const compactValue = compactNarrativeForDetail(rawValue);
+      if (compactValue && rawValue && normalizeSearchToken(compactValue) !== normalizeSearchToken(rawValue)) {
+        return `<div class="detail-copy">${readableTextHtml(compactValue, fallback)}</div>`;
+      }
       if (rich) {
         return `<div class="detail-copy">${rich}</div>`;
       }
-      const raw = String(value || "").trim();
-      const bullets = splitInlineBulletText(raw);
-      if (bullets.length) {
-        return `<div class="detail-copy"><ul class="bullets">${bullets.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul></div>`;
-      }
-      return `<div class="detail-copy"><p>${escapeHtml(raw || fallback || "Not captured in the idea spec yet.")}</p></div>`;
+      return `<div class="detail-copy">${readableTextHtml(value, fallback)}</div>`;
+    }
+
+    function orderingRationaleBlockHtml(row) {
+      const raw = compactPlainText(row && row.ordering_rationale);
+      if (!raw) return "";
+      const rawKey = normalizeSearchToken(raw);
+      const opportunityKey = normalizeSearchToken(row && row.opportunity);
+      if (rawKey && rawKey === opportunityKey) return "";
+      const compactValue = compactNarrativeForDetail(raw);
+      return [
+        '<section class="block">',
+        "<h3>Ordering Rationale</h3>",
+        `<div class="detail-copy">${readableTextHtml(compactValue || raw)}</div>`,
+        "</section>",
+      ].join("");
     }
 
     function normalizeIdList(values) {
@@ -2530,7 +2896,9 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
       splitFrom,
       splitInto,
       mergedInto,
-      mergedFrom
+      mergedFrom,
+      registryComponentLinksHtml = "",
+      registryComponentCount = 0
     ) {
       const parentValues = normalizeIdList(parents);
       const childrenValues = normalizeIdList(children);
@@ -2543,6 +2911,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
       const splitIntoValues = normalizeIdList(splitInto);
       const mergedIntoValues = normalizeIdList(mergedInto);
       const mergedFromValues = normalizeIdList(mergedFrom);
+      const registryCount = Math.max(0, Number(registryComponentCount || 0));
       const totalLinks =
         parentValues.length
         + childrenValues.length
@@ -2554,7 +2923,8 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
         + splitFromValues.length
         + splitIntoValues.length
         + mergedIntoValues.length
-        + mergedFromValues.length;
+        + mergedFromValues.length
+        + registryCount;
 
       const relationItems = [
         {
@@ -2612,6 +2982,11 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
           count: mergedFromValues.length,
           bodyHtml: renderWorkstreamLinkSet(mergedFromValues, "chip-topology-blocks"),
         },
+        {
+          title: "Registry Components",
+          count: registryCount,
+          bodyHtml: registryComponentLinksHtml || `<span class="topology-rel-empty">None</span>`,
+        },
       ];
       const visibleRelationItems = relationItems.filter((item) => Number(item.count || 0) > 0);
       const relationRows = visibleRelationItems.map((item) => topologyRelationRow(item)).join("");
@@ -2627,10 +3002,16 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
         splitIntoValues,
         mergedIntoValues,
         mergedFromValues,
+        registryCount ? [registryCount] : [],
       ].filter((values) => Array.isArray(values) && values.length > 0).length;
+
+      const componentStrip = registryComponentLinksHtml
+        ? `<div class="topology-component-strip"><span class="topology-component-strip-label">Components</span>${registryComponentLinksHtml}</div>`
+        : "";
 
       return `
         <div class="topology-board">
+          ${componentStrip}
           ${visibleRelationItems.length ? `
             <details class="topology-relations-panel">
               <summary>
@@ -2953,6 +3334,8 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
       `
         : "";
 
+      const registryComponents = registryComponentsForRow(selected);
+      const registryComponentLinksHtml = renderRegistryComponentLinkSet(selected);
       const topologyBoardHtml = renderTopologyBoard(
         selected.idea_id,
         parents,
@@ -2966,9 +3349,9 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
         splitInto,
         mergedInto,
         mergedFrom,
+        registryComponentLinksHtml,
+        registryComponents.length,
       );
-      const registryComponents = registryComponentsForRow(selected);
-      const registryComponentLinksHtml = renderRegistryComponentLinkSet(selected);
       const executionWaveSectionHtml = renderExecutionWaveDetailSection(selected);
       const implementedSummary = String(selected.implemented_summary || "").trim();
       const implementedSummaryHtml = implementedSummary
@@ -3023,10 +3406,6 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
             <a href="${escapeHtml(registryHrefForRow(selected))}" target="_top">Registry</a>
           </div>
           ${activeReleaseLabel ? `<p class="trace-subhead">Release Target</p><p>${escapeHtml(activeReleaseLabel)}</p>` : ""}
-          ${registryComponents.length ? `
-            <p class="trace-subhead">Registry Components</p>
-            <div class="topology-rel-body">${registryComponentLinksHtml}</div>
-          ` : ""}
         </section>
 
         <section class="block">
@@ -3073,10 +3452,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
           ${successMetricsHtml(selected)}
         </section>
 
-        <section class="block">
-          <h3>Ordering Rationale</h3>
-          <p>${escapeHtml(selected.ordering_rationale || "No ordering rationale recorded.")}</p>
-        </section>
+        ${orderingRationaleBlockHtml(selected)}
 
         <section class="block">
           <h3>Impacted Parts</h3>

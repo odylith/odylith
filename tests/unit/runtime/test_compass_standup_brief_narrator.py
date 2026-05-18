@@ -2945,6 +2945,8 @@ def test_build_standup_brief_fails_closed_when_no_provider_or_cache(tmp_path: Pa
     )
 
     _assert_unavailable(brief, reason="provider_unavailable")
+    assert brief["diagnostics"]["fallback_title"] == "Local runtime facts"
+    assert brief["diagnostics"]["fallback_digest"][0].startswith("Current: Compass is being steered")
 
 
 def test_build_standup_brief_fails_closed_when_live_provider_is_deferred_without_exact_cache(tmp_path: Path) -> None:
@@ -2961,6 +2963,24 @@ def test_build_standup_brief_fails_closed_when_live_provider_is_deferred_without
 
     _assert_unavailable(brief, reason="provider_deferred")
     assert provider.calls == 0
+
+
+def test_build_standup_brief_timeout_surfaces_local_facts_until_retry(tmp_path: Path) -> None:
+    provider = _FailingProvider(provider_name="codex-cli", failure_code="timeout")
+
+    brief = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=_fact_packet(),
+        generated_utc="2026-03-13T20:00:00Z",
+        config=_reasoning_config(),
+        provider=provider,
+    )
+
+    _assert_unavailable(brief, reason="timeout")
+    assert brief["diagnostics"]["title"] == "Narration timed out"
+    assert "showing local runtime facts" in brief["diagnostics"]["message"]
+    assert brief["diagnostics"]["fallback_digest"][0].startswith("Current:")
+    assert provider.calls == 2
 
 
 def test_build_standup_brief_meets_hot_and_cold_latency_budgets(tmp_path: Path) -> None:

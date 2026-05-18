@@ -8,7 +8,7 @@
     "explicit_event_count": 29,
     "mapped_workstream_evidence_count": 27,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 22,
+    "spec_history_event_count": 23,
     "status": "forensic_coverage_present",
     "timeline_event_count": 30
   },
@@ -20,24 +20,16 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
         "src/odylith/runtime/domain_intelligence/artifact_enrichment.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_cli_output.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_domain_profile.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_project_brief.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_project_intelligence.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagrams.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_proposal.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_experience.py",
         "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
         "src/odylith/runtime/domain_intelligence/greenfield_quality_gate.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_workstream_intelligence.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_workstream_rows.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_workstream_terms.py",
-        "src/odylith/runtime/domain_intelligence/proposal_contract.py",
-        "src/odylith/runtime/domain_intelligence/proposal_normalization.py",
-        "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
-        "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
-        "src/odylith/runtime/domain_intelligence/proposal_validation.py",
-        "src/odylith/runtime/domain_intelligence/robot_swarm_profile.py",
-        "src/odylith/runtime/domain_intelligence/proposal_review_card.py"
+        "src/odylith/runtime/domain_intelligence/proposal_memory.py",
+        "src/odylith/runtime/domain_intelligence/proposal_normalization.py"
       ],
       "confidence": "high",
       "event_index": 467,
@@ -47,8 +39,8 @@
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/artifact_enrichment.py +16 more",
-      "ts_iso": "2026-05-12T17:49:36-07:00",
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/domain_intelligence/artifact_enrichment.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py +8 more",
+      "ts_iso": "2026-05-17T19:51:02-07:00",
       "workstreams": []
     },
     {

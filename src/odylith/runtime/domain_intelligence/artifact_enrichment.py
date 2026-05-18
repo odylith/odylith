@@ -232,7 +232,7 @@ def tribunal_actor_projection(proposal: Mapping[str, Any]) -> tuple[dict[str, st
     """Return domain-specific visible Tribunal actors for a proposal."""
 
     first_graph = _first_domain_graph(proposal)
-    actor_names = _domain_actor_names(first_graph)
+    actor_names = _domain_actor_names(first_graph, proposal=proposal)
     responsibilities = {
         "beneficiary_advocate": "Protects the person or team receiving the value.",
         "domain_operator": "Checks that the workflow is operationally coherent.",
@@ -270,10 +270,15 @@ _TRIBUNAL_STABLE_ROLES = (
 )
 
 
-def _domain_actor_names(graph: DomainIntelligenceGraph) -> dict[str, str]:
+def _domain_actor_names(graph: DomainIntelligenceGraph, *, proposal: Mapping[str, Any]) -> dict[str, str]:
     compact = _compact_lens_name(graph)
-    actors = _role_candidates(graph.actors)
-    operators = _role_specific_candidates([*graph.operators, *graph.actors], ("operator", "ops", "workflow"))
+    proposal_actors = _proposal_actor_candidates(proposal)
+    actors = _role_candidates([*proposal_actors, *graph.actors])
+    operators = _role_specific_candidates(
+        [*proposal_actors, *graph.operators, *graph.actors],
+        ("operator", "ops", "workflow", "maintainer", "coordinator", "lead"),
+        ownerish_fallback=False,
+    )
     approvers = _role_candidates(graph.approvers)
     risk_owners = _role_specific_candidates([*graph.risk_owners, *graph.actors], ("risk", "safety", "compliance", "loss"))
     evidence_owners = _role_specific_candidates(
@@ -281,17 +286,138 @@ def _domain_actor_names(graph: DomainIntelligenceGraph) -> dict[str, str]:
         ("proof", "evidence", "validation"),
     )
     implementation_owners = _role_specific_candidates(
-        [*graph.invariants, *graph.validation_obligations, *graph.actors],
-        ("build", "implementation", "source", "engineer"),
+        [*proposal_actors, *graph.invariants, *graph.validation_obligations, *graph.actors],
+        ("build", "builder", "implementation", "source", "engineer"),
+    ) or _role_specific_candidates(
+        [*proposal_actors, *graph.invariants, *graph.validation_obligations, *graph.actors],
+        ("maintainer",),
     )
     return {
         "beneficiary_advocate": _actor_label(actors, fallback=f"{compact} beneficiary advocate"),
-        "domain_operator": _actor_label(operators, fallback=f"{compact} operator"),
-        "risk_owner": _actor_label(risk_owners, fallback=f"{compact} risk owner"),
-        "evidence_owner": _actor_label(evidence_owners, fallback=f"{compact} proof owner"),
+        "domain_operator": _actor_label(operators, fallback=actors[1] if len(actors) > 1 else f"{compact} operator"),
+        "risk_owner": _actor_label(risk_owners, fallback=f"{compact} risk reviewer"),
+        "evidence_owner": _actor_label(
+            evidence_owners,
+            fallback=_derived_role_label(
+                [*implementation_owners, *actors],
+                explicit_tokens=("proof", "evidence", "validation"),
+                fallback_lens=compact,
+                role_suffix="proof reviewer",
+            ),
+        ),
         "implementation_owner": _actor_label(implementation_owners, fallback=f"{compact} build owner"),
-        "release_owner": f"{compact} release owner",
+        "release_owner": _derived_role_label(
+            [
+                *implementation_owners,
+                *evidence_owners,
+                *risk_owners,
+                *operators,
+                *actors,
+            ],
+            explicit_tokens=("release", "promotion", "readiness", "rollback", "launch", "delivery"),
+            fallback_lens=compact,
+            role_suffix="release reviewer",
+        ),
     }
+
+
+def _proposal_actor_candidates(proposal: Mapping[str, Any]) -> tuple[str, ...]:
+    """Prefer accepted project actors over internal role fallbacks."""
+
+    values: list[str] = []
+    for item in proposal.get("backlog", []):
+        if not isinstance(item, Mapping):
+            continue
+        intelligence = item.get("domain_intelligence")
+        if isinstance(intelligence, Mapping):
+            values.extend(_actor_segments(intelligence.get("actors")))
+    project = proposal.get("project_intelligence")
+    if isinstance(project, Mapping):
+        for key in ("actors", "owners", "operators"):
+            values.extend(_actor_segments(project.get(key)))
+    for item in proposal.get("backlog", []):
+        if not isinstance(item, Mapping):
+            continue
+        values.extend(_actor_segments(item.get("customer")))
+    return unique_text(_actor_candidate_label(value) for value in values if value)
+
+
+def _actor_segments(value: Any) -> tuple[str, ...]:
+    rows: list[str] = []
+    for raw in text_values(value, split_scalar=True, strip_bullets=True):
+        text = clean_text(raw).strip(" .")
+        if not text:
+            continue
+        head, sep, tail = text.partition(":")
+        if sep and "actor" in head.casefold() and tail.strip():
+            text = tail.strip(" .")
+        rows.extend(text_values(text, split_scalar=True, strip_bullets=True))
+    return unique_text(rows)
+
+
+def _actor_candidate_label(value: str) -> str:
+    text = clean_text(value).strip(" .")
+    if not text:
+        return ""
+    for separator in (" — ", " – ", " - ", ":"):
+        head, sep, _body = text.partition(separator)
+        if sep and head.strip():
+            text = head.strip(" .")
+            break
+    lowered = text.casefold()
+    for marker in (
+        " who ",
+        " that ",
+        " using ",
+        " with ",
+        " needing ",
+        " responsible for ",
+        " accountable for ",
+        " receiving ",
+        " reviewing ",
+        " deciding ",
+    ):
+        head, sep, _tail = lowered.partition(marker)
+        if sep and head.strip():
+            text = text[: len(head)].strip(" .")
+            break
+    if len(text.split()) > 6:
+        role_phrase = _role_phrase_label(text)
+        if role_phrase:
+            return role_phrase
+    return text
+
+
+def _role_phrase_label(label: str) -> str:
+    role_words = {
+        "advocate",
+        "builder",
+        "coordinator",
+        "engineer",
+        "lead",
+        "maintainer",
+        "manufacturer",
+        "operator",
+        "owner",
+        "reviewer",
+        "user",
+    }
+    connectors = {"and", "or", "/", "&"}
+    words = [word.strip(".,;:()") for word in clean_text(label).replace("/", " / ").split()]
+    for index, word in enumerate(words):
+        if word.casefold() not in role_words:
+            continue
+        start = index
+        if index > 0 and words[index - 1].casefold() not in connectors:
+            start = index - 1
+        end = index + 1
+        if end + 1 < len(words) and words[end].casefold() in connectors and words[end + 1].casefold() in role_words:
+            end += 2
+        phrase = " ".join(words[start:end]).strip()
+        if phrase.casefold() in role_words:
+            return ""
+        return phrase
+    return ""
 
 
 def _primary_lens(*, family: str, title: str, glossary: Sequence[str]) -> str:
@@ -316,7 +442,7 @@ def _compact_lens_name(graph: DomainIntelligenceGraph) -> str:
 def _role_candidates(values: Sequence[str]) -> list[str]:
     rows: list[str] = []
     for value in values:
-        label = clean_text(value).split(":", 1)[0].strip()
+        label = _actor_candidate_label(value)
         if label:
             rows.append(label)
     return unique_text(rows)
@@ -325,7 +451,7 @@ def _role_candidates(values: Sequence[str]) -> list[str]:
 def _ownerish_candidates(values: Sequence[str]) -> list[str]:
     candidates = []
     for value in values:
-        label = clean_text(value).split(":", 1)[0].strip()
+        label = _actor_candidate_label(value)
         if not label:
             continue
         lowered = label.casefold()
@@ -334,22 +460,115 @@ def _ownerish_candidates(values: Sequence[str]) -> list[str]:
     return unique_text(candidates)
 
 
-def _role_specific_candidates(values: Sequence[str], tokens: Sequence[str]) -> list[str]:
+def _role_specific_candidates(
+    values: Sequence[str],
+    tokens: Sequence[str],
+    *,
+    ownerish_fallback: bool = True,
+) -> list[str]:
     candidates = []
     for value in values:
-        label = clean_text(value).split(":", 1)[0].strip()
+        source = clean_text(value)
+        label = _actor_candidate_label(source)
         if not label:
             continue
-        lowered = label.casefold()
+        lowered = source.casefold()
         if any(token in lowered for token in tokens):
             candidates.append(label)
-    return unique_text(candidates) or _ownerish_candidates(values)
+    return unique_text(candidates) or (_ownerish_candidates(values) if ownerish_fallback else [])
+
+
+def _derived_role_label(
+    values: Sequence[str],
+    *,
+    explicit_tokens: Sequence[str],
+    fallback_lens: str,
+    role_suffix: str,
+) -> str:
+    explicit = _role_specific_candidates(values, explicit_tokens, ownerish_fallback=False)
+    label = _actor_label(explicit, fallback="")
+    if label:
+        return label
+    for value in values:
+        candidate = _actor_candidate_label(value)
+        label = _actor_label([candidate], fallback="")
+        if label:
+            return label
+    for value in values:
+        candidate = _actor_candidate_label(value)
+        prefix = _actor_label_prefix(candidate)
+        if prefix:
+            return f"{prefix} {role_suffix}"
+    return f"{fallback_lens} {role_suffix}"
+
+
+def _actor_label_prefix(label: str) -> str:
+    text = clean_text(label).strip(" .")
+    if not text:
+        return ""
+    role_words = {
+        "advocate",
+        "beneficiary",
+        "builder",
+        "coordinator",
+        "engineer",
+        "lead",
+        "maintainer",
+        "manufacturer",
+        "operator",
+        "owner",
+        "reviewer",
+        "team",
+        "user",
+    }
+    words = text.replace("/", " ").split()
+    while words and words[-1].strip(".,;:()").casefold() in role_words:
+        words.pop()
+    return " ".join(words[:4]).strip()
 
 
 def _actor_label(values: Sequence[str], *, fallback: str) -> str:
     for value in values:
         label = clean_text(value)
-        if label and label.casefold() not in {"actor", "state object", "evidence record", "release gate"} and len(label.split()) <= 5:
+        if (
+            label
+            and label.casefold()
+            not in {
+                "actor",
+                "actors",
+                "human actors",
+                "main human actors",
+                "maintainer",
+                "owner",
+                "reviewer",
+                "state object",
+                "team",
+                "user",
+                "evidence record",
+                "release gate",
+                "the first-release actors are",
+                "actors involved in the first release are",
+                "build owner",
+                "domain operator",
+                "evidence owner",
+                "implementation owner",
+                "proof owner",
+                "proof reviewer",
+                "release owner",
+                "release reviewer",
+                "risk owner",
+                "risk reviewer",
+                "workflow operator",
+                "check",
+                "confirm",
+                "prove",
+                "review",
+                "test",
+                "validate",
+                "verify",
+            }
+            and len(label.split()) <= 6
+        ):
             return label
     return fallback
 
@@ -414,8 +633,20 @@ def _first(values: Sequence[str]) -> str:
 
 
 def _sentence(label: str, value: str) -> str:
-    text = clean_text(value)
+    text = _without_existing_label(label=label, value=clean_text(value))
     return f"{label}: {text}" if text else ""
+
+
+def _without_existing_label(*, label: str, value: str) -> str:
+    text = clean_text(value)
+    if not text:
+        return ""
+    label_text = clean_text(label).casefold()
+    lowered = text.casefold()
+    prefix = f"{label_text}:"
+    if lowered.startswith(prefix):
+        return clean_text(text[len(prefix) :])
+    return text
 
 
 def _labelled_rows(label: str, values: Sequence[str]) -> list[str]:

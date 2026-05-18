@@ -177,7 +177,7 @@ def test_greenfield_apply_rejects_child_without_topology(tmp_path) -> None:
     proposal["backlog"][1].pop("component_focus")
     proposal["backlog"][1].pop("related_diagram_slugs")
 
-    with pytest.raises(ValueError, match="greenfield proposal Tribunal failed"):
+    with pytest.raises(ValueError, match="greenfield proposal validation gate failed"):
         greenfield_proposals.apply_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,

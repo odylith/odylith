@@ -99,7 +99,7 @@ class CreatedBug:
             "capture_contract": self.capture_contract,
         }
         if self.tribunal is not None:
-            payload["tribunal"] = self.tribunal
+            payload["validation_gate"] = self.tribunal
         return payload
 
 
@@ -755,7 +755,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"  title: {result.title}")
         print(f"  severity: {result.severity}")
         print(f"  component: {result.component}")
-        print(f"  tribunal: {(result.tribunal or {}).get('status', 'unknown')}")
+        print(f"  validation gate: {(result.tribunal or {}).get('status', 'unknown')}")
         print(f"  path: {result.bug_path}")
         owned_surface_refresh.print_dashboard_handoff(
             surface="casebook",

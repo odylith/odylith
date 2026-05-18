@@ -64,12 +64,14 @@ def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic(
     runtime_truth_js = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-runtime-truth.v1.js")
     summary_js = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-summary.v1.js")
     state_js = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-state.v1.js")
+    base_template = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-style-base.v1.css")
 
     assert "const scopedWorkstream = WORKSTREAM_RE.test(" in shared_js
     assert "const hasScopedSelection = Boolean(scopedWorkstream);" in shared_js
     assert 'if (hasScopedSelection && scopedReady) return scopedReady;' in shared_js
     assert "function scopedFallbackToGlobalBrief(globalBrief, workstreamId, message, reason, globalWindow)" in shared_js
     assert "function globalFallbackToReadyBrief(globalReady, failedBrief, requestedWindow, fallbackWindow)" in shared_js
+    assert "function globalBriefShouldStayUnavailableForWarmPoll(brief)" in shared_js
     assert "function scopedLiveBriefFallbackMessage(workstreamId, diagnostics, requestedWindow, fallbackWindow)" in shared_js
     assert 'if (reason === "scoped_window_inactive") {' in shared_js
     assert "return scopedBrief;" in shared_js
@@ -81,7 +83,7 @@ def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic(
     assert 'is waiting on narration provider budget' in shared_js
     assert 'got a scoped provider reply, but the brief was not usable yet' in shared_js
     assert 'still needs its own ${requested} brief' in shared_js
-    assert 'if (!hasScopedSelection && globalBrief && String(globalBrief.status || "").trim() !== "ready" && globalReady) {' in shared_js
+    assert "&& !globalBriefShouldStayUnavailableForWarmPoll(globalBrief)" in shared_js
     assert 'return globalFallbackToReadyBrief(globalReady, globalBrief, key, globalReadyWindow || key);' in shared_js
     assert 'if (globalReady && (globalReadySource === "provider" || globalReadySource === "cache")) return globalReady;' in shared_js
     assert 'if (globalReady) return globalReady;' in shared_js
@@ -140,7 +142,10 @@ def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic(
     assert 'card.classList.toggle("standup-brief-card--compact", !hasNarrative);' in summary_js
     assert 'copyButton.classList.toggle("hidden", !hasNarrative);' in summary_js
     assert 'const retryUtc = String(diagnostics.next_retry_utc || "").trim();' in summary_js
+    assert 'const fallbackDigest = Array.isArray(diagnostics.fallback_digest)' in summary_js
+    assert "brief-fallback-digest" in summary_js
     assert 'brief-status-card--compact' in summary_js
+    assert ".brief-fallback-digest {" in base_template
     assert "function renderScopedFallbackBrief(brief, linkContext)" not in summary_js
     assert 'Show the global live brief while ${escapeHtml(workstream)} warms' not in summary_js
     assert 'return String(value ?? "")' in shared_js
@@ -281,11 +286,13 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert 'const progressCellLabel = progressKnown ? `${progressPct}%` : (progressLabel || "n/a");' in workstreams_js
     assert "<colgroup>" in workstreams_js
     assert '<col class="ws-col-progress" />' in workstreams_js
-    assert ".ws-table .ws-col-progress {\n      width: 118px;" in base_template
+    assert ".ws-table .ws-col-progress {\n      width: 128px;" in base_template
     assert "box-sizing: border-box;" in base_template
     assert ".ws-table th.ws-col-progress" in base_template
+    assert "padding-right: 10px;" in base_template
     assert "letter-spacing: 0.04em;" in base_template
     assert ".ws-table td.ws-col-progress" in base_template
+    assert "text-align: right;" in base_template
     assert "font-variant-numeric: tabular-nums;" in base_template
     assert "No active workstreams yet. Create or open one from Radar, then Compass will summarize it here." in workstreams_js
     assert "No additional current workstreams. Program and release lanes already cover the active work." not in workstreams_js
@@ -328,7 +335,8 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert ".stat .kpi-label {" not in base_template
     assert ".card {\n  border: 1px solid #dbeafe;" not in base_template
     assert ".ws-id-stack {" in base_css
-    assert ".ws-table .ws-col-id {\n      width: 150px;" in base_css
+    assert ".ws-table .ws-col-id {\n      width: 136px;" in base_css
+    assert ".ws-table .ws-col-id {\n        width: 150px;" in base_css
     assert "@media (min-width: 960px)" in base_css
     assert "__ODYLITH_COMPASS_KPI_GRID_CONTRACT__" not in base_css
     assert "__ODYLITH_COMPASS_KPI_CARD_CONTRACT__" not in base_css

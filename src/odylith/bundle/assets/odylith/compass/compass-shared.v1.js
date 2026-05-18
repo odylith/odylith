@@ -347,6 +347,15 @@ initQuickTooltips();
       return cloned;
     }
 
+    function globalBriefShouldStayUnavailableForWarmPoll(brief) {
+      const diagnostics = brief && brief.diagnostics && typeof brief.diagnostics === "object" ? brief.diagnostics : {};
+      const reason = String(diagnostics.reason || "").trim().toLowerCase();
+      return reason === "provider_deferred"
+        || reason === "rate_limited"
+        || reason === "timeout"
+        || reason === "transport_error";
+    }
+
     function scopedLiveBriefFallbackMessage(workstreamId, diagnostics, requestedWindow, fallbackWindow) {
       const scopedWorkstream = String(workstreamId || "This scope").trim() || "This scope";
       const safeDiagnostics = diagnostics && typeof diagnostics === "object" ? diagnostics : {};
@@ -522,7 +531,13 @@ initQuickTooltips();
             { reason: "scoped_brief_missing" },
           );
         }
-        if (!hasScopedSelection && globalBrief && String(globalBrief.status || "").trim() !== "ready" && globalReady) {
+        if (
+          !hasScopedSelection
+          && globalBrief
+          && String(globalBrief.status || "").trim() !== "ready"
+          && globalReady
+          && !globalBriefShouldStayUnavailableForWarmPoll(globalBrief)
+        ) {
           return globalFallbackToReadyBrief(globalReady, globalBrief, key, globalReadyWindow || key);
         }
         if (globalBrief && String(globalBrief.status || "").trim() !== "ready") return globalBrief;

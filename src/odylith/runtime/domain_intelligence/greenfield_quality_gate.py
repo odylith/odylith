@@ -38,6 +38,9 @@ _STALE_GENERIC_TERMS: tuple[str, ...] = (
     "Domain reviewer",
     "Implementation owner",
     "Evidence owner",
+    "Operator Workspace",
+    "Product Model",
+    "Evidence Harness",
 )
 
 _GENERIC_ACTOR_LABELS: tuple[str, ...] = (
@@ -76,14 +79,19 @@ _GOVERNANCE_PREP_PHRASES: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("accepted project story before artifacts", re.compile(r"\baccepted\s+project\s+story\s+before\b", re.IGNORECASE)),
 )
 
-_STALE_GENERIC_TITLES = {
-    "define first operator workflow",
-    "define domain contract and ownership",
-    "add release proof and operations harness",
-    "prove first product workflow",
-    "define first domain contract",
-    "prove release harness",
-}
+_MECHANICAL_ARTIFACT_PHRASES: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("diagram mechanics", re.compile(r"\b(?:part of the path|incoming arrows|outgoing arrows|starts the path|hands off|branch point)\b", re.IGNORECASE)),
+    ("generic current-state UI copy", re.compile(r"\bcurrent state,\s*available action,\s*and evidence\b", re.IGNORECASE)),
+    ("generated greenfield copy", re.compile(r"\bgenerated\s+from\s+the\s+(?:accepted\s+)?greenfield\s+(?:project|proposal)\b", re.IGNORECASE)),
+    ("proposal record provenance", re.compile(r"\b(?:actors and owners|jobs)\s+come\s+from\s+(?:the\s+)?proposal\b", re.IGNORECASE)),
+    ("generic first workflow", re.compile(r"(?<![-\w])(?:accepted\s+)?first\s+workflow\b", re.IGNORECASE)),
+    ("workflow lead scaffold", re.compile(r"\bworkflow\s+lead(?:\s+and\s+beneficiary)?\b", re.IGNORECASE)),
+    ("one accountable workflow", re.compile(r"\bone\s+accountable\s+workflow\b", re.IGNORECASE)),
+    ("evidence packet scaffold", re.compile(r"\bevidence\s+packet\b", re.IGNORECASE)),
+    ("state record scaffold", re.compile(r"\bstate\s+record\b", re.IGNORECASE)),
+    ("generated records", re.compile(r"\bgenerated\s+(?:records|workstreams)\b", re.IGNORECASE)),
+    ("visible completion scaffold", re.compile(r"\bintake\s+to\s+visible\s+completion\b|\bvisible\s+completion\b", re.IGNORECASE)),
+)
 
 _SCAFFOLD_MARKERS: tuple[str, ...] = (
     "odylith_apply_ready_scaffold",
@@ -188,9 +196,10 @@ def greenfield_quality_issues(proposal: Mapping[str, Any]) -> list[str]:
     issues.extend(_generic_actor_label_issues(public_leaves))
     issues.extend(_directive_leak_issues(public_leaves))
     issues.extend(_scaffold_marker_issues(public_leaves))
+    issues.extend(_mechanical_artifact_issues(public_leaves))
+    issues.extend(_qualitative_structure_issues(proposal))
     issues.extend(_governance_prep_language_issues(proposal))
     if prompt_terms:
-        issues.extend(_prompt_grounding_issues(proposal, prompt_terms=prompt_terms))
         issues.extend(_prompt_echo_issues(proposal, public_leaves=public_leaves))
     return _dedupe(issues)
 
@@ -259,55 +268,131 @@ def _scaffold_marker_issues(public_leaves: list[tuple[str, str]]) -> list[str]:
     return issues
 
 
-def _prompt_grounding_issues(proposal: Mapping[str, Any], *, prompt_terms: tuple[str, ...]) -> list[str]:
+def _mechanical_artifact_issues(public_leaves: list[tuple[str, str]]) -> list[str]:
     issues: list[str] = []
+    for label, pattern in _MECHANICAL_ARTIFACT_PHRASES:
+        paths = [path for path, text in public_leaves if pattern.search(text)]
+        if paths:
+            issues.append(
+                f"greenfield public product content uses mechanical scaffold language `{label}` instead of domain explanation at {_path_preview(paths)}"
+            )
+    return issues
+
+
+def _qualitative_structure_issues(proposal: Mapping[str, Any]) -> list[str]:
+    """Reject product records that have labels but no operational meaning."""
+
+    issues: list[str] = []
+    project_brief = proposal.get("project_brief")
+    if isinstance(project_brief, Mapping):
+        purpose = _field_text(project_brief, "purpose", "summary", "operator_value", "project_outcome")
+        if purpose and not _has_user_capability(purpose):
+            issues.append("proposal `project_brief` does not explain a user capability in product terms")
+        if purpose and not _has_problem_tension(purpose):
+            issues.append("proposal `project_brief` does not explain the problem, risk, or operational tension")
+        principle = _field_text(project_brief, "operating_principle", "project_outcome")
+        if principle and not _has_evidence_relationship(principle):
+            issues.append("proposal `project_brief` does not explain what evidence makes the release trustable")
+
     backlog = proposal.get("backlog")
     if isinstance(backlog, list):
         for index, row in enumerate(backlog, start=1):
             if not isinstance(row, Mapping):
                 continue
-            title = clean_text(row.get("title"))
-            if title.casefold() in _STALE_GENERIC_TITLES:
-                issues.append(f"backlog row {index} uses stale generic title `{title}`")
-            if not _has_prompt_term(_grounding_text(row), prompt_terms):
-                issues.append(
-                    f"backlog row {index} `{title or '<untitled>'}` is not grounded in prompt-specific terms "
-                    f"such as {_term_preview(prompt_terms)}"
-                )
+            title = clean_text(row.get("title")) or f"row {index}"
+            problem = _field_text(row, "problem")
+            if problem and not _has_problem_tension(problem):
+                issues.append(f"backlog row {index} `{title}` does not state the user problem, risk, or failure mode")
+            value_text = _field_text(
+                row,
+                "customer",
+                "opportunity",
+                "product_view",
+                "recommended_first_slice",
+                "success_metrics",
+                "validation",
+            )
+            if value_text and not _has_user_capability(value_text):
+                issues.append(f"backlog row {index} `{title}` does not describe a user capability or decision")
+            if value_text and not _has_ownership_boundary(value_text):
+                issues.append(f"backlog row {index} `{title}` does not explain ownership or state responsibility")
+            if value_text and not _has_evidence_relationship(value_text):
+                issues.append(f"backlog row {index} `{title}` does not explain evidence, review, or validation")
+
     components = proposal.get("components")
     if isinstance(components, list):
         for index, row in enumerate(components, start=1):
             if not isinstance(row, Mapping):
                 continue
-            label = clean_text(row.get("label"))
-            if label.casefold() in {"operator workspace", "product model", "evidence harness"}:
-                issues.append(f"component row {index} uses generic label `{label}` without the project noun")
-            if not _has_prompt_term(_grounding_text(row), prompt_terms):
-                issues.append(
-                    f"component row {index} `{label or '<unlabeled>'}` is not grounded in prompt-specific terms "
-                    f"such as {_term_preview(prompt_terms)}"
-                )
-    issues.extend(_top_level_grounding_issues(proposal, prompt_terms=prompt_terms))
+            label = clean_text(row.get("label") or row.get("component_id")) or f"component {index}"
+            component_text = _field_text(row, "responsibility", "boundary", "dependencies", "interfaces", "validation")
+            if component_text and not _has_ownership_boundary(component_text):
+                issues.append(f"component row {index} `{label}` does not explain what it owns, receives, or produces")
+            if component_text and not _has_evidence_relationship(component_text):
+                issues.append(f"component row {index} `{label}` does not explain proof, review, validation, or source evidence")
+
+    diagrams = proposal.get("diagrams")
+    if isinstance(diagrams, list):
+        for index, row in enumerate(diagrams, start=1):
+            if not isinstance(row, Mapping):
+                continue
+            title = clean_text(row.get("title") or row.get("slug")) or f"diagram {index}"
+            diagram_text = _field_text(row, "summary", "purpose", "operator_question", "proof_gate")
+            if diagram_text and not (_has_user_capability(diagram_text) or _has_evidence_relationship(diagram_text)):
+                issues.append(f"diagram row {index} `{title}` does not explain the product meaning of the view")
+            for component_index, component in enumerate(row.get("components") if isinstance(row.get("components"), list) else [], start=1):
+                if not isinstance(component, Mapping):
+                    continue
+                description = clean_text(component.get("description") or component.get("role"))
+                if description and not _has_ownership_boundary(description):
+                    issues.append(
+                        f"diagram row {index} `{title}` component {component_index} does not explain domain responsibility"
+                    )
     return issues
 
 
-def _top_level_grounding_issues(proposal: Mapping[str, Any], *, prompt_terms: tuple[str, ...]) -> list[str]:
-    checks = (
-        ("project_brief", proposal.get("project_brief"), ("purpose", "project_outcome", "operating_principle")),
-        ("project_intelligence", proposal.get("project_intelligence"), ("purpose", "coding_posture", "control_surface_summary")),
-        ("program", proposal.get("program"), ("recommended_first_wave", "blueprint", "waves")),
-        ("release_plan", proposal.get("release_plan"), ("label", "strategy", "milestones", "promotion_criteria")),
+def _field_text(row: Mapping[str, Any], *keys: str) -> str:
+    return " ".join(str(nested or "") for key in keys for nested in text_values(row.get(key))).strip()
+
+
+def _has_user_capability(text: str) -> bool:
+    lowered = clean_text(text).casefold()
+    return bool(
+        re.search(
+            r"\b(?:can|uses?|needs?|sees?|views?|reviews?|inspects?|understands?|decides?|submits?|records?|tracks?|approves?|blocks?|rejects?|verifies?|produces?|captures?|imports?|links?|derives?|assembles?|makes?|keeps?|completes?)\b",
+            lowered,
+        )
     )
-    issues: list[str] = []
-    for label, value, keys in checks:
-        if not isinstance(value, Mapping):
-            continue
-        text = " ".join(str(nested or "") for key in keys for nested in text_values(value.get(key))).casefold()
-        if text and not _has_prompt_term(text, prompt_terms):
-            issues.append(
-                f"proposal `{label}` is not grounded in prompt-specific terms such as {_term_preview(prompt_terms)}"
-            )
-    return issues
+
+
+def _has_problem_tension(text: str) -> bool:
+    lowered = clean_text(text).casefold()
+    return bool(
+        re.search(
+            r"\b(?:without|risk|harm|danger|fails?|failure|cannot|missing|unclear|unowned|blocked|drift|stale|unsupported|untrusted|needs?|must|if|when|unless|because|otherwise|prevents?|reduces?|no)\b",
+            lowered,
+        )
+    )
+
+
+def _has_ownership_boundary(text: str) -> bool:
+    lowered = clean_text(text).casefold()
+    return bool(
+        re.search(
+            r"\b(?:owns?|owned|responsible|authority|boundary|state|record|version|source of truth|receives?|produces?|records?|stores?|tracks?|links?|assembles?|derives?|controls?|protects?|coordinates?)\b",
+            lowered,
+        )
+    )
+
+
+def _has_evidence_relationship(text: str) -> bool:
+    lowered = clean_text(text).casefold()
+    return bool(
+        re.search(
+            r"\b(?:evidence|proof|trace|traces|source|audit|validate|validation|review|reviewer|inspect|replay|verified?|citation|history|decision|outcome|checks?|gate|readiness|failure|recovery)\b",
+            lowered,
+        )
+    )
 
 
 def _governance_prep_language_issues(proposal: Mapping[str, Any]) -> list[str]:
@@ -339,7 +424,8 @@ def _prompt_echo_issues(
     raw_prompt = clean_text(intent.get("prompt"))
     raw_title = clean_text(intent.get("title"))
     issues: list[str] = []
-    for label, value, max_hits in (("prompt", raw_prompt, 0), ("title", raw_title, 100)):
+    _ = raw_title
+    for label, value, max_hits in (("prompt", raw_prompt, 0),):
         needle = value.casefold()
         if len(needle) < 32:
             continue
@@ -387,10 +473,6 @@ def _is_excluded_public_key(key: str) -> bool:
     return lowered in _EXCLUDED_PUBLIC_KEYS or lowered.endswith(_EXCLUDED_KEY_SUFFIXES)
 
 
-def _grounding_text(row: Mapping[str, Any]) -> str:
-    return " ".join(text_values(row)).casefold()
-
-
 def _prompt_terms(proposal: Mapping[str, Any]) -> tuple[str, ...]:
     intent = proposal.get("intent")
     values: list[str] = []
@@ -420,22 +502,6 @@ def _meaningful_terms(text: str) -> tuple[str, ...]:
     return tuple(terms[:12])
 
 
-def _has_prompt_term(text: str, prompt_terms: tuple[str, ...]) -> bool:
-    haystack = text.casefold()
-    return any(_term_in_text(term, haystack) for term in prompt_terms)
-
-
-def _term_in_text(term: str, haystack: str) -> bool:
-    variants = {term, _singular(term)}
-    if term.endswith("y"):
-        variants.add(f"{term[:-1]}ies")
-    if term.endswith("s"):
-        variants.add(term[:-1])
-    else:
-        variants.add(f"{term}s")
-    return any(re.search(rf"(?<![a-z0-9]){re.escape(variant)}(?![a-z0-9])", haystack) for variant in variants)
-
-
 def _singular(token: str) -> str:
     if token.endswith("ies") and len(token) > 4:
         return f"{token[:-3]}y"
@@ -449,10 +515,6 @@ def _path_preview(paths: list[str]) -> str:
     if len(paths) > 3:
         preview = f"{preview}, +{len(paths) - 3} more"
     return preview
-
-
-def _term_preview(terms: tuple[str, ...]) -> str:
-    return ", ".join(terms[:5])
 
 
 def _dedupe(issues: list[str]) -> list[str]:

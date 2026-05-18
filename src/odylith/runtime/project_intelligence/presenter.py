@@ -8,12 +8,18 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.project_intelligence.deeplinks import deeplink_title_context
-from odylith.runtime.project_intelligence.deeplinks import inline_deeplink_html as _d
+from odylith.runtime.project_intelligence.deeplinks import inline_deeplink_html as _deeplink_html
 from odylith.runtime.project_intelligence.narration import table_columns as _default_table_columns
+from odylith.runtime.project_intelligence.utils import display_text, sentence
+from odylith.runtime.surfaces.dashboard_shell_links import radar_workstream_href
 
 
 def _e(value: object) -> str:
     return html.escape(str(value or ""), quote=True)
+
+
+def _d(value: object) -> str:
+    return _deeplink_html(display_text(value))
 
 
 def _sequence(value: object) -> list[Any]:
@@ -33,6 +39,9 @@ def _cards(items: object, class_name: str = "project-card") -> str:
             title, body = item
         elif len(item) >= 3:
             kicker, title, body = item[:3]
+        kicker = display_text(kicker)
+        title = display_text(title)
+        body = display_text(body)
         if not title and not body:
             continue
         kicker_html = f"<p>{_d(kicker)}</p>" if str(kicker or "").strip() else ""
@@ -49,20 +58,58 @@ def _cards(items: object, class_name: str = "project-card") -> str:
 def _use_cases(items: object) -> str:
     rows: list[str] = []
     for raw in _sequence(items):
-        item = list(raw) if isinstance(raw, Sequence) and not isinstance(raw, (str, bytes, bytearray)) else []
-        if len(item) < 2:
-            continue
-        title = item[0]
-        body = item[1]
-        status = item[2] if len(item) > 2 else ""
+        if isinstance(raw, Mapping):
+            title = raw.get("title")
+            body = raw.get("body") or raw.get("summary")
+            status = raw.get("status") or raw.get("evidence_tier")
+            workstream_id = _workstream_id(raw.get("workstream_id") or raw.get("idea_id") or raw.get("id"))
+        else:
+            item = list(raw) if isinstance(raw, Sequence) and not isinstance(raw, (str, bytes, bytearray)) else []
+            if len(item) < 2:
+                continue
+            title = item[0]
+            body = item[1]
+            status = item[2] if len(item) > 2 else ""
+            workstream_id = _workstream_id(item[3] if len(item) > 3 else "")
+        title_html = _job_title_html(title=title, workstream_id=workstream_id)
+        id_html = _job_workstream_link(workstream_id=workstream_id, title=title)
+        meta_html = f'<div class="project-job-meta">{id_html}<em>{_d(status)}</em></div>' if status or id_html else ""
         rows.append(
             '<article class="project-job-card">'
-            f"<h3>{_d(title)}</h3>"
+            f"<h3>{title_html}</h3>"
             f"<p>{_d(body)}</p>"
-            f"<em>{_d(status)}</em>"
+            f"{meta_html}"
             "</article>"
         )
     return "".join(rows)
+
+
+def _workstream_id(value: object) -> str:
+    token = sentence(value).upper()
+    return token if re.fullmatch(r"B-\d+", token) else ""
+
+
+def _job_title_html(*, title: object, workstream_id: str) -> str:
+    label = _e(display_text(title))
+    if not workstream_id:
+        return label
+    href = _e(radar_workstream_href(workstream_id))
+    aria = _e(f"Open {workstream_id} in Radar")
+    return f'<a class="project-job-title-link" target="_top" href="{href}" aria-label="{aria}">{label}</a>'
+
+
+def _job_workstream_link(*, workstream_id: str, title: object) -> str:
+    if not workstream_id:
+        return ""
+    href = _e(radar_workstream_href(workstream_id))
+    tooltip = _e(display_text(title) or workstream_id)
+    aria = _e(f"Open {workstream_id} in Radar")
+    return (
+        '<span class="project-job-workstream">'
+        f'<a class="project-deeplink project-id-deeplink" target="_top" href="{href}" '
+        f'data-tooltip="{tooltip}" aria-label="{aria}">{_e(workstream_id)}</a>'
+        "</span>"
+    )
 
 
 def _scenario_details(items: object, fallback: object) -> str:
@@ -85,6 +132,43 @@ def _bullets(items: object) -> str:
     if not values:
         return "<ul><li>No current source-backed item found.</li></ul>"
     return "<ul>" + "".join(f"<li>{item}</li>" for item in values) + "</ul>"
+
+
+def _compact_bullets(items: object, *, limit: int = 4, item_limit: int = 160) -> str:
+    raw_values = [str(item).strip() for item in _sequence(items) if str(item or "").strip()]
+    if not raw_values:
+        return "<ul><li>No current source-backed item found.</li></ul>"
+    values = [_d(_compact_sentence(item, limit=item_limit)) for item in raw_values[:limit]]
+    if len(raw_values) > limit:
+        values.append(f'<span class="project-more-count">+{len(raw_values) - limit} more tracked item{"s" if len(raw_values) - limit != 1 else ""}</span>')
+    return "<ul>" + "".join(f"<li>{item}</li>" for item in values) + "</ul>"
+
+
+def _compact_sentence(value: str, *, limit: int) -> str:
+    text = " ".join(str(value or "").split()).strip()
+    if len(text) <= limit:
+        return text
+    for separator in (". ", "; ", ": "):
+        head, sep, _tail = text.partition(separator)
+        if sep and 42 <= len(head) <= limit:
+            return head.rstrip(" ,;:") + ("." if separator == ". " else "")
+    words = text.split()
+    clipped: list[str] = []
+    length = 0
+    for word in words:
+        next_length = length + len(word) + (1 if clipped else 0)
+        if next_length > limit:
+            break
+        clipped.append(word)
+        length = next_length
+    return " ".join(clipped).rstrip(" ,;:") + "."
+
+
+def _display_title(value: object) -> str:
+    text = " ".join(str(value or "").split()).strip()
+    text = re.sub(r"^[\s\-–—:·|]+", "", text)
+    text = re.sub(r"[\s\-–—:·|]+$", "", text)
+    return text
 
 
 def _host_handoff(project: Mapping[str, Any]) -> str:
@@ -143,6 +227,7 @@ def _claim_evidence(project: Mapping[str, Any], columns: Sequence[tuple[str, str
     if not rows:
         return _table(rows, columns)
     grouped = _claim_evidence_groups(rows, project=project)
+    takeaway = _claim_evidence_takeaway(grouped=grouped, project=project)
     cards = "".join(
         _claim_evidence_card(title=title, body=body, rows=items)
         for title, body, items in grouped
@@ -160,7 +245,34 @@ def _claim_evidence(project: Mapping[str, Any], columns: Sequence[tuple[str, str
         f"{_table(rows, columns)}"
         "</details>"
     )
-    return f'<div class="project-evidence-readout">{cards}</div>{audit}'
+    return f"{takeaway}<div class=\"project-evidence-readout\">{cards}</div>{audit}"
+
+
+def _claim_evidence_takeaway(
+    *, grouped: Sequence[tuple[str, str, list[Mapping[str, Any]]]], project: Mapping[str, Any]
+) -> str:
+    source_posture = str(project.get("source_posture") or "").strip().casefold()
+    origin = " ".join(str(item or "") for item in _sequence(project.get("chips"))).casefold()
+    greenfield = "greenfield" in origin or source_posture in {"docs_only", "metadata_only", "empty_or_no_app_source"}
+    if greenfield:
+        body = (
+            "The product direction is accepted enough to plan from, but the software behavior is not trusted yet. "
+            "Treat the component shape as proposed until release proof passes with source and validation evidence."
+        )
+    else:
+        body = (
+            "Takeaway: trust current source-backed facts first. Treat proposed, stale, missing, or contradicted claims as "
+            "work that still needs evidence before it guides implementation."
+        )
+    counts = [f"{len(rows)} {title.lower()}" for title, _body, rows in grouped if rows]
+    count_html = f"<span>{_d('; '.join(counts))}</span>" if counts else ""
+    return (
+        '<div class="project-evidence-takeaway">'
+        "<b>Summary</b>"
+        f"<p>{_d(body)}</p>"
+        f"{count_html}"
+        "</div>"
+    )
 
 
 def _claim_evidence_groups(
@@ -186,18 +298,18 @@ def _claim_evidence_groups(
     if greenfield:
         return [
             (
-                "Accepted intent",
-                "These are the parts of the project the current proposal is allowed to use as direction.",
+                "Direction accepted",
+                "The product story and release boundary can guide planning.",
                 known,
             ),
             (
-                "Proposed shape",
-                "These choices guide planning, but they are not built software or source-backed behavior yet.",
+                "Shape to build",
+                "These choices describe the planned product shape, not built behavior.",
                 proposed,
             ),
             (
-                "Proof still required",
-                "These checks, questions, or weak claims must be resolved before confidence can increase.",
+                "Proof to earn",
+                "These checks decide whether the first release can be trusted.",
                 proof,
             ),
         ]
@@ -224,7 +336,7 @@ def _claim_evidence_card(*, title: str, body: str, rows: Sequence[Mapping[str, A
     items = []
     for row in rows:
         claim = _claim_label(str(row.get("claim") or "").strip() or "Claim")
-        value = str(row.get("value") or "").strip() or "No value recorded."
+        value = _claim_card_value(claim=claim, value=row.get("value"))
         evidence = str(row.get("evidence") or "").strip()
         owner = str(row.get("owner") or "").strip()
         meta_parts = [
@@ -246,10 +358,29 @@ def _claim_evidence_card(*, title: str, body: str, rows: Sequence[Mapping[str, A
     )
 
 
+def _claim_card_value(*, claim: str, value: object) -> str:
+    text = str(value or "").strip() or "No value recorded."
+    lowered_claim = claim.casefold()
+    if lowered_claim in {"first path", "proof required"}:
+        text = re.sub(r"\b\d+[.)]\s+[A-Z].*", "", text).strip(" .")
+        text = text.replace("The first complete path the product must prove is ", "")
+        text = text.replace("The accepted first path passes end to end:", "Release proof must pass end to end:")
+    if lowered_claim == "project promise":
+        return "Captured in the Product Story section above."
+    if lowered_claim == "proof required" and (
+        "reviewer can compare" in text.casefold() or "without trusting implementation prose" in text.casefold()
+    ):
+        return "Reviewer must see source evidence, validation output, non-goals, and the release decision."
+    if lowered_claim == "open questions":
+        return text
+    return _compact_sentence(text, limit=150)
+
+
 def _claim_label(value: str) -> str:
     labels = {
         "project identity": "Project",
-        "greenfield tribunal": "Tribunal result",
+        "greenfield tribunal": "Accepted product check",
+        "validation gate": "Accepted product check",
         "project explanation": "Project promise",
         "first path": "First path",
         "validation path": "Proof required",
@@ -266,7 +397,7 @@ def _evidence_phrase(value: str) -> str:
         "proposal": "Proposal claim",
         "proposed": "Proposal claim",
         "needs validation": "Needs validation",
-        "governed": "Accepted by governance",
+        "governed": "Accepted by project check",
         "source-backed": "Source-backed",
         "validated": "Validated",
         "operational": "Observed in runtime",
@@ -342,7 +473,8 @@ def _product_story_narrative(
     release_contract: Sequence[Mapping[str, Any]],
     supporting_records: Sequence[str],
 ) -> str:
-    headline_html = f"<h3>{_d(headline)}</h3>" if str(headline or "").strip() else ""
+    clean_headline = _display_title(headline)
+    headline_html = f"<h3>{_d(clean_headline)}</h3>" if clean_headline else ""
     paragraph_rows = [paragraph for paragraph in paragraphs if str(paragraph or "").strip()]
     first_paragraph = paragraph_rows[:1]
     remaining_paragraphs = paragraph_rows[1:]
@@ -419,7 +551,7 @@ def _render_blank_project(project: Mapping[str, Any]) -> str:
     <div class="project-hero-main project-hero-main-empty">
       <div class="project-hero-copy">
         <p class="project-eyebrow"><span></span>{_d(project.get("eyebrow"))}</p>
-        <h1>{_d(project.get("title"))}</h1>
+        <h1>{_d(_display_title(project.get("title")))}</h1>
         <p class="project-intro">{_d(project.get("intro"))}</p>
         <div class="project-chips">{chips}</div>
       </div>
@@ -521,10 +653,6 @@ def _fallback_payload() -> dict[str, Any]:
         "desired_state_label": "Desired state",
         "next_title": "What should move next?",
         "next_note": "No source-backed next action is available yet.",
-        "next_owner_label": "Owner",
-        "next_output_label": "Expected output",
-        "next_precondition_label": "Precondition",
-        "next_risk_label": "Risk if delayed",
         "proof_title": "What is known and unproven?",
         "proof_note": "No source-backed proof state is available yet.",
         "known_label": "Known from source records",
@@ -554,10 +682,6 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
     _scenario_label, _scenario_name, scenario_headline, scenario_caption, scenario_body = (
         [*scenario, "", "", "", "", ""]
     )[:5]
-    next_item = _sequence(project.get("next"))
-    next_title, next_detail, next_owner, next_output, next_precondition, next_risk = (
-        [*next_item, "", "", "", "", "", ""]
-    )[:6]
     chips = "".join(f"<span>{_d(chip)}</span>" for chip in _sequence(project.get("chips")))
     scenario_html = (
         f"""
@@ -582,7 +706,7 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
         else ""
     )
     answers_html = (
-        f"""      <section class="project-answer-strip"><div class="project-answer-grid">{_cards(project.get("answers"), "project-answer-card")}</div></section>
+        f"""      <section class="project-panel project-answer-strip"><div class="project-answer-grid">{_cards(project.get("answers"), "project-answer-card")}</div></section>
 """
         if _sequence(project.get("answers"))
         else ""
@@ -599,30 +723,15 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
         if _enabled(project, "jobs")
         else ""
     )
-    claim_html = (
-        f"""      <section class="project-panel project-evidence-panel"><div class="project-panel-head"><h2>{_d(project.get("claim_evidence_title"))}</h2><p>{_d(project.get("claim_evidence_note"))}</p></div>{_claim_evidence(project, claim_columns)}</section>
-"""
-        if _enabled(project, "claim_evidence")
-        else ""
-    )
+    claim_html = ""
     trust_html = (
         f"""      <section class="project-panel"><div class="project-panel-head"><h2>{_d(project.get("trust_title"))}</h2><p>{_d(project.get("trust_note"))}</p></div><div class="project-signal-grid"><article><h3>{_d(project.get("delta_label"))}</h3>{_bullets(project.get("delta"))}</article><article><h3>{_d(project.get("contradictions_label"))}</h3>{_bullets(project.get("contradictions"))}</article><article><h3>{_d(project.get("degraded_label"))}</h3>{_bullets(project.get("degraded_state"))}</article></div></section>
 """
         if _enabled(project, "trust")
         else ""
     )
-    posture_html = (
-        f"""      <section class="project-panel"><div class="project-panel-head"><h2>{_d(project.get("posture_title"))}</h2><p>{_d(project.get("posture_note"))}</p></div><div class="project-signal-grid project-signal-grid-two"><article><h3>{_d(project.get("validation_label"))}</h3>{_status_list(project.get("validation_posture"), title_key="posture", body_key="meaning")}</article><article><h3>{_d(project.get("risk_label"))}</h3>{_status_list(project.get("risk_classes"), title_key="risk", body_key="meaning")}</article></div></section>
-"""
-        if _enabled(project, "posture")
-        else ""
-    )
-    boundary_html = (
-        f"""      <section class="project-panel"><div class="project-panel-head"><h2>{_d(project.get("boundary_title"))}</h2><p>{_d(project.get("boundary_note"))}</p></div><div class="project-boundary-grid"><article class="project-included"><h3>{_d(project.get("included_label"))}</h3>{_bullets(project.get("included"))}</article><article class="project-excluded"><h3>{_d(project.get("excluded_label"))}</h3>{_bullets(project.get("excluded"))}</article></div></section>
-"""
-        if _enabled(project, "boundary")
-        else ""
-    )
+    posture_html = ""
+    boundary_html = ""
     state_html = (
         f"""      <p class="project-section-kicker">{_d(project.get("work_state_kicker"))}</p>
       <section class="project-panel"><div class="project-panel-head"><h2>{_d(project.get("state_title"))}</h2><p>{_d(project.get("state_note"))}</p></div><div class="project-state-grid"><article><h3>{_d(project.get("current_state_label"))}</h3>{_prose_lines(project.get("current"))}</article><strong>to</strong><article><h3>{_d(project.get("desired_state_label"))}</h3>{_prose_lines(project.get("desired"))}</article></div></section>
@@ -630,14 +739,15 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
         if _enabled(project, "state")
         else ""
     )
+    host_handoff_html = _host_handoff(project)
     next_html = (
-        f"""      <section class="project-panel"><div class="project-panel-head"><h2>{_d(project.get("next_title"))}</h2><p>{_d(project.get("next_note"))}</p></div><article class="project-next-card project-next-card-full"><h3>{_d(next_title)}</h3><p>{_d(next_detail)}</p><div><span><b>{_d(project.get("next_owner_label"))}</b>{_d(next_owner)}</span><span><b>{_d(project.get("next_output_label"))}</b>{_d(next_output)}</span><span><b>{_d(project.get("next_precondition_label"))}</b>{_d(next_precondition)}</span><span><b>{_d(project.get("next_risk_label"))}</b>{_d(next_risk)}</span></div></article>{_host_handoff(project)}</section>
+        f"""      <section class="project-panel"><div class="project-panel-head"><h2>{_d(project.get("next_title"))}</h2><p>{_d(project.get("next_note"))}</p></div>{host_handoff_html}</section>
 """
         if _enabled(project, "next")
         else ""
     )
     proof_html = (
-        f"""      <section class="project-panel"><div class="project-panel-head"><h2>{_d(project.get("proof_title"))}</h2><p>{_d(project.get("proof_note"))}</p></div><div class="project-proof-grid"><article><h3>{_d(project.get("known_label"))}</h3>{_bullets(project.get("known"))}</article><article><h3>{_d(project.get("unknown_label"))}</h3>{_bullets(project.get("unknown"))}</article><article><h3>{_d(project.get("confidence_label"))}</h3><strong>{_d(project.get("confidence"))}</strong><span class="project-meter"><i></i></span></article></div></section>
+        f"""      <section class="project-panel"><div class="project-panel-head"><h2>{_d(project.get("proof_title"))}</h2><p>{_d(project.get("proof_note"))}</p></div><div class="project-proof-grid"><article><h3>{_d(project.get("known_label"))}</h3>{_bullets(project.get("known"))}</article><article><h3>{_d(project.get("unknown_label"))}</h3>{_bullets(project.get("unknown"))}</article><article><h3>{_d(project.get("confidence_label"))}</h3><strong>{_d(project.get("confidence"))}</strong><span class="project-meter"><i></i></span><p>{_d(project.get("confidence_note"))}</p></article></div></section>
 """
         if _enabled(project, "proof")
         else ""
@@ -648,21 +758,32 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
     <div class="project-hero-main">
       <div class="project-hero-copy">
         <p class="project-eyebrow"><span></span>{_d(project.get("eyebrow"))}</p>
-        <h1>{_d(project.get("title"))}</h1>
+        <h1>{_d(_display_title(project.get("title")))}</h1>
         <p class="project-intro">{_d(project.get("intro"))}</p>
         <div class="project-chips">{chips}</div>
       </div>
       <aside class="project-hero-rail">
-        <section class="project-focus-card"><p>{_d(project.get("focus_label"))}</p><h2>{_d(project.get("focus"))}</h2></section>
-        <section class="project-open-card"><p>{_d(project.get("open_label"))}</p>{_bullets(project.get("open"))}</section>
+        <section class="project-focus-card"><p>{_d(_hero_rail_label(project.get("focus_label"), title=project.get("title"), fallback="Current focus"))}</p><h2>{_d(project.get("focus"))}</h2></section>
+        <section class="project-open-card"><p>{_d(_hero_rail_label(project.get("open_label"), title=project.get("title"), fallback="Open questions"))}</p>{_compact_bullets(project.get("open"))}</section>
       </aside>
     </div>
   </header>
 
   <div class="project-page-grid">
     <main class="project-main">
-{product_story_html}{answers_html}{scenario_html}{participants_html}{jobs_html}{claim_html}{trust_html}{posture_html}{boundary_html}{state_html}{next_html}{proof_html}
+{product_story_html}{participants_html}{answers_html}{scenario_html}{jobs_html}{claim_html}{trust_html}{posture_html}{boundary_html}{state_html}{next_html}{proof_html}
     </main>
   </div>
 </div>
 """.strip()
+
+
+def _hero_rail_label(value: object, *, title: object, fallback: str) -> str:
+    """Keep the hero rail labels short after the main hero has named the project."""
+
+    label = sentence(value, fallback)
+    project_title = sentence(title)
+    if project_title:
+        label = re.sub(re.escape(project_title), "", label, flags=re.IGNORECASE)
+        label = re.sub(r"\s+", " ", label).strip(" -:|")
+    return label or fallback

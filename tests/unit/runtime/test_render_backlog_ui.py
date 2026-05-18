@@ -135,6 +135,70 @@ def test_rewrite_section_text_rewrites_removed_snapshot_command() -> None:
     assert "odylith sync --check-only --check-clean --runtime-mode standalone --repo-root ." in rewritten
 
 
+def test_render_section_body_splits_inline_numbered_steps() -> None:
+    html = render_backlog_ui._render_section_body(
+        repo_root=REPO_ROOT,
+        lines=[
+            (
+                "The first path is: 1. User opens the product and starts capture. "
+                "2. User performs one bounded input. 3. User stops capture. "
+                "4. The product shows the reviewed result. No broader automation is in scope yet."
+            )
+        ],
+    )
+
+    assert "<p>The first path is</p>" in html
+    assert '<ol class="inline-steps">' in html
+    assert "<li>User opens the product and starts capture.</li>" in html
+    assert "<li>User performs one bounded input.</li>" in html
+    assert "<li>User stops capture.</li>" in html
+    assert "<li>The product shows the reviewed result.</li>" in html
+    assert "<p>No broader automation is in scope yet.</p>" in html
+    assert html.index('<ol class="inline-steps">') < html.index("No broader automation")
+
+
+def test_render_section_body_splits_inline_numbered_steps_inside_bullets() -> None:
+    html = render_backlog_ui._render_section_body(
+        repo_root=REPO_ROOT,
+        lines=[
+            (
+                "- Proof path: 1. User opens the product and starts capture. "
+                "2. User performs one bounded input. 3. User stops capture. "
+                "4. The product shows the reviewed result. If this fails, implementation should pause."
+            )
+        ],
+    )
+
+    assert "<ul>" in html
+    assert '<ol class="inline-steps">' in html
+    assert "<p>Proof path</p>" in html
+    assert "<li>User stops capture.</li>" in html
+    assert "<p>If this fails, implementation should pause.</p>" in html
+
+
+def test_render_section_body_strips_literal_markdown_emphasis_markers() -> None:
+    html = render_backlog_ui._render_section_body(
+        repo_root=REPO_ROOT,
+        lines=["**Account owner:** wants a clean operational summary without raw emphasis tokens."],
+    )
+
+    assert "**" not in html
+    assert "<p>Account owner: wants a clean operational summary without raw emphasis tokens.</p>" in html
+
+
+def test_extract_sections_from_markdown_strips_display_emphasis_tokens(tmp_path: Path) -> None:
+    idea = tmp_path / "idea.md"
+    idea.write_text(
+        "## Customer\n**Account owner:** wants clean UI text.\n\n## Problem\n__Raw emphasis__ leaks.\n",
+        encoding="utf-8",
+    )
+
+    sections = render_backlog_ui._extract_sections_from_markdown(idea)
+
+    assert sections["Customer"] == "Account owner: wants clean UI text."
+    assert sections["Problem"] == "Raw emphasis leaks."
+
+
 def test_render_plan_html_normalizes_legacy_meta_row_paths(tmp_path: Path) -> None:
     repo_root = tmp_path
     plan_path = repo_root / "odylith" / "technical-plans" / "in-progress" / "2026-03-26-test-plan.md"
@@ -362,6 +426,81 @@ def test_render_idea_spec_html_places_product_view_below_problem(tmp_path: Path)
     assert problem_idx < decision_idx < customer_idx
 
 
+def test_render_idea_spec_html_compacts_inventory_blobs_in_reader_sections(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    idea_path = repo_root / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "2026-04-08-blob-example.md"
+    idea_path.parent.mkdir(parents=True)
+    long_inventory = (
+        "Make product-owned systems explicit: Input Normalization: Converts Long Source Records Into "
+        "A Consistent Domain View, Candidate Scoring: Ranks Items By Recency, Duplicate Signals, "
+        "Price Movement, and Optional User Context, Review Flow: Lets the User Inspect Evidence, "
+        "Approve, Snooze, or Reject A Proposed Action, plus 2 more. Keep external systems separate: "
+        "Provider feeds; external portals; identity and consent services. Preserve release proof: "
+        "Every claim maps back to source evidence, reviewer action, state transition, validation output, "
+        "deferred scope, and a clear implementation stop condition before broader planning proceeds."
+    )
+    idea_path.write_text(
+        "\n".join(
+            (
+                "---",
+                "status: queued",
+                "idea_id: B-997",
+                "title: Example",
+                "date: 2026-04-08",
+                "priority: P1",
+                "commercial_value: 3",
+                "product_impact: 3",
+                "market_value: 3",
+                "sizing: M",
+                "complexity: Medium",
+                "ordering_score: 42",
+                "confidence: high",
+                "founder_override: no",
+                "---",
+                "",
+                "## Problem",
+                "Example problem.",
+                "",
+                "## Opportunity",
+                long_inventory,
+                "",
+                "## Why Now",
+                long_inventory,
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    html = render_backlog_ui._render_idea_spec_html(
+        repo_root=repo_root,
+        index_output_path=repo_root / "odylith" / "radar" / "radar.html",
+        entry={
+            "idea_id": "B-997",
+            "title": "Example",
+            "priority": "P1",
+            "status": "queued",
+            "ordering_score": 42,
+            "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-blob-example.md",
+            "rationale_bullets": [
+                f"why now: {long_inventory}",
+                "tradeoff: Define Boundary keeps sample product focused on one releaseable path while delaying scope not accepted in the confirmation.",
+                "deferred for now: anything outside this proof boundary waits: broad unproven scope.",
+                "ranking basis: Sample Product release readiness depends on preserving the confirmed product story, domain state, evidence, and proof boundary.",
+            ],
+        },
+    )
+
+    assert "Make product-owned systems explicit." in html
+    assert "Keep external systems separate." in html
+    assert "releaseable" not in html
+    assert "Keep the first release focused on the accepted path" in html
+    assert "Scope outside the accepted proof boundary waits for explicit evidence." in html
+    assert "Release readiness depends on the product story" in html
+    assert "Converts Long Source Records Into A Consistent Domain View" not in html
+    assert "Ranks Items By Recency" not in html
+
+
 def test_render_section_body_splits_dense_single_paragraph_prose() -> None:
     html = render_backlog_ui._render_section_body(
         repo_root=REPO_ROOT,
@@ -542,6 +681,10 @@ def test_render_backlog_ui_keeps_decision_basis_labeling_self_contained() -> Non
     assert "function humanizeToken(token)" in html
     assert 'return humanizeToken(label);' in html
     assert 'replace(/^[-*]\\s+/, "")' in html
+    assert "function compactNarrativeForDetail(value)" in html
+    assert 'class="bullets decision-bullets"' in html
+    assert "decision-basis-label" in html
+    assert "decision-basis-copy" in html
 
 
 def test_render_backlog_ui_includes_release_filters_summary_cards_and_release_chips() -> None:
@@ -696,7 +839,7 @@ def test_backlog_summary_entry_keeps_fail_closed_detail_fields() -> None:
     assert "promoted_to_plan_ui_file" not in summary
 
 
-def test_render_backlog_ui_right_aligns_age_and_exec_row_chips() -> None:
+def test_render_backlog_ui_side_rail_keeps_only_core_row_chips() -> None:
     html = render_backlog_ui._render_html(payload={"entries": []})
 
     assert ".row-meta {" in html
@@ -704,15 +847,48 @@ def test_render_backlog_ui_right_aligns_age_and_exec_row_chips() -> None:
     assert '<div class="row-meta">' in html
     assert '<div class="row-chips row-chips-end">' in html
     assert '<span class="chip">Age ${escapeHtml(ageLabel)}</span>' in html
-    assert '<span class="chip">Exec ${escapeHtml(executionDays)}</span>' in html
+    assert "${releaseChip}" in html
+    assert "Exec ${escapeHtml(executionDays)}" not in html
+    assert "const footerChips =" not in html
+    assert "const waveChips = executionWaveRoleChips(row);" not in html
 
 
-def test_render_backlog_ui_moves_status_and_release_labels_into_right_aligned_footer_row() -> None:
+def test_render_backlog_ui_side_rail_adds_one_paragraph_story_summary() -> None:
     html = render_backlog_ui._render_html(payload={"entries": []})
 
-    assert 'const footerChips = `${waveChips}${typeChips}${stageChip}${executionChip}${releaseChip}`;' in html
-    assert '<div class="row-foot">' in html
-    assert '${footerChips ? `<div class="row-chips row-chips-end">${footerChips}</div>` : ""}' in html
+    assert 'function rowStorySummary(row)' in html
+    assert 'function workstreamStoryParagraph(row)' in html
+    assert 'function workstreamStoryLines(row)' in html
+    assert 'function fitStorySentences(lines)' in html
+    assert "const ROW_STORY_MAX_SENTENCES = 2;" in html
+    assert "const ROW_STORY_MAX_CHARS = 260;" in html
+    assert 'function storySentence(value)' in html
+    assert "function shortenAtReadableBoundary(value, maxChars = 180)" in html
+    assert '<div class="row-story" aria-label="Workstream story summary">' in html
+    assert '<p class="row-story-text">${escapeHtml(story)}</p>' in html
+    assert "const story = workstreamStoryParagraph(row);" in html
+    assert '<span class="row-story-label">${escapeHtml(label)}</span>' not in html
+    assert '["For", user || "The named project user"]' not in html
+    assert '["Needs", problem || "A clearer bounded problem to solve"]' not in html
+    assert '["Proves", proof || "The release result reviewers should be able to trust"]' not in html
+    assert ".replace(/\\*\\*/g, \"\")" in html
+    assert "storySentence(row.problem)" in html
+    assert "storySentence(row.founder_pov)" in html
+    assert "storySentence(row.success_metrics)" in html
+    assert "const BACKLOG_LIST_ROW_HEIGHT = 214;" in html
+    assert ".row-story {" in html
+    assert ".row-story-line {" not in html
+    assert ".row-story-line::before {" not in html
+    assert "-webkit-line-clamp: 1;" not in html
+
+
+def test_render_backlog_ui_places_registry_components_inside_topology_board() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert 'title: "Registry Components"' in html
+    assert "registryComponentLinksHtml" in html
+    assert "registryComponentCount" in html
+    assert '<p class="trace-subhead">Registry Components</p>' not in html
 
 
 def test_render_backlog_ui_topology_board_does_not_render_selected_focus_strip() -> None:
@@ -737,6 +913,10 @@ def test_render_backlog_ui_uses_full_width_copy_and_consistent_detail_spacing() 
     assert "padding: 14px 16px;" in html
     assert ".detail-copy > p {" in html
     assert "max-width: 100%;" in html
+    assert ".detail-pair-grid {" in html
+    assert ".detail-pair-card {" in html
+    assert ".detail-copy ol {" in html
+    assert ".detail-copy .inline-steps {" in html
 
 
 def test_render_backlog_ui_keeps_unknown_execution_wave_progress_unknown() -> None:
@@ -745,6 +925,23 @@ def test_render_backlog_ui_keeps_unknown_execution_wave_progress_unknown() -> No
     assert "const numericProgressOrNull = (value) => {" in html
     assert 'if (value === null || value === undefined || value === "") return null;' in html
     assert 'Object.prototype.hasOwnProperty.call(plan, "display_progress_ratio")' in html
+
+
+def test_render_backlog_ui_runtime_fallback_can_split_inline_numbered_steps() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert "function splitInlineOrderedSteps(value)" in html
+    assert "function readableTextHtml(value" in html
+    assert "function cleanRenderedHtml(value)" in html
+    assert "function textFromRenderedHtml(value)" in html
+    assert "function structuredPairListHtml(value)" in html
+    assert "const structured = structuredPairListHtml(value);" in html
+    assert "const rawValue = compactPlainText(value) || textFromRenderedHtml(rich);" in html
+    assert "const compactValue = compactNarrativeForDetail(rawValue);" in html
+    assert "const rich = cleanRenderedHtml(renderedHtml);" in html
+    assert 'return `<div class="detail-copy">${readableTextHtml(value, fallback)}</div>`;' in html
+    assert "function orderingRationaleBlockHtml(row)" in html
+    assert 'return `<div class="detail-copy">${rich}</div>`;' in html
 
 
 def test_render_backlog_ui_skips_cached_rebuild_before_snapshot_load(
@@ -802,3 +999,40 @@ def test_render_backlog_ui_emits_runtime_contract(tmp_path: Path) -> None:
     assert payload["runtime_contract"]["surface"] == "radar"
     assert payload["runtime_contract"]["cache_hit"] is False
     assert payload["runtime_contract"]["built_from"] == "surface_render"
+
+
+def test_render_backlog_ui_payload_strips_emphasis_from_visible_text(tmp_path: Path) -> None:
+    _seed_backlog_render_repo(tmp_path)
+    idea_path = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "2026-04-11-cached-render.md"
+    content = idea_path.read_text(encoding="utf-8")
+    content = content.replace(
+        "ordering_rationale: prove cached radar render reuse",
+        "ordering_rationale: **prove cached radar render reuse**",
+    )
+    content = content.replace(
+        "Operators running repeated syncs.",
+        "**Operators:** running repeated syncs.",
+    )
+    idea_path.write_text(content, encoding="utf-8")
+
+    rc = render_backlog_ui.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--output",
+            "odylith/radar/radar.html",
+            "--runtime-mode",
+            "standalone",
+        ]
+    )
+
+    assert rc == 0
+    payload = _load_backlog_payload(tmp_path)
+    entry = payload["entries"][0]
+    assert entry["ordering_rationale"] == "prove cached radar render reuse"
+    assert entry["customer"] == "Operators: running repeated syncs."
+    assert "**" not in entry["customer_html"]
+    detail_shard = (tmp_path / "odylith" / "radar" / "backlog-detail-shard-001.v1.js").read_text(
+        encoding="utf-8"
+    )
+    assert "**Operators" not in detail_shard

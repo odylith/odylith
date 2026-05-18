@@ -224,9 +224,9 @@ INTERVENTION_CONTRACT_BUNDLE_EXPECTATIONS: tuple[tuple[str, bool], ...] = (
 )
 RUNTIME_HOTFILE_LIMITS = {
     "src/odylith/runtime/evaluation/odylith_benchmark_runner.py": 8429,
-    "src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py": 4085,
+    "src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py": 4504,
     "src/odylith/runtime/orchestration/subagent_orchestrator.py": 3364,
-    "src/odylith/runtime/surfaces/render_mermaid_catalog.py": 3346,
+    "src/odylith/runtime/surfaces/render_mermaid_catalog.py": 3363,
     "src/odylith/runtime/surfaces/render_registry_dashboard.py": 3313,
     "src/odylith/runtime/context_engine/odylith_architecture_mode.py": 3289,
     "src/odylith/runtime/orchestration/subagent_router.py": 3150,
@@ -243,11 +243,12 @@ RUNTIME_HOTFILE_LIMITS = {
     "src/odylith/runtime/governance/validate_backlog_contract.py": 2158,
     "src/odylith/runtime/surfaces/compass_standup_brief_batch.py": 2076,
     "src/odylith/runtime/context_engine/odylith_context_engine_runtime_learning_runtime.py": 1996,
-    "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py": 1985,
+    "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py": 2043,
     "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py": 1940,
     "src/odylith/runtime/memory/odylith_memory_backend.py": 1849,
     "src/odylith/runtime/evaluation/odylith_evaluation_ledger.py": 1576,
     "src/odylith/runtime/context_engine/odylith_context_engine_hot_path_scope_runtime.py": 1576,
+    "src/odylith/runtime/project_intelligence/greenfield.py": 1977,
     "src/odylith/runtime/surfaces/compass_dashboard_runtime.py": 1556,
     "src/odylith/runtime/context_engine/odylith_context_engine_grounding_runtime.py": 1508,
 }

@@ -401,7 +401,11 @@ def _implementation_prompt(*, start_id: str, title: str, first_slice: str) -> st
             "plan, implement the smallest source-backed slice, then run its listed validation gates."
         )
     title_text = title or "the first targeted workstream"
+    first_slice_text = str(first_slice or "").strip()
+    if first_slice_text and first_slice_text[-1] not in ".!?":
+        first_slice_text = f"{first_slice_text}."
+    scope_sentence = f"{first_slice_text} " if first_slice_text else ""
     return (
-        f"After project-first gates pass, start {start_id}: {first_slice} Treat `{title_text}` as the first "
+        f"After project-first gates pass, start {start_id}: {scope_sentence}Treat `{title_text}` as the first "
         "coding scope and do not advance waves until its validation gates pass."
     )

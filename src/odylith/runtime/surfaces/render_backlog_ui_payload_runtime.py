@@ -15,6 +15,7 @@ from odylith.runtime.governance import validate_backlog_contract as contract
 from odylith.runtime.governance.delivery import scope_signal_ladder
 from odylith.runtime.governance import workstream_progress as workstream_progress_runtime
 from odylith.runtime.governance import workstream_inference
+from odylith.runtime.surfaces import backlog_rich_text
 from odylith.runtime.surfaces import backlog_render_support
 from odylith.runtime.surfaces import dashboard_time
 
@@ -488,12 +489,22 @@ def _build_entry(
         plan=plan_data,
     )
 
+    def _display_text(value: object) -> str:
+        return backlog_rich_text.strip_display_markdown_emphasis(value)
+
+    def _display_list(values: Sequence[object]) -> list[str]:
+        return [_display_text(item) for item in values if _display_text(item)]
+
+    ordering_rationale = _display_text(metadata.get("ordering_rationale", ""))
+    implemented_summary = _display_text(metadata.get("implemented_summary", ""))
+    rationale_bullets = _display_list(rationale_map.get(idea_id, []))
+
     return {
         "section": section,
         "rank": payload["rank"].strip(),
         "rank_num": 999 if payload["rank"].strip() == "-" else int(payload["rank"].strip()),
         "idea_id": idea_id,
-        "title": payload["title"].strip(),
+        "title": _display_text(payload["title"]),
         "priority": payload["priority"].strip(),
         "ordering_score": score,
         "opportunity": opportunity,
@@ -525,11 +536,11 @@ def _build_entry(
         "finished_sort_date_display": finished_sort_date_display,
         "confidence": str(metadata.get("confidence", "")).strip(),
         "founder_override": str(metadata.get("founder_override", "no")).strip(),
-        "ordering_rationale": str(metadata.get("ordering_rationale", "")).strip(),
-        "implemented_summary": str(metadata.get("implemented_summary", "")).strip(),
-        "rationale_bullets": rationale_map.get(idea_id, []),
-        "rationale_text": " ".join(rationale_map.get(idea_id, [])).strip(),
-        "impacted_parts": str(metadata.get("impacted_parts", "")).strip(),
+        "ordering_rationale": ordering_rationale,
+        "implemented_summary": implemented_summary,
+        "rationale_bullets": rationale_bullets,
+        "rationale_text": " ".join(rationale_bullets).strip(),
+        "impacted_parts": _display_text(metadata.get("impacted_parts", "")),
         "problem": section_text.get("Problem", ""),
         "problem_html": _section_html("Problem"),
         "customer": section_text.get("Customer", ""),
@@ -543,9 +554,9 @@ def _build_entry(
         "implemented_summary_html": (
             backlog_render_support._render_section_body(
                 repo_root=repo_root,
-                lines=[str(metadata.get("implemented_summary", "")).strip()],
+                lines=[implemented_summary],
             )
-            if str(metadata.get("implemented_summary", "")).strip()
+            if implemented_summary
             else ""
         ),
         "promoted_to_plan": promoted_to_plan,

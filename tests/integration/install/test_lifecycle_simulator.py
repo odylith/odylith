@@ -311,7 +311,7 @@ def test_lifecycle_simulator_proves_historical_upgrades_to_0_1_15(tmp_path: Path
         assert '"label": "Lane"' in payload_text
         assert '"label": "Source"' in payload_text
         assert '"label": "Render"' in payload_text
-        assert "inside Lane" in payload_text
+        assert "Within Lane" in payload_text
 
 
 def test_lifecycle_simulator_blocks_migration_release_activation(tmp_path: Path, monkeypatch) -> None:

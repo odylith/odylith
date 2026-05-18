@@ -1381,7 +1381,7 @@ def test_render_tooling_dashboard_rebuilds_when_greenfield_project_is_accepted(
                 "evidence_tier": "user_intent",
                 "accepted_at": "2026-05-11T10:20:00-07:00",
                 "proposal": proposal,
-                "tribunal": {"status": "passed", "visible_actors": []},
+                "validation_gate": {"status": "passed", "visible_actors": []},
                 "created": {},
             },
             indent=2,

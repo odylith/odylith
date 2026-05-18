@@ -491,6 +491,57 @@ def _allocated_workstream_ids(
     return [f"B-{value:03d}" for value in range(max_id + 1, max_id + count + 1)]
 
 
+def _existing_workstream_ids_by_title(*, ideas: Mapping[str, backlog_contract.IdeaSpec]) -> dict[str, str]:
+    matches: dict[str, str] = {}
+    for idea_id, spec in ideas.items():
+        title = backlog_title_contract.normalize_workstream_title(
+            title=str(spec.metadata.get("title", "")).strip(),
+            repo_root=None,
+        )
+        if not title:
+            continue
+        current = matches.get(title)
+        if current is None or _workstream_id_number(idea_id) < _workstream_id_number(current):
+            matches[title] = str(idea_id).strip().upper()
+    return matches
+
+
+def _requested_duplicate_title_errors(
+    *,
+    index_errors: Sequence[str],
+    ideas: Mapping[str, backlog_contract.IdeaSpec],
+    requested_titles: set[str],
+) -> bool:
+    if not index_errors:
+        return False
+    for error in index_errors:
+        match = re.search(r"`(?P<left>B-\d{3,})`\s+<->\s+`(?P<right>B-\d{3,})`", str(error))
+        if not match:
+            return False
+        left = ideas.get(match.group("left"))
+        right = ideas.get(match.group("right"))
+        if left is None or right is None:
+            return False
+        left_title = backlog_title_contract.normalize_workstream_title(
+            title=str(left.metadata.get("title", "")).strip(),
+            repo_root=None,
+        )
+        right_title = backlog_title_contract.normalize_workstream_title(
+            title=str(right.metadata.get("title", "")).strip(),
+            repo_root=None,
+        )
+        if not left_title or left_title != right_title or left_title not in requested_titles:
+            return False
+    return True
+
+
+def _workstream_id_number(value: str) -> int:
+    match = _WORKSTREAM_RE.fullmatch(str(value or "").strip().upper())
+    if not match:
+        return 10**9
+    return int(match.group(1))
+
+
 def _created_workstream_topology(
     *,
     allocated_ids: Sequence[str],
@@ -634,17 +685,27 @@ def _preserved_reorder_sections(
     snapshot: Mapping[str, Any],
     *,
     active_ids: set[str],
+    exclude_ids: set[str] | None = None,
+    known_ids: set[str] | None = None,
 ) -> list[tuple[str, str, list[str]]]:
     sections_payload = snapshot.get("reorder_sections", {})
     preserved: list[tuple[str, str, list[str]]] = []
+    excluded = {str(value).strip() for value in (exclude_ids or set()) if str(value).strip()}
+    known = {str(value).strip() for value in (known_ids or set()) if str(value).strip()}
     if not isinstance(sections_payload, Mapping):
         return preserved
     for key, value in sections_payload.items():
-        if str(key) in active_ids or not isinstance(value, Mapping):
+        section_id = str(key).strip()
+        if (
+            section_id in active_ids
+            or section_id in excluded
+            or (known and section_id not in known)
+            or not isinstance(value, Mapping)
+        ):
             continue
         preserved.append(
             (
-                str(key),
+                section_id,
                 str(value.get("heading", "")).strip(),
                 [str(line) for line in value.get("lines", [])] if isinstance(value.get("lines"), list) else [],
             )
@@ -713,6 +774,16 @@ def create_queued_backlog_items(
         backlog_index_path=backlog_index_path,
         ideas_root=ideas_root,
     )
+    normalized_titles: list[str] = []
+    for raw_title in titles:
+        title = backlog_title_contract.normalize_workstream_title(
+            title=str(raw_title).strip(),
+            repo_root=repo_root,
+        )
+        if not title:
+            raise ValueError("backlog titles must be non-empty")
+        normalized_titles.append(title)
+    update_existing_titles = bool(getattr(args, "update_existing_titles", False))
     ideas, idea_errors = backlog_contract._validate_idea_specs(ideas_root, repo_root=repo_root)
     if idea_errors:
         raise ValueError("; ".join(idea_errors))
@@ -721,7 +792,10 @@ def create_queued_backlog_items(
         ideas=ideas,
         repo_root=repo_root,
     )
-    if index_errors:
+    if index_errors and not (
+        update_existing_titles
+        and _requested_duplicate_title_errors(index_errors=index_errors, ideas=ideas, requested_titles=set(normalized_titles))
+    ):
         raise ValueError("; ".join(index_errors))
 
     snapshot = backlog_contract.load_backlog_index_snapshot(backlog_index_path)
@@ -740,16 +814,13 @@ def create_queued_backlog_items(
     tribunal_decisions: list[dict[str, Any]] = []
     mutable_ideas = dict(ideas)
     reserved_paths: set[Path] = set()
-    normalized_titles: list[str] = []
-    for raw_title in titles:
-        title = backlog_title_contract.normalize_workstream_title(
-            title=str(raw_title).strip(),
-            repo_root=repo_root,
-        )
-        if not title:
-            raise ValueError("backlog titles must be non-empty")
-        normalized_titles.append(title)
-    allocated_ids = _allocated_workstream_ids(ideas=mutable_ideas, count=len(normalized_titles))
+    existing_id_by_title = _existing_workstream_ids_by_title(ideas=mutable_ideas) if update_existing_titles else {}
+    new_title_count = sum(1 for title in normalized_titles if title not in existing_id_by_title)
+    new_ids = iter(_allocated_workstream_ids(ideas=mutable_ideas, count=new_title_count))
+    allocated_ids: list[str] = []
+    for title in normalized_titles:
+        existing_id = existing_id_by_title.get(title)
+        allocated_ids.append(existing_id if existing_id else next(new_ids))
     parent_id = str(getattr(args, "parent", "") or "").strip().upper()
     existing_text_by_path: dict[Path, str] = {}
     if parent_id and str(args.workstream_type or "standalone").strip().lower() != "standalone":
@@ -776,7 +847,10 @@ def create_queued_backlog_items(
             workstream_children=tuple(str(item) for item in workstream_children if str(item).strip()),
         )
         metadata_by_idea_id[idea_id] = metadata
-        idea_path = _unique_idea_path(ideas_root=ideas_root, title=title, today=today, reserved=reserved_paths)
+        if idea_id in ideas:
+            idea_path = ideas[idea_id].path
+        else:
+            idea_path = _unique_idea_path(ideas_root=ideas_root, title=title, today=today, reserved=reserved_paths)
         reserved_paths.add(idea_path)
         sections = _grounded_sections_for_title(title=title, args=row_args)
         tribunal_decisions.append(_backlog_tribunal_decision(title=title, sections=sections).to_dict())
@@ -799,7 +873,24 @@ def create_queued_backlog_items(
         )
 
     row_records: list[dict[str, Any]] = []
+    updated_existing_ids = {idea_id for idea_id in allocated_ids if idea_id in ideas}
+    updated_titles = set(normalized_titles) if update_existing_titles else set()
+    stale_idea_paths: list[Path] = []
+    stale_idea_ids: list[str] = []
     for ordinal, row in enumerate(active_rows):
+        row_id = str(row["idea_id"]).strip()
+        row_title = backlog_title_contract.normalize_workstream_title(
+            title=str(row["title"]).strip(),
+            repo_root=repo_root,
+        )
+        if row_id in updated_existing_ids:
+            continue
+        if row_title in updated_titles:
+            stale_spec = mutable_ideas.pop(row_id, None)
+            if stale_spec is not None:
+                stale_idea_paths.append(stale_spec.path)
+                stale_idea_ids.append(row_id)
+            continue
         row_records.append(
             {
                 "idea_id": str(row["idea_id"]).strip(),
@@ -859,6 +950,7 @@ def create_queued_backlog_items(
         for key, value in dict(snapshot.get("reorder_sections", {})).items()
         if isinstance(snapshot.get("reorder_sections"), Mapping) and isinstance(value, Mapping)
     }
+    created_by_id = {item.idea_id: item for item in created_items}
     for rank, row in enumerate(row_records, start=1):
         idea_id = str(row["idea_id"]).strip()
         formatted_rows.append(
@@ -877,11 +969,15 @@ def create_queued_backlog_items(
                 str(row["link"]).strip(),
             ]
         )
-        if idea_id in existing_reorder:
+        if idea_id in existing_reorder and idea_id not in updated_existing_ids:
             _existing_heading, existing_lines = existing_reorder[idea_id]
             rationale_sections.append((idea_id, f"{idea_id} (rank {rank})", existing_lines))
             continue
-        created = next(item for item in created_items if item.idea_id == idea_id)
+        created = created_by_id.get(idea_id)
+        if created is None:
+            _existing_heading, existing_lines = existing_reorder.get(idea_id, ("", []))
+            rationale_sections.append((idea_id, f"{idea_id} (rank {rank})", existing_lines))
+            continue
         rationale_sections.append(
             (
                 idea_id,
@@ -893,7 +989,14 @@ def create_queued_backlog_items(
                 ),
             )
         )
-    rationale_sections.extend(_preserved_reorder_sections(snapshot, active_ids=active_ids))
+    rationale_sections.extend(
+        _preserved_reorder_sections(
+            snapshot,
+            active_ids=active_ids,
+            exclude_ids=set(stale_idea_ids),
+            known_ids=set(mutable_ideas),
+        )
+    )
     updated_index_text = _rewrite_active_backlog_section(
         backlog_index_path=backlog_index_path,
         active_rows=formatted_rows,
@@ -908,9 +1011,11 @@ def create_queued_backlog_items(
         "idea_files": {str(path.resolve()): text for path, text in new_text_by_path.items()},
         "_candidate_idea_specs": mutable_ideas,
         "existing_idea_files": {str(path.resolve()): text for path, text in existing_text_by_path.items()},
-        "tribunal": {
+        "stale_idea_files": [str(path.resolve()) for path in stale_idea_paths],
+        "stale_idea_ids": stale_idea_ids,
+        "validation_gate": {
             "status": "passed",
-            "version": "governed-artifact-tribunal-v1",
+            "version": "governed-artifact-validation-v1",
             "items": tribunal_decisions,
         },
     }
@@ -975,6 +1080,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not bool(args.dry_run):
         for raw_path, text in result.get("existing_idea_files", {}).items():
             Path(raw_path).write_text(str(text), encoding="utf-8")
+        for raw_path in result.get("stale_idea_files", []):
+            path = Path(str(raw_path))
+            if path.is_file():
+                path.unlink()
+        for stale_id in result.get("stale_idea_ids", []):
+            token = str(stale_id).strip().upper()
+            if not token:
+                continue
+            program_path = repo_root / "odylith" / "radar" / "source" / "programs" / f"{token}.execution-waves.v1.json"
+            if program_path.is_file():
+                program_path.unlink()
         for raw_path, text in result["idea_files"].items():
             Path(raw_path).write_text(str(text), encoding="utf-8")
         backlog_index_path.write_text(str(result["backlog_index_text"]), encoding="utf-8")
@@ -1042,7 +1158,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "radar": radar_refresh,
                 "compass": compass_refresh,
             },
-            "tribunal": result.get("tribunal", {}),
+            "validation_gate": result.get("validation_gate") or result.get("tribunal", {}),
             "dashboard": ""
             if args.dry_run
             else owned_surface_refresh.dashboard_handoff(
@@ -1060,7 +1176,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"- created_ids: {', '.join(str(item['idea_id']) for item in result['created'])}")
         print(f"- release_target: {release_payload['release_id'] or 'none'}")
         print("- queued_status_preserved: yes")
-        print(f"- tribunal: {result.get('tribunal', {}).get('status', 'unknown')}")
+        validation_gate = result.get("validation_gate") or result.get("tribunal", {})
+        print(f"- validation gate: {validation_gate.get('status', 'unknown')}")
         print(f"- radar_refresh: {radar_refresh['status']}")
         print(f"- compass_refresh: {compass_refresh['status']}")
         first_created_id = str(result["created"][0]["idea_id"]) if result["created"] else ""

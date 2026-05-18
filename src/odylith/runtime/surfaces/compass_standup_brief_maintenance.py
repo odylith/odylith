@@ -992,7 +992,10 @@ def failure_brief_for_fact_packet(
         return None
     if str(state_entry.get("status", "")).strip().lower() in {"ready", "skipped"}:
         return None
-    diagnostics = _diagnostics_from_state_entry(state_entry)
+    diagnostics = compass_standup_brief_narrator._diagnostics_with_local_fallback(  # noqa: SLF001
+        fact_packet=fact_packet,
+        diagnostics=_diagnostics_from_state_entry(state_entry),
+    )
     return _failure_brief(
         fingerprint=fingerprint,
         generated_utc=str(generated_utc).strip() or _now_utc_iso(),

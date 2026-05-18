@@ -43,7 +43,7 @@ def build_product_intent_confirmation(
                 "a short product title that names the actual product, not the command",
                 "the product story you believe the user means, written as concise narrative prose",
                 "the state object that changes through the first journey",
-                "the first complete path Odylith should prove before broader scope",
+                "the first complete path the product should prove before broader scope",
                 "the main human actors and why each matters",
                 "external systems separated from internal product systems",
                 "the critical assumptions you are making about origin, maturity, safety, money, data, runtime, or integrations",
@@ -58,7 +58,7 @@ def build_product_intent_confirmation(
                 "use generic actor placeholders instead of project-specific human roles",
                 "turn the product story into a list of governance artifacts",
                 "invent source-backed implementation evidence",
-                "generate backlog, Registry, Atlas, release waves, validation obligations, or proposal JSON before confirmation",
+                "generate implementation records, architecture records, release waves, validation obligations, or proposal JSON before confirmation",
                 "dump a generic template or domain catalog",
             ],
             "reasoning_standard": (
@@ -69,7 +69,7 @@ def build_product_intent_confirmation(
         },
         "confirmation_gate": {
             "status": "waiting_for_host_authored_product_intent",
-            "proceed": "If the interpretation is right, ask the operator to confirm so Odylith can build the apply-ready proposal, run Tribunal, and apply governed records.",
+            "proceed": "If the interpretation is right, ask the operator to confirm so Odylith can build the apply-ready proposal, run deterministic validation, and apply accepted project records.",
             "edit": "If anything is wrong or missing, ask the operator to reply with corrections before proposal expansion.",
             "reject": "If this is not the intended product, stop and write no records.",
         },
@@ -121,7 +121,7 @@ def format_product_intent_confirmation_text(confirmation: Mapping[str, Any]) -> 
             prompt,
             "",
             "Next step",
-            "- Confirm: if the interpretation is right, write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md, then run greenfield create with --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm so Odylith builds from the accepted narrative, runs Tribunal, and applies governed project records. Do not ask the operator to inspect proposal JSON.",
+            "- Confirm: if the interpretation is right, write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md, then run greenfield create with --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm so Odylith builds from the accepted narrative, validates it, and applies accepted project records. Do not ask the operator to inspect proposal JSON.",
             "- Edit: if the product story, actors, systems, assumptions, first path, or proof boundary is wrong, ask for corrections and rerun this confirmation.",
             "- Reject: if this is not the intended product, stop here and write nothing.",
         ]

@@ -4,8 +4,9 @@ import ast
 import json
 from pathlib import Path
 
-from odylith.runtime.project_intelligence import assets, builder, deeplinks, focus, presenter
+from odylith.runtime.project_intelligence import assets, builder, deeplinks, focus, presenter, product_story
 from odylith.runtime.project_intelligence.greenfield import _risk_classes
+from odylith.runtime.surfaces import dashboard_shell_links
 from tests.unit.runtime.test_greenfield_proposals import _apply_ready_greenfield_fixture as _host_greenfield_fixture
 
 
@@ -242,18 +243,18 @@ def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path:
     assert any("Registry names the owned boundaries" in row for row in source_records)
     assert any("Atlas gives reviewers" in row for row in source_records)
     assert payload["answers"][0] == (
-        "Who uses Odylith?",
+        "Who uses it?",
         "repository operators and coding agents",
         "Operators request repo work; agents execute it under Odylith controls.",
     )
     assert payload["answers"][1] == (
-        "What changes in Odylith?",
+        "What changes?",
         "coding-agent work",
         "Work moves from request to action with grounding, governance, and memory.",
     )
-    assert payload["answers"][2][0] == "What matters now for Odylith?"
+    assert payload["answers"][2][0] == "What matters now?"
     assert payload["answers"][4] == (
-        "What proves Odylith?",
+        "What proves it?",
         "State, work, shape, and risk evidence",
         "Compass shows state; Radar shows active work; Registry and Atlas show shape and topology; Casebook shows open risks.",
     )
@@ -308,9 +309,9 @@ def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path:
     assert payload["scenario_title"] == "Current implementing work"
     assert payload["jobs_title"] == "What is active for 0.2.0: Human Project Entry?"
     assert payload["boundary_title"] == "What is inside the current implementing boundary?"
-    assert payload["claim_evidence_title"] == "What can be trusted about Odylith right now?"
-    assert payload["state_title"] == "Where does Odylith stand?"
-    assert payload["next_title"] == "What should move next for Odylith?"
+    assert payload["claim_evidence_title"] == "What can be trusted right now?"
+    assert payload["state_title"] == "Where does this stand?"
+    assert payload["next_title"] == "What should move next?"
     assert payload["included_label"] == "In current slice"
     assert any("B-201: Dynamic Project intelligence" in item for item in payload["included"])
     assert any("missing subcomponent dashboard" in item for item in payload["excluded"])
@@ -322,16 +323,18 @@ def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path:
     assert "project-decision-grid" not in html
     assert "Decision now" not in html
     assert "What must be decided?" not in html
-    assert "What should move next for Odylith?" in html
-    assert "What can be trusted about Odylith right now?" in html
-    assert "Observed now" in html
-    assert "Proof gaps" in html
-    assert "View claim audit" in html
+    assert "What should move next?" in html
+    assert "What can be trusted about Odylith right now?" not in html
+    assert "Observed now" not in html
+    assert "Proof gaps" not in html
+    assert "View claim audit" not in html
     assert "Is the Odylith governance spine healthy?" not in html
     assert "What source coverage exists for Odylith?" not in html
-    assert "What changed or conflicts in Odylith?" in html
-    assert "What risk matters for Odylith?" in html
-    assert "What matters now for Odylith?" in html
+    assert "What changed or conflicts?" in html
+    assert "What risk matters?" in html
+    assert "What is inside the current implementing boundary?" not in html
+    assert "In current slice" not in html
+    assert "What matters now?" in html
     assert "What decision matters for Odylith?" not in html
     assert "Governance Engine" not in html
     assert "Source role:" not in html
@@ -348,8 +351,10 @@ def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path:
         '<a class="project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-201" '
         'data-tooltip="Dynamic Project intelligence" aria-label="Dynamic Project intelligence">B-201</a>'
     ) in html
-    assert '<a class="project-deeplink" target="_top" href="?tab=casebook">Casebook</a>' in html
-    assert '<a class="project-deeplink" target="_top" href="?tab=registry">Registry</a>' in html
+    assert '<a class="project-deeplink" target="_top" href="?tab=casebook">Casebook</a>' not in html
+    assert '<a class="project-deeplink" target="_top" href="?tab=registry">Registry</a>' not in html
+    assert "Casebook" in html
+    assert "Registry" in html
     assert "<b>Active work</b>" in html
     assert "<b>Next move</b>" in html
     assert "<b>Proof boundary</b>" in html
@@ -510,7 +515,7 @@ def test_project_intelligence_source_greenfield_story_uses_product_identity_befo
     assert "implementation-only context" in payload["desired"]
     assert all(term not in payload["desired"] for term in ("Radar", "Registry", "Atlas", "Compass", "Casebook"))
     assert payload["answers"][4] == (
-        "What proves Forest Preservation Tracker?",
+        "What proves it?",
         "Reviewer-visible product evidence",
         "A reviewer can follow the current state, active workflow, ownership boundary, risks, and validation evidence without relying on implementation-only context.",
     )
@@ -640,27 +645,62 @@ def test_project_intelligence_accepted_greenfield_story_uses_product_narrative_b
     assert payload["title"] == "Forest Preservation Tracker"
     assert payload["projection"]["origin"] == "accepted greenfield project"
     assert "accepted greenfield project" in payload["chips"]
-    assert story["paragraphs"][0].startswith("Forest Preservation Tracker is a record-keeping")
-    assert "conservation stewards" in story["paragraphs"][0]
-    assert "The first path is straightforward: a steward registers a forest parcel" in story["paragraphs"][1]
-    assert "current-state view that cites both observations" in story["paragraphs"][1]
+    assert payload["focus_label"] == "Accepted focus"
+    assert payload["open_label"] == "Open questions"
+    assert "Forest Preservation Tracker focus" not in html
+    assert "Open Forest Preservation Tracker questions" not in html
+    assert story["paragraphs"][0].startswith("The steward")
+    assert "keeps the work focused" in story["paragraphs"][0]
+    assert "forest parcel" in story["paragraphs"][0]
+    assert story["paragraphs"][1].startswith("Bottom line: release 0.0.1 succeeds")
+    assert "leaves enough evidence for review" in story["paragraphs"][1]
+    assert not any("The first path is straightforward:" in row for row in story["paragraphs"])
     assert "Radar" not in leading_story
     assert "Registry" not in leading_story
     assert "Atlas" not in leading_story
-    assert "The desired operational reality" in payload["desired"]
+    assert "Target reality:" in payload["desired"]
+    assert "User capability:" in payload["desired"]
+    assert "Release trust:" in payload["desired"]
     assert "Stewards get one place" in payload["desired"]
-    assert "Observer safety leakage" in payload["desired"]
-    assert "Release 0.0.1 succeeds when a reviewer can follow the evidence" in payload["desired"]
+    assert "Observer safety leakage" not in payload["desired"]
+    assert "first complete path" not in payload["desired"].casefold()
     assert all(term not in payload["desired"] for term in ("Radar", "Registry", "Atlas", "Compass", "Casebook"))
-    assert any(row.startswith("After the product path is clear") for row in story["paragraphs"])
-    assert "Who uses Forest Preservation Tracker?" in html
+    assert not any(row.startswith("After the product path is clear") for row in story["paragraphs"])
+    assert story["supporting_records"] == []
+    assert "Who uses it?" in html
     assert "Steward" in html
     assert "Field observer and community monitor" in html
     assert "Verifier" in html
     assert "Observer safety leakage" in html
     assert "Release 0.0.1 proof boundary" in html
-    assert "Open first plan" in html
-    assert "Revise story" in html
+    assert "Planning can continue" not in html
+    assert "Build is still blocked" not in html
+    assert "Risks that block build" not in html
+    assert "What is the first release boundary?" not in html
+    assert "Inside first release" not in html
+    assert "Outside until resolved" not in html
+    assert payload["next_title"] == "Start implementation planning"
+    assert "Open the first implementation plan first" in html
+    assert "Human " + "takeaway" not in html
+    assert "proof_title" not in payload
+    assert "Planning facts" not in html
+    assert "Build trust blockers" not in html
+    assert "Planning confidence" not in html
+    assert "Medium means the direction is usable for planning" not in html
+    assert not any("A steward registers a forest parcel" in row for row in payload["known"])
+    assert not any("The first complete path" in row for row in payload["known"])
+    assert "Product direction accepted for planning." in payload["known"]
+    assert any(row.startswith("Planned shape:") for row in payload["known"])
+    assert payload["host_handoff_title"] == "Prompts to use next"
+    assert "Use the first prompt to open the implementation plan" in html
+    assert "Start the first implementation plan" not in html
+    assert "Product decision owner and implementation owner" not in html
+    assert "Expected output" not in html
+    assert "Risk if delayed" not in html
+    assert "Start implementation plan" in html
+    assert "Implement first coding slice" in html
+    assert html.index("Start implementation plan") < html.index("Implement first coding slice")
+    assert "Revise project direction" in html
     assert "Forest Parcel Records Service is a `service`" not in html
     assert "Who uses Forest Parcel Records Service" not in html
     assert "repository operators" not in html
@@ -668,6 +708,250 @@ def test_project_intelligence_accepted_greenfield_story_uses_product_narrative_b
     assert "Odylith, apply this greenfield proposal" not in html
     assert "Accept it" not in html
     assert 'title="Forest Parcel Records Service with Versioned Boundary"' not in html
+
+
+def test_greenfield_product_story_does_not_repeat_hero_intro_or_numbered_first_path() -> None:
+    intro = (
+        "A musician or ensemble plays live. A laptop, phone, or tablet running LiveScore listens through its microphone. "
+        "As the performance progresses, LiveScore transcribes what is being played and, at the end of the take, produces "
+        "a clean, human-readable sheet-music PDF and MusicXML file. The wedge is the single-instrument live take: a solo "
+        "player wants the score back without re-playing it into notation software."
+    )
+    first_path = (
+        "The first complete path the product must prove is the solo monophonic instrument single take, offline analysis "
+        "flow: 1. User opens the app and taps Record. 2. User plays a roughly 30-second line. 3. User taps Stop. "
+        "4. The app shows the rendered score and offers downloadable files."
+    )
+    proof = (
+        "Proof must show the accepted first path passes end to end: "
+        "1. User opens the app and taps Record. 2. User plays a roughly 30-second line. 3. User taps Stop."
+    )
+
+    story = product_story.build_greenfield_product_story(
+        title="- LiveScore: Live Performance",
+        intro=intro,
+        project={
+            "intent": [
+                f"Project objective: {intro}",
+                "User or stakeholder outcome: The performer can hand the result to another player and get a recognizable reproduction of the take.",
+                f"Success condition: {proof}",
+                "Non-goals: live streaming notation, noisy-stage transcription, and cloud accounts in the first release.",
+            ]
+        },
+        project_brief={
+            "summary": intro,
+            "operating_principle": "Every release claim stays attached to the user capability, source evidence, and proof boundary accepted in the product direction.",
+        },
+        first_path=first_path,
+        release="0.0.1",
+        release_plan={"strategy": proof},
+        validation=[proof],
+        accepted={},
+        backlog=[],
+        components=[
+            {"label": "Audio Capture and Pre-processing Service"},
+            {"label": "Pitch and Onset Detection Engine"},
+            {"label": "Notation Export Service"},
+        ],
+        diagrams=[],
+        actors=[],
+    )
+    story_json = json.dumps(story, sort_keys=True)
+
+    assert story["headline"] == "Release 0.0.1 proves one usable first path"
+    assert story["paragraphs"][0].startswith("A musician or ensemble plays live")
+    assert story_json.count("A musician or ensemble plays live") == 1
+    assert "1. User" not in story_json
+    assert "2. User" not in story_json
+    assert not any("The first path is straightforward" in row for row in story["paragraphs"])
+    assert {row["label"] for row in story["release_contract"]} >= {
+        "User problem",
+        "First path",
+        "Product boundary",
+        "Owned capabilities",
+        "Proof",
+    }
+    assert "1. User" not in json.dumps(story["release_contract"])
+
+
+def test_greenfield_product_story_strips_markdown_prefaces_and_generic_proof_fallback() -> None:
+    first_path = (
+        "The first complete path to prove should be: user imports activity history, the product finds a likely recurring item, "
+        "shows evidence for that item, guides the user through a decision, records the outcome, and checks the next cycle."
+    )
+
+    story = product_story.build_greenfield_product_story(
+        title="Cleanup Assistant",
+        intro="A user wants to reduce recurring waste without losing services they still need.",
+        project={
+            "intent": [
+                "Project objective: A user wants to reduce recurring waste without losing services they still need.",
+                "User or stakeholder outcome: The user can review one recurring item, understand the evidence, and decide safely.",
+                "Success condition: Proof must show the accepted first path passes end to end.",
+            ]
+        },
+        project_brief={},
+        first_path=first_path,
+        release="0.0.1",
+        release_plan={"strategy": "Proof must show the accepted first path passes end to end."},
+        validation=["Proof must show the accepted first path passes end to end."],
+        accepted={},
+        backlog=[],
+        components=[{"label": "Activity Ingestion Service"}],
+        diagrams=[],
+        actors=[("", "**Account owner**", "**wants to reduce waste without losing important services.")],
+    )
+    rendered = json.dumps(story, sort_keys=True)
+
+    assert story["headline"] == "Release 0.0.1 proves one usable first path"
+    assert "**" not in rendered
+    assert "complete path to prove should be" not in rendered.casefold()
+    assert "Reviewer can compare the scenario result" not in rendered
+    assert any(row["label"] == "First path" for row in story["release_contract"])
+    assert any("representative input" in row["body"] for row in story["release_contract"] if row["label"] == "Proof")
+
+
+def test_greenfield_project_sections_do_not_reuse_first_path_as_page_filler(tmp_path: Path) -> None:
+    first_path = (
+        "The first complete path the product must prove is the solo monophonic instrument single take, offline analysis "
+        "flow: 1. User opens the app and taps Record. 2. User plays a roughly 30-second line. 3. User taps Stop. "
+        "4. The app shows a rendered score and downloadable MusicXML."
+    )
+    proposal = {
+        "mode": "greenfield_apply_ready",
+        "intent": {"title": "Practice Score Assistant"},
+        "observed_source": {"source_posture": "docs_only"},
+        "project_brief": {
+            "purpose": "A musician records a short practice take and gets a readable score they can review.",
+            "operator_value": "The performer can inspect the take, score, and export without replaying the music into notation software.",
+            "operating_principle": "Every release claim stays tied to the take state, evidence, and explicit non-goals.",
+        },
+        "project_intelligence": {
+            "state": [
+                (
+                    "The product's primary state object is the Take. A Take moves through these states during the first journey: "
+                    "idle: no audio capture active. capturing: sound detected. transcribed: note events resolved. "
+                    "scored: renderable notation produced. exported: score artifacts written. A Take owns: raw audio, note events, score model, rendered score, export artifacts."
+                )
+            ],
+        },
+        "validation_strategy": [f"first_slice_proof: {first_path}"],
+        "open_questions": [
+            {"question": "Does the first release need live notation or post-take export?"}
+        ],
+        "release_plan": {"label": "0.0.1", "strategy": "Release 0.0.1 proves the accepted score-capture boundary."},
+        "backlog": [
+            {
+                "title": "Establish Practice Score Assistant Program",
+                "recommended_first_slice": first_path,
+                "evidence_tier": "user_intent",
+            },
+            {
+                "title": "Prove Audio Capture Service",
+                "problem": f"The first user path must be built around the accepted product path: {first_path}",
+                "product_view": "Audio Capture Service owns microphone input and take buffering.",
+                "recommended_first_slice": first_path,
+                "evidence_tier": "odylith_assumption",
+            },
+            {
+                "title": "Define Pitch And Onset Detection Engine Boundary",
+                "product_view": "Pitch engine owns pitch tracking and onset segmentation.",
+                "recommended_first_slice": first_path,
+                "evidence_tier": "odylith_assumption",
+            },
+        ],
+        "components": [
+            {
+                "label": "Audio Capture Service",
+                "responsibility": "Audio capture owns microphone input and take buffering.",
+            }
+        ],
+        "diagrams": [{"title": "System Context View"}],
+    }
+
+    payload = builder.build_project_intelligence_payload(repo_root=tmp_path, shell_payload={"greenfield_proposal": proposal})
+    html = presenter.render_project_html({"project_intelligence": payload})
+    first_path_summary = "The solo monophonic instrument single take, offline analysis flow."
+    repeated_surfaces = json.dumps(
+        {
+            "answers": payload["answers"],
+            "jobs": payload["jobs"],
+            "known": payload["known"],
+            "claim_evidence": payload["claim_evidence"],
+        },
+        sort_keys=True,
+    )
+    release_contract_json = json.dumps(payload["product_story"]["release_contract"], sort_keys=True)
+
+    assert ("First path", first_path_summary) not in payload["answers"]
+    assert first_path_summary not in repeated_surfaces
+    assert "The first complete path the product must prove" not in repeated_surfaces
+    assert "User opens the app" not in repeated_surfaces
+    assert "User opens the app" not in release_contract_json
+    assert payload["scenario_details"][0] == ("First path", first_path_summary)
+    assert payload["jobs"][0][0] == "Establish Program"
+    assert "Establish Practice Score Assistant Program" not in html
+    assert payload["jobs"][0][1].startswith("Sets the accepted product story")
+    assert payload["answers"][1][1] == "Take moves from idle to exported"
+    assert payload["jobs"][1][1] == "Owns microphone input and take buffering."
+    assert payload["jobs"][2][0] == "Define Pitch and Onset Detection Engine Boundary"
+    assert len({row[1] for row in payload["jobs"]}) == len(payload["jobs"])
+    assert all("odylith" not in row[2].casefold() for row in payload["jobs"])
+    assert "boundary_title" not in payload
+    assert "included_label" not in payload
+    assert "excluded_label" not in payload
+    assert "included" not in payload
+    assert "excluded" not in payload
+    assert not any("First accepted path:" in row or "First proposed path:" in row for row in payload["known"])
+
+
+def test_greenfield_project_participants_collapse_role_description_duplicates(tmp_path: Path) -> None:
+    proposal = {
+        "mode": "greenfield_apply_ready",
+        "intent": {"title": "Practice Score Assistant"},
+        "observed_source": {"source_posture": "docs_only"},
+        "project_brief": {
+            "purpose": "A musician records a short take and gets a readable score they can review.",
+            "operator_value": "The performer can inspect the take and score without replaying the music into notation software.",
+            "operating_principle": "Every release claim stays tied to the accepted user capability and evidence.",
+        },
+        "project_intelligence": {
+            "owners": [
+                "Solo performer (primary): the musician who plays the take and reads the resulting score.",
+                "Solo performer (primary): The musician who plays the take and reads the resulting score.",
+            ],
+        },
+        "validation_strategy": [
+            "first_slice_proof: A solo performer records one take and reviews the generated score."
+        ],
+        "release_plan": {"label": "0.0.1"},
+        "backlog": [
+            {
+                "title": "Establish Practice Score Assistant Program",
+                "customer": (
+                    "Solo performer (primary): the musician who plays the take and reads the resulting score; "
+                    "Solo performer (primary); "
+                    "Practicing student: uses the score later."
+                ),
+                "recommended_first_slice": "A solo performer records one take and reviews the generated score.",
+                "domain_intelligence": {
+                    "actors": [
+                        "Solo performer (primary): the musician who plays the take and reads the resulting score.",
+                        "Practicing student: uses the score later.",
+                    ],
+                },
+            }
+        ],
+        "components": [],
+        "diagrams": [],
+    }
+
+    payload = builder.build_project_intelligence_payload(repo_root=tmp_path, shell_payload={"greenfield_proposal": proposal})
+    titles = [row[1] for row in payload["actors"]]
+
+    assert titles.count("Solo performer (primary)") == 1
+    assert titles.count("Practicing student") == 1
+    assert not any(": the musician" in title.casefold() for title in titles)
 
 
 def test_project_intelligence_presenter_renders_fallback_without_payload() -> None:
@@ -693,10 +977,49 @@ def test_project_intelligence_deeplink_renderer_links_governance_references() ->
     assert 'href="?tab=casebook&amp;bug=CB-654" data-tooltip="Rollback owner missing"' in html
     assert 'href="?tab=atlas&amp;diagram=D-987" data-tooltip="First slice flow"' in html
     assert 'title="Customer intake workflow"' not in html
-    assert 'href="?tab=registry">Registry</a>' in html
-    assert 'href="?tab=radar">radar</a>' in html
+    assert 'href="?tab=registry">Registry</a>' not in html
+    assert 'href="?tab=radar">radar</a>' not in html
+    assert "Registry, radar" in html
     assert 'href="technical-plans/in-progress/demo.md"' in html
     assert 'href="?tab=registry" data-tooltip=' not in html
+
+
+def test_shell_text_linkifier_keeps_surface_names_plain_and_links_ids(tmp_path: Path) -> None:
+    html = dashboard_shell_links.linkify_shell_text(
+        "Radar and Registry mention B-321, D-987, and odylith/technical-plans/in-progress/demo.md.",
+        repo_root=tmp_path,
+        output_path=tmp_path / "odylith" / "index.html",
+        preferred_scope_key="demo",
+    )
+
+    assert "Radar and Registry mention" in html
+    assert 'href="?tab=radar">Radar</a>' not in html
+    assert 'href="?tab=registry">Registry</a>' not in html
+    assert 'href="?tab=radar&amp;workstream=B-321">B-321</a>' in html
+    assert 'href="?tab=atlas&amp;workstream=B-321&amp;diagram=D-987">D-987</a>' in html
+
+
+def test_project_intelligence_presenter_links_project_jobs_to_radar_workstreams() -> None:
+    html = presenter.render_project_html(
+        {
+            "project_intelligence": {
+                "title": "Fixture project",
+                "intro": "Fixture intro.",
+                "chips": [],
+                "sections": ["jobs"],
+                "jobs_title": "What is proposed?",
+                "jobs_note": "Fixture jobs note.",
+                "jobs": [
+                    ("Prove first capability", "Owns the first release capability.", "Inferred", "B-321"),
+                ],
+                "governance_titles": {"B-321": "Prove first capability"},
+            }
+        }
+    )
+
+    assert 'class="project-job-title-link" target="_top" href="?tab=radar&amp;workstream=B-321"' in html
+    assert 'href="?tab=radar&amp;workstream=B-321" data-tooltip="Prove first capability"' in html
+    assert 'title="Prove first capability"' not in html
 
 
 def test_project_intelligence_presenter_uses_payload_narration_labels() -> None:
@@ -793,6 +1116,30 @@ def test_project_intelligence_presenter_uses_payload_narration_labels() -> None:
     assert "Where does the project stand?" not in html
 
 
+def test_project_intelligence_hero_rail_labels_do_not_repeat_project_title() -> None:
+    project_title = "Long Consumer Product Title That Already Appears In The Hero"
+    payload = {
+        "project_intelligence": {
+            "eyebrow": "fixture lens",
+            "title": project_title,
+            "intro": "Fixture project intro.",
+            "chips": ["fixture"],
+            "focus_label": f"Accepted {project_title} focus",
+            "focus": "Promote only after proof passes.",
+            "open_label": f"Open {project_title} questions",
+            "open": ["Which input path proves the first release?"],
+            "sections": [],
+        }
+    }
+
+    html = presenter.render_project_html(payload)
+
+    assert f"Accepted {project_title} focus" not in html
+    assert f"Open {project_title} questions" not in html
+    assert "<p>Accepted focus</p>" in html
+    assert "<p>Open questions</p>" in html
+
+
 def test_project_intelligence_renders_greenfield_origin_from_proposal(tmp_path: Path) -> None:
     proposal = _apply_ready_greenfield_fixture(tmp_path, "Build an ecommerce site with checkout recovery")
 
@@ -805,16 +1152,36 @@ def test_project_intelligence_renders_greenfield_origin_from_proposal(tmp_path: 
     assert payload["projection"]["origin"] == "greenfield proposal"
     assert "greenfield proposal" in payload["chips"]
     assert "User-stated and inferred" in payload["chips"]
-    assert "claim_evidence" in payload["sections"]
-    assert "Proposed first-path scenario" in html
-    assert "What can be trusted about" in html
-    assert "Accepted intent" in html
-    assert "Proposed shape" in html
-    assert "Proof still required" in html
-    assert "View claim audit" in html
-    assert "Unproven before build" in html
+    assert "claim_evidence" not in payload["sections"]
+    assert "Proposed first-path scenario" not in html
+    assert "Accepted first-path scenario" not in html
+    assert "What can be trusted about" not in html
+    assert "Direction accepted" not in html
+    assert "Shape to build" not in html
+    assert "Proof to earn" not in html
+    assert "software behavior is not trusted yet" not in html
+    assert "View claim audit" not in html
+    assert "Can " not in html
+    assert "move into implementation planning" not in html
+    assert "Human " + "takeaway" not in html
+    assert "Planning can continue" not in html
+    assert "Build is still blocked" not in html
+    assert "Risks that block build" not in html
+    assert "What is the first release boundary?" not in html
+    assert "Inside first release" not in html
+    assert "Outside until resolved" not in html
+    assert "What must be controlled before" not in html
+    assert "Build trust blockers" not in html
+    assert "Proposal confidence" not in html
+    assert "state" not in payload["sections"]
+    assert "Status now" not in html
+    assert "Where does this stand" not in html
+    assert "project-state-grid" not in html
     assert "Source-backed runtime" not in payload["chips"]
-    assert "The desired operational reality" in payload["desired"]
+    assert "Target reality:" in payload["desired"]
+    assert "User capability:" in payload["desired"]
+    assert "Release trust:" in payload["desired"]
+    assert " before." not in payload["desired"]
     assert "Release" in payload["desired"]
     assert all(term not in payload["desired"] for term in ("Radar", "Registry", "Atlas", "Compass", "Casebook"))
     assert any(row["evidence"] in {"user-stated", "inferred", "needs validation"} for row in payload["claim_evidence"])
@@ -824,18 +1191,19 @@ def test_project_intelligence_renders_greenfield_origin_from_proposal(tmp_path: 
     assert isinstance(story, dict)
     assert "the team can prove" not in story["headline"]
     assert "accept the" not in story["headline"].casefold()
+    assert story["headline"].startswith("Release 0.0.1 proves")
     assert story["release_contract"]
-    assert {row["label"] for row in story["release_contract"]} >= {"User value", "Core loop", "Proof"}
-    assert len(story["paragraphs"]) >= 3
-    assert any("narrows that promise" in row for row in story["paragraphs"])
-    assert any("before scope expands" in row or "failure mode" in row or "outside the first slice" in row for row in story["paragraphs"])
-    assert any("After the product path is clear" in row for row in story["paragraphs"])
-    source_records = story["supporting_records"]
-    assert any(row.startswith("Radar:") for row in source_records)
-    assert any(row.startswith("Registry:") for row in source_records)
-    assert any(row.startswith("Atlas:") for row in source_records)
-    assert any(row.startswith("Proof:") for row in source_records)
+    assert {row["label"] for row in story["release_contract"]} >= {"User problem", "First path", "Product boundary", "Proof"}
+    assert not any(row["label"] in {"First accepted path", "User value", "Release boundary", "Operating rule"} for row in story["release_contract"])
+    assert len(story["paragraphs"]) >= 2
+    assert any("keeps the work focused" in row for row in story["paragraphs"])
+    assert any("Bottom line: release" in row for row in story["paragraphs"])
+    assert not any("After the product path is clear" in row for row in story["paragraphs"])
+    assert story["supporting_records"] == []
+    assert all(term not in json.dumps(story) for term in ("Radar", "Registry", "Atlas", "Compass"))
     assert "Product Story" in html
+    assert html.index("project-product-story") < html.index("project-participants") < html.index("project-answer-strip")
+    assert 'class="project-panel project-answer-strip"' in html
     assert "the team can prove" not in html
     assert "project-story-contract" in html
     assert payload["host_handoff_title"] == "How to continue in the host chat"
@@ -844,9 +1212,9 @@ def test_project_intelligence_renders_greenfield_origin_from_proposal(tmp_path: 
     assert "Reject it" in html
     assert "Paste the chosen prompt into the same host chat" in html
     assert "proposal JSON" in html
-    assert "Radar" in html
-    assert "Registry" in html
-    assert "Atlas" in html
+    assert "Radar" not in html
+    assert "Registry" not in html
+    assert "Atlas" not in html
     assert "Topology spine" not in html
     assert "Story root" not in html
     assert "How the story becomes governance" not in html
@@ -871,6 +1239,24 @@ def test_greenfield_risk_posture_uses_readable_categories() -> None:
     for row, risk in zip(rows, risks, strict=True):
         assert row["meaning"] == risk
         assert row["risk"] not in row["meaning"]
+
+
+def test_greenfield_risk_posture_does_not_echo_numbered_first_path() -> None:
+    risks = [
+        (
+            "If the accepted first path is ambiguous, users cannot tell which state changed or which source produced "
+            "the evidence: The first complete path the product must prove is the solo take flow: 1. User opens the app. "
+            "2. User records audio. 3. User exports the result."
+        )
+    ]
+
+    rows = _risk_classes(risks)
+
+    assert rows[0]["meaning"] == (
+        "If the accepted first path is ambiguous, users cannot tell which state changed or which source produced the evidence."
+    )
+    assert "1. User" not in rows[0]["meaning"]
+    assert "first complete path" not in rows[0]["meaning"].casefold()
 
 
 def test_project_intelligence_greenfield_story_skips_meta_acceptance_path(tmp_path: Path) -> None:
@@ -927,17 +1313,18 @@ def test_project_intelligence_greenfield_story_skips_meta_acceptance_path(tmp_pa
 
     assert "one article from upload" in payload["scenario"][4].casefold()
     assert "accept the answer-review path" not in payload["product_story"]["headline"].casefold()
-    assert "prove one article" in payload["product_story"]["headline"].casefold()
+    assert payload["product_story"]["headline"] == "Release 0.0.1 proves one usable first path"
     assert payload["governance_titles"]["B-002"] == "Prove article ingestion and answer review"
-    assert 'href="?tab=radar&amp;workstream=B-002" data-tooltip="Prove article ingestion and answer review"' in html
+    assert 'class="project-job-title-link" target="_top" href="?tab=radar&amp;workstream=B-002"' in html
+    assert 'data-tooltip="Prove article ingestion and answer review"' in html
 
 
 def test_project_intelligence_greenfield_title_drops_operator_instructions(tmp_path: Path) -> None:
     proposal = _apply_ready_greenfield_fixture(
         tmp_path,
         prompt=(
-            "Draft a product-first greenfield proposal for a robot that checks the status of my plants "
-            "and provides water and nutrients in a timely fashion. "
+            "Draft a product-first greenfield proposal for a plant monitor that checks the status of my plants "
+            "and tells me when water or nutrients are needed. "
             "The goal is to keep my plants healthy, optimal and alive. "
             "Show the interpretation and direction choices first. Do not write records until I confirm."
         ),
@@ -1017,12 +1404,16 @@ def test_project_intelligence_css_uses_shared_surface_typography() -> None:
     assert "--project-type-chip-size: var(--surface-identifier-font-size, 14px);" in css
     assert "--project-type-chip-weight: var(--surface-identifier-font-weight, 500);" in css
     assert "--project-type-content-size: var(--project-type-body-size);" in css
-    assert "--project-type-title-size: 52px;" in css
-    assert "--project-type-intro-size: 28px;" in css
+    assert "--project-type-title-size: 42px;" in css
+    assert "--project-type-intro-size: 22px;" in css
     assert "--project-type-hero-eyebrow-size: 15px;" in css
     assert ".project-answer-card p" in css
     assert ".project-answer-card h3,\n.project-answer-card b" in css
     assert ".project-answer-card span" in css
+    assert "repeat(auto-fit, minmax(220px, 1fr))" in css
+    assert "repeat(auto-fit, minmax(190px, 1fr))" in css
+    assert "grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(240px, 0.58fr);" in css
+    assert ".project-proof-grid article > p" in css
     assert ".project-proof-grid li" in css
     assert ".project-orientation" not in css
     assert ".project-build-card" not in css
@@ -1034,6 +1425,8 @@ def test_project_intelligence_css_uses_shared_surface_typography() -> None:
     assert ".project-empty-action-grid" in css
     assert ".project-empty-preview-grid" in css
     assert ".project-prose-lines" in css
+    assert ".project-host-prompt-grid {\n  display: grid;\n  grid-template-columns: minmax(0, 1fr);" in css
+    assert ".project-host-prompt {\n  display: grid;\n  grid-template-columns: minmax(180px, 0.28fr) minmax(0, 1fr);" in css
     assert "font-size: 22px;" in css
     assert "font-size: 18px;" in css
     assert ".project-actor-grid" in css

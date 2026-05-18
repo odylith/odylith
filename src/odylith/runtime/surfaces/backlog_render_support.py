@@ -123,7 +123,7 @@ def _extract_sections_from_markdown(path: Path) -> dict[str, str]:
     normalized: dict[str, str] = {}
     for key, raw_lines in sections.items():
         merged = " ".join(token.strip() for token in raw_lines if token.strip())
-        normalized[key] = merged.strip()
+        normalized[key] = backlog_rich_text.strip_display_markdown_emphasis(merged).strip()
     return normalized
 
 

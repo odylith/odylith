@@ -150,8 +150,8 @@ def run_greenfield_tribunal(
     visible_actors = tribunal_actor_projection(proposal)
 
     issues.extend(project_intelligence_binding_issues(proposal))
-    dimensions["project_intelligence"] = (
-        "project intelligence is the root for program, release, Radar, Registry, and Atlas projections"
+    dimensions["product_story"] = (
+        "accepted product story, first path, release boundary, and proof boundary stay connected"
     )
 
     _check_release_plan(
@@ -161,10 +161,10 @@ def run_greenfield_tribunal(
         issues=issues,
         warnings=warnings,
     )
-    dimensions["release"] = "first release selector and target refs present"
+    dimensions["release_boundary"] = "first release selector, target scope, and promotion criteria are present"
 
     _check_program_waves(waves=waves, issues=issues)
-    dimensions["program"] = "waves carry labels, goals, validation gates, and focus"
+    dimensions["delivery_waves"] = "waves carry labels, goals, validation gates, and product capability focus"
 
     _check_backlog_topology(
         backlog=backlog,
@@ -172,10 +172,10 @@ def run_greenfield_tribunal(
         diagrams=diagrams,
         issues=issues,
     )
-    dimensions["radar"] = "child workstreams carry component, diagram, dependency, and proof hints"
+    dimensions["work_items"] = "child work items carry component, diagram, dependency, and proof expectations"
 
     _check_component_specs(components=components, diagrams=diagrams, issues=issues)
-    dimensions["registry"] = "candidate components carry planned ownership, interfaces, dependencies, and proof"
+    dimensions["component_ownership"] = "candidate components carry planned ownership, interfaces, dependencies, and proof"
 
     _check_diagram_traceability(
         proposal=proposal,
@@ -184,24 +184,24 @@ def run_greenfield_tribunal(
         components=components,
         issues=issues,
     )
-    dimensions["atlas"] = "diagrams carry explicit workstream and component traceability hints"
+    dimensions["architecture_views"] = "diagrams carry explicit work item and component traceability hints"
 
     _check_domain_security_posture(proposal=proposal, issues=issues)
     dimensions["domain_security"] = "explicit domain risk, security, compliance, policy, and abuse posture present"
     _check_visible_tribunal_actors(visible_actors=visible_actors, issues=issues)
     actor_labels = ", ".join(row["visible_actor"] for row in visible_actors[:4])
-    dimensions["tribunal"] = f"stable judgment roles render as domain-specific actors: {actor_labels}"
+    dimensions["validation_roles"] = f"stable judgment roles render as domain-specific actors: {actor_labels}"
 
-    dimensions["surfaces"] = "apply refreshes accepted product records after all writes"
+    dimensions["record_refresh"] = "accepted product records refresh after all writes"
     status = "failed" if issues else "passed"
     summary = (
-        "Greenfield proposal is coherent enough to write governed source truth."
+        "Accepted product direction is coherent enough to create project records."
         if not issues
-        else "Greenfield proposal is not coherent enough to write governed source truth."
+        else "Accepted product direction is not coherent enough to create project records."
     )
     return GreenfieldTribunalDecision(
         status=status,
-        version="greenfield-tribunal-v1",
+        version="greenfield-validation-gate-v1",
         summary=summary,
         dimensions=dimensions,
         issues=tuple(issues),
@@ -213,7 +213,7 @@ def run_greenfield_tribunal(
 def raise_for_failed_greenfield_tribunal(decision: GreenfieldTribunalDecision) -> None:
     if decision.passed:
         return
-    raise ValueError(format_proposal_issue_report("Tribunal", list(decision.issues)))
+    raise ValueError(format_proposal_issue_report("validation gate", list(decision.issues)))
 
 
 def _check_release_plan(

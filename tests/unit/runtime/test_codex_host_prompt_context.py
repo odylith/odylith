@@ -276,7 +276,7 @@ def test_main_emits_show_me_route_lock_without_running_prompt_observation(
     assert "tmp clone noise" in additional_context
     assert "spawn policy" in additional_context
     assert "must not create, scaffold, edit, or test" in additional_context
-    assert "sample robots" in additional_context
+    assert "sample devices" in additional_context
     assert "`./.odylith/bin/odylith show --repo-root .`" in additional_context
     assert "`odylith show --repo-root .`" in additional_context
     assert "Return that stdout directly" in additional_context

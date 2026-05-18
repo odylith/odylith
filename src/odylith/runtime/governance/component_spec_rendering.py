@@ -261,17 +261,15 @@ def _component_role_paragraphs(
         paragraphs.append(_paragraph(" ".join(context_bits)))
     release_bits = []
     if release_selector and first_slice:
-        release_bits.append(
-            f"For release {release_selector}, this component matters because {sentence_fragment(first_slice)}"
-        )
+        release_bits.append(f"Release {release_selector} contribution: {_brief_sentence(first_slice)}")
     elif release_selector:
-        release_bits.append(f"For release {release_selector}, this component must stay inside its accepted boundary")
+        release_bits.append(f"Release {release_selector} contribution: stay inside the accepted component boundary")
     elif first_slice:
-        release_bits.append(f"The first usable slice depends on {sentence_fragment(first_slice)}")
+        release_bits.append(f"First usable slice: {_brief_sentence(first_slice)}")
     if project_outcome:
-        release_bits.append(f"The project outcome it supports is {sentence_fragment(project_outcome)}")
+        release_bits.append(f"Project outcome: {_brief_sentence(project_outcome)}")
     if validation:
-        release_bits.append(f"First proof must show {sentence_fragment(validation[0])}")
+        release_bits.append(f"Required proof: {_brief_sentence(_strip_proof_prefix(validation[0]))}")
     if release_bits:
         paragraphs.append(" ".join(_paragraph(bit) for bit in release_bits if sentence_fragment(bit)))
     return tuple(paragraphs)
@@ -346,6 +344,9 @@ def _dependency_lines(values: Sequence[str]) -> tuple[str, ...]:
         text = sentence_fragment(str(value))
         if not text:
             continue
+        if re.match(r"^(domain evidence|design pressure|boundary pressure|release pressure|proof pressure)\s*:", text, flags=re.I):
+            rows.append(_sentence_case(text))
+            continue
         if _looks_like_sentence(text):
             rows.append(text)
         else:
@@ -354,7 +355,13 @@ def _dependency_lines(values: Sequence[str]) -> tuple[str, ...]:
 
 
 def _looks_like_sentence(value: str) -> bool:
-    return bool(re.search(r"\s", value)) and bool(re.search(r"\b(depends|reads|writes|calls|receives|produces|provides|requires|owns|uses)\b", value, re.I))
+    return bool(re.search(r"\s", value)) and bool(
+        re.search(
+            r"\b(coordinates|depends|reads|writes|calls|receives|produces|provides|requires|owns|uses)\b",
+            value,
+            re.I,
+        )
+    )
 
 
 def _component_heading(label: str, heading: str) -> str:
@@ -448,10 +455,19 @@ def _promotion_bar_lines(
 ) -> tuple[str, ...]:
     source = f"`{path}`" if path else "the source boundary named by the first technical plan"
     anchor = f"`{first_workstream}`" if first_workstream else "the first implementation plan"
-    proof = " and ".join(proof_lines[:2]) if proof_lines else "the listed component proof"
+    proof = (
+        " and ".join(_brief_sentence(_strip_proof_prefix(line), limit=220) for line in proof_lines[:2])
+        if proof_lines
+        else "the listed component proof"
+    )
+    promotion_proof = (
+        f"source-backed evidence for: {_lower_first(proof)}"
+        if proof_lines
+        else "the listed component proof"
+    )
     return (
         f"{label} remains candidate until {anchor} lands source-backed behavior inside {source}.",
-        f"Promotion requires {proof} to pass against real source, not proposal text.",
+        f"Promotion requires {promotion_proof}; proposal text alone is not enough.",
         "The component record, implementation plan, architecture view, and project status must refresh from that proof before active status.",
     )
 
@@ -479,7 +495,7 @@ def _proof_table(values: Sequence[str], *, commands: Sequence[str]) -> str:
     rows = ["| Claim | Required proof |", "| --- | --- |"]
     command_hint = _first_command_hint(commands)
     for value in values:
-        claim = sentence_fragment(str(value))
+        claim = _sentence_case(_strip_proof_prefix(str(value)))
         if claim:
             rows.append(f"| {claim} | {command_hint} |")
     return "\n".join(rows)
@@ -581,9 +597,32 @@ def _runway_lines(
     if release_selector:
         lines.append(f"Release target: {release_selector}.")
     if first_slice:
-        lines.append(f"First coding slice: {sentence_fragment(first_slice)}.")
+        lines.append(f"First coding slice: {_brief_sentence(first_slice, limit=240)}.")
     lines.append("Promote this component from candidate only after source-backed proof refreshes the component record and project status.")
     return _bullet_lines(lines)
+
+
+def _brief_sentence(value: str, *, limit: int = 220) -> str:
+    text = sentence_fragment(value)
+    if not text:
+        return ""
+    if ". " in text:
+        first = text.split(". ", 1)[0].strip()
+        if len(first) >= min(45, limit):
+            text = first
+    if len(text) <= limit:
+        return text
+    clipped = text[: max(0, limit - 1)].rstrip(" ,;:")
+    if " " in clipped:
+        clipped = clipped.rsplit(" ", 1)[0].rstrip(" ,;:")
+    return clipped + "…"
+
+
+def _strip_proof_prefix(value: str) -> str:
+    text = sentence_fragment(value)
+    text = re.sub(r"^(?:first\s+)?proof\s+(?:must\s+)?shows?\s+", "", text, flags=re.I).strip()
+    text = re.sub(r"^required\s+proof\s*:\s*", "", text, flags=re.I).strip()
+    return text
 
 
 def _command_lines(values: Sequence[str]) -> str:

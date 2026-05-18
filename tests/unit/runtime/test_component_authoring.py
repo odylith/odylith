@@ -95,6 +95,51 @@ def test_component_spec_template_uses_greenfield_responsibility_and_links() -> N
     assert "- Wave: Checkout spine (active)." in text
     assert "- Release target: 0.0.1." in text
     assert "- First coding slice: Implement browse-to-checkout with payment sandbox failure recovery." in text
-    assert "- Promotion requires Happy-path checkout smoke proof and Payment failure recovery proof to pass against real source, not proposal text." in text
+    assert "- Promotion requires source-backed evidence for: happy-path checkout smoke proof and Payment failure recovery proof; proposal text alone is not enough." in text
     assert "- `./.odylith/bin/odylith context --repo-root . B-201`" in text
     assert "- run npm test" in text
+
+
+def test_component_spec_template_keeps_greenfield_contracts_concise() -> None:
+    text = component_spec_rendering.build_component_spec(
+        component_id="field-intake",
+        label="Field Intake Service",
+        path="src/field_intake",
+        kind="service",
+        status="planned",
+        sources=("user_intent",),
+        workstreams=("B-210",),
+        responsibility="Own field intake records for the accepted first release path.",
+        boundary=(
+            "Field Intake owns field intake records. Rationale: intake must stay attributable, "
+            "recoverable, and reviewable before downstream decisions use it."
+        ),
+        dependencies=(
+            "Depends on the accepted product direction for user, problem, first path, and proof boundary.",
+            "Design pressure: intake must stay attributable, recoverable, and reviewable before downstream decisions use it.",
+        ),
+        interfaces=("Expose operations for field intake records needed by the accepted first path.",),
+        validation=("Proof shows field intake records work inside the accepted first path, including success and recovery evidence.",),
+        implementation_handoff={
+            "release_selector": "0.0.1",
+            "first_slice": (
+                "The first complete path is a controlled field review. "
+                "The user records one intake, attaches evidence, and sees the review result."
+            ),
+            "project_outcome": (
+                "Evidence should come from a realistic fixture showing successful intake, rejection, "
+                "and reviewer-visible recovery."
+            ),
+            "verification_commands": ["run pytest"],
+        },
+    )
+
+    assert "because The first" not in text
+    assert "First proof must show Proof shows" not in text
+    assert "Promotion requires Proof shows" not in text
+    assert "| Proof shows field intake" not in text
+    assert "Depends on Design pressure" not in text
+    assert "Release 0.0.1 contribution: The first complete path is a controlled field review." in text
+    assert "Required proof: field intake records work inside the accepted first path" in text
+    assert "| Field intake records work inside the accepted first path" in text
+    assert "- Design pressure: intake must stay attributable" in text

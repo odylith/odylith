@@ -1758,7 +1758,7 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   install-managed mirrors around that contract. Existing consumer-owned source
   truth does not require migration; upgraded repos receive fail-closed
   confirmed greenfield writes that preserve the accepted product story, actors,
-  systems, first workflow, non-goals, and proof boundary before governance
+  systems, first path, non-goals, and proof boundary before governance
   records are produced.
 - The post-refresh browser and install-managed settlement for that same
   confirmed greenfield product-narrative preservation pass is covered by
@@ -1768,3 +1768,84 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   mirrors after the migration assessment itself was refreshed. Existing
   consumer-owned source truth still does not require migration beyond normal
   dashboard/runtime refresh.
+- The general-purpose qualitative greenfield narration gate is covered by
+  `migration-observer:0.1.15:browser-surfaces:69944c9962e6`. The pass blocks
+  generic workflow/state/evidence scaffolding, prevents diagram-mechanics prose
+  from reaching Atlas box explanations, keeps consumer Project narration
+  product-first, and requires accepted intent to describe user capability,
+  domain state movement, operational risk, and reviewer-visible evidence before
+  browser-rendered project surfaces are written. Existing consumer-owned source
+  truth does not require migration; upgraded repos receive the stricter
+  generator, validation gate, and refreshed browser assets.
+- The consumer-safe validation naming settlement is covered by
+  `migration-observer:0.1.15:operator-cli-contracts:000962f775d8` and
+  `migration-observer:0.1.15:browser-surfaces:3d208ffb81f4`. The pass keeps
+  greenfield apply/create outputs, accepted project source records, component
+  authoring payloads, diagram scaffold logs, and browser-rendered project
+  narration on product-facing validation-gate language instead of maintainer
+  validation-engine terms. Existing consumer-owned source truth does not require
+  migration; upgraded repos receive neutral JSON keys, regenerated browser
+  surfaces, and backward-compatible readers for older accepted-project records.
+- The rendered Radar/browser payload refresh for the same consumer-safe
+  validation naming settlement is covered by
+  `migration-observer:0.1.15:browser-surfaces:37e35e4e2c35`. This binds the
+  regenerated browser artifacts after the source assessment record and release
+  smoke contract moved to validation-gate terminology. Existing consumer-owned
+  source truth does not require migration beyond normal dashboard refresh.
+- The browser-surface readability settlement is covered by
+  `migration-observer:0.1.15:browser-surfaces:9a0410a89615`. The pass keeps
+  generated Project, Radar, Atlas, and Compass surfaces useful to human readers by
+  formatting inline step sequences as readable steps, avoiding oversized repeated
+  prose blocks where a concise summary is enough, preserving local runtime facts
+  when standup narration times out, and keeping compact status tables legible.
+  Existing consumer-owned source truth does not require migration; upgraded repos
+  receive refreshed browser assets and deterministic local fallback rendering.
+- The post-rehearsal browser-surface readability settlement is covered by
+  `migration-observer:0.1.15:browser-surfaces:2c2e25d2be57`. The pass keeps
+  confirmed greenfield browser output on project-specific actors, concise
+  ownership descriptions, wrapped diagram labels, readable first-path and Radar
+  copy, Compass local-fact fallback, and unclipped workstream-table status
+  columns. Existing consumer-owned source truth does not require migration;
+  upgraded repos receive refreshed browser assets and the stricter generator
+  behavior.
+- The confirmed greenfield create/apply operator contract refresh is covered by
+  `migration-observer:0.1.15:operator-cli-contracts:ee1aa263b477`. The pass keeps
+  confirmed greenfield creation on the Odylith-owned apply-ready path, rejects
+  host-authored schema repair loops, preserves consumer-lane identity rules, and
+  keeps release proof tied to the exact fresh-repo command path. Existing
+  consumer-owned source truth does not require migration; upgraded repos receive
+  the corrected CLI contract, smoke coverage, and guidance assets.
+- The general-purpose confirmed greenfield reasoning and consumer managed-asset
+  refresh is covered by
+  `migration-observer:0.1.15:guidance-and-skills:13c7cc6daa8f` and
+  `migration-observer:0.1.15:install-managed-assets:8dd7cf0dc8d2`, with the
+  browser-rendered settlement covered by
+  `migration-observer:0.1.15:browser-surfaces:dc688754188f`, and the refreshed
+  browser/install payloads covered by
+  `migration-observer:0.1.15:browser-surfaces:da0cfceb44e9` and
+  `migration-observer:0.1.15:install-managed-assets:d3394f651d59`. The pass keeps
+  confirmed greenfield creation on accepted product intent, derives visible
+  reviewer roles from project actors instead of stable internal labels, removes
+  maintainer-only identity guidance from consumer-installed assets, and updates
+  local-release proof so fresh repos exercise the confirmed-create path while
+  regenerated browser views stay product-facing and domain-neutral.
+  Existing consumer-owned source truth does not require migration; upgraded
+  repos receive refreshed managed guidance, skills, bundled assets, browser
+  surfaces, and release smoke coverage.
+- The final readability, hotfile, and migration-gate settlement is covered by
+  `migration-observer:0.1.15:guidance-and-skills:e1b764f4a825`,
+  `migration-observer:0.1.15:browser-surfaces:f3798d043780`, and
+  `migration-observer:0.1.15:install-managed-assets:9972b770b30d`, with the
+  post-sync rendered-surface and bundle settlement covered by
+  `migration-observer:0.1.15:browser-surfaces:caea6a687f13` and
+  `migration-observer:0.1.15:install-managed-assets:64f251ff8bbd`. The pass keeps
+  consumer-visible browser surfaces free of markdown residue and repetitive
+  dashboard filler, preserves generic generated guidance for future projects, and
+  keeps generated asset adoption to normal upgrade/dashboard refresh behavior.
+  Existing consumer-owned source truth does not require migration.
+- The browser-surface and managed-asset settlement for the compact Compass table,
+  Radar topology component links, and regenerated consumer dashboard assets is
+  covered by `migration-observer:0.1.15:browser-surfaces:62935a44646e` and
+  `migration-observer:0.1.15:install-managed-assets:ea52929b18fb`. The pass keeps
+  existing consumer-owned governance truth unchanged; upgrades only refresh
+  Odylith-managed browser assets and install-managed bundle files.

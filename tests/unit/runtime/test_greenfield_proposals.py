@@ -8,7 +8,9 @@ from pathlib import Path
 
 import pytest
 
+from odylith.runtime.common import mermaid_text
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence.greenfield_confirmed_diagrams import confirmed_diagrams
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import PROJECT_INTELLIGENCE_LAYERS
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
@@ -33,7 +35,7 @@ A city permitting team uses the Municipal Permit Review Workspace to review buil
 State object that changes through the first journey
 A Permit Review File tracks the permit application, submitted documents, zoning status, reviewer comments, applicant revisions, decision state, and evidence that supports each approval or rejection.
 
-First complete path Odylith should prove before broader scope
+First complete path the product should prove before broader scope
 A permit coordinator imports one permit application, a zoning reviewer records a zoning check, the applicant submits one revision, and a supervisor reviews the decision package with traceable documents, comments, checks, and final status.
 
 Human actors
@@ -68,6 +70,192 @@ Release 0.0.1 succeeds when a supervisor can inspect one permit review file, see
 """
 
 
+def test_confirmed_greenfield_diagrams_use_compact_atlas_narration() -> None:
+    first_path = (
+        "The first complete path the product must prove is the solo monophonic instrument single take, offline analysis "
+        "flow: 1. User opens LiveScore and taps Record. 2. User plays a roughly 30-second monophonic line. "
+        "3. User taps Stop. 4. The app shows a rendered score and offers downloadable PDF and MusicXML."
+    )
+    proof_boundary = (
+        "What would count as evidence the wedge works: a recorded solo monophonic take of roughly 30 seconds, played by "
+        "a real musician, where the rendered score matches the played pitches and rhythms. What must not be claimed yet: "
+        "polyphony, noisy stages, or real-time engraving."
+    )
+    rows = confirmed_diagrams(
+        label="LiveScore: Live Performance",
+        diagram_slugs={
+            "context": "livescore-context",
+            "sequence": "livescore-sequence",
+            "state_evidence": "livescore-state-evidence",
+            "component_boundaries": "livescore-component-boundaries",
+            "ownership": "livescore-ownership",
+            "proof_review": "livescore-proof-review",
+        },
+        components=[
+            {
+                "component_id": "audio",
+                "label": "Audio Capture and Pre-processing Service",
+                "responsibility": "Audio capture and pre-processing owns microphone or line-in capture and normalization.",
+            },
+            {
+                "component_id": "pitch",
+                "label": "Pitch and Onset Detection Engine",
+                "responsibility": "Pitch and onset detection engine performs frame-level pitch tracking.",
+            },
+            {
+                "component_id": "score",
+                "label": "Score Renderer Service",
+                "responsibility": "Score renderer owns engraves the score model to PDF and MusicXML.",
+            },
+        ],
+        first_path=first_path,
+        proof_boundary=proof_boundary,
+        state_object="A Take moves from recorded audio to a rendered score with reviewable state.",
+        evidence_record="A take evidence packet links audio input, detected notes, score output, and review result.",
+        human_actors=["Solo performer (primary): the musician who plays the take."],
+        external_systems=["Operating system audio input"],
+        internal_systems=["Audio capture", "Pitch detection", "Score rendering"],
+        non_goals=["Real-time engraving remains outside the first release."],
+    )
+    sequence = next(row for row in rows if row["title"] == "First Path Sequence")
+    state_evidence = next(row for row in rows if row["title"] == "State and Evidence View")
+    boundary = next(row for row in rows if row["title"] == "Component Boundary View")
+    ownership = next(row for row in rows if row["title"] == "Ownership and Proof View")
+    proof_review = next(row for row in rows if row["title"] == "Release Proof Review")
+    copy = json.dumps(rows)
+
+    assert len(rows) == 6
+    assert "Walk the accepted first path" not in copy
+    assert "participant C1 as Audio Capture and<br/>Pre-processing Service" in sequence["mermaid_source"]
+    assert "pass state and evidence" in sequence["mermaid_source"]
+    assert "show state, evidence, and blockers" in sequence["mermaid_source"]
+    assert "<br/>" in sequence["mermaid_source"]
+    assert "**" not in sequence["mermaid_source"]
+    assert "The first complete path" not in sequence["mermaid_source"]
+    assert "component cards to decode" not in copy
+    assert "User opens LiveScore" not in sequence["summary"]
+    assert "This sequence shows what the first release must prove from Solo performer (primary)" in sequence["summary"]
+    assert "solo monophonic instrument single take" in sequence["summary"]
+    assert sequence["read_guide"].startswith("Start with the user action.")
+    assert "component handoff" not in sequence["read_guide"]
+    assert "component; messages are calls" not in sequence["read_guide"]
+    assert "State object" in state_evidence["mermaid_source"]
+    assert "Evidence record" in state_evidence["mermaid_source"]
+    assert "release boundary" in boundary["mermaid_source"]
+    assert ownership["summary"].startswith("Trace release ownership")
+    assert "polyphony" not in ownership["summary"]
+    assert proof_review["summary"].startswith("Show the review path")
+    assert "Outside release" in proof_review["mermaid_source"]
+    for row in rows:
+        if row["kind"] == "flowchart":
+            assert "classDef" in row["mermaid_source"]
+    for component in sequence["components"]:
+        description = component["description"]
+        assert "User opens LiveScore" not in description
+        assert "What would count as evidence" not in description
+        assert "For the first release" not in description
+        assert "owns owns" not in description
+        assert len(description) < 260
+    assert [row["description"] for row in sequence["components"]] == [
+        "Owns microphone or line-in capture and normalization.",
+        "Owns frame-level pitch tracking.",
+        "Owns engraving of the score model to PDF and MusicXML.",
+    ]
+
+
+def test_mermaid_text_normalizes_sequence_labels_notes_and_messages() -> None:
+    source = "\n".join(
+        [
+            "sequenceDiagram",
+            "  %% comment: keep **markers** and semicolon; untouched",
+            "  participant A as **Account owner**",
+            "  participant C1 as Transaction Ingestion and Normalization Adapter",
+            (
+                "  A->>C1: this is a very long message label with semicolon; and enough words "
+                "that it should wrap inside the diagram lane instead of stretching the canvas"
+            ),
+            (
+                "  Note over A,C1: **This note carries a very long accepted path explanation that "
+                "previously leaked outside the sequence note box and made the diagram unreadable for normal people.**"
+            ),
+        ]
+    )
+
+    normalized = mermaid_text.normalize_mermaid_source(source)
+
+    assert "**" not in normalized
+    assert "participant A as Account owner" in normalized
+    assert "participant C1 as Transaction Ingestion<br/>and Normalization<br/>Adapter" in normalized
+    assert "A->>C1: this is a very long message<br/>label with semicolon, and…" in normalized
+    assert "Note over A,C1: This note carries a very long<br/>accepted path explanation that<br/>previously leaked outside the…" in normalized
+
+
+def test_confirmed_greenfield_create_handles_generic_reviewer_and_action_systems(tmp_path: Path) -> None:
+    intent = parse_confirmed_intent_text(
+        """Volunteer Equipment Checkout Tracker — Product Intent Confirmation
+
+Product story
+A community group needs one reliable place to track shared equipment, who has it, when it is due back, and whether it is safe to lend again. The product helps coordinators avoid lost items, double bookings, and unclear responsibility by turning checkout requests, item condition checks, and returns into one auditable record.
+
+State object that changes through the first journey
+An Equipment Item moves from available to reserved to checked out to returned pending inspection to available again, with a condition note and responsible borrower attached to each transition.
+
+First complete path Odylith should prove before broader scope
+A coordinator registers one item, a borrower requests it for a date range, the coordinator approves checkout, the borrower returns it, and the coordinator records a return condition so the item can be made available again.
+
+Human actors
+- Coordinator — owns the inventory, approves checkouts, and records return condition.
+- Borrower — requests equipment, receives checkout approval, and returns the item.
+- Reviewer — checks whether the record explains who had the item, when it changed hands, and what condition it returned in.
+
+External systems
+- Identity provider for coordinator and borrower sign-in.
+- Email or SMS notification channel for checkout reminders, later wave only.
+
+Internal product systems
+- Item registry — records equipment identity, ownership, availability status, and condition baseline.
+- Checkout request log — captures borrower, requested date range, purpose, and approval status.
+- Approval workflow — records coordinator approval or rejection before an item leaves inventory.
+- Availability view — shows which items can be borrowed now and why unavailable items are blocked.
+- Return inspection record — captures returned condition, damage notes, and whether the item can be lent again.
+- Audit trail — records state changes, actor, timestamp, and source for reviewer traceability.
+
+Critical assumptions
+- One organization owns the inventory in the first release.
+- Payments, deposits, barcode scanning, and multi-location routing are out of scope for release 0.0.1.
+- The first proof uses seeded data and does not claim live integrations.
+
+Ambiguities that would change the first path
+- Whether borrowers can self-serve approvals or every checkout needs coordinator review.
+- Whether item condition needs photos in the first release.
+- Whether overdue notifications are required before the first release.
+
+Proof boundary
+Release 0.0.1 succeeds when a reviewer can follow one item through registration, reservation, approved checkout, return, condition inspection, and availability restoration without losing the responsible actor, date range, item state, or audit record.
+""",
+        prompt="Draft a product-first greenfield proposal for a volunteer equipment checkout tracker",
+    )
+
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="Draft a product-first greenfield proposal for a volunteer equipment checkout tracker",
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    encoded = json.dumps(proposal)
+
+    assert "Reviewer —" not in encoded
+    assert "Volunteer Equipment Checkout reviewer" in encoded
+    assert "owns captures" not in encoded
+    assert "owns shows" not in encoded
+    assert "visibility into which items can be borrowed now" in encoded
+    context = next(row for row in proposal["diagrams"] if row["title"] == "System Context View")
+    assert "<br/>" in context["mermaid_source"]
+    for row in proposal["diagrams"]:
+        for component in row["components"]:
+            assert component["description"].startswith("Owns ")
+
+
 def _confirmed_intent() -> dict[str, object]:
     return parse_confirmed_intent_text(
         CONFIRMED_INTENT_TEXT,
@@ -81,6 +269,135 @@ def _write_confirmed_intent(repo_root: Path) -> Path:
     return path
 
 
+def test_confirmed_intent_parser_keeps_ambiguities_out_of_first_path() -> None:
+    intent = _confirmed_intent()
+
+    assert "Does the first release need applicant self-service" not in str(intent["first_path"])
+    assert intent["first_path"].endswith("final status.")
+    assert intent["ambiguities"] == [
+        "Does the first release need applicant self-service, or only internal staff review?",
+        "Are zoning rules imported from a live GIS source, or referenced manually by reviewers?",
+        "Does final approval require one supervisor or multiple department sign-offs?",
+    ]
+
+
+def test_confirmed_intent_parser_allows_hyphenated_domain_workflow_phrases() -> None:
+    text = CONFIRMED_INTENT_TEXT.replace(
+        "A permit coordinator imports one permit application, a zoning reviewer records a zoning check, "
+        "the applicant submits one revision, and a supervisor reviews the decision package with traceable "
+        "documents, comments, checks, and final status.",
+        "A permit coordinator uses a mobile-first workflow to import one permit application, a zoning "
+        "reviewer records a zoning check, the applicant submits one revision, and a supervisor reviews "
+        "the decision package with traceable documents, comments, checks, and final status.",
+    )
+
+    intent = parse_confirmed_intent_text(
+        text,
+        prompt="Draft a greenfield proposal for a municipal permit review workspace",
+    )
+
+    assert "mobile-first workflow" in str(intent["first_path"])
+
+
+def test_confirmed_intent_parser_strips_markdown_emphasis_from_actor_rows() -> None:
+    intent = parse_confirmed_intent_text(
+        """Account Cleanup — Product Intent Confirmation
+
+Product story
+The account owner uses the account cleanup product to find recurring charges they no longer need, understand why each charge is being shown, and cancel one subscription without losing services they still use. The product connects transaction ingestion, recurring-charge detection, user review, and cancellation tracking so the account owner and support reviewer can see what changed and why.
+
+State object that changes through the first journey
+A cleanup review tracks transaction history, recurring-charge candidates, user approval, cancellation attempt state, and the next billing-cycle check.
+
+First complete path the product should prove before broader scope
+The user imports transaction history, reviews one likely subscription, approves a cancellation attempt, records the outcome, and checks whether the next billing cycle stopped.
+
+Human actors
+- **Account owner:** wants to reduce waste without accidentally losing important services.
+- **Support reviewer:** checks ambiguous cancellation attempts and user disputes.
+
+External systems
+- Bank or card transaction history.
+- Merchant cancellation portal or support inbox.
+
+Internal product systems
+- Transaction ingestion — imports financial activity and normalizes merchant, date, amount, and account source so cleanup evidence starts from a consistent transaction record.
+- Recurring-charge detection — identifies likely subscriptions from repeated charges, merchant cadence, amount patterns, and known billing descriptors while keeping uncertainty visible.
+- User review flow — explains evidence to the account owner, captures keep/cancel approval, and prevents cancellation without an explicit user decision.
+- Cancellation tracker — records the unsubscribe attempt, merchant response, support reviewer escalation, and follow-up billing status for the next cycle.
+
+Critical assumptions
+- Release 0.0.1 guides or records one cancellation path; it does not claim universal automated cancellation.
+
+Ambiguities that would change the first path
+- Whether transaction import comes from a live connection or a CSV file.
+
+Proof boundary
+Release 0.0.1 succeeds when a reviewer can see the imported transactions, the recurring-charge evidence, the user approval, the cancellation outcome, and the next billing-cycle check.
+""",
+        prompt="Draft a product-first greenfield proposal for account cleanup.",
+    )
+
+    encoded = json.dumps(intent)
+    assert "**" not in encoded
+    assert "Account owner: wants to reduce waste" in encoded
+    assert "Support reviewer: checks ambiguous cancellation attempts" in encoded
+
+
+def test_confirmed_intent_parser_accepts_internal_external_heading_and_prose_systems() -> None:
+    intent = parse_confirmed_intent_text(
+        """# Product Intent Confirmation
+
+	Product title:
+	Low-Cost Field Water Quality Monitor
+
+	Product story:
+	The product is a compact low-cost field water-quality monitor for community groups that need quick local screening before sending samples to a lab. It captures pH, turbidity, temperature, and conductivity readings, guides a non-specialist through calibration, and produces a readable result that explains whether the sample is safe, uncertain, or needs lab review. The value is practical screening without turning the device into a professional laboratory instrument.
+
+	State object that changes through the first journey:
+	The primary state object is the water sample assessment. An assessment starts as prepared, tracks calibration state, sample source, readings, confidence bands, battery level, contamination warnings, and reviewer notes, then ends as passed, flagged for retest, escalated to lab review, or safely discarded.
+
+	First complete path the product should prove before broader scope:
+	A field volunteer powers on the device, confirms calibration, collects one water sample, records the sample location and source, runs the sensor reading, sees a safe-or-review result, and exports a clear sample assessment with readings, calibration evidence, and next action.
+
+	Main human actors:
+	- Field volunteer who collects samples and needs simple prompts, calibration feedback, and a readable result.
+	- Program coordinator who reviews sample trends and decides which sites need lab follow-up.
+	- Lab reviewer who receives escalated samples and checks whether field evidence is complete enough to trust.
+
+	External systems separated from internal product systems:
+	- Water sources, sample containers, calibration solution, and field conditions.
+	- Optional lab information system used for escalated samples.
+
+	Internal systems separated from external systems:
+	The internal product systems combine a sampling probe and a low-cost sensor board and a calibration controller and a battery enclosure module and a result display and an assessment recorder and a safety cleanup checklist into one portable screening device. These internal systems matter because the product must stay inexpensive and field-ready while still producing trustworthy readings, calibration evidence, contamination handling, runtime status, and clear escalation behavior for the first screening path.
+
+	Critical assumptions:
+	- Low cost means community-affordable and bill-of-materials conscious, not laboratory-grade.
+	- Field screening means triage evidence only; certified water-safety decisions stay with lab or regulatory review.
+
+	Ambiguities that materially change the proposal:
+	- Which measurements belong in release 0.0.1 versus later sensor expansion.
+	- Whether sample records stay local-only or sync to a coordinator dashboard.
+
+	Proof boundary:
+	Evidence should come from a bench test or field trial showing calibration, sample reading stability, result explanation, battery behavior, and safe cleanup handling. Until then, the product must not claim regulatory certification, laboratory accuracy, contamination-safe handling for every sample type, or reliable operation across all field conditions.
+	""",
+        prompt="Draft a product-first greenfield proposal for a low-cost field water quality monitor.",
+    )
+
+    assert intent["title"] == "Low-Cost Field Water Quality Monitor"
+    assert "Water sources" in intent["external_systems"][0]
+    internal_systems = intent["internal_systems"]
+    assert len(internal_systems) >= 6
+    assert any("Calibration Controller" in row for row in internal_systems)
+    assert any("Battery Enclosure Module — Owns battery enclosure module. Relevant behavior" in row for row in internal_systems)
+    assert any("battery level" in row for row in internal_systems)
+    assert not any("Owns the accepted" in row for row in internal_systems)
+    assert all("—" in row for row in internal_systems)
+    assert not any("External systems" in row for row in internal_systems)
+
+
 def test_confirmed_intent_rejects_meta_scaffold_instead_of_product_story() -> None:
     bad_intent = """Community Archive — Product Intent Confirmation
 
@@ -90,7 +407,7 @@ Turn the community archive intent into a clear product narrative, first workflow
 State object that changes through the first journey
 A Community Archive state record stores the workflow result, owner, validation output, reviewer decision, and evidence packet so the release claim can be trusted later.
 
-First complete path Odylith should prove before broader scope
+First complete path the product should prove before broader scope
 Start with the community archive first workflow, then replay community archive record and review community archive evidence packet before source work starts.
 
 Human actors
@@ -278,10 +595,10 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
         "backlog": [
             {
                 "title": "Govern Commerce Launch System",
-                "problem": "The operator wants to build an ecommerce site, but the repo has no confirmed plan, boundaries, topology, or validation spine.",
+                "problem": "Commerce builders launching an ecommerce site and shoppers cannot trust checkout until browse, cart, payment handoff, order draft, and recovery evidence are separated.",
                 "customer": "Commerce builders and shoppers",
-                "opportunity": "Create a confirmed commerce launch plan with a checkout-first implementation spine and explicit recovery gates.",
-                "product_view": "The product plan should turn broad commerce intent into reviewable workstreams, components, topology, and release gates without claiming source exists.",
+                "opportunity": "Let commerce builders review one checkout-first path with explicit recovery gates before source work expands.",
+                "product_view": "Commerce Launch System should let shoppers browse, enter a cart, attempt checkout, and see recoverable payment failure while builders inspect the supporting state and evidence.",
                 "success_metrics": [
                     "The checkout spine has a parent workstream and first child boundary.",
                     "Candidate components are user_intent until source evidence exists.",
@@ -405,9 +722,18 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                 "status": "draft",
                 "link_state": "atlas_first_draft",
                 "components": [
-                    {"name": "Storefront", "description": "Browse, cart, checkout entry, and user-visible errors."},
-                    {"name": "Checkout Orchestrator", "description": "Payment handoff, order draft, and retry safety."},
-                    {"name": "Catalog Boundary", "description": "Product, price, inventory, and merchandising review."},
+                    {
+                        "name": "Storefront",
+                        "description": "Owns shopper-facing browse, cart entry, checkout entry, and user-visible error evidence.",
+                    },
+                    {
+                        "name": "Checkout Orchestrator",
+                        "description": "Owns payment handoff, order draft creation, retry recovery, and validation evidence.",
+                    },
+                    {
+                        "name": "Catalog Boundary",
+                        "description": "Owns product facts, price snapshots, inventory visibility, and merchandising review evidence.",
+                    },
                 ],
                 "related_workstream_titles": ["Govern Commerce Launch System", "Define Storefront boundary", "Define Catalog boundary"],
                 "intended_paths": ["apps/web", "src/checkout"],
@@ -452,9 +778,9 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                 "status": "draft",
                 "link_state": "atlas_first_draft",
                 "components": [
-                    {"name": "Storefront", "description": "Browse-to-cart proof and shopper-facing route ownership."},
+                    {"name": "Storefront", "description": "Owns browse-to-cart proof, shopper-facing route ownership, and error evidence."},
                     {"name": "Checkout Orchestrator", "description": "Payment recovery proof and order-state handoff."},
-                    {"name": "Catalog Boundary", "description": "Price snapshot and inventory review ownership."},
+                    {"name": "Catalog Boundary", "description": "Owns price snapshot, inventory review, and checkout validation evidence."},
                 ],
                 "related_workstream_titles": ["Govern Commerce Launch System", "Define Storefront boundary", "Define Catalog boundary"],
                 "intended_paths": ["apps/web", "src/checkout"],
@@ -510,13 +836,13 @@ def _host_actor_lines_for_prompt(prompt: str) -> list[str]:
             "Checkout proof reviewer: decides whether browser, contract, and recovery proof are strong enough to advance release.",
             "Commerce build owner: owns storefront, checkout, catalog, source paths, implementation sequence, and validation commands after planning.",
         ]
-    if "plant" in prompt.casefold() or "robot" in prompt.casefold():
+    if "plant" in prompt.casefold() or "sensor" in prompt.casefold():
         return [
-            "Plant owner advocate: represents the person depending on the robot to water and monitor plants without overwatering or neglect.",
+            "Plant owner advocate: represents the person depending on the monitor to surface plant health before neglect or over-care causes damage.",
             "Care routine operator: owns watering schedule, sensor review, refill workflow, and day-to-day plant-care movement.",
-            "Plant safety reviewer: owns overwatering, dry-soil, pump failure, electrical, and unattended-device exposure.",
+            "Plant safety reviewer: owns overwatering, dry-soil, alert failure, electrical, and unattended-device exposure.",
             "Care proof reviewer: decides whether sensor, watering, alert, and recovery proof is strong enough to advance release.",
-            "Robot build owner: owns device controller, plant-state model, source paths, implementation sequence, and validation commands after planning.",
+            "Plant monitor build owner: owns device controller, plant-state model, source paths, implementation sequence, and validation commands after planning.",
         ]
     return [
         "Product beneficiary advocate: represents the person who receives value from the first path.",
@@ -531,8 +857,8 @@ def _host_release_focus_for_prompt(prompt: str) -> str:
     lowered = prompt.casefold()
     if "ecommerce" in lowered or "checkout" in lowered:
         return "commerce checkout recovery path"
-    if "plant" in lowered or "robot" in lowered:
-        return "plant-care robot path"
+    if "plant" in lowered or "sensor" in lowered:
+        return "plant-care monitoring path"
     if "defi" in lowered or "risk" in lowered:
         return "DeFi risk-monitoring path"
     return "first product path"
@@ -556,9 +882,9 @@ def _host_rationale_lines(row: dict[str, object], *, prompt: str) -> list[str]:
 def _host_project_brief(*, title: str, prompt: str, release: str) -> dict[str, object]:
     return {
         "schema_version": "odylith.greenfield.project_brief.v1",
-        "purpose": f"Capture {title} as accepted product truth before backlog, component, diagram, release, or validation records drive source work.",
-        "operating_principle": "The host must reason from confirmed product intent; Odylith only validates and applies records that already carry project-specific truth.",
-        "project_outcome": f"{title} turns the operator request into a clear first journey, accountable actors, source boundaries, proof gates, and release scope.",
+        "purpose": f"{title} helps the first user complete one reviewable product path without losing state, owner, failure, or evidence context.",
+        "operating_principle": f"Every release {release} claim must connect the user action, state change, owning boundary, validation result, and reviewer-visible evidence.",
+        "project_outcome": f"A reviewer can inspect the {title} first path, state change, evidence, non-goals, and release decision before implementation expands scope.",
         "blueprint_sections": [
             {
                 "section": "Product story",
@@ -571,9 +897,9 @@ def _host_project_brief(*, title: str, prompt: str, release: str) -> dict[str, o
                 "why_it_matters": "It prevents arbitrary personas and clarifies who changes or absorbs risk.",
             },
             {
-                "section": "Topology and artifacts",
-                "must_capture": "How workstreams, component records, diagrams, and release proof all connect.",
-                "why_it_matters": "It keeps governance artifacts derived from one product spine instead of disconnected records.",
+                "section": "Owned product boundaries",
+                "must_capture": "Which product capability owns each state change, external handoff, evidence source, and release decision.",
+                "why_it_matters": "It keeps product understanding ahead of implementation detail and prevents disconnected ownership.",
             },
             {
                 "section": "Proof boundary",
@@ -1221,7 +1547,15 @@ def test_greenfield_prompt_returns_apply_ready_confirmed_proposal(tmp_path) -> N
     assert "catalog" not in proposal
     assert len(proposal["backlog"]) >= 4
     assert len(proposal["components"]) >= 4
-    assert len(proposal["diagrams"]) >= 3
+    assert len(proposal["diagrams"]) >= 6
+    assert {row["title"] for row in proposal["diagrams"]} >= {
+        "System Context View",
+        "First Path Sequence",
+        "State and Evidence View",
+        "Component Boundary View",
+        "Ownership and Proof View",
+        "Release Proof Review",
+    }
     assert "Permit file registry" in encoded
     assert "Zoning check ledger" in encoded
     assert "Release 0.0.1 succeeds when a supervisor can inspect one permit review file" in encoded
@@ -1236,6 +1570,11 @@ def test_greenfield_prompt_returns_apply_ready_confirmed_proposal(tmp_path) -> N
     assert "review-only" in proposal["apply_commands"][1]
     assert "internal apply payload" not in encoded
     assert "active-proposal.v1.json" not in encoded
+    assert "Make product-owned systems explicit:" not in encoded
+    assert "releaseable" not in encoded
+    for row in proposal["backlog"]:
+        for line in row.get("rationale_bullets", []):
+            assert len(line) <= 260
     assert "host_instruction" not in proposal
     assert "reasoning_contract" not in proposal
     assert "proposal_template" not in proposal
@@ -1271,7 +1610,7 @@ def test_greenfield_text_starts_with_product_intent_confirmation(tmp_path, capsy
     assert "Write in chat" in output
     assert "Do not" in output
     assert "echo command instructions as the product name" in output
-    assert "generate backlog, Registry, Atlas, release waves, validation obligations, or proposal JSON before confirmation" in output
+    assert "generate implementation records, architecture records, release waves, validation obligations, or proposal JSON before confirmation" in output
     assert "Original user intent" in output
     assert "Next step" in output
     assert "Confirm: if the interpretation is right" in output
@@ -1386,7 +1725,7 @@ def test_greenfield_text_full_detail_keeps_apply_path_available_after_intent_con
     assert "--confirm" in output
     assert "internal apply payload" not in output
     assert ".odylith/runtime/greenfield/active-proposal.v1.json" not in output
-    assert len(output.splitlines()) <= 240
+    assert len(output.splitlines()) <= 270
 
 
 def test_greenfield_title_preserves_meaningful_trailing_domain_terms(tmp_path) -> None:
@@ -1458,7 +1797,7 @@ def test_greenfield_cli_json_is_apply_ready_after_intent_confirmation(tmp_path, 
     assert "proposal_template" not in payload
     assert len(payload["backlog"]) >= 4
     assert len(payload["components"]) >= 3
-    assert len(payload["diagrams"]) >= 3
+    assert len(payload["diagrams"]) >= 6
 
 
 def test_greenfield_validation_rejects_old_generic_risk_boilerplate(tmp_path) -> None:
@@ -1475,7 +1814,7 @@ def test_greenfield_validation_rejects_old_generic_risk_boilerplate(tmp_path) ->
 
 
 def test_greenfield_workstreams_require_host_authored_intelligence(tmp_path) -> None:
-    proposal = _apply_ready_greenfield_fixture(tmp_path, "plant robot")
+    proposal = _apply_ready_greenfield_fixture(tmp_path, "plant sensor")
     brief = proposal["project_brief"]
 
     workflow = next(row for row in proposal["backlog"] if row["title"] == "Define Storefront boundary")
@@ -1485,7 +1824,7 @@ def test_greenfield_workstreams_require_host_authored_intelligence(tmp_path) -> 
     project_rendered = greenfield_proposals.render_project_intelligence_section(project_intelligence)
 
     assert "Host Authored Greenfield Project" not in project_rendered
-    assert "Make Plant Robot" in project_rendered
+    assert "Make Plant Sensor" in project_rendered
     assert intelligence["family"] == "host_reasoned_project"
     assert "Actor:" in rendered
     assert "State object:" in rendered
@@ -1516,7 +1855,7 @@ def test_greenfield_workstreams_require_host_authored_intelligence(tmp_path) -> 
 
 
 def test_greenfield_tribunal_uses_domain_specific_visible_actors(tmp_path) -> None:
-    proposal = _apply_ready_greenfield_fixture(tmp_path, "plant robot")
+    proposal = _apply_ready_greenfield_fixture(tmp_path, "plant sensor")
 
     decision = greenfield_proposals.run_greenfield_tribunal(proposal, release_selector="0.0.1")
     actor_labels = {row["visible_actor"] for row in decision.to_dict()["visible_actors"]}
@@ -1528,11 +1867,11 @@ def test_greenfield_tribunal_uses_domain_specific_visible_actors(tmp_path) -> No
     assert "Care routine operator" in actor_labels
     assert "Plant safety reviewer" in actor_labels
     assert "Care proof reviewer" in actor_labels
-    assert "Robot build owner" in actor_labels
+    assert "Plant monitor build owner" in actor_labels
     assert "beneficiary advocate" not in actor_labels
     assert not any("Host Reasoned Project" in label for label in actor_labels)
     assert not any(label in {"Actor", "State object", "Evidence record", "Release gate"} for label in actor_labels)
-    assert "stable judgment roles render as domain-specific actors" in decision.dimensions["tribunal"]
+    assert "stable judgment roles render as domain-specific actors" in decision.dimensions["validation_roles"]
 
 
 def test_greenfield_artifacts_are_bound_to_project_intelligence_root(tmp_path) -> None:
@@ -1580,7 +1919,7 @@ def test_greenfield_tribunal_rejects_unbound_artifact_projection(tmp_path) -> No
 def test_artifact_enrichment_projects_domain_graph_into_native_artifact_shapes(tmp_path) -> None:
     from odylith.runtime.domain_intelligence.artifact_enrichment import build_artifact_enrichment
 
-    proposal = _apply_ready_greenfield_fixture(tmp_path, "plant robot")
+    proposal = _apply_ready_greenfield_fixture(tmp_path, "plant sensor")
     row = next(item for item in proposal["backlog"] if item["title"] == "Define Storefront boundary")
 
     enrichment = build_artifact_enrichment(row=row, proposal=proposal)
@@ -1599,7 +1938,10 @@ def test_greenfield_apply_shapes_radar_specs_with_domain_intelligence_substrate(
     monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    proposal = _apply_ready_greenfield_fixture(tmp_path, "plant robot")
+    proposal = _apply_ready_greenfield_fixture(tmp_path, "plant sensor")
+    proposal["intent"]["summary"] = "**Primary reviewer** can compare the accepted path, state, and evidence."
+    proposal["backlog"][1]["customer"] = "**Primary reviewer** and __source reviewer__"
+    proposal["diagrams"][0]["components"][0]["description"] = "__Surface reviewer__ checks the visible behavior boundary."
 
     result = greenfield_proposals.apply_greenfield_proposal(
         repo_root=tmp_path,
@@ -1645,13 +1987,22 @@ def test_greenfield_apply_shapes_radar_specs_with_domain_intelligence_substrate(
     assert "- command.\n" not in all_radar_text
     assert "release targeting.\n- and proof sequencing." not in all_radar_text
     assert "?.\n" not in all_radar_text
+    assert "**Primary reviewer**" not in all_radar_text
+    assert "__source reviewer__" not in all_radar_text
+    assert "Primary reviewer and source reviewer" in all_radar_text
     accepted_path = tmp_path / "odylith" / "runtime" / "source" / "accepted-project.v1.json"
-    accepted = json.loads(accepted_path.read_text(encoding="utf-8"))
+    accepted_text = accepted_path.read_text(encoding="utf-8")
+    accepted = json.loads(accepted_text)
     assert accepted["schema_version"] == "odylith.accepted_project.v1"
     assert accepted["origin"] == "greenfield"
     assert accepted["proposal"]["artifact_derivation"]["root"] == "project_intelligence"
-    assert accepted["tribunal"]["status"] == "passed"
-    assert accepted["tribunal"]["visible_actors"]
+    assert accepted["validation_gate"]["status"] == "passed"
+    assert accepted["validation_gate"]["visible_actors"]
+    assert '"tribunal"' not in accepted_text
+    assert "greenfield-tribunal" not in accepted_text
+    assert "governed-artifact-tribunal" not in accepted_text
+    assert "**Primary reviewer**" not in accepted_text
+    assert "__Surface reviewer__" not in accepted_text
 
 
 def test_greenfield_apply_feeds_project_tab_from_accepted_project_and_tribunal(tmp_path, monkeypatch) -> None:
@@ -1687,21 +2038,18 @@ def test_greenfield_apply_feeds_project_tab_from_accepted_project_and_tribunal(t
     assert "Define Storefront boundary" in backlog_index
     assert "checkout orchestrator" in text
     assert "an-ecommerce-site-with-checkout-recovery" not in text
-    assert payload["title"] == "Ecommerce Site With Checkout Recovery"
+    assert payload["title"] == "Ecommerce Site with Checkout Recovery"
     assert payload["projection"]["origin"] == "accepted greenfield project"
     assert "accepted greenfield project" in payload["chips"]
     story = payload["product_story"]
-    assert "checkout" in story["headline"].lower()
-    assert "before expanding the product" in story["headline"]
+    assert story["headline"] == "Release 0.0.1 proves one usable first path"
     assert "Make Build" not in " ".join(story["paragraphs"])
-    assert len(story["paragraphs"]) >= 3
-    assert any("The first path defines" in paragraph for paragraph in story["paragraphs"])
-    assert any("Together, those records keep release" in paragraph for paragraph in story["paragraphs"])
-    source_records = story["supporting_records"]
-    assert any(row.startswith("Radar:") and "B-" in row for row in source_records)
-    assert any(row.startswith("Registry:") for row in source_records)
-    assert any(row.startswith("Atlas:") for row in source_records)
-    assert any(row.startswith("Proof: release 0.0.1 stays tied") for row in source_records)
+    assert len(story["paragraphs"]) >= 2
+    assert any("keeps the work focused" in paragraph for paragraph in story["paragraphs"])
+    assert not any("The first path defines" in paragraph for paragraph in story["paragraphs"])
+    assert not any("Together, those records keep release" in paragraph for paragraph in story["paragraphs"])
+    assert story["supporting_records"] == []
+    assert all(term not in json.dumps(story) for term in ("Radar", "Registry", "Atlas", "Compass"))
     assert "Product Story" in html
     assert "Storefront" in html
     assert "Checkout Orchestrator" in html
@@ -1722,7 +2070,7 @@ def test_greenfield_apply_feeds_project_tab_from_accepted_project_and_tribunal(t
     assert any("Commerce operator" == row[1] for row in payload["actors"])
     assert any("Payment risk reviewer" == row[1] for row in payload["actors"])
     assert any(
-        row["claim"] == "Greenfield Tribunal" and row["value"] == "passed" and row["source"].endswith("accepted-project.v1.json")
+        row["claim"] == "Accepted product check" and row["value"] == "passed" and row["source"].endswith("accepted-project.v1.json")
         for row in payload["claim_evidence"]
     )
 
@@ -1730,9 +2078,9 @@ def test_greenfield_apply_feeds_project_tab_from_accepted_project_and_tribunal(t
 def test_greenfield_project_tab_participants_prefer_project_actors_over_internal_tribunal_concepts(
     tmp_path,
 ) -> None:
-    proposal = _apply_ready_greenfield_fixture(tmp_path, "plant robot")
+    proposal = _apply_ready_greenfield_fixture(tmp_path, "plant sensor")
     proposal["_accepted_project"] = {
-        "tribunal": {
+        "validation_gate": {
             "visible_actors": [
                 {
                     "stable_role": "beneficiary_advocate",
@@ -1765,6 +2113,11 @@ def test_greenfield_project_tab_participants_prefer_project_actors_over_internal
     assert "Program Boundary operator" not in titles
     assert "Program Boundary proof owner" not in titles
     assert all(kicker == "" for kicker in kickers)
+    assert payload["participants_title"] == "Who participates?"
+    assert "claim_evidence_title" not in payload
+    assert payload["state_title"] == "Where does this stand?"
+    assert payload["next_title"] in {"What should move next?", "Start implementation planning"}
+    assert proposal["intent"]["title"] not in payload["participants_title"]
 
 
 def test_greenfield_apply_runs_artifact_tribunal_for_each_atlas_diagram(tmp_path, monkeypatch) -> None:
@@ -1998,7 +2351,7 @@ def test_greenfield_apply_reports_validation_issues_in_one_batch(tmp_path) -> No
 
 
 def test_greenfield_validation_rejects_missing_project_first_brief(tmp_path) -> None:
-    proposal = _apply_ready_greenfield_fixture(tmp_path, "robot swarm logistics app")
+    proposal = _apply_ready_greenfield_fixture(tmp_path, "warehouse dispatch planning app")
     proposal.pop("project_brief")
 
     with pytest.raises(ValueError) as excinfo:
@@ -2008,7 +2361,7 @@ def test_greenfield_validation_rejects_missing_project_first_brief(tmp_path) -> 
 
 
 def test_greenfield_validation_rejects_missing_project_intelligence(tmp_path) -> None:
-    proposal = _apply_ready_greenfield_fixture(tmp_path, "robot swarm logistics app")
+    proposal = _apply_ready_greenfield_fixture(tmp_path, "warehouse dispatch planning app")
     proposal.pop("project_intelligence")
 
     with pytest.raises(ValueError) as excinfo:
@@ -2018,7 +2371,7 @@ def test_greenfield_validation_rejects_missing_project_intelligence(tmp_path) ->
 
 
 def test_project_brief_blocks_coding_rush_without_domain_scaffold(tmp_path) -> None:
-    proposal = _apply_ready_greenfield_fixture(tmp_path, "robot swarm logistics app")
+    proposal = _apply_ready_greenfield_fixture(tmp_path, "warehouse dispatch planning app")
     brief = proposal["project_brief"]
     rendered = greenfield_proposals.format_proposal_text(proposal)
 
@@ -2028,7 +2381,7 @@ def test_project_brief_blocks_coding_rush_without_domain_scaffold(tmp_path) -> N
     assert "Coding starts only after the accepted project story" in rendered
     assert rendered.index("Project requirements") < rendered.index("Backlog proposal")
     assert "greenfield create --repo-root ." in rendered
-    assert "Robot Swarm Logistics App Operator Workspace" not in rendered
+    assert "Warehouse Dispatch Planning App Operator Workspace" not in rendered
 
 
 def test_greenfield_apply_rejects_shallow_component_responsibility(tmp_path) -> None:
@@ -2127,7 +2480,7 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert len(result["backlog"]) == 3
     assert len(result["components"]) == 3
     assert len(result["diagrams"]) == 2
-    assert result["tribunal"]["status"] == "passed"
+    assert result["validation_gate"]["status"] == "passed"
     assert result["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "tooling_shell"]
     assert result["dashboard_refresh"]["view"] == "odylith/index.html?tab=project"
     assert refresh_calls == [
@@ -2192,6 +2545,57 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert '"release_id": "release-commerce-launch-first"' in events
 
 
+def test_greenfield_apply_reuses_existing_diagram_ids_for_backlog_traceability(tmp_path, monkeypatch) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    atlas_catalog_path = tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json"
+    atlas_catalog_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "odylith.diagrams.v1",
+                "diagrams": [
+                    {
+                        "diagram_id": "D-001",
+                        "slug": "commerce-launch-system-context",
+                        "title": "Old Context",
+                    },
+                    {
+                        "diagram_id": "D-002",
+                        "slug": "commerce-launch-program-waves",
+                        "title": "Old Waves",
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+
+    result = greenfield_proposals.apply_greenfield_proposal(
+        repo_root=tmp_path,
+        proposal=_host_reasoned_ecommerce_proposal(),
+        confirm=True,
+        release_selector="0.0.1",
+    )
+
+    parent_idea = Path(result["backlog"][0]["idea_path"]).read_text(encoding="utf-8")
+    child_idea = Path(result["backlog"][1]["idea_path"]).read_text(encoding="utf-8")
+    atlas_catalog = json.loads(atlas_catalog_path.read_text(encoding="utf-8"))
+
+    assert result["diagrams"] == ["D-001", "D-002"]
+    assert {row["diagram_id"] for row in atlas_catalog["diagrams"]} == {"D-001", "D-002"}
+    assert "related_diagram_ids: D-001,D-002" in parent_idea
+    assert "related_diagram_ids: D-001,D-002" in child_idea
+    assert "D-003" not in parent_idea
+    assert "D-003" not in child_idea
+    assert build_traceability_graph.main(["--repo-root", str(tmp_path)]) == 0
+    traceability_graph = json.loads((tmp_path / "odylith/radar/traceability-graph.v1.json").read_text(encoding="utf-8"))
+    assert not any("not found in catalog" in warning for warning in traceability_graph["warnings"])
+
+
 def test_greenfield_apply_rejects_legacy_recipe_shape_without_host_authored_project_intelligence(tmp_path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
     monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
@@ -2249,7 +2653,7 @@ def test_greenfield_apply_writes_host_authored_component_specs(tmp_path, monkeyp
     catalog_spec = (spec_root / "commerce-catalog/CURRENT_SPEC.md").read_text(encoding="utf-8")
     atlas_catalog = json.loads((tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json").read_text(encoding="utf-8"))
 
-    assert result["tribunal"]["status"] == "passed"
+    assert result["validation_gate"]["status"] == "passed"
     assert [row["label"] for row in proposal["components"]] == [
         "Storefront",
         "Checkout Orchestrator",
@@ -2341,7 +2745,7 @@ def test_greenfield_apply_cli_prints_operator_handoff(tmp_path, monkeypatch, cap
     assert rc == 0
     assert "- project-first workstream: B-001 Govern Commerce Launch System" in out
     assert "- project story: odylith/index.html?tab=project" in out
-    assert "- radar gate: odylith/radar/radar.html?view=plan&workstream=B-001" in out
+    assert "- workstream detail: odylith/radar/radar.html?view=plan&workstream=B-001" in out
     assert "- project gate: review direction choices and readiness gates before opening a technical plan; do not edit source from this closeout" in out
     assert "- current project lane: wave Checkout spine | release 0.0.1" in out
     assert "- choose before coding:" in out
@@ -2415,7 +2819,7 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
     out = capsys.readouterr().out
     assert rc == 0
     assert "greenfield create wrote confirmed proposal" in out
-    assert "- tribunal: passed" in out
+    assert "- validation gate: passed" in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
     assert (tmp_path / "odylith/runtime/source/accepted-project.v1.json").is_file()
     accepted = (tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8")
@@ -2434,7 +2838,7 @@ def test_greenfield_create_cli_requires_confirmation_before_writes(tmp_path, cap
             "--repo-root",
             str(tmp_path),
             "--prompt",
-            "robot swarm logistics app",
+            "warehouse dispatch planning app",
             "--release",
             "0.0.1",
         ]
@@ -2505,7 +2909,7 @@ def test_greenfield_apply_namespaces_partial_project_diagram_slugs_before_scaffo
     )
 
     atlas_catalog = json.loads(atlas_catalog_path.read_text(encoding="utf-8"))
-    assert result["tribunal"]["status"] == "passed"
+    assert result["validation_gate"]["status"] == "passed"
     assert "checkout-flow" in {row["slug"] for row in atlas_catalog["diagrams"]}
     assert "commerce-launch-system-checkout-flow" in {row["slug"] for row in atlas_catalog["diagrams"]}
     assert (tmp_path / "odylith/atlas/source/commerce-launch-system-checkout-flow.mmd").is_file()
@@ -2650,7 +3054,10 @@ def test_greenfield_apply_json_output_is_machine_clean(tmp_path, monkeypatch, ca
     assert payload["atlas_scaffold_logs"]
     assert payload["memory"]["recorded"] is True
     assert payload["memory"]["event"]["source"] == "domain-intelligence"
-    assert payload["tribunal"]["status"] == "passed"
+    assert payload["validation_gate"]["status"] == "passed"
+    assert "tribunal" not in payload
+    assert all("tribunal" not in line.casefold() for line in payload["atlas_scaffold_logs"])
+    assert all("validation_gate" in row and "tribunal" not in row for row in payload["components"])
     assert payload["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "tooling_shell"]
     assert payload["dashboard_refresh"]["view"] == "odylith/index.html?tab=project"
     assert payload["release_target"]["release_id"] == "release-commerce-launch-first"

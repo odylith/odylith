@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+import re
 from typing import Any
 
 from odylith.runtime.project_intelligence.focus import backlog_rows_by_id
 from odylith.runtime.project_intelligence.narration import evidence_boundary_phrase
 from odylith.runtime.project_intelligence.summary import action_sentence, concise_text
-from odylith.runtime.project_intelligence.utils import dict_value, list_value, sentence, short, strings
+from odylith.runtime.project_intelligence.utils import dict_value, display_text, list_value, sentence, short, strings
 
 
 def build_greenfield_product_story(
@@ -59,11 +60,13 @@ def build_greenfield_product_story(
     release_contract = _greenfield_release_contract(
         product_line=product_line,
         first_path=first_path,
+        outcome=outcome,
         release=release,
         release_text=release_text,
         success=success,
         non_goals=non_goals,
         operating_principle=_brief_story_line(brief.get("operating_principle")),
+        validation=validation,
         components=components,
     )
     paragraphs = _greenfield_paragraphs(
@@ -79,18 +82,13 @@ def build_greenfield_product_story(
         workstreams=workstream_items,
         components=component_items,
         diagrams=diagram_items,
-    )
-    supporting_records = _greenfield_supporting_records(
-        workstreams=workstream_items,
-        components=component_items,
-        diagrams=diagram_items,
-        release=release,
+        actors=actors,
     )
     return {
         "headline": headline,
         "standfirst": "",
         "paragraphs": paragraphs,
-        "supporting_records": supporting_records,
+        "supporting_records": [],
         "release_contract": release_contract,
         "actors": _story_actor_items(actors),
     }
@@ -166,6 +164,18 @@ def project_intent_line(project: Mapping[str, Any], prefix: str) -> str:
     return ""
 
 
+def summarize_first_path(value: object) -> str:
+    """Return a compact, product-facing first-path phrase without step dumps."""
+
+    return _first_path_summary(sentence(value))
+
+
+def summarize_proof(value: object, *, first_path: str = "") -> str:
+    """Return a compact proof phrase without repeating numbered first-path steps."""
+
+    return _proof_claim(sentence(value), first_path=first_path)
+
+
 def _brief_story_line(value: object) -> str:
     text = sentence(value)
     if not text:
@@ -175,19 +185,15 @@ def _brief_story_line(value: object) -> str:
 
 def _greenfield_headline(*, first_path: str, title: str, product_line: str, release: str) -> str:
     release_label = sentence(release)
-    release_prefix = f"Release {release_label}: " if release_label else ""
-    path = _story_subject(first_path)
-    if path:
-        subject = _lower_first(path).strip()
-        if subject.startswith(("one ", "a ", "an ")):
-            return short(f"{release_prefix}prove {subject} before expanding the product", limit=120)
-        return short(f"{release_prefix}prove {subject} before expanding the product", limit=120)
-    promise = sentence(product_line).rstrip(".")
-    if promise and not _is_meta_project_line(promise):
-        return short(f"{release_prefix}{promise}", limit=120)
-    clean_title = sentence(title, "Project").rstrip(".")
-    suffix = f" release {release_label}" if release_label else " first release"
-    return short(f"{clean_title}{suffix} starts with one provable path", limit=120)
+    if release_label:
+        return f"Release {release_label} proves one usable first path"
+    return "Proves one usable first path"
+
+
+def _display_title(value: object) -> str:
+    text = sentence(value, "Project").rstrip(".")
+    text = text.lstrip(" -–—:·|").rstrip(" -–—:·|")
+    return text or "Project"
 
 
 def _source_headline(
@@ -464,30 +470,31 @@ def _greenfield_paragraphs(
     workstreams: Sequence[Mapping[str, str]],
     components: Sequence[Mapping[str, str]],
     diagrams: Sequence[Mapping[str, str]],
+    actors: Sequence[tuple[str, str, str]],
 ) -> list[str]:
     paragraphs: list[str] = []
     release_label = sentence(release, "0.0.1")
     product_line = _greenfield_product_line(objective=objective, intro=intro, outcome=outcome)
-    path_subject = _story_subject(first_path)
-    if not product_line and first_path:
-        product_line = f"Release {release_label} starts with {_lower_first(_story_sentence(first_path)).rstrip('.')}."
-    if product_line:
-        paragraph = product_line
-        if path_subject:
-            paragraph += f" Release {release_label} narrows that promise to one first slice: {_lower_first(path_subject).rstrip('.')}."
-        paragraphs.append(paragraph)
-    first_path_clause = _first_path_clause(first_path)
-    if first_path_clause:
+    path_story = _first_path_concrete_story(first_path)
+    actor_intro = _actor_journey_intro(actors)
+    if actor_intro and path_story:
+        paragraphs.append(f"{actor_intro} Release {release_label} keeps the work focused: {_capitalize_first(path_story).rstrip('.')}.")
+    elif product_line and path_story and not _story_contains(product_line, path_story):
         paragraphs.append(
-            f"The first path {first_path_clause}. "
-            f"{_greenfield_proof_sentence(success=success, release_text=release_text, first_path=first_path)}"
+            f"{product_line.rstrip()} Release {release_label} keeps the work focused: {_lower_first(path_story).rstrip('.')}."
         )
-    deferred = _deferred_scope_sentence(non_goals=non_goals, failure=failure, release=release_label, subject=path_subject)
-    if deferred:
-        paragraphs.append(deferred)
-    artifact_line = _greenfield_artifact_line(workstreams=workstreams, components=components, diagrams=diagrams, release=release_label)
-    if artifact_line:
-        paragraphs.append(artifact_line)
+    elif product_line:
+        paragraphs.append(product_line)
+    elif path_story:
+        paragraphs.append(f"This release proves the first useful path: {_lower_first(path_story).rstrip('.')}.")
+    proof_sentence = _greenfield_bottom_line(
+        release=release_label,
+        first_path=first_path,
+        success=success,
+        release_text=release_text,
+    )
+    if proof_sentence and not any(_same_story(proof_sentence, paragraph) for paragraph in paragraphs):
+        paragraphs.append(proof_sentence)
     return [paragraph for paragraph in paragraphs if paragraph]
 
 
@@ -509,52 +516,307 @@ def _greenfield_product_line(*, objective: str, intro: str, outcome: str) -> str
     return promise
 
 
+def _is_compact_proof_repeat(value: str) -> bool:
+    text = sentence(value).strip()
+    return text.casefold().startswith("proof must show ") and len(text) <= 92
+
+
 def _greenfield_release_contract(
     *,
     product_line: str,
     first_path: str,
+    outcome: str,
     release: str,
     release_text: str,
     success: str,
     non_goals: str,
     operating_principle: str,
+    validation: Sequence[str],
     components: Sequence[Mapping[str, Any]],
 ) -> list[dict[str, str]]:
-    release_label = sentence(release, "0.0.1")
     rows: list[dict[str, str]] = []
-    user_value = _contract_body(product_line)
-    first_path_body = _contract_body(first_path)
-    proof = _greenfield_proof_sentence(success=success, release_text=release_text, first_path=first_path)
-    component_text = _join(
-        [
-            sentence(component.get("label") or component.get("name") or component.get("component_id"))
-            for component in components[:4]
-        ]
+    user_problem = _contract_user_problem(product_line=product_line, first_path=first_path, outcome=outcome)
+    first_path_body = _contract_first_path_body(first_path)
+    boundary = _contract_product_boundary_body(non_goals=non_goals, validation=validation, success=success)
+    component_names = [
+        _capability_name(component.get("label") or component.get("name") or component.get("component_id"))
+        for component in components
+    ]
+    component_text = _contract_component_list(component_names)
+    proof_source = _contract_proof_candidate(validation) or _greenfield_proof_sentence(
+        success=success,
+        release_text=release_text,
+        first_path=first_path,
     )
-    excluded = _contract_body(non_goals)
-    if user_value:
-        rows.append({"label": "User value", "body": user_value})
+    proof_body = _contract_proof_body(proof_source, first_path=first_path)
+    if user_problem:
+        rows.append({"label": "User problem", "body": user_problem})
     if first_path_body:
-        rows.append({"label": "Core loop", "body": first_path_body})
-    principle = _contract_body(operating_principle)
-    if principle:
-        rows.append({"label": "Operating rule", "body": principle})
-    if component_text:
-        rows.append({"label": "Owned pieces", "body": component_text})
-    if proof:
-        rows.append({"label": "Proof", "body": proof})
-    if excluded:
-        rows.append({"label": "Excluded for now", "body": excluded})
+        rows.append({"label": "First path", "body": first_path_body})
+    if boundary:
+        rows.append({"label": "Product boundary", "body": boundary})
+    component_body = _contract_body(component_text)
+    if component_body:
+        rows.append({"label": "Owned capabilities", "body": component_body})
+    if proof_body:
+        rows.append({"label": "Proof", "body": proof_body})
     if not rows:
-        rows.append({"label": f"Release {release_label} contract", "body": "One accepted path, one proof boundary, and no source-backed implementation claim until validation exists."})
+        rows.append({"label": "Release contract", "body": "One accepted path, one proof boundary, and no source-backed implementation claim until validation exists."})
     return rows[:5]
+
+
+def _story_contains(container: str, contained: str) -> bool:
+    left = _normalized_story_text(container)
+    right = _normalized_story_text(contained)
+    return bool(left and right and right in left)
+
+
+def _first_path_concrete_story(value: str) -> str:
+    text = _strip_first_path_preface(sentence(value).strip())
+    if not text:
+        return ""
+    if re.search(r"\b1[.)]\s+[A-Z]", text):
+        summary = _first_path_summary(text)
+        return _story_excerpt(summary, limit=220).rstrip(".") if summary else ""
+    sentences = _story_sentences(text)
+    concrete = [
+        row
+        for row in sentences
+        if not re.search(r"\b(first complete path|first path|product must prove|release .*proves)\b", row, flags=re.IGNORECASE)
+    ]
+    chosen = " ".join(concrete[:2]).strip() or _first_path_summary(text)
+    chosen = _strip_numbered_steps(chosen)
+    return _story_excerpt(chosen, limit=320).rstrip(".") if chosen else ""
+
+
+def _greenfield_bottom_line(*, release: str, first_path: str, success: str, release_text: str) -> str:
+    path = _first_path_concrete_story(first_path)
+    if path:
+        return (
+            f"Bottom line: release {sentence(release, '0.0.1')} succeeds when the first path produces its user-visible result "
+            "and leaves enough evidence for review."
+        )
+    proof = _greenfield_proof_sentence(success=success, release_text=release_text, first_path=first_path)
+    proof = _contract_proof_body(proof, first_path=first_path)
+    if proof:
+        return f"Bottom line: release {sentence(release, '0.0.1')} succeeds when {proof[0].lower() + proof[1:] if proof else proof}"
+    return f"Bottom line: release {sentence(release, '0.0.1')} succeeds when the accepted path runs end to end and can be reviewed."
+
+
+def _contract_user_problem(*, product_line: str, first_path: str, outcome: str) -> str:
+    text = _story_sentence(product_line).rstrip(".")
+    if text and not _is_meta_project_line(text):
+        sentences = _story_sentences(text)
+        if sentences:
+            markers = ("need", "fail", "stuck", "without", "cannot", "can't", "hard", "expensive", "unsafe", "problem")
+            for pool in (sentences[1:], sentences):
+                for row in pool:
+                    if any(marker in row.casefold() for marker in markers):
+                        return _story_excerpt(row, limit=230)
+            return _story_excerpt(sentences[0], limit=230)
+        return _story_excerpt(text, limit=230)
+    outcome_text = _story_sentence(outcome).rstrip(".")
+    if outcome_text and not _is_meta_project_line(outcome_text):
+        return _story_excerpt(outcome_text, limit=230)
+    path = _first_path_concrete_story(first_path)
+    if path:
+        return _story_excerpt(f"The first useful user problem is visible through this path: {path}", limit=190)
+    return ""
+
+
+def _actor_journey_intro(actors: Sequence[tuple[str, str, str]]) -> str:
+    for _role, title, body in actors:
+        actor = display_text(title).rstrip(".")
+        detail = display_text(body).rstrip(".")
+        if not actor:
+            continue
+        subject = actor if re.match(r"^(?:a|an|the)\b", actor, flags=re.IGNORECASE) else f"The {_lower_first(actor).rstrip('.')}"
+        if detail.casefold().startswith("who "):
+            detail = detail[4:].strip()
+        if detail:
+            return _story_excerpt(f"{subject} {_lower_first(detail).rstrip('.')}.", limit=190)
+        return _story_excerpt(f"{subject} has one concrete first journey to complete.", limit=190)
+    return ""
+
+
+def _contract_first_path_body(first_path: str) -> str:
+    concrete = _first_path_concrete_story(first_path)
+    if concrete:
+        return _story_excerpt(concrete, limit=230)
+    return _contract_path_body(first_path)
+
+
+def _contract_product_boundary_body(*, non_goals: str, validation: Sequence[str], success: str) -> str:
+    excluded = _contract_body(non_goals)
+    if excluded:
+        return excluded
+    for candidate in [*validation, success]:
+        text = sentence(candidate)
+        if not text:
+            continue
+        for marker in ("must not claim", "does not claim", "does not include", "no "):
+            index = text.casefold().find(marker)
+            if index >= 0:
+                boundary = text[index:]
+                boundary = re.sub(r"^must not claim\s+", "This release does not claim ", boundary, flags=re.IGNORECASE)
+                return _story_excerpt(boundary, limit=190)
+    return "This release supports only the accepted first path; broader variants stay outside until their own proof exists."
+
+
+def _capability_name(value: object) -> str:
+    text = _display_name(value).strip()
+    text = re.sub(r"\s+Service$", "", text)
+    return text
 
 
 def _contract_body(value: str) -> str:
     text = _story_sentence(value).rstrip(".")
     if not text or _is_meta_project_line(text):
         return ""
-    return short(text, limit=190)
+    return _story_excerpt(text, limit=150)
+
+
+def _contract_path_body(value: str) -> str:
+    text = _first_path_subject(value) or _first_path_summary(value) or _story_sentence(value).rstrip(".")
+    if not text or _is_meta_project_line(text):
+        return ""
+    return _story_excerpt(text, limit=150)
+
+
+def _contract_component_list(values: Sequence[str], *, limit: int = 3) -> str:
+    rows = [sentence(value).rstrip(".") for value in values if sentence(value)]
+    if not rows:
+        return ""
+    selected = rows[:limit]
+    body = _join(selected)
+    overflow = len(rows) - len(selected)
+    if overflow > 0:
+        body = f"{body}, plus {overflow} more"
+    return body
+
+
+def _contract_proof_body(value: str, *, first_path: str = "") -> str:
+    text = sentence(value).strip()
+    text = _strip_numbered_steps(text)
+    text = _strip_proof_preface(text)
+    if _contract_path_echo(text):
+        return (
+            "Proof must show the accepted path works on representative input, records the user-visible result, "
+            "and exposes the evidence, non-goals, and release decision for review."
+        )
+    if first_path and _same_story(text, first_path):
+        return (
+            "Proof must show the accepted path works on representative input, records the user-visible result, "
+            "and exposes the evidence, non-goals, and release decision for review."
+        )
+    head, sep, _tail = text.partition(":")
+    if sep and len(head) >= 42:
+        return head.rstrip(".") + "."
+    return _story_excerpt(_story_sentence(text).rstrip("."), limit=320)
+
+
+def _contract_proof_candidate(validation: Sequence[str]) -> str:
+    rows = [_strip_proof_preface(_story_sentence(candidate).rstrip(".")) for candidate in validation]
+    for tokens in (
+        ("release proof", "proof boundary", "evidence means"),
+        ("evidence", "source", "non-goal", "verified", "reviewer-visible"),
+    ):
+        for text in rows:
+            if not text or _is_meta_project_line(text) or _contract_path_echo(text):
+                continue
+            lowered = text.casefold()
+            if any(token in lowered for token in tokens):
+                return text
+    return ""
+
+
+def _strip_proof_preface(value: str) -> str:
+    text = sentence(value).strip()
+    evidence_rewrite = re.sub(r"^evidence means\s+", "Evidence must show ", text, count=1, flags=re.IGNORECASE).strip()
+    if evidence_rewrite != text:
+        return _capitalize_first(evidence_rewrite)
+    patterns = (
+        r"^the release proof matches the accepted proof boundary\s*:\s*",
+        r"^release proof matches the accepted proof boundary\s*:\s*",
+        r"^proof boundary\s*:\s*",
+        r"^proof required\s*:\s*",
+        r"^proof must show\s*:\s*",
+    )
+    for pattern in patterns:
+        rewritten = re.sub(pattern, "", text, count=1, flags=re.IGNORECASE).strip()
+        if rewritten != text:
+            return _capitalize_first(rewritten)
+    return text
+
+
+def _contract_path_echo(value: str) -> bool:
+    text = sentence(value).casefold()
+    return "first path" in text or "first complete path" in text or "passes end to end" in text
+
+
+def _story_excerpt(value: str, *, limit: int) -> str:
+    text = sentence(value).strip()
+    if len(text) <= limit:
+        return _clean_excerpt_tail(text.rstrip(".") + ".")
+    sentences = _story_sentences(text)
+    selected: list[str] = []
+    total = 0
+    for row in sentences:
+        row_len = len(row) + (1 if selected else 0)
+        if selected and total + row_len > limit:
+            break
+        if not selected and len(row) > limit:
+            break
+        selected.append(row)
+        total += row_len
+    if selected:
+        return _clean_excerpt_tail(" ".join(selected).rstrip(".") + ".")
+    words: list[str] = []
+    total = 0
+    for word in text.split():
+        next_total = total + len(word) + (1 if words else 0)
+        if next_total > limit:
+            break
+        words.append(word)
+        total = next_total
+    while words and words[-1].casefold().strip(".,;:") in {"a", "an", "and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"}:
+        words.pop()
+    return _clean_excerpt_tail((" ".join(words).rstrip(" ,;:") or text[:limit].rstrip(" ,;:")).rstrip(".") + ".")
+
+
+def _clean_excerpt_tail(value: str) -> str:
+    text = re.sub(r"(?::\s*)?\b\d+\.$", ".", sentence(value).strip())
+    text = re.sub(
+        r"\b(?:a|an|and|as|at|by|before|for|from|in|inside|of|on|or|outside|the|to|until|with|without)\.$",
+        ".",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(r"\s+\.", ".", text)
+    return text
+
+
+def _display_name(value: object) -> str:
+    text = sentence(value).strip()
+    minor_words = {"a", "an", "and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"}
+    tokens: list[str] = []
+    raw_tokens = text.split()
+    for index, token in enumerate(raw_tokens):
+        stripped = token.strip(".,;:!?()[]{}")
+        if (
+            index > 0
+            and stripped.casefold() in minor_words
+            and not raw_tokens[index - 1].endswith(":")
+            and not _has_internal_capital(stripped)
+        ):
+            tokens.append(token.replace(stripped, stripped.casefold()))
+        else:
+            tokens.append(token)
+    return " ".join(tokens)
+
+
+def _has_internal_capital(value: str) -> bool:
+    return any(char.islower() for char in value) and any(char.isupper() for char in value[1:])
 
 
 def _is_meta_project_line(value: str) -> bool:
@@ -613,11 +875,10 @@ def _risk_boundary(*, failure: str, non_goals: str) -> str:
 
 def _deferred_scope_sentence(*, non_goals: str, failure: str, release: str, subject: str) -> str:
     excluded = _contract_body(non_goals)
-    reason_subject = _lower_first(subject).rstrip(".") if subject else "one bounded first path"
     if excluded:
         return (
             f"Release {release} deliberately excludes {excluded}. "
-            f"Those items stay out because the product must prove this first slice: {reason_subject} before scope expands."
+            "Those items stay out until the accepted scenario has reviewer-visible proof."
         )
     boundary = _risk_boundary(failure=failure, non_goals=non_goals)
     if boundary.startswith("the failure mode: "):
@@ -627,14 +888,14 @@ def _deferred_scope_sentence(*, non_goals: str, failure: str, release: str, subj
         )
     return (
         f"Release {release} keeps broader automation, live integrations, and irreversible decisions outside the first slice "
-        f"until the product proves this first slice: {reason_subject}."
+        "until reviewer-visible proof exists."
     )
 
 
 def _greenfield_proof_sentence(*, success: str, release_text: str, first_path: str) -> str:
     proof = next(
         (
-            _story_sentence(candidate).rstrip(".")
+            _proof_claim(_story_sentence(candidate).rstrip("."), first_path=first_path)
             for candidate in (success, release_text)
             if _story_sentence(candidate) and not _is_meta_project_line(_story_sentence(candidate))
         ),
@@ -643,6 +904,8 @@ def _greenfield_proof_sentence(*, success: str, release_text: str, first_path: s
     if proof:
         if _normalized_story_text(proof) == _normalized_story_text(first_path):
             return "Proof must show the first path happened, stayed inside its accepted boundary, and left reviewer-visible evidence."
+        if proof.casefold().startswith("proof must show "):
+            return proof.rstrip(".") + "."
         if proof.casefold().startswith(("promote ", "release ", "only ")):
             return f"{proof}."
         return f"Proof must show {proof[0].lower() + proof[1:] if proof else proof}."
@@ -654,6 +917,10 @@ def _greenfield_proof_sentence(*, success: str, release_text: str, first_path: s
 
 def _normalized_story_text(value: str) -> str:
     return " ".join(sentence(value).casefold().strip(" .").split())
+
+
+def _same_story(left: str, right: str) -> bool:
+    return bool(left and right and _normalized_story_text(left) == _normalized_story_text(right))
 
 
 def _greenfield_artifact_line(
@@ -698,7 +965,7 @@ def _greenfield_supporting_records(
 
 
 def _story_sentence(value: str) -> str:
-    text = sentence(value).replace("`", "")
+    text = display_text(value)
     text = _capitalize_first(text)
     return text if text.endswith((".", "?", "!")) else f"{text}." if text else ""
 
@@ -714,14 +981,14 @@ def _lower_first(value: str) -> str:
 
 def _story_actor_items(actors: Sequence[tuple[str, str, str]]) -> list[dict[str, str]]:
     return [
-        {"role": sentence(role), "title": sentence(title), "body": sentence(body)}
+        {"role": display_text(role), "title": display_text(title), "body": display_text(body)}
         for role, title, body in actors[:4]
-        if sentence(title)
+        if display_text(title)
     ]
 
 
 def _first_path_subject(value: str) -> str:
-    text = sentence(value).strip().rstrip(".")
+    text = _first_path_summary(value).rstrip(".")
     if not text:
         return ""
     lowered = text.lower()
@@ -740,24 +1007,80 @@ def _first_path_subject(value: str) -> str:
     return short(text, limit=96)
 
 
-def _first_path_clause(value: str) -> str:
-    text = sentence(value).strip().rstrip(".")
-    if not text:
-        return "proves the first journey"
-    if _is_meta_project_line(text):
-        return "proves the first usable product path"
-    lowered = text.lower()
-    for verb in ("prove", "validate", "show", "build", "create", "define"):
-        prefix = f"{verb} "
-        if lowered.startswith(prefix):
-            return f"{verb}s {text[len(prefix):]}"
-    return f"is straightforward: {_lower_first(text).rstrip('.')}"
-
-
 def _story_subject(value: str) -> str:
     text = _first_path_subject(value)
     if not text or _is_meta_project_line(text):
         return ""
+    return text
+
+
+def _first_path_summary(value: str) -> str:
+    text = _strip_numbered_steps(_story_sentence(value)).strip()
+    text = re.sub(r"\s*:\s*\.$", ".", text).strip()
+    text = re.sub(r"\bflow\s*:\s*(?:\.)?$", "flow.", text, flags=re.IGNORECASE).strip()
+    text = _strip_first_path_preface(text)
+    return text if text.endswith((".", "?", "!")) else f"{text}." if text else ""
+
+
+def _strip_numbered_steps(value: str) -> str:
+    text = sentence(value).strip()
+    if not text:
+        return ""
+    text = re.split(r"\s+\d+[.)]\s+(?=[A-Z])", text, maxsplit=1)[0].strip()
+    text = re.sub(r"(?::\s*)?\b\d+[.)]\s*$", "", text).strip()
+    text = re.sub(r"\s*:\s*$", "", text).strip()
+    return text if text.endswith((".", "?", "!")) else f"{text}." if text else ""
+
+
+def _strip_first_path_preface(value: str) -> str:
+    text = sentence(value).strip()
+    patterns = (
+        r"^the first complete path to prove should be\s*:?\s+",
+        r"^first complete path to prove should be\s*:?\s+",
+        r"^the first complete path should prove\s*:?\s+",
+        r"^first complete path should prove\s*:?\s+",
+        r"^the first complete path to prove is\s+",
+        r"^first complete path to prove is\s+",
+        r"^the first complete path is\s+",
+        r"^first complete path is\s+",
+        r"^the first path is\s+",
+        r"^first path is\s+",
+        r"^the first complete path (?:the product|this product|the system|release [^ ]+)?\s*must prove is\s+",
+        r"^first complete path (?:the product|this product|the system|release [^ ]+)?\s*must prove is\s+",
+        r"^the first path (?:the product|this product|the system|release [^ ]+)?\s*must prove is\s+",
+        r"^first path (?:the product|this product|the system|release [^ ]+)?\s*must prove is\s+",
+        r"^the first usable capability is this path:\s+",
+        r"^first path:\s+",
+    )
+    for pattern in patterns:
+        rewritten = re.sub(pattern, "", text, count=1, flags=re.IGNORECASE).strip()
+        if rewritten != text:
+            return _capitalize_first(rewritten)
+    return text
+
+
+def _story_sentences(value: str) -> list[str]:
+    text = sentence(value).strip()
+    if not text:
+        return []
+    return [
+        row.strip()
+        for row in re.split(r"(?<=[.!?])\s+(?=(?!\d+[.)]\s)[A-Z0-9])", text)
+        if row.strip()
+    ]
+
+
+def _proof_claim(value: str, *, first_path: str) -> str:
+    text = _strip_numbered_steps(value).rstrip(".")
+    head, sep, tail = text.partition(":")
+    if sep and len(head) >= 36:
+        tail_text = sentence(tail)
+        if re.search(r"\b\d+[.)]\s+[A-Z]", tail) or _same_story(tail_text, first_path) or "first path" in head.casefold():
+            text = head
+    if _same_story(text, first_path):
+        return "the first path happened, stayed inside its accepted boundary, and left reviewer-visible evidence"
+    if len(text) > 180:
+        text = _story_excerpt(text, limit=170).rstrip(".")
     return text
 
 

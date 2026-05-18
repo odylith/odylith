@@ -641,6 +641,9 @@
 
     .summary {
       margin: 0;
+      color: #34475d;
+      font-size: 1rem;
+      line-height: 1.45;
     }
 
     .diagram-explanation-section {
@@ -657,6 +660,8 @@
     }
 
     .diagram-guide-panel {
+      display: grid;
+      align-content: start;
       border: 1px solid rgba(3, 105, 161, 0.14);
       border-radius: 10px;
       background: rgba(248, 252, 255, 0.92);
@@ -670,6 +675,9 @@
 
     .read-guide-body {
       margin: 0;
+      color: #34475d;
+      font-size: 1rem;
+      line-height: 1.45;
     }
 
     .diagram-box-section,
@@ -777,34 +785,38 @@
     .component-list {
       margin-top: 0;
       display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      gap: 0;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 8px;
       min-width: 0;
       max-width: 100%;
-      border: 1px solid rgba(3, 105, 161, 0.14);
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.94);
-      overflow: hidden;
+      border: 0;
+      background: transparent;
+      overflow: visible;
     }
 
     .component-card {
       display: grid;
-      grid-template-columns: minmax(170px, 240px) minmax(0, 1fr);
-      gap: 12px;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 6px;
       align-items: start;
       min-width: 0;
       max-width: 100%;
-      border-bottom: 1px solid rgba(3, 105, 161, 0.12);
-      padding: 9px 11px;
-      background: transparent;
-    }
-
-    .component-card:last-child {
-      border-bottom: 0;
+      border: 1px solid rgba(3, 105, 161, 0.14);
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.94);
     }
 
     .component-card strong {
       display: block;
+    }
+
+    .component-heading {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px 8px;
+      align-items: baseline;
+      min-width: 0;
     }
 
     .component-token {
@@ -816,6 +828,7 @@
 
     .component-card p {
       margin: 0;
+      max-width: 72ch;
     }
     .summary, .read-guide-body, .component-card p {
   font-size: 15px;
@@ -1442,7 +1455,7 @@
   }
 })();
 </script>
-  <script id="catalogData" src="mermaid-payload.v1.js?v=13b167b1980c"></script>
-  <script src="mermaid-app.v1.js?v=13b167b1980c"></script>
+  <script id="catalogData" src="mermaid-payload.v1.js?v=60cac4d18b00"></script>
+  <script src="mermaid-app.v1.js?v=60cac4d18b00"></script>
 </body>
 </html>

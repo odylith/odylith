@@ -34,7 +34,7 @@ def attach_project_intelligence_bindings(proposal: Mapping[str, Any]) -> dict[st
         "project_title": base["project_title"],
         "project_slug": base["project_slug"],
         "derived_artifacts": list(_DERIVED_ARTIFACTS),
-        "tribunal_gate": "greenfield-tribunal-v1",
+        "validation_gate": "greenfield-validation-gate-v1",
         "rule": (
             "Greenfield governance artifacts are projected from project_intelligence first; "
             "artifact-specific writers may shape the native surface but must preserve purpose, "

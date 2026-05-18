@@ -12,7 +12,7 @@ captured stdout, do not answer. Never replace `odylith show` stdout with a
 hand-written "here's what Odylith demonstrated" summary, install diagnosis,
 dirty-path analysis, impact-packet recap, module-count scan, tmp-clone warning,
 spawn-policy note, or follow-up question. Never create, scaffold, edit, or test
-example application files such as HTML/CSS/JS demos, toy apps, sample robots, or
+example application files such as HTML/CSS/JS demos, toy apps, sample devices, or
 placeholder products in response to a show-me request.
 
 1. Run the first available show command and capture stdout only:

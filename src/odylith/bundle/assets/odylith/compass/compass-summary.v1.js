@@ -357,6 +357,10 @@
       const reason = String(diagnostics.reason || "").trim().toLowerCase();
       const retryUtc = String(diagnostics.next_retry_utc || "").trim();
       const retryCopy = retryUtc ? `Will retry after ${compactTimestamp(retryUtc)}.` : "";
+      const fallbackDigest = Array.isArray(diagnostics.fallback_digest)
+        ? diagnostics.fallback_digest.map((line) => String(line || "").trim()).filter(Boolean).slice(0, 3)
+        : [];
+      const fallbackTitle = String(diagnostics.fallback_title || "Local runtime facts").trim();
       const toneClass = reason === "provider_unavailable" || reason === "transport_error" || reason === "provider_deferred"
         ? "brief-status-card--info"
         : "brief-status-card--warn";
@@ -364,6 +368,14 @@
         <div class="brief-status-card ${toneClass} brief-status-card--compact" role="status" aria-live="polite">
           <div class="brief-status-title">${escapeHtml(title)}</div>
           <div class="brief-status-copy">${escapeHtml(message)}</div>
+          ${fallbackDigest.length ? `
+            <div class="brief-fallback-digest">
+              <div class="brief-fallback-title">${escapeHtml(fallbackTitle)}</div>
+              <ul>
+                ${fallbackDigest.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}
+              </ul>
+            </div>
+          ` : ""}
           ${retryCopy ? `<div class="brief-status-meta">${escapeHtml(retryCopy)}</div>` : ""}
         </div>
       `;

@@ -637,15 +637,15 @@ initSharedQuickTooltips();
       }
       const kind = String(diagram && diagram.kind ? diagram.kind : "").trim().toLowerCase();
       if (kind.includes("sequence")) {
-        return "Read from top to bottom. Each lane is an actor or component; arrows are calls, handoffs, or proof events; notes and failure branches show where the workflow can block or recover.";
+        return "Read this as a first-path rehearsal. Start with the user or trigger, follow each handoff, and stop at proof, blocker, or recovery notes because those marks define what must be true before trust increases.";
       }
       if (kind.includes("state")) {
-        return "Read states as allowed product or system conditions. Arrows are the only allowed transitions; blocked or rejected states mark conditions that must not advance without proof.";
+        return "Read this as the allowed lifecycle. States describe what can be true; arrows describe permitted movement; blocked or rejected states mark conditions that need proof or owner action before advancement.";
       }
       if (kind.includes("timeline")) {
         return "Read left to right as release or execution order. Each segment is a phase, wave, or proof checkpoint that should line up with the linked workstreams below.";
       }
-      return "Start with the named entrypoints, then follow each arrow to the next decision, action, proof, or recovery point. Boxes are components, states, decisions, or proof obligations; grouped regions show ownership boundaries; labeled edges explain the condition for movement.";
+      return "Read this as a boundary map. Start with the people, inputs, or trigger, then follow the path into product-owned responsibilities; outside boxes are dependencies, not first-release capabilities.";
     }
 
     function normalizeWorkstreamId(value) {
@@ -720,6 +720,72 @@ initSharedQuickTooltips();
       });
     }
 
+    function escapeRegExp(value) {
+      return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\$&");
+    }
+
+    function displayText(value) {
+      return String(value || "")
+        .replace(/\*\*/g, "")
+        .replace(/__/g, "")
+        .replace(/`([^`\n]*)`/g, "$1")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function componentNameWords(value) {
+      return displayText(value)
+        .replace(/\b(service|component|surface|adapter|engine|store|model|resolver)\b/gi, " ")
+        .replace(/[^a-z0-9]+/gi, " ")
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+    }
+
+    function stripLeadingComponentName(text, value) {
+      const words = componentNameWords(value);
+      if (!words.length) return text;
+      const original = String(text || "").trim();
+      for (let keep = words.length; keep > 0; keep -= 1) {
+        const pattern = new RegExp(
+          "^\s*" + words.slice(0, keep).map(escapeRegExp).join("[\s,/-]+") + "\b\s*",
+          "i",
+        );
+        const stripped = original.replace(pattern, "").trim();
+        if (stripped !== original) return stripped || original;
+      }
+      return original;
+    }
+
+    function componentResponsibilityText(component, displayName, rawName) {
+      let text = displayText(component && component.description ? component.description : "");
+      if (!text) return "Named responsibility in this diagram.";
+      [
+        /\bFor release\s+\S+,\s+it receives or produces\b/i,
+        /\bFor the first release,\s+this boundary\b/i,
+        /\bIt matters for release\s+\S+\s+because\b/i,
+        /\bReviewers trust it only when\b/i,
+        /\bProof must stay inside\b/i,
+        /\bThe first workflow depends on\b/i,
+        /\bThe first path depends on\b/i,
+      ].some((pattern) => {
+        const match = text.search(pattern);
+        if (match < 0) return false;
+        text = text.slice(0, match).trim().replace(/[;,.-]+$/g, "");
+        return true;
+      });
+      text = stripLeadingComponentName(text, rawName);
+      text = stripLeadingComponentName(text, displayName);
+      text = text.replace(
+        /^\s*owns?\s+(accepts?|assembles?|binds?|captures?|computes?|derives?|engraves?|estimates?|exports?|handles?|imports?|links?|performs?|preserves?|records?|renders?|resolves?|stores?|tracks?|validates?|writes?)\b/i,
+        (_match, verb) => String(verb || "").replace(/^./, (letter) => letter.toUpperCase()),
+      );
+      text = text.replace(/^\s*owns?\s+owns?\s+/i, "Owns ");
+      text = text.replace(/^\s*owns?\s+/i, "Owns ");
+      if (!text) return "Named responsibility in this diagram.";
+      return /[.!?]$/.test(text) ? text : `${text}.`;
+    }
+
     function renderComponents(diagram) {
       clearNode(componentListEl);
       (diagram.components || []).forEach((component) => {
@@ -731,16 +797,17 @@ initSharedQuickTooltips();
         headingGroup.className = "component-heading";
 
         const heading = document.createElement("strong");
-        heading.textContent = displayName || rawName;
+        heading.textContent = displayText(displayName || rawName);
 
         const body = document.createElement("p");
-        body.textContent = component.description;
+        body.className = "component-description";
+        body.textContent = componentResponsibilityText(component, displayName, rawName);
 
         headingGroup.appendChild(heading);
         if (rawName && displayName && rawName !== displayName) {
           const token = document.createElement("span");
           token.className = "component-token";
-          token.textContent = rawName;
+          token.textContent = displayText(rawName);
           headingGroup.appendChild(token);
         }
         card.appendChild(headingGroup);
@@ -766,9 +833,9 @@ initSharedQuickTooltips();
         const name = document.createElement("div");
         name.className = "diagram-box-name";
         const heading = document.createElement("strong");
-        heading.textContent = String(box.label || "").trim();
+        heading.textContent = displayText(box.label);
         name.appendChild(heading);
-        const roleText = String(box.role || "").trim();
+        const roleText = displayText(box.role);
         if (roleText) {
           const role = document.createElement("span");
           role.className = "diagram-box-role";
@@ -778,7 +845,7 @@ initSharedQuickTooltips();
 
         const description = document.createElement("p");
         description.className = "diagram-box-description";
-        description.textContent = String(box.description || "").trim();
+        description.textContent = displayText(box.description);
 
         row.appendChild(number);
         row.appendChild(name);

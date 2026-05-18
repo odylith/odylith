@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Sequence
 
 from odylith.runtime.surfaces import atlas_diagram_intelligence
+from odylith.runtime.surfaces import display_text
 
 
 _PLACEHOLDER_RE = re.compile(r"\b(tbd|todo|n/a|none|placeholder|fixme)\b", re.IGNORECASE)
@@ -35,6 +36,36 @@ _COMMON_COMPONENT_TOKENS = {
     "tracker",
     "view",
 }
+_SCOPE_OUT_RE = re.compile(
+    r"^(?:not\s+in\s+scope|out\s+of\s+scope|no\s+external|no\s+third[- ]party|no\s+payment|no\s+cloud)\b",
+    re.IGNORECASE,
+)
+_OWNED_ACTION_RE = re.compile(
+    r"^owns?\s+"
+    r"(accepts?|assembles?|binds?|captures?|computes?|derives?|engraves?|estimates?|exports?|handles?|imports?|"
+    r"links?|performs?|preserves?|records?|renders?|resolves?|stores?|tracks?|validates?|writes?)\b",
+    re.IGNORECASE,
+)
+_ACTION_START_RE = re.compile(
+    r"^(accepts?|assembles?|binds?|captures?|computes?|derives?|engraves?|estimates?|exports?|handles?|imports?|"
+    r"links?|performs?|preserves?|records?|renders?|resolves?|stores?|tracks?|validates?|writes?)\b",
+    re.IGNORECASE,
+)
+_LEGACY_COMPONENT_APPENDIX_RE = re.compile(
+    r"\b("
+    r"for release\s+\S+,\s+it receives or produces|"
+    r"it matters for release\s+\S+\s+because the first|"
+    r"reviewers trust it only when|"
+    r"proof must stay inside|"
+    r"the first workflow depends on|"
+    r"the first path depends on"
+    r")\b",
+    re.IGNORECASE,
+)
+_GENERIC_DIAGRAM_TITLE_RE = re.compile(
+    r"\b(context|sequence|ownership|proof|topology|diagram|view|state model|release map|workflow)\b",
+    re.IGNORECASE,
+)
 _NODE_LABEL_RE = re.compile(
     r"""
     (?<![\w.-])
@@ -113,6 +144,7 @@ def _clean_label(value: str) -> str:
     text = html.unescape(str(value or ""))
     text = re.sub(r"<\s*br\s*/?\s*>", "\n", text, flags=re.IGNORECASE)
     text = re.sub(r"<[^>]+>", " ", text)
+    text = display_text.strip_inline_markdown_emphasis_tokens(text)
     lines = [" ".join(line.split()) for line in text.splitlines()]
     lines = [line for line in lines if line]
     if not lines:
@@ -137,7 +169,80 @@ def _clean_label(value: str) -> str:
 
 
 def _label_key(value: str) -> str:
-    return re.sub(r"[^a-z0-9]+", " ", str(value or "").lower()).strip()
+    text = str(value or "")
+    if "·" in text:
+        text = text.split("·", 1)[0]
+    if re.match(r"^\s*proof\s+boundary\b", text, flags=re.IGNORECASE):
+        text = "proof boundary"
+    return re.sub(r"[^a-z0-9]+", " ", text.lower()).strip()
+
+
+def clean_component_description(*, name: str, description: str) -> str:
+    """Return concise reader-facing component copy for Atlas payloads."""
+
+    text = _clean_label(description).replace("`", "").strip()
+    if not text:
+        return ""
+    split_match = _LEGACY_COMPONENT_APPENDIX_RE.search(text)
+    if split_match is not None:
+        text = text[: split_match.start()].strip(" ;,.-")
+    stripped_name = _strip_leading_component_name(name=name, text=text)
+    if stripped_name and _component_name_key(stripped_name):
+        text = stripped_name
+    stripped_kind = re.sub(
+        r"^(?:service|component|surface|adapter|engine|store|model|resolver)\b\s*",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    ).strip()
+    if stripped_kind:
+        text = stripped_kind
+    text = re.sub(
+        r"^(?:is\s+)?(?:a|an)\s+[a-z -]+?\s+component\s+responsible\s+for\s+",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    ).strip()
+    text = re.sub(r"^(?:is\s+)?responsible\s+for\s+", "", text, flags=re.IGNORECASE).strip()
+    text = re.sub(
+        r"\s+with\s+\S+\s+as\s+its\s+initial(?:\s+evidence\s+anchor)?\.?$",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    ).strip(" ;,")
+    text = re.sub(r";\s*serve\s+as\b", "; serves as", text, flags=re.IGNORECASE)
+    text = _OWNED_ACTION_RE.sub(lambda match: str(match.group(1)), text).strip()
+    text = re.sub(r"^owns?\s+owns?\s+", "owns ", text, flags=re.IGNORECASE).strip()
+    if not text:
+        return ""
+    if re.match(r"^owns?\b", text, flags=re.IGNORECASE):
+        text = "Owns " + re.sub(r"^owns?\s+", "", text, flags=re.IGNORECASE).strip()
+    else:
+        text = text[:1].upper() + text[1:]
+    return _first_sentence(text)
+
+
+def _strip_leading_component_name(*, name: str, text: str) -> str:
+    name_words = _component_name_key(name).split()
+    if not name_words:
+        return text
+    for keep in range(len(name_words), 0, -1):
+        pattern = r"^\s*" + r"[\s,/-]+".join(re.escape(word) for word in name_words[:keep]) + r"\b\s*"
+        stripped = re.sub(pattern, "", text, count=1, flags=re.IGNORECASE).strip()
+        if stripped != text.strip():
+            return stripped or text
+    return text
+
+
+def _component_name_key(value: str) -> str:
+    text = re.sub(
+        r"\b(service|component|surface|adapter|engine|store|model|resolver)\b",
+        " ",
+        str(value or ""),
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(r"[^a-z0-9]+", " ", text.casefold())
+    return " ".join(text.split())
 
 
 def _subgraph_label(line: str) -> str:
@@ -192,6 +297,32 @@ def _node_action_sentence(label: str, *, context: DiagramBoxContext) -> str:
     project = context.project_name or "the product"
     tracked_object = context.tracked_object
     tracked_objects = context.tracked_objects
+    matched_components = _matching_components(label=clean, context=context)
+    if matched_components and _component_match_should_win(label=clean, matched_components=matched_components):
+        return _component_grounded_sentence(
+            subject=subject,
+            label=clean,
+            context=context,
+            matched_components=matched_components,
+        )
+    if _SCOPE_OUT_RE.search(clean):
+        project_phrase = project if project != "the product" else "this product"
+        return (
+            f"{subject} is intentionally outside the first-release proof boundary for {project_phrase}. "
+            "It matters because reviewers need to see which integrations, claims, or responsibilities are deferred."
+        )
+    if _has_any(
+        lowered,
+        ("musician", "performer", "student", "teacher", "arranger", "beneficiary", "customer", "user"),
+    ) and not _has_any(
+        lowered,
+        ("service", "provider", "adapter", "interface", "surface", "engine", "store"),
+    ):
+        project_phrase = project if project != "the product" else "this product"
+        return (
+            f"{subject} is a person {project_phrase} must serve. "
+            f"They supply, review, or depend on {_object_with_article(tracked_object)}, so the first release must make that outcome understandable and trustworthy."
+        )
     if _has_any(lowered, ("steward", "owner", "operator")) and not _has_any(
         lowered,
         ("web", "surface", "service", "interface", "status"),
@@ -232,6 +363,11 @@ def _node_action_sentence(label: str, *, context: DiagramBoxContext) -> str:
         return (
             f"{subject} is an external source of remote signals for {tracked_objects}. "
             "Those signals matter only when they retain provider, sensor, time, location, and provenance."
+        )
+    if _has_any(lowered, ("library", "libraries", "model", "dsp", "operating system", "subsystem")):
+        return (
+            f"{subject} is an external input, tool, or runtime dependency for {tracked_objects}. "
+            "It matters only when the product records what came from it, when it was used, and which claim or output it supports."
         )
     if _has_any(lowered, ("remote sensing adapter", "remote-sensing adapter", "imagery adapter")):
         return (
@@ -278,7 +414,6 @@ def _node_action_sentence(label: str, *, context: DiagramBoxContext) -> str:
             f"{subject} owns the trusted record layer for {project}: records, state versions, evidence links, derivation, and audit history. "
             "It matters because the first release must turn scattered inputs into traceable claims."
         )
-    matched_components = _matching_components(label=clean, context=context)
     if matched_components:
         return _component_grounded_sentence(
             subject=subject,
@@ -289,7 +424,10 @@ def _node_action_sentence(label: str, *, context: DiagramBoxContext) -> str:
     if _has_any(lowered, ("product", "program", "release")):
         return f"{subject} defines the product scope, target outcome, and proof boundary that release work must satisfy."
     if _has_any(lowered, ("interface", "dashboard", "ui", "surface", "portal", "console", "app", "workspace")):
-        return f"{subject} gives users the current state, available action, and supporting evidence for the part of the product they own."
+        return (
+            f"{subject} presents the domain object, latest state, next decision, and supporting evidence "
+            "for the user responsibility it serves."
+        )
     if _has_any(lowered, ("radar", "backlog", "workstream", "queue")):
         return f"{subject} tracks the work choices, priorities, and next slices that need governed follow-through."
     if _has_any(lowered, ("atlas", "diagram", "topology", "map")):
@@ -325,14 +463,14 @@ def _node_action_sentence(label: str, *, context: DiagramBoxContext) -> str:
     if _looks_like_state_object(clean):
         return f"{subject} is the object whose state changes as the flow moves from trigger to outcome."
     return (
-        f"{subject} is a named responsibility in {project}. It should explain what it owns, what it receives or produces, "
-        "and why that responsibility matters for the release proof."
+        f"{subject} is a named responsibility in {project}. It should name the domain object it owns, "
+        "the evidence or decision it receives or produces, and the release condition it protects."
     )
 
 
 def _project_name(*, title: str, summary: str, source_text: str) -> str:
     title_text = _clean_label(title).strip()
-    if title_text and not re.search(r"\b(context|sequence|ownership|proof|topology|diagram|view|state model)\b", title_text, re.IGNORECASE):
+    if title_text and not _GENERIC_DIAGRAM_TITLE_RE.search(title_text):
         return title_text
     summary_text = _clean_label(summary)
     match = re.search(
@@ -344,7 +482,13 @@ def _project_name(*, title: str, summary: str, source_text: str) -> str:
     subgraph = re.search(r"subgraph\s+\w+\s+\[\s*['\"]([^'\"]+)['\"]\s*\]", source_text)
     if subgraph:
         return _clean_label(subgraph.group(1))
-    return title_text or "the product"
+    label_match = re.search(
+        r"\b([A-Z][A-Za-z0-9]+(?:\s+[A-Z][A-Za-z0-9]+){1,4})\s+(?:shows?|separates?|connects?|owns?|turns?)\b",
+        summary_text,
+    )
+    if label_match and not _GENERIC_DIAGRAM_TITLE_RE.search(label_match.group(1)):
+        return label_match.group(1).strip()
+    return "the product"
 
 
 def _tracked_object_phrase(corpus: str) -> str:
@@ -354,7 +498,8 @@ def _tracked_object_phrase(corpus: str) -> str:
         "boundary",
         "observation",
         "evidence record",
-        "state record",
+        "state",
+        "take",
         "plant",
         "order",
         "shipment",
@@ -369,6 +514,7 @@ def _tracked_object_phrase(corpus: str) -> str:
         "active",
         "available",
         "current",
+        "cloud",
         "derived",
         "external",
         "first",
@@ -380,6 +526,8 @@ def _tracked_object_phrase(corpus: str) -> str:
         "reviewed",
         "source",
         "stable",
+        "the",
+        "this",
         "trusted",
         "versioned",
         "view",
@@ -398,6 +546,14 @@ def _matching_components(*, label: str, context: DiagramBoxContext) -> tuple[Map
     label_tokens = _meaningful_tokens(label)
     if not label_tokens:
         return ()
+    label_key = _component_name_key(label)
+    exact_matches = [
+        row
+        for row in context.components
+        if label_key and label_key == _component_name_key(str(row.get("name", "")).strip())
+    ]
+    if exact_matches:
+        return tuple(exact_matches[:1])
     matches: list[tuple[int, Mapping[str, str]]] = []
     for row in context.components:
         name = str(row.get("name", "")).strip()
@@ -414,6 +570,15 @@ def _matching_components(*, label: str, context: DiagramBoxContext) -> tuple[Map
     return tuple(row for _score, row in sorted(matches, key=lambda item: -item[0])[:4])
 
 
+def _component_match_should_win(*, label: str, matched_components: Sequence[Mapping[str, str]]) -> bool:
+    """Return true when a generated box label is clearly a component label."""
+    if len(matched_components) != 1:
+        return False
+    label_key = _component_name_key(label)
+    component_key = _component_name_key(str(matched_components[0].get("name", "")).strip())
+    return bool(component_key and (label_key == component_key or "…" in label or "..." in label))
+
+
 def _component_grounded_sentence(
     *,
     subject: str,
@@ -426,27 +591,106 @@ def _component_grounded_sentence(
     tracked_objects = context.tracked_objects
     component_names = [str(row.get("name", "")).strip() for row in matched_components if str(row.get("name", "")).strip()]
     component_descriptions = [
-        _first_sentence(str(row.get("description", "")).strip())
+        clean_component_description(
+            name=str(row.get("name", "")).strip(),
+            description=str(row.get("description", "")).strip(),
+        )
         for row in matched_components
         if str(row.get("description", "")).strip()
     ]
     if len(matched_components) > 1 or _has_any(label.casefold(), ("core services", "record core", "evidence core", "core:")):
         owned = _join_list(component_names) or "the core records, evidence, state, and audit responsibilities"
-        detail = f" It includes {component_descriptions[0]}" if component_descriptions else ""
+        evidence_target = _review_outcome_phrase(tracked_object)
+        detail = ""
+        if component_descriptions:
+            first_responsibility = _responsibility_phrase(component_descriptions[0], subject=subject)
+            if first_responsibility:
+                detail = f" It contributes {_ensure_gerund_phrase(first_responsibility)}."
         return (
             f"{subject} is the trusted record core for {project}. It ties {owned} into one release boundary "
-            f"so {tracked_object} claims can be traced from input to review.{detail}"
+            f"so {evidence_target} can be traced from input to review.{detail}"
         )
     description = component_descriptions[0] if component_descriptions else ""
     if description:
+        responsibility = _responsibility_phrase(description, subject=subject)
+        if _ACTION_START_RE.match(responsibility):
+            return (
+                f"{subject} {responsibility}. "
+                f"It matters because release proof must make this boundary traceable from accepted input to {_review_outcome_phrase(tracked_object)}."
+            )
         return (
-            f"{subject} owns a concrete {project} responsibility: {description[0].lower() + description[1:]}. "
-            f"It matters because release proof must show how this responsibility receives, preserves, or produces trusted {tracked_object} evidence."
+            f"{subject} owns {responsibility}. "
+            f"It matters because release proof must make this boundary traceable from accepted input to {_review_outcome_phrase(tracked_object)}."
         )
     return (
-        f"{subject} owns a concrete {project} responsibility for {tracked_objects}. "
+        f"{subject} owns a named responsibility for {tracked_objects}. "
         "It matters because release proof must show what it receives, preserves, or produces."
     )
+
+
+def _responsibility_phrase(value: str, *, subject: str) -> str:
+    text = _first_sentence(value).strip()
+    if not text:
+        return "the domain responsibility assigned to this boundary"
+    text = re.sub(rf"^{re.escape(subject)}\s+", "", text, flags=re.IGNORECASE).strip()
+    text = re.sub(
+        r"^(?:is responsible for|is a [a-z ]+ responsible for|owns?|records?|stores?|tracks?|links?|assembles?|evaluates?|derives?|serves?)\s+",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    ).strip()
+    text = text[:1].lower() + text[1:] if text else text
+    return text.rstrip(".")
+
+
+def _ensure_gerund_phrase(value: str) -> str:
+    """Return a readable contribution phrase for optional component detail."""
+    text = str(value or "").strip().rstrip(".")
+    if not text:
+        return ""
+    replacements = (
+        (r"^accepts?\b", "accepting"),
+        (r"^assembles?\b", "assembling"),
+        (r"^binds?\b", "binding"),
+        (r"^captures?\b", "capturing"),
+        (r"^computes?\b", "computing"),
+        (r"^derives?\b", "deriving"),
+        (r"^engraves?\b", "engraving"),
+        (r"^estimates?\b", "estimating"),
+        (r"^exports?\b", "exporting"),
+        (r"^imports?\b", "importing"),
+        (r"^links?\b", "linking"),
+        (r"^performs?\b", "performing"),
+        (r"^preserves?\b", "preserving"),
+        (r"^records?\b", "recording"),
+        (r"^renders?\b", "rendering"),
+        (r"^resolves?\b", "resolving"),
+        (r"^stores?\b", "storing"),
+        (r"^tracks?\b", "tracking"),
+        (r"^validates?\b", "validating"),
+        (r"^writes?\b", "writing"),
+    )
+    for pattern, replacement in replacements:
+        updated = re.sub(pattern, replacement, text, count=1, flags=re.IGNORECASE)
+        if updated != text:
+            return updated
+    return text
+
+
+def _object_with_article(value: str) -> str:
+    text = str(value or "").strip()
+    if not text:
+        return "the tracked record"
+    if re.match(r"^(?:a|an|the)\s+", text, flags=re.IGNORECASE):
+        return text
+    return f"the {text}"
+
+
+def _review_outcome_phrase(value: str) -> str:
+    text = str(value or "").strip()
+    if not text or re.search(r"\b(proof|boundary|gate|release)\b", text, flags=re.IGNORECASE):
+        return "a reviewed release outcome"
+    return f"a reviewed outcome for {_object_with_article(text)}"
 
 
 def _first_sentence(value: str) -> str:
@@ -528,7 +772,24 @@ def extract_diagram_boxes_from_mermaid(
             if container_stack:
                 container_stack.pop()
             continue
-        if lowered.startswith(("flowchart", "graph ")):
+        if lowered.startswith(("flowchart", "graph ", "sequencediagram")):
+            continue
+        if lowered.startswith(("autonumber", "note ", "activate ", "deactivate ")):
+            continue
+        if lowered.startswith("participant "):
+            label = _sequence_participant_label(line)
+            display_label = _resolved_box_label(label=label, context=context)
+            key = _label_key(display_label)
+            if display_label and key and key not in seen:
+                boxes.append(
+                    DiagramBoxExplanation(
+                        label=display_label,
+                        role="Participant",
+                        description=_generated_node_description(display_label, container_stack, context),
+                        generated=True,
+                    )
+                )
+                seen.add(key)
             continue
         if lowered.startswith("subgraph "):
             label = _subgraph_label(line)
@@ -554,11 +815,15 @@ def extract_diagram_boxes_from_mermaid(
             key = _label_key(label)
             if not label or not key or key in seen:
                 continue
+            display_label = _resolved_box_label(label=label, context=context)
+            display_key = _label_key(display_label)
+            if display_key and display_key in seen:
+                continue
             graph_description = atlas_diagram_intelligence.node_explanation_from_graph(
                 label=label,
                 source_text=source_text,
             )
-            semantic_description = _generated_node_description(label, container_stack, context)
+            semantic_description = _generated_node_description(display_label, container_stack, context)
             graph_role = atlas_diagram_intelligence.node_role_from_graph(
                 label=label,
                 source_text=source_text,
@@ -566,7 +831,7 @@ def extract_diagram_boxes_from_mermaid(
             role = container_stack[-1] if container_stack else (graph_role or "Step")
             boxes.append(
                 DiagramBoxExplanation(
-                    label=label,
+                    label=display_label,
                     role=role,
                     description=_merge_node_description(
                         semantic_description=semantic_description,
@@ -575,7 +840,7 @@ def extract_diagram_boxes_from_mermaid(
                     generated=True,
                 )
             )
-            seen.add(key)
+            seen.add(display_key or key)
     for node_id in graph.node_ids():
         label = graph.label(node_id)
         key = _label_key(label)
@@ -583,17 +848,46 @@ def extract_diagram_boxes_from_mermaid(
             continue
         if _low_signal_generated_graph_label(label=label, node_id=node_id):
             continue
+        display_label = _resolved_box_label(label=label, context=context)
+        display_key = _label_key(display_label)
+        if display_key and display_key in seen:
+            continue
         boxes.append(
             DiagramBoxExplanation(
-                label=label,
+                label=display_label,
                 role=atlas_diagram_intelligence.describe_graph_node_role(graph=graph, node_id=node_id),
                 description=atlas_diagram_intelligence.describe_graph_node(graph=graph, node_id=node_id)
-                or _generated_node_description(label, (), context),
+                or _generated_node_description(display_label, (), context),
                 generated=True,
             )
         )
-        seen.add(key)
+        seen.add(display_key or key)
     return tuple(boxes)
+
+
+def _sequence_participant_label(line: str) -> str:
+    """Return the visible label from a Mermaid sequence participant row."""
+    match = re.match(
+        r"^\s*(?:participant|actor)\s+\S+\s+as\s+(.+?)\s*$",
+        line,
+        flags=re.IGNORECASE,
+    )
+    if match:
+        return _clean_label(match.group(1))
+    match = re.match(r"^\s*(?:participant|actor)\s+(.+?)\s*$", line, flags=re.IGNORECASE)
+    return _clean_label(match.group(1)) if match else ""
+
+
+def _resolved_box_label(*, label: str, context: DiagramBoxContext) -> str:
+    """Resolve generated/truncated labels to full component labels when catalog truth is available."""
+    clean = _clean_label(label)
+    if "…" not in clean and "..." not in clean:
+        return clean
+    matches = _matching_components(label=clean, context=context)
+    if len(matches) != 1:
+        return clean
+    name = str(matches[0].get("name", "")).strip()
+    return name or clean
 
 
 def _merge_node_description(*, semantic_description: str, graph_description: str) -> str:
@@ -617,6 +911,10 @@ def _low_signal_generated_graph_label(*, label: str, node_id: str) -> bool:
     clean_id = _clean_label(node_id)
     if not clean_label:
         return True
+    if clean_label.casefold() in {"primary", "secondary", "later", "optional"}:
+        return True
+    if re.fullmatch(r"(?:component|actor|external|owner|proof|node)\d+", clean_label, flags=re.IGNORECASE):
+        return True
     if clean_label.casefold() != clean_id.casefold():
         return False
     return bool(re.fullmatch(r"[A-Z]|\d+|node\d+", clean_label, flags=re.IGNORECASE))
@@ -624,8 +922,8 @@ def _low_signal_generated_graph_label(*, label: str, node_id: str) -> bool:
 
 def catalog_box_copy_errors(*, box: Mapping[str, Any], context: str) -> tuple[str, ...]:
     """Return authoring errors for hand-written Atlas diagram-box copy."""
-    label = str(box.get("label", "")).strip()
-    description = str(box.get("description", "")).strip()
+    label = _clean_label(str(box.get("label", "")).strip())
+    description = display_text.strip_inline_markdown_emphasis(box.get("description", ""))
     errors: list[str] = []
     if not label or not description:
         return (f"{context} requires non-empty `label` and `description`",)
@@ -665,8 +963,8 @@ def normalize_catalog_diagram_boxes(
             errors.append(f"{box_context} must be an object")
             continue
         errors.extend(catalog_box_copy_errors(box=box, context=box_context))
-        label = str(box.get("label", "")).strip()
-        description = str(box.get("description", "")).strip()
+        label = _clean_label(str(box.get("label", "")).strip())
+        description = display_text.strip_inline_markdown_emphasis(box.get("description", ""))
         role = str(box.get("role", "")).strip()
         key = _label_key(label)
         if not label or not description:

@@ -23,6 +23,9 @@ DETAIL_LAYOUT_CSS = r"""
 
     .summary {
       margin: 0;
+      color: #34475d;
+      font-size: 1rem;
+      line-height: 1.45;
     }
 
     .diagram-explanation-section {
@@ -39,6 +42,8 @@ DETAIL_LAYOUT_CSS = r"""
     }
 
     .diagram-guide-panel {
+      display: grid;
+      align-content: start;
       border: 1px solid rgba(3, 105, 161, 0.14);
       border-radius: 10px;
       background: rgba(248, 252, 255, 0.92);
@@ -52,6 +57,9 @@ DETAIL_LAYOUT_CSS = r"""
 
     .read-guide-body {
       margin: 0;
+      color: #34475d;
+      font-size: 1rem;
+      line-height: 1.45;
     }
 
     .diagram-box-section,
@@ -132,34 +140,38 @@ DETAIL_LAYOUT_CSS = r"""
     .component-list {
       margin-top: 0;
       display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      gap: 0;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 8px;
       min-width: 0;
       max-width: 100%;
-      border: 1px solid rgba(3, 105, 161, 0.14);
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.94);
-      overflow: hidden;
+      border: 0;
+      background: transparent;
+      overflow: visible;
     }
 
     .component-card {
       display: grid;
-      grid-template-columns: minmax(170px, 240px) minmax(0, 1fr);
-      gap: 12px;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 6px;
       align-items: start;
       min-width: 0;
       max-width: 100%;
-      border-bottom: 1px solid rgba(3, 105, 161, 0.12);
-      padding: 9px 11px;
-      background: transparent;
-    }
-
-    .component-card:last-child {
-      border-bottom: 0;
+      border: 1px solid rgba(3, 105, 161, 0.14);
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.94);
     }
 
     .component-card strong {
       display: block;
+    }
+
+    .component-heading {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px 8px;
+      align-items: baseline;
+      min-width: 0;
     }
 
     .component-token {
@@ -171,6 +183,7 @@ DETAIL_LAYOUT_CSS = r"""
 
     .component-card p {
       margin: 0;
+      max-width: 72ch;
     }
     __ODYLITH_ATLAS_READABLE_COPY__
 
@@ -423,14 +436,14 @@ DETAIL_RUNTIME_HELPERS_JS = r"""
       }
       const kind = String(diagram && diagram.kind ? diagram.kind : "").trim().toLowerCase();
       if (kind.includes("sequence")) {
-        return "Read from top to bottom. Each lane is an actor or component; arrows are calls, handoffs, or proof events; notes and failure branches show where the workflow can block or recover.";
+        return "Read this as a first-path rehearsal. Start with the user or trigger, follow each handoff, and stop at proof, blocker, or recovery notes because those marks define what must be true before trust increases.";
       }
       if (kind.includes("state")) {
-        return "Read states as allowed product or system conditions. Arrows are the only allowed transitions; blocked or rejected states mark conditions that must not advance without proof.";
+        return "Read this as the allowed lifecycle. States describe what can be true; arrows describe permitted movement; blocked or rejected states mark conditions that need proof or owner action before advancement.";
       }
       if (kind.includes("timeline")) {
         return "Read left to right as release or execution order. Each segment is a phase, wave, or proof checkpoint that should line up with the linked workstreams below.";
       }
-      return "Start with the named entrypoints, then follow each arrow to the next decision, action, proof, or recovery point. Boxes are components, states, decisions, or proof obligations; grouped regions show ownership boundaries; labeled edges explain the condition for movement.";
+      return "Read this as a boundary map. Start with the people, inputs, or trigger, then follow the path into product-owned responsibilities; outside boxes are dependencies, not first-release capabilities.";
     }
 """

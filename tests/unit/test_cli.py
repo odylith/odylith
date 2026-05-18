@@ -218,7 +218,7 @@ def test_capabilities_command_prints_host_agnostic_engine_inventory(capsys) -> N
     assert "odylith greenfield apply" in output
     assert "Activation:" in output
     assert "attach the normalized execution handshake" in output
-    assert "deterministic proposal Tribunal" in output
+    assert "deterministic proposal gating" in output
     assert "Codex and Claude Code are adapters" in output
     assert "Use `odylith --help` for command syntax." in output
 
@@ -422,7 +422,7 @@ A city permitting team uses the Permit Review Workspace to review building appli
 State object that changes through the first journey
 A Permit Review File tracks the active application, submitted documents, zoning check status, applicant revisions, reviewer comments, unresolved blockers, decision state, and evidence supporting each approval or rejection.
 
-First complete path Odylith should prove before broader scope
+First complete path the product should prove before broader scope
 A coordinator imports one application, a reviewer records a zoning check, the applicant submits one revision, and a supervisor reviews the decision package.
 
 Human actors

@@ -6,6 +6,8 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.common import display_text as shared_display_text
+
 
 def dict_value(value: object) -> dict[str, Any]:
     return dict(value) if isinstance(value, Mapping) else {}
@@ -23,8 +25,20 @@ def list_value(value: object) -> list[Any]:
 
 
 def sentence(value: object, fallback: str = "") -> str:
-    token = " ".join(str(value or "").strip().split())
+    token = str(value or "").strip()
+    token = shared_display_text.strip_inline_markdown_emphasis_tokens(token).replace("`", "")
+    token = re.sub(r"\s+([,.;:?!])", r"\1", token)
+    token = " ".join(token.split())
     return token or fallback
+
+
+def display_text(value: object, fallback: str = "") -> str:
+    """Normalize human-facing prose before it reaches rendered project surfaces."""
+
+    token = sentence(value, fallback)
+    if not token:
+        return fallback
+    return sentence(token, fallback)
 
 
 def short(value: object, *, limit: int = 180, fallback: str = "") -> str:

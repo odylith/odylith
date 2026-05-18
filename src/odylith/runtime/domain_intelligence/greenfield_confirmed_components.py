@@ -94,37 +94,46 @@ def confirmed_project_brief(
     non_goals: list[str] | None = None,
 ) -> dict[str, Any]:
     label_lower = label.lower()
+    state_label = _state_object_label(state_object, fallback=f"{label} state")
+    evidence_label = _state_object_label(evidence_record, fallback=evidence_record)
     actor_summary = _join_domain_items(human_actors) or f"the first {label_lower} operator and reviewer"
-    internal_summary = _join_domain_items(internal_systems) or f"{state_object.lower()} ownership and {evidence_record.lower()} review"
-    external_summary = _join_domain_items(external_systems) or "fixture-backed or deferred external systems"
+    internal_summary = _join_system_names(internal_systems) or f"{state_label.lower()} ownership and {evidence_label.lower()} review"
+    external_summary = _join_domain_items(external_systems) or "explicitly deferred external systems"
     story = product_story or (
-        f"{label} turns the confirmed request into one usable workflow with named users, owned state, and reviewable proof."
+        f"{label} turns the confirmed request into one usable product path with named users, owned state, and reviewable proof."
     )
-    first = first_path or f"The first release proves one {label_lower} workflow from intake through state update and evidence review."
-    proof = proof_boundary or f"Release {release} succeeds only when {state_object.lower()} and {evidence_record.lower()} can be reviewed together."
+    story_brief = _brief_clause(story, limit=420)
+    first = _brief_clause(
+        first_path or f"The first release proves one {label_lower} path from intake through state update and evidence review.",
+        limit=300,
+    )
+    proof = _brief_clause(
+        proof_boundary or f"Release {release} succeeds only when {state_label.lower()} and {evidence_label.lower()} can be reviewed together.",
+        limit=300,
+    )
     non_goal_summary = _join_domain_items(non_goals) or "wider automation, live irreversible integrations, and production scaling"
     return {
         "schema_version": "odylith.greenfield.project_brief.v1",
         "purpose": story,
         "operating_principle": (
             f"Every release {release} claim must stay attached to the user capability, domain state, source evidence, "
-            "and proof boundary accepted in the Product Intent Confirmation."
+            "and proof boundary accepted in the product direction."
         ),
         "project_outcome": proof,
         "blueprint_sections": [
             {
                 "section": "Product story",
-                "must_capture": story,
+                "must_capture": story_brief,
                 "why_it_matters": f"Readers need to understand the product, user, problem, and real-world outcome before {label_lower} implementation boundaries appear.",
             },
             {
-                "section": "First workflow",
+                "section": "First path",
                 "must_capture": first,
-                "why_it_matters": "A narrow workflow keeps the first release testable and prevents broad platform drift.",
+                "why_it_matters": "A narrow first path keeps the first release testable and prevents broad platform drift.",
             },
             {
                 "section": "State and ownership",
-                "must_capture": f"{state_object} changes through the first journey; {internal_summary} own the domain records needed to trust it.",
+                "must_capture": f"{state_label} changes through the first journey; {internal_summary} own the domain records needed to trust it.",
                 "why_it_matters": "Clear ownership prevents silent state changes and unclear accountability.",
             },
             {
@@ -139,29 +148,29 @@ def confirmed_project_brief(
             },
         ],
         "customization_options": [
-            _brief_option("D1", "First user", f"Confirm the first human actors: {actor_summary}.", "Changes workflow steps and permission expectations."),
-            _brief_option("D2", "State object", f"Confirm whether {state_object.lower()} is the right object to version.", "Changes storage ownership and replay proof."),
+            _brief_option("D1", "First user", f"Confirm the first human actors: {actor_summary}.", "Changes path steps and permission expectations."),
+            _brief_option("D2", "State object", f"Confirm this as the versioned state object: {state_label}.", "Changes storage ownership and replay proof."),
             _brief_option("D3", "Evidence level", f"Confirm the proof boundary: {proof}", "Changes security posture and release confidence."),
             _brief_option("D4", "External systems", f"Confirm whether release {release} needs {external_summary}.", "Changes adapters, credentials, and failure modes."),
-            _brief_option("D5", "Release ambition", f"Keep {release} to the accepted first workflow and non-goals: {non_goal_summary}.", "Changes workstream depth and validation cost."),
+            _brief_option("D5", "Release ambition", f"Keep {release} to the accepted first path and non-goals: {non_goal_summary}.", "Changes planning depth and validation cost."),
         ],
         "customization_prompts": [
-            f"Revise the {label_lower} story if the first user, workflow, or state object is wrong.",
-            f"Add or remove an external source only if the first workflow cannot be trusted without it: {external_summary}.",
+            f"Revise the {label_lower} story if the first user, first path, or state object is wrong.",
+            "Decide whether the first release needs a live external source, a simulated source, or an explicitly deferred integration.",
             f"Tighten the {label_lower} proof bar so release readiness depends on the accepted proof boundary.",
         ],
         "pre_coding_checkpoints": [
-            _checkpoint("Product story accepted", f"Does the {label_lower} story name the user, problem, workflow, and non-goals?"),
-            _checkpoint("State ownership accepted", f"Does one component own {state_object.lower()} and its version history?"),
-            _checkpoint("Evidence path accepted", f"Can reviewers inspect {evidence_record.lower()} without trusting implementation prose?"),
+            _checkpoint("Product story accepted", f"Does the {label_lower} story name the user, problem, first path, and non-goals?"),
+            _checkpoint("State ownership accepted", f"Does one component own {state_label.lower()} and its version history?"),
+            _checkpoint("Evidence path accepted", f"Can reviewers inspect {evidence_label.lower()} without trusting implementation prose?"),
             _checkpoint("Release proof accepted", f"Do the {release} gates block promotion when {label_lower} proof is missing?"),
         ],
         "coding_readiness_gates": [
-            f"The accepted product story is present before implementation planning: {story}",
-            f"The first workflow is accepted in domain language: {first}",
-            f"The {label_lower} components come from internal product systems named in the Product Intent Confirmation: {internal_summary}.",
+            f"The accepted product story is present before implementation planning: {story_brief}",
+            f"The first path is accepted in domain language: {first}",
+            f"The {label_lower} components come from product systems named in the accepted product direction: {internal_summary}.",
             f"Release {release} has validation gates for success, failure, replay, access, and review evidence.",
-            f"External dependencies for {label_lower} are fixture-backed, sandboxed, source-backed, or explicitly deferred.",
+            f"External dependencies for {label_lower} are simulated, sandboxed, source-backed, or explicitly deferred.",
         ],
         "host_independent_paths": [
             {
@@ -174,7 +183,7 @@ def confirmed_project_brief(
                 "path": "Create confirmed records",
                 "command": f"odylith greenfield create --repo-root . --prompt {shell_quote(prompt)} --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release {release}",
                 "works_in": "shell, Codex, Claude Code",
-                "use_when": "Use after writing the already-shown Product Intent Confirmation to the intent file so Odylith builds from the confirmed narrative.",
+                "use_when": "Use after writing the already-shown confirmation to the intent file so the records build from the accepted narrative.",
             },
             {
                 "path": "Explicit file review",
@@ -246,14 +255,17 @@ def _component_label(name: str, kind: str) -> str:
 
 def _title_phrase(value: str) -> str:
     words = []
-    for word in str(value or "").split():
-        words.append(_title_word(word))
+    raw_words = str(value or "").split()
+    for index, word in enumerate(raw_words):
+        words.append(_title_word(word, first=index == 0, previous=raw_words[index - 1] if index else ""))
     return " ".join(words)
 
 
 def _responsibility(*, name: str, description: str, label: str) -> str:
-    detail = _strip_ownership_verb(description) or f"the {name.lower()} role in the accepted {label} first release"
-    return f"{name} owns {detail[:1].lower() + detail[1:] if detail else detail}."
+    detail, _rationale = _system_detail(description)
+    detail = detail or f"the {name.lower()} role in the accepted {label} first release"
+    detail = detail[:1].lower() + detail[1:] if detail else detail
+    return f"Owns {detail} for the accepted first release path."
 
 
 def _boundary(*, name: str, description: str, label: str, kind: str) -> str:
@@ -261,29 +273,32 @@ def _boundary(*, name: str, description: str, label: str, kind: str) -> str:
         return f"{name} owns user interaction and visible state for {label}; domain rules stay with the product systems it calls."
     if kind == "adapter":
         return f"{name} owns external-system translation and provenance for {label}; it does not own the external source of truth."
-    detail = _strip_ownership_verb(description) or f"the {label} domain responsibility named by the confirmed intent"
-    return f"{name} owns {detail}; it does not own unrelated product decisions or external-provider truth."
+    detail, rationale = _system_detail(description)
+    detail = detail or f"the {label} domain responsibility named by the confirmed intent"
+    rationale_text = f" {_evidence_sentence(rationale)}" if rationale else ""
+    return f"{name} owns {detail}.{rationale_text} It does not own unrelated product decisions or external-provider truth."
 
 
 def _dependencies(*, name: str, description: str, label: str, prior: list[dict[str, Any]]) -> list[str]:
-    deps = [f"Depends on the accepted {label} Product Intent Confirmation for user, problem, first workflow, and proof boundary."]
+    deps = [f"Depends on the accepted {label} product direction for user, problem, first path, and proof boundary."]
     if prior:
-        deps.append(f"Coordinates with {prior[0]['label']} where the first workflow crosses component boundaries.")
-    if description:
-        deps.append(f"Receives or produces domain information described as: {_strip_ownership_verb(description)}.")
+        deps.append(f"Coordinates with {prior[0]['label']} where the first path crosses component boundaries.")
+    _detail, rationale = _system_detail(description)
+    if rationale:
+        deps.append(_evidence_sentence(rationale))
     return deps
 
 
 def _interfaces(*, name: str, description: str, first_path: str) -> list[str]:
-    path = first_path or "the accepted first workflow"
-    detail = _strip_ownership_verb(description) or f"the {name.lower()} responsibility"
-    return [f"Expose operations for {detail} required by: {path}"]
+    detail, _rationale = _system_detail(description)
+    detail = detail or f"the {name.lower()} responsibility"
+    return [f"Expose operations for {detail} needed by the accepted first path."]
 
 
 def _validation(*, name: str, description: str, first_path: str) -> list[str]:
-    detail = _strip_ownership_verb(description) or name
-    path = first_path or "the accepted first workflow"
-    return [f"Contract proof shows {detail} supports {path} with traceable inputs, outputs, and failure behavior."]
+    detail, _rationale = _system_detail(description)
+    detail = detail or name
+    return [f"Proof shows {detail} works inside the accepted first path, including success, failure, and recovery evidence."]
 
 
 def _unique_component_id(component_id: str, existing: list[dict[str, Any]], index: int) -> str:
@@ -296,7 +311,78 @@ def _unique_component_id(component_id: str, existing: list[dict[str, Any]], inde
 
 
 def _strip_ownership_verb(value: str) -> str:
-    return re.sub(r"^(?:owns?|records?|stores?|tracks?|links?|assembles?|evaluates?|derives?|serves?)\s+", "", str(value or "").strip(), flags=re.IGNORECASE)
+    text = str(value or "").strip()
+    first, _, rest = text.partition(" ")
+    lower = first.casefold().strip(".,:;")
+    replacements = {
+        "accepts": "acceptance of",
+        "assembles": "assembly of",
+        "binds": "binding of",
+        "captures": "capture of",
+        "computes": "computed result for",
+        "derives": "derivation of",
+        "engraves": "engraving of",
+        "estimates": "estimate of",
+        "exports": "export of",
+        "handles": "handling of",
+        "imports": "import of",
+        "links": "links between",
+        "owns": "",
+        "own": "",
+        "performs": "",
+        "preserves": "preservation of",
+        "records": "record of",
+        "renders": "rendering of",
+        "resolves": "resolution of",
+        "serves": "service for",
+        "shows": "visibility into",
+        "stores": "stored record of",
+        "tracks": "tracking of",
+        "validates": "validation of",
+        "views": "view of",
+        "writes": "written record of",
+    }
+    if lower not in replacements or not rest:
+        return text
+    prefix = replacements[lower]
+    return rest.strip() if not prefix else f"{prefix} {rest.strip()}"
+
+
+def _system_detail(value: str) -> tuple[str, str]:
+    text = _strip_ownership_verb(value).strip(" .")
+    if not text:
+        return "", ""
+    parts = re.split(r"\brationale\s*:\s*", text, maxsplit=1, flags=re.IGNORECASE)
+    detail = parts[0].strip(" .")
+    rationale = parts[1].strip(" .") if len(parts) > 1 else ""
+    evidence_parts = re.split(r"\brelevant\s+behavior\s*:\s*", detail, maxsplit=1, flags=re.IGNORECASE)
+    if len(evidence_parts) > 1:
+        detail = evidence_parts[0].strip(" .")
+        evidence = evidence_parts[1].strip(" .")
+        rationale = ". ".join(part for part in (f"Relevant behavior: {evidence}" if evidence else "", rationale) if part)
+    detail = re.sub(r"^(?:the\s+)?accepted\s+", "", detail, flags=re.IGNORECASE).strip(" .")
+    return detail, rationale
+
+
+def _evidence_sentence(value: str) -> str:
+    text = str(value or "").strip(" .")
+    if not text:
+        return ""
+    if re.match(r"^relevant\s+behavior\s*:", text, flags=re.IGNORECASE):
+        evidence = re.sub(r"^relevant\s+behavior\s*:\s*", "", text, flags=re.IGNORECASE).strip(" .")
+        domain, _separator, pressure = evidence.partition(". ")
+        result = f"Domain evidence: {domain.strip(' .')}."
+        if pressure.strip():
+            result += f" Design pressure: {_sentence_case(pressure)}."
+        return result
+    return f"Design pressure: {text}."
+
+
+def _sentence_case(value: str) -> str:
+    text = str(value or "").strip(" .")
+    if not text:
+        return ""
+    return text[:1].upper() + text[1:]
 
 
 def _join_domain_items(items: list[str] | None, *, limit: int = 4) -> str:
@@ -308,10 +394,70 @@ def _join_domain_items(items: list[str] | None, *, limit: int = 4) -> str:
     return "; ".join(selected) + suffix
 
 
-def _title_word(value: str) -> str:
+def _join_system_names(items: list[str] | None, *, limit: int = 4) -> str:
+    values = [confirmed_system_name(str(item or "")).strip().rstrip(".") for item in (items or [])]
+    values = [value for value in values if value]
+    if not values:
+        return ""
+    selected = values[:limit]
+    suffix = "" if len(values) <= limit else f", plus {len(values) - limit} more"
+    return ", ".join(selected) + suffix
+
+
+def _brief_clause(value: str, *, limit: int = 180) -> str:
+    text = _plain_text(value).strip(" .")
+    text = re.sub(r"^the first complete path to prove should be\s*:?\s+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^first complete path to prove should be\s*:?\s+", "", text, flags=re.IGNORECASE)
+    if ". " in text:
+        text = text.split(". ", 1)[0].strip(" .")
+    if len(text) <= limit:
+        return text
+    return text[: max(0, limit - 1)].rstrip() + "…"
+
+
+def _state_object_label(value: str, *, fallback: str) -> str:
+    text = _plain_text(value).strip(" .:-")
+    if not text:
+        return fallback
+    first_clause = re.split(r"[.;\n]", text, maxsplit=1)[0].strip(" .:-")
+    dash_head = re.split(r"\s+[—-]\s+", first_clause, maxsplit=1)[0].strip(" .:-")
+    patterns = (
+        r"\b(?:the\s+)?(?:primary\s+)?state\s+object\s+is\s+(?:the\s+)?(?P<label>[^.;:]+)$",
+        r"\b(?:the\s+)?(?:domain\s+)?object\s+is\s+(?:the\s+)?(?P<label>[^.;:]+)$",
+        r"\b(?:the\s+)?proof\s+record\s+is\s+(?:the\s+)?(?P<label>[^.;:]+)$",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, dash_head, flags=re.IGNORECASE)
+        if match:
+            return _title_phrase(match.group("label").strip(" .:-")) or fallback
+    if dash_head and len(dash_head.split()) <= 7 and not re.search(
+        r"\b(is|are|starts?|moves?|changes?|tracks?|records?|captures?|produces?)\b",
+        dash_head,
+        re.IGNORECASE,
+    ):
+        return _title_phrase(dash_head) or fallback
+    return fallback
+
+
+def _title_phrase(value: str) -> str:
+    return " ".join(_title_word(word, first=index == 0) for index, word in enumerate(_plain_text(value).split()))
+
+
+def _plain_text(value: object) -> str:
+    text = str(value or "").strip()
+    text = text.replace("**", "").replace("__", "").replace("`", "")
+    text = re.sub(r"\s+([,.;:?!])", r"\1", text)
+    return " ".join(text.split())
+
+
+def _title_word(value: str, *, first: bool = True, previous: str = "") -> str:
     lower = value.casefold()
     if lower in {"ai", "api", "crm", "gis", "iot", "llm", "ml", "pwa", "ui", "ux"}:
         return lower.upper()
+    if any(char.islower() for char in value) and any(char.isupper() for char in value[1:]):
+        return value
+    if not first and not str(previous or "").endswith(":") and lower in {"a", "an", "and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"}:
+        return lower
     return value[:1].upper() + value[1:]
 
 

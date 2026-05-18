@@ -12,6 +12,8 @@ import re
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.surfaces import display_text
+
 
 _NODE_SHAPE_RE = re.compile(
     r"""
@@ -71,8 +73,20 @@ _MECHANICAL_COPY_RE = re.compile(
     r"\b("
     r"this view shows|this diagram shows|this diagram follows|read from .+ through the arrows|"
     r"through the arrows|arrows are|boxes are the|"
-    r"this box represents|none named|shows how|shows the path from|"
-    r"generic mermaid|diagram box|follow its arrows|carries a concrete step"
+    r"this box represents|none named|shows the path from|"
+    r"generic mermaid|diagram box|follow its arrows|carries a concrete step|"
+    r"walk the accepted first path|component cards to decode|messages are calls, handoffs|"
+    r"read the main spine|where the path splits|available next responsibilities|"
+    r"sends normal work toward|read .+ as the evidence boundary"
+    r")\b",
+    re.IGNORECASE,
+)
+_PLACEHOLDER_NODE_LABEL_RE = re.compile(r"\b(?:actor|component|external|service|system|node)\d+\b", re.IGNORECASE)
+_LEGACY_GREENFIELD_COPY_RE = re.compile(
+    r"\b("
+    r"walk the accepted first path|walk the accepted first workflow|"
+    r"component cards to decode|messages are calls, handoffs|"
+    r"read first path sequence from top to bottom|read first workflow sequence from top to bottom"
     r")\b",
     re.IGNORECASE,
 )
@@ -144,23 +158,102 @@ def build_diagram_narrative(
 ) -> DiagramNarrative:
     """Return stronger diagram copy when Mermaid structure carries enough signal."""
 
+    legacy_narrative = _legacy_greenfield_narrative(title=title, kind=kind, summary=summary, read_guide=read_guide)
+    if legacy_narrative is not None:
+        return legacy_narrative
+
     graph = parse_mermaid_graph(source_text)
     if len(graph.node_ids()) < 3 or len(graph.edges) < 2:
         return DiagramNarrative(summary=_sentence(summary), read_guide=_sentence(read_guide), generated=False)
 
-    if _authored_copy_is_useful(summary, graph=graph, min_words=8) and _authored_copy_is_useful(
-        read_guide,
-        graph=graph,
-        min_words=14,
-    ):
+    summary_is_useful = _authored_copy_is_useful(summary, graph=graph, min_words=8)
+    read_guide_is_useful = _authored_copy_is_useful(read_guide, graph=graph, min_words=14)
+    if summary_is_useful and read_guide_is_useful:
         return DiagramNarrative(summary=_sentence(summary), read_guide=_sentence(read_guide), generated=False)
 
     generated_summary = _diagram_summary(graph=graph, title=title, kind=kind)
     generated_read_guide = _diagram_read_guide(graph=graph, kind=kind)
-    if not generated_summary or not generated_read_guide:
-        return DiagramNarrative(summary=_sentence(summary), read_guide=_sentence(read_guide), generated=False)
+    fallback_summary = _sentence(summary)
+    fallback_read_guide = _sentence(read_guide)
+    final_summary = fallback_summary if summary_is_useful else generated_summary
+    final_read_guide = fallback_read_guide if read_guide_is_useful else generated_read_guide
+    if not final_summary:
+        final_summary = fallback_summary
+    if not final_read_guide:
+        final_read_guide = fallback_read_guide
+    if not final_summary or not final_read_guide:
+        return DiagramNarrative(summary=fallback_summary, read_guide=fallback_read_guide, generated=False)
 
-    return DiagramNarrative(summary=generated_summary, read_guide=generated_read_guide, generated=True)
+    return DiagramNarrative(
+        summary=final_summary,
+        read_guide=final_read_guide,
+        generated=not (summary_is_useful and read_guide_is_useful),
+    )
+
+
+def _legacy_greenfield_narrative(*, title: str, kind: str, summary: str, read_guide: str) -> DiagramNarrative | None:
+    """Replace old greenfield Atlas prose that embedded full paths or diagram mechanics."""
+
+    combined = f"{summary}\n{read_guide}"
+    if not _LEGACY_GREENFIELD_COPY_RE.search(combined):
+        return None
+    kind_token = str(kind or "").casefold()
+    title_label = _clean_title(title)
+    if "sequence" in kind_token:
+        path = _brief_path_from_legacy_summary(summary)
+        path_clause = f" for {path}" if path else ""
+        return DiagramNarrative(
+            summary=_sentence(
+                f"{title_label} shows what the first release must prove{path_clause}. "
+                "It keeps the user action, product responsibilities, and proof boundary visible before implementation expands scope."
+            ),
+            read_guide=(
+                "Start with the user action. Follow each named product responsibility. Treat proof or blocker notes "
+                "as the conditions that must hold before source work or release trust."
+            ),
+            generated=True,
+        )
+    if "state" in kind_token:
+        return DiagramNarrative(
+            summary=_sentence(f"{title_label} explains the allowed lifecycle and the proof required before state advances."),
+            read_guide=(
+                "Read this as the allowed lifecycle. States describe what can be true; arrows describe permitted movement; "
+                "blocked or rejected states mark conditions that need proof or owner action before advancement."
+            ),
+            generated=True,
+        )
+    return DiagramNarrative(
+        summary=_sentence(
+            f"{title_label} maps product-owned responsibilities, outside dependencies, and proof boundaries for the first release."
+        ),
+        read_guide=(
+            "Read this as a boundary map. Start with the people, inputs, or trigger, then follow the path into "
+            "product-owned responsibilities; outside boxes are dependencies, not first-release capabilities."
+        ),
+        generated=True,
+    )
+
+
+def _brief_path_from_legacy_summary(value: str) -> str:
+    text = _sentence(value)
+    text = re.sub(r"^walk the accepted first path in product terms:\s*", "", text, flags=re.IGNORECASE)
+    text = re.sub(
+        r"^the first complete path (?:the product )?(?:must|should) prove (?:before broader scope )?is\s+",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(r"\s+(?:flow|journey|path)\s*:\s*.*$", "", text, flags=re.IGNORECASE)
+    text = re.split(r"\s+\d+\.\s+", text, maxsplit=1)[0]
+    text = text.split(". ", 1)[0]
+    return _trim_words(text.strip(" .:"), max_words=12)
+
+
+def _trim_words(value: str, *, max_words: int) -> str:
+    words = str(value or "").split()
+    if len(words) <= max_words:
+        return " ".join(words)
+    return " ".join(words[:max_words]).rstrip(" ,;:")
 
 
 def parse_mermaid_graph(source_text: str) -> MermaidGraph:
@@ -196,7 +289,7 @@ def parse_mermaid_graph(source_text: str) -> MermaidGraph:
             node_id = str(match.group("id") or "").strip()
             label = _first_group_label(match)
             if node_id and label:
-                nodes.setdefault(node_id, label)
+                nodes[node_id] = label
 
         normalized_line = _NODE_SHAPE_RE.sub(lambda match: str(match.group("id") or ""), line)
         chained_edges = _parse_chained_edges(normalized_line)
@@ -324,18 +417,43 @@ def _authored_copy_is_useful(value: str, *, graph: MermaidGraph, min_words: int)
     text = _sentence(value)
     if len(_WORD_RE.findall(text)) < min_words:
         return False
-    if _MECHANICAL_COPY_RE.search(text):
+    if _PLACEHOLDER_NODE_LABEL_RE.search(text):
         return False
+    mechanical = _MECHANICAL_COPY_RE.search(text) is not None
     terms = _graph_terms(graph)
     if not terms:
-        return True
+        return not mechanical or _authored_copy_has_substance(text)
     text_key = _label_key(text)
     hits = 0
     for term in terms:
         term_key = _label_key(term)
         if term_key and term_key in text_key:
             hits += 1
-    return hits >= min(2, len(terms))
+    if hits >= min(2, len(terms)):
+        return True
+    if mechanical:
+        return False
+    return _authored_copy_has_substance(text)
+
+
+def _authored_copy_has_substance(text: str) -> bool:
+    """Return true when authored copy has enough real responsibility/proof signal.
+
+    Catalog summaries often explain cross-node contracts rather than repeating
+    literal Mermaid labels. Keep those when they name concrete responsibilities,
+    evidence, state, validation, or runtime boundaries; reject pure diagram
+    mechanics and placeholder prose.
+    """
+
+    lowered = str(text or "").lower()
+    signal_patterns = (
+        r"\b(boundar(?:y|ies)|contract|responsibilit(?:y|ies)|ownership|surface|component|system)\b",
+        r"\b(state|runtime|session|memory|packet|ledger|record|history|source|evidence)\b",
+        r"\b(proof|validate|validation|benchmark|gate|readiness|claim|decision|accepted|trusted)\b",
+        r"\b(flow|loop|route|routing|profile|policy|control|recovery|fallback|handoff)\b",
+    )
+    signals = sum(1 for pattern in signal_patterns if re.search(pattern, lowered))
+    return signals >= 2 and len(_WORD_RE.findall(text)) >= 12
 
 
 def _graph_terms(graph: MermaidGraph) -> tuple[str, ...]:
@@ -493,20 +611,26 @@ def _flow_summary(*, graph: MermaidGraph, title: str) -> str:
         spine = _path_between(graph=graph, start_id=start, stop_id=branch)
         middle = [_primary_label(graph.label(node_id)) for node_id in spine if node_id not in {start, branch}]
         normal_targets, stop_targets = _branch_targets(graph=graph, branch_id=branch)
-        lines = [f"{title_label} moves {start_label or 'the starting input'} to {branch_label}, where the path splits."]
+        incoming_sources = _node_label_list(
+            [graph.label(edge.source_id) for edge in graph.incoming(branch) if edge.source_id != "[*]"],
+            limit=3,
+        )
+        lines = [f"{title_label} centers on {branch_label} as the owned boundary for this path."]
+        if incoming_sources:
+            lines.append(f"It receives input from {incoming_sources}.")
         if middle:
-            lines.append(f"The spine first passes through {_join_list(middle[:4])}.")
+            lines.append(f"The path first passes through {_join_list(middle[:4])}.")
         if normal_targets:
-            lines.append(f"{branch_label} sends normal work toward {_join_list(normal_targets)}.")
+            lines.append(f"The responsibilities that depend on it are {_join_list(normal_targets)}.")
         if stop_targets:
             lines.append(f"Unsafe or unresolved paths stop at {_join_list(stop_targets)}.")
         elif exceptions:
             lines.append(
                 f"Recovery or blocked work is captured at {_node_label_list([graph.label(node_id) for node_id in exceptions], limit=2)}."
             )
-        proof_text = _node_label_list([graph.label(node_id) for node_id in proof_nodes], limit=3)
+        proof_text = _node_full_label_list([graph.label(node_id) for node_id in proof_nodes], limit=3)
         if proof_text:
-            lines.append(f"The path is trusted only after {proof_text}.")
+            lines.append(f"Release trust depends on {proof_text}.")
         return " ".join(lines)
 
     path = _main_path_ids(graph)
@@ -532,29 +656,31 @@ def _flow_read_guide(
         normal_targets, stop_targets = _branch_targets(graph=graph, branch_id=branch)
         branch_label = _primary_label(graph.label(branch))
         fanout = _primary_fanout_node(graph, exclude={branch})
-        lines = []
-        if len(spine_labels) > 1:
-            lines.append(f"Read the main spine first: {' -> '.join(spine_labels)}.")
+        lines = [f"Use this view to separate inputs, owned responsibilities, and release evidence."]
+        if len(graph.incoming(branch)) > 1:
+            lines.append(f"Boxes pointing into {branch_label} are people, sources, or prerequisites.")
+        elif len(spine_labels) > 1:
+            lines.append(f"Start with {spine_labels[0]} and read toward {branch_label}.")
         else:
             lines.append(f"Start at {_primary_label(start)} and read toward {branch_label}.")
         if normal_targets:
-            lines.append(f"At {branch_label}, the available next responsibilities are {_join_list(normal_targets)}.")
+            lines.append(f"Boxes leaving {branch_label} are the responsibilities that depend on that boundary.")
         if stop_targets:
             lines.append(f"The stop or recovery branch is {_join_list(stop_targets)}, which means the flow should not mutate state until the missing proof or unsafe condition is cleared.")
         if fanout:
             fanout_label = _primary_label(graph.label(fanout))
             fanout_targets, fanout_stops = _branch_targets(graph=graph, branch_id=fanout)
             if fanout_targets:
-                lines.append(f"Then use {fanout_label} to see which owned paths run in parallel: {_join_list(fanout_targets)}.")
+                lines.append(f"{fanout_label} shows which owned paths run in parallel.")
             if fanout_stops and not stop_targets:
                 lines.append(f"{_join_list(fanout_stops)} is where unsafe or incomplete work stops.")
         condition_copy = _condition_reading_copy(graph=graph, limit=4)
         if condition_copy:
             lines.append(condition_copy)
         proof_nodes = _ranked_proof_nodes(graph)
-        proof_text = _node_label_list([graph.label(node_id) for node_id in proof_nodes], limit=3)
+        proof_text = _node_full_label_list([graph.label(node_id) for node_id in proof_nodes], limit=3)
         if proof_text:
-            lines.append(_proof_boundary_read_sentence(proof_text=proof_text, proof_count=len(proof_nodes)))
+            lines.append(f"Check {proof_text} before treating the path as release-ready.")
         return " ".join(lines)
 
     lines = [f"Start at {_primary_label(start)}, then read each connected decision, action, proof, or recovery point."]
@@ -932,6 +1058,7 @@ def _clean_label(value: Any) -> str:
     text = html.unescape(str(value or "")).strip()
     text = re.sub(r"<\s*br\s*/?\s*>", " · ", text, flags=re.IGNORECASE)
     text = re.sub(r"<[^>]+>", " ", text)
+    text = display_text.strip_inline_markdown_emphasis(text)
     text = text.strip().strip('"').strip("'")
     return " ".join(text.split())
 
@@ -972,7 +1099,7 @@ def _label_key(value: str) -> str:
 
 
 def _sentence(value: str) -> str:
-    text = " ".join(str(value or "").split())
+    text = display_text.strip_inline_markdown_emphasis(value)
     if not text:
         return ""
     return text if text[-1:] in {".", "!", "?"} else f"{text}."
@@ -991,6 +1118,16 @@ def _label_list(values: Sequence[str], *, limit: int) -> str:
 def _node_label_list(values: Sequence[str], *, limit: int) -> str:
     clean = _unique([_primary_label(value) for value in values if _primary_label(value)])
     return _join_list(clean[:limit])
+
+
+def _node_full_label_list(values: Sequence[str], *, limit: int) -> str:
+    clean = _unique([_full_label(value) for value in values if _full_label(value)])
+    return _join_list(clean[:limit])
+
+
+def _full_label(value: str) -> str:
+    text = _clean_label(value)
+    return re.sub(r"\s*·\s*", " ", text).strip()
 
 
 def _join_list(values: Sequence[str]) -> str:

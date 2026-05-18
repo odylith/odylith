@@ -7,13 +7,13 @@ from typing import Any, Mapping
 
 def print_apply_result(result: Mapping[str, Any], *, verb: str) -> None:
     print(f"odylith greenfield {verb} wrote confirmed proposal")
-    tribunal = result.get("tribunal", {})
-    if isinstance(tribunal, Mapping):
-        print(f"- tribunal: {tribunal.get('status', 'unknown')}")
+    validation_gate = result.get("validation_gate") or result.get("tribunal", {})
+    if isinstance(validation_gate, Mapping):
+        print(f"- validation gate: {validation_gate.get('status', 'unknown')}")
     print(f"- backlog: {len(result['backlog'])}")
     print(f"- components: {len(result['components'])}")
     print(f"- diagrams: {len(result['diagrams'])}")
-    print("- validation already run: proposal schema, proposal Tribunal, governed backlog Tribunal, architecture scaffold, governance refresh")
+    print("- validation already run: proposal schema, product-quality gate, backlog checks, architecture scaffold, dashboard refresh")
     program = result.get("program", {})
     if isinstance(program, Mapping) and bool(program.get("created")):
         print(f"- program: {program.get('umbrella_id')} ({len(program.get('waves', []))} waves)")
@@ -48,7 +48,7 @@ def _print_created_surfaces(result: Mapping[str, Any]) -> None:
     diagram_ids = [str(item).strip() for item in result.get("diagrams", []) if str(item).strip()]
     if not backlog_paths and not spec_paths and not diagram_ids:
         return
-    print("- created governance files:")
+    print("- created project files:")
     for label, values in (
         ("workstream", backlog_paths[:3]),
         ("component spec", spec_paths[:3]),
@@ -74,7 +74,7 @@ def _print_next_steps(next_steps: Mapping[str, Any]) -> None:
     if project_id:
         print(f"- project-first workstream: {project_id} {project_title}".rstrip())
         print("- project story: odylith/index.html?tab=project")
-        print(f"- radar gate: odylith/radar/radar.html?view=plan&workstream={project_id}")
+        print(f"- workstream detail: odylith/radar/radar.html?view=plan&workstream={project_id}")
         print("- project gate: review direction choices and readiness gates before opening a technical plan; do not edit source from this closeout")
     if project_prompt:
         print(f"- next project prompt: {project_prompt}")

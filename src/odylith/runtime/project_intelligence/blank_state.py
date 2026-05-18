@@ -49,13 +49,13 @@ def build_blank_project_payload(*, repo_root: Path, shell_payload: Mapping[str, 
         "eyebrow": "Project not defined yet",
         "intro": (
             "Odylith is installed, but this repository does not yet have an accepted project definition, "
-            "greenfield proposal, backlog, component boundary, or topology map."
+            "greenfield proposal, work boundary, component ownership, or architecture map."
         ),
         "chips": ["Blank project state"],
         "blank_title": "Start with the project",
         "blank_note": (
-            "Define what this repo is meant to become, then Odylith can derive Radar workstreams, "
-            "Registry components, Atlas diagrams, risks, and proof from that source of truth."
+            "Define what this repo is meant to become, then Odylith can derive work items, "
+            "component boundaries, architecture views, risks, and proof from that source of truth."
         ),
         "blank_actions": [
             {
@@ -69,7 +69,7 @@ def build_blank_project_payload(*, repo_root: Path, shell_payload: Mapping[str, 
             {
                 "title": "Ground an existing repo",
                 "body": (
-                    "Use this when source already exists. Odylith should first explain what it can see, "
+                    "Use this when source already exists. The first response should explain what it can see, "
                     "then propose the first governed slice instead of inventing a project definition."
                 ),
                 "command": starter_prompt,
@@ -83,7 +83,7 @@ def build_blank_project_payload(*, repo_root: Path, shell_payload: Mapping[str, 
             },
             {
                 "title": "Governance spine",
-                "body": "How Radar, Registry, Atlas, Casebook, Compass, plans, and proof connect.",
+                "body": "How project decisions, work items, component boundaries, architecture views, risks, and proof connect.",
             },
             {
                 "title": "Execution boundary",

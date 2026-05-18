@@ -229,9 +229,9 @@ _GREENFIELD_CONFIRMED_CREATE_GUARDS = (
     "--intent-file",
     ".odylith/runtime/greenfield/confirmed-intent.md",
     "--confirm",
-    "same confirmation",
+    "same visible",
     "apply-ready",
-    "inspect proposal JSON",
+    "proposal JSON",
 )
 _GREENFIELD_PROJECT_FIRST_GUARDS = (
     "project-first",
@@ -509,7 +509,7 @@ def _greenfield_propose_apply_smoke(*, repo_root: Path, odylith: Path, env: dict
             "--repo-root",
             ".",
             "--prompt",
-            "robot swarm logistics app",
+            "warehouse dispatch planning app",
             "--format",
             "json",
         ],
@@ -538,7 +538,7 @@ def _greenfield_propose_apply_smoke(*, repo_root: Path, odylith: Path, env: dict
             "--repo-root",
             ".",
             "--prompt",
-            "robot swarm logistics app",
+            "warehouse dispatch planning app",
             "--intent-file",
             ".odylith/runtime/greenfield/confirmed-intent.md",
             "--confirm-intent",
@@ -566,7 +566,7 @@ def _greenfield_propose_apply_smoke(*, repo_root: Path, odylith: Path, env: dict
             "--repo-root",
             ".",
             "--prompt",
-            "robot swarm logistics app",
+            "warehouse dispatch planning app",
             "--intent-file",
             ".odylith/runtime/greenfield/confirmed-intent.md",
             "--confirm",
@@ -576,7 +576,7 @@ def _greenfield_propose_apply_smoke(*, repo_root: Path, odylith: Path, env: dict
         ],
     ).stdout
     _require_output_contains(output=create, expected='"mode": "applied"', label="greenfield create json")
-    _require_output_contains(output=create, expected='"tribunal"', label="greenfield create json")
+    _require_output_contains(output=create, expected='"validation_gate"', label="greenfield create json")
     _require_output_contains(output=create, expected='"dashboard_refresh"', label="greenfield create json")
     _require_no_greenfield_schema_loop(output=create, label="greenfield create json")
     _require_greenfield_surfaces(repo_root=repo_root, label="greenfield create smoke")
@@ -594,47 +594,47 @@ def _write_greenfield_confirmed_intent(*, repo_root: Path) -> Path:
     path = repo_root / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
-        """Robot Swarm Logistics App — Product Intent Confirmation
+        """Warehouse Dispatch Planning App — Product Intent Confirmation
 
 Product story
-A warehouse operations team uses the Robot Swarm Logistics App to coordinate autonomous robots moving inventory between receiving, storage, picking, packing, and charging zones. The product keeps dispatch decisions understandable by tying every robot assignment to current robot availability, job priority, zone constraints, and operator override history.
+A warehouse operations team uses the Warehouse Dispatch Planning App to coordinate inventory movement between receiving, storage, picking, packing, and staging zones. Without a shared dispatch view, job assignments can become blocked, unsafe, or impossible for operators to explain. The product keeps dispatch decisions understandable by tying every work assignment to current job priority, zone constraints, resource availability, and supervisor override history.
 
 State object that changes through the first journey
-A Dispatch Plan tracks a set of jobs, available robots, assigned routes, robot status, exception state, and the evidence that explains why a job was assigned, delayed, or blocked.
+A Dispatch Plan tracks a set of jobs, available crews or equipment, assigned routes, resource status, exception state, and the evidence that explains why a job was assigned, delayed, or blocked.
 
 First complete path Odylith should prove before broader scope
-A shift coordinator imports a small batch of warehouse jobs, views available robots, assigns jobs to robots, sees one blocked assignment explained by a zone or battery constraint, and reviews the final dispatch plan with evidence for each assignment.
+A shift coordinator imports a small batch of warehouse jobs, views available crews and equipment, assigns jobs to resources, sees one blocked assignment explained by a zone or capacity constraint, and reviews the final dispatch plan decision record with evidence for each assignment.
 
 Human actors
-- Shift coordinator — starts the dispatch run, reviews robot availability, and accepts or overrides assignments.
+- Shift coordinator — starts the dispatch run, reviews resource availability, and accepts or overrides assignments.
 - Warehouse operator — needs to understand why work is assigned, delayed, or escalated.
-- Fleet technician — reviews robot health, battery state, and blocked movement causes.
+- Equipment coordinator — reviews resource status, maintenance state, and blocked movement causes.
 - Operations reviewer — checks whether dispatch decisions were safe, explainable, and consistent with warehouse policy.
 
 External systems
 - Warehouse management system — supplies inbound jobs, pick tasks, and priority information.
-- Robot fleet API — supplies robot position, battery state, capacity, and health.
+- Equipment status feed — supplies location, availability, capacity, and maintenance state.
 - Zone map service — supplies warehouse zones, blocked aisles, charging areas, and route constraints.
 
 Internal product systems
-- Dispatch planner — assigns jobs to available robots while respecting priority, capacity, and constraints.
-- Robot state ledger — records robot availability, battery, health, current job, and recent status changes.
+- Dispatch planner — assigns jobs to available resources while respecting priority, capacity, and constraints.
+- Resource state ledger — records resource availability, location, capacity, current job, and recent status changes.
 - Job queue — stores imported warehouse tasks, priority, due window, and completion state.
-- Constraint evaluator — explains why a robot can or cannot take a job.
-- Dispatch evidence review — packages assignment rationale, blocked-job reasons, operator overrides, and validation output.
+- Constraint evaluator — explains why a resource can or cannot take a job.
+- Assignment rationale packager — packages assignment rationale, blocked-job reasons, operator overrides, and validation output.
 
 Critical assumptions
 - The first release is decision support for a small warehouse pilot, not fully autonomous live control.
-- Robot commands remain sandboxed or simulated until source-backed fleet contracts are accepted.
+- Live equipment commands remain sandboxed or simulated until source-backed integration contracts are accepted.
 - Dispatch evidence must be readable by operations staff, not only developers.
 
 Ambiguities that would change the first path
-1. Does release 0.0.1 need to issue live robot commands, or only produce an operator-reviewed dispatch plan?
+1. Does release 0.0.1 need to issue live work commands, or only produce an operator-reviewed dispatch plan?
 2. Are route constraints static from a zone map, or streamed from live facility sensors?
 3. Does the first release optimize for throughput, safety, energy use, or SLA priority?
 
 Proof boundary
-Release 0.0.1 succeeds when a reviewer can inspect a dispatch plan, see each robot-job assignment, understand any blocked assignment, trace the decision to robot state, job priority, constraints, and operator override evidence, and confirm that no live robot command is claimed unless the fleet integration has source-backed validation.
+Release 0.0.1 succeeds when a reviewer can inspect a dispatch plan, see each job assignment, understand any blocked assignment, trace the decision to resource state, job priority, constraints, and operator override evidence, and confirm that no live equipment command is claimed unless the integration has source-backed validation.
 """,
         encoding="utf-8",
     )

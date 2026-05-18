@@ -13,13 +13,14 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common import display_text
 from odylith.runtime.common import log_compass_timeline_event
 
 ACCEPTED_PROJECT_SOURCE_PATH = "odylith/runtime/source/accepted-project.v1.json"
 
 
 def _clean(value: Any) -> str:
-    return " ".join(str(value or "").split()).strip()
+    return display_text.strip_inline_markdown_emphasis(value)
 
 
 def _first_nonempty(values: Sequence[str], *, limit: int) -> list[str]:
@@ -101,7 +102,7 @@ def _write_accepted_project_source(
     diagram_ids: Sequence[str],
     release_selector: str,
     release_id: str,
-    tribunal: Mapping[str, Any] | None,
+    validation_gate: Mapping[str, Any] | None,
     event: Mapping[str, Any],
 ) -> Path:
     """Write the accepted project source record consumed by Project and context."""
@@ -123,8 +124,9 @@ def _write_accepted_project_source(
             "release_selector": _clean(release_selector),
             "release_id": _clean(release_id),
         },
-        "tribunal": dict(tribunal or {}),
+        "validation_gate": dict(validation_gate or {}),
     }
+    payload = display_text.strip_inline_markdown_emphasis_tree(payload)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(f"{json.dumps(payload, indent=2, sort_keys=True)}\n", encoding="utf-8")
     return path
@@ -139,6 +141,7 @@ def record_greenfield_acceptance(
     diagram_ids: Sequence[str],
     release_selector: str = "",
     release_id: str = "",
+    validation_gate: Mapping[str, Any] | None = None,
     tribunal: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Append the accepted proposal shape to greenfield memory.
@@ -190,7 +193,7 @@ def record_greenfield_acceptance(
         diagram_ids=diagram_ids,
         release_selector=release_selector,
         release_id=release_id,
-        tribunal=tribunal,
+        validation_gate=validation_gate or tribunal,
         event=payload,
     )
     return {

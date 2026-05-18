@@ -20,9 +20,8 @@ from odylith.runtime.surfaces import surface_path_helpers
 _WORKSTREAM_RE = re.compile(r"\bB-\d{3,}\b")
 _DIAGRAM_RE = re.compile(r"\bD-\d{3,}\b")
 _PLAN_RE = re.compile(r"\bodylith/technical-plans/(?:in-progress|done/[0-9]{4}-[0-9]{2}|done/legacy)/[A-Za-z0-9._/\-]+\.md\b")
-_SURFACE_RE = re.compile(r"\b(?:Registry|Casebook|Radar|Atlas|Compass)\b")
 _ASSET_RE = re.compile(
-    rf"{_PLAN_RE.pattern}|{_WORKSTREAM_RE.pattern}|{_DIAGRAM_RE.pattern}|{_SURFACE_RE.pattern}"
+    rf"{_PLAN_RE.pattern}|{_WORKSTREAM_RE.pattern}|{_DIAGRAM_RE.pattern}"
 )
 _SURFACE_TAB_MAP = {
     "Registry": "registry",
@@ -173,7 +172,7 @@ def linkify_shell_text(
     scope_lookup_map: Mapping[str, Mapping[str, Any]] | None = None,
     scope_lookup: Mapping[str, Mapping[str, Any]] | None = None,
 ) -> str:
-    """Link known workstream/diagram/surface tokens for shell-owned prose."""
+    """Link concrete governance IDs and paths for shell-owned prose."""
 
     raw = str(text or "").strip()
     if not raw:
@@ -182,12 +181,10 @@ def linkify_shell_text(
     preferred_scope = resolved_scope_lookup.get(str(preferred_scope_key or "").strip(), {})
     evidence = preferred_scope.get("evidence_context", {}) if isinstance(preferred_scope.get("evidence_context"), Mapping) else {}
     linked_workstreams = _linked_tokens(evidence, "linked_workstreams")
-    linked_components = _linked_tokens(evidence, "linked_components")
     linked_diagrams = _linked_tokens(evidence, "linked_diagrams")
     inline_workstreams = _WORKSTREAM_RE.findall(raw)
     inline_diagrams = _DIAGRAM_RE.findall(raw)
     preferred_workstream = inline_workstreams[0] if inline_workstreams else (linked_workstreams[0] if linked_workstreams else "")
-    preferred_component = linked_components[0] if linked_components else ""
     preferred_diagram = inline_diagrams[0] if inline_diagrams else (linked_diagrams[0] if linked_diagrams else "")
     parts: list[str] = []
     cursor = 0
@@ -203,13 +200,6 @@ def linkify_shell_text(
             href = shell_href(tab="radar", workstream=token)
         elif _DIAGRAM_RE.fullmatch(token):
             href = shell_href(tab="atlas", workstream=preferred_workstream, diagram=token)
-        elif _SURFACE_RE.fullmatch(token):
-            href = surface_href(
-                token,
-                workstream=preferred_workstream,
-                component=preferred_component,
-                diagram=preferred_diagram,
-            )
         if href:
             parts.append(
                 f'<a class="brief-inline-link" target="_top" href="{html.escape(href, quote=True)}">{html.escape(token)}</a>'

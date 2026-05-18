@@ -132,11 +132,11 @@ def _accepted_greenfield_intro(*, project_title: str, components: Sequence[Mappi
     if surfaces:
         return (
             f"{project_title} helps product owners, implementers, and reviewers keep "
-            f"{surfaces} connected as one traceable product workflow."
+            f"{surfaces} connected as one traceable product path."
         )
     return (
         f"{project_title} helps product owners, implementers, and reviewers turn accepted intent "
-        "into one traceable first workflow with owned boundaries and proof obligations."
+        "into one traceable first path with owned boundaries and proof obligations."
     )
 
 
@@ -465,25 +465,32 @@ def _project_jobs(
     next_title: str,
     next_action_text: str,
     blockers: Sequence[tuple[str, str, str]],
-) -> list[tuple[str, str, str]]:
+) -> list[tuple[str, str, str, str]]:
     rows_by_id = _backlog_rows_by_id(backlog)
-    jobs: list[tuple[str, str, str]] = []
+    jobs: list[tuple[str, str, str, str]] = []
     seen_titles: set[str] = set()
 
-    def add(title: object, body: object, status: str) -> None:
+    def add(title: object, body: object, status: str, *, workstream_id: object = "") -> None:
         clean_title = _short(title, limit=78)
         clean_body = _short(body, limit=145)
         if not clean_title or clean_title.lower() in seen_titles:
             return
         seen_titles.add(clean_title.lower())
-        jobs.append((clean_title, clean_body, status))
+        jobs.append(
+            (clean_title, clean_body, status, _normalized_workstream_id(workstream_id))
+        )
 
     for workstream_id in active_workstreams[:4]:
         row = rows_by_id.get(str(workstream_id).strip(), {})
         title = row.get("title") or workstream_id
         priority = _sentence(row.get("priority"), "active")
         status = _sentence(row.get("status"), "implementation")
-        add(title, f"{workstream_id} is {status} in {release_label}; priority {priority}.", "Current release")
+        add(
+            title,
+            f"{workstream_id} is {status} in {release_label}; priority {priority}.",
+            "Current release",
+            workstream_id=workstream_id,
+        )
 
     add(next_title, _short(next_action_text, limit=145), "Next action")
 
@@ -493,6 +500,11 @@ def _project_jobs(
         add(f"Resolve {title}", f"{detail}. Source: {owner}.", "Open risk")
 
     return jobs[:6]
+
+
+def _normalized_workstream_id(value: object) -> str:
+    token = str(value or "").strip().upper()
+    return token if re.fullmatch(r"B-\d+", token) else ""
 
 
 def _boundary_included(
@@ -650,7 +662,7 @@ def _visible_sections(
     *,
     origin: str,
     actors: Sequence[tuple[str, str, str]],
-    jobs: Sequence[tuple[str, str, str]],
+    jobs: Sequence[tuple[str, str, str] | tuple[str, str, str, str]],
     claim_evidence: Sequence[Mapping[str, Any]],
     delta: Sequence[str],
     contradictions: Sequence[str],
@@ -665,17 +677,11 @@ def _visible_sections(
         sections.append("participants")
     if jobs:
         sections.append("jobs")
-    if "greenfield" in origin.lower() or _has_uncertain_claims(claim_evidence):
-        sections.append("claim_evidence")
     if (
         _has_meaningful_items(contradictions, empty_prefix="No cross-surface contradiction")
         or _has_meaningful_items(degraded_state, empty_prefix="No degraded source condition")
     ):
         sections.append("trust")
-    if _has_material_posture(risk_classes, validation_posture):
-        sections.append("posture")
-    if included or excluded:
-        sections.append("boundary")
     sections.extend(["state", "next", "proof"])
     return sections
 
@@ -878,9 +884,9 @@ def build_project_intelligence_payload(
             evidence,
             complexity,
         ],
-        "focus_label": f"Current {project_title} focus",
+        "focus_label": "Current focus",
         "focus": current_focus,
-        "open_label": f"Open {project_title} risks",
+        "open_label": "Open risks",
         "open": [row[0] for row in blockers[:4]],
         "product_story_title": "Product Story",
         "product_story_note": "",
@@ -918,7 +924,7 @@ def build_project_intelligence_payload(
         ),
         "actors": actors,
         "participants": actors,
-        "participants_title": f"Who participates in {project_title}?",
+        "participants_title": "Who participates?",
         "participants_note": "People who decide, change, and review the current work.",
         "jobs": jobs,
         "jobs_title": f"What is active for {release_label}?",

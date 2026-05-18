@@ -27,6 +27,7 @@ from odylith.runtime.surfaces import dashboard_shell_links
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import dashboard_surface_bundle
+from odylith.runtime.surfaces import display_text
 from odylith.runtime.governance import delivery_intelligence_engine  # Backward-compatible test monkeypatch surface.
 from odylith.runtime.surfaces import generated_surface_cleanup
 from odylith.runtime.surfaces import source_bundle_mirror
@@ -46,6 +47,22 @@ _DIAGRAM_ID_RE = re.compile(r"^D-(\d{3,})$")
 _DIAGRAM_COMPACT_RE = re.compile(r"^D(\d{3,})$")
 _ATLAS_RENDER_GUARD_NAMESPACE = "generated-refresh-guards"
 _ATLAS_RENDER_GUARD_KEY = "atlas-render"
+
+
+def _display_text(value: Any) -> str:
+    return display_text.strip_inline_markdown_emphasis(value)
+
+
+def _display_row(row: Mapping[str, Any], fields: Sequence[str]) -> dict[str, Any]:
+    cleaned = dict(row)
+    for field in fields:
+        if field in cleaned:
+            cleaned[field] = _display_text(cleaned.get(field, ""))
+    return cleaned
+
+
+def _display_rows(rows: Sequence[Mapping[str, Any]], fields: Sequence[str]) -> list[dict[str, Any]]:
+    return [_display_row(row, fields) for row in rows if isinstance(row, Mapping)]
 
 
 def _extract_svg_viewbox_dimensions(svg_path: Path) -> tuple[float, float] | None:
@@ -201,7 +218,7 @@ def _component_catalog_rows(
         rows.append(
             {
                 "component_id": component_id,
-                "name": row.name or component_id,
+                "name": _display_text(row.name or component_id),
             }
         )
     return rows
@@ -473,12 +490,12 @@ def _load_catalog(
             continue
         diagram_id = normalized_diagram_id
         slug = _assert_non_empty(name="slug", value=item.get("slug"), errors=errors, context=context)
-        title = _assert_non_empty(name="title", value=item.get("title"), errors=errors, context=context)
-        kind = _assert_non_empty(name="kind", value=item.get("kind"), errors=errors, context=context)
-        status = _assert_non_empty(name="status", value=item.get("status"), errors=errors, context=context)
-        owner = _assert_non_empty(name="owner", value=item.get("owner"), errors=errors, context=context)
-        summary = _assert_non_empty(name="summary", value=item.get("summary"), errors=errors, context=context)
-        read_guide = str(item.get("read_guide", "")).strip()
+        title = _display_text(_assert_non_empty(name="title", value=item.get("title"), errors=errors, context=context))
+        kind = _display_text(_assert_non_empty(name="kind", value=item.get("kind"), errors=errors, context=context))
+        status = _display_text(_assert_non_empty(name="status", value=item.get("status"), errors=errors, context=context))
+        owner = _display_text(_assert_non_empty(name="owner", value=item.get("owner"), errors=errors, context=context))
+        summary = _display_text(_assert_non_empty(name="summary", value=item.get("summary"), errors=errors, context=context))
+        read_guide = _display_text(item.get("read_guide", ""))
         catalog_diagram_boxes = atlas_box_explanations.normalize_catalog_diagram_boxes(
             raw_boxes=item.get("diagram_boxes", []),
             context=context,
@@ -547,8 +564,11 @@ def _load_catalog(
                 if not isinstance(comp, dict):
                     errors.append(f"{context}: components[{comp_idx}] must be an object")
                     continue
-                comp_name = str(comp.get("name", "")).strip()
-                comp_desc = str(comp.get("description", "")).strip()
+                comp_name = _display_text(comp.get("name", ""))
+                comp_desc = atlas_box_explanations.clean_component_description(
+                    name=comp_name,
+                    description=_display_text(comp.get("description", "")),
+                )
                 if not comp_name or not comp_desc:
                     errors.append(
                         f"{context}: components[{comp_idx}] requires non-empty `name` and `description`"
@@ -625,7 +645,7 @@ def _load_catalog(
                     "file": backlog_rel,
                     "href": path_resolver.href(backlog_rel),
                     "idea_id": inferred,
-                    "title": str(metadata.get("title", "")).strip(),
+                    "title": _display_text(metadata.get("title", "")),
                 }
             )
         related_workstreams = sorted(set(related_workstreams))
@@ -649,7 +669,7 @@ def _load_catalog(
         related_registry = [
             {
                 "file": (
-                    f"{component_index[component_id].name or component_id} ({component_id})"
+                    f"{_display_text(component_index[component_id].name or component_id)} ({component_id})"
                     if component_id in component_index
                     else component_id
                 ),
@@ -681,6 +701,7 @@ def _load_catalog(
                 diagram_summary=summary,
             )
         )
+        diagram_boxes = _display_rows(diagram_boxes, ("label", "role", "description"))
         diagram_narrative = atlas_diagram_intelligence.build_diagram_narrative(
             title=title,
             kind=kind,
@@ -746,8 +767,8 @@ def _load_catalog(
                 "kind": kind,
                 "status": status,
                 "owner": owner,
-                "summary": diagram_narrative.summary,
-                "read_guide": diagram_narrative.read_guide,
+                "summary": _display_text(diagram_narrative.summary),
+                "read_guide": _display_text(diagram_narrative.read_guide),
                 "diagram_boxes": diagram_boxes,
                 "last_reviewed_utc": review_date.isoformat(),
                 "review_age_days": review_age_days,
@@ -937,7 +958,7 @@ def _workstream_title_entries(
 
     def remember(*, workstream_id: str, title: str) -> None:
         normalized_id = _normalize_workstream_id(workstream_id)
-        text = str(title or "").strip()
+        text = _display_text(title)
         if not normalized_id or not text:
             return
         lookup[normalized_id] = text
@@ -2422,6 +2443,72 @@ def _render_html(
       });
     }
 
+    function escapeRegExp(value) {
+      return String(value || "").replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&");
+    }
+
+    function displayText(value) {
+      return String(value || "")
+        .replace(/\\*\\*/g, "")
+        .replace(/__/g, "")
+        .replace(/`([^`\\n]*)`/g, "$1")
+        .replace(/\\s+/g, " ")
+        .trim();
+    }
+
+    function componentNameWords(value) {
+      return displayText(value)
+        .replace(/\\b(service|component|surface|adapter|engine|store|model|resolver)\\b/gi, " ")
+        .replace(/[^a-z0-9]+/gi, " ")
+        .trim()
+        .split(/\\s+/)
+        .filter(Boolean);
+    }
+
+    function stripLeadingComponentName(text, value) {
+      const words = componentNameWords(value);
+      if (!words.length) return text;
+      const original = String(text || "").trim();
+      for (let keep = words.length; keep > 0; keep -= 1) {
+        const pattern = new RegExp(
+          "^\\s*" + words.slice(0, keep).map(escapeRegExp).join("[\\s,/-]+") + "\\b\\s*",
+          "i",
+        );
+        const stripped = original.replace(pattern, "").trim();
+        if (stripped !== original) return stripped || original;
+      }
+      return original;
+    }
+
+    function componentResponsibilityText(component, displayName, rawName) {
+      let text = displayText(component && component.description ? component.description : "");
+      if (!text) return "Named responsibility in this diagram.";
+      [
+        /\\bFor release\\s+\\S+,\\s+it receives or produces\\b/i,
+        /\\bFor the first release,\\s+this boundary\\b/i,
+        /\\bIt matters for release\\s+\\S+\\s+because\\b/i,
+        /\\bReviewers trust it only when\\b/i,
+        /\\bProof must stay inside\\b/i,
+        /\\bThe first workflow depends on\\b/i,
+        /\\bThe first path depends on\\b/i,
+      ].some((pattern) => {
+        const match = text.search(pattern);
+        if (match < 0) return false;
+        text = text.slice(0, match).trim().replace(/[;,.-]+$/g, "");
+        return true;
+      });
+      text = stripLeadingComponentName(text, rawName);
+      text = stripLeadingComponentName(text, displayName);
+      text = text.replace(
+        /^\\s*owns?\\s+(accepts?|assembles?|binds?|captures?|computes?|derives?|engraves?|estimates?|exports?|handles?|imports?|links?|performs?|preserves?|records?|renders?|resolves?|stores?|tracks?|validates?|writes?)\\b/i,
+        (_match, verb) => String(verb || "").replace(/^./, (letter) => letter.toUpperCase()),
+      );
+      text = text.replace(/^\\s*owns?\\s+owns?\\s+/i, "Owns ");
+      text = text.replace(/^\\s*owns?\\s+/i, "Owns ");
+      if (!text) return "Named responsibility in this diagram.";
+      return /[.!?]$/.test(text) ? text : `${text}.`;
+    }
+
     function renderComponents(diagram) {
       clearNode(componentListEl);
       (diagram.components || []).forEach((component) => {
@@ -2433,16 +2520,17 @@ def _render_html(
         headingGroup.className = "component-heading";
 
         const heading = document.createElement("strong");
-        heading.textContent = displayName || rawName;
+        heading.textContent = displayText(displayName || rawName);
 
         const body = document.createElement("p");
-        body.textContent = component.description;
+        body.className = "component-description";
+        body.textContent = componentResponsibilityText(component, displayName, rawName);
 
         headingGroup.appendChild(heading);
         if (rawName && displayName && rawName !== displayName) {
           const token = document.createElement("span");
           token.className = "component-token";
-          token.textContent = rawName;
+          token.textContent = displayText(rawName);
           headingGroup.appendChild(token);
         }
         card.appendChild(headingGroup);
@@ -2468,9 +2556,9 @@ def _render_html(
         const name = document.createElement("div");
         name.className = "diagram-box-name";
         const heading = document.createElement("strong");
-        heading.textContent = String(box.label || "").trim();
+        heading.textContent = displayText(box.label);
         name.appendChild(heading);
-        const roleText = String(box.role || "").trim();
+        const roleText = displayText(box.role);
         if (roleText) {
           const role = document.createElement("span");
           role.className = "diagram-box-role";
@@ -2480,7 +2568,7 @@ def _render_html(
 
         const description = document.createElement("p");
         description.className = "diagram-box-description";
-        description.textContent = String(box.description || "").trim();
+        description.textContent = displayText(box.description);
 
         row.appendChild(number);
         row.appendChild(name);

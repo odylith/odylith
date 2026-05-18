@@ -1035,6 +1035,58 @@ def _section_facts(
     return ranked
 
 
+def _compact_local_fact_text(value: Any, *, limit: int = 190) -> str:
+    text = " ".join(str(value or "").split()).strip()
+    if not text:
+        return ""
+    if len(text) <= limit:
+        return text
+    clipped = text[:limit].rsplit(" ", 1)[0].strip()
+    return f"{clipped.rstrip('.,;:')}."
+
+
+def _local_runtime_fallback_digest(*, fact_packet: Mapping[str, Any]) -> list[str]:
+    """Return a small deterministic readout when AI narration is unavailable."""
+
+    lines: list[str] = []
+    section_order = (
+        ("current_execution", "Current"),
+        ("next_planned", "Next"),
+        ("risks_to_watch", "Watch"),
+    )
+    for section_key, label in section_order:
+        facts = _section_facts(fact_packet=fact_packet, section_key=section_key)
+        if not facts:
+            continue
+        text = _compact_local_fact_text(facts[0].get("text"))
+        if text:
+            lines.append(f"{label}: {text}")
+    if lines:
+        return lines[:3]
+
+    scope = fact_packet.get("scope")
+    scope_label = ""
+    if isinstance(scope, Mapping):
+        scope_label = str(scope.get("label", "")).strip()
+    if scope_label:
+        return [f"Local facts are available for {scope_label}, but a narrated summary is still pending."]
+    return ["Local runtime facts are available, but a narrated summary is still pending."]
+
+
+def _diagnostics_with_local_fallback(
+    *,
+    fact_packet: Mapping[str, Any],
+    diagnostics: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    payload = dict(diagnostics) if isinstance(diagnostics, Mapping) else {}
+    if "fallback_digest" not in payload:
+        digest = _local_runtime_fallback_digest(fact_packet=fact_packet)
+        if digest:
+            payload["fallback_title"] = "Local runtime facts"
+            payload["fallback_digest"] = digest
+    return payload
+
+
 def _provider_display_name(provider: str) -> str:
     token = str(provider or "").strip().lower()
     if token == "codex-cli":
@@ -1079,7 +1131,7 @@ def _unavailable_brief_message(
             )
         return "Compass could not warm this brief because the narration provider may have hit a credit or budget limit. It will retry on backoff."
     if token == "timeout":
-        return "Compass asked the narration provider for this brief, but the reply took too long. It will retry on backoff."
+        return "The narration provider timed out. Compass is showing local runtime facts when available and will retry on backoff."
     if token == "provider_unavailable":
         return "Compass is live. The optional narrated brief is not ready yet because the narration provider was not reachable and no exact replay exists for this packet."
     if token == "transport_error":
@@ -1117,7 +1169,7 @@ def _unavailable_brief_title(
             return f"Brief is waiting on {provider_label} budget"
         return "Brief is waiting on provider budget"
     if token == "timeout":
-        return "Brief timed out"
+        return "Narration timed out"
     if token == "provider_unavailable":
         return "Narrated brief not ready yet"
     if token == "transport_error":
@@ -1774,6 +1826,7 @@ def build_standup_brief(
             fingerprint=fingerprint,
             generated_utc=generated_utc,
             reason="provider_deferred",
+            diagnostics=_diagnostics_with_local_fallback(fact_packet=fact_packet),
         )
     resolved_provider = provider or odylith_reasoning.provider_from_config(
         resolved_config,
@@ -1794,6 +1847,7 @@ def build_standup_brief(
             fingerprint=fingerprint,
             generated_utc=generated_utc,
             reason="provider_unavailable",
+            diagnostics=_diagnostics_with_local_fallback(fact_packet=fact_packet),
         )
 
     failover_diagnostics: dict[str, Any] = {}
@@ -1846,7 +1900,10 @@ def build_standup_brief(
             generated_utc=generated_utc,
             provider=resolved_provider,
             fallback_reason="provider_empty",
-            diagnostics=failover_diagnostics,
+            diagnostics=_diagnostics_with_local_fallback(
+                fact_packet=fact_packet,
+                diagnostics=failover_diagnostics,
+            ),
         )
 
     sections, errors = _validate_brief_response(
@@ -1886,6 +1943,7 @@ def build_standup_brief(
                 fingerprint=fingerprint,
                 generated_utc=generated_utc,
                 reason="validation_failed",
+                diagnostics=_diagnostics_with_local_fallback(fact_packet=fact_packet),
             )
 
     ready = _ready_brief(

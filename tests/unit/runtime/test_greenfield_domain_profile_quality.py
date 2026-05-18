@@ -16,7 +16,7 @@ from tests.unit.runtime.test_greenfield_proposals import _write_confirmed_intent
 PRODUCT_INTENTS = [
     "draft a greenfield proposal for a city zoning permit review app",
     "draft a greenfield proposal for a food safety recall traceability system",
-    "draft a greenfield proposal for a plant-care robot that waters and monitors houseplants",
+    "draft a greenfield proposal for a plant-care irrigation device that waters and monitors houseplants",
     "draft a greenfield proposal for a quantum chemistry catalyst screening platform",
 ]
 
@@ -59,9 +59,10 @@ def test_product_intent_confirmation_does_not_pretend_to_reason_the_product(tmp_
     assert "Write in chat" in output
     assert "Do not" in output
     assert "No files changed" in output
-    assert "backlog" in output
-    assert "Registry" in output
-    assert "Atlas" in output
+    assert "implementation records" in output
+    assert "architecture records" in output
+    assert "Registry" not in output
+    assert "Atlas" not in output
     assert "Product story" not in output
     assert "Primary user" not in output
     assert "Project operator" not in output
@@ -143,10 +144,47 @@ def test_quality_gate_rejects_operator_directives_and_governance_prep_language()
     assert any("operator instruction" in issue for issue in issues)
 
 
+def test_quality_gate_rejects_mechanical_greenfield_scaffold_language() -> None:
+    proposal = _host_reasoned_ecommerce_proposal()
+    proposal["intent"]["prompt"] = "Draft a greenfield proposal for a community archive"
+    proposal["intent"]["title"] = "Community Archive"
+    proposal["project_brief"]["purpose"] = (
+        "Release 0.0.1 proves the accepted first workflow, then replays the community archive state record "
+        "and evidence packet."
+    )
+    proposal["backlog"][0]["problem"] = (
+        "Start with the community archive first workflow, then replay community archive record and review "
+        "community archive evidence packet."
+    )
+    proposal["backlog"][0]["customer"] = "Community Archive workflow lead and beneficiary."
+    proposal["diagrams"][0]["components"][0]["description"] = (
+        "Archivist is part of the path; incoming arrows show what must be true before it runs, and outgoing "
+        "arrows show what it enables next."
+    )
+
+    issues = greenfield_quality_issues(proposal)
+
+    assert any("generic first workflow" in issue for issue in issues)
+    assert any("evidence packet" in issue for issue in issues)
+    assert any("workflow lead" in issue for issue in issues)
+    assert any("diagram mechanics" in issue for issue in issues)
+
+
+def test_quality_gate_allows_domain_specific_hyphenated_workflow_phrases() -> None:
+    proposal = _host_reasoned_ecommerce_proposal()
+    proposal["open_questions"][0] = (
+        "Whether responders need a mobile-first workflow in the first release."
+    )
+
+    issues = greenfield_quality_issues(proposal)
+
+    assert not any("generic first workflow" in issue for issue in issues)
+
+
 def test_quality_gate_allows_domain_specific_actor_names_but_rejects_placeholders() -> None:
     proposal = _host_reasoned_ecommerce_proposal()
     proposal["backlog"][1]["domain_intelligence"]["actors"] = [
-        "Plant operator reviews the care plan before the robot waters anything.",
+        "Plant operator reviews the care plan before the watering device changes any plant schedule.",
         "Operator: generic placeholder that does not explain the project role.",
     ]
 
@@ -186,7 +224,6 @@ def test_runtime_source_does_not_contain_canned_greenfield_domain_families() -> 
         "clinical_trial",
         "legal_intake",
         "bioinformatics",
-        "robot_swarm",
         "GreenfieldDomainProfile",
         "infer_greenfield_domain_profile",
         "proposal_scaffold",

@@ -216,25 +216,23 @@ def _default_read_guide(*, title: str, kind: str, components: list[dict[str, str
     ]
     component_hint = ""
     if component_names:
-        component_hint = (
-            f" Use the component cards to decode {', '.join(component_names)} before following the links."
-        )
+        component_hint = f" Key owned boundaries: {', '.join(component_names)}."
     kind_token = str(kind or "").strip().lower()
     title_token = str(title or "").strip() or "this diagram"
     if "sequence" in kind_token:
         return (
-            f"Read {title_token} from top to bottom. Each lane is an actor or component; "
-            f"messages are calls, handoffs, or proof events; notes and failure branches show block or recovery points."
+            f"Read {title_token} as a first-path rehearsal. Start with the user or trigger, follow each handoff, "
+            "and stop at proof, blocker, or recovery notes because those marks define what must be true before trust increases."
             f"{component_hint}"
         )
     if "state" in kind_token:
         return (
-            f"Read {title_token} as allowed states and transitions. Arrows are the only valid moves; "
-            f"blocked or rejected states require proof before advancement.{component_hint}"
+            f"Read {title_token} as the allowed lifecycle. States describe what can be true; arrows describe permitted movement; "
+            f"blocked or rejected states mark conditions that need proof or owner action before advancement.{component_hint}"
         )
     return (
-        f"Read {title_token} from the named entrypoint through each connected responsibility. Boxes name the actors, "
-        f"records, systems, decisions, or proof obligations; grouped lanes show ownership or phase boundaries.{component_hint}"
+        f"Read {title_token} as a boundary map. Start with the people, inputs, or trigger, then follow the path into "
+        f"product-owned responsibilities; outside boxes are dependencies, not first-release capabilities.{component_hint}"
     )
 
 
@@ -353,7 +351,7 @@ def scaffold_diagram(
     catalog_path.write_text(f"{json.dumps(payload, indent=2)}\n", encoding="utf-8")
     logs.append(f"catalog updated: {catalog_path}")
     logs.append(f"added: {diagram_id} ({slug})")
-    logs.append(f"tribunal: {tribunal.status}")
+    logs.append(f"validation gate: {tribunal.status}")
 
     source_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=source_mmd)
     if source_path.exists():

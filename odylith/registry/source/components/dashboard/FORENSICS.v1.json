@@ -40,10 +40,10 @@
     "empty_reasons": [],
     "explicit_event_count": 113,
     "mapped_workstream_evidence_count": 64,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 19,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 114
+    "timeline_event_count": 113
   },
   "name": "Dashboard",
   "path_prefixes": [
@@ -53,22 +53,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
-      ],
-      "confidence": "high",
-      "event_index": 466,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "dashboard"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/surfaces/render_tooling_dashboard.py",
-      "ts_iso": "2026-05-11T14:10:43-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [
         "odylith/install.json",
