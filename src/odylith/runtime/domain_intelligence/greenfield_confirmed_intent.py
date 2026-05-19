@@ -16,7 +16,7 @@ FIELD_MIN_WORDS = {
     "proof_boundary": 18,
 }
 LIST_ROW_MIN_WORDS = 5
-SYSTEM_ROW_MIN_WORDS = 7
+SYSTEM_ROW_MIN_WORDS = 5
 
 _META_NARRATION_PATTERNS = [
     re.compile(pattern, re.IGNORECASE)
@@ -50,6 +50,61 @@ _GENERIC_SYSTEM_NAME_PATTERNS = [
     )
 ]
 
+_SYSTEM_NAME_NOUNS = {
+    "adapter",
+    "adapters",
+    "api",
+    "apis",
+    "client",
+    "clients",
+    "console",
+    "consoles",
+    "controller",
+    "controllers",
+    "coordinator",
+    "coordinators",
+    "dashboard",
+    "dashboards",
+    "engine",
+    "engines",
+    "flow",
+    "flows",
+    "gateway",
+    "gateways",
+    "harness",
+    "harnesses",
+    "integration",
+    "integrations",
+    "ledger",
+    "ledgers",
+    "manager",
+    "managers",
+    "module",
+    "modules",
+    "pipeline",
+    "pipelines",
+    "queue",
+    "queues",
+    "record",
+    "records",
+    "recorder",
+    "recorders",
+    "screen",
+    "screens",
+    "service",
+    "services",
+    "store",
+    "stores",
+    "surface",
+    "surfaces",
+    "tracker",
+    "trackers",
+    "view",
+    "views",
+    "workflow",
+    "workflows",
+}
+
 
 def load_confirmed_intent_file(path: Path, *, prompt: str = "", fallback_title: str = "") -> dict[str, Any]:
     """Load a host-visible Product Intent Confirmation from Markdown/text/JSON."""
@@ -78,6 +133,12 @@ def normalize_confirmed_intent(value: object, *, prompt: str = "", fallback_titl
         raise ValueError("confirmed intent must be Markdown text or a JSON object")
     payload = dict(value)
     title = _clean(payload.get("title") or payload.get("product_title") or fallback_title)
+    component_rows = _role_or_system_rows(
+        payload.get("component_responsibilities")
+        or payload.get("component_rows")
+        or payload.get("components")
+        or payload.get("owned_capabilities")
+    )
     result: dict[str, Any] = {
         "title": title,
         "prompt": _clean(payload.get("prompt") or prompt),
@@ -85,19 +146,71 @@ def normalize_confirmed_intent(value: object, *, prompt: str = "", fallback_titl
         "state_object": _clean(payload.get("state_object") or payload.get("state_object_first_journey")),
         "first_path": _clean(payload.get("first_path") or payload.get("first_workflow")),
         "proof_boundary": _clean(payload.get("proof_boundary")),
-        "human_actors": _strings(payload.get("human_actors") or payload.get("actors")),
+        "problem": _clean(payload.get("problem") or payload.get("user_problem") or payload.get("user_problem_and_risk")),
+        "customer": _clean(payload.get("customer")),
+        "opportunity": _clean(payload.get("opportunity")),
+        "product_view": _clean(payload.get("product_view")),
+        "success_metrics": _strings(payload.get("success_metrics") or payload.get("proof_metrics")),
+        "component_responsibilities": component_rows,
+        "human_actors": _role_or_system_rows(payload.get("human_actors") or payload.get("actors")),
         "external_systems": _strings(payload.get("external_systems")),
         "internal_systems": [],
         "assumptions": _strings(payload.get("assumptions") or payload.get("critical_assumptions")),
-        "ambiguities": _strings(payload.get("ambiguities") or payload.get("open_questions")),
+        "ambiguities": _strings(
+            payload.get("ambiguities") or payload.get("material_ambiguities") or payload.get("open_questions")
+        ),
         "non_goals": _strings(payload.get("non_goals")),
     }
     result["internal_systems"] = _expand_internal_system_rows(
-        _strings(payload.get("internal_systems") or payload.get("internal_product_systems")),
+        _preferred_internal_rows(
+            _role_or_system_rows(payload.get("internal_systems") or payload.get("internal_product_systems")),
+            component_rows,
+        ),
         context_text=_intent_context_text(result),
     )
     _validate_confirmed_intent(result)
     return result
+
+
+def structured_confirmed_intent_path(path: Path) -> Path:
+    """Return the CLI-owned structured companion path for a confirmed intent file."""
+
+    source = Path(path)
+    if source.suffix.lower() == ".json":
+        return source
+    return source.with_suffix(".json")
+
+
+def write_structured_confirmed_intent_file(path: Path, intent: Mapping[str, Any]) -> Path:
+    """Persist the normalized confirmed intent beside the human Markdown record."""
+
+    target = structured_confirmed_intent_path(path)
+    if target == Path(path):
+        return target
+    target.parent.mkdir(parents=True, exist_ok=True)
+    keys = (
+        "title",
+        "prompt",
+        "product_story",
+        "state_object",
+        "first_path",
+        "proof_boundary",
+        "problem",
+        "customer",
+        "opportunity",
+        "product_view",
+        "success_metrics",
+        "component_responsibilities",
+        "human_actors",
+        "external_systems",
+        "internal_systems",
+        "assumptions",
+        "ambiguities",
+        "non_goals",
+    )
+    payload = {key: intent.get(key) for key in keys if key in intent}
+    target.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return target
 
 
 def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: str = "") -> dict[str, Any]:
@@ -105,13 +218,20 @@ def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: 
 
     sections = _sections(text)
     title = _title_from_text(text) or _title_from_sections(sections) or fallback_title
+    preamble_story = _preamble_story(sections, title)
     result: dict[str, Any] = {
         "title": _clean(title),
         "prompt": _clean(prompt),
-        "product_story": _section_text(sections, "product_story"),
+        "product_story": _section_text(sections, "product_story") or preamble_story,
         "state_object": _section_text(sections, "state_object"),
         "first_path": _section_text(sections, "first_path"),
         "proof_boundary": _section_text(sections, "proof_boundary"),
+        "problem": _section_text(sections, "problem"),
+        "customer": _section_text(sections, "customer"),
+        "opportunity": _section_text(sections, "opportunity"),
+        "product_view": _section_text(sections, "product_view"),
+        "success_metrics": _section_list(sections, "success_metrics"),
+        "component_responsibilities": _section_list(sections, "component_responsibilities"),
         "human_actors": _section_list(sections, "human_actors"),
         "external_systems": _section_list(sections, "external_systems"),
         "internal_systems": [],
@@ -180,6 +300,15 @@ def _looks_like_plain_heading(text: str) -> bool:
     lowered = _normalize_heading(text)
     known = {
         "product story",
+        "product title",
+        "user problem",
+        "user problem and risk",
+        "problem",
+        "customer",
+        "opportunity",
+        "product view",
+        "success metrics",
+        "proof metrics",
         "state object that changes through the first journey",
         "first complete path odylith should prove before broader scope",
         "first complete path the product should prove before broader scope",
@@ -191,10 +320,14 @@ def _looks_like_plain_heading(text: str) -> bool:
         "assumptions",
         "critical assumptions",
         "ambiguities that would change the first path",
+        "material ambiguities",
         "open questions",
         "proof boundary",
         "non goals",
         "non-goals",
+        "systems",
+        "component responsibilities",
+        "owned capabilities",
     }
     return lowered in known
 
@@ -205,10 +338,26 @@ def _classify_heading(value: str) -> str:
         return ""
     if "product intent confirmation" in normalized:
         return "title"
+    if normalized in {"product title", "title"}:
+        return "title"
     if "product story" in normalized:
         return "product_story"
+    if normalized in {"user problem", "user problem and risk", "problem"}:
+        return "problem"
+    if normalized == "customer":
+        return "customer"
+    if normalized == "opportunity":
+        return "opportunity"
+    if normalized == "product view":
+        return "product_view"
+    if normalized in {"success metrics", "proof metrics"}:
+        return "success_metrics"
     if "human actor" in normalized or normalized == "actors":
         return "human_actors"
+    if normalized == "systems":
+        return "systems"
+    if "component responsibilit" in normalized or "owned capabilit" in normalized:
+        return "component_responsibilities"
     if normalized.startswith("internal ") and (
         "internal product system" in normalized or "internal system" in normalized
     ):
@@ -235,7 +384,7 @@ def _classify_heading(value: str) -> str:
 
 
 def _normalize_heading(value: str) -> str:
-    text = re.sub(r"[*_`]+", "", str(value or "")).strip().casefold()
+    text = re.sub(r"[*_`]+", " ", str(value or "")).strip().casefold()
     text = re.sub(r"[–—-]+", " ", text)
     text = re.sub(r"[^a-z0-9\s]+", "", text)
     return re.sub(r"\s+", " ", text).strip()
@@ -251,6 +400,13 @@ def _title_from_text(text: str) -> str:
             return _clean(match.group(1))
         if "product intent confirmation" in line.casefold():
             return _clean(re.sub(r"product intent confirmation", "", line, flags=re.IGNORECASE))
+    for raw_line in str(text or "").splitlines():
+        raw = str(raw_line or "").strip()
+        if not raw.startswith("#"):
+            continue
+        line = _clean(raw.lstrip("#").strip())
+        if line and not _classify_heading(line):
+            return line
     return ""
 
 
@@ -271,6 +427,21 @@ def _section_text(sections: Mapping[str, list[str]], key: str) -> str:
     return _clean(" ".join(line.strip("-* \t") for line in lines if line.strip()))
 
 
+def _preamble_story(sections: Mapping[str, list[str]], title: str) -> str:
+    lines: list[str] = []
+    title_text = _clean(title).casefold()
+    for raw_line in sections.get("preamble", []):
+        line = _clean(str(raw_line or "").lstrip("#").strip())
+        if not line:
+            continue
+        if title_text and line.casefold() == title_text:
+            continue
+        if _classify_heading(line):
+            continue
+        lines.append(line)
+    return _clean(" ".join(lines))
+
+
 def _section_list(sections: Mapping[str, list[str]], key: str) -> list[str]:
     values: list[str] = []
     for raw_line in sections.get(key, []):
@@ -287,13 +458,92 @@ def _section_list(sections: Mapping[str, list[str]], key: str) -> list[str]:
 
 
 def _internal_system_rows(sections: Mapping[str, list[str]], *, context_text: str = "") -> list[str]:
-    return _expand_internal_system_rows(_section_list(sections, "internal_systems"), context_text=context_text)
+    rows = _section_list(sections, "internal_systems")
+    component_rows = _section_list(sections, "component_responsibilities")
+    rows = _preferred_internal_rows(rows, component_rows)
+    if not rows:
+        rows = component_rows
+    else:
+        expanded = _expand_internal_system_rows(rows, context_text=context_text)
+        if component_rows and any(not _has_meaningful_system_description(row) for row in expanded):
+            return _expand_internal_system_rows(component_rows, context_text=context_text)
+        return expanded
+    if not rows:
+        rows = _combined_system_rows(sections, "internal")
+    return _expand_internal_system_rows(rows, context_text=context_text)
+
+
+def _preferred_internal_rows(rows: list[str], component_rows: list[str]) -> list[str]:
+    """Prefer rows that already describe component responsibility in reviewable terms."""
+
+    if not rows:
+        return component_rows
+    if not component_rows:
+        return rows
+    row_score = sum(_row_detail_score(row) for row in rows)
+    component_score = sum(_row_detail_score(row) for row in component_rows)
+    if component_score > row_score:
+        return component_rows
+    return rows
+
+
+def _row_detail_score(row: str) -> int:
+    text = _clean(row)
+    name = confirmed_system_name(text)
+    description = confirmed_system_description(text)
+    score = _word_count(description)
+    if name and name != description:
+        score += 8
+    if re.search(
+        r"\b(?:receives?|produces?|records?|stores?|tracks?|links?|derives?|controls?|reviews?|"
+        r"explains?|validates?|normalizes?|preserves?|routes?|captures?)\b",
+        description,
+        re.IGNORECASE,
+    ):
+        score += 6
+    if re.search(r"\b(?:evidence|state|source|actor|decision|review|failure|blocked|history)\b", description, re.IGNORECASE):
+        score += 4
+    return score
+
+
+def _combined_system_rows(sections: Mapping[str, list[str]], target: str) -> list[str]:
+    text = _section_text(sections, "systems")
+    if not text:
+        return []
+    target_pattern = (
+        r"internal(?:\s+product)?\s+systems?"
+        if target == "internal"
+        else r"external(?:\s+product)?\s+systems?"
+    )
+    other_pattern = (
+        r"external(?:\s+product)?\s+systems?"
+        if target == "internal"
+        else r"internal(?:\s+product)?\s+systems?"
+    )
+    match = re.search(
+        rf"\b{target_pattern}\b\s*(?:are|include|includes|:)\s*(.+?)(?=\b{other_pattern}\b\s*(?:are|include|includes|:)|$)",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return []
+    return _role_or_system_rows(match.group(1))
 
 
 def _expand_internal_system_rows(rows: list[str], *, context_text: str = "") -> list[str]:
     cleaned = [_clean(row) for row in rows if _clean(row)]
+    sentence_rows = _system_sentence_rows(" ".join(cleaned), context_text=context_text)
+    if len(cleaned) == 1 and len(sentence_rows) >= 2:
+        return sentence_rows
     if len(cleaned) != 1:
-        return cleaned
+        expanded: list[str] = []
+        for row in cleaned:
+            expanded.append(
+                _system_sentence_row(row, context_text=context_text)
+                or _concise_system_row(row, context_text=context_text)
+                or row
+            )
+        return expanded
     paragraph = cleaned[0]
     candidates = _extract_internal_system_candidates(paragraph)
     if len(candidates) < 2:
@@ -311,9 +561,17 @@ def _expand_internal_system_rows(rows: list[str], *, context_text: str = "") -> 
 def _intent_context_text(intent: Mapping[str, Any]) -> str:
     parts = [
         _clean(intent.get("product_story")),
-        _clean(intent.get("state_object")),
+        _clean(intent.get("problem")),
+        _clean(intent.get("customer")),
+        _clean(intent.get("opportunity")),
+        _clean(intent.get("product_view")),
         _clean(intent.get("first_path")),
+        _clean(intent.get("state_object")),
         _clean(intent.get("proof_boundary")),
+        " ".join(_strings(intent.get("success_metrics"))),
+        " ".join(_strings(intent.get("component_responsibilities"))),
+        " ".join(_strings(intent.get("human_actors"))),
+        " ".join(_strings(intent.get("external_systems"))),
         " ".join(_strings(intent.get("assumptions"))),
         " ".join(_strings(intent.get("non_goals"))),
     ]
@@ -326,8 +584,8 @@ def _expanded_system_description(candidate: str, *, context_text: str, rationale
     if clause:
         return f"Owns {subject}. Relevant behavior: {_brief_clause(clause, limit=240)}"
     if rationale:
-        return f"Owns {subject} for the accepted first path and proof boundary"
-    return f"Owns {subject} behavior, state, and proof obligations for the accepted first path"
+        return f"Defines how {subject} receives input, changes state, produces output, and exposes review evidence"
+    return f"Defines how {subject} receives input, changes state, produces output, and exposes review evidence"
 
 
 def _best_context_clause(candidate: str, context_text: str) -> str:
@@ -341,7 +599,8 @@ def _best_context_clause(candidate: str, context_text: str) -> str:
         if overlap <= 0:
             continue
         exact = sum(1 for term in terms if re.search(rf"\b{re.escape(term)}\w*\b", clause, flags=re.IGNORECASE))
-        scored.append((overlap * 10 + exact, -index, clause))
+        pronoun_penalty = 6 if re.match(r"^(?:it|they|this|that|the\s+primary\s+state\s+object)\b", clause, flags=re.IGNORECASE) else 0
+        scored.append((overlap * 10 + exact - pronoun_penalty, -index, clause))
     if not scored:
         return ""
     scored.sort(reverse=True)
@@ -393,6 +652,208 @@ def _extract_internal_system_candidates(paragraph: str) -> list[str]:
             if normalized.casefold() not in {value.casefold() for value in candidates}:
                 candidates.append(normalized)
     return candidates[:8]
+
+
+def _role_or_system_rows(value: object) -> list[str]:
+    if isinstance(value, Mapping):
+        row = _row_from_mapping(value)
+        return [row] if row else []
+    if isinstance(value, str):
+        return _rows_from_text(value)
+    if not isinstance(value, Sequence) or isinstance(value, (bytes, bytearray)):
+        return []
+    rows: list[str] = []
+    for item in value:
+        if isinstance(item, Mapping):
+            row = _row_from_mapping(item)
+            if row:
+                rows.append(row)
+            continue
+        rows.extend(_rows_from_text(str(item or "")))
+    return [_clean(row) for row in rows if _clean(row)]
+
+
+def _row_from_mapping(value: Mapping[str, Any]) -> str:
+    name = _clean(
+        value.get("name")
+        or value.get("title")
+        or value.get("role")
+        or value.get("actor")
+        or value.get("system")
+        or value.get("component")
+    )
+    description = _clean(
+        value.get("description")
+        or value.get("summary")
+        or value.get("responsibility")
+        or value.get("purpose")
+        or value.get("value")
+    )
+    if name and description:
+        return f"{name}: {description}"
+    return name or description
+
+
+def _rows_from_text(value: str) -> list[str]:
+    text = _clean(value)
+    if not text:
+        return []
+    line_rows: list[str] = []
+    for raw_line in str(value or "").splitlines():
+        line = re.sub(r"^\s*(?:[-*•]|\d+[.)])\s*", "", raw_line).strip()
+        if line:
+            line_rows.append(_clean(line))
+    if len(line_rows) > 1:
+        return line_rows
+    labeled = _labeled_span_rows(text)
+    if len(labeled) >= 2:
+        return labeled
+    sentence_rows = _system_sentence_rows(text)
+    if len(sentence_rows) >= 2:
+        return sentence_rows
+    return [text]
+
+
+def _labeled_span_rows(text: str) -> list[str]:
+    matches = list(
+        re.finditer(
+            r"(?:(?<=^)|(?<=[.;]\s))(?P<label>[A-Z][A-Za-z0-9 /&(),-]{1,72}?):\s*",
+            text,
+        )
+    )
+    if len(matches) < 2:
+        return []
+    rows: list[str] = []
+    for index, match in enumerate(matches):
+        label = _clean(match.group("label"))
+        end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
+        body = _clean(text[match.end() : end].strip(" .;"))
+        if label and body:
+            rows.append(f"{label}: {body}")
+    return rows
+
+
+def _system_sentence_rows(text: str, *, context_text: str = "") -> list[str]:
+    rows: list[str] = []
+    for sentence in re.split(r"(?<=[.!?])\s+", _clean(text)):
+        row = _system_sentence_row(sentence, context_text=context_text)
+        if row:
+            rows.append(row)
+    return rows
+
+
+def _system_sentence_row(sentence: str, *, context_text: str = "") -> str:
+    text = _clean(sentence).strip(" .")
+    if not text:
+        return ""
+    separator = re.search(r"\s+[—-]\s+|:\s+", text)
+    if separator:
+        name = _clean(text[: separator.start()])
+        body = _clean(text[separator.end() :])
+        if _usable_internal_system_candidate(name) and _word_count(body) >= 4:
+            return _format_system_row(name, body, context_text=context_text)
+    relative = re.match(r"(?P<name>.+?)\s+(?:that|which|who|where|whose)\s+(?P<body>.+)$", text, re.IGNORECASE)
+    if relative:
+        name = _clean(relative.group("name"))
+        body = _clean(relative.group("body"))
+        if _looks_like_system_name(name) and _word_count(body) >= 4:
+            return _format_system_row(name, body, context_text=context_text)
+    prefix = _system_name_prefix(text)
+    if prefix:
+        name, body = prefix
+        if _word_count(body) >= 4:
+            return _format_system_row(name, body, context_text=context_text)
+    name = _leading_title_phrase(text)
+    if not name:
+        return ""
+    body = _clean(text[len(name) :].strip(" ,:;.-"))
+    if _word_count(body) < 4:
+        return ""
+    return _format_system_row(name, body, context_text=context_text)
+
+
+def _concise_system_row(value: str, *, context_text: str = "") -> str:
+    name = _clean(value).strip(" .")
+    if not _usable_internal_system_candidate(name):
+        return ""
+    if re.search(r"\b(?:because|therefore|should|must|needs?|proves?|proof|release)\b", name, re.IGNORECASE):
+        return ""
+    return _format_system_row(name, _concise_system_description(name, context_text=context_text), context_text="")
+
+
+def _concise_system_description(name: str, *, context_text: str) -> str:
+    subject = _clean(name).casefold()
+    clause = _best_context_clause(name, context_text)
+    if clause:
+        return f"owns the {subject} responsibility and keeps it tied to this product behavior: {_brief_clause(clause, limit=180)}"
+    return f"defines the input, state change, output, and evidence needed to trust the {subject} responsibility"
+
+
+def _format_system_row(name: str, body: str, *, context_text: str = "") -> str:
+    return f"{_title_case_phrase(name)} — {_contextualized_system_body(name=name, body=body, context_text=context_text)}"
+
+
+def _contextualized_system_body(*, name: str, body: str, context_text: str) -> str:
+    description = _clean(body).strip(" .")
+    if _word_count(description) >= 6:
+        return description
+    clause = _best_context_clause(f"{name} {description}", context_text) or _best_context_clause(description, context_text)
+    if clause and _has_semantic_overlap(description, clause, minimum=2):
+        clause = _brief_clause(clause, limit=120)
+        return f"{description}. Related path: {clause}"
+    return f"{description} while preserving traceable state, evidence, and handoff"
+
+
+def _leading_title_phrase(text: str) -> str:
+    tokens = text.split()
+    if len(tokens) < 3:
+        return ""
+    name_tokens: list[str] = []
+    for token in tokens:
+        cleaned = token.strip(".,;:()[]")
+        if not cleaned:
+            break
+        if _looks_like_name_token(cleaned) or (
+            name_tokens and cleaned.casefold() in {"and", "or", "of", "for", "to", "the", "&"}
+        ):
+            name_tokens.append(cleaned)
+            continue
+        break
+    while name_tokens and name_tokens[-1].casefold() in {"and", "or", "of", "for", "to", "the", "&"}:
+        name_tokens.pop()
+    if len(name_tokens) < 2 or len(name_tokens) > 9:
+        return ""
+    candidate = _clean(" ".join(name_tokens))
+    return candidate if _usable_internal_system_candidate(candidate) else ""
+
+
+def _system_name_prefix(text: str) -> tuple[str, str] | None:
+    tokens = text.split()
+    if len(tokens) < 4:
+        return None
+    max_name_words = min(9, len(tokens) - 3)
+    for index in range(2, max_name_words + 1):
+        candidate = _clean(" ".join(tokens[:index]).strip(" ,:;.-"))
+        if not _looks_like_system_name(candidate):
+            continue
+        body = _clean(" ".join(tokens[index:]).strip(" ,:;.-"))
+        if body:
+            return candidate, body
+    return None
+
+
+def _looks_like_system_name(value: str) -> bool:
+    candidate = _clean(re.sub(r"^(?:a|an|the)\s+", "", value, flags=re.IGNORECASE))
+    if not _usable_internal_system_candidate(candidate):
+        return False
+    tokens = [token.strip(".,;:()[]").casefold() for token in candidate.split()]
+    return any(token in _SYSTEM_NAME_NOUNS for token in tokens)
+
+
+def _looks_like_name_token(value: str) -> bool:
+    if value.isupper() and len(value) > 1:
+        return True
+    return bool(re.match(r"^[A-Z][A-Za-z0-9&/-]*$", value))
 
 
 def _usable_internal_system_candidate(candidate: str) -> bool:
@@ -453,7 +914,7 @@ def _validate_confirmed_intent(intent: Mapping[str, Any]) -> None:
     if missing:
         formatted = ", ".join(dict.fromkeys(missing))
         raise ValueError(
-            "confirmed greenfield create needs the host-written Product Intent Confirmation; "
+            "confirmed greenfield create needs the operator-confirmed Product Intent Confirmation; "
             f"missing or too thin: {formatted}. Write the visible confirmation to a Markdown file "
             "and pass it with --intent-file."
         )
@@ -469,7 +930,9 @@ def _qualitative_intent_gaps(intent: Mapping[str, Any]) -> list[str]:
     systems = " ".join(_strings(intent.get("internal_systems")))
     context = " ".join(part for part in (story, state, actors, systems, proof) if part)
 
-    if story and not (_has_meaningful_sentences(story, minimum=2) and _has_semantic_overlap(story, f"{actors} {systems} {state}", minimum=1)):
+    if story and not (
+        _has_meaningful_story_shape(story) and _has_semantic_overlap(story, f"{actors} {systems} {state}", minimum=1)
+    ):
         gaps.append("product_story")
     if state and not (_has_meaningful_sentences(state, minimum=1) and _has_progression_or_outcome(state)):
         gaps.append("state_object")
@@ -516,6 +979,24 @@ def _contains_generic_system_scaffold(system_rows: list[str]) -> bool:
 def _has_meaningful_sentences(text: str, *, minimum: int) -> bool:
     sentences = [part.strip() for part in re.split(r"(?<=[.!?])\s+", _clean(text)) if _word_count(part) >= 8]
     return len(sentences) >= minimum or _word_count(_clean(text)) >= minimum * 18
+
+
+def _has_meaningful_story_shape(text: str) -> bool:
+    cleaned = _clean(text)
+    if _has_meaningful_sentences(cleaned, minimum=2):
+        return True
+    if not _has_meaningful_sentences(cleaned, minimum=1):
+        return False
+    if _has_progression_or_outcome(cleaned):
+        return True
+    return bool(
+        re.search(
+            r"\b(?:need|needs|want|wants|help|helps|manage|manages|track|tracks|record|records|show|shows|"
+            r"understand|decide|trust|review|route|collect|reduce|avoid|prevent|resolve|coordinate)\b",
+            cleaned,
+            re.IGNORECASE,
+        )
+    )
 
 
 def _has_progression_or_outcome(text: str) -> bool:
@@ -619,4 +1100,6 @@ __all__ = [
     "load_confirmed_intent_file",
     "normalize_confirmed_intent",
     "parse_confirmed_intent_text",
+    "structured_confirmed_intent_path",
+    "write_structured_confirmed_intent_file",
 ]

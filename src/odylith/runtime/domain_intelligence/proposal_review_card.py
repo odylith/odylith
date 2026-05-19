@@ -22,7 +22,7 @@ def format_visible_proposal_card_text(
 
     This is intentionally short enough to stay visible in Claude/Codex tool
     transcripts after product intent is confirmed. The longer text gate stays
-    behind ``--confirm-intent --detail full``. The apply-ready proposal is built
+    behind ``--confirm-intent --detail full``. The governed proposal is built
     by Odylith from confirmed intent, then accepted through ``greenfield create``.
     """
 
@@ -59,7 +59,7 @@ def format_visible_proposal_card_text(
 
     choice_lines = _visible_choice_lines(project_brief.get("customization_options"), limit=4)
     if choice_lines:
-        lines.extend(["", "Decisions before apply"])
+        lines.extend(["", "Decisions before confirmation"])
         lines.extend(f"- {line}" for line in choice_lines)
 
     lines.extend(
@@ -69,7 +69,7 @@ def format_visible_proposal_card_text(
             f"- {_visible_records_line(proposal, release_display=release_display)}",
             "",
             "Next",
-            f"- Apply as-is: {_visible_apply_command(proposal, request_context=request_context, release_selector=release_selector)}",
+            f"- Confirm as-is: {_visible_apply_command(proposal, request_context=request_context, release_selector=release_selector)}",
             "- Revise: answer the decisions above, then rerun greenfield propose.",
             "- Full review: add --confirm-intent --detail full for the long contract; export JSON only when explicitly requested.",
         ]

@@ -12,6 +12,7 @@ from odylith.runtime.common import mermaid_text
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagrams import confirmed_diagrams
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import normalize_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import PROJECT_INTELLIGENCE_LAYERS
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
@@ -166,7 +167,7 @@ def test_confirmed_greenfield_diagrams_use_compact_atlas_narration() -> None:
     assert [row["description"] for row in sequence["components"]] == [
         (
             "Owns microphone or line-in capture and normalization. Reviewers need to see what this boundary receives, "
-            "produces, and makes available next."
+            "produces, records, and makes available next."
         ),
         (
             "Performs frame-level pitch tracking. Reviewers need to see the inputs, rule version, result, "
@@ -211,10 +212,10 @@ def test_confirmed_greenfield_noun_phrase_responsibilities_stay_grammatical() ->
     assert first_description == (
         "Presents status dashboard for operator review, queue health, and decision history to users and captures "
         "the action or decision the product needs next. Reviewers need to see what the user saw, submitted, "
-        "corrected, or approved before downstream state changed."
+        "corrected, or approved and which product state changed after that action."
     )
     assert "Coordinates follow-up actions, reviewer handoff, and blocked-state recovery" in encoded
-    assert "each responsibility transfer, failure state, recovery action, and final outcome" in encoded
+    assert "each responsibility transfer, failure state, recovery action, and the state or record each handoff produces" in encoded
 
 
 def test_mermaid_text_normalizes_sequence_labels_notes_and_messages() -> None:
@@ -357,47 +358,47 @@ def test_confirmed_intent_parser_allows_hyphenated_domain_workflow_phrases() -> 
 
 def test_confirmed_intent_parser_strips_markdown_emphasis_from_actor_rows() -> None:
     intent = parse_confirmed_intent_text(
-        """Account Cleanup — Product Intent Confirmation
+        """Shared Operations Review — Product Intent Confirmation
 
 Product story
-The account owner uses the account cleanup product to find recurring charges they no longer need, understand why each charge is being shown, and cancel one subscription without losing services they still use. The product connects transaction ingestion, recurring-charge detection, user review, and cancellation tracking so the account owner and support reviewer can see what changed and why.
+The workspace helps an operator find stale work items, understand why each item needs review, decide whether to keep or close it, and leave a traceable outcome for the next reviewer. The product connects item ingestion, evidence review, operator approval, and follow-up tracking so the operator and support reviewer can see what changed and why.
 
 State object that changes through the first journey
-A cleanup review tracks transaction history, recurring-charge candidates, user approval, cancellation attempt state, and the next billing-cycle check.
+A review record tracks imported items, evidence, operator approval, action state, and the next follow-up check.
 
 First complete path the product should prove before broader scope
-The user imports transaction history, reviews one likely subscription, approves a cancellation attempt, records the outcome, and checks whether the next billing cycle stopped.
+The user imports work history, reviews one stale item, approves a close-or-keep decision, records the outcome, and checks whether the next follow-up state changed as expected.
 
 Human actors
-- **Account owner:** wants to reduce waste without accidentally losing important services.
-- **Support reviewer:** checks ambiguous cancellation attempts and user disputes.
+- **Primary operator:** wants to reduce stale work without accidentally closing important items.
+- **Support reviewer:** checks ambiguous follow-up attempts and user disputes.
 
 External systems
-- Bank or card transaction history.
-- Merchant cancellation portal or support inbox.
+- Work history export.
+- External action portal or support inbox.
 
 Internal product systems
-- Transaction ingestion — imports financial activity and normalizes merchant, date, amount, and account source so cleanup evidence starts from a consistent transaction record.
-- Recurring-charge detection — identifies likely subscriptions from repeated charges, merchant cadence, amount patterns, and known billing descriptors while keeping uncertainty visible.
-- User review flow — explains evidence to the account owner, captures keep/cancel approval, and prevents cancellation without an explicit user decision.
-- Cancellation tracker — records the unsubscribe attempt, merchant response, support reviewer escalation, and follow-up billing status for the next cycle.
+- Work item ingestion — imports activity and normalizes item id, source, timestamp, status, and owner so review evidence starts from a consistent record.
+- Stale-item detection — identifies likely stale items from repeated inactivity, status age, dependency state, and known workflow markers while keeping uncertainty visible.
+- User review flow — explains evidence to the primary operator, captures keep-or-close approval, and prevents action without an explicit user decision.
+- Follow-up tracker — records the attempted action, external response, support reviewer escalation, and follow-up status for the next cycle.
 
 Critical assumptions
-- Release 0.0.1 guides or records one cancellation path; it does not claim universal automated cancellation.
+- Release 0.0.1 guides or records one review path; it does not claim universal automated remediation.
 
 Ambiguities that would change the first path
-- Whether transaction import comes from a live connection or a CSV file.
+- Whether work history import comes from a live connection or a file export.
 
 Proof boundary
-Release 0.0.1 succeeds when a reviewer can see the imported transactions, the recurring-charge evidence, the user approval, the cancellation outcome, and the next billing-cycle check.
+Release 0.0.1 succeeds when a reviewer can see the imported items, the stale-item evidence, the user approval, the action outcome, and the next follow-up check.
 """,
-        prompt="Draft a product-first greenfield proposal for account cleanup.",
+        prompt="Draft a product-first greenfield proposal for a shared operations review workspace.",
     )
 
     encoded = json.dumps(intent)
     assert "**" not in encoded
-    assert "Account owner: wants to reduce waste" in encoded
-    assert "Support reviewer: checks ambiguous cancellation attempts" in encoded
+    assert "Primary operator: wants to reduce stale work" in encoded
+    assert "Support reviewer: checks ambiguous follow-up attempts" in encoded
 
 
 def test_confirmed_intent_parser_accepts_internal_external_heading_and_prose_systems() -> None:
@@ -452,6 +453,363 @@ def test_confirmed_intent_parser_accepts_internal_external_heading_and_prose_sys
     assert not any("Owns the accepted" in row for row in internal_systems)
     assert all("—" in row for row in internal_systems)
     assert not any("External systems" in row for row in internal_systems)
+
+
+def test_confirmed_intent_parser_accepts_product_title_and_underscored_system_heading() -> None:
+    intent = parse_confirmed_intent_text(
+        """# Product Intent Confirmation
+
+## Product Title
+Neighborhood Repair Desk
+
+## Product Story
+The Neighborhood Repair Desk helps a small operations team receive repair requests, understand which location and asset are affected, route the work to the right crew, and keep residents informed without losing the evidence behind each decision. The product turns scattered calls, photos, location notes, crew updates, and completion checks into one repair record that a coordinator can trust before promising that a problem is resolved.
+
+## State Object
+The primary state object is a repair case. It starts as reported, gathers location evidence, asset context, triage priority, assignment, crew updates, resident messages, completion evidence, and final review, then ends as resolved, deferred, duplicate, or blocked with a clear reason.
+
+## First Complete Path
+A resident reports a broken shared asset, the coordinator confirms the location and photos, the triage reviewer assigns a priority, the repair crew records the work outcome, and the coordinator closes the case only after the evidence and resident-visible status agree.
+
+## Human Actors
+- Resident: reports the issue, supplies location context, and needs a clear status without learning internal queue details.
+- Coordinator: reviews new cases, routes work, watches blocked repairs, and decides when a case can be closed.
+- Repair crew: receives assigned work, records field updates, and attaches completion evidence from the site.
+
+## Systems
+External systems are resident email, field photos, location references, maintenance contractors, and optional facilities maps.
+
+Internal product systems are request intake, evidence ledger, triage queue, assignment tracker, crew update recorder, resident status view, and closure review.
+
+## External Systems
+- Resident email and notification channel.
+- Field photo source and location reference.
+
+## internal_systems
+- Request intake service that captures the resident report, contact route, affected location, asset hint, and original issue description before triage begins.
+- Evidence ledger that stores photos, notes, timestamps, reviewer comments, and crew updates so a closeout decision can be traced.
+- Triage queue that assigns urgency, ownership, and blocked status while keeping duplicate or unsafe work from moving forward silently.
+- Crew update recorder that records field progress, completion evidence, failed access, and follow-up needs from the repair crew.
+
+## Critical Assumptions
+- The first release coordinates repair evidence and status; it does not dispatch emergency services or replace contractor management.
+- Location evidence may be imperfect, so the product must preserve uncertainty instead of pretending every report is precise.
+
+## Proof Boundary
+Release proof requires one repair case to move from resident report to triage, assignment, field update, closure review, and resident-visible final status. A reviewer must be able to trace the closeout decision back to the original report, evidence ledger, crew update, and unresolved blockers.
+""",
+        prompt="Draft a product-first greenfield proposal for a neighborhood repair desk.",
+    )
+
+    assert intent["title"] == "Neighborhood Repair Desk"
+    assert len(intent["human_actors"]) == 3
+    assert "Resident email" in intent["external_systems"][0]
+    assert len(intent["internal_systems"]) == 4
+    assert any(row.startswith("Request Intake Service — captures") for row in intent["internal_systems"])
+    assert any(row.startswith("Triage Queue — assigns urgency") for row in intent["internal_systems"])
+
+
+def test_confirmed_intent_parser_uses_opening_narrative_as_product_story() -> None:
+    intent = parse_confirmed_intent_text(
+        """# Community Permit Review Workspace
+
+A small city office needs one place to receive permit requests, check zoning rules, collect reviewer comments, and show applicants where each request stands. The first release proves that a simple permit can move from intake to review decision without losing the applicant, parcel, rule check, comment history, or final outcome.
+
+## State object that changes through the first journey
+Permit request — starts as draft, moves to submitted, checked for zoning fit, reviewed, decided, and closed with an applicant-visible decision record.
+
+## First complete path Odylith should prove before broader scope
+An applicant submits one permit request with parcel details and attachments. The system validates the required fields, runs a zoning checklist, routes the request to a reviewer, records the decision with reasons, and shows the applicant the result and next step.
+
+## Human actors
+- Applicant: submits a permit request and needs a clear status and decision.
+- Permit reviewer: checks request details, zoning fit, attachments, and decision reasons.
+
+## External systems
+- Parcel records and zoning maps.
+- Email notification provider.
+
+## Internal systems
+- Intake service: captures applicant details, parcel reference, requested work, and attachments.
+- Zoning checklist service: evaluates required rules and records pass, warning, or failure reasons.
+- Review decision ledger: stores reviewer decision, reasons, timestamps, and applicant-visible outcome history.
+
+## Critical assumptions
+- First release handles one permit type and one jurisdiction.
+
+## Ambiguities that would change the first path
+- Whether zoning checks are manual, rules-based, or integrated with a city GIS system.
+
+## Proof boundary
+Release proof must show the accepted permit path end to end with source evidence for intake validation, zoning checklist output, reviewer decision, applicant-visible status, non-goals, and safe handling of missing information.
+""",
+        prompt="Draft a product-first greenfield proposal for a community permit review workspace.",
+    )
+
+    assert intent["title"] == "Community Permit Review Workspace"
+    assert str(intent["product_story"]).startswith("A small city office needs")
+    assert "Community Permit Review Workspace" not in str(intent["product_story"])
+
+
+def test_confirmed_intent_parser_accepts_single_clear_opening_story_sentence() -> None:
+    intent = parse_confirmed_intent_text(
+        """# Community Permit Review Workspace
+
+A neighborhood association needs one place to receive permit requests, collect required documents, route reviews, record decisions, and show residents what changed without losing context in email threads.
+
+## State object that changes through the first journey
+A permit request moves from drafted to submitted, reviewed, approved or rejected, and archived with its evidence and decision history.
+
+## First complete path Odylith should prove before broader scope
+A resident submits one permit request with documents, a reviewer checks completeness, the association records an approval or rejection, and the resident sees the outcome and reason.
+
+## Human actors
+- Resident: submits requests and reads outcomes.
+- Reviewer: checks documents and records decisions.
+- Association manager: monitors pending requests and resolves disputes.
+
+## External systems
+- Email notifications.
+- Document storage.
+- Municipal reference rules.
+
+## Internal systems
+- Request intake service that captures submitted forms and attachments.
+- Review queue that tracks completeness, reviewer assignment, and decision status.
+- Decision record that preserves approval, rejection, reason, actor, and timestamp.
+
+## Critical assumptions
+- This is an internal workflow for one association first.
+
+## Ambiguities
+- Whether residents need public status tracking or private email-only updates.
+
+## Proof boundary
+Release evidence must show one request submitted, reviewed, decided, and visible to the resident with source documents and decision history. It must not claim automated legal compliance or municipal submission.
+""",
+        prompt="Draft a product-first greenfield proposal for a community permit review workspace.",
+    )
+
+    assert intent["title"] == "Community Permit Review Workspace"
+    assert str(intent["product_story"]).startswith("A neighborhood association needs")
+
+
+def test_confirmed_intent_parser_enriches_concise_capability_rows_without_schema_repair() -> None:
+    intent = parse_confirmed_intent_text(
+        """# Field Sensor Review Workspace
+
+A field operations team needs one place to pair a supported sensor, receive readings, explain gaps, show daily status, and let an operator decide whether a site needs attention. The first release proves that sensor data can move from device connection to reviewed status without hiding missing readings, abnormal signals, or unresolved consent and retention decisions.
+
+## State object that changes through the first journey
+The primary state object is a site reading timeline. It starts as unpaired, moves through paired, receiving data, quality checked, summarized, alerted, reviewed, exported or deleted, and records stale or abnormal states without pretending they are trusted measurements.
+
+## First complete path Odylith should prove before broader scope
+An operator pairs one supported device, grants data permissions, receives live readings, views a current dashboard, reviews a daily summary, sees a clear missing-data or abnormal-reading warning, and manages export or deletion for the stored readings.
+
+## Human actors
+- Operator: pairs the device, reads the dashboard, and decides what follow-up is needed.
+- Reviewer: checks whether the reading history and warning state are trustworthy enough to act on.
+- Support lead: diagnoses sync failures and protects sensitive reading data during incidents.
+
+## External systems
+- Sensor hardware, firmware, and calibration source.
+- Device operating system permissions.
+- Optional notification and storage provider.
+
+## Internal systems
+- Device pairing and sync.
+- Sensor ingestion and quality checks.
+- Metric normalization and status generation.
+- Consent, sharing, retention, and deletion.
+- Dashboard, history, alerts, and export.
+
+## Critical assumptions
+- The first release explains readings and status; it does not claim regulated diagnosis or emergency monitoring.
+- The supported device has a stable protocol or fixture contract for the first release.
+
+## Ambiguities
+- Whether data stays local-only or can sync to a cloud account.
+
+## Proof boundary
+Release proof must show one supported device path from pairing through live reading, stale-data handling, summary generation, warning display, privacy control, export, and deletion. It must not claim certified accuracy, diagnosis, emergency response, or broad hardware compatibility without separate validation.
+""",
+        prompt="Draft a product-first greenfield proposal for a field sensor review workspace.",
+    )
+
+    systems = intent["internal_systems"]
+    assert len(systems) == 5
+    assert systems[0].startswith("Device Pairing And Sync — owns the device pairing and sync responsibility")
+    assert all("—" in row for row in systems)
+    assert all("missing or too thin" not in row for row in systems)
+
+
+def test_confirmed_intent_json_splits_labeled_roles_and_sentence_systems() -> None:
+    intent = normalize_confirmed_intent(
+        {
+            "title": "Evidence Review Workspace",
+            "product_story": (
+                "The Evidence Review Workspace helps a review team collect submissions, compare them against "
+                "the accepted policy, capture reviewer notes, and publish a clear decision without losing the "
+                "source material behind that decision. The product value is that every acceptance, rejection, "
+                "or escalation remains tied to the submitted evidence and the reviewer who made the call."
+            ),
+            "state_object": (
+                "The primary state object is a review case that starts as submitted, moves through evidence "
+                "capture, eligibility check, reviewer decision, escalation, and final publication, and keeps "
+                "the source evidence attached throughout the journey."
+            ),
+            "first_path": (
+                "A submitter opens one case, uploads evidence, the review team checks eligibility, a reviewer "
+                "records a decision with a reason, and the system publishes a final status with the supporting "
+                "evidence and unresolved caveats visible."
+            ),
+            "proof_boundary": (
+                "Release proof requires one case to be submitted, reviewed, decided, and published with the "
+                "original evidence, reviewer notes, decision reason, escalation state, and final status all "
+                "visible to a reviewer."
+            ),
+            "human_actors": (
+                "Submitter: provides the source material and needs a clear status. Reviewer: checks evidence, "
+                "records the decision, and explains uncertainty. Operations lead: watches escalations and "
+                "decides whether the process is ready to trust."
+            ),
+            "external_systems": "Email intake, document storage, identity provider, and policy reference material.",
+            "internal_systems": (
+                "Intake Console captures the submitted request, evidence references, source owner, and contact route. "
+                "Evidence Ledger records attachments, reviewer notes, decision reasons, and timestamped state changes. "
+                "Review Queue shows eligibility status, blocked cases, reviewer assignment, and escalation needs. "
+                "Publication Record exposes the final decision, caveats, and evidence links for later review."
+            ),
+            "assumptions": [
+                "The first release proves one review path before broad automation.",
+                "External policy sources remain references, not owned truth.",
+            ],
+            "ambiguities": ["Whether approvals need one reviewer or two reviewers."],
+            "non_goals": ["No automated final decisions in the first release."],
+        },
+        prompt="Draft a product-first greenfield proposal for an evidence review workspace.",
+    )
+
+    assert intent["human_actors"] == [
+        "Submitter: provides the source material and needs a clear status",
+        "Reviewer: checks evidence, records the decision, and explains uncertainty",
+        "Operations lead: watches escalations and decides whether the process is ready to trust",
+    ]
+    assert intent["internal_systems"][0].startswith("Intake Console — captures the submitted request")
+    assert all("Captures The Submitted" not in row for row in intent["internal_systems"])
+
+
+def test_confirmed_create_uses_structured_intent_fields_without_repair_loop(tmp_path: Path) -> None:
+    intent = normalize_confirmed_intent(
+        {
+            "title": "Evidence Review Workspace",
+            "product_story": (
+                "An operations team needs a shared workspace for collecting submitted evidence, checking it "
+                "against an accepted policy, recording the reviewer decision, and publishing a result that a "
+                "later reviewer can understand without reconstructing the context from chat messages, files, "
+                "and disconnected notes."
+            ),
+            "problem": (
+                "Review decisions become unsafe when submitted evidence, policy checks, reviewer notes, and "
+                "published outcomes drift into separate places and no one can explain why a case was accepted, "
+                "rejected, or escalated."
+            ),
+            "customer": (
+                "Review coordinators, assigned reviewers, and operations leads who must make decisions from "
+                "submitted evidence while preserving the reason each decision was made."
+            ),
+            "opportunity": (
+                "Turn one submitted case into a traceable review path before adding automation, bulk intake, "
+                "or live external policy integrations."
+            ),
+            "product_view": (
+                "The first release is useful when a coordinator can open one case, see what evidence arrived, "
+                "route it to a reviewer, capture the review decision, and publish a final status with the "
+                "supporting evidence still visible."
+            ),
+            "state_object": (
+                "A review case moves from submitted to evidence captured, eligibility checked, reviewer "
+                "decision recorded, escalation resolved, and final status published while preserving the "
+                "source evidence and reviewer rationale."
+            ),
+            "first_path": (
+                "A submitter opens one case, uploads evidence, the coordinator checks eligibility, a reviewer "
+                "records a decision with a reason, the operations lead handles one escalation if needed, and "
+                "the system publishes a final status with the supporting evidence visible."
+            ),
+            "proof_boundary": (
+                "Release proof requires one case to be submitted, reviewed, decided, and published with the "
+                "original evidence, policy check result, reviewer rationale, escalation outcome, final status, "
+                "and non-goals visible to a reviewer."
+            ),
+            "success_metrics": [
+                "One submitted case reaches a published final status with source evidence and reviewer rationale visible.",
+                "One rejected or escalated case shows the blocking reason and preserves the evidence that caused it.",
+                "Deferred automation and live integrations remain outside the release proof until separately accepted.",
+            ],
+            "human_actors": [
+                "Submitter: provides source evidence and needs a clear final status.",
+                "Reviewer: checks evidence, records the decision, and explains uncertainty.",
+                "Operations lead: resolves escalations and decides whether the release proof is strong enough.",
+            ],
+            "external_systems": [
+                "Email intake for submitted material.",
+                "Document storage for source files.",
+                "Policy reference material used during review.",
+            ],
+            "component_responsibilities": [
+                "Case Intake Console: captures the submitted request, contact route, evidence references, and current intake status.",
+                "Evidence Ledger: records evidence files, source owner, reviewer notes, decision reasons, and timestamped state changes.",
+                "Review Queue: shows eligibility state, blocked cases, reviewer assignment, and escalation needs.",
+                "Publication Record: publishes the final decision, caveats, and supporting evidence links for later review.",
+            ],
+            "assumptions": [
+                "The first release proves one review path before broad automation.",
+                "External policy sources remain references, not owned truth.",
+            ],
+            "material_ambiguities": [
+                "Whether the first release needs one reviewer or two reviewers before publication.",
+                "Whether submitters need a self-service status page or only a notification.",
+            ],
+            "non_goals": [
+                "No automated final decisions in the first release.",
+                "No live external policy synchronization until the first review path is proven.",
+            ],
+        },
+        prompt="Draft a product-first greenfield proposal for an evidence review workspace.",
+    )
+
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="Draft a product-first greenfield proposal for an evidence review workspace.",
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    greenfield_proposals.validate_host_reasoned_proposal(proposal)
+    encoded = json.dumps(proposal)
+    parent = proposal["backlog"][0]
+
+    assert "Review decisions become unsafe" in parent["problem"]
+    assert any("published final status" in metric for metric in parent["success_metrics"])
+    assert "Case Intake Console" in encoded
+    assert "Evidence Ledger" in encoded
+    assert "component_responsibilities" not in proposal
+    assert "host-written" not in encoded
+    assert "schema repair" not in encoded.casefold()
+    assert "proposal JSON repair" not in encoded
+    assert "state record" not in encoded.casefold()
+    assert "**" not in encoded
+    for component in proposal["components"]:
+        responsibility = str(component["responsibility"])
+        assert len(responsibility.split()) >= 6
+        assert "accepted first release path" not in responsibility
+        assert "records review evidence" not in responsibility
+    for diagram in proposal["diagrams"]:
+        for component in diagram["components"]:
+            description = str(component["description"])
+            assert description.endswith(".")
+            assert "accepted first release path" not in description
+            assert "For the first release" not in description
 
 
 def test_confirmed_intent_rejects_meta_scaffold_instead_of_product_story() -> None:
@@ -520,7 +878,7 @@ def _seed_empty_governance_repo(repo_root: Path) -> None:
     )
 
 
-def _apply_ready_greenfield_fixture(repo_root: Path, prompt: str) -> dict[str, object]:
+def _governed_greenfield_fixture(repo_root: Path, prompt: str) -> dict[str, object]:
     _ = repo_root
     proposal = copy.deepcopy(_host_reasoned_ecommerce_proposal())
     title = " ".join(part[:1].upper() + part[1:] for part in greenfield_proposals.slugify(prompt).split("-"))
@@ -561,13 +919,16 @@ def _apply_ready_greenfield_fixture(repo_root: Path, prompt: str) -> dict[str, o
     return greenfield_proposals.normalize_host_reasoned_proposal(proposal)
 
 
+_apply_ready_greenfield_fixture = _governed_greenfield_fixture
+
+
 def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
     proposal: dict[str, object] = {
         "schema_version": "odylith.greenfield.proposal.v1",
         "mode": "host_reasoned_greenfield_proposal",
         "provider_calls": 0,
         "host_agnostic": True,
-        "write_policy": "proposal_first_confirm_before_apply",
+        "write_policy": "confirmed_intent_before_confirmed_create",
         "intent": {
             "prompt": "Build an ecommerce site",
             "title": "Commerce Launch System",
@@ -1050,7 +1411,7 @@ def _host_project_brief(*, title: str, prompt: str, release: str) -> dict[str, o
                 "path": "Optional proposal review",
                 "command": f"odylith greenfield propose --repo-root . --prompt {json.dumps(prompt)} --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json",
                 "works_in": "shell, Codex, Claude Code",
-                "use_when": "Use only when a reviewer explicitly asks to inspect the apply-ready JSON before apply.",
+                "use_when": "Use only when a reviewer explicitly asks to inspect the governed JSON audit artifact.",
             },
         ],
     }
@@ -1083,7 +1444,7 @@ def _host_project_intelligence(*, title: str, release: str) -> dict[str, object]
         "customization_flow": [
             "Confirm the product story and material ambiguities before proposal expansion.",
             "Review the confirmed proposal for actors, systems, topology, risks, and proof.",
-            "Apply the accepted proposal only after deterministic validation and the governed write gate pass.",
+            "Create accepted records only after deterministic validation and the governed write gate pass.",
             "Start source work only from the accepted child lane with source paths and proof commands.",
         ],
         **layers,
@@ -1585,7 +1946,7 @@ def _host_reasoned_crispr_without_parent() -> dict[str, object]:
     }
 
 
-def test_greenfield_prompt_returns_apply_ready_confirmed_proposal(tmp_path) -> None:
+def test_greenfield_prompt_returns_governed_confirmed_proposal(tmp_path) -> None:
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
         prompt="Draft a greenfield proposal for a municipal permit review workspace",
@@ -1597,7 +1958,7 @@ def test_greenfield_prompt_returns_apply_ready_confirmed_proposal(tmp_path) -> N
     assert proposal["mode"] == "host_reasoned_greenfield_proposal"
     assert proposal["provider_calls"] == 0
     assert proposal["host_agnostic"] is True
-    assert proposal["intent"]["reasoning_mode"] == "odylith_confirmed_apply_ready"
+    assert proposal["intent"]["reasoning_mode"] == "odylith_confirmed_governed_proposal"
     assert proposal["classification"]["method"] == "confirmed_open_world_product_shape"
     assert proposal["intent"]["title"] == "Municipal Permit Review Workspace"
     assert "catalog" not in proposal
@@ -1612,8 +1973,8 @@ def test_greenfield_prompt_returns_apply_ready_confirmed_proposal(tmp_path) -> N
         "Ownership and Proof View",
         "Release Proof Review",
     }
-    assert "Permit file registry" in encoded
-    assert "Zoning check ledger" in encoded
+    assert "Permit File Registry" in encoded
+    assert "Zoning Check Ledger" in encoded
     assert "Release 0.0.1 succeeds when a supervisor can inspect one permit review file" in encoded
     assert "Municipal Permit Review Workspace Workflow Service" not in encoded
     assert proposal["project_brief"]["blueprint_sections"]
@@ -1716,7 +2077,7 @@ def test_greenfield_confirm_intent_shows_direct_apply_handoff(tmp_path, capsys) 
     output = capsys.readouterr().out
     assert "Odylith greenfield proposal: Municipal Permit Review Workspace" in output
     assert "No files changed" in output
-    assert "- apply-ready JSON: built, normalized, validated" in output
+    assert "- governed proposal: built from confirmed intent, normalized, validated" in output
     assert "- mode: host_reasoned_greenfield_proposal" in output
     assert "Project requirements" in output
     assert "Project-first blueprint" in output
@@ -1821,7 +2182,7 @@ def test_greenfield_cli_json_defaults_to_intent_confirmation(tmp_path, capsys) -
     assert "diagrams" not in payload
 
 
-def test_greenfield_cli_json_is_apply_ready_after_intent_confirmation(tmp_path, capsys) -> None:
+def test_greenfield_cli_json_is_governed_audit_after_intent_confirmation(tmp_path, capsys) -> None:
     _write_confirmed_intent(tmp_path)
     rc = greenfield_proposals.main(
         [
@@ -1842,10 +2203,10 @@ def test_greenfield_cli_json_is_apply_ready_after_intent_confirmation(tmp_path, 
     payload = json.loads(capsys.readouterr().out)
     assert payload["mode"] == "host_reasoned_greenfield_proposal"
     assert payload["provider_calls"] == 0
-    assert payload["intent"]["reasoning_mode"] == "odylith_confirmed_apply_ready"
+    assert payload["intent"]["reasoning_mode"] == "odylith_confirmed_governed_proposal"
     encoded = json.dumps(payload)
-    assert "Permit file registry" in encoded
-    assert "Zoning check ledger" in encoded
+    assert "Permit File Registry" in encoded
+    assert "Zoning Check Ledger" in encoded
     assert "Municipal Permit Review Workspace Workflow Service" not in encoded
     assert "reasoning_contract" not in payload
     assert "host_instruction" not in payload
@@ -1870,7 +2231,7 @@ def test_greenfield_validation_rejects_old_generic_risk_boilerplate(tmp_path) ->
 
 
 def test_greenfield_workstreams_require_host_authored_intelligence(tmp_path) -> None:
-    proposal = _apply_ready_greenfield_fixture(tmp_path, "plant sensor")
+    proposal = _governed_greenfield_fixture(tmp_path, "plant sensor")
     brief = proposal["project_brief"]
 
     workflow = next(row for row in proposal["backlog"] if row["title"] == "Define Storefront boundary")
@@ -1911,7 +2272,7 @@ def test_greenfield_workstreams_require_host_authored_intelligence(tmp_path) -> 
 
 
 def test_greenfield_tribunal_uses_domain_specific_visible_actors(tmp_path) -> None:
-    proposal = _apply_ready_greenfield_fixture(tmp_path, "plant sensor")
+    proposal = _governed_greenfield_fixture(tmp_path, "plant sensor")
 
     decision = greenfield_proposals.run_greenfield_tribunal(proposal, release_selector="0.0.1")
     actor_labels = {row["visible_actor"] for row in decision.to_dict()["visible_actors"]}
@@ -1931,7 +2292,7 @@ def test_greenfield_tribunal_uses_domain_specific_visible_actors(tmp_path) -> No
 
 
 def test_greenfield_artifacts_are_bound_to_project_intelligence_root(tmp_path) -> None:
-    proposal = _apply_ready_greenfield_fixture(tmp_path, "DeFi risk sentinel app")
+    proposal = _governed_greenfield_fixture(tmp_path, "DeFi risk sentinel app")
     schema = proposal["project_intelligence"]["schema_version"]
     keys = list(proposal)
 
@@ -1955,7 +2316,7 @@ def test_greenfield_artifacts_are_bound_to_project_intelligence_root(tmp_path) -
 
 
 def test_greenfield_validation_rejects_artifacts_without_project_intelligence_binding(tmp_path) -> None:
-    proposal = _apply_ready_greenfield_fixture(tmp_path, "DeFi risk sentinel app")
+    proposal = _governed_greenfield_fixture(tmp_path, "DeFi risk sentinel app")
     proposal["components"][0].pop("project_intelligence_binding")
 
     with pytest.raises(ValueError, match="project_intelligence_binding"):
@@ -1963,7 +2324,7 @@ def test_greenfield_validation_rejects_artifacts_without_project_intelligence_bi
 
 
 def test_greenfield_tribunal_rejects_unbound_artifact_projection(tmp_path) -> None:
-    proposal = _apply_ready_greenfield_fixture(tmp_path, "DeFi risk sentinel app")
+    proposal = _governed_greenfield_fixture(tmp_path, "DeFi risk sentinel app")
     proposal["diagrams"][0].pop("project_intelligence_binding")
 
     decision = greenfield_proposals.run_greenfield_tribunal(proposal, release_selector="0.0.1")
@@ -1975,7 +2336,7 @@ def test_greenfield_tribunal_rejects_unbound_artifact_projection(tmp_path) -> No
 def test_artifact_enrichment_projects_domain_graph_into_native_artifact_shapes(tmp_path) -> None:
     from odylith.runtime.domain_intelligence.artifact_enrichment import build_artifact_enrichment
 
-    proposal = _apply_ready_greenfield_fixture(tmp_path, "plant sensor")
+    proposal = _governed_greenfield_fixture(tmp_path, "plant sensor")
     row = next(item for item in proposal["backlog"] if item["title"] == "Define Storefront boundary")
 
     enrichment = build_artifact_enrichment(row=row, proposal=proposal)
@@ -1994,7 +2355,7 @@ def test_greenfield_apply_shapes_radar_specs_with_domain_intelligence_substrate(
     monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    proposal = _apply_ready_greenfield_fixture(tmp_path, "plant sensor")
+    proposal = _governed_greenfield_fixture(tmp_path, "plant sensor")
     proposal["intent"]["summary"] = "**Primary reviewer** can compare the accepted path, state, and evidence."
     proposal["backlog"][1]["customer"] = "**Primary reviewer** and __source reviewer__"
     proposal["diagrams"][0]["components"][0]["description"] = "__Surface reviewer__ checks the visible behavior boundary."
@@ -2067,7 +2428,7 @@ def test_greenfield_apply_feeds_project_tab_from_accepted_project_and_tribunal(t
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     prompt = "Build an ecommerce site with checkout recovery"
-    proposal = _apply_ready_greenfield_fixture(tmp_path, prompt)
+    proposal = _governed_greenfield_fixture(tmp_path, prompt)
 
     greenfield_proposals.apply_greenfield_proposal(
         repo_root=tmp_path,
@@ -2134,7 +2495,7 @@ def test_greenfield_apply_feeds_project_tab_from_accepted_project_and_tribunal(t
 def test_greenfield_project_tab_participants_prefer_project_actors_over_internal_tribunal_concepts(
     tmp_path,
 ) -> None:
-    proposal = _apply_ready_greenfield_fixture(tmp_path, "plant sensor")
+    proposal = _governed_greenfield_fixture(tmp_path, "plant sensor")
     proposal["_accepted_project"] = {
         "validation_gate": {
             "visible_actors": [
@@ -2181,7 +2542,7 @@ def test_greenfield_apply_runs_artifact_tribunal_for_each_atlas_diagram(tmp_path
     monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    proposal = _apply_ready_greenfield_fixture(tmp_path, "DeFi risk sentinel app")
+    proposal = _governed_greenfield_fixture(tmp_path, "DeFi risk sentinel app")
     original = greenfield_proposals.scaffold_mermaid_diagram.artifact_tribunal.run_governed_artifact_tribunal
     diagram_payloads: list[dict[str, object]] = []
 
@@ -2407,7 +2768,7 @@ def test_greenfield_apply_reports_validation_issues_in_one_batch(tmp_path) -> No
 
 
 def test_greenfield_validation_rejects_missing_project_first_brief(tmp_path) -> None:
-    proposal = _apply_ready_greenfield_fixture(tmp_path, "warehouse dispatch planning app")
+    proposal = _governed_greenfield_fixture(tmp_path, "warehouse dispatch planning app")
     proposal.pop("project_brief")
 
     with pytest.raises(ValueError) as excinfo:
@@ -2417,7 +2778,7 @@ def test_greenfield_validation_rejects_missing_project_first_brief(tmp_path) -> 
 
 
 def test_greenfield_validation_rejects_missing_project_intelligence(tmp_path) -> None:
-    proposal = _apply_ready_greenfield_fixture(tmp_path, "warehouse dispatch planning app")
+    proposal = _governed_greenfield_fixture(tmp_path, "warehouse dispatch planning app")
     proposal.pop("project_intelligence")
 
     with pytest.raises(ValueError) as excinfo:
@@ -2427,7 +2788,7 @@ def test_greenfield_validation_rejects_missing_project_intelligence(tmp_path) ->
 
 
 def test_project_brief_blocks_coding_rush_without_domain_scaffold(tmp_path) -> None:
-    proposal = _apply_ready_greenfield_fixture(tmp_path, "warehouse dispatch planning app")
+    proposal = _governed_greenfield_fixture(tmp_path, "warehouse dispatch planning app")
     brief = proposal["project_brief"]
     rendered = greenfield_proposals.format_proposal_text(proposal)
 
@@ -2694,7 +3055,7 @@ def test_greenfield_apply_writes_host_authored_component_specs(tmp_path, monkeyp
     monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    proposal = _apply_ready_greenfield_fixture(tmp_path, "Build an ecommerce checkout recovery product")
+    proposal = _governed_greenfield_fixture(tmp_path, "Build an ecommerce checkout recovery product")
 
     result = greenfield_proposals.apply_greenfield_proposal(
         repo_root=tmp_path,
@@ -2898,7 +3259,7 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
     assert (tmp_path / "odylith/runtime/source/accepted-project.v1.json").is_file()
     accepted = (tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8")
-    assert "Permit file registry" in accepted
+    assert "Permit File Registry" in accepted
     assert "Municipal Permit Review Workspace Workflow Service" not in accepted
     assert (tmp_path / "odylith/registry/source/component_registry.v1.json").is_file()
     assert list((tmp_path / "odylith/atlas/source").glob("*.mmd"))

@@ -32,7 +32,7 @@ def build_apply_commands(proposal: Mapping[str, Any]) -> list[str]:
         + prompt_arg
         + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm"
         + release_arg,
-        "# optional review artifact: `greenfield propose --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json` emits the same apply-ready proposal",
+        "# optional audit artifact: `greenfield propose --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json` prints Odylith's governed proposal",
     ]
     if backlog:
         commands.append("# apply will create project workstream records after validation")
@@ -78,7 +78,7 @@ def format_proposal_text(proposal: Mapping[str, Any], *, detail: str = "brief") 
             [
                 "- Use `odylith greenfield create --repo-root . --prompt \"<confirmed request>\" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1` after writing the accepted Product Intent Confirmation; do not search Odylith source.",
                 "",
-                "Apply path after intent confirmation",
+                "Confirmed create after intent confirmation",
             ]
         )
         for step in _contract_rows(handoff.get("allowed_host_steps"), limit=4):
@@ -108,14 +108,14 @@ def format_proposal_text(proposal: Mapping[str, Any], *, detail: str = "brief") 
             lines.extend(["", "Quality bar"])
             for rule in contract.get("quality_bar", []) if isinstance(contract.get("quality_bar"), list) else []:
                 lines.append(f"- {rule}")
-        lines.extend(["", "Apply"])
+        lines.extend(["", "Confirmed create"])
         lines.append("After Product Intent is confirmed, run the confirmed create path; do not ask the operator to inspect proposal JSON.")
         if isinstance(commands, list):
             for command in commands:
                 lines.append("  " + str(command))
         return "\n".join(lines).rstrip() + "\n"
 
-    return _format_apply_ready_proposal_text(proposal)
+    return _format_governed_proposal_text(proposal)
 
 
 def _contract_rows(value: Any, *, limit: int) -> list[str]:
@@ -152,12 +152,12 @@ def _format_proposal_preview_text(
         f"Greenfield proposal preview: {title}",
         f"- source evidence: {source_posture}; No files changed.",
         "- gate: preview only; product records are written only after explicit confirmation",
-        "- proposal authorship: Odylith built the apply-ready proposal from confirmed intent",
+        "- proposal authorship: Odylith built the governed proposal from confirmed intent",
         "",
         "Gate 1 - Interpretation",
     ]
     lines.extend(_preview_project_intent_lines(project_intelligence))
-    lines.extend(["", "Gate 2 - Clarify Before Apply"])
+    lines.extend(["", "Gate 2 - Clarify Before Confirmation"])
     lines.extend(_preview_option_lines(project_brief.get("customization_options"), limit=6))
     question_lines = _preview_question_lines(proposal.get("open_questions"), limit=3)
     if question_lines:
@@ -179,11 +179,11 @@ def _format_proposal_preview_text(
         lines.append("- Architecture review views:")
         lines.extend(f"  - {line}" for line in diagram_lines)
     lines.extend(["", "Gate 4 - Choose Next Action"])
-    lines.append("- Recommended next step: say `Apply this proposal as-is` if Gate 1 and Gate 2 look right.")
-    lines.append("- Revise before apply: answer the Gate 2 choices that are wrong, then rerun `greenfield propose` with the sharper intent.")
+    lines.append("- Recommended next step: confirm this Product Intent if Gate 1 and Gate 2 look right.")
+    lines.append("- Revise before confirmation: answer the Gate 2 choices that are wrong, then rerun `greenfield propose` with the sharper intent.")
     lines.append("- First write point: `greenfield create --confirm`; no product records are written before that.")
-    lines.append("- Apply payload: Odylith builds the apply-ready proposal from the confirmed intent.")
-    lines.append("- Apply after Product Intent confirmation:")
+    lines.append("- Internal normalization: Odylith converts the confirmed intent into governed records without host-side JSON repair.")
+    lines.append("- Confirmed create after Product Intent confirmation:")
     lines.append(f"  {apply_json_command}")
     return "\n".join(lines).rstrip() + "\n"
 
@@ -293,12 +293,12 @@ def _compact_text(value: str, *, max_chars: int = 220) -> str:
     return text[: max_chars - 3].rstrip() + "..."
 
 
-def _format_apply_ready_proposal_text(
+def _format_governed_proposal_text(
     proposal: Mapping[str, Any],
     *,
     request_context: Mapping[str, Any] | None = None,
 ) -> str:
-    """Render the canonical proposal that apply can consume directly."""
+    """Render the governed proposal review without exposing internal normalization work."""
 
     request_context = request_context or {}
     intent = proposal.get("intent", {}) if isinstance(proposal.get("intent"), Mapping) else {}
@@ -310,9 +310,9 @@ def _format_apply_ready_proposal_text(
     lines = [
         f"Odylith greenfield proposal: {title}",
         f"- source evidence: {source_posture}; writes stay confirmation-gated",
-        f"- apply-ready JSON: built, normalized, validated, proposal gate {gate_status}",
+        f"- governed proposal: built from confirmed intent, normalized, validated, proposal gate {gate_status}",
         f"- mode: {proposal.get('mode', 'host_reasoned_greenfield_proposal')}",
-        "- shared artifact: this text and `--format json` are rendered from the same canonical proposal",
+        "- review views: this text and `--format json` are rendered from the same governed proposal",
         f"- provider_calls_by_odylith_cli: {proposal.get('provider_calls', 0)}",
     ]
     summary = str(intent.get("summary", "")).strip()
@@ -437,7 +437,7 @@ def _format_apply_ready_proposal_text(
                     lines.append(line)
             elif str(item).strip():
                 lines.append(f"- {item}")
-    lines.extend(["", "Apply gates"])
+    lines.extend(["", "Write gates"])
     lines.append("- deterministic proposal validation must pass before any source-truth writes")
     lines.append("- final refresh publishes accepted product records after writes")
     lines.extend(["", "Assumptions"])
@@ -450,7 +450,7 @@ def _format_apply_ready_proposal_text(
         rendered = _render_evidence_item(item, "question")
         if rendered:
             lines.append(f"- {rendered}")
-    lines.extend(["", "Apply"])
+    lines.extend(["", "Confirmed create"])
     lines.append("No files changed. Confirmed write path:")
     request_commands = request_context.get("apply_commands", [])
     apply_command = ""
@@ -459,7 +459,7 @@ def _format_apply_ready_proposal_text(
     if not apply_command:
         release_selector = _release_selector(release_plan)
         apply_command = "odylith greenfield create --repo-root . --prompt '<confirmed request>' --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm" + f" --release {shell_quote(release_selector)}"
-    lines.append("  # Odylith builds the apply-ready proposal from the confirmed intent")
+    lines.append("  # Odylith normalizes the confirmed intent internally before applying records")
     lines.append("  " + apply_command)
     commands = proposal.get("apply_commands", [])
     if isinstance(commands, list) and commands:

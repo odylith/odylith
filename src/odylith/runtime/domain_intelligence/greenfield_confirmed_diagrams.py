@@ -269,16 +269,16 @@ def _component_lead(*, label: str, subject: str, kind: str) -> str:
 
 def _component_review_sentence(*, label: str, subject: str, kind: str) -> str:
     if kind == "adapter":
-        return "Reviewers need to see which source supplied the input and what normalized result entered the product"
+        return "Reviewers need to see what this boundary receives from the source, what product record it produces, and which provenance evidence supports the handoff"
     if kind == "client":
-        return "Reviewers need to see what the user saw, submitted, corrected, or approved before downstream state changed"
+        return "Reviewers need to see what the user saw, submitted, corrected, or approved and which product state changed after that action"
     if _is_workflow_like(label, subject):
-        return "Reviewers need to see each responsibility transfer, failure state, recovery action, and final outcome"
+        return "Reviewers need to see each responsibility transfer, failure state, recovery action, and the state or record each handoff produces"
     if _is_record_like(label, subject):
         return "Reviewers need to see the versioned state, source evidence, and decisions that depended on this record"
     if _is_decision_like(label, subject):
         return "Reviewers need to see the inputs, rule version, result, and downstream decision that depended on it"
-    return "Reviewers need to see what this boundary receives, produces, and makes available next"
+    return "Reviewers need to see what this boundary receives, produces, records, and makes available next"
 
 
 def _clean_component_subject(value: str) -> str:

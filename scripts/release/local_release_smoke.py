@@ -228,10 +228,12 @@ _GREENFIELD_CONFIRMED_CREATE_GUARDS = (
     "greenfield create",
     "--intent-file",
     ".odylith/runtime/greenfield/confirmed-intent.md",
+    ".odylith/runtime/greenfield/confirmed-intent.json",
     "--confirm",
     "same visible",
-    "apply-ready",
+    "normalizes",
     "proposal JSON",
+    "parser/schema retries",
 )
 _GREENFIELD_PROJECT_FIRST_GUARDS = (
     "project-first",

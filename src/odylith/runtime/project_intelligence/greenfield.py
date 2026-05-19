@@ -34,14 +34,6 @@ def proposal_from_sources(*, repo_root: Path, shell_payload: Mapping[str, Any]) 
         proposal = _proposal_from_file(path)
         if proposal:
             return proposal
-    for path in (
-        Path(repo_root) / ".odylith" / "runtime" / "greenfield" / "active-proposal.v1.json",
-        Path(repo_root) / "odylith-greenfield-proposal.json",
-        Path(repo_root) / "greenfield-proposal.json",
-    ):
-        proposal = _proposal_from_file(path)
-        if proposal:
-            return proposal
     return {}
 
 

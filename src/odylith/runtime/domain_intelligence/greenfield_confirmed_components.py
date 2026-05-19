@@ -191,7 +191,7 @@ def confirmed_project_brief(
                 "path": "Explicit file review",
                 "command": f"odylith greenfield propose --repo-root . --prompt {shell_quote(prompt)} --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json",
                 "works_in": "shell, Codex, Claude Code",
-                "use_when": "Use only when a reviewer explicitly asks to inspect the apply-ready JSON before apply.",
+                "use_when": "Use only when a reviewer explicitly asks for a governed proposal audit artifact.",
             },
         ],
 }
@@ -265,11 +265,31 @@ def _title_phrase(value: str) -> str:
 def _responsibility(*, name: str, description: str) -> str:
     action, _rationale = _system_action(description)
     if action:
-        return _sentence_case(action)
+        if looks_like_finite_action(action):
+            if re.match(r"^\s*owns?\b", action, flags=re.IGNORECASE):
+                owned = _strip_ownership_verb(action).strip(" .")
+                if owned and owned.casefold() != action.casefold():
+                    return _ensure_responsibility_depth(f"Owns {owned}")
+            return _ensure_responsibility_depth(_sentence_case(action))
+        detail = _strip_ownership_verb(action).strip(" .")
+        if detail:
+            return _ensure_responsibility_depth(_sentence_case(detail))
     detail, _rationale = _system_detail(description)
     if detail:
-        return f"Owns {detail}."
-    return f"Owns the {name.lower()} responsibility named by the accepted product direction."
+        return _ensure_responsibility_depth(_sentence_case(detail))
+    return (
+        f"Owns the {name.lower()} responsibility named by the accepted product direction; "
+        "the first implementation plan must name its inputs, outputs, state changes, and review evidence."
+    )
+
+
+def _ensure_responsibility_depth(value: str) -> str:
+    text = _sentence_case(value)
+    if len(re.findall(r"[A-Za-z0-9]+", text)) >= 6:
+        return text
+    if text.casefold().startswith("owns "):
+        return f"{text} and its reviewable evidence."
+    return f"{text} and records review evidence."
 
 
 def _boundary(*, name: str, description: str, kind: str) -> str:

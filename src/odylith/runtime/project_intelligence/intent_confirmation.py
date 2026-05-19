@@ -50,7 +50,7 @@ def build_product_intent_confirmation(
                 "the few ambiguities that would materially change the first path, risk posture, topology, or proof bar",
                 "the proof boundary: what would count as evidence and what must not be claimed yet",
                 "a clear Next step block with Confirm, Edit, and Reject choices; each choice must say exactly what happens next",
-                "after confirmation, write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md so create can preserve it",
+                "after confirmation, write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md so create can preserve it and normalize structured intent internally",
             ],
             "must_not": [
                 "echo command instructions as the product name",
@@ -69,7 +69,7 @@ def build_product_intent_confirmation(
         },
         "confirmation_gate": {
             "status": "waiting_for_host_authored_product_intent",
-            "proceed": "If the interpretation is right, ask the operator to confirm so Odylith can build the apply-ready proposal, run deterministic validation, and apply accepted project records.",
+            "proceed": "If the interpretation is right, ask the operator to confirm so Odylith can build the governed proposal, run deterministic validation, and apply accepted project records.",
             "edit": "If anything is wrong or missing, ask the operator to reply with corrections before proposal expansion.",
             "reject": "If this is not the intended product, stop and write no records.",
         },
@@ -121,7 +121,7 @@ def format_product_intent_confirmation_text(confirmation: Mapping[str, Any]) -> 
             prompt,
             "",
             "Next step",
-            "- Confirm: if the interpretation is right, write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md, then run greenfield create with --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm so Odylith builds from the accepted narrative, validates it, and applies accepted project records. Do not ask the operator to inspect proposal JSON.",
+            "- Confirm: if the interpretation is right, write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md, then run greenfield create with --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm so Odylith normalizes the accepted narrative internally, validates it, and applies accepted project records. Do not ask the operator to inspect proposal JSON.",
             "- Edit: if the product story, actors, systems, assumptions, first path, or proof boundary is wrong, ask for corrections and rerun this confirmation.",
             "- Reject: if this is not the intended product, stop here and write nothing.",
         ]

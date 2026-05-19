@@ -104,36 +104,35 @@ def build_proposal_contract() -> dict[str, Any]:
             "intent_confirmation_authorizes_apply_attempt": True,
             "contract_use": [
                 "Use greenfield create --confirm as the normal post-confirmation path.",
-                "Use --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json only when an explicit review artifact is requested.",
+                "Let Odylith normalize the confirmed Markdown into structured runtime data; use --confirm-intent --format json only when an explicit audit artifact is requested.",
                 "Do not inspect Odylith source files, Python modules, local examples, or generated runtime files to discover schema fields.",
             ],
             "forbidden_host_steps": [
                 "Do not search src/odylith, .odylith, odylith/skills, or installed bundle files for greenfield schema after intent confirmation.",
                 "Do not create a proposal by copying local examples or template fixtures.",
                 "Do not ask the operator to inspect proposal JSON as the normal approval step.",
-                "Do not write governed records unless confirmed create/apply passes deterministic validation.",
+                "Do not write governed records unless confirmed create passes deterministic validation.",
             ],
             "allowed_host_steps": [
                 "Run greenfield create --confirm from the confirmed product intent and observed source posture.",
                 "Keep product story, actors, systems, workstreams, components, diagrams, risks, proof, and release gates project-specific.",
-                "Let Odylith build the apply-ready proposal; the create/apply command is the validation gate.",
+                "Let Odylith build the governed proposal; the confirmed create command is the validation gate.",
                 "Surface only the human-readable created-record summary or the validation issues.",
             ],
             "canonical_files": [
                 {
-                    "path": "odylith-greenfield-proposal.json",
-                    "purpose": "optional exported apply-ready review artifact when explicitly requested",
+                    "path": ".odylith/runtime/greenfield/confirmed-intent.json",
+                    "purpose": "internal structured form normalized from the operator-confirmed Product Intent Confirmation",
                     "governed_record": False,
                 }
             ],
             "canonical_commands": [
                 "odylith greenfield create --repo-root . --prompt \"<confirmed request>\" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1",
-                "odylith greenfield propose --repo-root . --prompt \"<confirmed request>\" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json > odylith-greenfield-proposal.json",
-                "odylith greenfield apply --repo-root . --proposal-file odylith-greenfield-proposal.json --confirm --release 0.0.1",
+                "odylith greenfield propose --repo-root . --prompt \"<confirmed request>\" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json",
             ],
             "failure_policy": [
                 "If validation rejects the proposal, do not write records; summarize the blocking issues in product language.",
-                "If the operator explicitly asks for a review artifact, export the proposal JSON; otherwise keep it internal.",
+                "If the operator explicitly asks for a JSON audit artifact, print it; otherwise keep structured proposal data internal.",
             ],
         },
         "minimum_content": {
@@ -158,7 +157,7 @@ def build_proposal_contract() -> dict[str, Any]:
             "program": "wave plan with goals, validation gates, component focus, and evidence tier",
             "project_brief": (
                 "a project-first blueprint with customization options, pre-coding checkpoints, coding readiness gates, "
-                "and host-independent commands; it must make clear that greenfield apply accepts project direction before "
+                "and host-independent commands; it must make clear that confirmed create accepts project direction before "
                 "the first source-backed implementation plan starts"
             ),
             "project_intelligence": (

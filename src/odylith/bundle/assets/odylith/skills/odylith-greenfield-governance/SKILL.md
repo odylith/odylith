@@ -32,22 +32,25 @@ architect a new project before source code exists.
    Product Intent Confirmation to
    `.odylith/runtime/greenfield/confirmed-intent.md`, then run
    `greenfield create --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1`
-   with the original prompt. Odylith builds the apply-ready proposal from that
-   accepted narrative, validates it, runs the Tribunal write gate, writes
-   records, and refreshes readable views. Do not search `src/odylith`,
-   `.odylith`, `odylith/skills`, installed bundle files, local examples, or
-   Python modules to discover schema fields after confirmation. Do not
-   hand-author or repair proposal JSON. `greenfield propose --intent-file
+   with the original prompt. Odylith first normalizes that Markdown into
+   `.odylith/runtime/greenfield/confirmed-intent.json`, validates it, runs the
+   Tribunal write gate, writes records, and refreshes readable views. Do not search `src/odylith`.
+   Do not search `.odylith`, `odylith/skills`, installed bundle files,
+   local examples, or Python modules to discover schema fields after confirmation. Do not
+   hand-author, switch to, or repair proposal JSON after confirmation. Do not
+   narrate parser/schema retries or intermediate create-shape failures in
+   operator chat. `greenfield propose --intent-file
    .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format
    json` is only an optional review artifact when explicitly requested.
-6. The operator's Product Intent confirmation authorizes one governed apply
+6. The operator's Product Intent confirmation authorizes one governed create
    attempt. Do not ask the operator to inspect proposal JSON or confirm a
    second time by default. The normal confirmed path is
    `./.odylith/bin/odylith greenfield create --repo-root . --prompt "<operator request>" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1`.
-   If a reviewer asks for JSON, feed the exact generated
-   `greenfield propose --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json` output to
-   `greenfield apply`; never reconstruct it by hand. If validation or Tribunal rejects the proposal, show the
-   blocking issues in product language and write no records.
+   If a reviewer asks for JSON, render
+   `greenfield propose --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json`
+   as an audit artifact only; never reconstruct it by hand and never turn it
+   into a host-side data-shaping step. If validation or Tribunal rejects the proposal,
+   show the blocking issues in product language and write no records.
 7. Preserve the evidence boundary: observed source, user intent, and Odylith
    assumptions must stay distinct. For consumer apps, include proportional
    security, privacy, abuse, accessibility, data-retention, compliance, and
@@ -60,7 +63,7 @@ architect a new project before source code exists.
    workstream, child-boundary strategy, wave-to-workstream policy,
    provisional release selector, decisive assumptions, customization options,
    and coding-readiness gates before asking the operator to confirm or revise.
-   Do not rush to `start B-***`; greenfield apply creates accepted project
+   Do not rush to `start B-***`; confirmed create writes accepted project
    truth, and coding begins only after the operator accepts the product gates
    and a child workstream has a technical plan.
 9. Keep latency low: rely on `greenfield create --confirm` for the

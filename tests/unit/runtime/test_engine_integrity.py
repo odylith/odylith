@@ -70,7 +70,7 @@ def test_engine_integrity_text_report_is_operator_readable() -> None:
     assert "Engine handshakes" in text
     assert "all requested engine areas are inventory-backed" in text
     assert "Engine spine" in text
-    assert "Domain Intelligence - greenfield/project-shape confirmation plus validated apply-ready proposals" in text
+    assert "Domain Intelligence - greenfield/project-shape confirmation plus validated governed proposals" in text
 
 
 def test_engine_integrity_rejects_command_only_activation(monkeypatch) -> None:

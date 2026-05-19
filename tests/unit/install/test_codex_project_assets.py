@@ -201,7 +201,7 @@ def test_claude_backlog_skill_shim_carries_exact_cli_enum_guard() -> None:
         assert "moderate" in text
 
 
-def test_greenfield_guidance_uses_product_intent_then_host_authored_apply_path() -> None:
+def test_greenfield_guidance_uses_product_intent_then_cli_owned_create_path() -> None:
     guidance_paths = (
         REPO_ROOT / "AGENTS.md",
         REPO_ROOT / "odylith" / "AGENTS.md",
@@ -249,6 +249,7 @@ def test_greenfield_guidance_uses_product_intent_then_host_authored_apply_path()
         assert "greenfield create" in text, path
         assert "--intent-file" in text, path
         assert ".odylith/runtime/greenfield/confirmed-intent.md" in text, path
+        assert ".odylith/runtime/greenfield/confirmed-intent.json" in text, path
         assert "--confirm" in text, path
         assert (
             "Do not inspect Odylith source" in text
@@ -256,9 +257,14 @@ def test_greenfield_guidance_uses_product_intent_then_host_authored_apply_path()
             or "Do not search `src/odylith`" in text
             or "do not search Odylith source" in text
             or "rather than searching Odylith source" in text
+            or "do not search `src/odylith`" in compact_text.casefold()
             or "do not search odylith source" in compact_text.casefold()
         ), path
-        assert "apply-ready" in text, path
+        assert "normalizes" in compact_text, path
+        assert (
+            "parser/schema retries" in compact_text
+            or "intermediate create-shape failures" in compact_text
+        ), path
         assert (
             "project-first" in compact_text
             or "product story" in compact_text
@@ -313,9 +319,14 @@ def test_greenfield_guidance_keeps_post_confirmation_contract_internal() -> None
         assert "greenfield create" in normalized, path
         assert "--intent-file" in normalized, path
         assert ".odylith/runtime/greenfield/confirmed-intent.md" in normalized, path
+        assert ".odylith/runtime/greenfield/confirmed-intent.json" in normalized, path
         assert "--confirm" in normalized, path
-        assert "apply-ready" in normalized, path
+        assert "normalizes" in normalized, path
         assert "hand-author" in normalized.casefold() or "hand author" in normalized.casefold(), path
+        assert (
+            "parser/schema retries" in normalized
+            or "intermediate create-shape failures" in normalized
+        ), path
         assert (
             "surface only" in normalized.casefold()
             or "show either created records" in normalized.casefold()

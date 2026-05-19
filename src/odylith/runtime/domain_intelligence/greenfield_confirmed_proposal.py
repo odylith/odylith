@@ -1,4 +1,4 @@
-"""Apply-ready greenfield proposal construction after intent confirmation."""
+"""Governed greenfield proposal construction after intent confirmation."""
 
 from __future__ import annotations
 
@@ -29,7 +29,7 @@ def build_confirmed_greenfield_proposal(
     release_selector: str = "",
     confirmed_intent: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Return the proposal object that ``greenfield apply`` consumes directly."""
+    """Return the governed proposal object built from accepted product intent."""
 
     if not isinstance(confirmed_intent, Mapping):
         raise ValueError("confirmed greenfield proposal requires accepted Product Intent Confirmation data.")
@@ -66,6 +66,11 @@ def build_confirmed_greenfield_proposal(
     assumptions = confirmed_intent_list(confirmed_intent, "assumptions")
     ambiguities = confirmed_intent_list(confirmed_intent, "ambiguities")
     non_goals = confirmed_intent_list(confirmed_intent, "non_goals")
+    problem_summary = confirmed_intent_summary(confirmed_intent, "problem", "")
+    customer_summary = confirmed_intent_summary(confirmed_intent, "customer", "")
+    opportunity_summary = confirmed_intent_summary(confirmed_intent, "opportunity", "")
+    product_view_summary = confirmed_intent_summary(confirmed_intent, "product_view", "")
+    success_metrics = confirmed_intent_list(confirmed_intent, "success_metrics")
     if not (product_story and state_object and first_path and proof_boundary and human_actors and len(internal_systems) >= 2):
         raise ValueError(
             "confirmed greenfield proposal requires product story, state object, first path, proof boundary, "
@@ -99,12 +104,12 @@ def build_confirmed_greenfield_proposal(
         "mode": "host_reasoned_greenfield_proposal",
         "provider_calls": 0,
         "host_agnostic": True,
-        "write_policy": "proposal_first_confirm_before_apply",
+        "write_policy": "confirmed_intent_before_confirmed_create",
         "intent": {
             "prompt": prompt_text,
             "title": product_title,
             "project_slug": product_slug,
-            "reasoning_mode": "odylith_confirmed_apply_ready",
+            "reasoning_mode": "odylith_confirmed_governed_proposal",
             "evidence_tier": "user_intent",
             "summary": (
                 f"{product_story} Release {release} stays bounded to: {first_path}"
@@ -121,8 +126,8 @@ def build_confirmed_greenfield_proposal(
         },
         "greenfield_ux": {
             "mode": "consumer_greenfield_confirmed_path",
-            "write_guardrail": "No product records are written until create or apply receives --confirm.",
-            "next_best_action": f"Apply the accepted {label_lower} first path through release {release}.",
+            "write_guardrail": "No product records are written until confirmed create receives --confirm.",
+            "next_best_action": f"Create accepted {label_lower} project records for release {release}.",
         },
         "assumptions": [
             {
@@ -222,6 +227,11 @@ def build_confirmed_greenfield_proposal(
             product_story=product_story,
             first_path=first_path,
             proof_boundary=proof_boundary,
+            problem=problem_summary,
+            customer=customer_summary,
+            opportunity=opportunity_summary,
+            product_view=product_view_summary,
+            success_metrics=success_metrics,
             human_actors=human_actors,
             internal_systems=internal_systems,
             external_systems=external_systems,
@@ -253,6 +263,11 @@ def build_confirmed_greenfield_proposal(
             product_story=product_story,
             first_path=first_path,
             proof_boundary=proof_boundary,
+            problem=problem_summary,
+            customer=customer_summary,
+            opportunity=opportunity_summary,
+            product_view=product_view_summary,
+            success_metrics=success_metrics,
             human_actors=human_actors,
             internal_systems=internal_systems,
             external_systems=external_systems,
@@ -286,7 +301,9 @@ def build_confirmed_greenfield_proposal(
             + shell_quote(prompt_text)
             + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release "
             + shell_quote(release),
-            "# optional review-only file path: write `odylith greenfield propose --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json` to a file, then pass that file to apply",
+            "# optional review-only audit: odylith greenfield propose --repo-root . --prompt "
+            + shell_quote(prompt_text)
+            + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json",
         ],
     }
     return proposal
@@ -301,6 +318,11 @@ def _project_intelligence(
     product_story: str = "",
     first_path: str = "",
     proof_boundary: str = "",
+    problem: str = "",
+    customer: str = "",
+    opportunity: str = "",
+    product_view: str = "",
+    success_metrics: list[str] | None = None,
     human_actors: list[str] | None = None,
     internal_systems: list[str] | None = None,
     external_systems: list[str] | None = None,
@@ -312,16 +334,20 @@ def _project_intelligence(
     state_lower = state_label.lower()
     evidence_lower = evidence_label.lower()
     story_summary = _short_summary(product_story, limit=360)
+    problem_summary = _problem_text(label=label, problem=problem, product_story=product_story, first_path=first_path)
+    opportunity_summary = _short_summary(opportunity, limit=320) or "The accepted first path becomes the planning boundary for source work and proof."
+    product_view_summary = _short_summary(product_view, limit=320) or "The first release stays narrow until source-backed behavior and review evidence exist."
     first_path_summary = _short_summary(first_path, limit=360)
     proof_summary = _short_summary(proof_boundary, limit=320)
     state_summary = _state_detail_summary(state_object, state_label=state_label, limit=260)
-    actors = _join_items(human_actors) or f"the first {label_lower} operator and reviewer"
+    actors = _short_summary(customer, limit=220) or _join_items(human_actors) or f"the first {label_lower} operator and reviewer"
     internals = _join_system_labels(internal_systems) or f"{state_lower} owner and {evidence_lower} owner"
     externals = _join_items(external_systems) or "explicitly deferred external systems"
     non_goal_text = _join_items(non_goals) or "broad platform automation and live irreversible integrations"
     rows = {
         "intent": [
             story_summary or f"{label} gives a named operator one accountable path instead of an unbounded product outcome.",
+            problem_summary,
             f"Release {release} proves the accepted first path before wider automation, integrations, or scaling claims are allowed: {first_path_summary}",
             f"The product outcome is useful only when {actors} can see what changed, why it changed, and what evidence supports the result.",
         ],
@@ -342,7 +368,7 @@ def _project_intelligence(
         ],
         "operators": [
             f"Actors involved in the first release are {actors}.",
-            f"Apply state-changing actions only through the systems named in the confirmed intent: {internals}.",
+            f"Route state-changing actions only through the systems named in the confirmed intent: {internals}.",
             f"Assemble {evidence_lower} from the first-path result, state replay, validation output, and reviewer decision.",
         ],
         "constraints": [
@@ -355,6 +381,7 @@ def _project_intelligence(
         ],
         "evidence": [
             f"The proof boundary is: {proof_summary}",
+            *[_short_summary(metric, limit=260) for metric in (success_metrics or [])[:3]],
             f"Simulated or sandbox evidence is acceptable for release {release}; live integrations need an explicit later contract.",
         ],
         "decisions": [
@@ -419,7 +446,7 @@ def _project_intelligence(
     return {
         "schema_version": "odylith.greenfield.project_intelligence.v1",
         "purpose": (
-            f"Make the {label_lower} operating reality clear enough that a user can understand the problem, first path, owned state, and proof boundary: {story_summary}"
+            f"Make the {label_lower} operating reality clear enough that a user can understand the problem, first path, owned state, and proof boundary: {story_summary or product_view_summary}"
         ),
         "coding_posture": (
             f"Coding starts only after the {label_lower} first path, state owner, evidence owner, source paths, "
@@ -427,6 +454,8 @@ def _project_intelligence(
         ),
         "control_surface_summary": [
             story_summary or f"{label} helps a named operator complete one accountable path instead of a vague platform promise.",
+            problem_summary,
+            product_view_summary or opportunity_summary,
             f"The first path is: {first_path_summary}",
             f"State ownership centers on {state_lower} and its version history.",
             f"Evidence review centers on {evidence_lower} and release proof: {proof_summary}",
@@ -527,6 +556,19 @@ def _short_summary(value: str, *, limit: int = 280) -> str:
     if " " in clipped:
         clipped = clipped.rsplit(" ", 1)[0].rstrip(" ,;:")
     return clipped + "…"
+
+
+def _problem_text(*, label: str, problem: str, product_story: str, first_path: str) -> str:
+    explicit = _short_summary(problem, limit=360)
+    if explicit:
+        return explicit
+    story = _short_summary(product_story, limit=240)
+    path = _short_summary(first_path, limit=180)
+    if story and path:
+        return f"Without a clear first path, users cannot trust whether {label.lower()} solves the accepted problem: {story} The proof path is {path}."
+    if story:
+        return f"Without source-backed proof, users cannot trust whether {label.lower()} solves the accepted problem: {story}."
+    return f"Without an explicit problem, first path, and proof boundary, {label.lower()} cannot be trusted as implementation-ready."
 
 
 def _state_detail_summary(value: str, *, state_label: str, limit: int = 280) -> str:
@@ -714,14 +756,22 @@ def _backlog(
     non_goals: list[str],
     components: list[dict[str, Any]],
     diagram_slugs: Mapping[str, str],
+    problem: str = "",
+    customer: str = "",
+    opportunity: str = "",
+    product_view: str = "",
+    success_metrics: list[str] | None = None,
 ) -> list[dict[str, Any]]:
     component_ids = [str(row["component_id"]) for row in components]
     state_label = _domain_object_label(state_object, fallback=f"{label} state")
     evidence_label = _domain_object_label(evidence_record, fallback=evidence_record)
     story_summary = _short_summary(product_story, limit=420)
+    problem_summary = _problem_text(label=label, problem=problem, product_story=product_story, first_path=first_path)
+    opportunity_summary = _short_summary(opportunity, limit=360)
+    product_view_summary = _short_summary(product_view, limit=360)
     first_path_summary = _short_summary(first_path, limit=380)
     proof_summary = _short_summary(proof_boundary, limit=340)
-    actors = _join_items(human_actors) or f"{label} users and reviewers"
+    actors = _short_summary(customer, limit=260) or _join_items(human_actors) or f"{label} users and reviewers"
     non_goal_text = _join_items(non_goals) or "broader automation, live integrations, and production-scale decisions"
     primary_component = str(components[0]["label"]) if components else f"{label} first component"
     proof_component = str(components[-1]["label"]) if components else f"{label} proof component"
@@ -729,12 +779,15 @@ def _backlog(
     parent = _backlog_row(
         label=label,
         title=f"Establish {label} Program",
-        problem=story_summary,
+        problem=problem_summary,
         customer=actors,
-        opportunity="Turn the accepted product story into a reviewed first-release boundary before source work starts.",
-        product_view=f"The first release is trustworthy only when the accepted path, {state_label}, and {evidence_label} can be reviewed together.",
+        opportunity=opportunity_summary
+        or "Turn the accepted product story into a reviewed first-release boundary before source work starts.",
+        product_view=product_view_summary
+        or f"The first release is trustworthy only when the accepted path, {state_label}, and {evidence_label} can be reviewed together.",
         first_slice=first_path_summary,
         metrics=[
+            *(success_metrics or [])[:2],
             "Release records preserve the accepted product story before implementation planning.",
             f"Release proof stays inside the accepted boundary for {evidence_label}.",
         ],
@@ -758,9 +811,9 @@ def _backlog(
     workflow = _backlog_row(
         label=label,
         title=workflow_title,
-        problem="The first user path must be built around the accepted product path, not a generic process abstraction.",
+        problem=f"Without the accepted first path in source-backed behavior, {actors} cannot trust that the product solves the confirmed problem: {problem_summary}",
         customer=actors,
-        opportunity="Prove the smallest usable product journey in source-backed behavior.",
+        opportunity=opportunity_summary or "Prove the smallest usable product journey in source-backed behavior.",
         product_view=f"The first implementation plan should explain how {primary_component} works with {second_component} to complete the accepted path.",
         first_slice=first_path_summary,
         metrics=[
@@ -784,7 +837,7 @@ def _backlog(
     boundary = _backlog_row(
         label=label,
         title=boundary_title,
-        problem=f"{label} cannot be trusted if state, evidence, ownership, and review boundaries drift away from the confirmed product reality.",
+        problem=f"{label} cannot be trusted if state, evidence, ownership, and review boundaries drift away from the confirmed problem: {problem_summary}",
         customer=actors,
         opportunity=(
             "Clarify what the product owns, what it consumes, and what stays outside the first release "
@@ -817,7 +870,7 @@ def _backlog(
     proof = _backlog_row(
         label=label,
         title=proof_title,
-        problem=f"Release readiness needs evidence a reviewer can inspect without trusting implementation claims.",
+        problem=f"Release readiness needs evidence a reviewer can inspect without trusting implementation claims; otherwise {actors} cannot verify the accepted result.",
         customer=actors,
         opportunity="Make release readiness depend on inspectable proof, not planning prose.",
         product_view=f"{proof_component} produces or participates in the evidence a reviewer needs before release work can proceed.",

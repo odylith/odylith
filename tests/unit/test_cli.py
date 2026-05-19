@@ -466,8 +466,8 @@ Release 0.0.1 succeeds when a supervisor can inspect one permit review file, see
     assert rc == 0
     assert payload["provider_calls"] == 0
     assert payload["mode"] == "host_reasoned_greenfield_proposal"
-    assert payload["intent"]["reasoning_mode"] == "odylith_confirmed_apply_ready"
-    assert payload["write_policy"] == "proposal_first_confirm_before_apply"
+    assert payload["intent"]["reasoning_mode"] == "odylith_confirmed_governed_proposal"
+    assert payload["write_policy"] == "confirmed_intent_before_confirmed_create"
     assert "reasoning_contract" not in payload
     assert "host_instruction" not in payload
     assert "canonical_proposal" not in payload
@@ -475,6 +475,11 @@ Release 0.0.1 succeeds when a supervisor can inspect one permit review file, see
     assert len(payload["backlog"]) >= 4
     assert len(payload["components"]) >= 3
     assert len(payload["diagrams"]) >= 3
+    structured_intent = intent_file.with_suffix(".json")
+    assert structured_intent.is_file()
+    structured_payload = json.loads(structured_intent.read_text(encoding="utf-8"))
+    assert structured_payload["title"] == "Permit Review Workspace"
+    assert len(structured_payload["internal_systems"]) >= 3
 
 
 def test_component_register_help_forwards_backend_flags(capsys) -> None:

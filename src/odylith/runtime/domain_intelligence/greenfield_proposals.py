@@ -2,9 +2,9 @@
 
 Odylith should not pretend a small built-in catalog can understand every
 possible project the operator may ask for. This module keeps the no-write
-Product Intent Confirmation separate from the confirmed create/apply path, then
-builds, validates, gates, and writes the apply-ready proposal without pushing
-schema repair back onto the host.
+Product Intent Confirmation separate from the confirmed create path, then
+builds, validates, gates, and writes the governed proposal without pushing
+internal normalization work back onto the host.
 """
 
 from __future__ import annotations
@@ -27,6 +27,7 @@ from odylith.runtime.analysis_engine.types import SourceSummary, slugify
 from odylith.runtime.domain_intelligence import greenfield_component_registry_scope
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import load_confirmed_intent_file
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_traceability
@@ -204,7 +205,7 @@ def build_greenfield_proposal(
     release_selector: str = "",
     confirmed_intent: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Return the apply-ready proposal after Product Intent is confirmed.
+    """Return the governed proposal after Product Intent is confirmed.
 
     The no-write ``greenfield propose`` command still asks the host to narrate a
     human Product Intent Confirmation first. After that confirmation, Odylith
@@ -249,7 +250,7 @@ def _load_confirmed_intent_args(args: argparse.Namespace, *, repo_root: Path) ->
     intent_file = str(getattr(args, "intent_file", "") or "").strip()
     if not intent_file:
         raise ValueError(
-            "confirmed greenfield create requires --intent-file with the host-written Product Intent Confirmation. "
+            "confirmed greenfield create requires --intent-file with the operator-confirmed Product Intent Confirmation. "
             "Write the same product story, actors, systems, first path, assumptions, ambiguities, and proof boundary "
             "that the operator confirmed to .odylith/runtime/greenfield/confirmed-intent.md, then rerun with "
             "--intent-file .odylith/runtime/greenfield/confirmed-intent.md. Odylith will not write records from a thin prompt."
@@ -258,7 +259,10 @@ def _load_confirmed_intent_args(args: argparse.Namespace, *, repo_root: Path) ->
     if not path.is_absolute():
         path = repo_root / path
     prompt = str(getattr(args, "prompt", "") or "")
-    return load_confirmed_intent_file(path, prompt=prompt, fallback_title=_intent_title(prompt))
+    intent = load_confirmed_intent_file(path, prompt=prompt, fallback_title=_intent_title(prompt))
+    if path.suffix.lower() != ".json":
+        write_structured_confirmed_intent_file(path, intent)
+    return intent
 
 
 def _next_diagram_id(repo_root: Path) -> str:
@@ -1214,7 +1218,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         "--confirmed-intent-file",
         default="",
         dest="intent_file",
-        help="Markdown/text/JSON file containing the host-written Product Intent Confirmation that the operator accepted.",
+        help="Markdown/text/JSON file containing the operator-confirmed Product Intent Confirmation.",
     )
     apply = subparsers.add_parser("apply", help="Apply a confirmed greenfield product proposal.")
     apply.add_argument("--repo-root", default=".")
@@ -1231,7 +1235,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         "--confirmed-intent-file",
         default="",
         dest="intent_file",
-        help="Markdown/text/JSON file containing the host-written Product Intent Confirmation that the operator accepted.",
+        help="Markdown/text/JSON file containing the operator-confirmed Product Intent Confirmation.",
     )
     create.add_argument("--confirm", action="store_true")
     create.add_argument("--release", default="")

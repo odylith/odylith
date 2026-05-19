@@ -186,12 +186,24 @@ Add a migration observer to the migration-runtime release gate. It scans changed
 - `migration-observer:0.1.12:browser-surfaces:d6d3e6d10f84`
 - `migration-observer:0.1.12:install-managed-assets:1d47c001ac50`
 - `migration-observer:0.1.15:browser-surfaces:4dfe898235a5`
+- `migration-observer:0.1.15:guidance-and-skills:3ec478acf01f`
+- `migration-observer:0.1.15:public-docs-and-release-guidance:65b4ded3f854`
+- `migration-observer:0.1.15:install-managed-assets:983d5161f7f0`
 
 The v0.1.15 browser-surface assessment covers the Radar detail-page template
 change that loads Mermaid only when the page actually contains Mermaid content.
 Existing consumer pages without diagrams no longer fetch the external Mermaid
 asset, while pages with diagrams keep the same lazy initialization behavior;
 headless browser smoke proof covers the changed cross-surface deep-link path.
+
+The v0.1.15 confirmed-greenfield assessment covers managed guidance, public
+docs, and install-managed assets that now keep the human Product Intent
+Confirmation as the visible contract while Odylith normalizes that accepted
+intent into structured runtime data internally. Existing consumer repos do not
+need source or governance-data migration: upgrades refresh the managed guidance
+and skills, confirmed greenfield writes remain explicit and fail-closed, and
+hosts are instructed to report only neutral progress, created records, or final
+validation blockers instead of exposing parser or schema-retry internals.
 
 ## 0.1.12 Upgrade Assessment
 - First-run install and sync overlap: existing 0.1.11 consumer repos can safely
@@ -1808,9 +1820,9 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   columns. Existing consumer-owned source truth does not require migration;
   upgraded repos receive refreshed browser assets and the stricter generator
   behavior.
-- The confirmed greenfield create/apply operator contract refresh is covered by
+- The confirmed greenfield create operator contract refresh is covered by
   `migration-observer:0.1.15:operator-cli-contracts:ee1aa263b477`. The pass keeps
-  confirmed greenfield creation on the Odylith-owned apply-ready path, rejects
+  confirmed greenfield creation on the Odylith-owned governed proposal path, rejects
   host-authored schema repair loops, preserves consumer-lane identity rules, and
   keeps release proof tied to the exact fresh-repo command path. Existing
   consumer-owned source truth does not require migration; upgraded repos receive
@@ -1880,3 +1892,22 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   rules, browser-rendered surfaces, and installed managed assets. Existing
   consumer-owned source truth does not require migration; upgraded repos receive
   the stricter clarity rule through normal managed guidance and asset refresh.
+- The confirmed-intent normalization contract refresh is covered by
+  `migration-observer:0.1.15:guidance-and-skills:81d45595bc48`,
+  `migration-observer:0.1.15:operator-cli-contracts:a8771e9fd968`,
+  `migration-observer:0.1.15:public-docs-and-release-guidance:979f0cfb53c9`,
+  and `migration-observer:0.1.15:install-managed-assets:0d6a73b60cdf`. The pass
+  keeps Product Intent Confirmation Markdown as the host-visible confirmation
+  artifact, moves structured runtime normalization fully inside Odylith, and
+  keeps JSON as an optional audit export rather than a host-authored repair path.
+  Existing consumer-owned source truth does not require migration; upgraded repos
+  receive the corrected guidance, CLI contract, public docs, and managed assets.
+- The confirmed-create richness and quiet-host-progress refresh is covered by
+  `migration-observer:0.1.15:guidance-and-skills:07e1f0667505` and
+  `migration-observer:0.1.15:install-managed-assets:4fa8904b527b`. The pass keeps
+  visible confirmation Markdown as the durable operator artifact, lets Odylith
+  derive structured runtime data internally, carries accepted problem, risk,
+  component responsibility, and proof detail into governed records, and keeps
+  parser/schema retry details out of consumer chat. Existing consumer-owned source
+  truth does not require migration; upgraded repos receive the corrected managed
+  guidance and bundled assets.
