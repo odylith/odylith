@@ -145,11 +145,11 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
             (
                 "What matters now?",
                 f"Release {release} proof boundary" if accepted_project else "Accept or revise the project shape",
-                "Review the release boundary, proof evidence, and first implementation owner before source implementation starts."
+                "Open the first implementation plan next; it should name the source boundary, proof gates, blockers, validation commands, and stop conditions before source changes."
                 if accepted_project
                 else "Implementation should wait until assumptions, first path, and proof gates are reviewed.",
             ),
-            ("What risk matters?", _risk_title(risk_labels or risks), _dashboard_excerpt(risks[0]) if risks else "No explicit proposal risk found."),
+            ("What risk matters?", _risk_title(risk_labels or risks), _risk_answer_body(risks=risks)),
             (
                 "What proves it?",
                 _proof_answer_title(validation=validation, first_path=first_path),
@@ -730,7 +730,7 @@ def _owner_title(project: Mapping[str, Any]) -> str:
         if sep and before.strip():
             head = before
             break
-    return short(head, limit=70)
+    return sentence(head)
 
 
 def _owner_body(project: Mapping[str, Any]) -> str:
@@ -742,8 +742,8 @@ def _owner_body(project: Mapping[str, Any]) -> str:
         before, sep, after = text.partition(marker)
         if sep and after.strip():
             verb = marker.strip().split()[0].capitalize()
-            return short(f"{verb} {after.strip()}", limit=135)
-    return short(text, limit=135)
+            return sentence(f"{verb} {after.strip()}")
+    return sentence(text)
 
 
 def _user_title(
@@ -754,7 +754,7 @@ def _user_title(
 ) -> str:
     actor_titles = [sentence(row[1]) for row in actors if sentence(row[1])]
     if actor_titles:
-        return short(actor_titles[0], limit=78)
+        return actor_titles[0]
     return _owner_title(project)
 
 
@@ -766,10 +766,10 @@ def _user_body(
 ) -> str:
     operator_value = sentence(project_brief.get("operator_value"))
     if operator_value:
-        return short(operator_value, limit=180)
+        return operator_value
     actor_bodies = _dedupe_text([sentence(row[2]) for row in actors if sentence(row[2])])
     if actor_bodies:
-        return short(actor_bodies[0], limit=125)
+        return actor_bodies[0]
     return _owner_body(project)
 
 
@@ -889,12 +889,12 @@ def _change_body(*, project: Mapping[str, Any], intro: str, first_path: str) -> 
     state_body = _state_change_body(project)
     if state_body:
         return state_body
-    clean_purpose = _clean_project_purpose(project.get("purpose"))
-    if clean_purpose:
-        return short(clean_purpose, limit=180)
     path = summarize_first_path(first_path) or sentence(first_path)
     if path:
-        return "The accepted first release has one state change to prove; the detailed scenario below owns the path."
+        return f"The first release should prove this product behavior: {path.rstrip('.')}."
+    clean_purpose = _clean_project_purpose(project.get("purpose"))
+    if clean_purpose:
+        return clean_purpose
     return short(intro, limit=180)
 
 
@@ -1091,6 +1091,15 @@ def _risk_title(risks: Sequence[str]) -> str:
     return _risk_label(_risk_meaning(risks[0]), used=set())
 
 
+def _risk_answer_body(*, risks: Sequence[str]) -> str:
+    if not risks:
+        return "No explicit proposal risk found."
+    risk = _risk_without_embedded_path(risks[0])
+    if risk:
+        return risk
+    return sentence(risks[0])
+
+
 def _host_handoff_prompts(*, title: str, accepted: bool = False) -> list[dict[str, str]]:
     if accepted:
         return [
@@ -1186,10 +1195,10 @@ def _proof_answer_title(*, validation: Sequence[str], first_path: str) -> str:
 def _proof_answer_body(*, validation: Sequence[str], first_path: str) -> str:
     proof = summarize_proof(validation[0] if validation else "", first_path=first_path)
     if proof and not _looks_path_echo(proof, first_path=first_path):
-        return short(proof.rstrip(".") + ".", limit=170)
+        return proof.rstrip(".") + "."
     return (
-        "A reviewer can compare the accepted scenario, resulting state, source evidence, explicit non-goals, "
-        "and release decision without trusting implementation prose."
+        "Release proof should show the accepted path running end to end with reviewer-visible source evidence, "
+        "validation output, explicit non-goals, failure or recovery handling, and an explicit release decision."
     )
 
 

@@ -78,6 +78,41 @@ def test_project_intelligence_blank_install_ignores_generic_orienting_next_actio
     assert "Define the project first" not in html
 
 
+def test_project_answer_summary_renders_as_full_table_without_markdown_noise() -> None:
+    long_body = (
+        "The project owner needs the system to keep the full operational explanation visible, including the "
+        "last sentence that used to disappear when the answer strip was rendered as fixed-width cards."
+    )
+    html = presenter.render_project_html(
+        {
+            "project_intelligence": {
+                "mode": "greenfield",
+                "title": "Example Project",
+                "eyebrow": "Project type: example",
+                "intro": "A small project summary.",
+                "chips": [],
+                "product_story_title": "Product Story",
+                "product_story": {"headline": "Example story", "paragraphs": ["Example story body."]},
+                "sections": ["product_story"],
+                "answers": [
+                    ("Who uses it?", "**Account owner**", long_body),
+                    ("What proves it?", "Reviewer-visible release evidence", "Evidence stays visible in the table."),
+                ],
+            }
+        }
+    )
+
+    assert 'class="project-panel project-answer-strip"' in html
+    assert 'class="project-answer-table"' in html
+    assert "<table><tbody>" in html
+    assert "project-answer-card" not in html
+    assert "**" not in html
+    assert "Who uses it?" in html
+    assert "Account owner" in html
+    assert "last sentence that used to disappear" in html
+    assert "title=" not in html
+
+
 def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path: Path) -> None:
     _write_json(
         tmp_path / "odylith" / "registry" / "source" / "component_registry.v1.json",
@@ -348,9 +383,10 @@ def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path:
     assert "Evidence boundary:" not in html
     assert '<div class="project-prose-lines"><p>Project tab now compiles from source records.</p><p>Current release: 0.2.0: Human Project Entry.</p><p>Worktree: mixed with 2 meaningful and 1 generated changed paths.</p></div>' in html
     assert (
-        '<a class="project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-201" '
-        'data-tooltip="Dynamic Project intelligence" aria-label="Dynamic Project intelligence">B-201</a>'
+        '<a class="project-workstream-chip project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-201" '
+        'data-tooltip="Dynamic Project intelligence" aria-label="Open B-201 in Radar">B-201</a>'
     ) in html
+    assert "<em>" not in html
     assert '<a class="project-deeplink" target="_top" href="?tab=casebook">Casebook</a>' not in html
     assert '<a class="project-deeplink" target="_top" href="?tab=registry">Registry</a>' not in html
     assert "Casebook" in html
@@ -1407,10 +1443,20 @@ def test_project_intelligence_css_uses_shared_surface_typography() -> None:
     assert "--project-type-title-size: 42px;" in css
     assert "--project-type-intro-size: 22px;" in css
     assert "--project-type-hero-eyebrow-size: 15px;" in css
-    assert ".project-answer-card p" in css
-    assert ".project-answer-card h3,\n.project-answer-card b" in css
-    assert ".project-answer-card span" in css
-    assert "repeat(auto-fit, minmax(220px, 1fr))" in css
+    assert ".project-answer-table table" in css
+    assert ".project-answer-table th" in css
+    assert ".project-answer-table td strong" in css
+    assert ".project-answer-table td p" in css
+    assert ".project-workstream-chip" in css
+    assert "var(--surface-workstream-button-padding, 1px 8px)" in css
+    assert "var(--surface-workstream-button-font-size, 12px)" in css
+    assert ".project-label-chip" in css
+    assert ".project-label-chip-success" in css
+    assert ".project-label-chip-warning" in css
+    assert ".project-job-card em" not in css
+    assert ".project-chips span:nth-child" not in css
+    assert ".project-job-workstream .project-deeplink" not in css
+    assert "-webkit-line-clamp" not in css
     assert "repeat(auto-fit, minmax(190px, 1fr))" in css
     assert "grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(240px, 0.58fr);" in css
     assert ".project-proof-grid article > p" in css

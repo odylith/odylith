@@ -71,7 +71,7 @@ def _change_body(source: str, current_focus: str) -> str:
         return f"Work moves from request to action with {_join_lower(qualities)}."
     if qualities:
         return f"Work moves toward an outcome with {_join_lower(qualities)}."
-    return concise_text(current_focus, limit=120)
+    return sentence(current_focus)
 
 
 def _next_title(value: object) -> str:
@@ -112,7 +112,7 @@ def _risk_body(critical_count: int, blockers: Sequence[tuple[str, str, str]]) ->
         noun = "blocker" if critical_count == 1 else "blockers"
         return f"{critical_count} critical {noun} remain open."
     if blockers:
-        return concise_text(blockers[0][1], limit=90, fallback="Open risk remains unresolved.")
+        return sentence(blockers[0][1]) or "Open risk remains unresolved."
     return "No current blocker is recorded."
 
 

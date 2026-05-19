@@ -16,3 +16,7 @@ Scope: applies to all files under `odylith/compass/runtime/`.
 - `odylith/compass/runtime/current.v1.json` and `current.v1.js` are the latest rendered runtime snapshot.
 - `odylith/compass/runtime/history/` preserves active historical runtime snapshots.
 - `odylith/compass/runtime/history/archive/` keeps compressed older daily snapshots for explicit restore.
+- Human-visible Compass copy must be concise, grammatical, and clear about
+  current state, trusted evidence, blockers, and next action. Timeout,
+  unavailable, and degraded states must say what happened and what will happen
+  next without vague or decorative filler.

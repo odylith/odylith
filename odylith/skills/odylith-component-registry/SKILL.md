@@ -32,3 +32,9 @@ Use when refreshing, validating, or auditing the Registry surface and its linked
 - Keep candidate-versus-curated decisions explicit; do not silently promote auto-derived tokens into first-class components.
 - If no component exists for a materially important surface, suggest or create a reviewed `candidate` entry in the same turn; promote it to first-class only when the evidence is strong enough.
 - When a component exists but its living spec is thin, deepen it with technically specific boundary, responsibility, interface, control, validation, and feature-history detail instead of leaving a placeholder.
+- Component specs must be component-specific, not repeated template copy.
+  Every visible spec section should plainly explain what this component owns,
+  what it receives, what it produces, what it refuses to own, which
+  collaborators it depends on, and what proof makes its boundary trustworthy.
+  Broken grammar, clipped text, Markdown residue, and generic "owns X for the
+  accepted path" narration are Registry regressions.

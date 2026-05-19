@@ -291,8 +291,6 @@ def _render_html(*, payload: dict[str, object]) -> str:
       padding-top: 2px;
     }
 
-    .topology-component-strip { border: 1px solid #dbeafe; border-radius: 11px; background: #fff; padding: 8px 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-    .topology-component-strip-label { margin-right: 4px; }
 
     __ODYLITH_EXECUTION_WAVE_CSS__
 
@@ -474,7 +472,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
     }
 
     .row-story { margin-top: 9px; padding-top: 9px; border-top: 1px solid #edf2f7; }
-    .row-story-text { color: #475569; font-size: 12px; line-height: 1.42; margin: 0; overflow-wrap: anywhere; }
+    .row-story-text { color: #475569; font-size: 12px; line-height: 1.42; margin: 0; overflow-wrap: break-word; word-break: normal; }
 
     __ODYLITH_RADAR_CHIP_SURFACE__
     __ODYLITH_RADAR_CHIP_TYPOGRAPHY__
@@ -1372,43 +1370,46 @@ def _render_html(*, payload: dict[str, object]) -> str:
     }
 
     const ROW_STORY_MAX_SENTENCES = 2;
-    const ROW_STORY_MAX_CHARS = 260;
+    const ROW_STORY_MAX_CHARS = 300;
+    const ROW_STORY_SENTENCE_MAX_CHARS = 260;
+    const LOW_VALUE_STORY_PATTERNS = [/\\bgeneric process abstraction\\b/i, /\\baccepted product path\\b/i, /\\bsource-backed behavior\\b/i, /\\bfirst implementation plan\\b/i, /\\bimplementation plan should\\b/i, /\\bfirst release is trustworthy only when\\b/i, /\\brelease readiness depends on\\b/i, /\\brelease readiness\\b/i, /\\bstate changes through the first path\\b/i, /\\bplanning prose\\b/i, /\\bstate boundary\\b/i, /\\breview boundary\\b/i, /\\bproof boundary\\b/i, /\\bbefore source work starts\\b/i, /\\bbefore implementation starts\\b/i, /\\bcoding claims are trusted\\b/i, /\\brelease records preserve\\b/i, /\\brelease readiness needs evidence\\b/i, /\\bwithout trusting implementation claims\\b/i, /\\bcannot be trusted if state,\\s*evidence/i];
 
     function rowStorySummary(row) {
       const story = workstreamStoryParagraph(row);
-      if (!story) return "";
-      return `
-        <div class="row-story" aria-label="Workstream story summary">
-          <p class="row-story-text">${escapeHtml(story)}</p>
-        </div>
-      `;
+      return story ? `<div class="row-story" aria-label="Workstream story summary"><p class="row-story-text">${escapeHtml(story)}</p></div>` : "";
     }
 
-    function workstreamStoryParagraph(row) {
-      return fitStorySentences(workstreamStoryLines(row)).join(" ");
-    }
+    function workstreamStoryParagraph(row) { const lines = fitStorySentences(workstreamStoryLines(row)); return lines.length ? lines.join(" ") : normalizeNarrativeSentence(titleNarrativeSentence(row)); }
 
     function workstreamStoryLines(row) {
-      const candidates = [
-        storySentence(row.problem),
-        storySentence(row.founder_pov),
-        titleNarrativeSentence(row),
-        roleNarrativeSentence(row.customer),
-        storySentence(row.success_metrics),
-        storySentence(row.opportunity),
-        storySentence(row.ordering_rationale),
-      ];
+      const titleLine = titleNarrativeSentence(row);
+      const problemLine = storySentence(row.problem);
+      const expectedLine = expectedOutcomeStorySentence(row);
+      const candidates = isProgramStoryRow(row) ? [problemLine, expectedLine, titleLine, storySentence(row.opportunity), storySentence(row.success_metrics)] : [titleLine, problemLine, storySentence(row.opportunity), expectedLine, storySentence(row.success_metrics), roleNarrativeSentence(row.customer)];
       const lines = [];
       const seen = new Set();
       candidates.forEach((candidate) => {
         const text = normalizeNarrativeSentence(candidate);
-        if (!text) return;
+        if (!text || isLowValueStorySentence(text)) return;
         const key = text.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
         if (!key || seen.has(key)) return;
         seen.add(key);
         lines.push(text);
       });
       return lines;
+    }
+
+    function isProgramStoryRow(row) { const title = compactPlainText(row && row.title); const type = compactPlainText(row && (row.workstream_type || row.type)); return /^(Establish|Govern|Guide|Shape)\\s+.+?\\s+Program$/i.test(title) || /umbrella|program/i.test(type); }
+
+    function expectedOutcomeStorySentence(row) { return storySentence(rationaleValue(row, "expected outcome")); }
+    function rationaleValue(row, wantedLabel) {
+      const wanted = normalizeSearchToken(wantedLabel);
+      const values = Array.isArray(row && row.rationale_bullets) ? row.rationale_bullets : [];
+      for (const raw of values) {
+        const match = compactPlainText(raw).match(/^([^:]{2,80}):\\s*(.+)$/);
+        if (match && normalizeSearchToken(match[1]) === wanted) return match[2];
+      }
+      return "";
     }
 
     function fitStorySentences(lines) {
@@ -1426,10 +1427,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
       return fitted;
     }
 
-    function conciseStoryLine(value) {
-      const sentence = normalizeNarrativeSentence(shortenAtReadableBoundary(value, 150));
-      return sentence.length > 180 ? normalizeNarrativeSentence(shortenAtWordBoundary(sentence, 180)) : sentence;
-    }
+    function conciseStoryLine(value) { const sentence = normalizeNarrativeSentence(shortenAtReadableBoundary(value, ROW_STORY_SENTENCE_MAX_CHARS)); return sentence.length > ROW_STORY_SENTENCE_MAX_CHARS ? normalizeNarrativeSentence(shortenAtWordBoundary(sentence, ROW_STORY_SENTENCE_MAX_CHARS)) : sentence; }
 
     function roleNarrativeSentence(value) {
       const text = firstSemicolonSegment(value);
@@ -1441,27 +1439,18 @@ def _render_html(*, payload: dict[str, object]) -> str:
     }
 
     function conciseNarrativeSentence(value) {
-      let text = firstSemicolonSegment(value)
-        .replace(/^(why now|expected outcome|tradeoff|deferred for now|ranking basis):\\s*/i, "")
-        .replace(/^the first complete path (the product must prove|to prove should be)\\s*:?\\s*/i, "")
-        .trim();
-      text = shortenAtReadableBoundary(text, 150);
+      let text = cleanStoryCandidate(firstSemicolonSegment(value));
+      text = shortenAtReadableBoundary(text, ROW_STORY_SENTENCE_MAX_CHARS);
       const sentence = (text.match(/[^.!?]+[.!?]+|[^.!?]+$/) || [text])[0] || "";
       return normalizeNarrativeSentence(sentence);
     }
 
     function storySentence(value) {
-      let text = compactPlainText(value)
-        .replace(/^(why now|expected outcome|tradeoff|deferred for now|ranking basis):\\s*/i, "")
-        .replace(/^the first complete path (the product must prove|to prove should be)\\s*:?\\s*/i, "")
-        .replace(/\\breleaseable\\b/gi, "releasable")
-        .trim();
+      let text = cleanStoryCandidate(value);
       if (!text) return "";
       const inlineBullets = splitInlineBulletText(text);
-      if (inlineBullets.length) {
-        text = inlineBullets[0];
-      }
-      const firstSentence = (text.match(/[^.!?]+[.!?]+|[^.!?]+$/) || [text])[0] || text;
+      if (inlineBullets.length) text = inlineBullets[0];
+      const firstSentence = firstStorySentence(text);
       let sentence = String(firstSentence || "").replace(/\\s+/g, " ").trim();
       for (const boundary of [", but ", ", while ", "; however ", "; meanwhile "]) {
         const index = sentence.toLowerCase().indexOf(boundary);
@@ -1471,7 +1460,19 @@ def _render_html(*, payload: dict[str, object]) -> str:
         }
       }
       sentence = sentence.replace(/(\\.\\.\\.|…)$/g, "").replace(/[,:;]+$/g, "").trim();
+      if (isLowValueStorySentence(sentence)) return "";
       return normalizeNarrativeSentence(sentence);
+    }
+
+    function cleanStoryCandidate(value) {
+      return compactPlainText(value).replace(/^(why now|expected outcome|tradeoff|deferred for now|ranking basis|first path|proof required):\\s*/i, "").replace(/^the first complete path (the product must prove|to prove should be)\\s*:?\\s*/i, "").replace(/\\breleaseable\\b/gi, "releasable").trim();
+    }
+
+    function firstStorySentence(value) { const text = compactPlainText(value).replace(/\\s+\\d{1,2}\\.\\s+/g, " "); const sentence = text ? (text.match(/[^.!?]+[.!?]+|[^.!?]+$/) || [text])[0] : ""; return String(sentence || text).trim(); }
+
+    function isLowValueStorySentence(value) {
+      const text = compactPlainText(value);
+      return !text || text.length < 18 || LOW_VALUE_STORY_PATTERNS.some((pattern) => pattern.test(text)) || (/^(the|this)\\s+(accepted|proposed|current)\\s+/i.test(text) && /\\b(proposal|direction|plan)\\b/i.test(text)) || (/\\b(state|evidence|ownership|boundary|proof)\\.?$/i.test(text) && /,\\s*\\w+/.test(text));
     }
 
     function shortenAtReadableBoundary(value, maxChars = 180) {
@@ -1506,8 +1507,8 @@ def _render_html(*, payload: dict[str, object]) -> str:
     function shortenAtWordBoundary(value, maxChars) {
       const text = compactPlainText(value);
       if (!text || text.length <= maxChars) return text;
-      const commaIndex = text.lastIndexOf(",", maxChars);
-      if (commaIndex >= 70) return text.slice(0, commaIndex).trim();
+      const sentenceIndex = Math.max(text.lastIndexOf(". ", maxChars), text.lastIndexOf("? ", maxChars), text.lastIndexOf("! ", maxChars));
+      if (sentenceIndex >= 70) return text.slice(0, sentenceIndex + 1).trim();
       return text.slice(0, Math.max(0, maxChars)).replace(/\\s+\\S*$/, "").trim();
     }
 
@@ -1549,19 +1550,19 @@ def _render_html(*, payload: dict[str, object]) -> str:
       const title = compactPlainText(row && row.title);
       const program = title.match(/^(Establish|Govern|Guide|Shape)\\s+(.+?)\\s+Program$/i);
       if (program) {
-        return "Sets the first release story, ownership, and proof bar.";
+        return "Sets the first release story, ownership boundaries, and proof bar before source work begins.";
       }
       const prove = title.match(/^Prove\\s+(.+)$/i);
       if (prove) {
-        return `${prove[1].trim()} must show source-backed evidence before coding claims are trusted.`;
+        return `${prove[1].trim()} is the next owned capability to make concrete: inputs, outputs, failure cases, and validation evidence.`;
       }
       const boundary = title.match(/^Define\\s+(.+?)\\s+Boundary$/i);
       if (boundary) {
-        return `${boundary[1].trim()} decides what this work owns, delegates, and leaves out.`;
+        return `${boundary[1].trim()} needs a clean ownership line: what it owns, what it receives, what it produces, and what stays out.`;
       }
       const proof = title.match(/^Prepare\\s+(.+?)\\s+Release Proof$/i);
       if (proof) {
-        return `${proof[1].trim()} collects the evidence reviewers need before release trust.`;
+        return `${proof[1].trim()} turns the slice into reviewable evidence: scenario result, source records, validation output, non-goals, and decision.`;
       }
       return title;
     }
@@ -3164,7 +3165,6 @@ def _render_html(*, payload: dict[str, object]) -> str:
 
       return `
         <div class="topology-board">
-          ${registryComponentLinksHtml ? `<div class="topology-component-strip"><span class="topology-component-strip-label">Components</span>${registryComponentLinksHtml}</div>` : ""}
           ${visibleRelationItems.length ? `
             <details class="topology-relations-panel">
               <summary>

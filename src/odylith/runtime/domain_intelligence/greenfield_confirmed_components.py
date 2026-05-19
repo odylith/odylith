@@ -6,6 +6,9 @@ import re
 from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.common import display_text
+from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import (
     confirmed_system_description,
     confirmed_system_name,
@@ -72,7 +75,6 @@ def confirmed_components(
         label=label,
         label_slug=label_slug,
         internal_systems=internal_systems,
-        first_path=first_path,
     )
 
 
@@ -200,7 +202,6 @@ def _confirmed_system_components(
     label: str,
     label_slug: str,
     internal_systems: list[str],
-    first_path: str,
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     path_slug = _path_slug(label_slug)
@@ -213,7 +214,7 @@ def _confirmed_system_components(
         else:
             component_id = component_slug
         kind = _system_kind(name, description)
-        responsibility = _responsibility(name=name, description=description, label=label)
+        responsibility = _responsibility(name=name, description=description)
         rows.append(
             {
                 "component_id": _unique_component_id(component_id, rows, index),
@@ -221,10 +222,10 @@ def _confirmed_system_components(
                 "kind": kind,
                 "intended_path": f"src/{path_slug}/{_path_slug(component_slug)}",
                 "responsibility": responsibility,
-                "boundary": _boundary(name=name, description=description, label=label, kind=kind),
-                "dependencies": _dependencies(name=name, description=description, label=label, prior=rows),
-                "interfaces": _interfaces(name=name, description=description, first_path=first_path),
-                "validation": _validation(name=name, description=description, first_path=first_path),
+                "boundary": _boundary(name=name, description=description, kind=kind),
+                "dependencies": _dependencies(name=name, description=description, prior=rows),
+                "interfaces": _interfaces(name=name, description=description, kind=kind),
+                "validation": _validation(name=name, description=description, kind=kind),
                 "status": "planned",
                 "qualification": "candidate",
                 "evidence_tier": "user_intent",
@@ -261,44 +262,80 @@ def _title_phrase(value: str) -> str:
     return " ".join(words)
 
 
-def _responsibility(*, name: str, description: str, label: str) -> str:
+def _responsibility(*, name: str, description: str) -> str:
+    action, _rationale = _system_action(description)
+    if action:
+        return _sentence_case(action)
     detail, _rationale = _system_detail(description)
-    detail = detail or f"the {name.lower()} role in the accepted {label} first release"
-    detail = detail[:1].lower() + detail[1:] if detail else detail
-    return f"Owns {detail} for the accepted first release path."
+    if detail:
+        return f"Owns {detail}."
+    return f"Owns the {name.lower()} responsibility named by the accepted product direction."
 
 
-def _boundary(*, name: str, description: str, label: str, kind: str) -> str:
+def _boundary(*, name: str, description: str, kind: str) -> str:
+    action, rationale = _system_action(description)
+    topic, rationale = _system_detail(description)
+    topic = topic or action or f"the {name.lower()} responsibility"
+    responsibility = _responsibility_reference(action=action, fallback=topic)
     if kind == "client":
-        return f"{name} owns user interaction and visible state for {label}; domain rules stay with the product systems it calls."
+        return (
+            f"{name} owns the user-facing actions and visible states for {responsibility}. "
+            "Domain derivation, persistence, and external-provider truth stay with the product systems it calls."
+        )
     if kind == "adapter":
-        return f"{name} owns external-system translation and provenance for {label}; it does not own the external source of truth."
-    detail, rationale = _system_detail(description)
-    detail = detail or f"the {label} domain responsibility named by the confirmed intent"
+        return (
+            f"{name} owns translation, normalization, and provenance for {responsibility}. "
+            "The upstream provider, imported file, or external system remains outside this boundary."
+        )
     rationale_text = f" {_evidence_sentence(rationale)}" if rationale else ""
-    return f"{name} owns {detail}.{rationale_text} It does not own unrelated product decisions or external-provider truth."
+    return (
+        f"{name} owns state, rules, and handoff for {responsibility}. It produces the records, decisions, or handoffs other components depend on."
+        f"{rationale_text} Presentation, external-provider truth, and adjacent product decisions stay outside unless explicitly assigned."
+    )
 
 
-def _dependencies(*, name: str, description: str, label: str, prior: list[dict[str, Any]]) -> list[str]:
-    deps = [f"Depends on the accepted {label} product direction for user, problem, first path, and proof boundary."]
+def _dependencies(*, name: str, description: str, prior: list[dict[str, Any]]) -> list[str]:
+    action, _action_rationale = _system_action(description)
+    topic, rationale = _system_detail(description)
+    responsibility = _responsibility_reference(action=action, fallback=topic or f"the {name.lower()} responsibility")
+    deps: list[str] = []
     if prior:
-        deps.append(f"Coordinates with {prior[0]['label']} where the first path crosses component boundaries.")
-    _detail, rationale = _system_detail(description)
+        previous = prior[-1]
+        previous_label = str(previous.get("label") or previous.get("component_id") or "the previous component").strip()
+        deps.append(
+            f"Coordinates with {previous_label} so upstream state, evidence, or decisions are available before this component can {_can_clause(action, responsibility)}."
+        )
     if rationale:
         deps.append(_evidence_sentence(rationale))
+    if not deps:
+        deps.append(
+            f"The first implementation plan must name the exact data, event, or call boundary this component uses to {_can_clause(action, responsibility)}."
+        )
     return deps
 
 
-def _interfaces(*, name: str, description: str, first_path: str) -> list[str]:
+def _interfaces(*, name: str, description: str, kind: str) -> list[str]:
+    action, _action_rationale = _system_action(description)
     detail, _rationale = _system_detail(description)
-    detail = detail or f"the {name.lower()} responsibility"
-    return [f"Expose operations for {detail} needed by the accepted first path."]
+    detail = detail or action or f"the {name.lower()} responsibility"
+    responsibility = _responsibility_reference(action=action, fallback=detail)
+    if kind == "client":
+        return [f"Visible action and state contract for {responsibility}, including normal, empty, blocked, and recovery states."]
+    if kind == "adapter":
+        return [f"Input and output contract for {responsibility}, including source identity, payload shape, normalized result, and error state."]
+    return [f"Command, query, or event contract for {responsibility}; includes accepted input, produced state, failure state, and ownership handoff."]
 
 
-def _validation(*, name: str, description: str, first_path: str) -> list[str]:
+def _validation(*, name: str, description: str, kind: str) -> list[str]:
+    action, _action_rationale = _system_action(description)
     detail, _rationale = _system_detail(description)
-    detail = detail or name
-    return [f"Proof shows {detail} works inside the accepted first path, including success, failure, and recovery evidence."]
+    detail = detail or action or name
+    responsibility = _responsibility_reference(action=action, fallback=detail)
+    if kind == "client":
+        return [f"Normal path, blocked path, and recovery state are visible for {responsibility}."]
+    if kind == "adapter":
+        return [f"Accepted input, rejected input, provenance preservation, and repeatable normalized output are proven while this component {_does_clause(action, responsibility)}."]
+    return [f"Valid transition, invalid input rejection, and traceable output are proven while this component {_does_clause(action, responsibility)}."]
 
 
 def _unique_component_id(component_id: str, existing: list[dict[str, Any]], index: int) -> str:
@@ -321,7 +358,6 @@ def _strip_ownership_verb(value: str) -> str:
         "captures": "capture of",
         "computes": "computed result for",
         "derives": "derivation of",
-        "engraves": "engraving of",
         "estimates": "estimate of",
         "exports": "export of",
         "handles": "handling of",
@@ -362,6 +398,48 @@ def _system_detail(value: str) -> tuple[str, str]:
         rationale = ". ".join(part for part in (f"Relevant behavior: {evidence}" if evidence else "", rationale) if part)
     detail = re.sub(r"^(?:the\s+)?accepted\s+", "", detail, flags=re.IGNORECASE).strip(" .")
     return detail, rationale
+
+
+def _system_action(value: str) -> tuple[str, str]:
+    text = str(value or "").strip(" .")
+    if not text:
+        return "", ""
+    parts = re.split(r"\brationale\s*:\s*", text, maxsplit=1, flags=re.IGNORECASE)
+    action = parts[0].strip(" .")
+    rationale = parts[1].strip(" .") if len(parts) > 1 else ""
+    evidence_parts = re.split(r"\brelevant\s+behavior\s*:\s*", action, maxsplit=1, flags=re.IGNORECASE)
+    if len(evidence_parts) > 1:
+        action = evidence_parts[0].strip(" .")
+        evidence = evidence_parts[1].strip(" .")
+        rationale = ". ".join(part for part in (f"Relevant behavior: {evidence}" if evidence else "", rationale) if part)
+    action = re.sub(r"^(?:the\s+)?accepted\s+", "", action, flags=re.IGNORECASE).strip(" .")
+    return action, rationale
+
+
+def _responsibility_reference(*, action: str, fallback: str) -> str:
+    action = str(action or "").strip(" .")
+    fallback = str(fallback or "").strip(" .")
+    if action:
+        return f"this responsibility: {action[:1].lower() + action[1:]}"
+    if fallback:
+        return fallback[:1].lower() + fallback[1:]
+    return "this component responsibility"
+
+
+def _does_clause(action: str, fallback: str) -> str:
+    action = str(action or "").strip(" .")
+    if looks_like_finite_action(action):
+        return action[:1].lower() + action[1:]
+    fallback = str(fallback or "").strip(" .")
+    return f"handles {fallback[:1].lower() + fallback[1:]}" if fallback else "handles its assigned responsibility"
+
+
+def _can_clause(action: str, fallback: str) -> str:
+    action = str(action or "").strip(" .")
+    if looks_like_finite_action(action):
+        return base_action_clause(action)
+    fallback = str(fallback or "").strip(" .")
+    return f"complete {fallback[:1].lower() + fallback[1:]}" if fallback else "complete its assigned responsibility"
 
 
 def _evidence_sentence(value: str) -> str:
@@ -444,8 +522,7 @@ def _title_phrase(value: str) -> str:
 
 
 def _plain_text(value: object) -> str:
-    text = str(value or "").strip()
-    text = text.replace("**", "").replace("__", "").replace("`", "")
+    text = display_text.strip_inline_markdown_emphasis_tokens(value).replace("`", "").strip()
     text = re.sub(r"\s+([,.;:?!])", r"\1", text)
     return " ".join(text.split())
 

@@ -20,6 +20,10 @@ Scope: applies to all files under `odylith/radar/source/`.
   `## Customer`, `## Opportunity`, `## Product View`, and
   `## Success Metrics`. Placeholder text, title-derived boilerplate, and
   generic backlog-create defaults are invalid workstream truth.
+- Human-visible Radar copy must be plain-English, grammatical, non-repetitive,
+  and clear about the problem, customer, intended outcome, and evidence of
+  success. If the reader cannot quickly tell what problem the workstream
+  solves, the record is too thin even if the fields are present.
 - Use `odylith backlog create` with the required grounded core-detail flags for
   new backlog ids. If an existing workstream is hollow, retrofill the source
   record from the bound plan or implementation evidence before refreshing

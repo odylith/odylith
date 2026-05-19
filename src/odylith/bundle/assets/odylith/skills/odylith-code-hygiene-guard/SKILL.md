@@ -40,6 +40,11 @@ ownership, not just file boundaries.
 - Inventory project-surface reach too before editing: source files, hooks,
   prompts, templates, config, docs, generators, and installed assets that may
   be carrying the same slop class under different file extensions.
+- Treat unclear human-visible generated copy as slop. Titles, summaries,
+  cards, diagrams, component specs, workstream descriptions, prompts, hooks,
+  CLI messages, and docs must be simple, easy to understand, legible,
+  grammatically coherent, and clear before any voice or live narration is
+  added.
 - Consolidate generic coercion and normalization helpers into a real shared
   owner instead of adding one more local wrapper.
 - Do not treat a shared helper or kernel as a cleanup ornament. If it lands,
@@ -107,6 +112,9 @@ ownership, not just file boundaries.
   same pass.
 - If the change updates guidance, skills, or shipped mirrors, validate the
   source and bundle copies in the same change.
+- If the change touches human-visible generated content, update the source
+  rule or generator and its regression tests. Do not hand-polish one rendered
+  sample while leaving the unclear-copy class alive.
 - If the pass claims repo-wide or lane-wide cleanup, rerun the requested
   repo-wide structural scan or equivalent inventory before closeout.
 - Repo-wide or lane-wide anti-slop claims require two proof layers: fresh

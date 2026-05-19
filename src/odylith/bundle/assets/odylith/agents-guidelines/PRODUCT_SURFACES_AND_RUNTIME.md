@@ -69,6 +69,13 @@
 - `**Odylith Observation**` and `Odylith Proposal` are shipped product
   surfaces, not host-local flourishes. The same shared core must power them on
   Codex and Claude.
+- Human-visible product surface copy has a minimum clarity floor. Every
+  visible card, heading, status, explanation, prompt, note, and fallback must
+  answer what this is, why it matters, and what the reader should do or trust
+  next in plain language before it tries to be expressive. If the grammar is
+  broken, a title is clipped, Markdown markers leak, or the text depends on
+  internal surface names instead of human meaning, the renderer or generator
+  failed.
 - The live mid-turn hot path for teaser, Observation, and Proposal belongs to
   the intervention engine. `Odylith Chatter` owns the broader narration
   posture and the evidence-backed `Odylith Assist:` closeout or explicit

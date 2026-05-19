@@ -761,6 +761,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "--force --impact-mode full" not in shell_index_html
     guidance_text = guidance_path.read_text(encoding="utf-8")
     assert "local repo truth, not a copy of the Odylith product repo" in guidance_text
+    assert "Generated human-visible content has a non-negotiable clarity floor across all lanes" in guidance_text
     assert "`.claude/`, `.codex/`, `.agents/skills/`, `odylith/AGENTS.md`, `odylith/CLAUDE.md`, the shipped scoped guidance companions under `odylith/**/AGENTS.md` and `odylith/**/CLAUDE.md`, `odylith/agents-guidelines/`, and `odylith/skills/` are Odylith-managed guidance assets" in guidance_text
     assert "Before any substantive repo scan or code change outside trivial fixes, run `./.odylith/bin/odylith start --repo-root .` first" in guidance_text
     assert "keep the active workstream, component, or packet in scope" in guidance_text

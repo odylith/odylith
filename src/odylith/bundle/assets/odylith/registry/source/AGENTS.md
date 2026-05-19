@@ -9,3 +9,7 @@ Registry source is surface-owned truth.
 - In consumer repos diagnosing Odylith product issues, Registry source is read-only: prepare component-ready maintainer evidence instead of editing local Odylith Registry truth.
 - Do not relocate Registry source into a shared docs bucket.
 - Update Registry source through the owning governance flows and `odylith sync`, not by inventing duplicate component-spec ledgers elsewhere.
+- Human-visible Registry copy must be simple, grammatical, and specific to the
+  component. A component spec should explain ownership, boundary, inputs,
+  outputs, collaborators, exclusions, and proof obligations without repeating
+  the same boilerplate across every component.

@@ -174,6 +174,69 @@ def test_repo_governance_docs_preserve_watcher_and_brief_contract_in_bundle_mirr
         assert live_text == mirror_text
 
 
+def test_human_visible_clarity_floor_travels_to_bundle_mirrors() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    checks = (
+        (
+            "odylith/AGENTS.md",
+            "src/odylith/bundle/assets/odylith/AGENTS.md",
+            "Generated human-visible content has a non-negotiable clarity floor across all lanes",
+        ),
+        (
+            "odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md",
+            "src/odylith/bundle/assets/odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md",
+            "grammatically coherent, and clear about the thing it describes",
+        ),
+        (
+            "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md",
+            "src/odylith/bundle/assets/odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md",
+            "what this is, why it matters, and what the reader should do or trust",
+        ),
+        (
+            "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+            "src/odylith/bundle/assets/odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+            "surface names, IDs, lifecycle states, and internal control-plane terms cannot",
+        ),
+        (
+            "odylith/skills/odylith-greenfield-governance/SKILL.md",
+            "src/odylith/bundle/assets/odylith/skills/odylith-greenfield-governance/SKILL.md",
+            "Product meaning comes before artifact mapping",
+        ),
+        (
+            "odylith/skills/odylith-component-registry/SKILL.md",
+            "src/odylith/bundle/assets/odylith/skills/odylith-component-registry/SKILL.md",
+            "Component specs must be component-specific, not repeated template copy",
+        ),
+        (
+            "odylith/radar/source/AGENTS.md",
+            "src/odylith/bundle/assets/odylith/radar/source/AGENTS.md",
+            "Human-visible Radar copy must be plain-English",
+        ),
+        (
+            "odylith/registry/source/AGENTS.md",
+            "src/odylith/bundle/assets/odylith/registry/source/AGENTS.md",
+            "Human-visible Registry copy must be simple",
+        ),
+        (
+            "odylith/atlas/source/AGENTS.md",
+            "src/odylith/bundle/assets/odylith/atlas/source/AGENTS.md",
+            "Human-visible Atlas copy must explain",
+        ),
+        (
+            "odylith/compass/runtime/AGENTS.md",
+            "src/odylith/bundle/assets/odylith/compass/runtime/AGENTS.md",
+            "Human-visible Compass copy must be concise",
+        ),
+    )
+
+    for live_rel, mirror_rel, expected_snippet in checks:
+        live_text = (repo_root / live_rel).read_text(encoding="utf-8")
+        mirror_text = (repo_root / mirror_rel).read_text(encoding="utf-8")
+        assert expected_snippet in live_text
+        assert expected_snippet in mirror_text
+        assert live_text == mirror_text
+
+
 def test_migration_observer_agent_guidance_stays_maintainer_only() -> None:
     repo_root = Path(__file__).resolve().parents[3]
     forbidden_tokens = (

@@ -23,3 +23,7 @@ Scope: applies to all files under `odylith/technical-plans/`.
   --help` is a read-only command guide, not a plan writer. Use
   `odylith governance ...` and `odylith validate plan-* ...` for
   technical-plan maintenance and validation.
+- Human-visible plan copy must be simple, grammatical, and directly useful for
+  starting or reviewing implementation: name the slice, target files or
+  modules, proof gates, validation commands, blockers, and stop conditions
+  without clipped titles or boilerplate.

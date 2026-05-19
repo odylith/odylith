@@ -22,6 +22,23 @@ def _d(value: object) -> str:
     return _deeplink_html(display_text(value))
 
 
+def _project_chip_tone(value: object) -> str:
+    text = display_text(value).casefold()
+    if any(token in text for token in ("risk", "question", "blocker", "unresolved", "missing", "weak", "unproven")):
+        return "warning"
+    if any(token in text for token in ("accepted", "confirmed", "passed", "source", "user", "inferred", "governed")):
+        return "success"
+    return "neutral"
+
+
+def _project_label_chip(value: object) -> str:
+    label = display_text(value)
+    if not label:
+        return ""
+    tone = _project_chip_tone(label)
+    return f'<span class="project-label-chip project-label-chip-{tone}">{_d(label)}</span>'
+
+
 def _sequence(value: object) -> list[Any]:
     return list(value) if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)) else []
 
@@ -55,6 +72,42 @@ def _cards(items: object, class_name: str = "project-card") -> str:
     return "".join(cards)
 
 
+def _answer_table(items: object) -> str:
+    rows: list[str] = []
+    for raw in _sequence(items):
+        item = list(raw) if isinstance(raw, Sequence) and not isinstance(raw, (str, bytes, bytearray)) else []
+        question, title, body = ("", "", "")
+        if len(item) == 2:
+            title, body = item
+        elif len(item) >= 3:
+            question, title, body = item[:3]
+        question = display_text(question)
+        title = display_text(title)
+        body = display_text(body)
+        if not question and not title and not body:
+            continue
+        body_html = ""
+        if title:
+            body_html += f"<strong>{_d(title)}</strong>"
+        if body:
+            body_html += f"<p>{_d(body)}</p>"
+        rows.append(
+            "<tr>"
+            f'<th scope="row">{_d(question or "Project question")}</th>'
+            f"<td>{body_html}</td>"
+            "</tr>"
+        )
+    if not rows:
+        return ""
+    return (
+        '<div class="project-answer-table">'
+        "<table><tbody>"
+        f"{''.join(rows)}"
+        "</tbody></table>"
+        "</div>"
+    )
+
+
 def _use_cases(items: object) -> str:
     rows: list[str] = []
     for raw in _sequence(items):
@@ -73,7 +126,10 @@ def _use_cases(items: object) -> str:
             workstream_id = _workstream_id(item[3] if len(item) > 3 else "")
         title_html = _job_title_html(title=title, workstream_id=workstream_id)
         id_html = _job_workstream_link(workstream_id=workstream_id, title=title)
-        meta_html = f'<div class="project-job-meta">{id_html}<em>{_d(status)}</em></div>' if status or id_html else ""
+        status_html = _project_label_chip(status)
+        meta_html = (
+            f'<div class="project-job-meta">{id_html}{status_html}</div>' if status_html or id_html else ""
+        )
         rows.append(
             '<article class="project-job-card">'
             f"<h3>{title_html}</h3>"
@@ -106,7 +162,7 @@ def _job_workstream_link(*, workstream_id: str, title: object) -> str:
     aria = _e(f"Open {workstream_id} in Radar")
     return (
         '<span class="project-job-workstream">'
-        f'<a class="project-deeplink project-id-deeplink" target="_top" href="{href}" '
+        f'<a class="project-workstream-chip project-deeplink project-id-deeplink" target="_top" href="{href}" '
         f'data-tooltip="{tooltip}" aria-label="{aria}">{_e(workstream_id)}</a>'
         "</span>"
     )
@@ -544,7 +600,7 @@ def _render_blank_readout(items: object) -> str:
 
 
 def _render_blank_project(project: Mapping[str, Any]) -> str:
-    chips = "".join(f"<span>{_d(chip)}</span>" for chip in _sequence(project.get("chips")))
+    chips = "".join(_project_label_chip(chip) for chip in _sequence(project.get("chips")))
     return f"""
 <div class="project-surface project-surface-empty">
   <header class="project-hero project-hero-empty">
@@ -682,7 +738,7 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
     _scenario_label, _scenario_name, scenario_headline, scenario_caption, scenario_body = (
         [*scenario, "", "", "", "", ""]
     )[:5]
-    chips = "".join(f"<span>{_d(chip)}</span>" for chip in _sequence(project.get("chips")))
+    chips = "".join(_project_label_chip(chip) for chip in _sequence(project.get("chips")))
     scenario_html = (
         f"""
       <section class="project-panel project-scenario">
@@ -705,10 +761,11 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
         if _enabled(project, "product_story")
         else ""
     )
+    answer_table = _answer_table(project.get("answers"))
     answers_html = (
-        f"""      <section class="project-panel project-answer-strip"><div class="project-answer-grid">{_cards(project.get("answers"), "project-answer-card")}</div></section>
+        f"""      <section class="project-panel project-answer-strip" aria-label="Project summary table">{answer_table}</section>
 """
-        if _sequence(project.get("answers"))
+        if answer_table
         else ""
     )
     participants_html = (

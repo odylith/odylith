@@ -119,7 +119,7 @@ External ecosystem checks argue against a narrow canned project taxonomy. GitHub
 ## Success Metrics
 Greenfield propose returns a low-latency, provider_calls=0 Product Intent Confirmation request for any vague or precise greenfield prompt.
 Greenfield create confirmed by the operator builds an apply-ready proposal inside Odylith with backlog candidates, program waves, release plan, planned Registry components, draft Atlas Mermaid sources, assumptions, risks, validation strategy, open questions, and exact governed-write evidence.
-Provider-free greenfield scaffolds include a multi-view Atlas suite with mutually traceable workstream/component links; the robot-swarm logistics path emits conflict, safety, telemetry, deployment-boundary, and observability/audit views in addition to baseline topology.
+Provider-free greenfield scaffolds include a multi-view Atlas suite with mutually traceable workstream/component links; complex physical, analytical, and operational domains can add risk, safety, telemetry, deployment-boundary, and observability/audit views without hard-coded domain families.
 Greenfield proposals carry a project-first brief before backlog: direction options, pre-coding checkpoints, coding-readiness gates, and host-independent commands must be visible in text and JSON before apply.
 Greenfield Registry component specs stay component-owned: they must not copy project-level risk/security/compliance posture into every dossier, and each spec must name the component's own boundary, outside-boundary exclusions, collaborators, interfaces, failure modes, proof obligations, first source path, most specific child workstream anchor, and component-local diagram set instead of project-wide topology links.
 Greenfield create/apply writes through owned Radar, Registry, Atlas, release-targeting, and Compass memory paths only after --confirm, preserving user_intent evidence and source-backed truth separation.
@@ -150,8 +150,8 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   host/migration suite, and the 185-test browser matrix without provider calls
   or consumer-lane source claims.
 - 2026-05-08 greenfield Atlas suite hardening proved the provider-free generic
-  scaffold now emits five architecture views and the robot-swarm logistics
-  profile emits ten domain-specific views while validation and Tribunal still
+  scaffold now emits the baseline architecture views and richer accepted
+  scenarios can emit additional domain-specific views while validation and Tribunal still
   pass: `PYTHONPATH=src python -m pytest -q
   tests/unit/runtime/test_greenfield_proposals.py
   tests/unit/runtime/test_greenfield_atlas_contract.py
@@ -166,7 +166,7 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   --target-version 0.1.15 --json` (`blocked_manual_migrations=0`); `git diff
   --check`; `python -m py_compile` for the touched Domain Intelligence modules.
 - 2026-05-08 project-first greenfield UX hardening proved proposal text, JSON,
-  legacy normalization, validation rejection, robot-swarm customization options,
+  legacy normalization, validation rejection, customization option coverage,
   and apply/create closeout now prioritize project shaping before coding:
   `PYTHONPATH=src pytest -q tests/unit/runtime/test_greenfield_proposals.py`
   (`33 passed`). Casebook bug `CB-186` captures the fixed-pending-release UX
@@ -315,9 +315,9 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   scaffold now keeps project identity in intent, slug, summary, and context,
   while diagram titles stay concise and scannable (`System Overview`,
   `First Slice Flow`, `Component Ownership Map`, `Domain State Model`,
-  `Validation And Release Topology`, plus robot-specific view names). The
+  `Validation And Release Topology`, plus domain-specific view names). The
   Tribunal rejects project-title-prefixed diagram titles before confirmed
-  writes. Proof: `CB-195`, focused generic and robot Atlas tests,
+  writes. Proof: `CB-195`, focused Atlas tests,
   compact preview repro, and source-local Tribunal rejection
   test for prefixed host-authored titles.
 - Deepening pass split science/math into targeted subdomains and added fixture
@@ -325,7 +325,7 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   libraries, physics simulation, differential-equation solvers, computational
   biology pipelines, formal proof libraries, statistics/econometrics notebooks,
   math education, geospatial climate analysis, ML experiment platforms, and
-  robotics calibration workflows. Formal-proof proposals now carry proof
+  calibration workflows. Formal-proof proposals now carry proof
   checker/theorem obligations and explicitly avoid numerical tolerance/random
   seed advice.
 - The earlier in-code fit-classification path is superseded for v0.1.13 by
@@ -575,6 +575,16 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   prompt-only confirmed-create fail-closed path, and the consumer-facing
   browser/install asset refresh needed so accepted product narration survives
   into generated governance records.
+  The 2026-05-18 component-spec and live-narration hardening is assessed under
+  `migration-observer:0.1.15:operator-cli-contracts:7086f45abb8e`,
+  `migration-observer:0.1.15:browser-surfaces:6d646859699e`, and
+  `migration-observer:0.1.15:install-managed-assets:fb949a80a583`. The
+  operator contract remains additive and confirmation-gated: hosts still use
+  the same greenfield create/apply flow, while the generated records now have
+  stronger general-purpose quality constraints before they are trusted. Existing
+  consumer source truth remains readable and does not need destructive
+  migration; upgraded browser and bundle assets regenerate cleaner Dashboard,
+  Radar, Registry, and Atlas surfaces from each repo's own records.
   Existing consumer governance truth remains unchanged; upgrades
   refresh managed guidance/assets and keep proposal writes explicit through
   `odylith greenfield create --confirm`.

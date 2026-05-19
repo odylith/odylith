@@ -861,8 +861,13 @@ def test_render_backlog_ui_side_rail_adds_one_paragraph_story_summary() -> None:
     assert 'function workstreamStoryLines(row)' in html
     assert 'function fitStorySentences(lines)' in html
     assert "const ROW_STORY_MAX_SENTENCES = 2;" in html
-    assert "const ROW_STORY_MAX_CHARS = 260;" in html
+    assert "const ROW_STORY_MAX_CHARS = 300;" in html
+    assert "const ROW_STORY_SENTENCE_MAX_CHARS = 260;" in html
+    assert "const LOW_VALUE_STORY_PATTERNS = [" in html
     assert 'function storySentence(value)' in html
+    assert 'function expectedOutcomeStorySentence(row)' in html
+    assert 'function isLowValueStorySentence(value)' in html
+    assert 'function isProgramStoryRow(row)' in html
     assert "function shortenAtReadableBoundary(value, maxChars = 180)" in html
     assert '<div class="row-story" aria-label="Workstream story summary">' in html
     assert '<p class="row-story-text">${escapeHtml(story)}</p>' in html
@@ -872,8 +877,18 @@ def test_render_backlog_ui_side_rail_adds_one_paragraph_story_summary() -> None:
     assert '["Needs", problem || "A clearer bounded problem to solve"]' not in html
     assert '["Proves", proof || "The release result reviewers should be able to trust"]' not in html
     assert ".replace(/\\*\\*/g, \"\")" in html
+    assert "generic process abstraction" in html
+    assert "accepted product path" in html
+    assert "state changes through the first path" in html
+    assert "planning prose" in html
+    assert "state boundary" in html
+    assert "review boundary" in html
+    assert "is the next owned capability to make concrete" in html
+    assert "needs a clean ownership line" in html
+    assert "turns the slice into reviewable evidence" in html
+    assert "must prove its part of the first release" not in html
     assert "storySentence(row.problem)" in html
-    assert "storySentence(row.founder_pov)" in html
+    assert "storySentence(row.founder_pov)" not in html
     assert "storySentence(row.success_metrics)" in html
     assert "const BACKLOG_LIST_ROW_HEIGHT = 214;" in html
     assert ".row-story {" in html
@@ -888,6 +903,9 @@ def test_render_backlog_ui_places_registry_components_inside_topology_board() ->
     assert 'title: "Registry Components"' in html
     assert "registryComponentLinksHtml" in html
     assert "registryComponentCount" in html
+    assert "topology-component-strip" not in html
+    assert "topology-component-strip-label" not in html
+    assert '<span class="topology-component-strip-label">Components</span>' not in html
     assert '<p class="trace-subhead">Registry Components</p>' not in html
 
 

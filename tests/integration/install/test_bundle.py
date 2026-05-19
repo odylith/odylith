@@ -9,6 +9,10 @@ def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     assert "compact product-first interpretation" in agents_text
     assert "runs the Tribunal write gate" in agents_text
     assert "rerender only the owned surface" in agents_text
+    assert "Generated human-visible content has a non-negotiable clarity floor across all lanes" in agents_text
+    anti_slop_text = (root / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md").read_text(encoding="utf-8")
+    assert "grammatically coherent, and clear about the thing it describes" in anti_slop_text
+    assert "plain English before it tries to be expressive" in anti_slop_text
     assert "Codex-Only Optimizations When Supported" in (root / "agents-guidelines" / "CODEX_HOST_CONTRACT.md").read_text(encoding="utf-8")
     assert "./.odylith/bin/odylith codex compatibility --repo-root ." in (root / "README.md").read_text(encoding="utf-8")
     assert "./.odylith/bin/odylith radar refresh --repo-root ." in (root / "README.md").read_text(encoding="utf-8")

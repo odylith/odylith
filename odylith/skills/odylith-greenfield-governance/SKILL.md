@@ -14,6 +14,11 @@ architect a new project before source code exists.
    which ambiguities change the proposal, and a clear next-step block:
    confirm to expand into the proposal contract, edit to correct the
    interpretation, or reject to stop with no records written.
+   The confirmation and every created record must pass the clarity floor first:
+   simple, easy to understand, legible, grammatically coherent, and clear.
+   Product meaning comes before artifact mapping; clipped titles, malformed
+   Markdown, repeated generic copy, or internal Odylith surface dumps are
+   invalid greenfield narration.
    It must not generate backlog, Registry, Atlas, release waves, validation
    obligations, or proposal JSON before the operator confirms the
    interpretation.

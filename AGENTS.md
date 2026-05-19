@@ -16,6 +16,7 @@ Paths under `odylith/` follow `odylith/AGENTS.md`; this root block is the hard-l
 - For quick visibility after a narrow truth change, rerender only the owned surface: `odylith radar refresh`, `odylith registry refresh`, `odylith casebook refresh`, `odylith atlas refresh`, or `odylith compass refresh`; use `odylith compass deep-refresh` for brief settlement and `odylith sync` for the broader governance lane.
 - Keep startup, Context Engine, Execution Engine, memory substrate, Tribunal, Intervention Engine, observers, governance, subagent routing, Surface DAGs, delivery, analysis, and migration-breakage observation active. Optimize by routing, caching, batching, and shortening prompt surface, not by disabling engines.
 - Treat AI slop as a regression. Apply across lanes, hosts, languages, and any codebase or project surface. Move ownership, not just files; partial shared-kernel adoption is still incomplete; if the smell remains, the pass is incomplete. Prose-only hardening is incomplete. Repo-wide claims need fresh behavior proof for the touched slice and a fresh structural inventory for the claimed scope. Browser proof requires the headless browser matrix across normal, empty/fallback, and degraded or error states. Rule: `odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md`; use `odylith/skills/odylith-code-hygiene-guard/SKILL.md` under quality pressure.
+- Generated human-visible content has a non-negotiable clarity floor across all lanes: simple, legible, grammatical, clear. Broken visible copy is AI slop; fix the source rule or generator.
 - For guidance behavior pressure cases or discipline pressure, use `odylith validate guidance-behavior --repo-root .`, `odylith benchmark --profile quick --family guidance_behavior`, quick discipline benchmarks, and `odylith discipline status/check/explain`; Discipline hot paths must not call host models, providers, subagents, broad scans, full validation, or projection expansion.
 - A plain `Odylith, help` request is the CLI help fast path. Use the first available `odylith --help` command and print stdout only.
 - A plain `Odylith, show me what you can do` request is the advisory `odylith show` repo-capability demo. It is not a request to prove intervention UX, diagnose install posture, run `start`, run `doctor`, explain missing launcher state, or build a sample application. Print first available show stdout only. If Odylith is not installed in the current folder, say so; do not substitute generic host work.
@@ -124,6 +125,9 @@ Odylith is a product repo, not a host repo.
 
 ## Anti-Slop Non-Negotiables
 - Treat AI slop as a regression in this repository.
+- Human-visible generated content must be simple, easy to understand, legible,
+  grammatically coherent, and clear before any live narration, voice, or
+  stylistic embellishment is added.
 - The bar applies to any codebase or project surface: services, libraries,
   apps, CLIs, infra glue, scripts, docs, prompts, hooks, templates, config,
   and generated assets all count.

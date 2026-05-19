@@ -20,6 +20,10 @@ odylith sync --repo-root . --force
 
 - Follow the canonical brief contract in [Briefs Voice Contract](../registry/source/components/briefs-voice-contract/CURRENT_SPEC.md).
 - Keep Compass narrative concise, execution-meaningful, grounded in local repo truth, and in friendly grounded maintainer narration.
+- Compass brief, status, unavailable-state, timeout, and dashboard copy must
+  be simple, legible, grammatically coherent, and clear before it is voiceful.
+  Rewrite any clever, clipped, or dashboard-wise line into plain language that
+  tells the reader what changed, what is trusted, and what should happen next.
 - `LLM writes, local code thinks` is the brief-generation rule. Build the
   winning local story first; do not ask the provider to rediscover it from a
   raw packet.

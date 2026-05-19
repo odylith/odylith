@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common.prose_grammar import finite_action_clause
 from odylith.runtime.governance import artifact_tribunal
 from odylith.runtime.governance import component_spec_rendering
 from odylith.runtime.governance import owned_surface_refresh
@@ -103,54 +104,7 @@ def _finite_responsibility_clause(value: str) -> str:
     text = component_spec_rendering.sentence_fragment(value)
     if not text:
         return ""
-    head, separator, tail = text.partition(" ")
-    verb = head.strip(",:;").casefold()
-    replacements = {
-        "own": "owns",
-        "serve": "serves",
-        "provide": "provides",
-        "track": "tracks",
-        "validate": "validates",
-        "render": "renders",
-        "refresh": "refreshes",
-        "capture": "captures",
-        "coordinate": "coordinates",
-        "derive": "derives",
-        "enforce": "enforces",
-        "hold": "holds",
-        "manage": "manages",
-        "map": "maps",
-        "write": "writes",
-    }
-    if verb in replacements and separator:
-        return f"{replacements[verb]} {tail.strip()}"
-    finite_verbs = {
-        "accepts",
-        "binds",
-        "captures",
-        "connects",
-        "coordinates",
-        "derives",
-        "enforces",
-        "handles",
-        "holds",
-        "manages",
-        "maps",
-        "owns",
-        "provides",
-        "refreshes",
-        "renders",
-        "serves",
-        "supports",
-        "tracks",
-        "validates",
-        "writes",
-    }
-    if verb in finite_verbs:
-        return f"{text[:1].lower()}{text[1:]}" if text else ""
-    if separator:
-        return f"owns {text[:1].lower()}{text[1:]}"
-    return f"{text[:1].lower()}{text[1:]}" if text else ""
+    return finite_action_clause(text, default_verb="owns", default_single_token=False)
 
 
 def _kind_article(kind: str) -> str:

@@ -125,6 +125,46 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
     assert page.locator(".project-state-grid").count() == 0
     assert page.locator(".project-scenario").count() == 0
     assert page.locator('.project-job-card a[href*="tab=radar"][href*="workstream="]').count() >= 1
+    assert page.locator(".project-job-card em").count() == 0
+
+    chip_contract = page.locator(".project-job-card .project-workstream-chip").first.evaluate(
+        """(node) => {
+            const style = window.getComputedStyle(node);
+            return {
+              borderRadius: style.borderRadius,
+              fontSize: style.fontSize,
+              fontWeight: style.fontWeight,
+              paddingTop: style.paddingTop,
+              paddingRight: style.paddingRight,
+            };
+        }"""
+    )
+    assert chip_contract == {
+        "borderRadius": "999px",
+        "fontSize": "12px",
+        "fontWeight": "500",
+        "paddingTop": "1px",
+        "paddingRight": "8px",
+    }
+    label_contract = page.locator(".project-job-card .project-label-chip").first.evaluate(
+        """(node) => {
+            const style = window.getComputedStyle(node);
+            return {
+              borderRadius: style.borderRadius,
+              fontSize: style.fontSize,
+              fontWeight: style.fontWeight,
+              paddingTop: style.paddingTop,
+              paddingRight: style.paddingRight,
+            };
+        }"""
+    )
+    assert label_contract == {
+        "borderRadius": "4px",
+        "fontSize": "12px",
+        "fontWeight": "700",
+        "paddingTop": "4px",
+        "paddingRight": "10px",
+    }
 
     handoff_layout = page.locator(".project-host-handoff").evaluate(
         """(node) => {

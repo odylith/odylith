@@ -7,6 +7,12 @@
 - Surface updates should be driven from grounded packet output, not freehand heuristics.
 - The right goal is truthful closeout with less operator effort, not more narration.
 - If a surface lacks enough evidence, keep the fail-closed posture and ask the operator to widen.
+- Human-visible governance copy must be simple, grammatical, and directly
+  useful before it is clever or voiceful. Radar, Registry, Atlas, Compass,
+  Casebook, technical plans, release notes, prompts, and CLI messages must
+  explain the work, boundary, evidence, risk, and next action in human terms;
+  surface names, IDs, lifecycle states, and internal control-plane terms cannot
+  stand in for that explanation.
 
 ## Source Contracts
 - Use the local source contracts under `odylith/` as the operational authority for their surfaces:

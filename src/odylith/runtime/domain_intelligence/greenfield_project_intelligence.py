@@ -148,7 +148,7 @@ def render_project_intelligence_section(value: Any, *, preview: bool = False) ->
     if purpose:
         lines.append(purpose)
     if coding_posture:
-        lines.extend(["", f"**Coding posture:** {coding_posture}"])
+        lines.extend(["", f"Coding posture: {coding_posture}"])
     _append_layer(lines, "Product Requirements", value.get("control_surface_summary"), limit=5 if preview else 0)
     _append_layer(lines, "Customization Flow", value.get("customization_flow"), limit=5 if preview else 0)
     for key in PROJECT_INTELLIGENCE_LAYERS:

@@ -8,6 +8,9 @@ or asks to create one or more Radar backlog workstreams.
 2. Gather grounded core detail before authoring: Problem, Customer,
    Opportunity, Product View, and Success Metrics. Do not use title-derived
    boilerplate, `TBD`, `Details.`, or other placeholders.
+   The visible workstream title and body must be simple, easy to understand,
+   legible, grammatically coherent, and clear about the problem being solved,
+   who benefits, what changes, and what evidence would prove success.
    Exception: when the user asks for a new greenfield project from intent
    only, use `odylith greenfield propose` first for Product Intent
    Confirmation. Only after the operator confirms the interpretation should

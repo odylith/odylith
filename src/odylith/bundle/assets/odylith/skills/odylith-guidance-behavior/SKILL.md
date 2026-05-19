@@ -27,6 +27,11 @@ signals, and benchmark sovereignty.
   stale live/source-bundle mirrors for guidance docs, skills, host shims,
   governed program/spec truth, and benchmark corpora before consumer or
   dogfood lanes can claim the guidance behavior contract is green.
+- Treat the human-visible clarity floor as guidance behavior. Shared
+  guidance, installed guidance, skills, and shipped mirrors must all say that
+  generated content must be simple, easy to understand, legible,
+  grammatically coherent, and clear before any voice or live narration is
+  added.
 
 ## Rules
 - Keep the full validator explicit and out of the live hot path.

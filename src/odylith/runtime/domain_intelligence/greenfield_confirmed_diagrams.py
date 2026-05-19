@@ -6,7 +6,10 @@ import re
 from collections.abc import Mapping
 from typing import Any
 
+from odylith.runtime.common import display_text
 from odylith.runtime.common import mermaid_text
+from odylith.runtime.common.prose_grammar import finite_action_clause
+from odylith.runtime.common.prose_grammar import looks_like_action_clause
 
 
 def confirmed_diagrams(
@@ -127,7 +130,7 @@ def confirmed_diagrams(
             "kind": "flowchart",
             "summary": (
                 f"Shows which product systems own the first release for {label} and which dependencies stay outside. "
-                "Readers can see where state, evidence, and handoffs belong before implementation expands."
+                "Readers can see where state, evidence, and responsibility transfers belong before implementation expands."
             ),
             "read_guide": (
                 "Read this as an ownership boundary map. Product-owned components sit inside the release boundary; "
@@ -217,16 +220,152 @@ def _component_description(row: Mapping[str, Any]) -> str:
     responsibility = str(row.get("responsibility", "")).strip()
     boundary = str(row.get("boundary", "")).strip()
     label = str(row.get("label", "")).strip() or "Component"
-    responsibility_text = _responsibility_fragment(label=label, value=responsibility or boundary)
-    if responsibility_text:
-        description = _sentence(f"Owns {responsibility_text}")
-    else:
-        description = _sentence("Owns a named responsibility in the accepted first release path")
-    return description
+    kind = _component_kind(row=row, label=label)
+    responsibility_text = _responsibility_fragment(label=label, value=responsibility)
+    boundary_text = _responsibility_fragment(label=label, value=boundary)
+    subject = _component_subject(label=label, responsibility=responsibility_text, boundary=boundary_text)
+    lead = _component_lead(label=label, subject=subject, kind=kind)
+    review = _component_review_sentence(label=label, subject=subject, kind=kind)
+    return f"{_sentence(lead)} {_sentence(review)}"
+
+
+def _component_kind(*, row: Mapping[str, Any], label: str) -> str:
+    kind = str(row.get("kind", "")).strip().casefold()
+    label_text = label.casefold()
+    if re.search(r"\b(adapter|connector|integration|provider|import|source)\b", label_text):
+        return "adapter"
+    if re.search(r"\b(client|surface|ui|portal|dashboard|app|view)\b", label_text):
+        return "client"
+    if kind in {"adapter", "client", "service"}:
+        return kind
+    return "service"
+
+
+def _component_subject(*, label: str, responsibility: str, boundary: str) -> str:
+    for candidate in (responsibility, boundary):
+        subject = _clean_component_subject(candidate)
+        if subject and not _shallow_component_subject(subject, label=label):
+            return subject
+    return _label_subject(label)
+
+
+def _component_lead(*, label: str, subject: str, kind: str) -> str:
+    if _looks_like_action_clause(subject):
+        return finite_action_clause(subject)
+    if kind == "adapter":
+        if _is_workflow_like(label, subject):
+            return f"Coordinates {subject} across outside systems and product-owned records while preserving provenance"
+        return f"Translates {subject} inputs into product-owned records and preserves source provenance"
+    if kind == "client":
+        return f"Presents {subject} to users and captures the action or decision the product needs next"
+    if _is_record_like(label, subject):
+        return f"Maintains {subject} as a product-owned record with reviewable history"
+    if _is_workflow_like(label, subject):
+        return f"Coordinates {subject} so responsibility transfers, blocked states, and recovery paths stay visible"
+    if _is_decision_like(label, subject):
+        return f"Owns the rules or calculations for {subject}"
+    return f"Owns {subject}"
+
+
+def _component_review_sentence(*, label: str, subject: str, kind: str) -> str:
+    if kind == "adapter":
+        return "Reviewers need to see which source supplied the input and what normalized result entered the product"
+    if kind == "client":
+        return "Reviewers need to see what the user saw, submitted, corrected, or approved before downstream state changed"
+    if _is_workflow_like(label, subject):
+        return "Reviewers need to see each responsibility transfer, failure state, recovery action, and final outcome"
+    if _is_record_like(label, subject):
+        return "Reviewers need to see the versioned state, source evidence, and decisions that depended on this record"
+    if _is_decision_like(label, subject):
+        return "Reviewers need to see the inputs, rule version, result, and downstream decision that depended on it"
+    return "Reviewers need to see what this boundary receives, produces, and makes available next"
+
+
+def _clean_component_subject(value: str) -> str:
+    text = _compact_text(value).strip(" .")
+    if not text:
+        return ""
+    text = re.split(r"\b(?:design pressure|domain evidence|relevant behavior)\s*:", text, maxsplit=1, flags=re.IGNORECASE)[0]
+    text = text.split(";", 1)[0]
+    text = re.sub(r"\bfor\s+the\s+accepted\s+first\s+(?:release\s+)?path\b", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\band\s+proof\s+boundary\b", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bneeded\s+by\s+the\s+accepted\s+first\s+path\b", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bthe\s+accepted\s+first\s+path\b", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\baccepted\s+first\s+release\s+path\b", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s+", " ", text).strip(" .,:;")
+    return _lower_domain_phrase(_strip_component_type_suffix(text), preserve_mixed_case=True)
+
+
+def _shallow_component_subject(subject: str, *, label: str) -> bool:
+    text = subject.casefold().strip(" .")
+    if not text:
+        return True
+    if text == label.casefold():
+        return True
+    if re.fullmatch(r"(?:this\s+)?(?:component\s+)?responsibility", text):
+        return True
+    return not re.search(r"[a-z0-9]", text)
+
+
+def _label_subject(label: str) -> str:
+    text = _compact_text(label).strip(" .")
+    return _lower_domain_phrase(_strip_component_type_suffix(text) or label, preserve_mixed_case=False)
+
+
+def _strip_component_type_suffix(value: str) -> str:
+    return re.sub(
+        r"\b(?:adapter|service|engine|surface|client|module|system|component)\b$",
+        "",
+        str(value or ""),
+        flags=re.IGNORECASE,
+    ).strip(" .")
+
+
+def _lower_domain_phrase(value: str, *, preserve_mixed_case: bool) -> str:
+    words = []
+    for word in str(value or "").strip().split():
+        if word.isupper() and len(word) > 1:
+            words.append(word)
+        elif preserve_mixed_case and any(char.isupper() for char in word[1:]):
+            words.append(word)
+        else:
+            words.append(word[:1].lower() + word[1:])
+    return " ".join(words)
+
+
+def _is_record_like(label: str, subject: str) -> bool:
+    return bool(
+        re.search(
+            r"\b(records?|ledgers?|stores?|registr(?:y|ies)|trails?|histor(?:y|ies)|snapshots?|status|states?|logs?|index(?:es|)|indices)\b",
+            f"{label} {subject}",
+            re.IGNORECASE,
+        )
+    )
+
+
+def _is_workflow_like(label: str, subject: str) -> bool:
+    return bool(
+        re.search(
+            r"\b(workflow|orchestrat\w*|queue|handoff|review|approval|coordination|routing)\b",
+            f"{label} {subject}",
+            re.IGNORECASE,
+        )
+    )
+
+
+def _is_decision_like(label: str, subject: str) -> bool:
+    return bool(
+        re.search(
+            r"\b(engine|scor\w*|rank\w*|pricing|detect\w*|classif\w*|estimate\w*|resolv\w*|deriv\w*|calculat\w*|rules?)\b",
+            f"{label} {subject}",
+            re.IGNORECASE,
+        )
+    )
 
 
 def _sentence(value: str) -> str:
-    text = " ".join(str(value or "").strip().split()).rstrip(".")
+    text = display_text.strip_inline_markdown_emphasis_tokens(value).replace("`", "")
+    text = " ".join(text.strip().split()).rstrip(".")
     if text:
         text = text[:1].upper() + text[1:]
     return f"{text}." if text else ""
@@ -297,7 +436,6 @@ def _responsibility_fragment(*, label: str, value: str) -> str:
         text = text[5:].strip()
     if text.casefold().startswith("responsible for "):
         text = text[len("responsible for ") :].strip()
-    text = _nominalize_leading_action(text)
     return text.strip(" .")
 
 
@@ -309,76 +447,32 @@ def _strip_leading_label(*, label: str, text: str) -> str:
         pattern = r"^\s*" + r"[\s,/-]+".join(re.escape(word) for word in words[:keep]) + r"\b\s*"
         stripped = re.sub(pattern, "", text, count=1, flags=re.IGNORECASE).strip()
         if stripped != text.strip():
+            if re.match(r"^(?:for|of|in|with|to|by|from|through|into|on|at)\b", stripped, flags=re.IGNORECASE):
+                return text
             return stripped or text
     return text
 
 
-def _starts_with_action_verb(value: str) -> bool:
-    first = str(value or "").strip().split(" ", 1)[0].casefold()
-    return first in {
-        "accepts",
-        "assembles",
-        "binds",
-        "captures",
-        "computes",
-        "derives",
-        "engraves",
-        "estimates",
-        "exports",
-        "handles",
-        "imports",
-        "links",
-        "performs",
-        "preserves",
-        "records",
-        "renders",
-        "resolves",
-        "shows",
-        "stores",
-        "validates",
-        "views",
-        "writes",
-    }
-
-
-def _nominalize_leading_action(value: str) -> str:
+def _lower_common_lead(value: str) -> str:
     text = str(value or "").strip()
-    if not text:
-        return ""
-    first, _, rest = text.partition(" ")
-    rest = rest.strip()
-    lower = first.casefold().strip(".,:;")
-    replacements = {
-        "accepts": "acceptance of",
-        "assembles": "assembly of",
-        "binds": "binding of",
-        "captures": "capture of",
-        "computes": "computed result for",
-        "derives": "derivation of",
-        "engraves": "engraving of",
-        "estimates": "estimate of",
-        "exports": "export of",
-        "handles": "handling of",
-        "imports": "import of",
-        "links": "links between",
-        "own": "",
-        "owns": "",
-        "performs": "",
-        "preserves": "preservation of",
-        "records": "record of",
-        "renders": "rendering of",
-        "resolves": "resolution of",
-        "shows": "visibility into",
-        "stores": "stored record of",
-        "tracks": "tracking of",
-        "validates": "validation of",
-        "views": "view of",
-        "writes": "written record of",
-    }
-    if lower not in replacements or not rest:
+    first, separator, rest = text.partition(" ")
+    if not first:
         return text
-    prefix = replacements[lower]
-    return rest if not prefix else f"{prefix} {rest}"
+    if first.isupper() or any(char.isupper() for char in first[1:]):
+        return text
+    lowered = first[:1].lower() + first[1:]
+    return f"{lowered}{separator}{rest}" if separator else lowered
+
+
+def _looks_like_action_clause(value: str) -> bool:
+    text = str(value or "").strip()
+    if re.match(
+        r"^(?:review|approval|support)\s+(?:screen|view|surface|page|form|dashboard|queue|desk|center)\b",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        return False
+    return looks_like_action_clause(value)
 
 
 def _compact_text(value: str) -> str:

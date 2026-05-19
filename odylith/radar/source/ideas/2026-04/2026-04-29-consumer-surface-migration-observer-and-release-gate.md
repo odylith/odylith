@@ -1849,3 +1849,34 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   `migration-observer:0.1.15:install-managed-assets:ea52929b18fb`. The pass keeps
   existing consumer-owned governance truth unchanged; upgrades only refresh
   Odylith-managed browser assets and install-managed bundle files.
+- The component-spec and live-narration settlement is covered by
+  `migration-observer:0.1.15:operator-cli-contracts:7086f45abb8e`,
+  `migration-observer:0.1.15:browser-surfaces:6d646859699e`, and
+  `migration-observer:0.1.15:install-managed-assets:fb949a80a583`. The pass keeps
+  greenfield create/apply on the same confirmation-gated operator path, makes
+  generated Registry specs and diagram explanations component-local instead of
+  repeating project-wide boilerplate, and refreshes browser/bundle assets so
+  upgraded consumers regenerate cleaner surfaces from their own governance
+  records. Existing consumer-owned source truth does not require migration.
+- The post-refresh browser payload for that same settlement is covered by
+  `migration-observer:0.1.15:browser-surfaces:a4d5479aef77`. Existing
+  consumer-owned source truth remains unchanged; upgraded repos pick up the
+  cleaner rendered Radar payload through normal dashboard refresh or managed
+  asset adoption.
+- The shared generated-prose grammar settlement for the same component-spec
+  lane is covered by
+  `migration-observer:0.1.15:operator-cli-contracts:4290168b87f6`. The pass
+  keeps the greenfield operator contract unchanged while moving responsibility
+  verb handling into a generic runtime helper used by both confirmed-greenfield
+  authoring and Registry spec rendering. Existing consumer-owned source truth
+  does not require migration; upgraded repos receive cleaner generated records
+  through the normal confirmed-create and refresh paths.
+- The cross-lane human-visible clarity floor is covered by
+  `migration-observer:0.1.15:guidance-and-skills:07884892bbe0`,
+  `migration-observer:0.1.15:browser-surfaces:c4f98e37901a`, and
+  `migration-observer:0.1.15:install-managed-assets:74dd21c66ed5`. The pass
+  makes generated human-facing content fail closed on unclear, ungrammatical, or
+  malformed visible copy across guidance, specialist skills, scoped governance
+  rules, browser-rendered surfaces, and installed managed assets. Existing
+  consumer-owned source truth does not require migration; upgraded repos receive
+  the stricter clarity rule through normal managed guidance and asset refresh.

@@ -72,6 +72,7 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
         "Keep startup, Context Engine, Execution Engine, memory substrate, Tribunal, Intervention Engine, observers",
         "Optimize by routing, caching, batching, and shortening prompt surface, not by disabling engines.",
         "Treat AI slop as a regression",
+        "Generated human-visible content has a non-negotiable clarity floor across all lanes",
         "odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md",
         "odylith/skills/odylith-code-hygiene-guard/SKILL.md",
         "Discipline hot paths must not call host models",

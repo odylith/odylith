@@ -6,9 +6,13 @@ import datetime as dt
 import re
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common import display_text
+from odylith.runtime.common.prose_grammar import finite_action_clause
+
 
 def sentence_fragment(value: str) -> str:
-    return " ".join(str(value or "").strip().split()).rstrip(".")
+    text = display_text.strip_inline_markdown_emphasis_tokens(value)
+    return " ".join(text.strip().split()).rstrip(".")
 
 
 def build_component_spec(
@@ -41,9 +45,6 @@ def build_component_spec(
     wave_label = _handoff_text(handoff, "wave_label")
     wave_status = _handoff_text(handoff, "wave_status")
     release_selector = _handoff_text(handoff, "release_selector")
-    project_title = _handoff_text(handoff, "project_title")
-    project_purpose = _handoff_text(handoff, "project_purpose")
-    project_outcome = _handoff_text(handoff, "project_outcome")
     handoff_validation = _handoff_list(handoff, "validation_gates")
     handoff_commands = _handoff_list(handoff, "verification_commands")
 
@@ -70,17 +71,15 @@ def build_component_spec(
         responsibility=responsibility_line or responsibility_text,
         boundary=boundary_text,
         profile=profile,
+        interfaces=interface_lines,
+        dependencies=dependency_lines,
+        proof_lines=proof_lines,
     )
     role_paragraphs = _component_role_paragraphs(
         label=label,
         profile=profile,
-        project_title=project_title,
-        project_purpose=project_purpose,
-        project_outcome=project_outcome,
-        release_selector=release_selector,
-        first_slice=first_slice,
         responsibility=responsibility_line or responsibility_text,
-        boundary=boundary_text,
+        dependencies=dependency_lines,
         validation=proof_lines,
     )
 
@@ -221,7 +220,7 @@ def _kind_profile(kind: str) -> dict[str, str]:
         "default_owns": "The first domain state model, commands, queries, invariants, and integration handoff.",
         "default_interface": "A command, query, schema, module, or event contract selected by the first technical plan.",
         "default_dependency": "Confirmed first-workflow semantics; external providers stay outside the boundary until planned.",
-        "default_validation": "Contract proof covers valid state transition, invalid input rejection, and retry behavior.",
+        "default_validation": "Valid state transition, invalid input rejection, and retry behavior are proven.",
         "default_risk": "A loose runtime boundary can couple adjacent slices or hide invariant failures.",
         "default_outside": "Presentation, deployment, proof harnesses, and external providers unless this component boundary explicitly owns them.",
     }
@@ -231,20 +230,14 @@ def _component_role_paragraphs(
     *,
     label: str,
     profile: Mapping[str, str],
-    project_title: str,
-    project_purpose: str,
-    project_outcome: str,
-    release_selector: str,
-    first_slice: str,
     responsibility: str,
-    boundary: str,
+    dependencies: Sequence[str],
     validation: Sequence[str],
 ) -> tuple[str, ...]:
     role = profile.get("role_noun", "ownership boundary")
-    project_suffix = f" in {project_title}" if project_title else ""
     paragraphs = [
         _paragraph(
-            f"{label} is a {role}{project_suffix}. "
+            f"{label} is a {role}. "
             + (
                 f"It {_lower_first(responsibility)}"
                 if responsibility
@@ -252,26 +245,13 @@ def _component_role_paragraphs(
             )
         )
     ]
-    context_bits = []
-    if project_purpose:
-        context_bits.append(f"Product context: {project_purpose}")
-    if boundary:
-        context_bits.append(f"Boundary: {boundary}")
-    if context_bits:
-        paragraphs.append(_paragraph(" ".join(context_bits)))
-    release_bits = []
-    if release_selector and first_slice:
-        release_bits.append(f"Release {release_selector} contribution: {_brief_sentence(first_slice)}")
-    elif release_selector:
-        release_bits.append(f"Release {release_selector} contribution: stay inside the accepted component boundary")
-    elif first_slice:
-        release_bits.append(f"First usable slice: {_brief_sentence(first_slice)}")
-    if project_outcome:
-        release_bits.append(f"Project outcome: {_brief_sentence(project_outcome)}")
+    proof_bits = []
     if validation:
-        release_bits.append(f"Required proof: {_brief_sentence(_strip_proof_prefix(validation[0]))}")
-    if release_bits:
-        paragraphs.append(" ".join(_paragraph(bit) for bit in release_bits if sentence_fragment(bit)))
+        proof_bits.append(f"Proof focus: {_lower_first(_strip_proof_prefix(validation[0]))}")
+    if dependencies:
+        proof_bits.append(f"Collaboration focus: {dependencies[0]}")
+    if proof_bits:
+        paragraphs.append(" ".join(_paragraph(bit) for bit in proof_bits if sentence_fragment(bit)))
     return tuple(paragraphs)
 
 
@@ -298,44 +278,7 @@ def _responsibility_clause(value: str, *, default_verb: str) -> str:
     text = sentence_fragment(value)
     if not text:
         return ""
-    head, separator, tail = text.partition(" ")
-    verb = head.strip(",:;").casefold()
-    replacements = {
-        "assemble": "assembles",
-        "bind": "binds",
-        "capture": "captures",
-        "connect": "connects",
-        "coordinate": "coordinates",
-        "derive": "derives",
-        "enforce": "enforces",
-        "fetch": "fetches",
-        "hold": "holds",
-        "manage": "manages",
-        "map": "maps",
-        "own": "owns",
-        "present": "presents",
-        "provide": "provides",
-        "record": "records",
-        "render": "renders",
-        "serve": "serves",
-        "track": "tracks",
-        "validate": "validates",
-        "write": "writes",
-    }
-    finite_verbs = set(replacements.values()) | {
-        "accepts",
-        "checks",
-        "handles",
-        "protects",
-        "reviews",
-        "supports",
-    }
-    if verb in replacements and separator:
-        return f"{replacements[verb]} {tail.strip()}"
-    if verb in finite_verbs:
-        return f"{text[:1].lower()}{text[1:]}"
-    default = str(default_verb or "owns").strip().lower() or "owns"
-    return f"{default} {text[:1].lower()}{text[1:]}"
+    return finite_action_clause(text, default_verb=default_verb, default_single_token=True)
 
 
 def _dependency_lines(values: Sequence[str]) -> tuple[str, ...]:
@@ -355,12 +298,17 @@ def _dependency_lines(values: Sequence[str]) -> tuple[str, ...]:
 
 
 def _looks_like_sentence(value: str) -> bool:
-    return bool(re.search(r"\s", value)) and bool(
-        re.search(
-            r"\b(coordinates|depends|reads|writes|calls|receives|produces|provides|requires|owns|uses)\b",
-            value,
-            re.I,
-        )
+    if not re.search(r"\s", value):
+        return False
+    if re.search(
+        r"\b(can|cannot|coordinates|depends|keeps|must|needs|owns|provides|produces|reads|receives|remains|requires|should|stays|uses|will|writes)\b",
+        value,
+        re.I,
+    ):
+        return True
+    return bool(
+        re.search(r"[.;:]", value)
+        and len([part for part in value.split() if part.strip()]) >= 5
     )
 
 
@@ -396,12 +344,29 @@ def _component_heading(label: str, heading: str) -> str:
     return f"{label_text} {heading_text}"
 
 
-def _contract_summary(*, label: str, responsibility: str, boundary: str, profile: Mapping[str, str]) -> str:
+def _contract_summary(
+    *,
+    label: str,
+    responsibility: str,
+    boundary: str,
+    profile: Mapping[str, str],
+    interfaces: Sequence[str],
+    dependencies: Sequence[str],
+    proof_lines: Sequence[str],
+) -> str:
+    rows: list[str] = []
     if responsibility:
-        return (
-            f"{label} {_lower_first(responsibility)}. "
-            "Its contract is limited to the interfaces, dependencies, and proof obligations below."
-        )
+        rows.append(f"Contract focus: {label} {_lower_first(responsibility)}")
+    elif boundary:
+        rows.append(f"Contract focus: {label} owns the boundary described above")
+    if interfaces:
+        rows.append(f"Primary interface: {interfaces[0]}")
+    if dependencies:
+        rows.append(f"Main collaboration: {dependencies[0]}")
+    if proof_lines:
+        rows.append(f"Proof obligation: {_lower_first(_strip_proof_prefix(proof_lines[0]))}")
+    if rows:
+        return ". ".join(row for row in rows if sentence_fragment(row))
     if boundary:
         return (
             f"{label} owns the boundary described above. "
@@ -620,6 +585,12 @@ def _brief_sentence(value: str, *, limit: int = 220) -> str:
 
 def _strip_proof_prefix(value: str) -> str:
     text = sentence_fragment(value)
+    text = re.sub(
+        r"^(?:contract|adapter|behavior|release|user-visible)?\s*proof\s+(?:must\s+)?(?:covers?|shows?|proves?)\s+",
+        "",
+        text,
+        flags=re.I,
+    ).strip()
     text = re.sub(r"^(?:first\s+)?proof\s+(?:must\s+)?shows?\s+", "", text, flags=re.I).strip()
     text = re.sub(r"^required\s+proof\s*:\s*", "", text, flags=re.I).strip()
     return text

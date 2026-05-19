@@ -24,3 +24,9 @@ Use when adding or updating Atlas Mermaid diagrams, or when a materially changed
 - Treat `related_backlog`, `related_plans`, `related_docs`, `related_code`, and `change_watch_paths` as mandatory context, not optional metadata.
 - Keep linked workstreams, components, docs, and code synchronized with the diagram change so Atlas does not drift away from the rest of Odylith truth.
 - Fail closed on stale diagrams, broken links, or missing render assets.
+- Diagram titles, summaries, "how to read" text, box labels, and box
+  explanations must pass the clarity floor: simple, legible, grammatical, and
+  clear. They must explain what each actor, system, state, boundary, or
+  control means in the project and why it matters; diagram mechanics such as
+  "incoming arrows", "outgoing arrows", "branch point", or "part of the path"
+  are not enough.

@@ -109,17 +109,20 @@ def test_component_spec_template_keeps_greenfield_contracts_concise() -> None:
         status="planned",
         sources=("user_intent",),
         workstreams=("B-210",),
-        responsibility="Own field intake records for the accepted first release path.",
+        responsibility="Records field intake with attribution, review state, and recovery outcome.",
         boundary=(
-            "Field Intake owns field intake records. Rationale: intake must stay attributable, "
-            "recoverable, and reviewable before downstream decisions use it."
+            "Field Intake owns the state and rules for recording field intake with attribution, review state, "
+            "and recovery outcome. Presentation and downstream decisions stay outside."
         ),
         dependencies=(
-            "Depends on the accepted product direction for user, problem, first path, and proof boundary.",
-            "Design pressure: intake must stay attributable, recoverable, and reviewable before downstream decisions use it.",
+            "Coordinates with Review Queue for reviewer assignment and recovery decisions.",
+            "Intake must stay attributable, recoverable, and reviewable before downstream decisions use it.",
         ),
-        interfaces=("Expose operations for field intake records needed by the accepted first path.",),
-        validation=("Proof shows field intake records work inside the accepted first path, including success and recovery evidence.",),
+        interfaces=(
+            "Command, query, or event contract for recording field intake; includes accepted input, produced state, "
+            "failure state, and ownership handoff.",
+        ),
+        validation=("Contract proof covers accepted intake, rejected input, and reviewer-visible recovery state.",),
         implementation_handoff={
             "release_selector": "0.0.1",
             "first_slice": (
@@ -137,9 +140,15 @@ def test_component_spec_template_keeps_greenfield_contracts_concise() -> None:
     assert "because The first" not in text
     assert "First proof must show Proof shows" not in text
     assert "Promotion requires Proof shows" not in text
-    assert "| Proof shows field intake" not in text
+    assert "| Contract proof covers" not in text
     assert "Depends on Design pressure" not in text
-    assert "Release 0.0.1 contribution: The first complete path is a controlled field review." in text
-    assert "Required proof: field intake records work inside the accepted first path" in text
-    assert "| Field intake records work inside the accepted first path" in text
-    assert "- Design pressure: intake must stay attributable" in text
+    assert "Depends on Intake must" not in text
+    assert "Release 0.0.1 contribution:" not in text
+    assert "Product context:" not in text
+    assert "Project outcome:" not in text
+    assert "Proof focus: accepted intake, rejected input, and reviewer-visible recovery state" in text
+    assert "Primary interface: Command, query, or event contract for recording field intake" in text
+    assert "Proof obligation: accepted intake, rejected input, and reviewer-visible recovery state" in text
+    assert "| Accepted intake, rejected input, and reviewer-visible recovery state |" in text
+    assert "- Intake must stay attributable" in text
+    assert "…" not in text

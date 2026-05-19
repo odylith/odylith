@@ -31,6 +31,12 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
 - Structural cleanup is not permission to drift behavior, UX, or UI. Preserve
   semantics deliberately and prove the touched contract on the real toolchain
   or surface that owns it.
+- Human-visible generated content has the same minimum clarity floor in this
+  maintainer lane: simple, easy to understand, legible, grammatically
+  coherent, and clear before any live narration, voice, or stylistic
+  embellishment is added. When this floor is strengthened here, push the same
+  rule into consumer-safe guidance, skills, install generators, and shipped
+  mirrors.
 - When strengthening anti-slop policy in maintainer mode, push the shared
   contract into the consumer-safe guidance, shared skill, and shipped bundle
   mirrors in the same change so Codex and Claude consumer lanes inherit the

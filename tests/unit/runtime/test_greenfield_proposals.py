@@ -10,6 +10,7 @@ import pytest
 
 from odylith.runtime.common import mermaid_text
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagrams import confirmed_diagrams
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import PROJECT_INTELLIGENCE_LAYERS
@@ -25,6 +26,12 @@ from odylith.runtime.project_intelligence import presenter as project_intelligen
 def _write(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
+
+
+def _markdown_section(text: str, heading: str) -> str:
+    start = text.index(heading)
+    end = text.find("\n## ", start + len(heading))
+    return text[start:] if end == -1 else text[start:end]
 
 
 CONFIRMED_INTENT_TEXT = """Municipal Permit Review Workspace — Product Intent Confirmation
@@ -157,10 +164,57 @@ def test_confirmed_greenfield_diagrams_use_compact_atlas_narration() -> None:
         assert "owns owns" not in description
         assert len(description) < 260
     assert [row["description"] for row in sequence["components"]] == [
-        "Owns microphone or line-in capture and normalization.",
-        "Owns frame-level pitch tracking.",
-        "Owns engraving of the score model to PDF and MusicXML.",
+        (
+            "Owns microphone or line-in capture and normalization. Reviewers need to see what this boundary receives, "
+            "produces, and makes available next."
+        ),
+        (
+            "Performs frame-level pitch tracking. Reviewers need to see the inputs, rule version, result, "
+            "and downstream decision that depended on it."
+        ),
+        (
+            "Engraves the score model to PDF and MusicXML. Reviewers need to see the inputs, rule version, result, "
+            "and downstream decision that depended on it."
+        ),
     ]
+
+
+def test_confirmed_greenfield_noun_phrase_responsibilities_stay_grammatical() -> None:
+    components = confirmed_components(
+        label="Operations Review Workspace",
+        label_slug="operations-review-workspace",
+        internal_systems=[
+            "Status dashboard — status dashboard for operator review, queue health, and decision history.",
+            "Review coordinator — coordinates follow-up actions, reviewer handoff, and blocked-state recovery.",
+        ],
+    )
+    rows = confirmed_diagrams(
+        label="Operations Review Workspace",
+        diagram_slugs={
+            "context": "operations-context",
+            "sequence": "operations-sequence",
+            "state_evidence": "operations-state-evidence",
+            "component_boundaries": "operations-component-boundaries",
+            "ownership": "operations-ownership",
+            "proof_review": "operations-proof-review",
+        },
+        components=components,
+        human_actors=["Operator"],
+        internal_systems=["Status dashboard", "Review coordinator"],
+    )
+    encoded = json.dumps({"components": components, "diagrams": rows})
+    first_description = rows[0]["components"][0]["description"]
+
+    assert "statu dashboard" not in encoded
+    assert "responsibility to status dashboard" not in encoded
+    assert components[0]["responsibility"] == "Status dashboard for operator review, queue health, and decision history"
+    assert first_description == (
+        "Presents status dashboard for operator review, queue health, and decision history to users and captures "
+        "the action or decision the product needs next. Reviewers need to see what the user saw, submitted, "
+        "corrected, or approved before downstream state changed."
+    )
+    assert "Coordinates follow-up actions, reviewer handoff, and blocked-state recovery" in encoded
+    assert "each responsibility transfer, failure state, recovery action, and final outcome" in encoded
 
 
 def test_mermaid_text_normalizes_sequence_labels_notes_and_messages() -> None:
@@ -248,12 +302,14 @@ Release 0.0.1 succeeds when a reviewer can follow one item through registration,
     assert "Volunteer Equipment Checkout reviewer" in encoded
     assert "owns captures" not in encoded
     assert "owns shows" not in encoded
-    assert "visibility into which items can be borrowed now" in encoded
+    assert "Shows which items can be borrowed now" in encoded
     context = next(row for row in proposal["diagrams"] if row["title"] == "System Context View")
     assert "<br/>" in context["mermaid_source"]
     for row in proposal["diagrams"]:
         for component in row["components"]:
-            assert component["description"].startswith("Owns ")
+            assert "accepted first release path" not in component["description"]
+            assert "owns owns" not in component["description"].casefold()
+            assert component["description"].endswith(".")
 
 
 def _confirmed_intent() -> dict[str, object]:
@@ -2675,7 +2731,26 @@ def test_greenfield_apply_writes_host_authored_component_specs(tmp_path, monkeyp
     assert "## Storefront Interaction Boundary" not in storefront_spec
     assert "## Checkout Orchestrator Runtime Boundary" not in checkout_spec
     assert "## Catalog Boundary Runtime Boundary" not in catalog_spec
+    role_sections = [
+        _markdown_section(storefront_spec, "## Component Role"),
+        _markdown_section(checkout_spec, "## Component Role"),
+        _markdown_section(catalog_spec, "## Component Role"),
+    ]
+    assert len(set(role_sections)) == 3
+    assert "browse, cart entry, checkout entry" in role_sections[0]
+    assert "payment handoff, order draft" in role_sections[1]
+    assert "price snapshots" in role_sections[2]
     for text in (storefront_spec, checkout_spec, catalog_spec):
+        assert "Contract focus:" in text
+        assert "Primary interface:" in text
+        assert "Proof obligation:" in text
+        assert "Product context:" not in text
+        assert "Project outcome:" not in text
+        assert "Release 0.0.1 contribution:" not in text
+        assert "Required proof:" not in text
+        assert "accepted first release path" not in text
+        assert "**" not in text
+        assert "…" not in text
         assert "Experience Boundary" not in text
         assert "registered through `odylith component register`" not in text
         assert "first operator-visible workflow, view or command entrypoint" not in text
@@ -2827,6 +2902,34 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
     assert "Municipal Permit Review Workspace Workflow Service" not in accepted
     assert (tmp_path / "odylith/registry/source/component_registry.v1.json").is_file()
     assert list((tmp_path / "odylith/atlas/source").glob("*.mmd"))
+    spec_root = tmp_path / "odylith/registry/source/components"
+    specs = {path.parent.name: path.read_text(encoding="utf-8") for path in spec_root.glob("*/CURRENT_SPEC.md")}
+    permit_spec = specs["permit-file-registry"]
+    zoning_spec = specs["zoning-check-ledger"]
+    revision_spec = next(text for slug, text in specs.items() if slug.endswith("revision-tracker"))
+    decision_spec = specs["decision-package-review"]
+    assert "Owns permit identity, applicant metadata, submitted documents, and decision state" in permit_spec
+    assert "Records zoning checks, reviewer comments, rule references, and pass or block outcomes" in zoning_spec
+    assert "Links applicant revisions to the documents and checks they are meant to address" in revision_spec
+    assert "Assembles evidence, reviewer notes, unresolved blockers, and final approval state" in decision_spec
+    role_sections = [
+        _markdown_section(permit_spec, "## Component Role"),
+        _markdown_section(zoning_spec, "## Component Role"),
+        _markdown_section(revision_spec, "## Component Role"),
+        _markdown_section(decision_spec, "## Component Role"),
+    ]
+    assert len(set(role_sections)) == 4
+    for text in (permit_spec, zoning_spec, revision_spec, decision_spec):
+        assert "Product context:" not in text
+        assert "Project outcome:" not in text
+        assert "Release 0.0.1 contribution:" not in text
+        assert "accepted first release path" not in text
+        assert "Contract proof covers" not in text
+        assert "Contract focus:" in text
+        assert "Primary interface:" in text
+        assert "Proof obligation:" in text
+        assert "**" not in text
+        assert "…" not in text
 
 
 def test_greenfield_create_cli_requires_confirmation_before_writes(tmp_path, capsys) -> None:
