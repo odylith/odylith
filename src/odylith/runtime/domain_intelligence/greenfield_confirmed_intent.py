@@ -41,14 +41,11 @@ _META_NARRATION_PATTERNS = [
     )
 ]
 
-_GENERIC_SYSTEM_NAME_PATTERNS = [
-    re.compile(pattern, re.IGNORECASE)
-    for pattern in (
-        r"\bworkflow\s+service\b",
-        r"\bstate\s+store\b",
-        r"\bevidence\s+review\b",
-    )
-]
+_GENERIC_SYSTEM_NAME_KEYS = {
+    "workflow service",
+    "state store",
+    "evidence review",
+}
 
 _SYSTEM_NAME_NOUNS = {
     "adapter",
@@ -301,6 +298,9 @@ def _looks_like_plain_heading(text: str) -> bool:
     known = {
         "product story",
         "product title",
+        "state object",
+        "first complete path",
+        "first path",
         "user problem",
         "user problem and risk",
         "problem",
@@ -321,8 +321,10 @@ def _looks_like_plain_heading(text: str) -> bool:
         "critical assumptions",
         "ambiguities that would change the first path",
         "material ambiguities",
+        "ambiguities",
         "open questions",
         "proof boundary",
+        "next step",
         "non goals",
         "non-goals",
         "systems",
@@ -378,6 +380,8 @@ def _classify_heading(value: str) -> str:
         return "first_path"
     if "proof boundary" in normalized:
         return "proof_boundary"
+    if normalized == "next step":
+        return "next_step"
     if "non goal" in normalized or "non-goal" in normalized:
         return "non_goals"
     return ""
@@ -969,11 +973,14 @@ def _contains_meta_narration(intent: Mapping[str, Any]) -> bool:
 
 
 def _contains_generic_system_scaffold(system_rows: list[str]) -> bool:
-    names = [confirmed_system_name(row) for row in system_rows]
-    if any(pattern.search(name) for name in names for pattern in _GENERIC_SYSTEM_NAME_PATTERNS):
-        return True
-    compact = " ".join(name.casefold() for name in names)
-    return all(token in compact for token in ("workflow", "state", "evidence"))
+    keys = {_system_name_key(confirmed_system_name(row)) for row in system_rows}
+    keys.discard("")
+    return _GENERIC_SYSTEM_NAME_KEYS.issubset(keys)
+
+
+def _system_name_key(value: str) -> str:
+    text = re.sub(r"[^a-z0-9\s]+", " ", str(value or "").casefold())
+    return re.sub(r"\s+", " ", text).strip()
 
 
 def _has_meaningful_sentences(text: str, *, minimum: int) -> bool:

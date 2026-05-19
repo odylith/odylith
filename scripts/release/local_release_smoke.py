@@ -235,6 +235,14 @@ _GREENFIELD_CONFIRMED_CREATE_GUARDS = (
     "proposal JSON",
     "parser/schema retries",
 )
+_GREENFIELD_CONFIRMATION_FORMAT_GUARDS = (
+    "sectioned",
+    "Product story",
+    "State object",
+    "First complete path",
+    "Proof boundary",
+    "wall of prose",
+)
 _GREENFIELD_PROJECT_FIRST_GUARDS = (
     "project-first",
     "product story",
@@ -316,6 +324,9 @@ def _require_greenfield_guidance_uses_confirmed_create(*, repo_root: Path, label
         for token in _GREENFIELD_CONFIRMED_CREATE_GUARDS:
             if token not in compact_text:
                 raise RuntimeError(f"{label} guidance omits confirmed create guard: {relative_path}: {token}")
+        for token in _GREENFIELD_CONFIRMATION_FORMAT_GUARDS:
+            if token not in compact_text:
+                raise RuntimeError(f"{label} guidance omits confirmation format guard: {relative_path}: {token}")
         if not any(token in compact_text for token in _GREENFIELD_PROJECT_FIRST_GUARDS):
             raise RuntimeError(f"{label} guidance omits project-first greenfield guard: {relative_path}")
         if not any(token in text for token in _GREENFIELD_NO_SOURCE_SPELUNKING_GUARDS):

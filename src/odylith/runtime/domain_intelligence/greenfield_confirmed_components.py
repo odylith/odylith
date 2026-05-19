@@ -40,6 +40,22 @@ _STOPWORDS = {
     "with",
 }
 
+_GENERIC_COMPONENT_ROLE_PREFIXES: tuple[tuple[re.Pattern[str], str], ...] = (
+    (re.compile(r"^primary\s+user\b", re.IGNORECASE), "User"),
+    (re.compile(r"^end[-\s]*user\s+advocate\b", re.IGNORECASE), "User Advocacy"),
+    (re.compile(r"^project\s+operator\b", re.IGNORECASE), "Product Operations"),
+    (re.compile(r"^workflow\s+operator\b", re.IGNORECASE), "Workflow Operations"),
+    (re.compile(r"^operator\b", re.IGNORECASE), "Operations"),
+    (re.compile(r"^maintainer\b", re.IGNORECASE), "Maintenance"),
+    (re.compile(r"^domain\s+reviewer\b", re.IGNORECASE), "Domain Review"),
+    (re.compile(r"^risk\s+reviewer\b", re.IGNORECASE), "Risk Review"),
+    (re.compile(r"^proof\s+reviewer\b", re.IGNORECASE), "Proof Review"),
+    (re.compile(r"^reviewer\b", re.IGNORECASE), "Review"),
+    (re.compile(r"^implementation\s+owner\b", re.IGNORECASE), "Implementation Ownership"),
+    (re.compile(r"^evidence\s+owner\b", re.IGNORECASE), "Evidence Ownership"),
+    (re.compile(r"^build\s+owner\b", re.IGNORECASE), "Build Ownership"),
+)
+
 
 def domain_label(title: str, prompt: str) -> str:
     source = title or prompt or "Greenfield Project"
@@ -88,6 +104,7 @@ def confirmed_project_brief(
     product_story: str = "",
     first_path: str = "",
     proof_boundary: str = "",
+    problem: str = "",
     human_actors: list[str] | None = None,
     internal_systems: list[str] | None = None,
     external_systems: list[str] | None = None,
@@ -116,7 +133,7 @@ def confirmed_project_brief(
     non_goal_summary = _join_domain_items(non_goals) or "wider automation, live irreversible integrations, and production scaling"
     return {
         "schema_version": "odylith.greenfield.project_brief.v1",
-        "purpose": story,
+        "purpose": _purpose_text(story=story, problem=problem, first=first),
         "operating_principle": (
             f"Every release {release} claim must stay attached to the user capability, domain state, source evidence, "
             "and proof boundary accepted in the product direction."
@@ -197,6 +214,17 @@ def confirmed_project_brief(
 }
 
 
+def _purpose_text(*, story: str, problem: str, first: str) -> str:
+    story_text = _plain_text(story).strip(" .")
+    problem_text = _brief_clause(problem, limit=260)
+    if problem_text:
+        return f"{story_text}. Problem to solve: {problem_text}."
+    first_text = _brief_clause(first, limit=240)
+    if first_text:
+        return f"{story_text}. Without this first path, users cannot trust the product result: {first_text}."
+    return story_text
+
+
 def _confirmed_system_components(
     *,
     label: str,
@@ -206,7 +234,7 @@ def _confirmed_system_components(
     rows: list[dict[str, Any]] = []
     path_slug = _path_slug(label_slug)
     for index, system in enumerate(internal_systems, start=1):
-        name = confirmed_system_name(system)
+        name = system_component_name(confirmed_system_name(system))
         description = confirmed_system_description(system)
         component_slug = slugify(name) or f"{label_slug}-component-{index}"
         if not component_slug.startswith(label_slug) and len(component_slug.split("-")) <= 2:
@@ -232,6 +260,25 @@ def _confirmed_system_components(
             }
         )
     return rows
+
+
+def system_component_name(value: str) -> str:
+    """Convert actor-placeholder prefixes into capability names for component records."""
+
+    name = _plain_text(value).strip(" .:-")
+    if not name:
+        return ""
+    for pattern, replacement in _GENERIC_COMPONENT_ROLE_PREFIXES:
+        match = pattern.match(name)
+        if not match:
+            continue
+        rest = name[match.end() :].strip(" .:-")
+        if not rest:
+            return replacement
+        if rest.casefold().startswith(replacement.casefold()):
+            return _sentence_case(rest)
+        return f"{replacement} {rest}"
+    return name
 
 
 def _system_kind(name: str, description: str) -> str:
@@ -589,4 +636,5 @@ __all__ = [
     "confirmed_project_brief",
     "domain_label",
     "shell_quote",
+    "system_component_name",
 ]

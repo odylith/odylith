@@ -63,8 +63,9 @@ issues it can create. Each suggestion comes with the command to run it.
 
 If the repo is still empty or too thin for source-backed boundaries, Odylith
 switches to greenfield mode instead of dead-ending. The host model drafts the
-project-specific proposal in chat, while Odylith supplies the evidence tiers,
-schema, topology requirements, confirmation gate, and apply path.
+Product Intent Confirmation in chat as clear sectioned Markdown, while Odylith
+supplies the evidence tiers, schema, topology requirements, confirmation gate,
+and governed create path.
 
 For example:
 
@@ -72,12 +73,12 @@ For example:
 odylith greenfield propose --repo-root . --prompt "build an ecommerce site"
 ```
 
-The proposal can include backlog candidates, program waves, release planning,
-planned Registry components, host-authored Atlas topology, assumptions, risks,
-open questions, and validation obligations. Nothing is written until an
-accepted proposal is applied with confirmation. Apply runs a deterministic
-greenfield Tribunal before writes, targets the first release lane, and refreshes
-Radar, Registry, Atlas, and Compass after all accepted artifacts are written.
+After confirmation, Odylith turns that accepted narrative into backlog
+candidates, program waves, release planning, planned Registry components, Atlas
+topology, assumptions, risks, open questions, and validation obligations.
+Nothing is written until the confirmed create path validates the accepted
+intent, runs the deterministic greenfield Tribunal, targets the first release
+lane, and refreshes Radar, Registry, Atlas, and Compass.
 
 Then open `odylith/index.html` in a browser and follow the Cheatsheet in the
 drawer.

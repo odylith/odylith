@@ -8,9 +8,9 @@ import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
-from tests.unit.runtime.test_greenfield_proposals import _confirmed_intent
-from tests.unit.runtime.test_greenfield_proposals import _host_reasoned_ecommerce_proposal
-from tests.unit.runtime.test_greenfield_proposals import _write_confirmed_intent
+from tests.unit.runtime.greenfield_proposal_fixtures import _confirmed_intent
+from tests.unit.runtime.greenfield_proposal_fixtures import _host_reasoned_ecommerce_proposal
+from tests.unit.runtime.greenfield_proposal_fixtures import _write_confirmed_intent
 
 
 PRODUCT_INTENTS = [
@@ -49,7 +49,9 @@ def test_confirmed_greenfield_proposal_is_apply_ready_without_domain_profiles(tm
 
 
 @pytest.mark.parametrize("prompt", PRODUCT_INTENTS)
-def test_product_intent_confirmation_does_not_pretend_to_reason_the_product(tmp_path: Path, capsys, prompt: str) -> None:
+def test_product_intent_confirmation_requests_sectioned_host_reasoning_without_records(
+    tmp_path: Path, capsys, prompt: str
+) -> None:
     rc = greenfield_proposals.main(["propose", "--repo-root", str(tmp_path), "--prompt", prompt])
     output = capsys.readouterr().out
 
@@ -63,7 +65,9 @@ def test_product_intent_confirmation_does_not_pretend_to_reason_the_product(tmp_
     assert "architecture records" in output
     assert "Registry" not in output
     assert "Atlas" not in output
-    assert "Product story" not in output
+    assert "Product story; State object; First complete path; Human actors" in output
+    assert "Proof boundary; Next step" in output
+    assert "do not collapse it into a wall of prose" in output
     assert "Primary user" not in output
     assert "Project operator" not in output
     assert "Evidence owner" not in output

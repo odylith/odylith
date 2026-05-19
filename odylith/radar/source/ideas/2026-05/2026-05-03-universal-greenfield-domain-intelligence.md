@@ -77,6 +77,12 @@ External ecosystem checks argue against a narrow canned project taxonomy. GitHub
 
 ## Scope
 - Add no-write `odylith greenfield propose` for Product Intent Confirmation.
+- Make the no-write Product Intent Confirmation visibly sectioned in every
+  host lane: title, Product story, State object, First complete path, Human
+  actors, External systems, Internal product systems, Critical assumptions,
+  Ambiguities, Proof boundary, and Confirm/Edit/Reject. Do not allow one large
+  prose block, decorative Markdown around normal domain nouns, or hidden
+  structure that only the host model can infer.
 - Add confirmed `odylith greenfield create --confirm` for Odylith-owned apply-ready proposal generation and governed writes.
 - Keep `odylith greenfield apply` as the lower-level validated proposal-file path, not the default host workflow.
 - Keep host adapters thin; every supported host routes to the same CLI/runtime path.
@@ -118,6 +124,7 @@ External ecosystem checks argue against a narrow canned project taxonomy. GitHub
 
 ## Success Metrics
 Greenfield propose returns a low-latency, provider_calls=0 Product Intent Confirmation request for any vague or precise greenfield prompt.
+Product Intent Confirmation guidance requires scannable sectioned Markdown, short paragraphs, bullets where appropriate, and plain domain terms with no code ticks or decorative bold markers.
 Greenfield create confirmed by the operator builds an apply-ready proposal inside Odylith with backlog candidates, program waves, release plan, planned Registry components, draft Atlas Mermaid sources, assumptions, risks, validation strategy, open questions, and exact governed-write evidence.
 Provider-free greenfield scaffolds include a multi-view Atlas suite with mutually traceable workstream/component links; complex physical, analytical, and operational domains can add risk, safety, telemetry, deployment-boundary, and observability/audit views without hard-coded domain families.
 Greenfield proposals carry a project-first brief before backlog: direction options, pre-coding checkpoints, coding-readiness gates, and host-independent commands must be visible in text and JSON before apply.
@@ -404,6 +411,19 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   suite, install asset and release-smoke suites, source-local confirmed-create
   repro in a bootstrapped empty repo, Casebook source validation, component
   Registry validation, engine-integrity validation, and `git diff --check`.
+- 2026-05-19 confirmed-intent parser hardening fixed the next fail-closed
+  regression in the same confirmed-create contract: domain-specific systems that
+  legitimately own evidence review, such as a race gearbox `run evidence review
+  surface`, must survive Product Intent parsing and Tribunal proposal
+  construction instead of being rejected as generic fallback scaffold. The
+  guard now rejects the exact fallback trio while accepting project-specific
+  evidence-review systems, preserving both sides of the confirmation gate.
+  Focused proof passed
+  `tests/unit/runtime/test_greenfield_proposals.py::test_confirmed_intent_parser_accepts_domain_specific_evidence_review_surface`,
+  `tests/unit/runtime/test_greenfield_proposals.py::test_confirmed_intent_parser_still_rejects_exact_generic_system_scaffold`,
+  and
+  `tests/unit/test_cli.py::test_greenfield_propose_confirm_intent_json_is_provider_free`
+  (`3 passed`).
 
 ## Rollout
 - Ship in v0.1.14 with B-141 because the user-facing failure is inseparable from consumer-lane host UX hardening: low latency is not enough if empty-repo greenfield prompts dead-end or if accepted proposals fail to show programs, waves, release targets, Registry topology, and Atlas traceability.

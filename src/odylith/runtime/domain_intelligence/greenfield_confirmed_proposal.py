@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_components import 
     confirmed_project_brief,
     domain_label,
     shell_quote,
+    system_component_name,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagrams import confirmed_diagrams
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import (
@@ -212,6 +213,7 @@ def build_confirmed_greenfield_proposal(
             product_story=product_story,
             first_path=first_path,
             proof_boundary=proof_boundary,
+            problem=problem_summary,
             human_actors=human_actors,
             internal_systems=internal_systems,
             external_systems=external_systems,
@@ -493,7 +495,7 @@ def _evidence_record_label(*, label: str, proof_boundary: str, internal_systems:
         if any(token in name for token in ("evidence", "audit", "proof", "review", "ledger")):
             first = str(system).split("—", 1)[0].split("-", 1)[0].split(":", 1)[0].strip()
             if first:
-                return f"{first} proof record"
+                return f"{system_component_name(first)} proof record"
     if proof_boundary:
         return f"{label} proof record"
     return f"{label} proof record"

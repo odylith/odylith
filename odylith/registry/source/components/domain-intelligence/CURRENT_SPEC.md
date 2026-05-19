@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-05-09
+Last updated: 2026-05-19
 
 
 ## Overview
@@ -68,6 +68,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-09: Split the default greenfield proposal UX into staged review gates instead of dumping the deep accepted record. `greenfield propose` now renders interpretation, clarify-before-apply choices, a compact product preview, and an explicit choose-next-action gate; `--format json` and `greenfield create/apply --confirm` retain the deep project, workstream, component, architecture, release, risk, validation, memory, and Tribunal-gated apply contract. The same pass preserved domain-bearing trailing title terms, removed surface-first show/guidance wording, guarded product-repo source truth from stale consumer repair paths, and made standalone Registry rendering prefer source manifest truth over stale runtime snapshots. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-194`)
 - 2026-05-09: Tightened greenfield architecture view naming so generated diagram titles are concise view names rather than full prompt-prefixed labels. Generic and robot-swarm profiles now emit titles such as `System Overview`, `First Slice Flow`, and `Telemetry Contract And Data Flow`; slugs and summaries retain project identity. The Tribunal rejects confirmed proposals whose diagram titles repeat the project title prefix. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-195`)
 - 2026-05-14: Replaced the v0.1.15 host-authored JSON repair path with an Odylith-owned confirmed create path. `greenfield propose --confirm-intent --format json` now emits the same apply-ready proposal that `greenfield create --confirm` applies, release smoke runs the confirmed create path against a fresh repo, and installed guidance forbids hand-authored proposal repair loops across hosts. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-173`, `CB-181`)
+- 2026-05-19: Tightened the confirmed-intent internal-systems gate so fail-closed create still rejects the exact generic fallback trio while accepting domain-specific systems that own evidence review, such as a race gearbox run evidence review surface. The recurrence is captured under `CB-202`, and the regression tests prove both acceptance and rejection paths. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -92,6 +93,11 @@ This section captures synchronized requirement and contract signals derived from
   gate before any writes. After confirmation, `greenfield create --confirm`
   builds and applies the durable record; `propose --confirm-intent --format json`
   is the optional review artifact for the same apply-ready object.
+- Confirmed-intent parsing must accept both bullet-row and prose-row internal
+  systems when the accepted narrative is concrete enough to infer owned product
+  systems. Generic scaffold detection may reject exact fallback names together,
+  but it must not reject a project-specific `evidence review` system solely
+  because evidence review is part of its domain responsibility.
 - Installed greenfield guidance must not ask Codex or Claude hosts to hand-author
   or reconstruct proposal JSON. Proposal review uses the canonical object from
   `greenfield propose`; confirmation uses `greenfield create --confirm` unless an

@@ -38,9 +38,13 @@ placeholder products in response to a show-me request.
    absent. Run the project-first proposal path instead:
    `./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<their request>"`.
    Treat that output as a no-write Product Intent request. Write the short
-   Product Intent Confirmation in chat from live reasoning so the operator sees
-   the interpreted product story, actors, systems, assumptions, ambiguities,
-   and confirm/edit/reject gate. After the operator confirms the same
+   Product Intent Confirmation in chat from live reasoning as sectioned
+   Markdown so the operator sees Product story, State object, First complete
+   path, Human actors, External systems, Internal product systems, Critical
+   assumptions, Ambiguities, Proof boundary, and Confirm/Edit/Reject. Use
+   bullets for actors, systems, assumptions, and ambiguities; do not collapse
+   the confirmation into a wall of prose or wrap normal domain words in code
+   ticks or decorative bold markers. After the operator confirms the same
    interpretation, write that same visible confirmation to
    `.odylith/runtime/greenfield/confirmed-intent.md`, then run the confirmed
    create path from the same confirmation:

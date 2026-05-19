@@ -9,11 +9,17 @@ architect a new project before source code exists.
    `./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<operator request>"`.
 3. Treat the default CLI text as the host reasoning contract, not the
    interpretation itself. The host must write the Product Intent Confirmation
-   in chat from live reasoning: what the product is, who the human actors are,
-   which external and internal systems matter, what assumptions are being made,
-   which ambiguities change the proposal, and a clear next-step block:
+   in chat from live reasoning. The visible confirmation must be sectioned
+   Markdown, not one large paragraph and never a wall of prose: title, Product
+   story, State object, First complete path, Human actors, External systems,
+   Internal product systems, Critical assumptions, Ambiguities, Proof boundary,
+   and a clear next-step block:
    confirm to expand into the proposal contract, edit to correct the
    interpretation, or reject to stop with no records written.
+   Use short paragraphs for the story, state object, first path, and proof
+   boundary. Use bullets for actors, systems, assumptions, and ambiguities.
+   Do not wrap ordinary product, actor, state, or component names in code ticks
+   or decorative bold markers.
    The confirmation and every created record must pass the clarity floor first:
    simple, easy to understand, legible, grammatically coherent, and clear.
    Product meaning comes before artifact mapping; clipped titles, malformed

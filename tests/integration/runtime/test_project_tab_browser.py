@@ -13,7 +13,7 @@ from tests.integration.runtime.surface_browser_test_support import (
     _new_page,
     _static_server,
 )
-from tests.unit.runtime.test_greenfield_proposals import (
+from tests.unit.runtime.greenfield_proposal_fixtures import (
     _apply_ready_greenfield_fixture,
     _seed_empty_governance_repo,
 )

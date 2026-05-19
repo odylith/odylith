@@ -39,6 +39,13 @@ def build_product_intent_confirmation(
         "host_reasoning_task": {
             "task": "Write the Product Intent Confirmation in chat before Odylith builds any proposal records.",
             "time_budget": "20_to_30_seconds_to_read",
+            "format_contract": [
+                "Render the visible confirmation as sectioned Markdown, not as one long paragraph.",
+                "Use this order: Product story; State object; First complete path; Human actors; External systems; Internal product systems; Critical assumptions; Ambiguities; Proof boundary; Next step.",
+                "Keep Product story, State object, First complete path, and Proof boundary as short paragraphs.",
+                "Use bullets for Human actors, External systems, Internal product systems, Critical assumptions, and Ambiguities so the reader can scan the interpretation.",
+                "Use plain prose for domain nouns; do not wrap ordinary product, actor, state, or component names in code ticks or decorative bold markers.",
+            ],
             "must_include": [
                 "a short product title that names the actual product, not the command",
                 "the product story you believe the user means, written as concise narrative prose",
@@ -56,6 +63,8 @@ def build_product_intent_confirmation(
                 "echo command instructions as the product name",
                 "use the repository directory as the project title when the prompt names a product",
                 "use generic actor placeholders instead of project-specific human roles",
+                "collapse the confirmation into a wall of prose without clear sections",
+                "use Markdown emphasis or code formatting around normal domain words",
                 "turn the product story into a list of governance artifacts",
                 "invent source-backed implementation evidence",
                 "generate implementation records, architecture records, release waves, validation obligations, or proposal JSON before confirmation",
@@ -101,12 +110,31 @@ def format_product_intent_confirmation_text(confirmation: Mapping[str, Any]) -> 
         "Product Intent Confirmation needed",
         f"No files changed. Source posture: {source_posture}.",
         "",
-        "Host reasoning task",
-        _clean(task.get("reasoning_standard")),
+        f"Host reasoning task: {_clean(task.get('reasoning_standard'))}",
         "",
-        "Write in chat",
+        "Visible format contract",
     ]
-    lines.extend(f"- {item}" for item in _strings(task.get("must_include")))
+    lines.append(
+        "- Render the visible confirmation as sectioned Markdown in this order: "
+        "Product story; State object; First complete path; Human actors; External systems; "
+        "Internal product systems; Critical assumptions; Ambiguities; Proof boundary; Next step. "
+        "Use bullets for Human actors, External systems, Internal product systems, Critical assumptions, "
+        "and Ambiguities; do not collapse it into a wall of prose."
+    )
+    lines.extend(
+        [
+            "",
+            "Write in chat",
+        ]
+    )
+    lines.extend(
+        [
+            "- product title, Product story, State object, and First complete path",
+            "- Human actors, External systems, and Internal product systems",
+            "- Critical assumptions, Ambiguities, and Proof boundary",
+            "- Confirm/Edit/Reject next step with what happens next",
+        ]
+    )
     lines.extend(
         [
             "",
@@ -119,7 +147,6 @@ def format_product_intent_confirmation_text(confirmation: Mapping[str, Any]) -> 
             "",
             "Original user intent",
             prompt,
-            "",
             "Next step",
             "- Confirm: if the interpretation is right, write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md, then run greenfield create with --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm so Odylith normalizes the accepted narrative internally, validates it, and applies accepted project records. Do not ask the operator to inspect proposal JSON.",
             "- Edit: if the product story, actors, systems, assumptions, first path, or proof boundary is wrong, ask for corrections and rerun this confirmation.",

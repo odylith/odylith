@@ -7,7 +7,7 @@ from pathlib import Path
 from odylith.runtime.project_intelligence import assets, builder, deeplinks, focus, presenter, product_story
 from odylith.runtime.project_intelligence.greenfield import _risk_classes
 from odylith.runtime.surfaces import dashboard_shell_links
-from tests.unit.runtime.test_greenfield_proposals import _apply_ready_greenfield_fixture as _host_greenfield_fixture
+from tests.unit.runtime.greenfield_proposal_fixtures import _apply_ready_greenfield_fixture as _host_greenfield_fixture
 
 
 def _write_json(path: Path, payload: object) -> None:

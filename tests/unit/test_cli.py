@@ -404,7 +404,10 @@ def test_greenfield_propose_command_is_provider_free(tmp_path: Path, capsys) -> 
     assert payload["write_policy"] == "host_reason_product_intent_before_confirmed_greenfield_create"
     assert payload["host_reasoning_task"]["must_include"]
     assert payload["host_reasoning_task"]["must_not"]
+    assert payload["host_reasoning_task"]["format_contract"]
+    assert "sectioned Markdown" in " ".join(payload["host_reasoning_task"]["format_contract"])
     assert "echo command instructions" in " ".join(payload["host_reasoning_task"]["must_not"])
+    assert "collapse the confirmation into a wall of prose without clear sections" in payload["host_reasoning_task"]["must_not"]
     assert "backlog" not in payload
     assert "components" not in payload
     assert "diagrams" not in payload

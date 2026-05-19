@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
-from tests.unit.runtime.test_greenfield_proposals import (
+from tests.unit.runtime.greenfield_proposal_fixtures import (
     _host_reasoned_ecommerce_proposal,
     _seed_empty_governance_repo,
 )

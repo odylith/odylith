@@ -4,7 +4,7 @@ import copy
 
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import project_intelligence_issues
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import domain_intelligence_issues
-from tests.unit.runtime.test_greenfield_proposals import _host_reasoned_ecommerce_proposal
+from tests.unit.runtime.greenfield_proposal_fixtures import _host_reasoned_ecommerce_proposal
 
 
 def _apply_ready_fixture(tmp_path, prompt: str) -> dict[str, object]:  # noqa: ANN001

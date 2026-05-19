@@ -1964,3 +1964,43 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   Existing consumer-owned source truth does not require migration; upgraded repos
   receive the corrected guidance through normal install, upgrade, or doctor asset
   refresh.
+- The sectioned Product Intent Confirmation guidance settlement is covered by
+  `migration-observer:0.1.15:guidance-and-skills:91a7a95b234f`,
+  `migration-observer:0.1.15:public-docs-and-release-guidance:412e1554c724`,
+  `migration-observer:0.1.15:browser-surfaces:166c6ffec12f`, and
+  `migration-observer:0.1.15:install-managed-assets:65b77b8f5647`. The pass keeps
+  greenfield confirmation visible as sectioned Markdown before any governed
+  write, blocks wall-of-prose or decorative Markdown leakage in installed host
+  guidance, and keeps structured runtime normalization inside Odylith after
+  confirmation. Existing consumer-owned source truth does not require migration;
+  upgraded repos receive the clearer managed guidance, public docs, browser
+  surfaces, and bundle assets through the normal install, upgrade, or doctor
+  refresh path.
+- The post-governance-refresh rendered asset settlement for that same sectioned
+  confirmation pass is covered by
+  `migration-observer:0.1.15:browser-surfaces:5274717fba44` and
+  `migration-observer:0.1.15:install-managed-assets:80c312315c25`, with final
+  public-docs, browser, and install-managed wording settlement covered by
+  `migration-observer:0.1.15:public-docs-and-release-guidance:b265939a6aaa`,
+  `migration-observer:0.1.15:browser-surfaces:84d10b57698f`, and
+  `migration-observer:0.1.15:install-managed-assets:485b5b1c6108`, with
+  post-Atlas-refresh rendered-settlement markers
+  `migration-observer:0.1.15:browser-surfaces:8f33187819d1` and
+  `migration-observer:0.1.15:install-managed-assets:ae45fa758240`. The pass
+  binds the regenerated browser payloads, public guidance, and install-managed
+  bundle mirrors after Casebook, Radar, and Compass were refreshed from generic
+  source truth, and keeps installed guidance explicit about no JSON inspection,
+  no second confirmation, and created-record summary/blocker-only closeout.
+  Existing consumer-owned records remain unchanged; upgraded repos receive the
+  regenerated read-only surfaces through normal dashboard/runtime refresh.
+- The confirmed-create regression hardening and anti-slop test decomposition is
+  covered by `migration-observer:0.1.15:guidance-and-skills:44e6c381c721` and
+  `migration-observer:0.1.15:install-managed-assets:1afba9f83fbd`. The pass
+  keeps confirmed greenfield creation fail-closed on generic fallback systems,
+  preserves domain-specific evidence review surfaces, splits parser, CLI, and
+  confirmed-surface coverage out of the oversized proposal test catch-all, and
+  refreshes managed guidance and install-managed bundle mirrors. Existing
+  consumer-owned governance records do not need a bespoke migration; upgraded
+  installs receive the clarified host guidance, skill text, and managed assets
+  through the normal install, upgrade, doctor, or dashboard refresh path while
+  confirmed-create behavior is enforced by the runtime gate.
