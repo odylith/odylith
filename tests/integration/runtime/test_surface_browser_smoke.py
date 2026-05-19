@@ -1211,7 +1211,8 @@ def test_shell_history_and_cross_surface_deeplinks_round_trip_cleanly(browser_co
         value=idea_id,
     )
 
-    _click_visible(radar.locator("#detail a.chip-registry-component:visible").first)
+    radar.locator("#detail details.topology-relations-panel").first.evaluate("node => { node.open = true; }")
+    _click_visible(radar.locator("#detail .topology-relations a.chip-registry-component:visible").first)
     page.wait_for_url(
         re.compile(rf".*/odylith/index\.html\?tab=registry(&.*)?component={re.escape(component_id.lower())}(&.*|$)"),
         timeout=15000,

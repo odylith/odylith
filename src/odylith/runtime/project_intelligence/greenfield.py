@@ -1926,7 +1926,6 @@ def _claim_evidence(
 
 def _accepted_validation_gate(accepted: Mapping[str, Any]) -> Mapping[str, Any]:
     """Return the accepted-project validation result, including legacy records."""
-
     gate = dict_value(accepted.get("validation_gate"))
     if gate:
         return gate

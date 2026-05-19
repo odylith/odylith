@@ -51,6 +51,12 @@ def test_atlas_component_cards_explain_specific_boundary_without_path_boilerplat
                 "kind": "client",
                 "responsibility": "Review screen for user approval and correction.",
             },
+            {
+                "component_id": "assignment-planner",
+                "label": "Assignment Planner",
+                "kind": "service",
+                "responsibility": "Assigns jobs to available resources while respecting priority, capacity, and constraints.",
+            },
         ],
     )
 
@@ -75,8 +81,12 @@ def test_atlas_component_cards_explain_specific_boundary_without_path_boilerplat
     )
     assert components["User Review Surface"] == (
         "Presents review screen for user approval and correction to users and captures the action or decision the "
-        "product needs next. Reviewers need to see what the user saw, submitted, corrected, or approved before "
-        "downstream state changed."
+        "product needs next. Reviewers need to see what the user saw, submitted, corrected, or approved and which "
+        "product state changed after that action."
+    )
+    assert components["Assignment Planner"] == (
+        "Owns the product responsibility to assign jobs to available resources while respecting priority, capacity, "
+        "and constraints. Reviewers need to see what this boundary receives, produces, records, and makes available next."
     )
     assert "accepted first release path" not in encoded
     assert "for the accepted first" not in encoded

@@ -170,11 +170,11 @@ def test_confirmed_greenfield_diagrams_use_compact_atlas_narration() -> None:
             "produces, records, and makes available next."
         ),
         (
-            "Performs frame-level pitch tracking. Reviewers need to see the inputs, rule version, result, "
+            "Owns the product responsibility to perform frame-level pitch tracking. Reviewers need to see the inputs, rule version, result, "
             "and downstream decision that depended on it."
         ),
         (
-            "Engraves the score model to PDF and MusicXML. Reviewers need to see the inputs, rule version, result, "
+            "Owns the product responsibility to engrave the score model to PDF and MusicXML. Reviewers need to see the inputs, rule version, result, "
             "and downstream decision that depended on it."
         ),
     ]
@@ -215,7 +215,7 @@ def test_confirmed_greenfield_noun_phrase_responsibilities_stay_grammatical() ->
         "corrected, or approved and which product state changed after that action."
     )
     assert "Coordinates follow-up actions, reviewer handoff, and blocked-state recovery" in encoded
-    assert "each responsibility transfer, failure state, recovery action, and the state or record each handoff produces" in encoded
+    assert "each responsibility transfer, failure state, recovery action, and final outcome" in encoded
 
 
 def test_mermaid_text_normalizes_sequence_labels_notes_and_messages() -> None:

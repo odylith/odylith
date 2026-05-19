@@ -1911,3 +1911,56 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   parser/schema retry details out of consumer chat. Existing consumer-owned source
   truth does not require migration; upgraded repos receive the corrected managed
   guidance and bundled assets.
+- The consumer guidance size-budget settlement is covered by
+  `migration-observer:0.1.15:install-managed-assets:b9fde18343c0`. The pass keeps
+  the confirmed-create operator contract intact while removing duplicated
+  installed guidance prose so consumer bootstrap assets stay within the managed
+  guidance budget. Existing consumer-owned source truth does not require
+  migration; upgraded repos receive the shorter managed guidance through normal
+  install, upgrade, or doctor asset refresh.
+- The managed guidance size and clarity settlement is covered by
+  `migration-observer:0.1.15:guidance-and-skills:3cbd72cf8d4e` and
+  `migration-observer:0.1.15:install-managed-assets:ff9f909fb8af`. The pass keeps
+  the anti-slop and confirmed-create rules explicit while shortening managed
+  guidance and installed bootstrap prose to stay inside release budgets. Existing
+  consumer-owned source truth does not require migration; upgraded repos receive
+  the clearer managed guidance through normal install, upgrade, or doctor asset
+  refresh.
+- The final managed guidance budget settlement is covered by
+  `migration-observer:0.1.15:guidance-and-skills:3f7fb9ddb327` and
+  `migration-observer:0.1.15:install-managed-assets:709b975e7ac4`. The pass keeps
+  the exact anti-slop, shared-kernel, and confirmed-create protections visible
+  while preserving the shorter installed guidance footprint. Existing
+  consumer-owned source truth does not require migration; upgraded repos receive
+  the corrected managed guidance through normal install, upgrade, or doctor asset
+  refresh.
+- The final release-candidate guidance proof wording settlement is covered by
+  `migration-observer:0.1.15:guidance-and-skills:cf8ed3770c00` and
+  `migration-observer:0.1.15:install-managed-assets:78e66ca674e9`. The pass keeps
+  repo-wide anti-slop proof, headless browser matrix, and confirmed-create
+  guidance explicit while preserving the managed install footprint. Existing
+  consumer-owned source truth does not require migration; upgraded repos receive
+  the corrected managed guidance through normal install, upgrade, or doctor asset
+  refresh.
+- The release-candidate managed guidance exactness settlement is covered by
+  `migration-observer:0.1.15:guidance-and-skills:51ee7bbd1374` and
+  `migration-observer:0.1.15:install-managed-assets:f9d892e58414`. The pass keeps
+  anti-slop proof, browser-state proof, and closeout evidence wording explicit
+  while preserving the managed guidance byte budget. Existing consumer-owned
+  source truth does not require migration; upgraded repos receive the corrected
+  guidance through normal install, upgrade, or doctor asset refresh.
+- The release-candidate guidance grammar settlement is covered by
+  `migration-observer:0.1.15:guidance-and-skills:0a0dbe7f6623` and
+  `migration-observer:0.1.15:install-managed-assets:aca1ffa700a1`. The pass keeps
+  the generic anti-slop rule, clarity floor, and browser-state proof intact while
+  removing clipped wording from managed guidance. Existing consumer-owned source
+  truth does not require migration; upgraded repos receive the clearer guidance
+  through normal install, upgrade, or doctor asset refresh.
+- The release-candidate exact guidance contract settlement is covered by
+  `migration-observer:0.1.15:guidance-and-skills:952e0a7c07a6` and
+  `migration-observer:0.1.15:install-managed-assets:d683748d5616`. The pass keeps
+  the exact anti-slop contract sentence, shared-kernel proof sentence, and
+  browser-state proof wording pinned while keeping the managed guidance concise.
+  Existing consumer-owned source truth does not require migration; upgraded repos
+  receive the corrected guidance through normal install, upgrade, or doctor asset
+  refresh.

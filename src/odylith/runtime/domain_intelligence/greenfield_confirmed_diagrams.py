@@ -8,6 +8,7 @@ from typing import Any
 
 from odylith.runtime.common import display_text
 from odylith.runtime.common import mermaid_text
+from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import finite_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 
@@ -251,7 +252,10 @@ def _component_subject(*, label: str, responsibility: str, boundary: str) -> str
 
 def _component_lead(*, label: str, subject: str, kind: str) -> str:
     if _looks_like_action_clause(subject):
-        return finite_action_clause(subject)
+        clause = finite_action_clause(subject)
+        if _component_clause_explains_boundary(clause):
+            return clause
+        return f"Owns the product responsibility to {_base_initial_action_clause(clause)}"
     if kind == "adapter":
         if _is_workflow_like(label, subject):
             return f"Coordinates {subject} across outside systems and product-owned records while preserving provenance"
@@ -267,13 +271,34 @@ def _component_lead(*, label: str, subject: str, kind: str) -> str:
     return f"Owns {subject}"
 
 
+def _component_clause_explains_boundary(value: str) -> bool:
+    return bool(
+        re.search(
+            r"\b(?:owns?|owned|responsible|authority|boundary|state|record|version|source of truth|"
+            r"receives?|produces?|records?|stores?|tracks?|links?|assembles?|derives?|controls?|"
+            r"protects?|coordinates?|maintains?|preserves?)\b",
+            value,
+            re.IGNORECASE,
+        )
+    )
+
+
+def _base_initial_action_clause(value: str) -> str:
+    text = str(value or "").strip(" .")
+    first, separator, rest = text.partition(" ")
+    if not first:
+        return text
+    base = base_action_clause(f"{first} placeholder").partition(" ")[0] or first
+    return f"{base} {rest.strip()}" if separator else base
+
+
 def _component_review_sentence(*, label: str, subject: str, kind: str) -> str:
     if kind == "adapter":
-        return "Reviewers need to see what this boundary receives from the source, what product record it produces, and which provenance evidence supports the handoff"
+        return "Reviewers need to see which source supplied the input and what normalized result entered the product"
     if kind == "client":
         return "Reviewers need to see what the user saw, submitted, corrected, or approved and which product state changed after that action"
     if _is_workflow_like(label, subject):
-        return "Reviewers need to see each responsibility transfer, failure state, recovery action, and the state or record each handoff produces"
+        return "Reviewers need to see each responsibility transfer, failure state, recovery action, and final outcome"
     if _is_record_like(label, subject):
         return "Reviewers need to see the versioned state, source evidence, and decisions that depended on this record"
     if _is_decision_like(label, subject):
