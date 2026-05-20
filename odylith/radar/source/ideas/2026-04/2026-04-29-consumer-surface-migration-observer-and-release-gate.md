@@ -2033,3 +2033,34 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   narrative is available. Existing consumer-owned source truth does not need a
   bespoke migration; upgraded installs receive the renderer behavior through the
   normal dashboard/runtime refresh path.
+- The confirmed-create completion and governed browser-surface settlement is
+  covered by `migration-observer:0.1.15:browser-surfaces:e819589101ed`. The pass
+  keeps confirmed greenfield creation on a bounded completion loop that fills
+  derivable project posture, backlog risk, component proof, component risks, and
+  Atlas watch paths before governed writes, then refreshes the generic Casebook,
+  Radar, and Registry browser surfaces from Odylith-owned source truth. Existing
+  consumer-owned governance records do not need a bespoke migration; upgraded
+  installs receive the stronger generator behavior and regenerated read-only
+  browser surfaces through normal runtime/dashboard refresh.
+- The final confirmed-create completion surface settlement is covered by
+  `migration-observer:0.1.15:browser-surfaces:6128cebf0b9a` and
+  `migration-observer:0.1.15:install-managed-assets:0f092276d707`, with the
+  post-sync bundled-asset fingerprint
+  `migration-observer:0.1.15:install-managed-assets:9ea90ad784ea` and the
+  managed-guidance generator fingerprint
+  `migration-observer:0.1.15:install-managed-assets:5ccc5a1d9f0a`. The pass
+  binds the refreshed Atlas freshness fingerprints, Compass/Radar/Registry/Casebook
+  browser payloads, Registry forensics, top-level shell, and bundled HTML mirrors
+  after the generic confirmed-create completion gate settled. Existing
+  consumer-owned governance truth is not rewritten by upgrade adoption; upgraded
+  installs receive the regenerated read-only surfaces and stronger future
+  confirmed-create behavior through normal runtime, managed asset, and dashboard
+  refresh paths.
+- The terminal confirmed-create completion refresh is covered by
+  `migration-observer:0.1.15:browser-surfaces:10d3b21e2095` and
+  `migration-observer:0.1.15:install-managed-assets:4e832d742a3e`. The pass
+  binds the post-sync Atlas, Compass, Radar, Registry, Casebook, Registry
+  forensics, top-level shell, and bundled managed HTML outputs after the
+  install-managed guidance generator was tightened. Existing consumer-owned
+  records remain unchanged; upgrades receive only managed runtime behavior,
+  regenerated read-only surfaces, and refreshed bundle assets.

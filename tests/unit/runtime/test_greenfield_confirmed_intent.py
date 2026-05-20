@@ -9,6 +9,7 @@ from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import normalize_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
+from odylith.runtime.governance import artifact_tribunal
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _confirmed_intent
 
@@ -474,6 +475,88 @@ Release proof must show one supported device path from pairing through live read
     assert all("missing or too thin" not in row for row in systems)
 
 
+def test_confirmed_proposal_completion_adds_component_risks_and_fresh_diagram_watch_paths(tmp_path: Path) -> None:
+    intent = parse_confirmed_intent_text(
+        """# Field Sensor Review Workspace
+
+A field operations team needs one place to pair a supported sensor, receive readings, explain gaps, show daily status, and let an operator decide whether a site needs attention. The first release proves that sensor data can move from device connection to reviewed status without hiding missing readings, abnormal signals, or unresolved consent and retention decisions.
+
+## State object that changes through the first journey
+The primary state object is a site reading timeline. It starts as unpaired, moves through paired, receiving data, quality checked, summarized, alerted, reviewed, exported or deleted, and records stale or abnormal states without pretending they are trusted measurements.
+
+## First complete path Odylith should prove before broader scope
+An operator pairs one supported device, grants data permissions, receives live readings, views a current dashboard, reviews a daily summary, sees a clear missing-data or abnormal-reading warning, and manages export or deletion for the stored readings.
+
+## Human actors
+- Operator: pairs the device, reads the dashboard, and decides what follow-up is needed.
+- Reviewer: checks whether the reading history and warning state are trustworthy enough to act on.
+- Support lead: diagnoses sync failures and protects sensitive reading data during incidents.
+
+## External systems
+- Sensor hardware, firmware, and calibration source.
+- Device operating system permissions.
+- Optional notification and storage provider.
+
+## Internal systems
+- Device pairing and sync.
+- Sensor ingestion and quality checks.
+- Metric normalization and status generation.
+- Consent, sharing, retention, and deletion.
+- Dashboard, history, alerts, and export.
+
+## Critical assumptions
+- The first release explains readings and status; it does not claim regulated diagnosis or emergency monitoring.
+- The supported device has a stable protocol or fixture contract for the first release.
+
+## Ambiguities
+- Whether data stays local-only or can sync to a cloud account.
+
+## Proof boundary
+Release proof must show one supported device path from pairing through live reading, stale-data handling, summary generation, warning display, privacy control, export, and deletion. It must not claim certified accuracy, diagnosis, emergency response, or broad hardware compatibility without separate validation.
+""",
+        prompt="Draft a product-first greenfield proposal for a field sensor review workspace.",
+    )
+
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="Draft a product-first greenfield proposal for a field sensor review workspace.",
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+
+    for component in proposal["components"]:
+        risks = component.get("risks")
+        assert isinstance(risks, list)
+        assert len(risks) >= 3
+        joined = " ".join(risks)
+        assert "Domain risk:" in joined
+        assert "Security and policy posture:" in joined
+        assert "privacy" in joined.casefold()
+        assert "retention" in joined.casefold()
+        assert "safety" in joined.casefold()
+        assert "…" not in joined
+        decision = artifact_tribunal.run_governed_artifact_tribunal(
+            artifact_kind="component",
+            payload={
+                "component_id": component["component_id"],
+                "label": component["label"],
+                "path": component["intended_path"],
+                "kind": component["kind"],
+                "responsibility": component["responsibility"],
+                "boundary": component["boundary"],
+                "interfaces": component["interfaces"],
+                "dependencies": component["dependencies"],
+                "validation": component["validation"],
+                "risks": component["risks"],
+            },
+        )
+        assert decision.passed, decision.issues
+
+    for diagram in proposal["diagrams"]:
+        assert diagram["watch_paths"]
+        assert "odylith/atlas/source" not in diagram["watch_paths"]
+
+
 def test_confirmed_intent_json_splits_labeled_roles_and_sentence_systems() -> None:
     intent = normalize_confirmed_intent(
         {
@@ -670,5 +753,4 @@ The community archive first workflow passes end to end with fixture-backed input
 
     with pytest.raises(ValueError, match="missing or too thin"):
         parse_confirmed_intent_text(bad_intent, prompt="Create a community archive")
-
 

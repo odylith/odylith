@@ -358,8 +358,15 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
         assert "Contract focus:" in text
         assert "Primary interface:" in text
         assert "Proof obligation:" in text
+        assert "Failure Modes" in text
+        assert "Domain risk:" in text
+        assert "Security and policy posture:" in text
         assert "**" not in text
         assert "…" not in text
+    catalog = json.loads((tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json").read_text(encoding="utf-8"))
+    for diagram in catalog["diagrams"]:
+        assert diagram["change_watch_paths"]
+        assert "odylith/atlas/source" not in diagram["change_watch_paths"]
 
 
 def test_greenfield_create_cli_requires_confirmation_before_writes(tmp_path, capsys) -> None:

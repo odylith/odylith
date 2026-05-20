@@ -608,6 +608,26 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   Existing consumer governance truth remains unchanged; upgrades
   refresh managed guidance/assets and keep proposal writes explicit through
   `odylith greenfield create --confirm`.
+  The 2026-05-20 confirmed-create completion and Atlas self-staleness fix is
+  assessed under `migration-observer:0.1.15:browser-surfaces:4d81743c447b`.
+  Existing consumer truth remains compatible: the change affects future
+  confirmed-create generation and regenerated browser surfaces, while existing
+  Radar, Registry, Atlas, release, and Compass records stay owned by the
+  consumer repo that created them.
+
+- 2026-05-20 confirmed-create completion hardening made confirmation own the
+  full governed artifact set instead of surfacing derivable gaps back to the
+  operator. `greenfield create --confirm` now routes confirmed proposals through
+  a bounded completion gate that fills project posture, backlog risk/security
+  posture, component interfaces/dependencies/validation/risks, and Atlas watch
+  paths from the accepted intent before rerunning the greenfield Tribunal and
+  governed artifact Tribunals. The same pass removed Atlas self-watch paths so
+  newly scaffolded diagrams do not become stale by rendering their own catalog,
+  SVG, and PNG assets. Proof includes the confirmed-intent/CLI regression tests,
+  governed component Tribunal checks, focused greenfield proposal suites, and a
+  fresh external consumer create run that produced Radar, Registry, Atlas,
+  release, Compass memory, and refreshed shell surfaces end to end without
+  storing the external product's domain labels in Odylith governance truth.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component authoring, CLI dispatch, show capabilities, and Compass transaction filtering.

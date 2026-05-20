@@ -36,9 +36,9 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 94,
-    "mapped_workstream_evidence_count": 69,
-    "recent_path_match_count": 1,
+    "explicit_event_count": 95,
+    "mapped_workstream_evidence_count": 70,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 12,
     "status": "forensic_coverage_present",
     "timeline_event_count": 95
@@ -52,20 +52,36 @@
   "spec_ref": "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
   "timeline": [
     {
-      "artifacts": [
-        "src/odylith/runtime/surfaces/render_mermaid_catalog.py"
-      ],
+      "artifacts": [],
       "confidence": "high",
       "event_index": 466,
-      "explicit_components": [],
-      "kind": "workspace_activity",
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "kind": "implementation",
       "mapped_components": [
-        "atlas"
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/surfaces/render_mermaid_catalog.py",
-      "ts_iso": "2026-05-17T18:12:12-07:00",
-      "workstreams": []
+      "summary": "Hardened confirmed greenfield internal-system parsing so domain-specific evidence-review systems pass Tribunal-backed create while exact generic fallback scaffolds still fail closed under CB-202.",
+      "ts_iso": "2026-05-19T14:04:11-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 157,
-    "mapped_workstream_evidence_count": 115,
+    "explicit_event_count": 158,
+    "mapped_workstream_evidence_count": 116,
     "recent_path_match_count": 1,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 158
+    "timeline_event_count": 159
   },
   "name": "Radar",
   "path_prefixes": [
@@ -55,19 +55,52 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md"
+        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md"
       ],
       "confidence": "high",
-      "event_index": 468,
+      "event_index": 470,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "radar"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-      "ts_iso": "2026-05-17T21:49:31-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md, odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
+      "ts_iso": "2026-05-19T19:05:26-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 466,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Hardened confirmed greenfield internal-system parsing so domain-specific evidence-review systems pass Tribunal-backed create while exact generic fallback scaffolds still fail closed under CB-202.",
+      "ts_iso": "2026-05-19T14:04:11-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [],

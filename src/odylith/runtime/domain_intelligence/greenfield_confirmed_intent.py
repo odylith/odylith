@@ -572,14 +572,14 @@ def _intent_context_text(intent: Mapping[str, Any]) -> str:
         _clean(intent.get("first_path")),
         _clean(intent.get("state_object")),
         _clean(intent.get("proof_boundary")),
-        " ".join(_strings(intent.get("success_metrics"))),
-        " ".join(_strings(intent.get("component_responsibilities"))),
-        " ".join(_strings(intent.get("human_actors"))),
-        " ".join(_strings(intent.get("external_systems"))),
-        " ".join(_strings(intent.get("assumptions"))),
-        " ".join(_strings(intent.get("non_goals"))),
+        ". ".join(_strings(intent.get("success_metrics"))),
+        ". ".join(_strings(intent.get("component_responsibilities"))),
+        ". ".join(_strings(intent.get("human_actors"))),
+        ". ".join(_strings(intent.get("external_systems"))),
+        ". ".join(_strings(intent.get("assumptions"))),
+        ". ".join(_strings(intent.get("non_goals"))),
     ]
-    return _clean(" ".join(part for part in parts if part))
+    return _clean(". ".join(part.strip(" .") for part in parts if part))
 
 
 def _expanded_system_description(candidate: str, *, context_text: str, rationale: str) -> str:
@@ -613,7 +613,9 @@ def _best_context_clause(candidate: str, context_text: str) -> str:
 
 def _context_clauses(text: str) -> list[str]:
     clauses: list[str] = []
-    for sentence in re.split(r"(?<=[.!?])\s+", _clean(text)):
+    context = re.sub(r"([.!?][\"'])\s+", "\\1\n", _clean(text))
+    context = re.sub(r"([.!?])\s+", "\\1\n", context)
+    for sentence in context.splitlines():
         for clause in re.split(r"\s*;\s*|\s+,\s+(?=(?:and|or|then|when|while|without)\b)", sentence):
             cleaned = _clean(clause).strip(" .")
             if _word_count(cleaned) >= 6:
@@ -625,10 +627,13 @@ def _brief_clause(value: str, *, limit: int) -> str:
     text = _clean(value).strip(" .")
     if len(text) <= limit:
         return text
-    clipped = text[: max(0, limit - 1)].rstrip(" ,;:")
+    clipped = text[: max(0, limit)].rstrip(" ,;:")
     if " " in clipped:
         clipped = clipped.rsplit(" ", 1)[0].rstrip(" ,;:")
-    return clipped + "…"
+    words = clipped.split()
+    while words and words[-1].casefold().strip(".,;:") in {"and", "or", "to", "with", "for", "from", "of", "the", "a", "an"}:
+        words.pop()
+    return " ".join(words).rstrip(" ,;:")
 
 
 def _extract_internal_system_candidates(paragraph: str) -> list[str]:

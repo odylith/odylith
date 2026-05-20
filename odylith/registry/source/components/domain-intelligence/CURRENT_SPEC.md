@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-05-19
+Last updated: 2026-05-20
 
 
 ## Overview
@@ -69,6 +69,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-09: Tightened greenfield architecture view naming so generated diagram titles are concise view names rather than full prompt-prefixed labels. Generic and robot-swarm profiles now emit titles such as `System Overview`, `First Slice Flow`, and `Telemetry Contract And Data Flow`; slugs and summaries retain project identity. The Tribunal rejects confirmed proposals whose diagram titles repeat the project title prefix. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-195`)
 - 2026-05-14: Replaced the v0.1.15 host-authored JSON repair path with an Odylith-owned confirmed create path. `greenfield propose --confirm-intent --format json` now emits the same apply-ready proposal that `greenfield create --confirm` applies, release smoke runs the confirmed create path against a fresh repo, and installed guidance forbids hand-authored proposal repair loops across hosts. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-173`, `CB-181`)
 - 2026-05-19: Tightened the confirmed-intent internal-systems gate so fail-closed create still rejects the exact generic fallback trio while accepting domain-specific systems that own evidence review, such as a race gearbox run evidence review surface. The recurrence is captured under `CB-202`, and the regression tests prove both acceptance and rejection paths. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-05-20: Added the confirmed-completion gate for `greenfield create --confirm`. Confirmed proposals now fill deterministic omissions before writes: project posture, backlog risk/security fields, component interfaces/dependencies/validation/risks, and non-self-invalidating Atlas watch paths. The gate reruns proposal and governed-artifact Tribunals before create applies source truth, so a rich accepted intent produces a full Radar/Registry/Atlas/release/Compass project set instead of stopping on missing derivable fields. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -98,6 +99,12 @@ This section captures synchronized requirement and contract signals derived from
   systems. Generic scaffold detection may reject exact fallback names together,
   but it must not reject a project-specific `evidence review` system solely
   because evidence review is part of its domain responsibility.
+- Confirmed-create completion must run after normalization and before any
+  source-truth write. It fills every deterministic Radar, Registry, Atlas,
+  release, risk, proof, and validation field derivable from the accepted intent,
+  then reruns the greenfield Tribunal and governed artifact Tribunals. It may
+  retry bounded deterministic omissions, but it must not invent source-backed
+  implementation evidence or ask the host to hand-author proposal JSON.
 - Installed greenfield guidance must not ask Codex or Claude hosts to hand-author
   or reconstruct proposal JSON. Proposal review uses the canonical object from
   `greenfield propose`; confirmation uses `greenfield create --confirm` unless an

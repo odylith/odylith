@@ -557,7 +557,11 @@ def _brief_clause(value: str, *, limit: int = 180) -> str:
         text = text.split(". ", 1)[0].strip(" .")
     if len(text) <= limit:
         return text
-    return text[: max(0, limit - 1)].rstrip() + "…"
+    clipped = text[: max(0, limit)].rsplit(" ", 1)[0].rstrip(" ,;:")
+    words = clipped.split()
+    while words and words[-1].casefold().strip(".,;:") in {"and", "or", "to", "with", "for", "from", "of", "the", "a", "an"}:
+        words.pop()
+    return " ".join(words).rstrip(" ,;:")
 
 
 def _state_object_label(value: str, *, fallback: str) -> str:

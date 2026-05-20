@@ -25,6 +25,7 @@ from typing import Any, Mapping, Sequence
 from odylith.runtime.analysis_engine import repo_analysis
 from odylith.runtime.analysis_engine.types import SourceSummary, slugify
 from odylith.runtime.domain_intelligence import greenfield_component_registry_scope
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import load_confirmed_intent_file
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
@@ -229,6 +230,8 @@ def build_greenfield_proposal(
         release_selector=release_selector,
         confirmed_intent=confirmed_intent,
     )
+    proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
+    proposal = complete_confirmed_proposal(proposal, release_selector=release_selector)
     proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
     validate_host_reasoned_proposal(proposal)
     selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
@@ -785,6 +788,8 @@ def apply_greenfield_proposal(
 
     if not confirm:
         raise ValueError("--confirm is required before greenfield apply writes accepted product records")
+    proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
+    proposal = complete_confirmed_proposal(proposal, release_selector=release_selector)
     proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
     validate_host_reasoned_proposal(proposal)
     root = Path(repo_root).expanduser().resolve()
