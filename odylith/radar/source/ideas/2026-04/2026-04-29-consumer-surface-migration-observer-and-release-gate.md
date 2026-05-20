@@ -2090,3 +2090,31 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   producers. Existing consumer-owned records remain unchanged; upgraded installs
   receive the corrected managed guidance and bundled shell assets through normal
   install, upgrade, doctor, or managed asset refresh.
+- The general confirmed-create completion and generated governance-surface
+  settlement is covered by
+  `migration-observer:0.1.15:browser-surfaces:6687fb6f264b` and
+  `migration-observer:0.1.15:install-managed-assets:a99408a8d661`. The pass
+  binds regenerated Atlas, Casebook, Registry, and bundled HTML surfaces after
+  the generic completion gate started expanding derivable confirmed-intent
+  actor, system, risk, success, and proof fields before Tribunal validation.
+  Existing consumer-owned governance records remain unchanged; upgraded installs
+  receive the stronger future confirmed-create behavior and regenerated
+  read-only browser or bundle assets through normal runtime, dashboard, install,
+  upgrade, doctor, or managed asset refresh.
+- The post-refresh confirmed-create completion and generated governance-surface
+  settlement is covered by
+  `migration-observer:0.1.15:browser-surfaces:c097d0c231a4` and
+  `migration-observer:0.1.15:install-managed-assets:7ab7b45decdc`. The pass
+  binds the final path set after Compass, Radar, Registry, Casebook, Atlas, and
+  bundled shell surfaces were regenerated from the generic confirmed-create
+  completion change. Existing consumer-owned records remain unchanged; upgraded
+  installs receive the stronger future generator behavior and refreshed
+  read-only browser or bundle surfaces through normal runtime, dashboard,
+  install, upgrade, doctor, or managed asset refresh.
+- The full-sync bundled surface settlement for that same confirmed-create
+  completion pass is covered by
+  `migration-observer:0.1.15:install-managed-assets:8593dbf4eec5`. The pass
+  binds the final bundled HTML path set after Atlas, Casebook, Compass, Radar,
+  Registry, and the top-level shell mirrors settled. Existing consumer-owned
+  truth remains unchanged; upgraded installs receive only regenerated managed
+  read-only surfaces and the stronger future confirmed-create generator.

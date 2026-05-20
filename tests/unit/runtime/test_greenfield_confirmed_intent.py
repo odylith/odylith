@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfie
 from odylith.runtime.governance import artifact_tribunal
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _confirmed_intent
+from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 
 
 def test_confirmed_intent_parser_keeps_ambiguities_out_of_first_path() -> None:
@@ -145,50 +146,50 @@ Reject: stop without writing records.
 
 def test_confirmed_intent_parser_accepts_domain_specific_evidence_review_surface(tmp_path: Path) -> None:
     intent = parse_confirmed_intent_text(
-        """Race Gearbox Reliability Workspace — Product Intent Confirmation
+        """Equipment Reliability Review Workspace — Product Intent Confirmation
 
 Product story
-The app helps race engineers catch efficiency loss and early gearbox degradation before it turns into missed performance, unplanned gearbox changes, or race-ending reliability failures. It gives engineers one reviewable workspace for run data, gearbox state, degradation signals, and maintenance decisions so the team can act before the next run.
+The app helps reliability engineers catch efficiency loss and early equipment degradation before it turns into missed performance, unplanned service changes, or operational failures. It gives engineers one reviewable workspace for run data, equipment state, degradation signals, and maintenance decisions so the team can act before the next run.
 
 State object
-A Gearbox Health Record tracks the gearbox identity, session run, telemetry summary, efficiency trend, inspection notes, degradation alerts, maintenance decision, and evidence attached to each readiness state.
+An Equipment Health Record tracks equipment identity, session run, telemetry summary, efficiency trend, inspection notes, degradation alerts, maintenance decision, and evidence attached to each readiness state.
 
 First complete path
-A race engineer imports one run, reviews gearbox telemetry and inspection notes, sees an efficiency-loss warning, records a maintenance decision, and verifies whether the gearbox is cleared, watched, or removed before the next run.
+A reliability engineer imports one run, reviews equipment telemetry and inspection notes, sees an efficiency-loss warning, records a maintenance decision, and verifies whether the equipment is cleared, watched, or removed before the next run.
 
 Human actors
-- Race engineer — reviews run evidence, decides whether gearbox condition is safe enough for the next run, and owns the maintenance recommendation.
-- Crew chief — checks the engineer decision and coordinates gearbox change or continued use.
+- Reliability engineer — reviews run evidence, decides whether equipment condition is safe enough for the next run, and owns the maintenance recommendation.
+- Operations lead — checks the engineer decision and coordinates service change or continued use.
 - Data engineer — maintains telemetry feeds and confirms signal quality before reliability claims are trusted.
 
 External systems
 - Telemetry logger supplies run traces and sensor samples.
-- Maintenance history system supplies prior gearbox usage, service intervals, and component changes.
+- Maintenance history system supplies prior equipment usage, service intervals, and component changes.
 
 Internal product systems
-The internal product systems include a telemetry ingestion pipeline, gearbox health model, degradation alert ledger, maintenance decision workspace, and run evidence review surface.
+The internal product systems include a telemetry ingestion pipeline, equipment health model, degradation alert ledger, maintenance decision workspace, and run evidence review surface.
 
 Critical assumptions
-- Release 0.0.1 starts with one gearbox and one post-run review path.
+- Release 0.0.1 starts with one equipment asset and one post-run review path.
 - Sensor data is imported from fixtures before live team integrations are trusted.
-- The product recommends maintenance review but does not automate race safety approval.
+- The product recommends maintenance review but does not automate operational safety approval.
 
 Ambiguities
 - Which telemetry channels are required for the first reliability signal?
 - What threshold should classify efficiency loss as actionable?
-- Who has authority to clear a gearbox after a warning?
+- Who has authority to clear equipment after a warning?
 
 Proof boundary
-Release 0.0.1 succeeds when an engineer can import one run, inspect the gearbox health record, see the degradation evidence and efficiency trend, record the maintenance decision, and explain why the gearbox is cleared, watched, or removed before the next run.
+Release 0.0.1 succeeds when an engineer can import one run, inspect the equipment health record, see the degradation evidence and efficiency trend, record the maintenance decision, and explain why the equipment is cleared, watched, or removed before the next run.
 """,
-        prompt="Build a race gearbox reliability app",
+        prompt="Build an equipment reliability review app",
     )
 
     assert len(intent["internal_systems"]) == 5
     assert any(row.startswith("Run Evidence Review Surface —") for row in intent["internal_systems"])
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
-        prompt="Build a race gearbox reliability app",
+        prompt="Build an equipment reliability review app",
         release_selector="0.0.1",
         confirmed_intent=intent,
     )
@@ -475,6 +476,121 @@ Release proof must show one supported device path from pairing through live read
     assert all("missing or too thin" not in row for row in systems)
 
 
+def test_confirmed_intent_completion_expands_thin_actors_and_systems_generically() -> None:
+    intent = parse_confirmed_intent_text(
+        """# Evidence Review Workspace
+
+An operations review team needs one workspace to collect submitted observations, compare them with reference rules, record uncertainty, and decide what follow-up is safe before the next review. The first release proves that one observation can move from intake to review decision without hiding missing evidence, unsafe assumptions, or unresolved ownership.
+
+## State object
+An evidence case tracks item identity, observation notes, source references, review status, uncertainty, follow-up decision, and final outcome.
+
+## First complete path
+A coordinator imports one submitted observation, a reviewer checks the evidence, the team records one uncertainty, the coordinator chooses a follow-up action, and the case ends with a clear reviewed or blocked status.
+
+## Human actors
+- Coordinator
+- Reviewer
+- Support helper
+
+## External systems
+- Submitted notes and supporting files.
+- Reference rules.
+
+## Internal product systems
+- Case intake.
+- Evidence review.
+- Follow-up tracker.
+
+## Proof boundary
+Release 0.0.1 succeeds when a reviewer can inspect one evidence case, trace the observation to source notes, see the uncertainty and follow-up decision, and explain why the case is reviewed or blocked without claiming complete operational coverage.
+""",
+        prompt="Draft a product-first greenfield proposal for an evidence review workspace.",
+    )
+
+    assert len(intent["human_actors"]) >= 3
+    assert all(len(row.split()) >= 7 for row in intent["human_actors"])
+    assert len(intent["internal_systems"]) >= 3
+    assert all("—" in row for row in intent["internal_systems"])
+    assert all(len(row.split("—", 1)[1].split()) >= 5 for row in intent["internal_systems"])
+    assert len(intent["success_metrics"]) >= 3
+    assert intent["problem"]
+    assert intent["customer"]
+    assert intent["opportunity"]
+    assert intent["product_view"]
+    assert "missing or too thin" not in json.dumps(intent)
+
+
+def test_confirmed_greenfield_create_completes_thin_intent_before_governed_records(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    intent_path = tmp_path / ".odylith/runtime/greenfield/confirmed-intent.md"
+    intent_path.parent.mkdir(parents=True, exist_ok=True)
+    intent_path.write_text(
+        """# Decision Review Workspace
+
+A small operations team needs one place to receive submitted observations, compare them against quality rules, record uncertainty, and decide whether an item can move forward or needs another review. The first release proves that one decision can be traced from intake through review without hiding missing measurements, reviewer judgment, or unsafe release claims.
+
+## State object
+A decision record tracks item identity, source observation, quality checks, uncertainty, reviewer notes, recheck status, and final release decision.
+
+## First complete path
+A coordinator imports one observation, a reviewer checks quality evidence, the system records one uncertainty, the reviewer chooses release or recheck, and the record shows the final status with source evidence.
+
+## Human actors
+- Coordinator
+- Reviewer
+- Operations lead
+
+## External systems
+- Submitted observation file.
+- Quality reference rules.
+
+## Internal product systems
+- Case intake.
+- Quality review.
+- Decision ledger.
+
+## Proof boundary
+Release 0.0.1 succeeds when one decision record can be inspected from source observation through quality evidence, uncertainty, reviewer decision, recheck status, and final outcome without claiming automated approval or production certification.
+""",
+        encoding="utf-8",
+    )
+
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Draft a product-first greenfield proposal for a decision review workspace.",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--release",
+            "0.0.1",
+            "--confirm",
+        ]
+    )
+
+    output = capsys.readouterr().out
+    assert rc == 0, output
+    assert "greenfield create wrote confirmed proposal" in output
+    assert "missing or too thin" not in output
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
+    accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
+    encoded = json.dumps(accepted)
+    assert "Decision Review Workspace" in encoded
+    assert "Case Intake" in encoded
+    assert "Quality Review" in encoded
+    assert "Decision Ledger" in encoded
+
+
 def test_confirmed_proposal_completion_adds_component_risks_and_fresh_diagram_watch_paths(tmp_path: Path) -> None:
     intent = parse_confirmed_intent_text(
         """# Field Sensor Review Workspace
@@ -753,4 +869,3 @@ The community archive first workflow passes end to end with fixture-backed input
 
     with pytest.raises(ValueError, match="missing or too thin"):
         parse_confirmed_intent_text(bad_intent, prompt="Create a community archive")
-

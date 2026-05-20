@@ -8,6 +8,8 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
+
 
 FIELD_MIN_WORDS = {
     "product_story": 28,
@@ -165,6 +167,7 @@ def normalize_confirmed_intent(value: object, *, prompt: str = "", fallback_titl
         ),
         context_text=_intent_context_text(result),
     )
+    result = _complete_confirmed_intent_before_validation(result)
     _validate_confirmed_intent(result)
     return result
 
@@ -210,6 +213,15 @@ def write_structured_confirmed_intent_file(path: Path, intent: Mapping[str, Any]
     return target
 
 
+def _complete_confirmed_intent_before_validation(intent: Mapping[str, Any]) -> dict[str, Any]:
+    result = dict(intent)
+    if _contains_meta_narration(result):
+        return result
+    if _contains_generic_system_scaffold(_strings(result.get("internal_systems"))):
+        return result
+    return complete_confirmed_intent(result)
+
+
 def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: str = "") -> dict[str, Any]:
     """Parse the human Product Intent Confirmation that the host already showed."""
 
@@ -237,6 +249,7 @@ def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: 
         "non_goals": _section_list(sections, "non_goals"),
     }
     result["internal_systems"] = _internal_system_rows(sections, context_text=_intent_context_text(result))
+    result = _complete_confirmed_intent_before_validation(result)
     _validate_confirmed_intent(result)
     return result
 

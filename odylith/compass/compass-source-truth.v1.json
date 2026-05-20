@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-05-20T03:30:25Z",
+  "generated_utc": "2026-05-20T06:11:32Z",
   "release_summary": {
     "catalog": [
       {
@@ -315,18 +315,18 @@
         "activity": {
           "24h": {
             "commit_count": 4,
-            "local_change_count": 0,
-            "file_touch_count": 104
+            "local_change_count": 2,
+            "file_touch_count": 105
           },
           "48h": {
             "commit_count": 6,
-            "local_change_count": 0,
-            "file_touch_count": 219
+            "local_change_count": 2,
+            "file_touch_count": 220
           }
         },
         "timeline": {
           "start_date": "2026-05-01",
-          "last_activity_iso": "2026-05-19T19:13:29-07:00",
+          "last_activity_iso": "2026-05-19T22:16:45-07:00",
           "age_days": 18,
           "eta_days": 1,
           "eta_confidence": "high"
@@ -342,8 +342,8 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 68,
-            "band": "Medium"
+            "index": 72,
+            "band": "High"
           },
           "48h": {
             "index": 75,
@@ -374,14 +374,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 172,
+            "meaningful_change_count": 174,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 2,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -606,7 +606,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 178,
+            "meaningful_change_count": 179,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -648,6 +648,192 @@
           }
         ],
         "proof_summary_lines": []
+      },
+      {
+        "idea_id": "B-140",
+        "title": "Consumer Surface Migration Observer And Release Gate",
+        "status": "finished",
+        "priority": "P0",
+        "sizing": "M",
+        "complexity": "High",
+        "ordering_score": "100",
+        "implemented_summary": "",
+        "why": {
+          "problem": "Odylith can change dashboards, managed guidance, skills, install-managed assets, or host-facing surfaces in the product repo without explicitly assessing how already-installed consumer repositories will experience that change. That leaves migration needs to human memory after the code lands.",
+          "customer": "Odylith maintainers preparing 0.1.12 and future releases, plus downstream consumer-repo operators who upgrade from earlier installed versions and expect dashboards, guidance, skills, hooks, and managed assets to migrate intentionally.",
+          "proposed_solution": "Add a surface migration observer to the migration runtime and wire it into `odylith release migration-gate`. The observer classifies changed consumer-visible surfaces, emits exact Radar markers for migration-assessment obligations, and blocks release gating until each observed need has a completed workstream record for the target version.",
+          "opportunity": "Make consumer-lane migration assessment automatic whenever product surfaces move, so every release can prove that changed surfaces were either migration-safe, planned as release-note guidance, or backed by a real migration/repair task before publish.",
+          "why_now": "This slice is active enough that it should exist as explicit backlog truth now.",
+          "founder_pov": "Add a migration observer to the migration-runtime release gate. It scans changed consumer-visible surface paths, classifies the migration risk, emits exact governance prompts, and fails the release gate until each observed need is linked to tracked Radar migration work or intentionally waived with evidence."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "Removed from 0.1.15",
+        "plan": {
+          "created": "2026-04-29",
+          "updated": "2026-04-29",
+          "all_total_tasks": 20,
+          "all_done_tasks": 20,
+          "total_tasks": 12,
+          "done_tasks": 12,
+          "progress_ratio": 1.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": 1.0,
+          "display_progress_label": "100% progress",
+          "display_progress_state": "percent",
+          "progress_classification": "closed",
+          "checklist_label": "Checklist 12/12",
+          "next_tasks": []
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 6,
+            "local_change_count": 1,
+            "file_touch_count": 110
+          },
+          "48h": {
+            "commit_count": 8,
+            "local_change_count": 1,
+            "file_touch_count": 215
+          }
+        },
+        "timeline": {
+          "start_date": "2026-04-29",
+          "last_activity_iso": "2026-05-19T23:10:51-07:00",
+          "age_days": 20,
+          "eta_days": 0,
+          "eta_confidence": "high"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [],
+          "split_from": [],
+          "split_into": [],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 35,
+          "24h": {
+            "index": 55,
+            "band": "Medium"
+          },
+          "48h": {
+            "index": 55,
+            "band": "Medium"
+          }
+        },
+        "proof_state": {
+          "lane_id": "v0.1.13-host-integrity",
+          "frontier_phase": "governance-refresh",
+          "proof_status": "live_verified",
+          "evidence_tier": "live_verified",
+          "allowed_next_work": [
+            "closeout",
+            "secondary hardening",
+            "docs"
+          ],
+          "deployment_truth": {
+            "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
+            "pushed_head": "unknown",
+            "published_source_commit": "unknown",
+            "runner_fingerprint": "unknown",
+            "last_live_failing_commit": "unknown"
+          },
+          "recent_work_categories": [
+            "governance"
+          ],
+          "source": "inferred",
+          "resolution_state": "inferred"
+        },
+        "claim_guard": {
+          "blocked_terms": [],
+          "claim_scope": "live",
+          "highest_truthful_claim": "fixed live",
+          "hosted_frontier_advanced": true,
+          "proof_status": "live_verified",
+          "same_fingerprint_as_last_falsification": false
+        },
+        "proof_state_resolution": {
+          "lane_ids": [
+            "v0.1.13-host-integrity"
+          ],
+          "state": "resolved"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "contract-level",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 16,
+            "decision_evidence": true,
+            "explicit_count": 145,
+            "frontier_phase": "governance-refresh",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 77,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 164,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "live_verified",
+            "stale_authority": false,
+            "synthetic_count": 0,
+            "unsafe_closeout": false,
+            "verified_completion": true
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A recent verified completion was recorded.",
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-140"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-140"
+          }
+        ],
+        "proof_summary_lines": [
+          "Frontier: governance-refresh",
+          "Evidence tier: live verified"
+        ]
       },
       {
         "idea_id": "B-083",
@@ -745,19 +931,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 5,
-            "local_change_count": 3,
+            "commit_count": 6,
+            "local_change_count": 0,
             "file_touch_count": 110
           },
           "48h": {
-            "commit_count": 7,
-            "local_change_count": 3,
+            "commit_count": 8,
+            "local_change_count": 0,
             "file_touch_count": 226
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-05-19T20:13:13-07:00",
+          "last_activity_iso": "2026-05-19T21:06:42-07:00",
           "age_days": 39,
           "eta_days": null,
           "eta_confidence": "low"
@@ -916,19 +1102,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 5,
-            "local_change_count": 3,
+            "commit_count": 6,
+            "local_change_count": 0,
             "file_touch_count": 110
           },
           "48h": {
-            "commit_count": 7,
-            "local_change_count": 3,
+            "commit_count": 8,
+            "local_change_count": 0,
             "file_touch_count": 226
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-05-19T20:13:13-07:00",
+          "last_activity_iso": "2026-05-19T21:06:42-07:00",
           "age_days": 40,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1102,19 +1288,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 2,
-            "file_touch_count": 104
+            "commit_count": 5,
+            "local_change_count": 0,
+            "file_touch_count": 106
           },
           "48h": {
-            "commit_count": 6,
-            "local_change_count": 2,
-            "file_touch_count": 220
+            "commit_count": 7,
+            "local_change_count": 0,
+            "file_touch_count": 221
           }
         },
         "timeline": {
           "start_date": "2026-04-25",
-          "last_activity_iso": "2026-05-19T20:13:35-07:00",
+          "last_activity_iso": "2026-05-19T21:06:42-07:00",
           "age_days": 24,
           "eta_days": null,
           "eta_confidence": "low"
@@ -1289,19 +1475,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 2,
-            "file_touch_count": 104
+            "commit_count": 5,
+            "local_change_count": 0,
+            "file_touch_count": 106
           },
           "48h": {
-            "commit_count": 6,
-            "local_change_count": 2,
-            "file_touch_count": 231
+            "commit_count": 7,
+            "local_change_count": 0,
+            "file_touch_count": 232
           }
         },
         "timeline": {
           "start_date": "2026-04-17",
-          "last_activity_iso": "2026-05-19T20:13:35-07:00",
+          "last_activity_iso": "2026-05-19T21:06:42-07:00",
           "age_days": 32,
           "eta_days": null,
           "eta_confidence": "low"
@@ -1395,192 +1581,6 @@
           }
         ],
         "proof_summary_lines": []
-      },
-      {
-        "idea_id": "B-140",
-        "title": "Consumer Surface Migration Observer And Release Gate",
-        "status": "finished",
-        "priority": "P0",
-        "sizing": "M",
-        "complexity": "High",
-        "ordering_score": "100",
-        "implemented_summary": "",
-        "why": {
-          "problem": "Odylith can change dashboards, managed guidance, skills, install-managed assets, or host-facing surfaces in the product repo without explicitly assessing how already-installed consumer repositories will experience that change. That leaves migration needs to human memory after the code lands.",
-          "customer": "Odylith maintainers preparing 0.1.12 and future releases, plus downstream consumer-repo operators who upgrade from earlier installed versions and expect dashboards, guidance, skills, hooks, and managed assets to migrate intentionally.",
-          "proposed_solution": "Add a surface migration observer to the migration runtime and wire it into `odylith release migration-gate`. The observer classifies changed consumer-visible surfaces, emits exact Radar markers for migration-assessment obligations, and blocks release gating until each observed need has a completed workstream record for the target version.",
-          "opportunity": "Make consumer-lane migration assessment automatic whenever product surfaces move, so every release can prove that changed surfaces were either migration-safe, planned as release-note guidance, or backed by a real migration/repair task before publish.",
-          "why_now": "This slice is active enough that it should exist as explicit backlog truth now.",
-          "founder_pov": "Add a migration observer to the migration-runtime release gate. It scans changed consumer-visible surface paths, classifies the migration risk, emits exact governance prompts, and fails the release gate until each observed need is linked to tracked Radar migration work or intentionally waived with evidence."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md"
-        },
-        "registry_components": [
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "Removed from 0.1.15",
-        "plan": {
-          "created": "2026-04-29",
-          "updated": "2026-04-29",
-          "all_total_tasks": 20,
-          "all_done_tasks": 20,
-          "total_tasks": 12,
-          "done_tasks": 12,
-          "progress_ratio": 1.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": 1.0,
-          "display_progress_label": "100% progress",
-          "display_progress_state": "percent",
-          "progress_classification": "closed",
-          "checklist_label": "Checklist 12/12",
-          "next_tasks": []
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 108
-          },
-          "48h": {
-            "commit_count": 7,
-            "local_change_count": 1,
-            "file_touch_count": 214
-          }
-        },
-        "timeline": {
-          "start_date": "2026-04-29",
-          "last_activity_iso": "2026-05-19T20:29:58-07:00",
-          "age_days": 20,
-          "eta_days": 0,
-          "eta_confidence": "high"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [],
-          "split_from": [],
-          "split_into": [],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 35,
-          "24h": {
-            "index": 53,
-            "band": "Medium"
-          },
-          "48h": {
-            "index": 55,
-            "band": "Medium"
-          }
-        },
-        "proof_state": {
-          "lane_id": "v0.1.13-host-integrity",
-          "frontier_phase": "governance-refresh",
-          "proof_status": "live_verified",
-          "evidence_tier": "live_verified",
-          "allowed_next_work": [
-            "closeout",
-            "secondary hardening",
-            "docs"
-          ],
-          "deployment_truth": {
-            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
-            "pushed_head": "unknown",
-            "published_source_commit": "unknown",
-            "runner_fingerprint": "unknown",
-            "last_live_failing_commit": "unknown"
-          },
-          "recent_work_categories": [
-            "governance"
-          ],
-          "source": "inferred",
-          "resolution_state": "inferred"
-        },
-        "claim_guard": {
-          "blocked_terms": [],
-          "claim_scope": "live",
-          "highest_truthful_claim": "fixed live",
-          "hosted_frontier_advanced": true,
-          "proof_status": "live_verified",
-          "same_fingerprint_as_last_falsification": false
-        },
-        "proof_state_resolution": {
-          "lane_ids": [
-            "v0.1.13-host-integrity"
-          ],
-          "state": "resolved"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "contract-level",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 16,
-            "decision_evidence": true,
-            "explicit_count": 145,
-            "frontier_phase": "governance-refresh",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 77,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 164,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "live_verified",
-            "stale_authority": false,
-            "synthetic_count": 0,
-            "unsafe_closeout": false,
-            "verified_completion": true
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A recent verified completion was recorded.",
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-140"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-140"
-          }
-        ],
-        "proof_summary_lines": [
-          "Frontier: governance-refresh",
-          "Evidence tier: live verified"
-        ]
       },
       {
         "idea_id": "B-005",
@@ -2898,14 +2898,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 179,
+            "meaningful_change_count": 178,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 2,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -6040,7 +6040,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+            "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -8369,14 +8369,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 183,
+            "meaningful_change_count": 182,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 2,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -11897,14 +11897,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 175,
+            "meaningful_change_count": 174,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -15497,14 +15497,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 177,
+            "meaningful_change_count": 176,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -15725,14 +15725,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 179,
+            "meaningful_change_count": 178,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 2,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -16069,7 +16069,7 @@
           ],
           "linked_bug_id": "CB-077",
           "deployment_truth": {
-            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+            "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -16111,14 +16111,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 178,
+            "meaningful_change_count": 177,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "live_verified",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -18092,14 +18092,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 178,
+            "meaningful_change_count": 177,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 2,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -19931,14 +19931,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 167,
+            "meaningful_change_count": 166,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -21146,14 +21146,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 177,
+            "meaningful_change_count": 176,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -22207,14 +22207,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 175,
+            "meaningful_change_count": 174,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -23763,14 +23763,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 172,
+            "meaningful_change_count": 171,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -24354,7 +24354,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+            "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24579,7 +24579,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+            "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24804,7 +24804,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+            "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -25029,7 +25029,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+            "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -25254,7 +25254,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+            "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -29590,18 +29590,18 @@
         "activity": {
           "24h": {
             "commit_count": 4,
-            "local_change_count": 0,
-            "file_touch_count": 104
+            "local_change_count": 2,
+            "file_touch_count": 105
           },
           "48h": {
             "commit_count": 6,
-            "local_change_count": 0,
-            "file_touch_count": 219
+            "local_change_count": 2,
+            "file_touch_count": 220
           }
         },
         "timeline": {
           "start_date": "2026-05-01",
-          "last_activity_iso": "2026-05-19T19:13:29-07:00",
+          "last_activity_iso": "2026-05-19T22:16:45-07:00",
           "age_days": 18,
           "eta_days": 1,
           "eta_confidence": "high"
@@ -29617,8 +29617,8 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 68,
-            "band": "Medium"
+            "index": 72,
+            "band": "High"
           },
           "48h": {
             "index": 75,
@@ -29649,14 +29649,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 172,
+            "meaningful_change_count": 174,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 2,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -29881,7 +29881,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 178,
+            "meaningful_change_count": 179,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -29923,6 +29923,192 @@
           }
         ],
         "proof_summary_lines": []
+      },
+      {
+        "idea_id": "B-140",
+        "title": "Consumer Surface Migration Observer And Release Gate",
+        "status": "finished",
+        "priority": "P0",
+        "sizing": "M",
+        "complexity": "High",
+        "ordering_score": "100",
+        "implemented_summary": "",
+        "why": {
+          "problem": "Odylith can change dashboards, managed guidance, skills, install-managed assets, or host-facing surfaces in the product repo without explicitly assessing how already-installed consumer repositories will experience that change. That leaves migration needs to human memory after the code lands.",
+          "customer": "Odylith maintainers preparing 0.1.12 and future releases, plus downstream consumer-repo operators who upgrade from earlier installed versions and expect dashboards, guidance, skills, hooks, and managed assets to migrate intentionally.",
+          "proposed_solution": "Add a surface migration observer to the migration runtime and wire it into `odylith release migration-gate`. The observer classifies changed consumer-visible surfaces, emits exact Radar markers for migration-assessment obligations, and blocks release gating until each observed need has a completed workstream record for the target version.",
+          "opportunity": "Make consumer-lane migration assessment automatic whenever product surfaces move, so every release can prove that changed surfaces were either migration-safe, planned as release-note guidance, or backed by a real migration/repair task before publish.",
+          "why_now": "This slice is active enough that it should exist as explicit backlog truth now.",
+          "founder_pov": "Add a migration observer to the migration-runtime release gate. It scans changed consumer-visible surface paths, classifies the migration risk, emits exact governance prompts, and fails the release gate until each observed need is linked to tracked Radar migration work or intentionally waived with evidence."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "Removed from 0.1.15",
+        "plan": {
+          "created": "2026-04-29",
+          "updated": "2026-04-29",
+          "all_total_tasks": 20,
+          "all_done_tasks": 20,
+          "total_tasks": 12,
+          "done_tasks": 12,
+          "progress_ratio": 1.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": 1.0,
+          "display_progress_label": "100% progress",
+          "display_progress_state": "percent",
+          "progress_classification": "closed",
+          "checklist_label": "Checklist 12/12",
+          "next_tasks": []
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 6,
+            "local_change_count": 1,
+            "file_touch_count": 110
+          },
+          "48h": {
+            "commit_count": 8,
+            "local_change_count": 1,
+            "file_touch_count": 215
+          }
+        },
+        "timeline": {
+          "start_date": "2026-04-29",
+          "last_activity_iso": "2026-05-19T23:10:51-07:00",
+          "age_days": 20,
+          "eta_days": 0,
+          "eta_confidence": "high"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [],
+          "split_from": [],
+          "split_into": [],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 35,
+          "24h": {
+            "index": 55,
+            "band": "Medium"
+          },
+          "48h": {
+            "index": 55,
+            "band": "Medium"
+          }
+        },
+        "proof_state": {
+          "lane_id": "v0.1.13-host-integrity",
+          "frontier_phase": "governance-refresh",
+          "proof_status": "live_verified",
+          "evidence_tier": "live_verified",
+          "allowed_next_work": [
+            "closeout",
+            "secondary hardening",
+            "docs"
+          ],
+          "deployment_truth": {
+            "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
+            "pushed_head": "unknown",
+            "published_source_commit": "unknown",
+            "runner_fingerprint": "unknown",
+            "last_live_failing_commit": "unknown"
+          },
+          "recent_work_categories": [
+            "governance"
+          ],
+          "source": "inferred",
+          "resolution_state": "inferred"
+        },
+        "claim_guard": {
+          "blocked_terms": [],
+          "claim_scope": "live",
+          "highest_truthful_claim": "fixed live",
+          "hosted_frontier_advanced": true,
+          "proof_status": "live_verified",
+          "same_fingerprint_as_last_falsification": false
+        },
+        "proof_state_resolution": {
+          "lane_ids": [
+            "v0.1.13-host-integrity"
+          ],
+          "state": "resolved"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "contract-level",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 16,
+            "decision_evidence": true,
+            "explicit_count": 145,
+            "frontier_phase": "governance-refresh",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 77,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 164,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "live_verified",
+            "stale_authority": false,
+            "synthetic_count": 0,
+            "unsafe_closeout": false,
+            "verified_completion": true
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A recent verified completion was recorded.",
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-140"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-140"
+          }
+        ],
+        "proof_summary_lines": [
+          "Frontier: governance-refresh",
+          "Evidence tier: live verified"
+        ]
       },
       {
         "idea_id": "B-083",
@@ -30020,19 +30206,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 5,
-            "local_change_count": 3,
+            "commit_count": 6,
+            "local_change_count": 0,
             "file_touch_count": 110
           },
           "48h": {
-            "commit_count": 7,
-            "local_change_count": 3,
+            "commit_count": 8,
+            "local_change_count": 0,
             "file_touch_count": 226
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-05-19T20:13:13-07:00",
+          "last_activity_iso": "2026-05-19T21:06:42-07:00",
           "age_days": 39,
           "eta_days": null,
           "eta_confidence": "low"
@@ -30191,19 +30377,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 5,
-            "local_change_count": 3,
+            "commit_count": 6,
+            "local_change_count": 0,
             "file_touch_count": 110
           },
           "48h": {
-            "commit_count": 7,
-            "local_change_count": 3,
+            "commit_count": 8,
+            "local_change_count": 0,
             "file_touch_count": 226
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-05-19T20:13:13-07:00",
+          "last_activity_iso": "2026-05-19T21:06:42-07:00",
           "age_days": 40,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -30377,19 +30563,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 2,
-            "file_touch_count": 104
+            "commit_count": 5,
+            "local_change_count": 0,
+            "file_touch_count": 106
           },
           "48h": {
-            "commit_count": 6,
-            "local_change_count": 2,
-            "file_touch_count": 220
+            "commit_count": 7,
+            "local_change_count": 0,
+            "file_touch_count": 221
           }
         },
         "timeline": {
           "start_date": "2026-04-25",
-          "last_activity_iso": "2026-05-19T20:13:35-07:00",
+          "last_activity_iso": "2026-05-19T21:06:42-07:00",
           "age_days": 24,
           "eta_days": null,
           "eta_confidence": "low"
@@ -30564,19 +30750,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 2,
-            "file_touch_count": 104
+            "commit_count": 5,
+            "local_change_count": 0,
+            "file_touch_count": 106
           },
           "48h": {
-            "commit_count": 6,
-            "local_change_count": 2,
-            "file_touch_count": 231
+            "commit_count": 7,
+            "local_change_count": 0,
+            "file_touch_count": 232
           }
         },
         "timeline": {
           "start_date": "2026-04-17",
-          "last_activity_iso": "2026-05-19T20:13:35-07:00",
+          "last_activity_iso": "2026-05-19T21:06:42-07:00",
           "age_days": 32,
           "eta_days": null,
           "eta_confidence": "low"
@@ -30670,192 +30856,6 @@
           }
         ],
         "proof_summary_lines": []
-      },
-      {
-        "idea_id": "B-140",
-        "title": "Consumer Surface Migration Observer And Release Gate",
-        "status": "finished",
-        "priority": "P0",
-        "sizing": "M",
-        "complexity": "High",
-        "ordering_score": "100",
-        "implemented_summary": "",
-        "why": {
-          "problem": "Odylith can change dashboards, managed guidance, skills, install-managed assets, or host-facing surfaces in the product repo without explicitly assessing how already-installed consumer repositories will experience that change. That leaves migration needs to human memory after the code lands.",
-          "customer": "Odylith maintainers preparing 0.1.12 and future releases, plus downstream consumer-repo operators who upgrade from earlier installed versions and expect dashboards, guidance, skills, hooks, and managed assets to migrate intentionally.",
-          "proposed_solution": "Add a surface migration observer to the migration runtime and wire it into `odylith release migration-gate`. The observer classifies changed consumer-visible surfaces, emits exact Radar markers for migration-assessment obligations, and blocks release gating until each observed need has a completed workstream record for the target version.",
-          "opportunity": "Make consumer-lane migration assessment automatic whenever product surfaces move, so every release can prove that changed surfaces were either migration-safe, planned as release-note guidance, or backed by a real migration/repair task before publish.",
-          "why_now": "This slice is active enough that it should exist as explicit backlog truth now.",
-          "founder_pov": "Add a migration observer to the migration-runtime release gate. It scans changed consumer-visible surface paths, classifies the migration risk, emits exact governance prompts, and fails the release gate until each observed need is linked to tracked Radar migration work or intentionally waived with evidence."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md"
-        },
-        "registry_components": [
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "Removed from 0.1.15",
-        "plan": {
-          "created": "2026-04-29",
-          "updated": "2026-04-29",
-          "all_total_tasks": 20,
-          "all_done_tasks": 20,
-          "total_tasks": 12,
-          "done_tasks": 12,
-          "progress_ratio": 1.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": 1.0,
-          "display_progress_label": "100% progress",
-          "display_progress_state": "percent",
-          "progress_classification": "closed",
-          "checklist_label": "Checklist 12/12",
-          "next_tasks": []
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 108
-          },
-          "48h": {
-            "commit_count": 7,
-            "local_change_count": 1,
-            "file_touch_count": 214
-          }
-        },
-        "timeline": {
-          "start_date": "2026-04-29",
-          "last_activity_iso": "2026-05-19T20:29:58-07:00",
-          "age_days": 20,
-          "eta_days": 0,
-          "eta_confidence": "high"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [],
-          "split_from": [],
-          "split_into": [],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 35,
-          "24h": {
-            "index": 53,
-            "band": "Medium"
-          },
-          "48h": {
-            "index": 55,
-            "band": "Medium"
-          }
-        },
-        "proof_state": {
-          "lane_id": "v0.1.13-host-integrity",
-          "frontier_phase": "governance-refresh",
-          "proof_status": "live_verified",
-          "evidence_tier": "live_verified",
-          "allowed_next_work": [
-            "closeout",
-            "secondary hardening",
-            "docs"
-          ],
-          "deployment_truth": {
-            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
-            "pushed_head": "unknown",
-            "published_source_commit": "unknown",
-            "runner_fingerprint": "unknown",
-            "last_live_failing_commit": "unknown"
-          },
-          "recent_work_categories": [
-            "governance"
-          ],
-          "source": "inferred",
-          "resolution_state": "inferred"
-        },
-        "claim_guard": {
-          "blocked_terms": [],
-          "claim_scope": "live",
-          "highest_truthful_claim": "fixed live",
-          "hosted_frontier_advanced": true,
-          "proof_status": "live_verified",
-          "same_fingerprint_as_last_falsification": false
-        },
-        "proof_state_resolution": {
-          "lane_ids": [
-            "v0.1.13-host-integrity"
-          ],
-          "state": "resolved"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "contract-level",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 16,
-            "decision_evidence": true,
-            "explicit_count": 145,
-            "frontier_phase": "governance-refresh",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 77,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 164,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "live_verified",
-            "stale_authority": false,
-            "synthetic_count": 0,
-            "unsafe_closeout": false,
-            "verified_completion": true
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A recent verified completion was recorded.",
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-140"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-140"
-          }
-        ],
-        "proof_summary_lines": [
-          "Frontier: governance-refresh",
-          "Evidence tier: live verified"
-        ]
       },
       {
         "idea_id": "B-005",
@@ -32333,14 +32333,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 179,
+            "meaningful_change_count": 178,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 2,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -33817,14 +33817,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 183,
+            "meaningful_change_count": 182,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 2,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -34353,14 +34353,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 175,
+            "meaningful_change_count": 174,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -34573,14 +34573,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 177,
+            "meaningful_change_count": 176,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -34801,14 +34801,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 179,
+            "meaningful_change_count": 178,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 2,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -35936,14 +35936,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 178,
+            "meaningful_change_count": 177,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 2,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -37698,7 +37698,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+            "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -46827,7 +46827,7 @@
           ],
           "linked_bug_id": "CB-077",
           "deployment_truth": {
-            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+            "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -46869,14 +46869,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 178,
+            "meaningful_change_count": 177,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "live_verified",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -49366,14 +49366,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 167,
+            "meaningful_change_count": 166,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -50581,14 +50581,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 177,
+            "meaningful_change_count": 176,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -51642,14 +51642,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 175,
+            "meaningful_change_count": 174,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -53198,14 +53198,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 172,
+            "meaningful_change_count": 171,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -53789,7 +53789,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+            "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54014,7 +54014,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+            "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54239,7 +54239,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+            "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54464,7 +54464,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+            "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54689,7 +54689,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+            "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -58866,18 +58866,18 @@
       "activity": {
         "24h": {
           "commit_count": 4,
-          "local_change_count": 0,
-          "file_touch_count": 104
+          "local_change_count": 2,
+          "file_touch_count": 105
         },
         "48h": {
           "commit_count": 6,
-          "local_change_count": 0,
-          "file_touch_count": 219
+          "local_change_count": 2,
+          "file_touch_count": 220
         }
       },
       "timeline": {
         "start_date": "2026-05-01",
-        "last_activity_iso": "2026-05-19T19:13:29-07:00",
+        "last_activity_iso": "2026-05-19T22:16:45-07:00",
         "age_days": 18,
         "eta_days": 1,
         "eta_confidence": "high"
@@ -58893,8 +58893,8 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 68,
-          "band": "Medium"
+          "index": 72,
+          "band": "High"
         },
         "48h": {
           "index": 75,
@@ -58925,14 +58925,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 172,
+          "meaningful_change_count": 174,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 2,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -59157,7 +59157,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 178,
+          "meaningful_change_count": 179,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -59199,6 +59199,192 @@
         }
       ],
       "proof_summary_lines": []
+    },
+    {
+      "idea_id": "B-140",
+      "title": "Consumer Surface Migration Observer And Release Gate",
+      "status": "finished",
+      "priority": "P0",
+      "sizing": "M",
+      "complexity": "High",
+      "ordering_score": "100",
+      "implemented_summary": "",
+      "why": {
+        "problem": "Odylith can change dashboards, managed guidance, skills, install-managed assets, or host-facing surfaces in the product repo without explicitly assessing how already-installed consumer repositories will experience that change. That leaves migration needs to human memory after the code lands.",
+        "customer": "Odylith maintainers preparing 0.1.12 and future releases, plus downstream consumer-repo operators who upgrade from earlier installed versions and expect dashboards, guidance, skills, hooks, and managed assets to migrate intentionally.",
+        "proposed_solution": "Add a surface migration observer to the migration runtime and wire it into `odylith release migration-gate`. The observer classifies changed consumer-visible surfaces, emits exact Radar markers for migration-assessment obligations, and blocks release gating until each observed need has a completed workstream record for the target version.",
+        "opportunity": "Make consumer-lane migration assessment automatic whenever product surfaces move, so every release can prove that changed surfaces were either migration-safe, planned as release-note guidance, or backed by a real migration/repair task before publish.",
+        "why_now": "This slice is active enough that it should exist as explicit backlog truth now.",
+        "founder_pov": "Add a migration observer to the migration-runtime release gate. It scans changed consumer-visible surface paths, classifies the migration risk, emits exact governance prompts, and fails the release gate until each observed need is linked to tracked Radar migration work or intentionally waived with evidence."
+      },
+      "links": {
+        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+        "plan_file": "odylith/technical-plans/done/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md"
+      },
+      "registry_components": [
+        {
+          "component_id": "odylith",
+          "name": "Odylith"
+        }
+      ],
+      "execution_wave_programs": [],
+      "release": {},
+      "release_history_summary": "Removed from 0.1.15",
+      "plan": {
+        "created": "2026-04-29",
+        "updated": "2026-04-29",
+        "all_total_tasks": 20,
+        "all_done_tasks": 20,
+        "total_tasks": 12,
+        "done_tasks": 12,
+        "progress_ratio": 1.0,
+        "progress_basis": "execution_checklist",
+        "display_progress_ratio": 1.0,
+        "display_progress_label": "100% progress",
+        "display_progress_state": "percent",
+        "progress_classification": "closed",
+        "checklist_label": "Checklist 12/12",
+        "next_tasks": []
+      },
+      "activity": {
+        "24h": {
+          "commit_count": 6,
+          "local_change_count": 1,
+          "file_touch_count": 110
+        },
+        "48h": {
+          "commit_count": 8,
+          "local_change_count": 1,
+          "file_touch_count": 215
+        }
+      },
+      "timeline": {
+        "start_date": "2026-04-29",
+        "last_activity_iso": "2026-05-19T23:10:51-07:00",
+        "age_days": 20,
+        "eta_days": 0,
+        "eta_confidence": "high"
+      },
+      "lineage": {
+        "reopens": [],
+        "reopened_by": [],
+        "split_from": [],
+        "split_into": [],
+        "merged_into": [],
+        "merged_from": []
+      },
+      "cost": {
+        "base_index": 35,
+        "24h": {
+          "index": 55,
+          "band": "Medium"
+        },
+        "48h": {
+          "index": 55,
+          "band": "Medium"
+        }
+      },
+      "proof_state": {
+        "lane_id": "v0.1.13-host-integrity",
+        "frontier_phase": "governance-refresh",
+        "proof_status": "live_verified",
+        "evidence_tier": "live_verified",
+        "allowed_next_work": [
+          "closeout",
+          "secondary hardening",
+          "docs"
+        ],
+        "deployment_truth": {
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
+          "pushed_head": "unknown",
+          "published_source_commit": "unknown",
+          "runner_fingerprint": "unknown",
+          "last_live_failing_commit": "unknown"
+        },
+        "recent_work_categories": [
+          "governance"
+        ],
+        "source": "inferred",
+        "resolution_state": "inferred"
+      },
+      "claim_guard": {
+        "blocked_terms": [],
+        "claim_scope": "live",
+        "highest_truthful_claim": "fixed live",
+        "hosted_frontier_advanced": true,
+        "proof_status": "live_verified",
+        "same_fingerprint_as_last_falsification": false
+      },
+      "proof_state_resolution": {
+        "lane_ids": [
+          "v0.1.13-host-integrity"
+        ],
+        "state": "resolved"
+      },
+      "scope_signal": {
+        "budget_class": "fast_simple",
+        "caps": [],
+        "feature_vector": {
+          "blast_radius_class": "contract-level",
+          "broad_fanout": false,
+          "cross_surface_conflict": false,
+          "decision_count": 16,
+          "decision_evidence": true,
+          "explicit_count": 145,
+          "frontier_phase": "governance-refresh",
+          "generated_only_churn": false,
+          "governance_only_local_change": false,
+          "has_any_signal": true,
+          "implementation_count": 77,
+          "implementation_evidence": true,
+          "linked_child_count": 0,
+          "linked_surface_count": 5,
+          "meaningful_change_count": 164,
+          "meaningful_scope_activity": true,
+          "narrow_verified_signal": true,
+          "open_warning": false,
+          "proof_blocker": false,
+          "proof_status": "live_verified",
+          "stale_authority": false,
+          "synthetic_count": 0,
+          "unsafe_closeout": false,
+          "verified_completion": true
+        },
+        "label": "Active scope",
+        "promoted_default": true,
+        "rank": 3,
+        "reasons": [
+          "A recent verified completion was recorded.",
+          "A narrow verified scoped signal was recorded.",
+          "Explicit decision evidence is present.",
+          "Explicit implementation evidence is present.",
+          "Meaningful scope-local implementation evidence is present."
+        ],
+        "rung": "R3",
+        "token": "active_scope"
+      },
+      "proof_refs": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-140"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-140"
+        }
+      ],
+      "proof_summary_lines": [
+        "Frontier: governance-refresh",
+        "Evidence tier: live verified"
+      ]
     },
     {
       "idea_id": "B-083",
@@ -59296,19 +59482,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 3,
+          "commit_count": 6,
+          "local_change_count": 0,
           "file_touch_count": 110
         },
         "48h": {
-          "commit_count": 7,
-          "local_change_count": 3,
+          "commit_count": 8,
+          "local_change_count": 0,
           "file_touch_count": 226
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-05-19T20:13:13-07:00",
+        "last_activity_iso": "2026-05-19T21:06:42-07:00",
         "age_days": 39,
         "eta_days": null,
         "eta_confidence": "low"
@@ -59467,19 +59653,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 3,
+          "commit_count": 6,
+          "local_change_count": 0,
           "file_touch_count": 110
         },
         "48h": {
-          "commit_count": 7,
-          "local_change_count": 3,
+          "commit_count": 8,
+          "local_change_count": 0,
           "file_touch_count": 226
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-05-19T20:13:13-07:00",
+        "last_activity_iso": "2026-05-19T21:06:42-07:00",
         "age_days": 40,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -59653,19 +59839,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 2,
-          "file_touch_count": 104
+          "commit_count": 5,
+          "local_change_count": 0,
+          "file_touch_count": 106
         },
         "48h": {
-          "commit_count": 6,
-          "local_change_count": 2,
-          "file_touch_count": 220
+          "commit_count": 7,
+          "local_change_count": 0,
+          "file_touch_count": 221
         }
       },
       "timeline": {
         "start_date": "2026-04-25",
-        "last_activity_iso": "2026-05-19T20:13:35-07:00",
+        "last_activity_iso": "2026-05-19T21:06:42-07:00",
         "age_days": 24,
         "eta_days": null,
         "eta_confidence": "low"
@@ -59840,19 +60026,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 2,
-          "file_touch_count": 104
+          "commit_count": 5,
+          "local_change_count": 0,
+          "file_touch_count": 106
         },
         "48h": {
-          "commit_count": 6,
-          "local_change_count": 2,
-          "file_touch_count": 231
+          "commit_count": 7,
+          "local_change_count": 0,
+          "file_touch_count": 232
         }
       },
       "timeline": {
         "start_date": "2026-04-17",
-        "last_activity_iso": "2026-05-19T20:13:35-07:00",
+        "last_activity_iso": "2026-05-19T21:06:42-07:00",
         "age_days": 32,
         "eta_days": null,
         "eta_confidence": "low"
@@ -59946,192 +60132,6 @@
         }
       ],
       "proof_summary_lines": []
-    },
-    {
-      "idea_id": "B-140",
-      "title": "Consumer Surface Migration Observer And Release Gate",
-      "status": "finished",
-      "priority": "P0",
-      "sizing": "M",
-      "complexity": "High",
-      "ordering_score": "100",
-      "implemented_summary": "",
-      "why": {
-        "problem": "Odylith can change dashboards, managed guidance, skills, install-managed assets, or host-facing surfaces in the product repo without explicitly assessing how already-installed consumer repositories will experience that change. That leaves migration needs to human memory after the code lands.",
-        "customer": "Odylith maintainers preparing 0.1.12 and future releases, plus downstream consumer-repo operators who upgrade from earlier installed versions and expect dashboards, guidance, skills, hooks, and managed assets to migrate intentionally.",
-        "proposed_solution": "Add a surface migration observer to the migration runtime and wire it into `odylith release migration-gate`. The observer classifies changed consumer-visible surfaces, emits exact Radar markers for migration-assessment obligations, and blocks release gating until each observed need has a completed workstream record for the target version.",
-        "opportunity": "Make consumer-lane migration assessment automatic whenever product surfaces move, so every release can prove that changed surfaces were either migration-safe, planned as release-note guidance, or backed by a real migration/repair task before publish.",
-        "why_now": "This slice is active enough that it should exist as explicit backlog truth now.",
-        "founder_pov": "Add a migration observer to the migration-runtime release gate. It scans changed consumer-visible surface paths, classifies the migration risk, emits exact governance prompts, and fails the release gate until each observed need is linked to tracked Radar migration work or intentionally waived with evidence."
-      },
-      "links": {
-        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-        "plan_file": "odylith/technical-plans/done/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md"
-      },
-      "registry_components": [
-        {
-          "component_id": "odylith",
-          "name": "Odylith"
-        }
-      ],
-      "execution_wave_programs": [],
-      "release": {},
-      "release_history_summary": "Removed from 0.1.15",
-      "plan": {
-        "created": "2026-04-29",
-        "updated": "2026-04-29",
-        "all_total_tasks": 20,
-        "all_done_tasks": 20,
-        "total_tasks": 12,
-        "done_tasks": 12,
-        "progress_ratio": 1.0,
-        "progress_basis": "execution_checklist",
-        "display_progress_ratio": 1.0,
-        "display_progress_label": "100% progress",
-        "display_progress_state": "percent",
-        "progress_classification": "closed",
-        "checklist_label": "Checklist 12/12",
-        "next_tasks": []
-      },
-      "activity": {
-        "24h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 108
-        },
-        "48h": {
-          "commit_count": 7,
-          "local_change_count": 1,
-          "file_touch_count": 214
-        }
-      },
-      "timeline": {
-        "start_date": "2026-04-29",
-        "last_activity_iso": "2026-05-19T20:29:58-07:00",
-        "age_days": 20,
-        "eta_days": 0,
-        "eta_confidence": "high"
-      },
-      "lineage": {
-        "reopens": [],
-        "reopened_by": [],
-        "split_from": [],
-        "split_into": [],
-        "merged_into": [],
-        "merged_from": []
-      },
-      "cost": {
-        "base_index": 35,
-        "24h": {
-          "index": 53,
-          "band": "Medium"
-        },
-        "48h": {
-          "index": 55,
-          "band": "Medium"
-        }
-      },
-      "proof_state": {
-        "lane_id": "v0.1.13-host-integrity",
-        "frontier_phase": "governance-refresh",
-        "proof_status": "live_verified",
-        "evidence_tier": "live_verified",
-        "allowed_next_work": [
-          "closeout",
-          "secondary hardening",
-          "docs"
-        ],
-        "deployment_truth": {
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
-          "pushed_head": "unknown",
-          "published_source_commit": "unknown",
-          "runner_fingerprint": "unknown",
-          "last_live_failing_commit": "unknown"
-        },
-        "recent_work_categories": [
-          "governance"
-        ],
-        "source": "inferred",
-        "resolution_state": "inferred"
-      },
-      "claim_guard": {
-        "blocked_terms": [],
-        "claim_scope": "live",
-        "highest_truthful_claim": "fixed live",
-        "hosted_frontier_advanced": true,
-        "proof_status": "live_verified",
-        "same_fingerprint_as_last_falsification": false
-      },
-      "proof_state_resolution": {
-        "lane_ids": [
-          "v0.1.13-host-integrity"
-        ],
-        "state": "resolved"
-      },
-      "scope_signal": {
-        "budget_class": "fast_simple",
-        "caps": [],
-        "feature_vector": {
-          "blast_radius_class": "contract-level",
-          "broad_fanout": false,
-          "cross_surface_conflict": false,
-          "decision_count": 16,
-          "decision_evidence": true,
-          "explicit_count": 145,
-          "frontier_phase": "governance-refresh",
-          "generated_only_churn": false,
-          "governance_only_local_change": false,
-          "has_any_signal": true,
-          "implementation_count": 77,
-          "implementation_evidence": true,
-          "linked_child_count": 0,
-          "linked_surface_count": 5,
-          "meaningful_change_count": 164,
-          "meaningful_scope_activity": true,
-          "narrow_verified_signal": true,
-          "open_warning": false,
-          "proof_blocker": false,
-          "proof_status": "live_verified",
-          "stale_authority": false,
-          "synthetic_count": 0,
-          "unsafe_closeout": false,
-          "verified_completion": true
-        },
-        "label": "Active scope",
-        "promoted_default": true,
-        "rank": 3,
-        "reasons": [
-          "A recent verified completion was recorded.",
-          "A narrow verified scoped signal was recorded.",
-          "Explicit decision evidence is present.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
-        ],
-        "rung": "R3",
-        "token": "active_scope"
-      },
-      "proof_refs": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-140"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-140"
-        }
-      ],
-      "proof_summary_lines": [
-        "Frontier: governance-refresh",
-        "Evidence tier: live verified"
-      ]
     },
     {
       "idea_id": "B-005",
@@ -61609,14 +61609,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 179,
+          "meaningful_change_count": 178,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -63093,14 +63093,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 183,
+          "meaningful_change_count": 182,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -63629,14 +63629,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 175,
+          "meaningful_change_count": 174,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -63849,14 +63849,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 177,
+          "meaningful_change_count": 176,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -64077,14 +64077,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 179,
+          "meaningful_change_count": 178,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -65212,14 +65212,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 178,
+          "meaningful_change_count": 177,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -66974,7 +66974,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -76103,7 +76103,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -76145,14 +76145,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 178,
+          "meaningful_change_count": 177,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "live_verified",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -78642,14 +78642,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 167,
+          "meaningful_change_count": 166,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -79857,14 +79857,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 177,
+          "meaningful_change_count": 176,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -80918,14 +80918,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 175,
+          "meaningful_change_count": 174,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -82474,14 +82474,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 172,
+          "meaningful_change_count": 171,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -83065,7 +83065,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -83290,7 +83290,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -83515,7 +83515,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -83740,7 +83740,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -83965,7 +83965,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -90106,19 +90106,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 3,
+          "commit_count": 6,
+          "local_change_count": 0,
           "file_touch_count": 110
         },
         "48h": {
-          "commit_count": 7,
-          "local_change_count": 3,
+          "commit_count": 8,
+          "local_change_count": 0,
           "file_touch_count": 226
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-05-19T20:13:13-07:00",
+        "last_activity_iso": "2026-05-19T21:06:42-07:00",
         "age_days": 39,
         "eta_days": null,
         "eta_confidence": "low"
@@ -90361,7 +90361,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -92683,7 +92683,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 178,
+          "meaningful_change_count": 179,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -92829,18 +92829,18 @@
       "activity": {
         "24h": {
           "commit_count": 4,
-          "local_change_count": 0,
-          "file_touch_count": 104
+          "local_change_count": 2,
+          "file_touch_count": 105
         },
         "48h": {
           "commit_count": 6,
-          "local_change_count": 0,
-          "file_touch_count": 219
+          "local_change_count": 2,
+          "file_touch_count": 220
         }
       },
       "timeline": {
         "start_date": "2026-05-01",
-        "last_activity_iso": "2026-05-19T19:13:29-07:00",
+        "last_activity_iso": "2026-05-19T22:16:45-07:00",
         "age_days": 18,
         "eta_days": 1,
         "eta_confidence": "high"
@@ -92856,8 +92856,8 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 68,
-          "band": "Medium"
+          "index": 72,
+          "band": "High"
         },
         "48h": {
           "index": 75,
@@ -92888,14 +92888,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 172,
+          "meaningful_change_count": 174,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 2,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -93127,14 +93127,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 183,
+          "meaningful_change_count": 182,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -97627,14 +97627,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 175,
+          "meaningful_change_count": 174,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -101227,14 +101227,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 177,
+          "meaningful_change_count": 176,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -101455,14 +101455,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 179,
+          "meaningful_change_count": 178,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -101799,7 +101799,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -101841,14 +101841,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 178,
+          "meaningful_change_count": 177,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "live_verified",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -102783,19 +102783,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 3,
+          "commit_count": 6,
+          "local_change_count": 0,
           "file_touch_count": 110
         },
         "48h": {
-          "commit_count": 7,
-          "local_change_count": 3,
+          "commit_count": 8,
+          "local_change_count": 0,
           "file_touch_count": 226
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-05-19T20:13:13-07:00",
+        "last_activity_iso": "2026-05-19T21:06:42-07:00",
         "age_days": 40,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -104170,14 +104170,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 178,
+          "meaningful_change_count": 177,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -106009,14 +106009,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 167,
+          "meaningful_change_count": 166,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -107224,14 +107224,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 177,
+          "meaningful_change_count": 176,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -108285,14 +108285,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 175,
+          "meaningful_change_count": 174,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -109841,14 +109841,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 172,
+          "meaningful_change_count": 171,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -111445,14 +111445,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 179,
+          "meaningful_change_count": 178,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -111620,7 +111620,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -111845,7 +111845,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -112070,7 +112070,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -112295,7 +112295,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -112469,19 +112469,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 2,
-          "file_touch_count": 104
+          "commit_count": 5,
+          "local_change_count": 0,
+          "file_touch_count": 106
         },
         "48h": {
-          "commit_count": 6,
-          "local_change_count": 2,
-          "file_touch_count": 220
+          "commit_count": 7,
+          "local_change_count": 0,
+          "file_touch_count": 221
         }
       },
       "timeline": {
         "start_date": "2026-04-25",
-        "last_activity_iso": "2026-05-19T20:13:35-07:00",
+        "last_activity_iso": "2026-05-19T21:06:42-07:00",
         "age_days": 24,
         "eta_days": null,
         "eta_confidence": "low"
@@ -112707,7 +112707,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -112881,19 +112881,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 2,
-          "file_touch_count": 104
+          "commit_count": 5,
+          "local_change_count": 0,
+          "file_touch_count": 106
         },
         "48h": {
-          "commit_count": 6,
-          "local_change_count": 2,
-          "file_touch_count": 231
+          "commit_count": 7,
+          "local_change_count": 0,
+          "file_touch_count": 232
         }
       },
       "timeline": {
         "start_date": "2026-04-17",
-        "last_activity_iso": "2026-05-19T20:13:35-07:00",
+        "last_activity_iso": "2026-05-19T21:06:42-07:00",
         "age_days": 32,
         "eta_days": null,
         "eta_confidence": "low"
@@ -117173,19 +117173,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
+          "commit_count": 6,
           "local_change_count": 1,
-          "file_touch_count": 108
+          "file_touch_count": 110
         },
         "48h": {
-          "commit_count": 7,
+          "commit_count": 8,
           "local_change_count": 1,
-          "file_touch_count": 214
+          "file_touch_count": 215
         }
       },
       "timeline": {
         "start_date": "2026-04-29",
-        "last_activity_iso": "2026-05-19T20:29:58-07:00",
+        "last_activity_iso": "2026-05-19T23:10:51-07:00",
         "age_days": 20,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -117201,7 +117201,7 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 53,
+          "index": 55,
           "band": "Medium"
         },
         "48h": {
@@ -117220,7 +117220,7 @@
           "docs"
         ],
         "deployment_truth": {
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -117317,10 +117317,6 @@
       "B-004",
       "B-005",
       "B-027",
-      "B-069",
-      "B-083",
-      "B-115",
-      "B-117",
       "B-140",
       "B-142"
     ],
@@ -117328,10 +117324,6 @@
       "B-004",
       "B-005",
       "B-027",
-      "B-069",
-      "B-083",
-      "B-115",
-      "B-117",
       "B-140",
       "B-142"
     ]
@@ -117341,10 +117333,6 @@
       "B-004",
       "B-005",
       "B-027",
-      "B-069",
-      "B-083",
-      "B-115",
-      "B-117",
       "B-140",
       "B-142"
     ],
@@ -117352,10 +117340,6 @@
       "B-004",
       "B-005",
       "B-027",
-      "B-069",
-      "B-083",
-      "B-115",
-      "B-117",
       "B-140",
       "B-142"
     ]
@@ -117586,30 +117570,24 @@
         }
       },
       "B-083": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
         "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
+          "The signal fans across too many scopes to promote directly.",
+          "Recent signal exists, but it is not strong enough to promote by default."
         ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
+        "caps": [
+          "broad_fanout"
+        ],
+        "promoted_default": false,
+        "budget_class": "cache_only",
         "feature_vector": {
           "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": true,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
+          "window_inactive": false,
+          "governance_only_local_change": false,
+          "broad_fanout": true
         }
       },
       "B-084": {
@@ -119082,29 +119060,24 @@
         }
       },
       "B-069": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
         "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Meaningful scope-local implementation evidence is present."
+          "The signal fans across too many scopes to promote directly.",
+          "Recent signal exists, but it is not strong enough to promote by default."
         ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
+        "caps": [
+          "broad_fanout"
+        ],
+        "promoted_default": false,
+        "budget_class": "cache_only",
         "feature_vector": {
           "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": false,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
+          "window_inactive": false,
+          "governance_only_local_change": false,
+          "broad_fanout": true
         }
       },
       "B-070": {
@@ -119749,29 +119722,24 @@
         }
       },
       "B-115": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
         "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Meaningful scope-local implementation evidence is present."
+          "The signal fans across too many scopes to promote directly.",
+          "Recent signal exists, but it is not strong enough to promote by default."
         ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
+        "caps": [
+          "broad_fanout"
+        ],
+        "promoted_default": false,
+        "budget_class": "cache_only",
         "feature_vector": {
           "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": false,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
+          "window_inactive": false,
+          "governance_only_local_change": false,
+          "broad_fanout": true
         }
       },
       "B-116": {
@@ -119795,29 +119763,24 @@
         }
       },
       "B-117": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
         "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Meaningful scope-local implementation evidence is present."
+          "The signal fans across too many scopes to promote directly.",
+          "Recent signal exists, but it is not strong enough to promote by default."
         ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
+        "caps": [
+          "broad_fanout"
+        ],
+        "promoted_default": false,
+        "budget_class": "cache_only",
         "feature_vector": {
           "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": false,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
+          "window_inactive": false,
+          "governance_only_local_change": false,
+          "broad_fanout": true
         }
       },
       "B-118": {
@@ -120493,30 +120456,24 @@
         }
       },
       "B-083": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
         "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
+          "The signal fans across too many scopes to promote directly.",
+          "Recent signal exists, but it is not strong enough to promote by default."
         ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
+        "caps": [
+          "broad_fanout"
+        ],
+        "promoted_default": false,
+        "budget_class": "cache_only",
         "feature_vector": {
           "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": true,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
+          "window_inactive": false,
+          "governance_only_local_change": false,
+          "broad_fanout": true
         }
       },
       "B-084": {
@@ -121993,29 +121950,24 @@
         }
       },
       "B-069": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
         "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Meaningful scope-local implementation evidence is present."
+          "The signal fans across too many scopes to promote directly.",
+          "Recent signal exists, but it is not strong enough to promote by default."
         ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
+        "caps": [
+          "broad_fanout"
+        ],
+        "promoted_default": false,
+        "budget_class": "cache_only",
         "feature_vector": {
           "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": false,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
+          "window_inactive": false,
+          "governance_only_local_change": false,
+          "broad_fanout": true
         }
       },
       "B-070": {
@@ -122662,29 +122614,24 @@
         }
       },
       "B-115": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
         "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Meaningful scope-local implementation evidence is present."
+          "The signal fans across too many scopes to promote directly.",
+          "Recent signal exists, but it is not strong enough to promote by default."
         ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
+        "caps": [
+          "broad_fanout"
+        ],
+        "promoted_default": false,
+        "budget_class": "cache_only",
         "feature_vector": {
           "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": false,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
+          "window_inactive": false,
+          "governance_only_local_change": false,
+          "broad_fanout": true
         }
       },
       "B-116": {
@@ -122708,29 +122655,24 @@
         }
       },
       "B-117": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
         "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Meaningful scope-local implementation evidence is present."
+          "The signal fans across too many scopes to promote directly.",
+          "Recent signal exists, but it is not strong enough to promote by default."
         ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
+        "caps": [
+          "broad_fanout"
+        ],
+        "promoted_default": false,
+        "budget_class": "cache_only",
         "feature_vector": {
           "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": false,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
+          "window_inactive": false,
+          "governance_only_local_change": false,
+          "broad_fanout": true
         }
       },
       "B-118": {

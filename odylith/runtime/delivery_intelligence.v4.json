@@ -1771,7 +1771,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -2382,126 +2382,6 @@
     },
     {
       "action_label": "Review manually",
-      "brief": "Odylith Chatter still needs review, but the missing evidence is more decisive than the visible surface activity. No named owned artifacts back the current ownership read. Do not let weak ownership evidence harden into a semantic conclusion. Evidence is insufficient for semantic diff review; first bind the case to named owned artifacts or explicit ownership evidence.",
-      "claim_guard": {
-        "blocked_terms": [],
-        "claim_scope": "live",
-        "highest_truthful_claim": "fixed live",
-        "hosted_frontier_advanced": true,
-        "proof_status": "live_verified",
-        "same_fingerprint_as_last_falsification": false
-      },
-      "confidence": 0.605,
-      "confidence_factors": {
-        "contradiction_strength": 0.52,
-        "evidence_completeness": 0.5,
-        "ownership_clarity": 0.2,
-        "proof_route_quality": 1.0,
-        "provider_validation": 0.55
-      },
-      "decision_at_stake": "What maintainer action on Odylith Chatter would still change the decision given the current checkpoint and proof?",
-      "deterministic_reason": "provider unavailable",
-      "deterministic_reason_detail": "No AI reasoning provider is configured or available for this Odylith refresh.",
-      "headline": "Evidence on Odylith Chatter is still too weak to act",
-      "id": "case-component-odylith-chatter",
-      "packet_mode": "manual",
-      "proof_refs": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-031"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-031"
-        }
-      ],
-      "proof_reopen": {},
-      "proof_routes": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-031"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-031"
-        }
-      ],
-      "proof_state": {
-        "allowed_next_work": [
-          "closeout",
-          "secondary hardening",
-          "docs"
-        ],
-        "clearance_condition": "One coherent `proof_state` lane is carried across delivery scopes, Tribunal, packets, shell, Compass, Registry, and chatter, and claim guard blocks unqualified live-fix language below `live_verified`.",
-        "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
-        "deployment_truth": {
-          "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
-          "published_source_commit": "unknown",
-          "pushed_head": "unknown",
-          "runner_fingerprint": "unknown"
-        },
-        "evidence_tier": "live_verified",
-        "failure_fingerprint": "same live failure fingerprint can reproduce while adjacent local progress still reads like blocker movement.",
-        "first_failing_phase": "status synthesis",
-        "frontier_phase": "status synthesis",
-        "lane_id": "proof-state-control-plane",
-        "linked_bug_id": "CB-077",
-        "proof_status": "live_verified",
-        "resolution_state": "resolved",
-        "source": "casebook",
-        "source_path": "odylith/casebook/bugs/2026-04-08-live-proof-lanes-do-not-pin-the-primary-blocker-frontier-or-falsification-memory.md"
-      },
-      "proof_state_resolution": {
-        "lane_ids": [
-          "proof-state-control-plane"
-        ],
-        "state": "resolved"
-      },
-      "provider_focus": false,
-      "provider_used": false,
-      "provider_validated": false,
-      "rank": 27,
-      "reasoning_state": "deterministic-only",
-      "scope_id": "odylith-chatter",
-      "scope_key": "component:odylith-chatter",
-      "scope_label": "Odylith Chatter",
-      "scope_type": "component",
-      "selection_metrics": {
-        "blast_radius_severity": 58,
-        "decision_debt": 16,
-        "governance_lag": 64,
-        "live_reason": "Linked to live workstream B-141.",
-        "scenario": "unsafe_closeout",
-        "scope_type": "component",
-        "severity": "watch"
-      },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-141. It sits in a 2-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 2,
-      "selection_slot": "visible_overflow",
-      "systemic_theme_tags": [
-        "insufficient_evidence",
-        "ownership_gap"
-      ]
-    },
-    {
-      "action_label": "Review manually",
       "brief": "Radar still needs review, but the missing evidence is more decisive than the visible surface activity. No named owned artifacts back the current ownership read. Do not let weak ownership evidence harden into a semantic conclusion. Evidence is insufficient for semantic diff review; first bind the case to named owned artifacts or explicit ownership evidence.",
       "claim_guard": {},
       "confidence": 0.605,
@@ -2568,7 +2448,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 28,
+      "rank": 27,
       "reasoning_state": "deterministic-only",
       "scope_id": "radar",
       "scope_key": "component:radar",
@@ -2583,8 +2463,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-048, B-064, and +4 more. It sits in a 2-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 2,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-048, B-064, and +4 more.",
+      "selection_score_band_size": 1,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -2657,7 +2537,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 29,
+      "rank": 28,
       "reasoning_state": "deterministic-only",
       "scope_id": "atlas",
       "scope_key": "component:atlas",
@@ -2672,8 +2552,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-033, B-071, and +2 more. It sits in a 21-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 21,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-033, B-071, and +2 more. It sits in a 22-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 22,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -2750,7 +2630,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 30,
+      "rank": 29,
       "reasoning_state": "deterministic-only",
       "scope_id": "benchmark",
       "scope_key": "component:benchmark",
@@ -2765,8 +2645,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-021, B-022, and +7 more. It sits in a 21-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 21,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-021, B-022, and +7 more. It sits in a 22-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 22,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -2845,7 +2725,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -2870,7 +2750,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 31,
+      "rank": 30,
       "reasoning_state": "deterministic-only",
       "scope_id": "casebook",
       "scope_key": "component:casebook",
@@ -2885,8 +2765,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-097 and B-141. It sits in a 21-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 21,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-097 and B-141. It sits in a 22-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 22,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -2965,7 +2845,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -2990,7 +2870,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 32,
+      "rank": 31,
       "reasoning_state": "deterministic-only",
       "scope_id": "compass",
       "scope_key": "component:compass",
@@ -3005,8 +2885,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-025, B-071, and +7 more. It sits in a 21-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 21,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-025, B-071, and +7 more. It sits in a 22-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 22,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -3085,7 +2965,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3110,7 +2990,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 33,
+      "rank": 32,
       "reasoning_state": "deterministic-only",
       "scope_id": "dashboard",
       "scope_key": "component:dashboard",
@@ -3125,8 +3005,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-022, B-021, and +11 more. It sits in a 21-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 21,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-022, B-021, and +11 more. It sits in a 22-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 22,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -3205,7 +3085,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3230,7 +3110,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 34,
+      "rank": 33,
       "reasoning_state": "deterministic-only",
       "scope_id": "delivery-intelligence",
       "scope_key": "component:delivery-intelligence",
@@ -3245,8 +3125,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-071 and B-091. It sits in a 21-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 21,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-071 and B-091. It sits in a 22-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 22,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -3321,7 +3201,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 35,
+      "rank": 34,
       "reasoning_state": "deterministic-only",
       "scope_id": "execution-engine",
       "scope_key": "component:execution-engine",
@@ -3336,8 +3216,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-141. It sits in a 21-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 21,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-141. It sits in a 22-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 22,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -3412,7 +3292,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 36,
+      "rank": 35,
       "reasoning_state": "deterministic-only",
       "scope_id": "governance-intervention-engine",
       "scope_key": "component:governance-intervention-engine",
@@ -3427,8 +3307,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-141 and B-142. It sits in a 21-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 21,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-141 and B-142. It sits in a 22-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 22,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -3507,7 +3387,127 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
+          "published_source_commit": "unknown",
+          "pushed_head": "unknown",
+          "runner_fingerprint": "unknown"
+        },
+        "evidence_tier": "live_verified",
+        "failure_fingerprint": "same live failure fingerprint can reproduce while adjacent local progress still reads like blocker movement.",
+        "first_failing_phase": "status synthesis",
+        "frontier_phase": "status synthesis",
+        "lane_id": "proof-state-control-plane",
+        "linked_bug_id": "CB-077",
+        "proof_status": "live_verified",
+        "resolution_state": "resolved",
+        "source": "casebook",
+        "source_path": "odylith/casebook/bugs/2026-04-08-live-proof-lanes-do-not-pin-the-primary-blocker-frontier-or-falsification-memory.md"
+      },
+      "proof_state_resolution": {
+        "lane_ids": [
+          "proof-state-control-plane"
+        ],
+        "state": "resolved"
+      },
+      "provider_focus": false,
+      "provider_used": false,
+      "provider_validated": false,
+      "rank": 36,
+      "reasoning_state": "deterministic-only",
+      "scope_id": "odylith",
+      "scope_key": "component:odylith",
+      "scope_label": "Odylith",
+      "scope_type": "component",
+      "selection_metrics": {
+        "blast_radius_severity": 58,
+        "decision_debt": 16,
+        "governance_lag": 18,
+        "live_reason": "Linked to live workstream B-021, B-033, and +16 more.",
+        "scenario": "unsafe_closeout",
+        "scope_type": "component",
+        "severity": "watch"
+      },
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-021, B-033, and +16 more. It sits in a 22-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 22,
+      "selection_slot": "visible_overflow",
+      "systemic_theme_tags": [
+        "insufficient_evidence",
+        "ownership_gap"
+      ]
+    },
+    {
+      "action_label": "Review manually",
+      "brief": "Odylith Chatter still needs review, but the missing evidence is more decisive than the visible surface activity. No named owned artifacts back the current ownership read. Do not let weak ownership evidence harden into a semantic conclusion. Evidence is insufficient for semantic diff review; first bind the case to named owned artifacts or explicit ownership evidence.",
+      "claim_guard": {
+        "blocked_terms": [],
+        "claim_scope": "live",
+        "highest_truthful_claim": "fixed live",
+        "hosted_frontier_advanced": true,
+        "proof_status": "live_verified",
+        "same_fingerprint_as_last_falsification": false
+      },
+      "confidence": 0.605,
+      "confidence_factors": {
+        "contradiction_strength": 0.52,
+        "evidence_completeness": 0.5,
+        "ownership_clarity": 0.2,
+        "proof_route_quality": 1.0,
+        "provider_validation": 0.55
+      },
+      "decision_at_stake": "What maintainer action on Odylith Chatter would still change the decision given the current checkpoint and proof?",
+      "deterministic_reason": "provider unavailable",
+      "deterministic_reason_detail": "No AI reasoning provider is configured or available for this Odylith refresh.",
+      "headline": "Evidence on Odylith Chatter is still too weak to act",
+      "id": "case-component-odylith-chatter",
+      "packet_mode": "manual",
+      "proof_refs": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-031"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-031"
+        }
+      ],
+      "proof_reopen": {},
+      "proof_routes": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-031"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-031"
+        }
+      ],
+      "proof_state": {
+        "allowed_next_work": [
+          "closeout",
+          "secondary hardening",
+          "docs"
+        ],
+        "clearance_condition": "One coherent `proof_state` lane is carried across delivery scopes, Tribunal, packets, shell, Compass, Registry, and chatter, and claim guard blocks unqualified live-fix language below `live_verified`.",
+        "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
+        "deployment_truth": {
+          "last_live_failing_commit": "unknown",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3534,21 +3534,21 @@
       "provider_validated": false,
       "rank": 37,
       "reasoning_state": "deterministic-only",
-      "scope_id": "odylith",
-      "scope_key": "component:odylith",
-      "scope_label": "Odylith",
+      "scope_id": "odylith-chatter",
+      "scope_key": "component:odylith-chatter",
+      "scope_label": "Odylith Chatter",
       "scope_type": "component",
       "selection_metrics": {
         "blast_radius_severity": 58,
         "decision_debt": 16,
         "governance_lag": 18,
-        "live_reason": "Linked to live workstream B-021, B-033, and +16 more.",
+        "live_reason": "Linked to live workstream B-141.",
         "scenario": "unsafe_closeout",
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-021, B-033, and +16 more. It sits in a 21-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 21,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-141. It sits in a 22-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 22,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -3627,7 +3627,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3667,8 +3667,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-022, B-038, and +7 more. It sits in a 21-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 21,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-022, B-038, and +7 more. It sits in a 22-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 22,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -3757,8 +3757,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-021 and B-038. It sits in a 21-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 21,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-021 and B-038. It sits in a 22-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 22,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -3846,8 +3846,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 21-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 21,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 22-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 22,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -3932,8 +3932,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 21-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 21,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 22-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 22,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -4018,8 +4018,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 21-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 21,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 22-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 22,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -4104,8 +4104,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-021. It sits in a 21-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 21,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-021. It sits in a 22-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 22,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -4184,7 +4184,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4224,8 +4224,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-071. It sits in a 21-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 21,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-071. It sits in a 22-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 22,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -4313,8 +4313,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-045, B-071, and +2 more. It sits in a 21-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 21,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-045, B-071, and +2 more. It sits in a 22-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 22,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -4399,8 +4399,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-021, B-033, and +6 more. It sits in a 21-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 21,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-021, B-033, and +6 more. It sits in a 22-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 22,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -4491,8 +4491,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-022, B-021, and +2 more. It sits in a 21-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 21,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-022, B-021, and +2 more. It sits in a 22-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 22,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -4583,8 +4583,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-084, B-087, and +1 more. It sits in a 21-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 21,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-084, B-087, and +1 more. It sits in a 22-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 22,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -4663,7 +4663,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4703,8 +4703,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-022, B-038, and +1 more. It sits in a 21-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 21,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-022, B-038, and +1 more. It sits in a 22-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 22,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -4786,14 +4786,14 @@
       "selection_metrics": {
         "blast_radius_severity": 58,
         "decision_debt": 86,
-        "governance_lag": 18,
+        "governance_lag": 64,
         "live_reason": "Linked to live workstream B-141 and B-142.",
         "scenario": "cross_surface_conflict",
         "scope_type": "component",
-        "severity": "watch"
+        "severity": "blocker"
       },
-      "selection_reason": "Selected as the highest-ranked cross surface conflict component so the queue covers a distinct case class before same-scenario priority fill. Live rationale: Linked to live workstream B-141 and B-142. It sits in a 4-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 4,
+      "selection_reason": "Selected as the highest-ranked cross surface conflict component so the queue covers a distinct case class before same-scenario priority fill. Live rationale: Linked to live workstream B-141 and B-142.",
+      "selection_score_band_size": 1,
       "selection_slot": "scenario_coverage",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -4881,8 +4881,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-141. It sits in a 4-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 4,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-141. It sits in a 3-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 3,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -4967,8 +4967,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-045. It sits in a 4-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 4,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-045. It sits in a 3-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 3,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -5053,8 +5053,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-033 and B-040. It sits in a 4-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 4,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-033 and B-040. It sits in a 3-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 3,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -5322,93 +5322,6 @@
     },
     {
       "action_label": "Review manually",
-      "brief": "Context And Agent Execution Stack looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if latest delta already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind latest delta before treating Context And Agent Execution Stack as authoritative across Registry, Radar, Compass, and Atlas.",
-      "claim_guard": {},
-      "confidence": 0.605,
-      "confidence_factors": {
-        "contradiction_strength": 0.52,
-        "evidence_completeness": 0.5,
-        "ownership_clarity": 0.2,
-        "proof_route_quality": 1.0,
-        "provider_validation": 0.55
-      },
-      "decision_at_stake": "Does Context And Agent Execution Stack actually own the cross-surface state Odylith is aggregating, or is shared-surface churn being mistaken for authority?",
-      "deterministic_reason": "provider unavailable",
-      "deterministic_reason_detail": "No AI reasoning provider is configured or available for this Odylith refresh.",
-      "headline": "Cross-surface ownership is not proven yet",
-      "id": "case-diagram-D-002",
-      "packet_mode": "manual",
-      "proof_refs": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-001"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-001"
-        }
-      ],
-      "proof_reopen": {},
-      "proof_routes": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-001"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-001"
-        }
-      ],
-      "proof_state": {},
-      "proof_state_resolution": {
-        "lane_ids": [],
-        "state": "none"
-      },
-      "provider_focus": false,
-      "provider_used": false,
-      "provider_validated": false,
-      "rank": 57,
-      "reasoning_state": "deterministic-only",
-      "scope_id": "D-002",
-      "scope_key": "diagram:D-002",
-      "scope_label": "Context And Agent Execution Stack",
-      "scope_type": "diagram",
-      "selection_metrics": {
-        "blast_radius_severity": 58,
-        "decision_debt": 16,
-        "governance_lag": 64,
-        "live_reason": "Newer activity outruns the last explicit checkpoint.",
-        "scenario": "unsafe_closeout",
-        "scope_type": "diagram",
-        "severity": "watch"
-      },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 2-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 2,
-      "selection_slot": "visible_overflow",
-      "systemic_theme_tags": [
-        "authority",
-        "ownership_gap",
-        "cross_surface"
-      ]
-    },
-    {
-      "action_label": "Review manually",
       "brief": "Delivery Governance Topology looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if latest delta already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind latest delta before treating Delivery Governance Topology as authoritative across Registry, Radar, Compass, and Atlas.",
       "claim_guard": {},
       "confidence": 0.605,
@@ -5470,7 +5383,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 58,
+      "rank": 57,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-004",
       "scope_key": "diagram:D-004",
@@ -5485,8 +5398,8 @@
         "scope_type": "diagram",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 2-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 2,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint.",
+      "selection_score_band_size": 1,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "authority",
@@ -5567,7 +5480,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 59,
+      "rank": 58,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-036",
       "scope_key": "diagram:D-036",
@@ -5582,104 +5495,8 @@
         "scope_type": "diagram",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 4-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 4,
-      "selection_slot": "visible_overflow",
-      "systemic_theme_tags": [
-        "insufficient_evidence",
-        "ownership_gap"
-      ]
-    },
-    {
-      "action_label": "Review manually",
-      "brief": "Conversation Observation And Governed Proposal Flow still needs review, but the missing evidence is more decisive than the visible surface activity. No named owned artifacts back the current ownership read. Do not let weak ownership evidence harden into a semantic conclusion. Evidence is insufficient for semantic diff review; first bind the case to named owned artifacts or explicit ownership evidence.",
-      "claim_guard": {},
-      "confidence": 0.605,
-      "confidence_factors": {
-        "contradiction_strength": 0.52,
-        "evidence_completeness": 0.5,
-        "ownership_clarity": 0.2,
-        "proof_route_quality": 1.0,
-        "provider_validation": 0.55
-      },
-      "decision_at_stake": "What maintainer action on Conversation Observation And Governed Proposal Flow would still change the decision given the current checkpoint and proof?",
-      "deterministic_reason": "provider unavailable",
-      "deterministic_reason_detail": "No AI reasoning provider is configured or available for this Odylith refresh.",
-      "headline": "Evidence on Conversation Observation And Governed Proposal Flow is still too weak to act",
-      "id": "case-diagram-D-038",
-      "packet_mode": "manual",
-      "proof_refs": [
-        {
-          "anchor": "approval-clearance",
-          "fact_tag": "clearance",
-          "kind": "clearance",
-          "label": "Conversation Observation And Governed Proposal Flow clearance",
-          "surface": "shell",
-          "value": "diagram:D-038"
-        },
-        {
-          "anchor": "forensic-evidence",
-          "fact_tag": "forensic_evidence",
-          "kind": "component",
-          "label": "governance-intervention-engine forensic evidence",
-          "surface": "registry",
-          "value": "component:governance-intervention-engine"
-        }
-      ],
-      "proof_reopen": {},
-      "proof_routes": [
-        {
-          "anchor": "approval-clearance",
-          "fact_tag": "clearance",
-          "kind": "clearance",
-          "label": "Conversation Observation And Governed Proposal Flow clearance",
-          "surface": "shell",
-          "value": "diagram:D-038"
-        },
-        {
-          "anchor": "forensic-evidence",
-          "fact_tag": "forensic_evidence",
-          "kind": "component",
-          "label": "governance-intervention-engine forensic evidence",
-          "surface": "registry",
-          "value": "component:governance-intervention-engine"
-        }
-      ],
-      "proof_state": {},
-      "proof_state_resolution": {
-        "lane_ids": [
-          "benchmark-v0.1.11",
-          "code_only",
-          "discipline",
-          "host_latency_integrity",
-          "proof",
-          "proof-state-control-plane",
-          "release-0-1-11",
-          "source-local",
-          "v0.1.13-host-integrity"
-        ],
-        "state": "ambiguous"
-      },
-      "provider_focus": false,
-      "provider_used": false,
-      "provider_validated": false,
-      "rank": 60,
-      "reasoning_state": "deterministic-only",
-      "scope_id": "D-038",
-      "scope_key": "diagram:D-038",
-      "scope_label": "Conversation Observation And Governed Proposal Flow",
-      "scope_type": "diagram",
-      "selection_metrics": {
-        "blast_radius_severity": 24,
-        "decision_debt": 16,
-        "governance_lag": 64,
-        "live_reason": "Newer activity outruns the last explicit checkpoint.",
-        "scenario": "unsafe_closeout",
-        "scope_type": "diagram",
-        "severity": "watch"
-      },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 4-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 4,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 3-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 3,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -5759,7 +5576,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 61,
+      "rank": 59,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-043",
       "scope_key": "diagram:D-043",
@@ -5774,8 +5591,8 @@
         "scope_type": "diagram",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 4-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 4,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 3-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 3,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -5855,7 +5672,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 62,
+      "rank": 60,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-044",
       "scope_key": "diagram:D-044",
@@ -5870,8 +5687,8 @@
         "scope_type": "diagram",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 4-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 4,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 3-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 3,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -5941,7 +5758,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 63,
+      "rank": 61,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-022",
       "scope_key": "diagram:D-022",
@@ -6070,7 +5887,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 64,
+      "rank": 62,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-024",
       "scope_key": "diagram:D-024",
@@ -6087,6 +5904,93 @@
       },
       "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-022 and B-038. It sits in a 2-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
       "selection_score_band_size": 2,
+      "selection_slot": "visible_overflow",
+      "systemic_theme_tags": [
+        "authority",
+        "ownership_gap",
+        "cross_surface"
+      ]
+    },
+    {
+      "action_label": "Review manually",
+      "brief": "Context And Agent Execution Stack looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if latest delta already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind latest delta before treating Context And Agent Execution Stack as authoritative across Registry, Radar, Compass, and Atlas.",
+      "claim_guard": {},
+      "confidence": 0.605,
+      "confidence_factors": {
+        "contradiction_strength": 0.52,
+        "evidence_completeness": 0.5,
+        "ownership_clarity": 0.2,
+        "proof_route_quality": 1.0,
+        "provider_validation": 0.55
+      },
+      "decision_at_stake": "Does Context And Agent Execution Stack actually own the cross-surface state Odylith is aggregating, or is shared-surface churn being mistaken for authority?",
+      "deterministic_reason": "provider unavailable",
+      "deterministic_reason_detail": "No AI reasoning provider is configured or available for this Odylith refresh.",
+      "headline": "Cross-surface ownership is not proven yet",
+      "id": "case-diagram-D-002",
+      "packet_mode": "manual",
+      "proof_refs": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-001"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-001"
+        }
+      ],
+      "proof_reopen": {},
+      "proof_routes": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-001"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-001"
+        }
+      ],
+      "proof_state": {},
+      "proof_state_resolution": {
+        "lane_ids": [],
+        "state": "none"
+      },
+      "provider_focus": false,
+      "provider_used": false,
+      "provider_validated": false,
+      "rank": 63,
+      "reasoning_state": "deterministic-only",
+      "scope_id": "D-002",
+      "scope_key": "diagram:D-002",
+      "scope_label": "Context And Agent Execution Stack",
+      "scope_type": "diagram",
+      "selection_metrics": {
+        "blast_radius_severity": 58,
+        "decision_debt": 16,
+        "governance_lag": 18,
+        "live_reason": "Newer activity outruns the last explicit checkpoint.",
+        "scenario": "unsafe_closeout",
+        "scope_type": "diagram",
+        "severity": "watch"
+      },
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 3-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 3,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "authority",
@@ -6157,7 +6061,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 65,
+      "rank": 64,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-003",
       "scope_key": "diagram:D-003",
@@ -6172,8 +6076,8 @@
         "scope_type": "diagram",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 2-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 2,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 3-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 3,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "authority",
@@ -6244,7 +6148,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 66,
+      "rank": 65,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-005",
       "scope_key": "diagram:D-005",
@@ -6259,8 +6163,8 @@
         "scope_type": "diagram",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 2-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 2,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 3-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 3,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "authority",
@@ -6341,7 +6245,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 67,
+      "rank": 66,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-037",
       "scope_key": "diagram:D-037",
@@ -6356,8 +6260,104 @@
         "scope_type": "diagram",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 4-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 4,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 5-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 5,
+      "selection_slot": "visible_overflow",
+      "systemic_theme_tags": [
+        "insufficient_evidence",
+        "ownership_gap"
+      ]
+    },
+    {
+      "action_label": "Review manually",
+      "brief": "Conversation Observation And Governed Proposal Flow still needs review, but the missing evidence is more decisive than the visible surface activity. No named owned artifacts back the current ownership read. Do not let weak ownership evidence harden into a semantic conclusion. Evidence is insufficient for semantic diff review; first bind the case to named owned artifacts or explicit ownership evidence.",
+      "claim_guard": {},
+      "confidence": 0.605,
+      "confidence_factors": {
+        "contradiction_strength": 0.52,
+        "evidence_completeness": 0.5,
+        "ownership_clarity": 0.2,
+        "proof_route_quality": 1.0,
+        "provider_validation": 0.55
+      },
+      "decision_at_stake": "What maintainer action on Conversation Observation And Governed Proposal Flow would still change the decision given the current checkpoint and proof?",
+      "deterministic_reason": "provider unavailable",
+      "deterministic_reason_detail": "No AI reasoning provider is configured or available for this Odylith refresh.",
+      "headline": "Evidence on Conversation Observation And Governed Proposal Flow is still too weak to act",
+      "id": "case-diagram-D-038",
+      "packet_mode": "manual",
+      "proof_refs": [
+        {
+          "anchor": "approval-clearance",
+          "fact_tag": "clearance",
+          "kind": "clearance",
+          "label": "Conversation Observation And Governed Proposal Flow clearance",
+          "surface": "shell",
+          "value": "diagram:D-038"
+        },
+        {
+          "anchor": "forensic-evidence",
+          "fact_tag": "forensic_evidence",
+          "kind": "component",
+          "label": "governance-intervention-engine forensic evidence",
+          "surface": "registry",
+          "value": "component:governance-intervention-engine"
+        }
+      ],
+      "proof_reopen": {},
+      "proof_routes": [
+        {
+          "anchor": "approval-clearance",
+          "fact_tag": "clearance",
+          "kind": "clearance",
+          "label": "Conversation Observation And Governed Proposal Flow clearance",
+          "surface": "shell",
+          "value": "diagram:D-038"
+        },
+        {
+          "anchor": "forensic-evidence",
+          "fact_tag": "forensic_evidence",
+          "kind": "component",
+          "label": "governance-intervention-engine forensic evidence",
+          "surface": "registry",
+          "value": "component:governance-intervention-engine"
+        }
+      ],
+      "proof_state": {},
+      "proof_state_resolution": {
+        "lane_ids": [
+          "benchmark-v0.1.11",
+          "code_only",
+          "discipline",
+          "host_latency_integrity",
+          "proof",
+          "proof-state-control-plane",
+          "release-0-1-11",
+          "source-local",
+          "v0.1.13-host-integrity"
+        ],
+        "state": "ambiguous"
+      },
+      "provider_focus": false,
+      "provider_used": false,
+      "provider_validated": false,
+      "rank": 67,
+      "reasoning_state": "deterministic-only",
+      "scope_id": "D-038",
+      "scope_key": "diagram:D-038",
+      "scope_label": "Conversation Observation And Governed Proposal Flow",
+      "scope_type": "diagram",
+      "selection_metrics": {
+        "blast_radius_severity": 24,
+        "decision_debt": 16,
+        "governance_lag": 18,
+        "live_reason": "Newer activity outruns the last explicit checkpoint.",
+        "scenario": "unsafe_closeout",
+        "scope_type": "diagram",
+        "severity": "watch"
+      },
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 5-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 5,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -6452,8 +6452,8 @@
         "scope_type": "diagram",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 4-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 4,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 5-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 5,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -6548,8 +6548,8 @@
         "scope_type": "diagram",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 4-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 4,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 5-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 5,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -6644,8 +6644,8 @@
         "scope_type": "diagram",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 4-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 4,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Newer activity outruns the last explicit checkpoint. It sits in a 5-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 5,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -7249,7 +7249,7 @@
       ]
     }
   ],
-  "generated_utc": "2026-05-20 03:30:24Z",
+  "generated_utc": "2026-05-20 06:11:31Z",
   "indexes": {
     "cases": {
       "case-component-atlas": "component:atlas",
@@ -7574,7 +7574,7 @@
         "policy": 0,
         "renderer": 3782,
         "runbook": 0,
-        "runtime": 49094,
+        "runtime": 49079,
         "spec": 48757
       },
       "claim_guard": {
@@ -8058,7 +8058,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -8134,7 +8134,7 @@
         "closure_readiness": 80,
         "cross_surface_convergence": 98,
         "decision_debt": 23,
-        "governance_lag": 27,
+        "governance_lag": 26,
         "workstream_concentration": 39
       },
       "surface_contributions": [
@@ -8570,7 +8570,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -8646,7 +8646,7 @@
         "closure_readiness": 59,
         "cross_surface_convergence": 94,
         "decision_debt": 40,
-        "governance_lag": 43,
+        "governance_lag": 41,
         "workstream_concentration": 65
       },
       "surface_contributions": [
@@ -8683,7 +8683,7 @@
         "policy": 0,
         "renderer": 1820,
         "runbook": 0,
-        "runtime": 23552,
+        "runtime": 23544,
         "spec": 23747
       },
       "claim_guard": {
@@ -9304,7 +9304,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -9380,7 +9380,7 @@
         "closure_readiness": 83,
         "cross_surface_convergence": 100,
         "decision_debt": 16,
-        "governance_lag": 28,
+        "governance_lag": 26,
         "workstream_concentration": 32
       },
       "surface_contributions": [
@@ -9417,7 +9417,7 @@
         "policy": 0,
         "renderer": 1820,
         "runbook": 0,
-        "runtime": 23552,
+        "runtime": 23544,
         "spec": 23747
       },
       "claim_guard": {
@@ -10038,7 +10038,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -10114,7 +10114,7 @@
         "closure_readiness": 83,
         "cross_surface_convergence": 100,
         "decision_debt": 16,
-        "governance_lag": 28,
+        "governance_lag": 26,
         "workstream_concentration": 32
       },
       "surface_contributions": [
@@ -10151,7 +10151,7 @@
         "policy": 0,
         "renderer": 34,
         "runbook": 0,
-        "runtime": 1282,
+        "runtime": 1283,
         "spec": 646
       },
       "claim_guard": {
@@ -10660,7 +10660,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -11091,7 +11091,7 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 188,
+        "runtime": 187,
         "spec": 181
       },
       "confidence": "Medium",
@@ -11114,15 +11114,14 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 1,
-        "shared_component_event_count": 94,
+        "shared_component_event_count": 93,
         "status": "finished",
         "successor_event_count": 0,
-        "synthetic_count": 2
+        "synthetic_count": 1
       },
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -11136,7 +11135,8 @@
           "src/odylith/runtime/domain_intelligence/proposal_contract.py",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
-          "src/odylith/install/manager.py"
+          "src/odylith/install/manager.py",
+          "src/odylith/install/runtime.py"
         ],
         "code_references": [
           "src/odylith/cli.py",
@@ -11209,7 +11209,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -11397,7 +11396,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -11606,14 +11605,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 183,
+          "meaningful_change_count": 182,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -11969,7 +11968,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -14126,7 +14125,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -17804,7 +17803,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -19921,7 +19920,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -20470,7 +20469,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -23503,7 +23502,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -26763,13 +26762,13 @@
         "policy": 0,
         "renderer": 9,
         "runbook": 0,
-        "runtime": 181,
+        "runtime": 180,
         "spec": 178
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
-        "closeout_signal": "suppressed_shared_component_only",
+        "closeout_signal": "none",
         "decision_count": 18,
         "developer_doc_count": 0,
         "direct_event_count": 3,
@@ -26786,14 +26785,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 74,
+        "shared_component_event_count": 73,
         "status": "finished",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -26808,7 +26806,8 @@
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
-          "src/odylith/install/runtime.py"
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -26873,10 +26872,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -27056,9 +27054,9 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-04-07T09:59:30-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:08:42-07:00",
+        "latest_event_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
-        "latest_signal_kind": "workspace_activity",
+        "latest_signal_kind": "statement",
         "linked_components": [
           "benchmark",
           "delivery-intelligence",
@@ -27153,7 +27151,7 @@
       ],
       "explanation_facts": [
         "Status is finished.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: benchmark, delivery-intelligence, execution-engine, governance-intervention-engine, and +12 more.",
         "Lineage successors: none.",
         "Linked diagrams: D-002, D-018, and D-020.",
@@ -27162,7 +27160,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-031 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith Chatter is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -27216,14 +27214,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 175,
+          "meaningful_change_count": 174,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -27246,7 +27244,7 @@
         "closure_readiness": 82,
         "cross_surface_convergence": 100,
         "decision_debt": 16,
-        "governance_lag": 64,
+        "governance_lag": 18,
         "workstream_concentration": 32
       },
       "surface_contributions": [
@@ -33301,7 +33299,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -35184,7 +35182,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -35683,7 +35681,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -37552,7 +37550,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -38014,7 +38012,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -38476,7 +38474,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -40045,13 +40043,13 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 184,
+        "runtime": 183,
         "spec": 179
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
-        "closeout_signal": "suppressed_shared_component_only",
+        "closeout_signal": "none",
         "decision_count": 19,
         "developer_doc_count": 0,
         "direct_event_count": 0,
@@ -40068,14 +40066,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 80,
+        "shared_component_event_count": 79,
         "status": "finished",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -40090,7 +40087,8 @@
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
-          "src/odylith/install/runtime.py"
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -40155,10 +40153,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -40340,9 +40337,9 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:08:42-07:00",
+        "latest_event_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
-        "latest_signal_kind": "workspace_activity",
+        "latest_signal_kind": "statement",
         "linked_components": [
           "benchmark",
           "dashboard",
@@ -40445,7 +40442,7 @@
       ],
       "explanation_facts": [
         "Status is finished.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: benchmark, dashboard, delivery-intelligence, execution-engine, and +14 more.",
         "Lineage successors: none.",
         "Linked diagrams: D-002, D-018, D-020, and D-025.",
@@ -40454,7 +40451,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-058 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith Chatter is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Dashboard is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -40508,14 +40505,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 177,
+          "meaningful_change_count": 176,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -40538,7 +40535,7 @@
         "closure_readiness": 82,
         "cross_surface_convergence": 100,
         "decision_debt": 16,
-        "governance_lag": 64,
+        "governance_lag": 18,
         "workstream_concentration": 32
       },
       "surface_contributions": [
@@ -40575,7 +40572,7 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 185,
+        "runtime": 184,
         "spec": 181
       },
       "confidence": "Medium",
@@ -40598,15 +40595,14 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 93,
+        "shared_component_event_count": 92,
         "status": "finished",
         "successor_event_count": 0,
-        "synthetic_count": 2
+        "synthetic_count": 1
       },
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -40620,7 +40616,8 @@
           "src/odylith/runtime/domain_intelligence/proposal_contract.py",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
-          "src/odylith/install/manager.py"
+          "src/odylith/install/manager.py",
+          "src/odylith/install/runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -40689,7 +40686,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -40872,7 +40868,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -41042,14 +41038,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 179,
+          "meaningful_change_count": 178,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -42138,7 +42134,7 @@
         "policy": 0,
         "renderer": 18,
         "runbook": 0,
-        "runtime": 185,
+        "runtime": 184,
         "spec": 179
       },
       "claim_guard": {
@@ -42149,10 +42145,10 @@
         "proof_status": "live_verified",
         "same_fingerprint_as_last_falsification": false
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
-        "closeout_signal": "suppressed_shared_component_only",
+        "closeout_signal": "none",
         "decision_count": 22,
         "developer_doc_count": 0,
         "direct_event_count": 0,
@@ -42169,14 +42165,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 91,
+        "shared_component_event_count": 90,
         "status": "finished",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -42191,7 +42186,8 @@
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
-          "src/odylith/install/runtime.py"
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -42272,10 +42268,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -42458,9 +42453,9 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:08:42-07:00",
+        "latest_event_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
-        "latest_signal_kind": "workspace_activity",
+        "latest_signal_kind": "statement",
         "linked_components": [
           "casebook",
           "compass",
@@ -42542,7 +42537,7 @@
       ],
       "explanation_facts": [
         "Status is finished.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: casebook, compass, dashboard, delivery-intelligence, and +5 more.",
         "Lineage successors: none.",
         "Linked diagrams: D-004 and D-026.",
@@ -42551,7 +42546,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-062 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith Chatter is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Compass is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -42606,7 +42601,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -42650,14 +42645,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 178,
+          "meaningful_change_count": 177,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "live_verified",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -42680,7 +42675,7 @@
         "closure_readiness": 82,
         "cross_surface_convergence": 100,
         "decision_debt": 16,
-        "governance_lag": 64,
+        "governance_lag": 18,
         "workstream_concentration": 32
       },
       "surface_contributions": [
@@ -43012,7 +43007,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -43506,7 +43501,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -44542,7 +44537,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -46953,7 +46948,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -47171,7 +47166,7 @@
         "policy": 0,
         "renderer": 18,
         "runbook": 0,
-        "runtime": 185,
+        "runtime": 184,
         "spec": 180
       },
       "confidence": "Medium",
@@ -47194,15 +47189,14 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 92,
+        "shared_component_event_count": 91,
         "status": "finished",
         "successor_event_count": 0,
-        "synthetic_count": 2
+        "synthetic_count": 1
       },
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -47216,7 +47210,8 @@
           "src/odylith/runtime/domain_intelligence/proposal_contract.py",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
-          "src/odylith/install/manager.py"
+          "src/odylith/install/manager.py",
+          "src/odylith/install/runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -47285,7 +47280,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -47467,7 +47461,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -47639,14 +47633,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 178,
+          "meaningful_change_count": 177,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -50636,7 +50630,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T14:04:11-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -51800,13 +51794,13 @@
         "policy": 0,
         "renderer": 2,
         "runbook": 0,
-        "runtime": 178,
+        "runtime": 177,
         "spec": 144
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
-        "closeout_signal": "suppressed_shared_component_only",
+        "closeout_signal": "none",
         "decision_count": 11,
         "developer_doc_count": 0,
         "direct_event_count": 0,
@@ -51823,14 +51817,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 54,
+        "shared_component_event_count": 53,
         "status": "finished",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -51845,7 +51838,8 @@
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
-          "src/odylith/install/runtime.py"
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -51905,10 +51899,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -52080,9 +52073,9 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:08:42-07:00",
+        "latest_event_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
-        "latest_signal_kind": "workspace_activity",
+        "latest_signal_kind": "statement",
         "linked_components": [
           "execution-engine",
           "odylith-chatter",
@@ -52145,7 +52138,7 @@
       ],
       "explanation_facts": [
         "Status is finished.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: execution-engine, odylith-chatter, and odylith-context-engine.",
         "Lineage successors: B-072.",
         "Linked diagrams: D-030 and D-031.",
@@ -52154,7 +52147,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-082 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith Chatter is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Odylith Context Engine is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -52208,14 +52201,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 167,
+          "meaningful_change_count": 166,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -52238,7 +52231,7 @@
         "closure_readiness": 82,
         "cross_surface_convergence": 100,
         "decision_debt": 16,
-        "governance_lag": 64,
+        "governance_lag": 18,
         "workstream_concentration": 32
       },
       "surface_contributions": [
@@ -53186,7 +53179,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -56643,7 +56636,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -58773,13 +58766,13 @@
         "policy": 0,
         "renderer": 18,
         "runbook": 0,
-        "runtime": 185,
+        "runtime": 184,
         "spec": 176
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
-        "closeout_signal": "suppressed_shared_component_only",
+        "closeout_signal": "none",
         "decision_count": 21,
         "developer_doc_count": 0,
         "direct_event_count": 5,
@@ -58796,14 +58789,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 84,
+        "shared_component_event_count": 83,
         "status": "finished",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -58818,7 +58810,8 @@
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
-          "src/odylith/install/runtime.py"
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -58883,10 +58876,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -59068,9 +59060,9 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-04-17T13:31:40-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:08:42-07:00",
+        "latest_event_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
-        "latest_signal_kind": "workspace_activity",
+        "latest_signal_kind": "statement",
         "linked_components": [
           "benchmark",
           "compass",
@@ -59165,7 +59157,7 @@
       ],
       "explanation_facts": [
         "Status is finished.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: benchmark, compass, delivery-intelligence, execution-engine, and +12 more.",
         "Lineage successors: B-105, B-106, B-107, B-108, and +1 more.",
         "Linked diagrams: D-002 and D-038.",
@@ -59174,7 +59166,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-096 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith Chatter is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Compass is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -59228,14 +59220,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 177,
+          "meaningful_change_count": 176,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -59258,7 +59250,7 @@
         "closure_readiness": 82,
         "cross_surface_convergence": 100,
         "decision_debt": 16,
-        "governance_lag": 64,
+        "governance_lag": 18,
         "workstream_concentration": 32
       },
       "surface_contributions": [
@@ -60334,13 +60326,13 @@
         "policy": 0,
         "renderer": 9,
         "runbook": 0,
-        "runtime": 181,
+        "runtime": 180,
         "spec": 178
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
-        "closeout_signal": "suppressed_shared_component_only",
+        "closeout_signal": "none",
         "decision_count": 18,
         "developer_doc_count": 0,
         "direct_event_count": 6,
@@ -60357,14 +60349,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 74,
+        "shared_component_event_count": 73,
         "status": "finished",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -60379,7 +60370,8 @@
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
-          "src/odylith/install/runtime.py"
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -60444,10 +60436,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -60627,9 +60618,9 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-04-16T16:47:23-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:08:42-07:00",
+        "latest_event_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
-        "latest_signal_kind": "workspace_activity",
+        "latest_signal_kind": "statement",
         "linked_components": [
           "benchmark",
           "delivery-intelligence",
@@ -60736,7 +60727,7 @@
       ],
       "explanation_facts": [
         "Status is finished.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: benchmark, delivery-intelligence, execution-engine, governance-intervention-engine, and +12 more.",
         "Lineage successors: B-100, B-101, B-102, B-103, and +1 more.",
         "Linked diagrams: D-002, D-024, D-030, and D-031.",
@@ -60745,7 +60736,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-099 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith Chatter is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -60799,14 +60790,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 175,
+          "meaningful_change_count": 174,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -60829,7 +60820,7 @@
         "closure_readiness": 82,
         "cross_surface_convergence": 100,
         "decision_debt": 16,
-        "governance_lag": 64,
+        "governance_lag": 18,
         "workstream_concentration": 32
       },
       "surface_contributions": [
@@ -63604,7 +63595,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -64293,13 +64284,13 @@
         "policy": 0,
         "renderer": 18,
         "runbook": 0,
-        "runtime": 183,
+        "runtime": 182,
         "spec": 160
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
-        "closeout_signal": "suppressed_shared_component_only",
+        "closeout_signal": "none",
         "decision_count": 17,
         "developer_doc_count": 0,
         "direct_event_count": 0,
@@ -64316,14 +64307,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 78,
+        "shared_component_event_count": 77,
         "status": "finished",
         "successor_event_count": 5,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -64338,7 +64328,8 @@
           "src/odylith/install/runtime.py",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+          "src/odylith/runtime/domain_intelligence/proposal_validation.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -64393,10 +64384,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -64573,9 +64563,9 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:08:42-07:00",
+        "latest_event_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
-        "latest_signal_kind": "workspace_activity",
+        "latest_signal_kind": "statement",
         "linked_components": [
           "compass",
           "governance-intervention-engine",
@@ -64632,7 +64622,7 @@
       ],
       "explanation_facts": [
         "Status is finished.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: compass, governance-intervention-engine, and odylith-chatter.",
         "Lineage successors: B-096.",
         "Linked diagrams: D-038.",
@@ -64641,7 +64631,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-107 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith Chatter is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Compass is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -64695,14 +64685,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 172,
+          "meaningful_change_count": 171,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -64725,7 +64715,7 @@
         "closure_readiness": 82,
         "cross_surface_convergence": 100,
         "decision_debt": 16,
-        "governance_lag": 64,
+        "governance_lag": 18,
         "workstream_concentration": 32
       },
       "surface_contributions": [
@@ -65517,7 +65507,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -65735,7 +65725,7 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 185,
+        "runtime": 184,
         "spec": 181
       },
       "confidence": "Medium",
@@ -65758,15 +65748,14 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 94,
+        "shared_component_event_count": 93,
         "status": "finished",
         "successor_event_count": 3,
-        "synthetic_count": 2
+        "synthetic_count": 1
       },
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -65780,7 +65769,8 @@
           "src/odylith/runtime/domain_intelligence/proposal_contract.py",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
-          "src/odylith/install/manager.py"
+          "src/odylith/install/manager.py",
+          "src/odylith/install/runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -65849,7 +65839,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -66032,7 +66021,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-04-17T20:20:18-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -66199,14 +66188,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 179,
+          "meaningful_change_count": 178,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -66703,7 +66692,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -67253,7 +67242,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -67803,7 +67792,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -68353,7 +68342,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -69345,7 +69334,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -80900,7 +80889,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -81012,7 +81001,7 @@
         "policy": 0,
         "renderer": 18,
         "runbook": 0,
-        "runtime": 185,
+        "runtime": 186,
         "spec": 180
       },
       "confidence": "Medium",
@@ -81043,7 +81032,8 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "src/odylith/install/agents.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -81056,8 +81046,7 @@
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
           "src/odylith/runtime/domain_intelligence/proposal_contract.py",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
-          "src/odylith/cli.py",
-          "src/odylith/install/manager.py"
+          "src/odylith/cli.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -81126,7 +81115,8 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "src/odylith/install/agents.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -81308,7 +81298,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-05-03T10:46:04-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -81475,7 +81465,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 178,
+          "meaningful_change_count": 179,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -81543,7 +81533,7 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 170,
+        "runtime": 172,
         "spec": 181
       },
       "confidence": "Medium",
@@ -81566,14 +81556,16 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 90,
+        "shared_component_event_count": 91,
         "status": "implementation",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 2
       },
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -81586,9 +81578,7 @@
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
           "src/odylith/runtime/domain_intelligence/proposal_contract.py",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
-          "src/odylith/cli.py",
-          "src/odylith/install/manager.py",
-          "src/odylith/install/runtime.py"
+          "src/odylith/cli.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -81657,6 +81647,8 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -81833,7 +81825,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-05-19T14:04:11-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -81970,14 +81962,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 172,
+          "meaningful_change_count": 174,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 2,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -83360,7 +83352,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -83822,7 +83814,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -84288,7 +84280,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -84697,7 +84689,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -84812,10 +84804,10 @@
         "policy": 0,
         "renderer": 0,
         "runbook": 0,
-        "runtime": 31,
+        "runtime": 33,
         "spec": 16
       },
-      "confidence": "High",
+      "confidence": "Medium",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "decision_count": 0,
@@ -84829,7 +84821,7 @@
         "reasoning_state": "",
         "runbook_count": 0,
         "status": "active",
-        "synthetic_count": 0
+        "synthetic_count": 1
       },
       "evidence_bundle": {
         "changed_artifacts": [],
@@ -84881,12 +84873,12 @@
         ]
       },
       "evidence_context": {
-        "basis": "explicit",
+        "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-05-19T14:04:11-07:00",
+        "latest_event_ts_iso": "2026-05-19T22:16:45-07:00",
         "latest_explicit_ts_iso": "2026-05-19T14:04:11-07:00",
-        "latest_signal_kind": "implementation",
+        "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "domain-intelligence"
         ],
@@ -84933,7 +84925,7 @@
         }
       ],
       "explanation_facts": [
-        "Evidence quality is explicit.",
+        "Evidence quality is mixed.",
         "Blast radius class is cross-surface.",
         "Linked surfaces: Registry, Radar, Compass, Atlas, and +1 more.",
         "Linked workstreams: B-141 and B-142.",
@@ -84966,7 +84958,7 @@
         "secondary_scenarios": [
           "orphan_activity"
         ],
-        "severity": "watch",
+        "severity": "blocker",
         "source": "deterministic",
         "why_hidden": "Each tool shows a valid slice, but the contradiction only appears when their scope, authority, and next action are compared together."
       },
@@ -85006,7 +84998,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -85028,7 +85020,7 @@
         "closure_readiness": 58,
         "cross_surface_convergence": 100,
         "decision_debt": 86,
-        "governance_lag": 18,
+        "governance_lag": 64,
         "workstream_concentration": 74
       },
       "surface_contributions": [
@@ -86961,7 +86953,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -87076,7 +87068,7 @@
         "policy": 0,
         "renderer": 0,
         "runbook": 0,
-        "runtime": 69,
+        "runtime": 68,
         "spec": 29
       },
       "claim_guard": {
@@ -87087,7 +87079,7 @@
         "proof_status": "live_verified",
         "same_fingerprint_as_last_falsification": false
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "decision_count": 3,
@@ -87101,7 +87093,7 @@
         "reasoning_state": "",
         "runbook_count": 1,
         "status": "active",
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [],
@@ -87184,12 +87176,12 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-05-19T20:08:42-07:00",
+        "latest_event_ts_iso": "2026-05-03T10:46:04-07:00",
         "latest_explicit_ts_iso": "2026-05-03T10:46:04-07:00",
-        "latest_signal_kind": "workspace_activity",
+        "latest_signal_kind": "implementation",
         "linked_components": [
           "odylith-chatter"
         ],
@@ -87302,7 +87294,7 @@
         }
       ],
       "explanation_facts": [
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Blast radius class is cross-surface.",
         "Linked surfaces: Registry, Radar, Compass, Atlas, and +1 more.",
         "Linked workstreams: B-031, B-001, B-058, B-059, and +8 more.",
@@ -87366,7 +87358,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -87419,7 +87411,7 @@
           "proof_blocker": false,
           "proof_status": "live_verified",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -87442,7 +87434,7 @@
         "closure_readiness": 96,
         "cross_surface_convergence": 100,
         "decision_debt": 16,
-        "governance_lag": 64,
+        "governance_lag": 18,
         "workstream_concentration": 32
       },
       "surface_contributions": [
@@ -87844,7 +87836,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -89882,7 +89874,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -90084,7 +90076,7 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-05-19T14:04:11-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -92715,7 +92707,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -92916,7 +92908,7 @@
         "basis": "mixed",
         "blast_radius_class": "contract-level",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-03-01T21:38:40-08:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -93147,7 +93139,7 @@
         "runtime": 45,
         "spec": 17
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "decision_count": 10,
@@ -93160,7 +93152,7 @@
         "reasoning_state": "",
         "stale_diagram": false,
         "status": "active",
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [],
@@ -93227,12 +93219,12 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-05-19T20:08:42-07:00",
+        "latest_event_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_explicit_ts_iso": "2026-03-16T14:37:51-07:00",
-        "latest_signal_kind": "workspace_activity",
+        "latest_signal_kind": "statement",
         "linked_components": [
           "odylith-context-engine",
           "odylith-projection-bundle",
@@ -93361,7 +93353,7 @@
         "Atlas freshness is fresh.",
         "Linked components: odylith-context-engine, odylith-projection-bundle, odylith-projection-snapshot, odylith-memory-backend, and +11 more.",
         "Linked workstreams: B-001, B-031, B-058, B-059, and +3 more.",
-        "Evidence quality is mixed."
+        "Evidence quality is explicit."
       ],
       "operator_readout": {
         "action": "Capture the final reviewed checkpoint for B-001 and clear linked surfaces before closeout.",
@@ -93429,7 +93421,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -93452,7 +93444,7 @@
         "closure_readiness": 96,
         "cross_surface_convergence": 100,
         "decision_debt": 16,
-        "governance_lag": 64,
+        "governance_lag": 18,
         "workstream_concentration": 32
       },
       "surface_contributions": [
@@ -93866,7 +93858,7 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-03-01T21:38:40-08:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -100177,7 +100169,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
+          "local_head": "eacb5826f1f5e7f3fe634ce731eade698445c26d",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -102860,7 +102852,7 @@
         "basis": "mixed",
         "blast_radius_class": "local",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-03-03T13:56:10-08:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -103351,7 +103343,7 @@
         "runtime": 33,
         "spec": 14
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "local",
         "decision_count": 13,
@@ -103364,7 +103356,7 @@
         "reasoning_state": "",
         "stale_diagram": false,
         "status": "active",
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [],
@@ -103431,12 +103423,12 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "local",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-05-19T20:08:42-07:00",
+        "latest_event_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_explicit_ts_iso": "2026-03-01T21:38:40-08:00",
-        "latest_signal_kind": "workspace_activity",
+        "latest_signal_kind": "statement",
         "linked_components": [
           "governance-intervention-engine",
           "odylith-chatter",
@@ -103514,7 +103506,7 @@
         "Atlas freshness is fresh.",
         "Linked components: governance-intervention-engine, odylith-chatter, compass, and execution-engine.",
         "Linked workstreams: none.",
-        "Evidence quality is mixed."
+        "Evidence quality is explicit."
       ],
       "operator_readout": {
         "action": "Capture the final reviewed checkpoint for Conversation Observation And Governed Proposal Flow and clear linked surfaces before closeout.",
@@ -103588,7 +103580,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -103610,7 +103602,7 @@
         "closure_readiness": 82,
         "cross_surface_convergence": 76,
         "decision_debt": 16,
-        "governance_lag": 64,
+        "governance_lag": 18,
         "workstream_concentration": 32
       },
       "surface_contributions": [
@@ -104755,7 +104747,7 @@
         "reasoning_state": "",
         "stale_diagram": false,
         "status": "active",
-        "synthetic_count": 1
+        "synthetic_count": 2
       },
       "evidence_bundle": {
         "changed_artifacts": [],
@@ -104825,7 +104817,7 @@
         "basis": "mixed",
         "blast_radius_class": "local",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-03-01T21:38:40-08:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -104980,7 +104972,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 2,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -105119,7 +105111,7 @@
         "basis": "mixed",
         "blast_radius_class": "local",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
+        "latest_event_ts_iso": "2026-05-19T23:10:51-07:00",
         "latest_explicit_ts_iso": "2026-03-03T13:56:10-08:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -105338,7 +105330,7 @@
       "scope_label": "Domain Intelligence",
       "scope_signal_rung": "R3",
       "scope_signal_token": "active_scope",
-      "severity": "watch"
+      "severity": "blocker"
     },
     "highest_severity_scope": {
       "action": "Capture the final reviewed checkpoint for B-001 and clear linked surfaces before closeout.",
