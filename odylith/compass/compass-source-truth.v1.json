@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-05-20T02:05:56Z",
+  "generated_utc": "2026-05-20T03:30:25Z",
   "release_summary": {
     "catalog": [
       {
@@ -314,19 +314,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 5,
-            "file_touch_count": 87
+            "commit_count": 4,
+            "local_change_count": 0,
+            "file_touch_count": 104
           },
           "48h": {
-            "commit_count": 5,
-            "local_change_count": 5,
-            "file_touch_count": 213
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 219
           }
         },
         "timeline": {
           "start_date": "2026-05-01",
-          "last_activity_iso": "2026-05-19T18:42:37-07:00",
+          "last_activity_iso": "2026-05-19T19:13:29-07:00",
           "age_days": 18,
           "eta_days": 1,
           "eta_confidence": "high"
@@ -342,8 +342,8 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 73,
-            "band": "High"
+            "index": 68,
+            "band": "Medium"
           },
           "48h": {
             "index": 75,
@@ -374,14 +374,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 175,
+            "meaningful_change_count": 172,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 2,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -606,14 +606,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 181,
+            "meaningful_change_count": 178,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 3,
+            "synthetic_count": 2,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -745,19 +745,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 1,
-            "file_touch_count": 90
+            "commit_count": 5,
+            "local_change_count": 3,
+            "file_touch_count": 110
           },
           "48h": {
-            "commit_count": 6,
-            "local_change_count": 1,
-            "file_touch_count": 218
+            "commit_count": 7,
+            "local_change_count": 3,
+            "file_touch_count": 226
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-05-19T19:02:15-07:00",
+          "last_activity_iso": "2026-05-19T20:13:13-07:00",
           "age_days": 39,
           "eta_days": null,
           "eta_confidence": "low"
@@ -773,7 +773,7 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 50,
+            "index": 55,
             "band": "Medium"
           },
           "48h": {
@@ -916,19 +916,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 1,
-            "file_touch_count": 90
+            "commit_count": 5,
+            "local_change_count": 3,
+            "file_touch_count": 110
           },
           "48h": {
-            "commit_count": 6,
-            "local_change_count": 1,
-            "file_touch_count": 218
+            "commit_count": 7,
+            "local_change_count": 3,
+            "file_touch_count": 226
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-05-19T19:02:15-07:00",
+          "last_activity_iso": "2026-05-19T20:13:13-07:00",
           "age_days": 40,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -946,7 +946,7 @@
         "cost": {
           "base_index": 71,
           "24h": {
-            "index": 86,
+            "index": 91,
             "band": "High"
           },
           "48h": {
@@ -1102,19 +1102,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
+            "commit_count": 4,
             "local_change_count": 2,
-            "file_touch_count": 86
+            "file_touch_count": 104
           },
           "48h": {
-            "commit_count": 5,
+            "commit_count": 6,
             "local_change_count": 2,
-            "file_touch_count": 213
+            "file_touch_count": 220
           }
         },
         "timeline": {
           "start_date": "2026-04-25",
-          "last_activity_iso": "2026-05-19T19:03:42-07:00",
+          "last_activity_iso": "2026-05-19T20:13:35-07:00",
           "age_days": 24,
           "eta_days": null,
           "eta_confidence": "low"
@@ -1130,7 +1130,7 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 48,
+            "index": 52,
             "band": "Medium"
           },
           "48h": {
@@ -1289,19 +1289,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
+            "commit_count": 4,
             "local_change_count": 2,
-            "file_touch_count": 86
+            "file_touch_count": 104
           },
           "48h": {
-            "commit_count": 5,
+            "commit_count": 6,
             "local_change_count": 2,
-            "file_touch_count": 224
+            "file_touch_count": 231
           }
         },
         "timeline": {
           "start_date": "2026-04-17",
-          "last_activity_iso": "2026-05-19T19:03:42-07:00",
+          "last_activity_iso": "2026-05-19T20:13:35-07:00",
           "age_days": 32,
           "eta_days": null,
           "eta_confidence": "low"
@@ -1317,7 +1317,7 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 48,
+            "index": 52,
             "band": "Medium"
           },
           "48h": {
@@ -1444,19 +1444,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
+            "commit_count": 5,
             "local_change_count": 1,
-            "file_touch_count": 90
+            "file_touch_count": 108
           },
           "48h": {
-            "commit_count": 6,
+            "commit_count": 7,
             "local_change_count": 1,
-            "file_touch_count": 207
+            "file_touch_count": 214
           }
         },
         "timeline": {
           "start_date": "2026-04-29",
-          "last_activity_iso": "2026-05-19T19:05:26-07:00",
+          "last_activity_iso": "2026-05-19T20:29:58-07:00",
           "age_days": 20,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1472,7 +1472,7 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 50,
+            "index": 53,
             "band": "Medium"
           },
           "48h": {
@@ -1491,7 +1491,7 @@
             "docs"
           ],
           "deployment_truth": {
-            "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -6040,7 +6040,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -16069,7 +16069,7 @@
           ],
           "linked_bug_id": "CB-077",
           "deployment_truth": {
-            "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24354,7 +24354,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24579,7 +24579,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24804,7 +24804,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -25029,7 +25029,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -25254,7 +25254,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -29589,19 +29589,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 5,
-            "file_touch_count": 87
+            "commit_count": 4,
+            "local_change_count": 0,
+            "file_touch_count": 104
           },
           "48h": {
-            "commit_count": 5,
-            "local_change_count": 5,
-            "file_touch_count": 213
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 219
           }
         },
         "timeline": {
           "start_date": "2026-05-01",
-          "last_activity_iso": "2026-05-19T18:42:37-07:00",
+          "last_activity_iso": "2026-05-19T19:13:29-07:00",
           "age_days": 18,
           "eta_days": 1,
           "eta_confidence": "high"
@@ -29617,8 +29617,8 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 73,
-            "band": "High"
+            "index": 68,
+            "band": "Medium"
           },
           "48h": {
             "index": 75,
@@ -29649,14 +29649,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 175,
+            "meaningful_change_count": 172,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 2,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -29881,14 +29881,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 181,
+            "meaningful_change_count": 178,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 3,
+            "synthetic_count": 2,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -30020,19 +30020,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 1,
-            "file_touch_count": 90
+            "commit_count": 5,
+            "local_change_count": 3,
+            "file_touch_count": 110
           },
           "48h": {
-            "commit_count": 6,
-            "local_change_count": 1,
-            "file_touch_count": 218
+            "commit_count": 7,
+            "local_change_count": 3,
+            "file_touch_count": 226
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-05-19T19:02:15-07:00",
+          "last_activity_iso": "2026-05-19T20:13:13-07:00",
           "age_days": 39,
           "eta_days": null,
           "eta_confidence": "low"
@@ -30048,7 +30048,7 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 50,
+            "index": 55,
             "band": "Medium"
           },
           "48h": {
@@ -30191,19 +30191,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 1,
-            "file_touch_count": 90
+            "commit_count": 5,
+            "local_change_count": 3,
+            "file_touch_count": 110
           },
           "48h": {
-            "commit_count": 6,
-            "local_change_count": 1,
-            "file_touch_count": 218
+            "commit_count": 7,
+            "local_change_count": 3,
+            "file_touch_count": 226
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-05-19T19:02:15-07:00",
+          "last_activity_iso": "2026-05-19T20:13:13-07:00",
           "age_days": 40,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -30221,7 +30221,7 @@
         "cost": {
           "base_index": 71,
           "24h": {
-            "index": 86,
+            "index": 91,
             "band": "High"
           },
           "48h": {
@@ -30377,19 +30377,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
+            "commit_count": 4,
             "local_change_count": 2,
-            "file_touch_count": 86
+            "file_touch_count": 104
           },
           "48h": {
-            "commit_count": 5,
+            "commit_count": 6,
             "local_change_count": 2,
-            "file_touch_count": 213
+            "file_touch_count": 220
           }
         },
         "timeline": {
           "start_date": "2026-04-25",
-          "last_activity_iso": "2026-05-19T19:03:42-07:00",
+          "last_activity_iso": "2026-05-19T20:13:35-07:00",
           "age_days": 24,
           "eta_days": null,
           "eta_confidence": "low"
@@ -30405,7 +30405,7 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 48,
+            "index": 52,
             "band": "Medium"
           },
           "48h": {
@@ -30564,19 +30564,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
+            "commit_count": 4,
             "local_change_count": 2,
-            "file_touch_count": 86
+            "file_touch_count": 104
           },
           "48h": {
-            "commit_count": 5,
+            "commit_count": 6,
             "local_change_count": 2,
-            "file_touch_count": 224
+            "file_touch_count": 231
           }
         },
         "timeline": {
           "start_date": "2026-04-17",
-          "last_activity_iso": "2026-05-19T19:03:42-07:00",
+          "last_activity_iso": "2026-05-19T20:13:35-07:00",
           "age_days": 32,
           "eta_days": null,
           "eta_confidence": "low"
@@ -30592,7 +30592,7 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 48,
+            "index": 52,
             "band": "Medium"
           },
           "48h": {
@@ -30719,19 +30719,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
+            "commit_count": 5,
             "local_change_count": 1,
-            "file_touch_count": 90
+            "file_touch_count": 108
           },
           "48h": {
-            "commit_count": 6,
+            "commit_count": 7,
             "local_change_count": 1,
-            "file_touch_count": 207
+            "file_touch_count": 214
           }
         },
         "timeline": {
           "start_date": "2026-04-29",
-          "last_activity_iso": "2026-05-19T19:05:26-07:00",
+          "last_activity_iso": "2026-05-19T20:29:58-07:00",
           "age_days": 20,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -30747,7 +30747,7 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 50,
+            "index": 53,
             "band": "Medium"
           },
           "48h": {
@@ -30766,7 +30766,7 @@
             "docs"
           ],
           "deployment_truth": {
-            "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -37698,7 +37698,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -46827,7 +46827,7 @@
           ],
           "linked_bug_id": "CB-077",
           "deployment_truth": {
-            "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -53789,7 +53789,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54014,7 +54014,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54239,7 +54239,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54464,7 +54464,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54689,7 +54689,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+            "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -58865,19 +58865,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 5,
-          "file_touch_count": 87
+          "commit_count": 4,
+          "local_change_count": 0,
+          "file_touch_count": 104
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 5,
-          "file_touch_count": 213
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 219
         }
       },
       "timeline": {
         "start_date": "2026-05-01",
-        "last_activity_iso": "2026-05-19T18:42:37-07:00",
+        "last_activity_iso": "2026-05-19T19:13:29-07:00",
         "age_days": 18,
         "eta_days": 1,
         "eta_confidence": "high"
@@ -58893,8 +58893,8 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 73,
-          "band": "High"
+          "index": 68,
+          "band": "Medium"
         },
         "48h": {
           "index": 75,
@@ -58925,14 +58925,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 175,
+          "meaningful_change_count": 172,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -59157,14 +59157,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 181,
+          "meaningful_change_count": 178,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 2,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -59296,19 +59296,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 1,
-          "file_touch_count": 90
+          "commit_count": 5,
+          "local_change_count": 3,
+          "file_touch_count": 110
         },
         "48h": {
-          "commit_count": 6,
-          "local_change_count": 1,
-          "file_touch_count": 218
+          "commit_count": 7,
+          "local_change_count": 3,
+          "file_touch_count": 226
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-05-19T19:02:15-07:00",
+        "last_activity_iso": "2026-05-19T20:13:13-07:00",
         "age_days": 39,
         "eta_days": null,
         "eta_confidence": "low"
@@ -59324,7 +59324,7 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 50,
+          "index": 55,
           "band": "Medium"
         },
         "48h": {
@@ -59467,19 +59467,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 1,
-          "file_touch_count": 90
+          "commit_count": 5,
+          "local_change_count": 3,
+          "file_touch_count": 110
         },
         "48h": {
-          "commit_count": 6,
-          "local_change_count": 1,
-          "file_touch_count": 218
+          "commit_count": 7,
+          "local_change_count": 3,
+          "file_touch_count": 226
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-05-19T19:02:15-07:00",
+        "last_activity_iso": "2026-05-19T20:13:13-07:00",
         "age_days": 40,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -59497,7 +59497,7 @@
       "cost": {
         "base_index": 71,
         "24h": {
-          "index": 86,
+          "index": 91,
           "band": "High"
         },
         "48h": {
@@ -59653,19 +59653,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
+          "commit_count": 4,
           "local_change_count": 2,
-          "file_touch_count": 86
+          "file_touch_count": 104
         },
         "48h": {
-          "commit_count": 5,
+          "commit_count": 6,
           "local_change_count": 2,
-          "file_touch_count": 213
+          "file_touch_count": 220
         }
       },
       "timeline": {
         "start_date": "2026-04-25",
-        "last_activity_iso": "2026-05-19T19:03:42-07:00",
+        "last_activity_iso": "2026-05-19T20:13:35-07:00",
         "age_days": 24,
         "eta_days": null,
         "eta_confidence": "low"
@@ -59681,7 +59681,7 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 48,
+          "index": 52,
           "band": "Medium"
         },
         "48h": {
@@ -59840,19 +59840,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
+          "commit_count": 4,
           "local_change_count": 2,
-          "file_touch_count": 86
+          "file_touch_count": 104
         },
         "48h": {
-          "commit_count": 5,
+          "commit_count": 6,
           "local_change_count": 2,
-          "file_touch_count": 224
+          "file_touch_count": 231
         }
       },
       "timeline": {
         "start_date": "2026-04-17",
-        "last_activity_iso": "2026-05-19T19:03:42-07:00",
+        "last_activity_iso": "2026-05-19T20:13:35-07:00",
         "age_days": 32,
         "eta_days": null,
         "eta_confidence": "low"
@@ -59868,7 +59868,7 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 48,
+          "index": 52,
           "band": "Medium"
         },
         "48h": {
@@ -59995,19 +59995,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
+          "commit_count": 5,
           "local_change_count": 1,
-          "file_touch_count": 90
+          "file_touch_count": 108
         },
         "48h": {
-          "commit_count": 6,
+          "commit_count": 7,
           "local_change_count": 1,
-          "file_touch_count": 207
+          "file_touch_count": 214
         }
       },
       "timeline": {
         "start_date": "2026-04-29",
-        "last_activity_iso": "2026-05-19T19:05:26-07:00",
+        "last_activity_iso": "2026-05-19T20:29:58-07:00",
         "age_days": 20,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -60023,7 +60023,7 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 50,
+          "index": 53,
           "band": "Medium"
         },
         "48h": {
@@ -60042,7 +60042,7 @@
           "docs"
         ],
         "deployment_truth": {
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -66974,7 +66974,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -76103,7 +76103,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -83065,7 +83065,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -83290,7 +83290,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -83515,7 +83515,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -83740,7 +83740,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -83965,7 +83965,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -90106,19 +90106,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 1,
-          "file_touch_count": 90
+          "commit_count": 5,
+          "local_change_count": 3,
+          "file_touch_count": 110
         },
         "48h": {
-          "commit_count": 6,
-          "local_change_count": 1,
-          "file_touch_count": 218
+          "commit_count": 7,
+          "local_change_count": 3,
+          "file_touch_count": 226
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-05-19T19:02:15-07:00",
+        "last_activity_iso": "2026-05-19T20:13:13-07:00",
         "age_days": 39,
         "eta_days": null,
         "eta_confidence": "low"
@@ -90134,7 +90134,7 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 50,
+          "index": 55,
           "band": "Medium"
         },
         "48h": {
@@ -90361,7 +90361,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -92683,14 +92683,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 181,
+          "meaningful_change_count": 178,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 2,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -92828,19 +92828,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 5,
-          "file_touch_count": 87
+          "commit_count": 4,
+          "local_change_count": 0,
+          "file_touch_count": 104
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 5,
-          "file_touch_count": 213
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 219
         }
       },
       "timeline": {
         "start_date": "2026-05-01",
-        "last_activity_iso": "2026-05-19T18:42:37-07:00",
+        "last_activity_iso": "2026-05-19T19:13:29-07:00",
         "age_days": 18,
         "eta_days": 1,
         "eta_confidence": "high"
@@ -92856,8 +92856,8 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 73,
-          "band": "High"
+          "index": 68,
+          "band": "Medium"
         },
         "48h": {
           "index": 75,
@@ -92888,14 +92888,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 175,
+          "meaningful_change_count": 172,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -101799,7 +101799,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -102783,19 +102783,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 1,
-          "file_touch_count": 90
+          "commit_count": 5,
+          "local_change_count": 3,
+          "file_touch_count": 110
         },
         "48h": {
-          "commit_count": 6,
-          "local_change_count": 1,
-          "file_touch_count": 218
+          "commit_count": 7,
+          "local_change_count": 3,
+          "file_touch_count": 226
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-05-19T19:02:15-07:00",
+        "last_activity_iso": "2026-05-19T20:13:13-07:00",
         "age_days": 40,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -102813,7 +102813,7 @@
       "cost": {
         "base_index": 71,
         "24h": {
-          "index": 86,
+          "index": 91,
           "band": "High"
         },
         "48h": {
@@ -111620,7 +111620,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -111845,7 +111845,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -112070,7 +112070,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -112295,7 +112295,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -112469,19 +112469,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
+          "commit_count": 4,
           "local_change_count": 2,
-          "file_touch_count": 86
+          "file_touch_count": 104
         },
         "48h": {
-          "commit_count": 5,
+          "commit_count": 6,
           "local_change_count": 2,
-          "file_touch_count": 213
+          "file_touch_count": 220
         }
       },
       "timeline": {
         "start_date": "2026-04-25",
-        "last_activity_iso": "2026-05-19T19:03:42-07:00",
+        "last_activity_iso": "2026-05-19T20:13:35-07:00",
         "age_days": 24,
         "eta_days": null,
         "eta_confidence": "low"
@@ -112497,7 +112497,7 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 48,
+          "index": 52,
           "band": "Medium"
         },
         "48h": {
@@ -112707,7 +112707,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -112881,19 +112881,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
+          "commit_count": 4,
           "local_change_count": 2,
-          "file_touch_count": 86
+          "file_touch_count": 104
         },
         "48h": {
-          "commit_count": 5,
+          "commit_count": 6,
           "local_change_count": 2,
-          "file_touch_count": 224
+          "file_touch_count": 231
         }
       },
       "timeline": {
         "start_date": "2026-04-17",
-        "last_activity_iso": "2026-05-19T19:03:42-07:00",
+        "last_activity_iso": "2026-05-19T20:13:35-07:00",
         "age_days": 32,
         "eta_days": null,
         "eta_confidence": "low"
@@ -112909,7 +112909,7 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 48,
+          "index": 52,
           "band": "Medium"
         },
         "48h": {
@@ -117173,19 +117173,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
+          "commit_count": 5,
           "local_change_count": 1,
-          "file_touch_count": 90
+          "file_touch_count": 108
         },
         "48h": {
-          "commit_count": 6,
+          "commit_count": 7,
           "local_change_count": 1,
-          "file_touch_count": 207
+          "file_touch_count": 214
         }
       },
       "timeline": {
         "start_date": "2026-04-29",
-        "last_activity_iso": "2026-05-19T19:05:26-07:00",
+        "last_activity_iso": "2026-05-19T20:29:58-07:00",
         "age_days": 20,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -117201,7 +117201,7 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 50,
+          "index": 53,
           "band": "Medium"
         },
         "48h": {
@@ -117220,7 +117220,7 @@
           "docs"
         ],
         "deployment_truth": {
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -117321,6 +117321,7 @@
       "B-083",
       "B-115",
       "B-117",
+      "B-140",
       "B-142"
     ],
     "48h": [
@@ -117331,6 +117332,7 @@
       "B-083",
       "B-115",
       "B-117",
+      "B-140",
       "B-142"
     ]
   },
@@ -117343,6 +117345,7 @@
       "B-083",
       "B-115",
       "B-117",
+      "B-140",
       "B-142"
     ],
     "48h": [
@@ -117353,6 +117356,7 @@
       "B-083",
       "B-115",
       "B-117",
+      "B-140",
       "B-142"
     ]
   },
@@ -120237,21 +120241,29 @@
         }
       },
       "B-140": {
-        "rank": 1,
-        "rung": "R1",
-        "token": "background_trace",
-        "label": "Background trace",
+        "rank": 3,
+        "rung": "R3",
+        "token": "active_scope",
+        "label": "Active scope",
         "reasons": [
-          "Recent signal exists, but it is not strong enough to promote by default."
+          "A narrow verified scoped signal was recorded.",
+          "Meaningful scope-local implementation evidence is present."
         ],
         "caps": [],
-        "promoted_default": false,
-        "budget_class": "cache_only",
+        "promoted_default": true,
+        "budget_class": "fast_simple",
         "feature_vector": {
           "has_any_signal": true,
-          "window_inactive": false,
-          "governance_only_local_change": false,
-          "broad_fanout": false
+          "verified_completion": false,
+          "narrow_verified_signal": true,
+          "meaningful_scope_activity": true,
+          "decision_evidence": false,
+          "implementation_evidence": false,
+          "open_warning": false,
+          "cross_surface_conflict": false,
+          "stale_authority": false,
+          "unsafe_closeout": false,
+          "proof_blocker": false
         }
       }
     },
@@ -123143,21 +123155,29 @@
         }
       },
       "B-140": {
-        "rank": 1,
-        "rung": "R1",
-        "token": "background_trace",
-        "label": "Background trace",
+        "rank": 3,
+        "rung": "R3",
+        "token": "active_scope",
+        "label": "Active scope",
         "reasons": [
-          "Recent signal exists, but it is not strong enough to promote by default."
+          "A narrow verified scoped signal was recorded.",
+          "Meaningful scope-local implementation evidence is present."
         ],
         "caps": [],
-        "promoted_default": false,
-        "budget_class": "cache_only",
+        "promoted_default": true,
+        "budget_class": "fast_simple",
         "feature_vector": {
           "has_any_signal": true,
-          "window_inactive": false,
-          "governance_only_local_change": false,
-          "broad_fanout": false
+          "verified_completion": false,
+          "narrow_verified_signal": true,
+          "meaningful_scope_activity": true,
+          "decision_evidence": false,
+          "implementation_evidence": false,
+          "open_warning": false,
+          "cross_surface_conflict": false,
+          "stale_authority": false,
+          "unsafe_closeout": false,
+          "proof_blocker": false
         }
       }
     }

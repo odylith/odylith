@@ -67,3 +67,7 @@ def test_customer_bootstrap_guidance_carries_live_proof_claim_gate() -> None:
     assert "Hook `systemMessage` or `additionalContext` generation is not proof of chat-visible UX" in guidance
     assert "reports `Activation: ready` and a chat-visibility line is confirmed" in guidance
     assert "Treat recorded-only and waiting-for-chat states as partial proof" in guidance
+    assert "sectioned Markdown: Product story, State object, First complete path" in guidance
+    assert "Proof boundary" in guidance
+    assert "avoid wall of prose" in guidance
+    assert ".odylith/runtime/greenfield/confirmed-intent.json" in guidance

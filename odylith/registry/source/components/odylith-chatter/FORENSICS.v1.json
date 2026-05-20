@@ -59,7 +59,7 @@
         "src/odylith/install/agents.py"
       ],
       "confidence": "high",
-      "event_index": 469,
+      "event_index": 468,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
@@ -67,7 +67,7 @@
       ],
       "meaningful": true,
       "summary": "Recent workspace activity across tracked paths: src/odylith/install/agents.py",
-      "ts_iso": "2026-05-19T19:02:15-07:00",
+      "ts_iso": "2026-05-19T20:08:42-07:00",
       "workstreams": []
     },
     {

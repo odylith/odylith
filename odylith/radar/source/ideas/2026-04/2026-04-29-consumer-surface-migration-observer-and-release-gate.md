@@ -2064,3 +2064,29 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   install-managed guidance generator was tightened. Existing consumer-owned
   records remain unchanged; upgrades receive only managed runtime behavior,
   regenerated read-only surfaces, and refreshed bundle assets.
+- The installed greenfield confirmation artifact guidance settlement is covered
+  by `migration-observer:0.1.15:install-managed-assets:cd118a2f1dda`. The pass
+  keeps consumer AGENTS and bootstrap guidance aligned on the visible sectioned
+  Product Intent Confirmation flow: hosts save the confirmed Markdown artifact,
+  Odylith performs structured JSON normalization internally, and operator-facing
+  guidance does not ask for JSON inspection or hand repair. Existing
+  consumer-owned governance records remain unchanged; upgraded installs receive
+  the clearer managed guidance through normal install, upgrade, doctor, or
+  managed asset refresh.
+- The post-sync rendered confirmation guidance settlement is covered by
+  `migration-observer:0.1.15:browser-surfaces:7d17d7e44a5d` and
+  `migration-observer:0.1.15:install-managed-assets:98fa1465d423`. The pass
+  binds the Radar, Atlas, Compass, Registry, Casebook, top-level shell, and
+  bundled managed HTML outputs regenerated after the installed greenfield
+  confirmation guidance change. Existing consumer-owned governance truth is not
+  rewritten by upgrade adoption; upgraded installs receive the regenerated
+  read-only surfaces and corrected managed guidance through normal runtime,
+  dashboard, install, upgrade, doctor, or managed asset refresh.
+- The final post-sync install-managed asset assessment for that guidance
+  settlement is covered by
+  `migration-observer:0.1.15:install-managed-assets:129501f2f6bc`. The pass
+  binds the stable install-managed path set after full governance sync,
+  including the bundled Odylith shell HTML plus the install guidance source
+  producers. Existing consumer-owned records remain unchanged; upgraded installs
+  receive the corrected managed guidance and bundled shell assets through normal
+  install, upgrade, doctor, or managed asset refresh.

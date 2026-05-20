@@ -1771,7 +1771,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -2452,7 +2452,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -2845,7 +2845,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -2965,7 +2965,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3085,7 +3085,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3205,7 +3205,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3507,7 +3507,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3627,7 +3627,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4184,7 +4184,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4663,7 +4663,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4786,14 +4786,14 @@
       "selection_metrics": {
         "blast_radius_severity": 58,
         "decision_debt": 86,
-        "governance_lag": 64,
+        "governance_lag": 18,
         "live_reason": "Linked to live workstream B-141 and B-142.",
         "scenario": "cross_surface_conflict",
         "scope_type": "component",
-        "severity": "blocker"
+        "severity": "watch"
       },
-      "selection_reason": "Selected as the highest-ranked cross surface conflict component so the queue covers a distinct case class before same-scenario priority fill. Live rationale: Linked to live workstream B-141 and B-142.",
-      "selection_score_band_size": 1,
+      "selection_reason": "Selected as the highest-ranked cross surface conflict component so the queue covers a distinct case class before same-scenario priority fill. Live rationale: Linked to live workstream B-141 and B-142. It sits in a 4-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 4,
       "selection_slot": "scenario_coverage",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -4881,8 +4881,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-141. It sits in a 3-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 3,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-141. It sits in a 4-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 4,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -4967,8 +4967,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-045. It sits in a 3-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 3,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-045. It sits in a 4-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 4,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -5053,8 +5053,8 @@
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-033 and B-040. It sits in a 3-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 3,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-033 and B-040. It sits in a 4-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 4,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "insufficient_evidence",
@@ -7249,7 +7249,7 @@
       ]
     }
   ],
-  "generated_utc": "2026-05-20 02:05:56Z",
+  "generated_utc": "2026-05-20 03:30:24Z",
   "indexes": {
     "cases": {
       "case-component-atlas": "component:atlas",
@@ -7574,8 +7574,8 @@
         "policy": 0,
         "renderer": 3782,
         "runbook": 0,
-        "runtime": 49113,
-        "spec": 48813
+        "runtime": 49094,
+        "spec": 48757
       },
       "claim_guard": {
         "blocked_terms": [],
@@ -8058,7 +8058,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -8134,7 +8134,7 @@
         "closure_readiness": 80,
         "cross_surface_convergence": 98,
         "decision_debt": 23,
-        "governance_lag": 28,
+        "governance_lag": 27,
         "workstream_concentration": 39
       },
       "surface_contributions": [
@@ -8570,7 +8570,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -8683,8 +8683,8 @@
         "policy": 0,
         "renderer": 1820,
         "runbook": 0,
-        "runtime": 23560,
-        "spec": 23775
+        "runtime": 23552,
+        "spec": 23747
       },
       "claim_guard": {
         "blocked_terms": [],
@@ -9304,7 +9304,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -9417,8 +9417,8 @@
         "policy": 0,
         "renderer": 1820,
         "runbook": 0,
-        "runtime": 23560,
-        "spec": 23775
+        "runtime": 23552,
+        "spec": 23747
       },
       "claim_guard": {
         "blocked_terms": [],
@@ -10038,7 +10038,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -10151,7 +10151,7 @@
         "policy": 0,
         "renderer": 34,
         "runbook": 0,
-        "runtime": 1285,
+        "runtime": 1282,
         "spec": 646
       },
       "claim_guard": {
@@ -10660,7 +10660,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -10736,7 +10736,7 @@
         "closure_readiness": 85,
         "cross_surface_convergence": 98,
         "decision_debt": 29,
-        "governance_lag": 23,
+        "governance_lag": 22,
         "workstream_concentration": 37
       },
       "surface_contributions": [
@@ -11092,7 +11092,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 188,
-        "spec": 182
+        "spec": 181
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -11122,7 +11122,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
@@ -11136,7 +11135,8 @@
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
           "src/odylith/runtime/domain_intelligence/proposal_contract.py",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
-          "src/odylith/cli.py"
+          "src/odylith/cli.py",
+          "src/odylith/install/manager.py"
         ],
         "code_references": [
           "src/odylith/cli.py",
@@ -11209,7 +11209,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
@@ -11230,6 +11229,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -11397,7 +11397,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -11674,7 +11674,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 184,
-        "spec": 182
+        "spec": 181
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -11704,7 +11704,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -11718,7 +11717,8 @@
           "src/odylith/runtime/domain_intelligence/proposal_contract.py",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
-          "src/odylith/install/manager.py"
+          "src/odylith/install/manager.py",
+          "src/odylith/install/runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -11787,7 +11787,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -11807,6 +11806,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -11969,7 +11969,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -13837,7 +13837,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 170,
-        "spec": 182
+        "spec": 181
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -13867,7 +13867,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -13881,7 +13880,8 @@
           "src/odylith/runtime/domain_intelligence/proposal_contract.py",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
-          "src/odylith/install/manager.py"
+          "src/odylith/install/manager.py",
+          "src/odylith/install/runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -13950,7 +13950,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -13970,6 +13969,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -14126,7 +14126,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -17510,7 +17510,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 180,
-        "spec": 182
+        "spec": 181
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -17540,7 +17540,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -17554,7 +17553,8 @@
           "src/odylith/runtime/domain_intelligence/proposal_contract.py",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
-          "src/odylith/install/manager.py"
+          "src/odylith/install/manager.py",
+          "src/odylith/install/runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -17623,7 +17623,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -17643,6 +17642,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -17804,7 +17804,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -19633,7 +19633,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 166,
-        "spec": 182
+        "spec": 181
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -19663,7 +19663,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -19677,7 +19676,8 @@
           "src/odylith/runtime/domain_intelligence/proposal_contract.py",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
-          "src/odylith/install/manager.py"
+          "src/odylith/install/manager.py",
+          "src/odylith/install/runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -19746,7 +19746,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -19766,6 +19765,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -19921,7 +19921,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -20182,7 +20182,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 166,
-        "spec": 182
+        "spec": 181
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -20212,7 +20212,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -20226,7 +20225,8 @@
           "src/odylith/runtime/domain_intelligence/proposal_contract.py",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
-          "src/odylith/install/manager.py"
+          "src/odylith/install/manager.py",
+          "src/odylith/install/runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -20295,7 +20295,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -20315,6 +20314,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -20470,7 +20470,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -23208,7 +23208,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 184,
-        "spec": 182
+        "spec": 181
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -23238,7 +23238,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -23252,7 +23251,8 @@
           "src/odylith/runtime/domain_intelligence/proposal_contract.py",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
-          "src/odylith/install/manager.py"
+          "src/odylith/install/manager.py",
+          "src/odylith/install/runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -23321,7 +23321,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -23341,6 +23340,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -23503,7 +23503,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -27056,7 +27056,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-04-07T09:59:30-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:02:15-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:08:42-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -33009,7 +33009,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 179,
-        "spec": 181
+        "spec": 180
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -33039,7 +33039,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -33053,7 +33052,8 @@
           "src/odylith/runtime/domain_intelligence/proposal_contract.py",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
-          "src/odylith/install/manager.py"
+          "src/odylith/install/manager.py",
+          "src/odylith/install/runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -33122,7 +33122,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -33142,6 +33141,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -33301,7 +33301,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -34900,7 +34900,7 @@
         "renderer": 18,
         "runbook": 0,
         "runtime": 164,
-        "spec": 180
+        "spec": 179
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -34930,7 +34930,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -34944,7 +34943,8 @@
           "src/odylith/install/manager.py",
           "src/odylith/install/runtime.py",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
-          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
+          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -35013,7 +35013,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -35030,6 +35029,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -35184,7 +35184,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -35401,7 +35401,7 @@
         "renderer": 18,
         "runbook": 0,
         "runtime": 161,
-        "spec": 173
+        "spec": 172
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -35431,7 +35431,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -35445,7 +35444,8 @@
           "src/odylith/install/manager.py",
           "src/odylith/install/runtime.py",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
-          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
+          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -35514,7 +35514,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -35531,6 +35530,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -35683,7 +35683,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -37280,7 +37280,7 @@
         "renderer": 18,
         "runbook": 0,
         "runtime": 161,
-        "spec": 173
+        "spec": 172
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -37310,7 +37310,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -37324,7 +37323,8 @@
           "src/odylith/install/manager.py",
           "src/odylith/install/runtime.py",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
-          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
+          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -37383,7 +37383,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -37400,6 +37399,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -37552,7 +37552,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -37742,7 +37742,7 @@
         "renderer": 18,
         "runbook": 0,
         "runtime": 161,
-        "spec": 173
+        "spec": 172
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -37772,7 +37772,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -37786,7 +37785,8 @@
           "src/odylith/install/manager.py",
           "src/odylith/install/runtime.py",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
-          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
+          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -37845,7 +37845,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -37862,6 +37861,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -38014,7 +38014,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -38204,7 +38204,7 @@
         "renderer": 18,
         "runbook": 0,
         "runtime": 161,
-        "spec": 173
+        "spec": 172
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -38234,7 +38234,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -38248,7 +38247,8 @@
           "src/odylith/install/manager.py",
           "src/odylith/install/runtime.py",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
-          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
+          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -38307,7 +38307,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -38324,6 +38323,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -38476,7 +38476,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -40340,7 +40340,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:02:15-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:08:42-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -40576,7 +40576,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 185,
-        "spec": 182
+        "spec": 181
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -40606,7 +40606,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
@@ -40620,7 +40619,8 @@
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
           "src/odylith/runtime/domain_intelligence/proposal_contract.py",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
-          "src/odylith/cli.py"
+          "src/odylith/cli.py",
+          "src/odylith/install/manager.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -40689,7 +40689,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
@@ -40710,6 +40709,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -40872,7 +40872,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -42458,7 +42458,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:02:15-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:08:42-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -42606,7 +42606,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -42718,7 +42718,7 @@
         "renderer": 18,
         "runbook": 0,
         "runtime": 184,
-        "spec": 181
+        "spec": 180
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -42748,7 +42748,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -42762,7 +42761,8 @@
           "src/odylith/runtime/domain_intelligence/proposal_contract.py",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
-          "src/odylith/install/manager.py"
+          "src/odylith/install/manager.py",
+          "src/odylith/install/runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -42831,7 +42831,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -42851,6 +42850,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -43012,7 +43012,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -43222,7 +43222,7 @@
         "renderer": 18,
         "runbook": 0,
         "runtime": 164,
-        "spec": 180
+        "spec": 179
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -43252,7 +43252,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -43266,7 +43265,8 @@
           "src/odylith/install/manager.py",
           "src/odylith/install/runtime.py",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
-          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
+          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -43335,7 +43335,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -43352,6 +43351,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -43506,7 +43506,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -44257,7 +44257,7 @@
         "renderer": 18,
         "runbook": 0,
         "runtime": 168,
-        "spec": 180
+        "spec": 179
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -44287,7 +44287,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -44301,7 +44300,8 @@
           "src/odylith/install/manager.py",
           "src/odylith/install/runtime.py",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
-          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
+          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -44370,7 +44370,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -44387,6 +44386,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -44542,7 +44542,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -46665,7 +46665,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 166,
-        "spec": 182
+        "spec": 181
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -46695,7 +46695,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -46709,7 +46708,8 @@
           "src/odylith/runtime/domain_intelligence/proposal_contract.py",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
-          "src/odylith/install/manager.py"
+          "src/odylith/install/manager.py",
+          "src/odylith/install/runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -46778,7 +46778,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -46798,6 +46797,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -46953,7 +46953,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -47172,7 +47172,7 @@
         "renderer": 18,
         "runbook": 0,
         "runtime": 185,
-        "spec": 181
+        "spec": 180
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -47202,7 +47202,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
@@ -47216,7 +47215,8 @@
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
           "src/odylith/runtime/domain_intelligence/proposal_contract.py",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
-          "src/odylith/cli.py"
+          "src/odylith/cli.py",
+          "src/odylith/install/manager.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -47285,7 +47285,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
@@ -47306,6 +47305,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -47467,7 +47467,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -50370,7 +50370,7 @@
         "renderer": 18,
         "runbook": 0,
         "runtime": 120,
-        "spec": 135
+        "spec": 134
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -50400,7 +50400,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
           "src/odylith/runtime/domain_intelligence/robot_swarm_profile.py",
@@ -50414,7 +50413,8 @@
           "src/odylith/install/manager.py",
           "src/odylith/install/runtime.py",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
-          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
+          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -50468,7 +50468,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
           "src/odylith/runtime/domain_intelligence/robot_swarm_profile.py",
@@ -50485,6 +50484,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -50636,7 +50636,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T14:04:11-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -52080,7 +52080,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:02:15-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:08:42-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -53186,7 +53186,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -56356,7 +56356,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 169,
-        "spec": 181
+        "spec": 180
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -56386,7 +56386,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -56400,7 +56399,8 @@
           "src/odylith/runtime/domain_intelligence/proposal_contract.py",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
-          "src/odylith/install/manager.py"
+          "src/odylith/install/manager.py",
+          "src/odylith/install/runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -56469,7 +56469,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -56489,6 +56488,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -56643,7 +56643,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -59068,7 +59068,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-04-17T13:31:40-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:02:15-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:08:42-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -60627,7 +60627,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-04-16T16:47:23-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:02:15-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:08:42-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -63316,7 +63316,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 166,
-        "spec": 182
+        "spec": 181
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -63346,7 +63346,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -63360,7 +63359,8 @@
           "src/odylith/runtime/domain_intelligence/proposal_contract.py",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
-          "src/odylith/install/manager.py"
+          "src/odylith/install/manager.py",
+          "src/odylith/install/runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -63429,7 +63429,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -63449,6 +63448,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -63604,7 +63604,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -64573,7 +64573,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:02:15-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:08:42-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -65223,7 +65223,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 180,
-        "spec": 182
+        "spec": 181
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -65253,7 +65253,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -65267,7 +65266,8 @@
           "src/odylith/runtime/domain_intelligence/proposal_contract.py",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
           "src/odylith/cli.py",
-          "src/odylith/install/manager.py"
+          "src/odylith/install/manager.py",
+          "src/odylith/install/runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -65336,7 +65336,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -65356,6 +65355,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -65517,7 +65517,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -65736,7 +65736,7 @@
         "renderer": 19,
         "runbook": 0,
         "runtime": 185,
-        "spec": 182
+        "spec": 181
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -65766,7 +65766,6 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
@@ -65780,7 +65779,8 @@
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
           "src/odylith/runtime/domain_intelligence/proposal_contract.py",
           "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
-          "src/odylith/cli.py"
+          "src/odylith/cli.py",
+          "src/odylith/install/manager.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -65849,7 +65849,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/install/agents.py",
           "github/workflows/release.yml",
           "odylith/install.json",
@@ -65870,6 +65869,7 @@
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -66032,7 +66032,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-04-17T20:20:18-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -66703,7 +66703,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -67253,7 +67253,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -67803,7 +67803,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -68353,7 +68353,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -69345,7 +69345,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -80900,7 +80900,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -81012,8 +81012,8 @@
         "policy": 0,
         "renderer": 18,
         "runbook": 0,
-        "runtime": 189,
-        "spec": 182
+        "runtime": 185,
+        "spec": 180
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -81035,21 +81035,15 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 94,
+        "shared_component_event_count": 93,
         "status": "implementation",
         "successor_event_count": 0,
-        "synthetic_count": 3
+        "synthetic_count": 2
       },
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/install/agents.py",
-          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -81057,7 +81051,13 @@
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
           "src/odylith/runtime/domain_intelligence/robot_swarm_profile.py",
           "tests/unit/runtime/test_greenfield_proposals.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_transaction.py"
+          "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
+          "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
+          "src/odylith/cli.py",
+          "src/odylith/install/manager.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -81126,13 +81126,7 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/install/agents.py",
-          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -81149,7 +81143,10 @@
           "src/odylith/install/manager.py",
           "src/odylith/install/runtime.py",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
+          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -81311,7 +81308,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-05-03T10:46:04-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -81478,14 +81475,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 181,
+          "meaningful_change_count": 178,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 2,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -81546,8 +81543,8 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 174,
-        "spec": 183
+        "runtime": 170,
+        "spec": 181
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -81569,20 +81566,14 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 91,
+        "shared_component_event_count": 90,
         "status": "implementation",
         "successor_event_count": 0,
-        "synthetic_count": 2
+        "synthetic_count": 1
       },
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
-          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -81591,7 +81582,13 @@
           "src/odylith/runtime/domain_intelligence/robot_swarm_profile.py",
           "tests/unit/runtime/test_greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
-          "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md"
+          "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
+          "src/odylith/cli.py",
+          "src/odylith/install/manager.py",
+          "src/odylith/install/runtime.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -81660,12 +81657,6 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
-          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
-          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py",
           "github/workflows/release.yml",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -81682,7 +81673,10 @@
           "src/odylith/install/manager.py",
           "src/odylith/install/runtime.py",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
+          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
           "src/odylith/runtime/domain_intelligence/proposal_planning.py",
           "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
@@ -81839,7 +81833,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-05-19T14:04:11-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T16:16:54-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -81976,14 +81970,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 175,
+          "meaningful_change_count": 172,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -83366,7 +83360,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -83828,7 +83822,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -84294,7 +84288,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -84703,7 +84697,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -84818,10 +84812,10 @@
         "policy": 0,
         "renderer": 0,
         "runbook": 0,
-        "runtime": 34,
+        "runtime": 31,
         "spec": 16
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "decision_count": 0,
@@ -84835,7 +84829,7 @@
         "reasoning_state": "",
         "runbook_count": 0,
         "status": "active",
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [],
@@ -84887,12 +84881,12 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-05-19T18:37:20-07:00",
+        "latest_event_ts_iso": "2026-05-19T14:04:11-07:00",
         "latest_explicit_ts_iso": "2026-05-19T14:04:11-07:00",
-        "latest_signal_kind": "workspace_activity",
+        "latest_signal_kind": "implementation",
         "linked_components": [
           "domain-intelligence"
         ],
@@ -84939,7 +84933,7 @@
         }
       ],
       "explanation_facts": [
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Blast radius class is cross-surface.",
         "Linked surfaces: Registry, Radar, Compass, Atlas, and +1 more.",
         "Linked workstreams: B-141 and B-142.",
@@ -84972,7 +84966,7 @@
         "secondary_scenarios": [
           "orphan_activity"
         ],
-        "severity": "blocker",
+        "severity": "watch",
         "source": "deterministic",
         "why_hidden": "Each tool shows a valid slice, but the contradiction only appears when their scope, authority, and next action are compared together."
       },
@@ -85012,7 +85006,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -85034,7 +85028,7 @@
         "closure_readiness": 58,
         "cross_surface_convergence": 100,
         "decision_debt": 86,
-        "governance_lag": 64,
+        "governance_lag": 18,
         "workstream_concentration": 74
       },
       "surface_contributions": [
@@ -86967,7 +86961,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -87193,7 +87187,7 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-05-19T19:02:15-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:08:42-07:00",
         "latest_explicit_ts_iso": "2026-05-03T10:46:04-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -87372,7 +87366,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -87850,7 +87844,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -89888,7 +89882,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -90090,7 +90084,7 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-05-19T14:04:11-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -92721,7 +92715,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -92922,7 +92916,7 @@
         "basis": "mixed",
         "blast_radius_class": "contract-level",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-03-01T21:38:40-08:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -93236,7 +93230,7 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-05-19T19:02:15-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:08:42-07:00",
         "latest_explicit_ts_iso": "2026-03-16T14:37:51-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -93872,7 +93866,7 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-03-01T21:38:40-08:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -100183,7 +100177,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "c7ce87b5b223ea42ffe15a0be085ad0ac63ba195",
+          "local_head": "ded140fdd4da3b0ee60179c97ca2eea0a1db39c7",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -102866,7 +102860,7 @@
         "basis": "mixed",
         "blast_radius_class": "local",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-03-03T13:56:10-08:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -103440,7 +103434,7 @@
         "basis": "mixed",
         "blast_radius_class": "local",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-05-19T19:02:15-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:08:42-07:00",
         "latest_explicit_ts_iso": "2026-03-01T21:38:40-08:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -104761,7 +104755,7 @@
         "reasoning_state": "",
         "stale_diagram": false,
         "status": "active",
-        "synthetic_count": 2
+        "synthetic_count": 1
       },
       "evidence_bundle": {
         "changed_artifacts": [],
@@ -104831,7 +104825,7 @@
         "basis": "mixed",
         "blast_radius_class": "local",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-03-01T21:38:40-08:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -104986,7 +104980,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -105125,7 +105119,7 @@
         "basis": "mixed",
         "blast_radius_class": "local",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-05-19T19:05:26-07:00",
+        "latest_event_ts_iso": "2026-05-19T20:29:58-07:00",
         "latest_explicit_ts_iso": "2026-03-03T13:56:10-08:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -105344,7 +105338,7 @@
       "scope_label": "Domain Intelligence",
       "scope_signal_rung": "R3",
       "scope_signal_token": "active_scope",
-      "severity": "blocker"
+      "severity": "watch"
     },
     "highest_severity_scope": {
       "action": "Capture the final reviewed checkpoint for B-001 and clear linked surfaces before closeout.",
