@@ -859,6 +859,7 @@ def test_render_backlog_ui_side_rail_adds_one_paragraph_story_summary() -> None:
     assert 'function rowStorySummary(row)' in html
     assert 'function workstreamStoryParagraph(row)' in html
     assert 'function workstreamStoryLines(row)' in html
+    assert 'function isTitleEchoStorySentence(row, value)' in html
     assert 'function fitStorySentences(lines)' in html
     assert "const ROW_STORY_MAX_SENTENCES = 2;" in html
     assert "const ROW_STORY_MAX_CHARS = 300;" in html
@@ -887,6 +888,8 @@ def test_render_backlog_ui_side_rail_adds_one_paragraph_story_summary() -> None:
     assert "needs a clean ownership line" in html
     assert "turns the slice into reviewable evidence" in html
     assert "must prove its part of the first release" not in html
+    assert "const primaryCandidates =" in html
+    assert "const candidates = [...primaryCandidates, titleLine];" in html
     assert "storySentence(row.problem)" in html
     assert "storySentence(row.founder_pov)" not in html
     assert "storySentence(row.success_metrics)" in html

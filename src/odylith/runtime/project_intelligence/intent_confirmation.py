@@ -44,6 +44,7 @@ def build_product_intent_confirmation(
                 "Use this order: Product story; State object; First complete path; Human actors; External systems; Internal product systems; Critical assumptions; Ambiguities; Proof boundary; Next step.",
                 "Keep Product story, State object, First complete path, and Proof boundary as short paragraphs.",
                 "Use bullets for Human actors, External systems, Internal product systems, Critical assumptions, and Ambiguities so the reader can scan the interpretation.",
+                "Render Next step as three separate bullet lines: Confirm, Edit, and Reject.",
                 "Use plain prose for domain nouns; do not wrap ordinary product, actor, state, or component names in code ticks or decorative bold markers.",
             ],
             "must_include": [
@@ -56,7 +57,7 @@ def build_product_intent_confirmation(
                 "the critical assumptions you are making about origin, maturity, safety, money, data, runtime, or integrations",
                 "the few ambiguities that would materially change the first path, risk posture, topology, or proof bar",
                 "the proof boundary: what would count as evidence and what must not be claimed yet",
-                "a clear Next step block with Confirm, Edit, and Reject choices; each choice must say exactly what happens next",
+                "a clear Next step block with three separate bullet lines for Confirm, Edit, and Reject; each choice must say exactly what happens next",
                 "after confirmation, write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md so create can preserve it and normalize structured intent internally",
             ],
             "must_not": [
@@ -119,7 +120,8 @@ def format_product_intent_confirmation_text(confirmation: Mapping[str, Any]) -> 
         "Product story; State object; First complete path; Human actors; External systems; "
         "Internal product systems; Critical assumptions; Ambiguities; Proof boundary; Next step. "
         "Use bullets for Human actors, External systems, Internal product systems, Critical assumptions, "
-        "and Ambiguities; do not collapse it into a wall of prose."
+        "and Ambiguities. Render Next step as three separate bullet lines: Confirm, Edit, and Reject; "
+        "do not collapse it into a wall of prose."
     )
     lines.extend(
         [
@@ -132,7 +134,7 @@ def format_product_intent_confirmation_text(confirmation: Mapping[str, Any]) -> 
             "- product title, Product story, State object, and First complete path",
             "- Human actors, External systems, and Internal product systems",
             "- Critical assumptions, Ambiguities, and Proof boundary",
-            "- Confirm/Edit/Reject next step with what happens next",
+            "- Next step with three separate bullet lines: Confirm, Edit, and Reject",
         ]
     )
     lines.extend(

@@ -1385,12 +1385,13 @@ def _render_html(*, payload: dict[str, object]) -> str:
       const titleLine = titleNarrativeSentence(row);
       const problemLine = storySentence(row.problem);
       const expectedLine = expectedOutcomeStorySentence(row);
-      const candidates = isProgramStoryRow(row) ? [problemLine, expectedLine, titleLine, storySentence(row.opportunity), storySentence(row.success_metrics)] : [titleLine, problemLine, storySentence(row.opportunity), expectedLine, storySentence(row.success_metrics), roleNarrativeSentence(row.customer)];
+      const primaryCandidates = isProgramStoryRow(row) ? [problemLine, expectedLine, storySentence(row.opportunity), storySentence(row.success_metrics)] : [problemLine, storySentence(row.opportunity), expectedLine, storySentence(row.success_metrics), roleNarrativeSentence(row.customer)]; const candidates = [...primaryCandidates, titleLine];
       const lines = [];
       const seen = new Set();
       candidates.forEach((candidate) => {
         const text = normalizeNarrativeSentence(candidate);
         if (!text || isLowValueStorySentence(text)) return;
+        if (lines.length === 0 && isTitleEchoStorySentence(row, text) && primaryCandidates.some((primary) => normalizeNarrativeSentence(primary))) return;
         const key = text.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
         if (!key || seen.has(key)) return;
         seen.add(key);
@@ -1400,6 +1401,8 @@ def _render_html(*, payload: dict[str, object]) -> str:
     }
 
     function isProgramStoryRow(row) { const title = compactPlainText(row && row.title); const type = compactPlainText(row && (row.workstream_type || row.type)); return /^(Establish|Govern|Guide|Shape)\\s+.+?\\s+Program$/i.test(title) || /umbrella|program/i.test(type); }
+
+    function isTitleEchoStorySentence(row, value) { const title = normalizeSearchToken(row && row.title); const text = normalizeSearchToken(value); return Boolean(title && text && (text === title || text.startsWith(`${title} `))); }
 
     function expectedOutcomeStorySentence(row) { return storySentence(rationaleValue(row, "expected outcome")); }
     function rationaleValue(row, wantedLabel) {

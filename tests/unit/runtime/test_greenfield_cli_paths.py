@@ -31,6 +31,7 @@ def test_greenfield_text_starts_with_product_intent_confirmation(tmp_path, capsy
     assert "Render the visible confirmation as sectioned Markdown" in output
     assert "Product story; State object; First complete path; Human actors" in output
     assert "Use bullets for Human actors, External systems, Internal product systems" in output
+    assert "Render Next step as three separate bullet lines: Confirm, Edit, and Reject" in output
     assert "Write in chat" in output
     assert "Do not" in output
     assert "echo command instructions as the product name" in output
@@ -39,9 +40,9 @@ def test_greenfield_text_starts_with_product_intent_confirmation(tmp_path, capsy
     assert "generate implementation records, architecture records, release waves, validation obligations, or proposal JSON before confirmation" in output
     assert "Original user intent" in output
     assert "Next step" in output
-    assert "Confirm: if the interpretation is right" in output
-    assert "Edit: if the product story, actors, systems, assumptions, first path, or proof boundary is wrong" in output
-    assert "Reject: if this is not the intended product" in output
+    assert "- Confirm: if the interpretation is right" in output
+    assert "- Edit: if the product story, actors, systems, assumptions, first path, or proof boundary is wrong" in output
+    assert "- Reject: if this is not the intended product" in output
     assert "No records were written. Confirm, edit, or reject this interpretation." not in output
     assert "greenfield create --repo-root ." in output
     assert "--confirm" in output
@@ -188,6 +189,8 @@ def test_greenfield_cli_json_defaults_to_intent_confirmation(tmp_path, capsys) -
     assert payload["host_reasoning_task"]["format_contract"]
     assert "sectioned Markdown" in " ".join(payload["host_reasoning_task"]["format_contract"])
     assert "Product story; State object; First complete path; Human actors" in " ".join(payload["host_reasoning_task"]["format_contract"])
+    assert "three separate bullet lines: Confirm, Edit, and Reject" in " ".join(payload["host_reasoning_task"]["format_contract"])
+    assert "three separate bullet lines for Confirm, Edit, and Reject" in " ".join(payload["host_reasoning_task"]["must_include"])
     assert "dump a generic template or domain catalog" in payload["host_reasoning_task"]["must_not"]
     assert "collapse the confirmation into a wall of prose without clear sections" in payload["host_reasoning_task"]["must_not"]
     assert "use Markdown emphasis or code formatting around normal domain words" in payload["host_reasoning_task"]["must_not"]

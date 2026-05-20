@@ -2004,3 +2004,32 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   installs receive the clarified host guidance, skill text, and managed assets
   through the normal install, upgrade, doctor, or dashboard refresh path while
   confirmed-create behavior is enforced by the runtime gate.
+- The source-local Radar side-rail narration and Compass refresh settlement is
+  covered by `migration-observer:0.1.15:browser-surfaces:c842dccd5603` and
+  `migration-observer:0.1.15:install-managed-assets:490c02ceb928`. The pass keeps
+  changed browser-rendered governance surfaces and bundle mirrors within the
+  normal install, upgrade, doctor, or dashboard refresh path; existing
+  consumer-owned governance truth is not rewritten and does not need a bespoke
+  migration.
+- The rendered Radar refresh settlement for that same pass is covered by
+  `migration-observer:0.1.15:browser-surfaces:073a2ea9b4a5`. The pass binds the
+  regenerated browser payload, traceability graph, and source-backed Radar
+  surface after the generic migration assessment was recorded. Existing consumer
+  records remain unchanged; upgraded installs receive the regenerated read-only
+  browser surface through normal dashboard/runtime refresh.
+- The Product Intent Confirmation Next-step bullet guidance settlement is
+  covered by `migration-observer:0.1.15:guidance-and-skills:49fd40c7e0c8` and
+  `migration-observer:0.1.15:install-managed-assets:c5018beeb120`. The pass
+  changes only managed host guidance and the install-managed mirror so Confirm,
+  Edit, and Reject render as three separate bullet lines instead of one
+  paragraph. Existing consumer-owned governance records do not need migration;
+  upgraded installs receive the clearer guidance through normal install,
+  upgrade, doctor, or managed asset refresh.
+- The source-local Radar story-paragraph title echo settlement is covered by
+  `migration-observer:0.1.15:browser-surfaces:c512ed0929a3` and
+  `migration-observer:0.1.15:browser-surfaces:d5dbea8c8b6b`. The pass keeps the
+  rendered Radar browser story paragraph from falling back to a title echo when
+  product-specific problem, opportunity, expected outcome, metric, or customer
+  narrative is available. Existing consumer-owned source truth does not need a
+  bespoke migration; upgraded installs receive the renderer behavior through the
+  normal dashboard/runtime refresh path.
