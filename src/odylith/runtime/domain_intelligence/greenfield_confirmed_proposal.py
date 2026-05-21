@@ -15,6 +15,14 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_components import 
     shell_quote,
     system_component_name,
 )
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_text as _compact_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label as _domain_object_label
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_brief_items as _join_brief_items
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_items as _join_items
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_system_labels as _join_system_labels
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import problem_text as _problem_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary as _short_summary
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_summary as _state_detail_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagrams import confirmed_diagrams
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import (
     confirmed_intent_list,
@@ -94,6 +102,7 @@ def build_confirmed_greenfield_proposal(
         components=components,
         internal_systems=internal_systems,
     )
+    parent_title = _parent_workstream_title(label)
     diagram_slugs = {
         "context": f"{label_slug}-system-context",
         "sequence": f"{label_slug}-first-path",
@@ -243,6 +252,7 @@ def build_confirmed_greenfield_proposal(
         ),
         "program": _program(
             label=label,
+            parent_title=parent_title,
             release=release,
             workflow_title=workflow_title,
             boundary_title=boundary_title,
@@ -259,6 +269,7 @@ def build_confirmed_greenfield_proposal(
         ),
         "backlog": _backlog(
             label=label,
+            parent_title=parent_title,
             workflow_title=workflow_title,
             boundary_title=boundary_title,
             proof_title=proof_title,
@@ -285,7 +296,7 @@ def build_confirmed_greenfield_proposal(
             components=components,
             diagram_slugs=diagram_slugs,
             workstream_titles={
-                "program": f"Establish {label} Program",
+                "program": parent_title,
                 "workflow": workflow_title,
                 "boundary": boundary_title,
                 "proof": proof_title,
@@ -477,18 +488,32 @@ def _project_intelligence(
 
 
 def _workstream_titles(*, label: str, components: list[dict[str, Any]], internal_systems: list[str]) -> tuple[str, str, str]:
-    labels = [str(row.get("label", "")).strip() for row in components if str(row.get("label", "")).strip()]
+    labels = [
+        _workstream_subject(str(row.get("label", "")).strip())
+        for row in components
+        if str(row.get("label", "")).strip()
+    ]
     if len(labels) >= 3 and internal_systems:
         return (
-            f"Prove {labels[0]}",
-            f"Define {labels[1]} Boundary",
-            f"Prepare {labels[2]} Release Proof",
+            f"Build {labels[0]} First Path",
+            f"Implement {labels[1]} State Handoffs",
+            f"Build {labels[2]} Proof Review",
         )
     return (
-        f"Prove {label} First Path",
-        f"Define {label} State And Evidence Boundaries",
-        f"Prepare {label} Release Proof",
+        f"Build {label} First Path",
+        f"Implement {label} State Handoffs",
+        f"Build {label} Proof Review",
     )
+
+
+def _parent_workstream_title(label: str) -> str:
+    return f"Ship {label} First Release"
+
+
+def _workstream_subject(value: str) -> str:
+    text = _compact_text(value)
+    text = re.sub(r"\s+(Service|Surface|Component|Boundary)$", "", text, flags=re.IGNORECASE).strip()
+    return text or value
 
 
 def _evidence_record_label(*, label: str, proof_boundary: str, internal_systems: list[str]) -> str:
@@ -503,151 +528,10 @@ def _evidence_record_label(*, label: str, proof_boundary: str, internal_systems:
     return f"{label} proof record"
 
 
-def _compact_text(value: str) -> str:
-    text = str(value or "").strip()
-    text = text.replace("**", "").replace("__", "").replace("`", "")
-    text = re.sub(r"\s+([,.;:?!])", r"\1", text)
-    return " ".join(text.split())
-
-
-def _domain_object_label(value: str, *, fallback: str) -> str:
-    text = _compact_text(value)
-    if not text:
-        return fallback
-    first_clause = re.split(r"[.;\n]", text, maxsplit=1)[0].strip(" :.-")
-    dash_head = re.split(r"\s+[—-]\s+", first_clause, maxsplit=1)[0].strip(" :.-")
-    patterns = (
-        r"\b(?:the\s+)?(?:primary\s+)?state\s+object\s+is\s+(?:the\s+)?(?P<label>[^.;:]+)$",
-        r"\b(?:the\s+)?(?:domain\s+)?object\s+is\s+(?:the\s+)?(?P<label>[^.;:]+)$",
-        r"\b(?:the\s+)?proof\s+record\s+is\s+(?:the\s+)?(?P<label>[^.;:]+)$",
-    )
-    for pattern in patterns:
-        match = re.search(pattern, dash_head, flags=re.IGNORECASE)
-        if match:
-            candidate = match.group("label").strip(" :.-")
-            return _title_label(candidate) or fallback
-    if dash_head and not re.search(r"\b(is|are|starts?|moves?|changes?|tracks?|records?|captures?|produces?)\b", dash_head, re.IGNORECASE):
-        return _title_label(dash_head) or fallback
-    words = text.split()
-    if len(words) <= 7:
-        return _title_label(text) or fallback
-    return fallback
-
-
-def _short_summary(value: str, *, limit: int = 280) -> str:
-    text = _compact_text(value).strip(" .")
-    if not text:
-        return ""
-    text = re.sub(r"^(?:state object|first path|proof boundary|product story)\s*:\s*", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^the first complete path to prove should be\s*:?\s+", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^first complete path to prove should be\s*:?\s+", "", text, flags=re.IGNORECASE)
-    if len(text) <= limit:
-        return text
-    sentences = re.split(r"(?<=[.!?])\s+", text)
-    selected: list[str] = []
-    total = ""
-    for sentence in sentences:
-        candidate = " ".join([*selected, sentence]).strip()
-        if len(candidate) > limit and selected:
-            break
-        selected.append(sentence)
-        total = candidate
-        if len(total) >= limit * 0.55:
-            break
-    if total:
-        return total.strip(" .")
-    clipped = text[: max(0, limit - 1)].rstrip(" ,;:")
-    if " " in clipped:
-        clipped = clipped.rsplit(" ", 1)[0].rstrip(" ,;:")
-    return clipped + "…"
-
-
-def _problem_text(*, label: str, problem: str, product_story: str, first_path: str) -> str:
-    explicit = _short_summary(problem, limit=360)
-    if explicit:
-        return explicit
-    story = _short_summary(product_story, limit=240)
-    path = _short_summary(first_path, limit=180)
-    if story and path:
-        return f"Without a clear first path, users cannot trust whether {label.lower()} solves the accepted problem: {story} The proof path is {path}."
-    if story:
-        return f"Without source-backed proof, users cannot trust whether {label.lower()} solves the accepted problem: {story}."
-    return f"Without an explicit problem, first path, and proof boundary, {label.lower()} cannot be trusted as implementation-ready."
-
-
-def _state_detail_summary(value: str, *, state_label: str, limit: int = 280) -> str:
-    summary = _short_summary(value, limit=limit)
-    if not summary:
-        return ""
-    label_pattern = re.escape(state_label).replace(r"\ ", r"\s+")
-    summary = re.sub(
-        rf"^(?:the\s+)?(?:primary\s+)?state\s+object\s+is\s+(?:the\s+)?{label_pattern}\.?\s*",
-        "",
-        summary,
-        flags=re.IGNORECASE,
-    ).strip(" .")
-    if summary.casefold() == state_label.casefold():
-        return ""
-    return summary
-
-
-def _join_system_labels(items: list[str] | None, *, limit: int = 4) -> str:
-    values: list[str] = []
-    for item in items or []:
-        text = _compact_text(item)
-        if not text:
-            continue
-        values.append(_domain_object_label(text, fallback=text.split("—", 1)[0].split(":", 1)[0].strip()))
-    values = [value for value in values if value]
-    if not values:
-        return ""
-    selected = values[:limit]
-    suffix = "" if len(values) <= limit else "; additional accepted systems remain in the intent"
-    return ", ".join(selected) + suffix
-
-
-def _title_label(value: str) -> str:
-    words = []
-    for index, word in enumerate(_compact_text(value).strip(" .").split()):
-        lower = word.casefold()
-        if index == 0 and lower in {"a", "an", "the"}:
-            continue
-        if lower in {"and", "or", "of", "the", "to", "for", "in", "on", "with"} and words:
-            words.append(lower)
-            continue
-        if lower in {"ai", "api", "crm", "gis", "iot", "llm", "ml", "pwa", "ui", "ux"}:
-            words.append(lower.upper())
-            continue
-        words.append(word[:1].upper() + word[1:])
-    return " ".join(words).strip()
-
-
-def _join_items(items: list[str] | None, *, limit: int = 4) -> str:
-    values = [str(item).strip().rstrip(".") for item in (items or []) if str(item).strip()]
-    if not values:
-        return ""
-    selected = values[:limit]
-    suffix = "" if len(values) <= limit else "; additional accepted items remain in the intent"
-    return "; ".join(selected) + suffix
-
-
-def _join_brief_items(items: list[str] | None, *, limit: int = 3, item_limit: int = 120) -> str:
-    values = [
-        re.sub(r"\s+[-*]\s+", " ", _short_summary(str(item), limit=item_limit)).strip(" ;")
-        for item in (items or [])
-        if str(item).strip()
-    ]
-    values = [value for value in values if value]
-    if not values:
-        return ""
-    selected = values[:limit]
-    suffix = "" if len(values) <= limit else "; additional accepted items remain in the intent"
-    return ", ".join(selected) + suffix
-
-
 def _program(
     *,
     label: str,
+    parent_title: str,
     release: str,
     workflow_title: str,
     boundary_title: str,
@@ -661,10 +545,12 @@ def _program(
         "recommended_first_wave": f"{label} first-path proof",
         "blueprint": {
             "program_type": "greenfield_program",
-            "parent_workstream": f"Establish {label} Program",
-            "child_workstream_strategy": f"Separate the accepted first path, {label.lower()} state ownership, and release proof before implementation.",
+            "parent_workstream": parent_title,
+            "child_workstream_strategy": (
+                f"Build the first usable {label.lower()} path, then harden its state handoffs and proof review."
+            ),
             "child_workstreams": [workflow_title, boundary_title, proof_title],
-            "wave_to_workstream_policy": "Waves describe delivery order while child workstreams carry owned product slices.",
+            "wave_to_workstream_policy": "Waves follow product build order; each child owns a distinct implementation slice.",
             "release_strategy": f"Target release {release} only after first-path, state replay, and proof review pass.",
             "recommended_wave_order": [
                 f"{label} first-path proof",
@@ -743,9 +629,31 @@ def _release_plan(
     }
 
 
+def _component_label_at(components: list[dict[str, Any]], index: int, *, fallback: str) -> str:
+    if not components:
+        return fallback
+    bounded_index = min(max(index, 0), len(components) - 1)
+    value = str(components[bounded_index].get("label", "")).strip()
+    return value or fallback
+
+
+def _component_contract_at(components: list[dict[str, Any]], index: int) -> Mapping[str, Any]:
+    if not components:
+        return {}
+    bounded_index = min(max(index, 0), len(components) - 1)
+    contract = components[bounded_index].get("component_contract")
+    return contract if isinstance(contract, Mapping) else {}
+
+
+def _contract_clause(contract: Mapping[str, Any], key: str, *, fallback: str) -> str:
+    value = _short_summary(str(contract.get(key) or ""), limit=220)
+    return value or fallback
+
+
 def _backlog(
     *,
     label: str,
+    parent_title: str,
     workflow_title: str,
     boundary_title: str,
     proof_title: str,
@@ -769,7 +677,6 @@ def _backlog(
     component_ids = [str(row["component_id"]) for row in components]
     state_label = _domain_object_label(state_object, fallback=f"{label} state")
     evidence_label = _domain_object_label(evidence_record, fallback=evidence_record)
-    story_summary = _short_summary(product_story, limit=420)
     problem_summary = _problem_text(label=label, problem=problem, product_story=product_story, first_path=first_path)
     opportunity_summary = _short_summary(opportunity, limit=360)
     product_view_summary = _short_summary(product_view, limit=360)
@@ -777,31 +684,44 @@ def _backlog(
     proof_summary = _short_summary(proof_boundary, limit=340)
     actors = _short_summary(customer, limit=260) or _join_items(human_actors) or f"{label} users and reviewers"
     non_goal_text = _join_items(non_goals) or "broader automation, live integrations, and production-scale decisions"
-    primary_component = str(components[0]["label"]) if components else f"{label} first component"
-    proof_component = str(components[-1]["label"]) if components else f"{label} proof component"
-    second_component = str(components[1]["label"]) if len(components) > 1 else primary_component
+    primary_component = _workstream_subject(_component_label_at(components, 0, fallback=f"{label} first path"))
+    second_component = _workstream_subject(_component_label_at(components, 1, fallback=primary_component))
+    proof_component = _workstream_subject(
+        _component_label_at(components, len(components) - 1, fallback=f"{label} proof review")
+    )
+    primary_contract = _component_contract_at(components, 0)
+    state_contract = _component_contract_at(components, 1 if len(components) > 1 else 0)
+    proof_contract = _component_contract_at(components, len(components) - 1)
+    primary_inputs = _contract_clause(primary_contract, "accepted_inputs", fallback="the first user action and required domain input")
+    primary_outputs = _contract_clause(primary_contract, "produced_outputs", fallback=f"a visible {label.lower()} result")
+    state_owned = _contract_clause(state_contract, "owned_state", fallback=f"{state_label} lifecycle and handoff state")
+    state_outputs = _contract_clause(state_contract, "produced_outputs", fallback=f"{state_label} status, blockers, and handoff output")
+    proof_outputs = _contract_clause(proof_contract, "produced_outputs", fallback=f"{evidence_label} review result")
     parent = _backlog_row(
         label=label,
-        title=f"Establish {label} Program",
+        title=parent_title,
         problem=problem_summary,
         customer=actors,
         opportunity=opportunity_summary
-        or "Turn the accepted product story into a reviewed first-release boundary before source work starts.",
+        or f"Build the first release around {primary_component}, {second_component}, and {proof_component}.",
         product_view=product_view_summary
-        or f"The first release is trustworthy only when the accepted path, {state_label}, and {evidence_label} can be reviewed together.",
+        or f"{label} is useful when {actors} can complete the first path and inspect the resulting {state_label}.",
         first_slice=first_path_summary,
         metrics=[
-            *(success_metrics or [])[:2],
-            "Release records preserve the accepted product story before implementation planning.",
-            f"Release proof stays inside the accepted boundary for {evidence_label}.",
+            *(success_metrics or [])[:1],
+            f"{primary_component} runs from first user action to visible result: {first_path_summary}.",
+            f"{second_component} keeps {state_label} success, blocked, and review states understandable.",
+            f"{proof_component} shows evidence for the accepted release boundary: {proof_summary}.",
         ],
         component_focus=component_ids,
         diagram_focus=list(diagram_slugs.values()),
         dependencies=[
-            "Depends on the confirmed actors, product-owned responsibilities, and proof boundary from the accepted intent."
+            f"Depends on the accepted actors, external sources, and product systems needed for {first_path_summary}."
         ],
-        interfaces=[f"Program handoff names the first path, state object, proof boundary, non-goals, and internal systems."],
-        validation=["Review confirms the story, first path, state object, component ownership, and proof boundary agree."],
+        interfaces=[
+            f"Release scope connects {primary_component}, {second_component}, and {proof_component} without absorbing deferred scope."
+        ],
+        validation=[f"Release review exercises {first_path_summary} and checks {proof_summary}."],
         state_object=state_label,
         evidence_record=evidence_label,
         first_path=first_path_summary,
@@ -815,20 +735,26 @@ def _backlog(
     workflow = _backlog_row(
         label=label,
         title=workflow_title,
-        problem=f"Without the accepted first path in source-backed behavior, {actors} cannot trust that the product solves the confirmed problem: {problem_summary}",
+        problem=f"{primary_component} cannot yet let the first user complete this product path: {first_path_summary}.",
         customer=actors,
-        opportunity=opportunity_summary or "Prove the smallest usable product journey in source-backed behavior.",
-        product_view=f"The first implementation plan should explain how {primary_component} works with {second_component} to complete the accepted path.",
-        first_slice=first_path_summary,
+        opportunity=(
+            f"Build the narrow {primary_component} entry, actions, feedback, and handoff before adding deferred scope."
+        ),
+        product_view=(
+            f"{primary_component} supports the first path: {first_path_summary}. It accepts {primary_inputs}, "
+            f"coordinates with {second_component}, and produces {primary_outputs}."
+        ),
+        first_slice=f"Implement the first usable {primary_component} path: {first_path_summary}.",
         metrics=[
-            "A user can complete the accepted first path and see a clear result.",
-            f"At least one domain failure is rejected or recovered with evidence tied to {state_label}.",
+            f"A user completes the path through {primary_component} and sees a clear success, blocked, or recovery result.",
+            f"Missing or invalid domain input is rejected before it corrupts {state_label}.",
+            f"The first-path result hands the right state to {second_component}.",
         ],
         component_focus=component_ids[: max(1, min(2, len(component_ids)))],
         diagram_focus=[diagram_slugs["context"], diagram_slugs["sequence"], diagram_slugs["state_evidence"]],
-        dependencies=[f"Depends on {second_component} where the first path needs durable state or supporting evidence."],
-        interfaces=["Expose only the operations needed to run the accepted first path; keep deferred scope out of the first slice."],
-        validation=[f"End-to-end proof covers the first path, at least one domain failure, and reviewer-visible recovery."],
+        dependencies=[f"Depends on {second_component} for durable state, blockers, and recovery handoff."],
+        interfaces=[f"Expose the minimum user entrypoints and commands needed for {first_path_summary}."],
+        validation=[f"End-to-end proof covers success, missing input, and recovery for {primary_component}."],
         state_object=state_label,
         evidence_record=evidence_label,
         first_path=first_path_summary,
@@ -841,27 +767,28 @@ def _backlog(
     boundary = _backlog_row(
         label=label,
         title=boundary_title,
-        problem=f"{label} cannot be trusted if state, evidence, ownership, and review boundaries drift away from the confirmed problem: {problem_summary}",
+        problem=f"{label} can produce false confidence if {state_label} changes without actor, source, status, and evidence ownership.",
         customer=actors,
         opportunity=(
-            "Clarify what the product owns, what it consumes, and what stays outside the first release "
-            "before implementation starts."
+            f"Implement {second_component} as the state and handoff boundary for accepted inputs, outputs, blocked states, "
+            "and external-source references."
         ),
-        product_view=f"{state_label} is the state boundary; {evidence_label} is the review boundary.",
-        first_slice=f"Map how {state_label} changes through the first path and how {evidence_label} proves or blocks release readiness.",
+        product_view=f"{second_component} keeps {state_label} trustworthy by owning {state_owned} and producing {state_outputs}.",
+        first_slice=f"Implement {state_label} lifecycle states and handoffs for: {first_path_summary}.",
         metrics=[
-            f"Every state change names actor, source, owner, and evidence expectation.",
-            f"Every owned system remains tied to the domain responsibility accepted in the product direction.",
+            f"Every {state_label} change names actor, source, status, owner, and evidence expectation.",
+            f"External inputs are accepted, quarantined, or rejected before they change {state_label}.",
+            f"Downstream consumers can distinguish success, blocked, stale, and review-needed states.",
         ],
-        component_focus=component_ids,
+        component_focus=[component_ids[1]] if len(component_ids) > 1 else component_ids,
         diagram_focus=[
             diagram_slugs["state_evidence"],
             diagram_slugs["component_boundaries"],
             diagram_slugs["ownership"],
         ],
-        dependencies=["Depends on the confirmed internal systems and external boundaries from the accepted intent."],
-        interfaces=[f"State, evidence, review, and external-source interfaces stay separate and traceable."],
-        validation=[f"Boundary proof rejects records that cannot explain {state_label}, {evidence_label}, or {proof_summary}."],
+        dependencies=[f"Depends on {primary_component} for user actions and on accepted external sources for source evidence."],
+        interfaces=[f"State, evidence, review, and external-source interfaces stay separate around {second_component}."],
+        validation=[f"State proof rejects transitions that cannot explain {state_label}, source evidence, or owner."],
         state_object=state_label,
         evidence_record=evidence_label,
         first_path=first_path_summary,
@@ -874,20 +801,29 @@ def _backlog(
     proof = _backlog_row(
         label=label,
         title=proof_title,
-        problem=f"Release readiness needs evidence a reviewer can inspect without trusting implementation claims; otherwise {actors} cannot verify the accepted result.",
+        problem=(
+            f"{proof_component} cannot support release review unless it replays source evidence, validation output, "
+            "non-goals, and reviewer decision."
+        ),
         customer=actors,
-        opportunity="Make release readiness depend on inspectable proof, not planning prose.",
-        product_view=f"{proof_component} produces or participates in the evidence a reviewer needs before release work can proceed.",
-        first_slice=f"Produce one reviewable proof record that maps the first path, {state_label}, validation output, and reviewer decision.",
+        opportunity=(
+            f"Build the {proof_component} review output with validation results, state references, reviewer decision, and deferred scope."
+        ),
+        product_view=f"{proof_component} produces {proof_outputs} and shows whether {proof_summary} passes, fails, or is blocked.",
+        first_slice=f"Implement one reviewable {evidence_label} output for the first path, validation result, and reviewer decision.",
         metrics=[
-            f"Release proof lists the domain evidence required by the accepted product direction.",
-            f"Release proof explicitly excludes non-goals until accepted later: {non_goal_text}.",
+            f"{evidence_label} links source input, {state_label}, validation output, reviewer decision, and outcome.",
+            f"Missing evidence blocks proof review instead of producing a release-ready claim.",
+            f"The proof view uses the accepted proof boundary: {proof_summary}.",
+            f"The proof view keeps deferred scope visible: {non_goal_text}.",
         ],
         component_focus=[component_ids[-1]] if component_ids else [],
         diagram_focus=[diagram_slugs["ownership"], diagram_slugs["proof_review"], diagram_slugs["sequence"]],
-        dependencies=[f"Depends on first-path validation, state replay, access posture, and evidence review output."],
-        interfaces=[f"Release proof export contains validation summary, state references, evidence references, reviewer decision, and deferred scope."],
-        validation=[f"Release proof fails closed when any part of the accepted proof boundary is missing: {proof_summary}"],
+        dependencies=[f"Depends on {second_component} state replay, {primary_component} path proof, and reviewer access posture."],
+        interfaces=[
+            f"{proof_component} exposes validation summary, state references, evidence references, reviewer decision, and deferred scope."
+        ],
+        validation=[f"Proof review fails closed when any part of the accepted proof boundary is missing: {proof_summary}"],
         state_object=state_label,
         evidence_record=evidence_label,
         first_path=first_path_summary,
@@ -953,6 +889,14 @@ def _backlog_row(
         "domain_intelligence": _domain_intelligence(
             label=label,
             row_title=title,
+            problem=problem,
+            opportunity=opportunity,
+            product_view=product_view,
+            first_slice=first_slice,
+            metrics=metrics,
+            dependencies=dependencies,
+            interfaces=interfaces,
+            validation=validation,
             state_object=state_object,
             evidence_record=evidence_record,
             first_path=first_path,
@@ -975,9 +919,9 @@ def _rationale_lines(*, label: str, title: str, opportunity: str, first_slice: s
     return [
         f"- why now: {why_now}.",
         f"- expected outcome: {expected_outcome}.",
-        "- tradeoff: Keep the first release focused on the accepted path while deferring unconfirmed scope.",
-        "- deferred for now: Scope outside the accepted proof boundary waits for explicit evidence.",
-        "- ranking basis: Release readiness depends on the product story, domain state, evidence, and proof boundary staying aligned.",
+        f"- tradeoff: Keep {title} narrow enough to prove before adjacent product scope expands.",
+        f"- deferred for now: Scope outside {title} waits for explicit product evidence.",
+        f"- ranking basis: {title} unblocks the next build decision for {label}.",
     ]
 
 
@@ -985,6 +929,14 @@ def _domain_intelligence(
     *,
     label: str,
     row_title: str,
+    problem: str,
+    opportunity: str,
+    product_view: str,
+    first_slice: str,
+    metrics: list[str],
+    dependencies: list[str],
+    interfaces: list[str],
+    validation: list[str],
     state_object: str,
     evidence_record: str,
     first_path: str,
@@ -994,23 +946,29 @@ def _domain_intelligence(
     external_systems: list[str],
     non_goals: list[str],
 ) -> dict[str, Any]:
-    label_lower = label.lower()
     actors = human_actors or [f"{label} product user: uses the accepted first path."]
     internals = internal_systems or [f"{state_object}: owns domain state.", f"{evidence_record}: owns proof review."]
     internal_labels = _join_system_labels(internals) or _join_items(internals)
     externals = external_systems or ["No live external system is accepted for the first release."]
     non_goal_text = _join_items(non_goals) or "unconfirmed broader platform behavior"
+    focus = _short_summary(product_view or first_slice or opportunity, limit=360)
+    risk = _short_summary(problem, limit=300) or f"{label} can fail if {row_title} is too vague to implement."
+    build_scope = _short_summary(first_slice or first_path, limit=320)
+    metric_summary = _join_brief_items(metrics, limit=3, item_limit=140)
+    dependency_summary = _join_brief_items(dependencies, limit=2, item_limit=150)
+    interface_summary = _join_brief_items(interfaces, limit=2, item_limit=150)
+    validation_summary = _join_brief_items(validation, limit=3, item_limit=150)
     return {
         "schema_version": "odylith.greenfield.workstream_intelligence.v1",
         "family": slugify(label).replace("-", "_") or "confirmed_product",
-        "summary": f"{row_title} preserves the accepted product story, first path, domain state, proof evidence, and non-goals.",
+        "summary": focus or f"{row_title} turns the accepted {label} slice into buildable product behavior.",
         "actors": actors,
         "intent": [
-            f"{row_title} advances the product by making this first path real: {first_path}",
-            f"{row_title} keeps {state_object}, {evidence_record}, and release proof connected to the confirmed user problem.",
+            focus or f"{row_title} advances {label} by building one concrete product slice.",
+            f"User problem: {risk}",
         ],
         "scope": [
-            f"In scope: {first_path}",
+            f"Build scope: {build_scope}",
             f"Out of scope for now: {non_goal_text}.",
         ],
         "ontology": [
@@ -1020,29 +978,29 @@ def _domain_intelligence(
             f"Proof boundary: {proof_boundary}.",
         ],
         "state": [
-            f"{state_object} changes through the accepted first journey: {first_path}",
-            f"{label} state is not trusted unless the evidence record and proof boundary explain it.",
+            f"State focus: {build_scope}",
+            f"Owned state remains trustworthy only when {state_object} and {evidence_record} explain the visible outcome.",
         ],
         "operators": [
-            f"First-path actors perform the accepted product path: {_join_items(actors)}.",
-            f"Internal systems own product behavior: {internal_labels}.",
-            f"External systems remain separate from product-owned truth: {_join_items(externals)}.",
+            f"Build operations: {interface_summary or build_scope}.",
+            f"Internal systems involved here: {internal_labels}.",
+            f"External source boundaries here: {_join_items(externals)}.",
         ],
         "constraints": [
-            f"Do not derive product records from a thin prompt when confirmed product systems are required.",
-            f"Do not claim implementation readiness from proposal prose; readiness assertions require validation output and proof evidence.",
+            f"Keep {row_title} inside the accepted first-release scope: {non_goal_text}.",
+            f"Do not claim {row_title} ready until validation demonstrates: {validation_summary or proof_boundary}.",
         ],
         "source_of_truth_map": [
             f"{state_object} is the source of truth for current first-path state.",
             f"{evidence_record} is the source of truth for proof readiness and reviewer confidence.",
         ],
         "evidence_model": [
-            f"{evidence_record} must show what happened, who or what produced the evidence, which state it supports, and how the reviewer can verify it.",
-            f"Proof cannot pass outside the accepted boundary: {proof_boundary}",
+            f"Evidence for this slice: {validation_summary or proof_boundary}.",
+            f"{evidence_record} must show source input, state reference, validation result, reviewer decision, and visible outcome.",
         ],
         "decisions": [
-            f"Decide whether the accepted first path is sufficient for release planning: {first_path}",
-            f"Decide whether each internal system has a clear responsibility: {internal_labels}.",
+            f"Decide whether {row_title} delivers its local outcome: {metric_summary or build_scope}.",
+            f"Decide whether dependencies are ready: {dependency_summary or internal_labels}.",
         ],
         "assumptions": [
             f"User intent is the evidence tier until source-backed implementation exists.",
@@ -1053,53 +1011,54 @@ def _domain_intelligence(
             f"External systems: {_join_items(externals)}.",
         ],
         "invariants": [
-            f"Every state change must name actor, source, timestamp, and evidence expectation.",
-            f"Every readiness assertion must map to {state_object}, {evidence_record}, validation output, reviewer decision, and non-goal boundary.",
+            f"Every state change touched by {row_title} names actor, source, status, and evidence expectation.",
+            f"Every readiness assertion for {row_title} maps to {state_object}, {evidence_record}, validation output, and non-goals.",
         ],
         "risks": [
-            f"Product comprehension fails if release records lose the confirmed domain terms, actors, state, and evidence.",
-            f"Release confidence fails if evidence cannot explain the accepted proof boundary.",
+            risk,
+            f"Trust fails if {row_title} hides missing state, source evidence, access limits, or deferred scope.",
         ],
         "validation_obligations": [
-            f"Validate the accepted first path in domain terms.",
-            f"Validate state replay for {state_object}.",
-            f"Validate proof traceability for {evidence_record} against: {proof_boundary}",
+            *(validation or []),
+            f"Validate that {row_title} preserves {state_object} and {evidence_record} in domain terms.",
+            f"Validate that {row_title} satisfies its local success criteria: {metric_summary or build_scope}.",
+            f"Validate that {row_title} handles a blocked or recovery path without hiding missing evidence.",
         ],
         "artifacts": [
-            f"{state_object} history captures actor, source, status, timestamp, and version history.",
-            f"{evidence_record} captures validation output, replay output, reviewer decision, and release scope.",
+            f"{state_object} history captures the local states needed by {row_title}.",
+            f"{evidence_record} captures validation output, replay output, reviewer decision, and deferred scope.",
         ],
         "authority": [
             f"Only accepted actors or systems can move first-path state: {_join_items(actors)}.",
-            f"Proof review can block release when validation, replay, access, or evidence is incomplete.",
+            f"{row_title} can block the first release when validation, replay, access, or evidence is incomplete.",
         ],
         "owners": [
-            f"Internal product systems own release responsibilities: {internal_labels}.",
-            f"Review ownership follows the accepted proof boundary, not generic implementation labels.",
+            f"Internal product systems own this slice: {internal_labels}.",
+            f"Review ownership follows the accepted proof boundary and this row's local validation.",
         ],
         "execution_memory": [
-            f"Future work starts from the accepted first path and state object.",
+            f"Future work starts from the accepted first path and this row's local build outcome.",
             f"Product-owner correction or source-backed contradiction invalidates stale assumptions.",
         ],
         "metrics": [
-            f"Zero release records are written without confirmed product systems.",
-            f"Every readiness assertion has state, evidence, validation, reviewer, and non-goal references.",
+            metric_summary or f"{row_title} has a user-visible success, blocked, and recovery signal.",
+            f"Every readiness assertion for {row_title} has state, evidence, validation, reviewer, and non-goal references.",
         ],
         "change_model": [
-            f"Changing the state object invalidates first-path, proof, and release-readiness assumptions.",
-            f"Changing external dependencies invalidates security, privacy, access, and failure proof.",
+            f"Changing the state object invalidates {row_title} validation and handoff assumptions.",
+            f"Changing external dependencies invalidates access, privacy, recovery, and proof for {row_title}.",
         ],
         "invalidation_rules": [
-            f"If confirmed narrative is missing, no records may be written.",
-            f"If release records cannot explain the accepted first path, release readiness stays blocked.",
+            f"If {row_title} cannot run or be reviewed in product terms, release readiness stays blocked.",
+            f"If evidence cannot explain {state_object}, {evidence_record}, or non-goals, this slice is incomplete.",
         ],
         "conflict_model": [
-            f"Confirmed product intent beats generic builder fallback.",
-            f"Source-backed validation beats narrative claims when implementation behavior disagrees.",
+            f"Confirmed product intent beats generic builder fallback for {row_title}.",
+            f"Source-backed validation beats narrative claims when {row_title} behavior disagrees.",
         ],
         "transfer_priors": [
-            f"Keep release scope small enough for concrete behavior proof.",
-            f"Use the confirmed actors, state, systems, evidence, and failure terms in every generated record.",
+            f"Keep {row_title} small enough for concrete behavior proof.",
+            f"Use confirmed actors, state, systems, evidence, and failure terms in this slice.",
         ],
     }
 

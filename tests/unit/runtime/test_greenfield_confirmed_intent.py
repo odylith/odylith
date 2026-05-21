@@ -19,6 +19,23 @@ from tests.unit.runtime.greenfield_proposal_fixtures import _confirmed_intent
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 
 
+def _max_word_overlap(values: list[str]) -> float:
+    word_sets = [
+        {
+            word.strip(".,;:!?()[]{}").casefold()
+            for word in value.split()
+            if len(word.strip(".,;:!?()[]{}")) > 3
+        }
+        for value in values
+    ]
+    scores: list[float] = []
+    for index, left in enumerate(word_sets):
+        for right in word_sets[index + 1 :]:
+            if left and right:
+                scores.append(len(left & right) / min(len(left), len(right)))
+    return max(scores or [0.0])
+
+
 def test_confirmed_intent_parser_keeps_ambiguities_out_of_first_path() -> None:
     intent = _confirmed_intent()
 
@@ -704,6 +721,43 @@ Release 0.0.1 succeeds when one decision record can be inspected from source obs
     assert "Case Intake" in encoded
     assert "Quality Review" in encoded
     assert "Decision Ledger" in encoded
+    titles = [str(row["title"]) for row in accepted["proposal"]["backlog"]]
+    assert titles == [
+        "Ship Decision Review Workspace First Release",
+        "Build Case Intake First Path",
+        "Implement Quality Review State Handoffs",
+        "Build Decision Ledger Proof Review",
+    ]
+    rows_by_title = {str(row["title"]): row for row in accepted["proposal"]["backlog"]}
+    first_path_row = rows_by_title["Build Case Intake First Path"]
+    state_row = rows_by_title["Implement Quality Review State Handoffs"]
+    proof_row = rows_by_title["Build Decision Ledger Proof Review"]
+
+    assert "coordinator imports one observation" in first_path_row["problem"]
+    assert "quality evidence" in first_path_row["product_view"]
+    assert "Decision Record" in state_row["product_view"]
+    assert "actor, source, status" in " ".join(state_row["success_metrics"])
+    assert "reviewer decision" in proof_row["product_view"]
+    assert "automated approval" in " ".join(proof_row["success_metrics"])
+
+    radar_text = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in (tmp_path / "odylith/radar/source/ideas").glob("**/*.md")
+    )
+    for banned in (
+        "governed workstream",
+        "component boundary, diagram view, and release gate",
+        "Release records preserve",
+        "Program handoff names",
+        "Turn the accepted product intent into inspectable release records",
+        "Do not derive product records",
+    ):
+        assert banned not in radar_text
+    child_blobs = [
+        " ".join(str(row.get(key, "")) for key in ("problem", "opportunity", "product_view", "recommended_first_slice"))
+        for row in (first_path_row, state_row, proof_row)
+    ]
+    assert _max_word_overlap(child_blobs) < 0.58
 
 
 def test_confirmed_proposal_completion_adds_component_risks_and_fresh_diagram_watch_paths(tmp_path: Path) -> None:

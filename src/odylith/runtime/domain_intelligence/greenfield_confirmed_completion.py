@@ -144,12 +144,12 @@ def _complete_backlog(proposal: dict[str, Any]) -> bool:
             changed = True
         if not _clean(row.get("opportunity")):
             row["opportunity"] = (
-                f"Turn the accepted product intent into inspectable release records before implementation work starts for {title}."
+                f"Build the smallest useful product slice for {title}: {_first_path(proposal)}"
             )
             changed = True
         if not _clean(row.get("product_view")):
             row["product_view"] = (
-                f"{title} is useful when a reviewer can inspect the state, evidence, domain risk, and proof boundary together."
+                f"{title} is useful when the user can complete the first path and inspect the resulting state, blockers, and evidence."
             )
             changed = True
         metrics = list(text_values(row.get("success_metrics")))
@@ -158,9 +158,9 @@ def _complete_backlog(proposal: dict[str, Any]) -> bool:
                 unique_text(
                     [
                         *metrics,
-                        f"The accepted first path is represented by a governed workstream, component boundary, diagram view, and release gate.",
-                        f"The workstream names at least one success path and one failure or blocked path for {_state_object(proposal)}.",
-                        f"Release readiness is blocked unless proof evidence matches the accepted boundary: {_proof_boundary(proposal)}",
+                        f"The accepted first path can be exercised end to end: {_first_path(proposal)}",
+                        f"{_state_object(proposal)} records success, blocked, stale, and review-needed states.",
+                        f"Proof evidence blocks promotion unless it matches the accepted boundary: {_proof_boundary(proposal)}",
                     ]
                 )
             )

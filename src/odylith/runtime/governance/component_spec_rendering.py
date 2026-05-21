@@ -707,7 +707,22 @@ def _brief_sentence(value: str, *, limit: int = 220) -> str:
     clipped = text[: max(0, limit - 1)].rstrip(" ,;:")
     if " " in clipped:
         clipped = clipped.rsplit(" ", 1)[0].rstrip(" ,;:")
-    return clipped + "…"
+    clipped = _strip_dangling_tail(clipped)
+    return clipped
+
+
+def _strip_dangling_tail(value: str) -> str:
+    text = value.rstrip(" ,;:.")
+    while True:
+        cleaned = re.sub(
+            r"\b(?:a|an|and|as|at|because|by|for|from|if|in|into|of|on|or|the|to|when|while|with|without)$",
+            "",
+            text,
+            flags=re.I,
+        ).rstrip(" ,;:.")
+        if cleaned == text:
+            return cleaned
+        text = cleaned
 
 
 def _strip_proof_prefix(value: str) -> str:
