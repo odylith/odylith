@@ -15,6 +15,7 @@ class GreenfieldApplyTransaction:
         "odylith/registry",
         "odylith/atlas",
         "odylith/compass",
+        "odylith/runtime/source",
         "odylith/runtime/delivery_intelligence.v4.json",
     )
 

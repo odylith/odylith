@@ -16,7 +16,7 @@ from odylith.runtime.project_intelligence.product_story import (
     summarize_first_path,
     summarize_proof,
 )
-from odylith.runtime.project_intelligence.utils import dict_value, display_text, list_value, sentence, short, strings
+from odylith.runtime.project_intelligence.utils import dict_value, display_text, list_value, sanitize_actor_body, sentence, short, strings
 
 
 def proposal_from_sources(*, repo_root: Path, shell_payload: Mapping[str, Any]) -> dict[str, Any]:
@@ -1396,7 +1396,7 @@ def _role_description_parts(value: str) -> tuple[str, str]:
 
 def _default_actor_body(title: str) -> str:
     lowered = title.casefold()
-    if any(token in lowered for token in ("owner", "advocate", "user", "customer", "merchant", "patient", "client")):
+    if any(token in lowered for token in ("owner", "advocate", "user", "customer", "client")):
         return "Receives the value of the first project path and decides whether it is acceptable."
     if any(token in lowered for token in ("operator", "coordinator", "caretaker", "maintainer")):
         return "Moves the first path through day-to-day operation and handles exceptions."
@@ -1466,19 +1466,15 @@ def _is_project_actor_label(value: str) -> bool:
         "customer",
         "engineer",
         "maintainer",
-        "merchant",
         "operator",
         "owner",
-        "patient",
         "person",
         "observer",
         "reviewer",
-        "scientist",
         "steward",
         "team",
         "user",
         "verifier",
-        "funder",
     )
     if any(marker in lowered for marker in system_markers) and not any(
         marker in lowered for marker in human_markers
@@ -1513,7 +1509,7 @@ def _dedupe_actor_rows(rows: Sequence[tuple[str, str, str]]) -> list[tuple[str, 
 
 def _actor_display_parts(*, title: object, body: object) -> tuple[str, str]:
     clean_title = display_text(title)
-    clean_body = display_text(body)
+    clean_body = sanitize_actor_body(body)
     role, role_body = _role_description_parts(clean_title)
     if role:
         clean_title = role
@@ -1846,7 +1842,7 @@ def _join_boundary_values(values: Sequence[str], *, total: int) -> str:
     joined = "; ".join(clean_values)
     remaining = max(0, total - len(clean_values))
     if remaining:
-        joined = f"{joined}; plus {remaining} more"
+        joined = f"{joined}; additional accepted items remain outside this summary"
     return joined
 
 

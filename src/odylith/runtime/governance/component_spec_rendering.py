@@ -8,6 +8,14 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import display_text
 from odylith.runtime.common.prose_grammar import finite_action_clause
+from odylith.runtime.domain_intelligence.greenfield_component_contract import (
+    boundary_from_contract,
+    dependencies_from_contract,
+    interfaces_from_contract,
+    responsibility_from_contract,
+    risks_from_contract,
+    validation_from_contract,
+)
 
 
 def sentence_fragment(value: str) -> str:
@@ -33,8 +41,11 @@ def build_component_spec(
     risks: Sequence[str] = (),
     qualification: str = "candidate",
     implementation_handoff: Mapping[str, Any] | None = None,
+    component_contract: Mapping[str, Any] | None = None,
 ) -> str:
     handoff = implementation_handoff or {}
+    contract = component_contract or {}
+    has_contract = bool(contract)
     profile = _kind_profile(kind)
     normalized_sources = [str(item).strip() for item in sources if str(item).strip()]
     workstream_ids = [str(item).strip().upper() for item in workstreams if str(item).strip()]
@@ -48,39 +59,49 @@ def build_component_spec(
     handoff_validation = _handoff_list(handoff, "validation_gates")
     handoff_commands = _handoff_list(handoff, "verification_commands")
 
-    responsibility_text = sentence_fragment(responsibility)
-    responsibility_line = _responsibility_sentence(responsibility_text, default_verb=profile["default_verb"])
-    boundary_text = sentence_fragment(boundary) or responsibility_text
+    responsibility_source = responsibility_from_contract(label, contract) if has_contract else responsibility
+    responsibility_text = sentence_fragment(responsibility_source)
+    responsibility_line = responsibility_text if has_contract else _responsibility_sentence(responsibility_text, default_verb=profile["default_verb"])
+    boundary_source = boundary_from_contract(label, contract) if has_contract else boundary
+    boundary_text = sentence_fragment(boundary_source) or responsibility_text
     evidence_text = _evidence_text(normalized_sources=normalized_sources, path=path)
     plan_link = _plan_link(first_workstream)
     related_workstreams = ", ".join(f"`{item}`" for item in workstream_ids) if workstream_ids else "none yet"
     related_diagrams = ", ".join(f"`{item}`" for item in diagram_ids) if diagram_ids else "none yet"
     proof_lines = _component_proof_lines(
-        validation=validation,
+        validation=validation_from_contract(contract) if has_contract else validation,
         handoff_validation=handoff_validation,
         label=label,
         boundary=boundary_text,
         responsibility=responsibility_line or responsibility_text,
     )
-    interface_lines = _unique_lines(interfaces or (profile["default_interface"],))
-    dependency_lines = _dependency_lines(dependencies or (profile["default_dependency"],))
-    risk_lines = _unique_lines(risks or (profile["default_risk"],))
-    outside_boundary = _outside_boundary_lines(boundary=boundary_text, profile=profile)
-    contract_summary = _contract_summary(
-        label=label,
-        responsibility=responsibility_line or responsibility_text,
-        boundary=boundary_text,
-        profile=profile,
-        interfaces=interface_lines,
-        dependencies=dependency_lines,
-        proof_lines=proof_lines,
+    interface_lines = _unique_lines(interfaces_from_contract(contract) if has_contract else interfaces or (profile["default_interface"],))
+    dependency_lines = _dependency_lines(dependencies_from_contract(contract) if has_contract else dependencies or (profile["default_dependency"],))
+    risk_lines = _unique_lines(risks_from_contract(label, contract) if has_contract else risks or (profile["default_risk"],))
+    outside_boundary = _contract_outside_boundary_lines(contract) if has_contract else _outside_boundary_lines(boundary=boundary_text, profile=profile)
+    contract_summary = (
+        _contract_summary_from_contract(label=label, contract=contract)
+        if has_contract
+        else _contract_summary(
+            label=label,
+            responsibility=responsibility_line or responsibility_text,
+            boundary=boundary_text,
+            profile=profile,
+            interfaces=interface_lines,
+            dependencies=dependency_lines,
+            proof_lines=proof_lines,
+        )
     )
-    role_paragraphs = _component_role_paragraphs(
-        label=label,
-        profile=profile,
-        responsibility=responsibility_line or responsibility_text,
-        dependencies=dependency_lines,
-        validation=proof_lines,
+    role_paragraphs = (
+        _component_contract_role_paragraphs(label=label, profile=profile, contract=contract)
+        if has_contract
+        else _component_role_paragraphs(
+            label=label,
+            profile=profile,
+            responsibility=responsibility_line or responsibility_text,
+            dependencies=dependency_lines,
+            validation=proof_lines,
+        )
     )
 
     return "\n".join(
@@ -151,6 +172,8 @@ def build_component_spec(
                 wave_status=wave_status,
                 release_selector=release_selector,
                 first_slice=first_slice,
+                label=label,
+                local_proof=proof_lines[0] if proof_lines else "",
             ),
             "",
             "### Definition Of Done",
@@ -253,6 +276,75 @@ def _component_role_paragraphs(
     if proof_bits:
         paragraphs.append(" ".join(_paragraph(bit) for bit in proof_bits if sentence_fragment(bit)))
     return tuple(paragraphs)
+
+
+def _component_contract_role_paragraphs(
+    *,
+    label: str,
+    profile: Mapping[str, str],
+    contract: Mapping[str, Any],
+) -> tuple[str, ...]:
+    role = profile.get("role_noun", "ownership boundary")
+    owned = sentence_fragment(str(contract.get("owned_state", "")))
+    inputs = sentence_fragment(str(contract.get("accepted_inputs", "")))
+    outputs = sentence_fragment(str(contract.get("produced_outputs", "")))
+    proof = _first_text(contract.get("local_proof"))
+    first = (
+        f"{label} is a {role}. It owns {_lower_first(owned)}, accepts {_lower_first(inputs)}, and produces {_lower_first(outputs)}"
+        if owned and inputs and outputs
+        else f"{label} is a {role} with a local contract that must remain visible in implementation and review"
+    )
+    second = f"Its distinguishing proof is {_lower_first(proof)}" if proof else ""
+    collaborators = _contract_collaborator_sentence(contract)
+    return tuple(_paragraph(row) for row in (first, second, collaborators) if sentence_fragment(row))
+
+
+def _contract_summary_from_contract(*, label: str, contract: Mapping[str, Any]) -> str:
+    owned = sentence_fragment(str(contract.get("owned_state", "")))
+    inputs = sentence_fragment(str(contract.get("accepted_inputs", "")))
+    outputs = sentence_fragment(str(contract.get("produced_outputs", "")))
+    states = sentence_fragment(str(contract.get("states_or_transitions", "")))
+    outside = sentence_fragment(str(contract.get("outside_boundary", "")))
+    proof = _first_text(contract.get("local_proof"))
+    rows = [
+        f"{label} owns {_lower_first(owned)}" if owned else "",
+        f"It accepts {_lower_first(inputs)} and produces {_lower_first(outputs)}" if inputs and outputs else "",
+        f"It can render, emit, or transition {_lower_first(states)}" if states else "",
+        f"It refuses {_lower_first(outside)}" if outside else "",
+        _contract_collaborator_sentence(contract),
+        f"Its local proof is {proof}" if proof else "",
+    ]
+    return ". ".join(sentence_fragment(row) for row in rows if sentence_fragment(row))
+
+
+def _contract_collaborator_sentence(contract: Mapping[str, Any]) -> str:
+    upstream = sentence_fragment(str(contract.get("upstream_truth", "")))
+    downstream = sentence_fragment(str(contract.get("downstream_consumers", "")))
+    if upstream and downstream:
+        return f"Upstream truth comes from {upstream}; downstream consumers are {downstream}"
+    if upstream:
+        return f"Upstream truth comes from {upstream}"
+    if downstream:
+        return f"Downstream consumers are {downstream}"
+    return ""
+
+
+def _contract_outside_boundary_lines(contract: Mapping[str, Any]) -> tuple[str, ...]:
+    outside = sentence_fragment(str(contract.get("outside_boundary", "")))
+    if not outside:
+        return ()
+    rows = [sentence_fragment(part) for part in re.split(r",|\band\b|\bor\b", outside) if sentence_fragment(part)]
+    return _unique_lines(rows or (outside,))
+
+
+def _first_text(value: Any) -> str:
+    if isinstance(value, (list, tuple, set)):
+        for item in value:
+            text = sentence_fragment(str(item))
+            if text:
+                return text
+        return ""
+    return sentence_fragment(str(value))
 
 
 def _responsibility_sentence(value: str, *, default_verb: str) -> str:
@@ -544,6 +636,8 @@ def _runway_lines(
     wave_status: str,
     release_selector: str,
     first_slice: str,
+    label: str = "",
+    local_proof: str = "",
 ) -> str:
     lines = []
     if path:
@@ -552,6 +646,11 @@ def _runway_lines(
         lines.append("Choose the source boundary in the first technical plan before implementation starts.")
     if first_workstream and first_workstream_title:
         lines.append(f"Use `{first_workstream}` ({first_workstream_title}) as the implementation-plan anchor.")
+        if local_proof and not _workstream_title_matches_component(first_workstream_title, label):
+            lines.append(
+                "This is a broad project workstream; the component still needs its narrower local proof: "
+                f"{_brief_sentence(local_proof, limit=220)}."
+            )
     elif first_workstream:
         lines.append(f"Use `{first_workstream}` as the implementation-plan anchor.")
     else:
@@ -565,6 +664,34 @@ def _runway_lines(
         lines.append(f"First coding slice: {_brief_sentence(first_slice, limit=240)}.")
     lines.append("Promote this component from candidate only after source-backed proof refreshes the component record and project status.")
     return _bullet_lines(lines)
+
+
+def _workstream_title_matches_component(title: str, label: str) -> bool:
+    title_terms = _meaningful_terms(title)
+    label_terms = _meaningful_terms(label)
+    return bool(title_terms & label_terms)
+
+
+def _meaningful_terms(value: str) -> set[str]:
+    structural = {
+        "anchor",
+        "boundary",
+        "component",
+        "define",
+        "first",
+        "implementation",
+        "plan",
+        "project",
+        "service",
+        "surface",
+        "view",
+        "workstream",
+    }
+    return {
+        word
+        for word in re.findall(r"[a-z0-9][a-z0-9_-]{3,}", sentence_fragment(value).casefold())
+        if word not in structural
+    }
 
 
 def _brief_sentence(value: str, *, limit: int = 220) -> str:

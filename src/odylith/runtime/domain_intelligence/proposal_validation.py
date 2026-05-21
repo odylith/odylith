@@ -7,6 +7,7 @@ from collections.abc import Mapping
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_project_brief import project_brief_issues
+from odylith.runtime.domain_intelligence.greenfield_component_contract import component_contract_issues
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import project_intelligence_issues
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import domain_intelligence_issues
@@ -117,6 +118,7 @@ def collect_host_reasoned_proposal_issues(proposal: Mapping[str, Any]) -> list[s
     if isinstance(components, list):
         for index, row in enumerate(components, start=1):
             capture(lambda row=row, index=index: _validate_component_row(row, index))
+        issues.extend(component_contract_issues(proposal))
     if isinstance(diagrams, list):
         capture(lambda: _validate_diagrams(diagrams))
     issues.extend(project_intelligence_binding_issues(proposal))

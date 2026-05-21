@@ -61,8 +61,6 @@ def _inferred_project_type(source: str) -> str:
         if any(token in source for token in ("govern", "admiss", "control", "tribunal", "execution")):
             return "coding-agent governance"
         return "coding-agent tooling"
-    if any(token in source for token in ("patient", "clinical", "care", "discharge")):
-        return "care delivery workflow"
     if any(token in source for token in ("funding", "capital", "lending", "repayment", "treasury")):
         return "capital product"
     if any(token in source for token in ("experiment", "hypothesis", "assay", "perturbation", "reproducib")):

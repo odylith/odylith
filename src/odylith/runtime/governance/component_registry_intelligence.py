@@ -81,6 +81,9 @@ _PRODUCT_LAYER_NORMALIZATION_VERSION = "consumer-distro-suffix-v1"
 _RADAR_IDEA_CONTRACT_VERSION = f"v0.1.11:{backlog_contract.IDEA_SPEC_CACHE_VERSION}"
 _COMPONENT_INDEX_CACHE_VERSION = "v2"
 _COMPONENT_REPORT_CACHE_VERSION = "v5"
+_MIGRATION_OBSERVER_MARKER_RE = re.compile(
+    r"\bmigration-observer:[A-Za-z0-9_.-]+:[A-Za-z0-9_.-]+(?::[A-Fa-f0-9]{12})?\b"
+)
 _SKILL_TRIGGER_HEADING_RE = re.compile(r"^###\s+(.+?)\s*$", re.I)
 _SKILL_TRIGGER_ITEM_RE = re.compile(r"^\s*-\s*`([^`]+)`\s*$")
 _SKILL_TRIGGER_PHRASE_RE = re.compile(r'^\s*-\s*"([^"]+)"\s*$')
@@ -2100,11 +2103,27 @@ def is_meaningful_workspace_artifact(path: str, *, repo_root: Path | None = None
     if workstream_inference.is_generated_or_global_path(token):
         return False
     root = Path(str(repo_root)).resolve() if repo_root is not None else None
+    if root is not None and _is_migration_observer_assessment_record(repo_root=root, path=token):
+        return False
     if root is not None and is_component_forensics_path(token, repo_root=root):
         return False
     if token.startswith("odylith/radar/source/ui/"):
         return False
     return True
+
+
+def _is_migration_observer_assessment_record(*, repo_root: Path, path: str) -> bool:
+    token = str(path or "").strip()
+    if not token.startswith(f"{DEFAULT_IDEAS_ROOT}/") or not token.endswith(".md"):
+        return False
+    candidate = (repo_root.resolve() / token).resolve()
+    try:
+        text = candidate.read_text(encoding="utf-8")
+    except OSError:
+        return False
+    if "migration-observer:" not in text:
+        return False
+    return bool(_MIGRATION_OBSERVER_MARKER_RE.search(text))
 
 
 def is_requirements_trace_event(event: MappedEvent) -> bool:

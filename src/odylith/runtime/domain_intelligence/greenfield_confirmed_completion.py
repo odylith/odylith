@@ -8,6 +8,16 @@ from typing import Any
 
 from odylith.runtime.common import display_text
 from odylith.runtime.domain_intelligence import greenfield_programs
+from odylith.runtime.domain_intelligence.greenfield_component_contract import (
+    boundary_from_contract,
+    component_contract_issues,
+    dependencies_from_contract,
+    ensure_component_contract,
+    interfaces_from_contract,
+    responsibility_from_contract,
+    risks_from_contract,
+    validation_from_contract,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
@@ -185,21 +195,43 @@ def _complete_components(proposal: dict[str, Any]) -> bool:
         if not isinstance(row, dict):
             continue
         label = _component_label(row, index)
-        if not _clean(row.get("responsibility")):
-            row["responsibility"] = (
-                f"Owns the {label.lower()} responsibility for the accepted first path and records the evidence needed to trust it."
-            )
+        previous_label = _component_label(rows[index - 2], index - 1) if index > 1 and isinstance(rows[index - 2], Mapping) else ""
+        next_label = _component_label(rows[index], index + 1) if index < len(rows) and isinstance(rows[index], Mapping) else ""
+        contract = ensure_component_contract(
+            row,
+            proposal=proposal,
+            previous_label=previous_label,
+            next_label=next_label,
+        )
+        if row.get("component_contract") != contract:
+            row["component_contract"] = contract
             changed = True
-        if not _clean(row.get("boundary")):
-            row["boundary"] = (
-                f"{label} owns its assigned state, command, evidence, and handoff boundary. Adjacent product decisions, "
-                "external-provider truth, and release approval stay outside unless explicitly assigned."
-            )
+        if _component_field_is_weak(row.get("responsibility")):
+            row["responsibility"] = responsibility_from_contract(label, contract)
             changed = True
-        changed |= _ensure_list(row, "interfaces", _component_interfaces(row, label))
-        changed |= _ensure_list(row, "dependencies", _component_dependencies(row, label, proposal))
-        changed |= _ensure_list(row, "validation", _component_validation(row, label, proposal))
-        changed |= _ensure_list(row, "risks", _component_risks(row, label, proposal))
+        if _component_field_is_weak(row.get("boundary")):
+            row["boundary"] = boundary_from_contract(label, contract)
+            changed = True
+        if _component_sequence_is_weak(row.get("interfaces")):
+            row["interfaces"] = interfaces_from_contract(contract)
+            changed = True
+        else:
+            changed |= _ensure_list(row, "interfaces", _component_interfaces(row, label, contract))
+        if _component_sequence_is_weak(row.get("dependencies")):
+            row["dependencies"] = dependencies_from_contract(contract)
+            changed = True
+        else:
+            changed |= _ensure_list(row, "dependencies", _component_dependencies(row, label, proposal, contract))
+        if _component_sequence_is_weak(row.get("validation")):
+            row["validation"] = validation_from_contract(contract)
+            changed = True
+        else:
+            changed |= _ensure_list(row, "validation", _component_validation(row, label, proposal, contract))
+        if _component_sequence_is_weak(row.get("risks")):
+            row["risks"] = risks_from_contract(label, contract)
+            changed = True
+        else:
+            changed |= _ensure_list(row, "risks", _component_risks(row, label, proposal, contract))
         changed |= _ensure_text(row, "status", "planned")
         changed |= _ensure_text(row, "qualification", "candidate")
         changed |= _ensure_text(row, "evidence_tier", "user_intent")
@@ -241,6 +273,7 @@ def _complete_diagrams(proposal: dict[str, Any]) -> bool:
 def _preflight_issues(proposal: Mapping[str, Any], *, release_selector: str) -> list[str]:
     issues: list[str] = []
     issues.extend(collect_host_reasoned_proposal_issues(proposal))
+    issues.extend(component_contract_issues(proposal))
     selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
     tribunal = run_greenfield_tribunal(proposal, release_selector=selector)
     issues.extend(tribunal.issues)
@@ -302,49 +335,42 @@ def _artifact_issues(proposal: Mapping[str, Any]) -> list[str]:
     return issues
 
 
-def _component_interfaces(row: Mapping[str, Any], label: str) -> list[str]:
-    responsibility = _fragment(row.get("responsibility"), fallback=f"{label} responsibility")
-    return [
-        f"Command, query, event, or visible-state contract for {responsibility}; includes accepted input, produced state, failure state, and ownership handoff."
-    ]
+def _component_interfaces(row: Mapping[str, Any], label: str, contract: Mapping[str, Any]) -> list[str]:
+    return interfaces_from_contract(contract)
 
 
-def _component_dependencies(row: Mapping[str, Any], label: str, proposal: Mapping[str, Any]) -> list[str]:
-    responsibility = _fragment(row.get("responsibility"), fallback=f"{label} responsibility")
-    return [
-        f"The first implementation plan must name the data, event, source, or prior component this component uses for {responsibility}.",
-        f"Depends on the accepted state object and proof boundary staying aligned: {_state_object(proposal)}.",
-    ]
+def _component_dependencies(
+    row: Mapping[str, Any],
+    label: str,
+    proposal: Mapping[str, Any],
+    contract: Mapping[str, Any],
+) -> list[str]:
+    return dependencies_from_contract(contract)
 
 
-def _component_validation(row: Mapping[str, Any], label: str, proposal: Mapping[str, Any]) -> list[str]:
-    responsibility = _fragment(row.get("responsibility"), fallback=f"{label} responsibility")
-    return [
-        f"Normal path, blocked path, invalid input rejection, degraded state, and recovery evidence are proven for {responsibility}.",
-        f"Release proof checks this component against the accepted boundary: {_proof_boundary(proposal)}",
-    ]
+def _component_validation(
+    row: Mapping[str, Any],
+    label: str,
+    proposal: Mapping[str, Any],
+    contract: Mapping[str, Any],
+) -> list[str]:
+    return validation_from_contract(contract)
 
 
-def _component_risks(row: Mapping[str, Any], label: str, proposal: Mapping[str, Any]) -> list[str]:
-    responsibility = _fragment(row.get("responsibility"), fallback=f"{label} responsibility")
+def _component_risks(
+    row: Mapping[str, Any],
+    label: str,
+    proposal: Mapping[str, Any],
+    contract: Mapping[str, Any],
+) -> list[str]:
+    values = risks_from_contract(label, contract)
     proof = _proof_boundary(proposal)
     first_path = _first_path(proposal)
     state_object = _state_object(proposal)
     context = _best_context_line(row=row, proposal=proposal)
-    values = [
-        (
-            f"Domain risk: {label} can make {_project_title(proposal)} unsafe or misleading if its assigned behavior "
-            f"is accepted without proof that matches the boundary. Assigned behavior: {responsibility}. Proof boundary: {proof}"
-        ),
-        (
-            f"Operational mitigation: {label} must expose normal, blocked, degraded, and recovery evidence before "
-            f"release readiness can trust {state_object}: {first_path}"
-        ),
-        (
-            f"Security and policy posture: {label} keeps authorization, ownership, access control, private data handling, "
-            "privacy, retention, audit, accessibility, safety, abuse prevention, and reviewer evidence explicit."
-        ),
-    ]
+    values.append(
+        f"Operational mitigation: {label} must expose local blockers and recovery evidence before release readiness can trust {state_object}: {first_path}"
+    )
     if context:
         values.append(f"Accepted-intent constraint: {label} must preserve this risk or policy condition: {context}")
     return list(unique_text(values))
@@ -409,6 +435,36 @@ def _keywords(values: Sequence[Any]) -> set[str]:
             if len(word) >= 4:
                 words.add(word)
     return words
+
+
+def _component_field_is_weak(value: Any) -> bool:
+    text = _clean(value).casefold()
+    if not text:
+        return True
+    generic_markers = (
+        "responsibility and keeps it tied",
+        "accepted first path",
+        "assigned state, command, evidence",
+        "records review evidence",
+        "this component boundary",
+        "first implementation plan must name",
+    )
+    return any(marker in text for marker in generic_markers) or len(text.split()) < 6
+
+
+def _component_sequence_is_weak(value: Any) -> bool:
+    rows = list(text_values(value))
+    if not rows:
+        return True
+    text = " ".join(_clean(row).casefold() for row in rows)
+    generic_markers = (
+        "command, query, event, or visible-state contract",
+        "normal path, blocked path",
+        "accepted input, produced state",
+        "first implementation plan must name",
+        "release proof checks this component",
+    )
+    return any(marker in text for marker in generic_markers)
 
 
 def _ensure_list(row: dict[str, Any], key: str, defaults: Sequence[str]) -> bool:

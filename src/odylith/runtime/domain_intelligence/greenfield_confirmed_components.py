@@ -13,6 +13,15 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import (
     confirmed_system_description,
     confirmed_system_name,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_contract import (
+    boundary_from_contract,
+    dependencies_from_contract,
+    ensure_component_contract,
+    interfaces_from_contract,
+    responsibility_from_contract,
+    risks_from_contract,
+    validation_from_contract,
+)
 
 
 _STOPWORDS = {
@@ -81,6 +90,8 @@ def confirmed_components(
     label_slug: str,
     internal_systems: list[str] | None = None,
     first_path: str = "",
+    state_object: str = "",
+    proof_boundary: str = "",
 ) -> list[dict[str, Any]]:
     if not internal_systems:
         raise ValueError(
@@ -91,6 +102,9 @@ def confirmed_components(
         label=label,
         label_slug=label_slug,
         internal_systems=internal_systems,
+        first_path=first_path,
+        state_object=state_object,
+        proof_boundary=proof_boundary,
     )
 
 
@@ -162,12 +176,12 @@ def confirmed_project_brief(
             },
             {
                 "section": "Actors and systems",
-                "must_capture": f"Human actors: {actor_summary}. External systems: {external_summary}.",
+                "must_capture": f"Actors include {actor_summary}. External systems include {external_summary}.",
                 "why_it_matters": "Actor and system boundaries keep user value separate from implementation mechanics.",
             },
         ],
         "customization_options": [
-            _brief_option("D1", "First user", f"Confirm the first human actors: {actor_summary}.", "Changes path steps and permission expectations."),
+            _brief_option("D1", "First user", f"Confirm the first people and teams: {actor_summary}.", "Changes path steps and permission expectations."),
             _brief_option("D2", "State object", f"Confirm this as the versioned state object: {state_label}.", "Changes storage ownership and replay proof."),
             _brief_option("D3", "Evidence level", f"Confirm the proof boundary: {proof}", "Changes security posture and release confidence."),
             _brief_option("D4", "External systems", f"Confirm whether release {release} needs {external_summary}.", "Changes adapters, credentials, and failure modes."),
@@ -230,6 +244,9 @@ def _confirmed_system_components(
     label: str,
     label_slug: str,
     internal_systems: list[str],
+    first_path: str = "",
+    state_object: str = "",
+    proof_boundary: str = "",
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     path_slug = _path_slug(label_slug)
@@ -243,22 +260,51 @@ def _confirmed_system_components(
             component_id = component_slug
         kind = _system_kind(name, description)
         responsibility = _responsibility(name=name, description=description)
-        rows.append(
-            {
-                "component_id": _unique_component_id(component_id, rows, index),
-                "label": _component_label(name, kind),
-                "kind": kind,
-                "intended_path": f"src/{path_slug}/{_path_slug(component_slug)}",
-                "responsibility": responsibility,
-                "boundary": _boundary(name=name, description=description, kind=kind),
-                "dependencies": _dependencies(name=name, description=description, prior=rows),
-                "interfaces": _interfaces(name=name, description=description, kind=kind),
-                "validation": _validation(name=name, description=description, kind=kind),
-                "status": "planned",
-                "qualification": "candidate",
-                "evidence_tier": "user_intent",
-            }
+        row: dict[str, Any] = {
+            "component_id": _unique_component_id(component_id, rows, index),
+            "label": _component_label(name, kind),
+            "kind": kind,
+            "intended_path": f"src/{path_slug}/{_path_slug(component_slug)}",
+            "responsibility": responsibility,
+            "boundary": _boundary(name=name, description=description, kind=kind),
+            "dependencies": _dependencies(name=name, description=description, prior=rows),
+            "interfaces": _interfaces(name=name, description=description, kind=kind),
+            "validation": _validation(name=name, description=description, kind=kind),
+            "status": "planned",
+            "qualification": "candidate",
+            "evidence_tier": "user_intent",
+            "source_system_description": description,
+        }
+        rows.append(row)
+    proposal_context = {
+        "intent": {
+            "title": label,
+            "first_path": first_path,
+            "proof_boundary": proof_boundary,
+        },
+        "state_object": state_object,
+    }
+    for index, row in enumerate(rows):
+        previous_label = str(rows[index - 1].get("label", "")) if index else ""
+        next_label = str(rows[index + 1].get("label", "")) if index + 1 < len(rows) else ""
+        contract = ensure_component_contract(
+            row,
+            proposal=proposal_context,
+            previous_label=previous_label,
+            next_label=next_label,
         )
+        row["component_contract"] = contract
+        if _generated_or_weak(row.get("responsibility")):
+            row["responsibility"] = responsibility_from_contract(str(row.get("label", "")), contract)
+        if _generated_or_weak(row.get("boundary")):
+            row["boundary"] = boundary_from_contract(str(row.get("label", "")), contract)
+        if _generated_sequence(row.get("interfaces")):
+            row["interfaces"] = interfaces_from_contract(contract)
+        if _generated_sequence(row.get("dependencies")):
+            row["dependencies"] = dependencies_from_contract(contract)
+        if _generated_sequence(row.get("validation")):
+            row["validation"] = validation_from_contract(contract)
+        row["risks"] = risks_from_contract(str(row.get("label", "")), contract)
     return rows
 
 
@@ -405,6 +451,41 @@ def _validation(*, name: str, description: str, kind: str) -> list[str]:
     return [f"Valid transition, invalid input rejection, and traceable output are proven while this component {_does_clause(action, responsibility)}."]
 
 
+def _generated_or_weak(value: Any) -> bool:
+    text = _plain_text(value).casefold()
+    if not text:
+        return True
+    generic_markers = (
+        "responsibility and keeps it tied",
+        "accepted first path",
+        "assigned state, command, evidence",
+        "records review evidence",
+        "this responsibility:",
+        "first implementation plan must name",
+        "selected by the first implementation plan",
+    )
+    if any(marker in text for marker in generic_markers):
+        return True
+    return len(re.findall(r"[a-z0-9]+", text)) < 6
+
+
+def _generated_sequence(value: Any) -> bool:
+    rows = [str(item).strip() for item in (value if isinstance(value, list) else [value]) if str(item).strip()]
+    if not rows:
+        return True
+    joined = " ".join(_plain_text(row).casefold() for row in rows)
+    generic_markers = (
+        "responsibility and keeps it tied",
+        "assigned state, command, evidence",
+        "first implementation plan must name",
+        "command, query, or event contract",
+        "normal path, blocked path",
+        "accepted input, produced state",
+        "state, behavior, evidence, or access",
+    )
+    return any(marker in joined for marker in generic_markers)
+
+
 def _unique_component_id(component_id: str, existing: list[dict[str, Any]], index: int) -> str:
     used = {str(row.get("component_id", "")) for row in existing}
     candidate = component_id
@@ -535,7 +616,7 @@ def _join_domain_items(items: list[str] | None, *, limit: int = 4) -> str:
     if not values:
         return ""
     selected = values[:limit]
-    suffix = "" if len(values) <= limit else f", plus {len(values) - limit} more"
+    suffix = "" if len(values) <= limit else "; additional accepted items remain in the intent"
     return "; ".join(selected) + suffix
 
 
@@ -545,7 +626,7 @@ def _join_system_names(items: list[str] | None, *, limit: int = 4) -> str:
     if not values:
         return ""
     selected = values[:limit]
-    suffix = "" if len(values) <= limit else f", plus {len(values) - limit} more"
+    suffix = "" if len(values) <= limit else "; additional accepted systems remain in the intent"
     return ", ".join(selected) + suffix
 
 
@@ -559,7 +640,7 @@ def _brief_clause(value: str, *, limit: int = 180) -> str:
         return text
     clipped = text[: max(0, limit)].rsplit(" ", 1)[0].rstrip(" ,;:")
     words = clipped.split()
-    while words and words[-1].casefold().strip(".,;:") in {"and", "or", "to", "with", "for", "from", "of", "the", "a", "an"}:
+    while words and words[-1].casefold().strip(".,;:") in {"and", "or", "to", "with", "for", "from", "of", "the", "a", "an", "required"}:
         words.pop()
     return " ".join(words).rstrip(" ,;:")
 

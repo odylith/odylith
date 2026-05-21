@@ -72,8 +72,6 @@ def state_object(
         return "repository work"
     if "workflow" in source:
         return "workflow state"
-    if "experiment" in source:
-        return "experiment state"
     category = humanize(root_component.get("category"), fallback)
     return category.lower() if category else fallback
 

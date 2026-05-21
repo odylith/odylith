@@ -189,6 +189,7 @@ def register_component(
     validation: Sequence[str] = (),
     risks: Sequence[str] = (),
     implementation_handoff: Mapping[str, Any] | None = None,
+    component_contract: Mapping[str, Any] | None = None,
     dry_run: bool = False,
     refresh: bool = True,
     update_existing: bool = False,
@@ -253,6 +254,7 @@ def register_component(
         validation=validation,
         risks=risks,
         implementation_handoff=implementation_handoff,
+        component_contract=component_contract,
     )
     tribunal = artifact_tribunal.run_governed_artifact_tribunal(
         artifact_kind="component",
@@ -268,6 +270,7 @@ def register_component(
             "validation": validation,
             "risks": risks,
             "implementation_handoff": dict(implementation_handoff or {}),
+            "component_contract": dict(component_contract or {}),
         },
     )
     artifact_tribunal.raise_for_failed_artifact_tribunal(tribunal)

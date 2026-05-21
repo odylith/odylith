@@ -9,7 +9,15 @@ from typing import Any
 from odylith.runtime.project_intelligence.focus import backlog_rows_by_id
 from odylith.runtime.project_intelligence.narration import evidence_boundary_phrase
 from odylith.runtime.project_intelligence.summary import action_sentence, concise_text
-from odylith.runtime.project_intelligence.utils import dict_value, display_text, list_value, sentence, short, strings
+from odylith.runtime.project_intelligence.utils import (
+    dict_value,
+    display_text,
+    list_value,
+    sanitize_actor_body,
+    sentence,
+    short,
+    strings,
+)
 
 
 def build_greenfield_product_story(
@@ -477,7 +485,7 @@ def _greenfield_paragraphs(
     product_line = _greenfield_product_line(objective=objective, intro=intro, outcome=outcome)
     path_story = _first_path_concrete_story(first_path)
     actor_intro = _actor_journey_intro(actors)
-    if actor_intro and path_story:
+    if actor_intro and path_story and not _story_contains(actor_intro, path_story):
         paragraphs.append(f"{actor_intro} Release {release_label} keeps the work focused: {_capitalize_first(path_story).rstrip('.')}.")
     elif product_line and path_story and not _story_contains(product_line, path_story):
         paragraphs.append(
@@ -627,7 +635,7 @@ def _contract_user_problem(*, product_line: str, first_path: str, outcome: str) 
 def _actor_journey_intro(actors: Sequence[tuple[str, str, str]]) -> str:
     for _role, title, body in actors:
         actor = display_text(title).rstrip(".")
-        detail = display_text(body).rstrip(".")
+        detail = _actor_story_detail(body).rstrip(".")
         if not actor:
             continue
         subject = actor if re.match(r"^(?:a|an|the)\b", actor, flags=re.IGNORECASE) else f"The {_lower_first(actor).rstrip('.')}"
@@ -691,7 +699,7 @@ def _contract_component_list(values: Sequence[str], *, limit: int = 3) -> str:
     body = _join(selected)
     overflow = len(rows) - len(selected)
     if overflow > 0:
-        body = f"{body}, plus {overflow} more"
+        body = f"{body}, with additional accepted capabilities tracked separately"
     return body
 
 
@@ -981,10 +989,14 @@ def _lower_first(value: str) -> str:
 
 def _story_actor_items(actors: Sequence[tuple[str, str, str]]) -> list[dict[str, str]]:
     return [
-        {"role": display_text(role), "title": display_text(title), "body": display_text(body)}
+        {"role": display_text(role), "title": display_text(title), "body": _actor_story_detail(body)}
         for role, title, body in actors[:4]
         if display_text(title)
     ]
+
+
+def _actor_story_detail(value: object) -> str:
+    return sanitize_actor_body(value)
 
 
 def _first_path_subject(value: str) -> str:

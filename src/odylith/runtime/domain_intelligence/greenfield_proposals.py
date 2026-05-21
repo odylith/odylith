@@ -29,6 +29,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import load_confirmed_intent_file
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
+from odylith.runtime.domain_intelligence.greenfield_component_contract import rendered_component_spec_quality_issues
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_traceability
@@ -799,15 +800,15 @@ def apply_greenfield_proposal(
     release_selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
     tribunal = run_greenfield_tribunal(proposal, release_selector=release_selector)
     raise_for_failed_greenfield_tribunal(tribunal)
-    backlog_args = _backlog_apply_args(proposal, release_selector=release_selector)
-    backlog_result = backlog_authoring.create_queued_backlog_items(
-        repo_root=root,
-        backlog_index_path=root / "odylith/radar/source/INDEX.md",
-        ideas_root=root / "odylith/radar/source/ideas",
-        titles=[str(row.get("title", "")).strip() for row in backlog_rows if str(row.get("title", "")).strip()],
-        args=backlog_args,
-    )
     with GreenfieldApplyTransaction(root) as transaction:
+        backlog_args = _backlog_apply_args(proposal, release_selector=release_selector)
+        backlog_result = backlog_authoring.create_queued_backlog_items(
+            repo_root=root,
+            backlog_index_path=root / "odylith/radar/source/INDEX.md",
+            ideas_root=root / "odylith/radar/source/ideas",
+            titles=[str(row.get("title", "")).strip() for row in backlog_rows if str(row.get("title", "")).strip()],
+            args=backlog_args,
+        )
         result = _write_greenfield_proposal(
             root=root,
             proposal=proposal,
@@ -1124,11 +1125,13 @@ def _write_greenfield_proposal(
             validation=row_text_tuple(row, "validation", "test_strategy"),
             risks=_component_risk_lines(row, proposal),
             implementation_handoff=handoff,
+            component_contract=row.get("component_contract") if isinstance(row.get("component_contract"), Mapping) else None,
             dry_run=False,
             update_existing=True,
             refresh=False,
         )
         components_created.append(created.as_dict())
+    _raise_for_component_spec_quality(root=root, proposal=proposal, components=components_created)
 
     release_id = "none"
     if isinstance(release_targeting, Mapping):
@@ -1167,6 +1170,30 @@ def _write_greenfield_proposal(
         "release_bootstrap": release_bootstrap or {"created": False, "release": {}},
         "release_target": release_targeting or {"selector": release_selector, "release_id": "none", "events": []},
     }
+
+
+def _raise_for_component_spec_quality(
+    *,
+    root: Path,
+    proposal: Mapping[str, Any],
+    components: Sequence[Mapping[str, Any]],
+) -> None:
+    specs: dict[str, str] = {}
+    for component in components:
+        spec_path = Path(str(component.get("spec_path", "")))
+        if not spec_path.is_absolute():
+            spec_path = root / spec_path
+        label = str(component.get("label", "") or component.get("component_id", "") or spec_path.parent.name).strip()
+        if spec_path.is_file() and label:
+            specs[label] = spec_path.read_text(encoding="utf-8")
+    if not specs:
+        return
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    title = str(intent.get("title", "")).strip()
+    issues = rendered_component_spec_quality_issues(specs, project_title=title)
+    if issues:
+        detail = "\n".join(f"- {issue}" for issue in issues)
+        raise ValueError(f"greenfield component spec quality gate failed with {len(issues)} issue(s):\n{detail}")
 
 
 def _remove_stale_workstream_artifacts(*, root: Path, stale_ids: object) -> None:

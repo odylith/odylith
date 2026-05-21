@@ -130,7 +130,6 @@ def build_component_handoffs(
             or focused_child_ids
             or release_child_ids
             or child_ids
-            or [item for item in first_release_ids if item != umbrella_id]
             or [umbrella_id]
         )[0]
         proposal_row = _proposal_row_for_created_id(proposal=proposal, created=created, created_id=start_id)

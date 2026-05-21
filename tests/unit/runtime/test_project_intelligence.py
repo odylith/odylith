@@ -990,6 +990,69 @@ def test_greenfield_project_participants_collapse_role_description_duplicates(tm
     assert not any(": the musician" in title.casefold() for title in titles)
 
 
+def test_greenfield_project_copy_does_not_splice_first_path_sentences_into_actor_cards(tmp_path: Path) -> None:
+    first_path = (
+        "A field team submits a request that needs review. "
+        "The workspace suggests an accountable owner and records the final decision."
+    )
+    proposal = {
+        "mode": "greenfield_apply_ready",
+        "intent": {"title": "Request Handoff App"},
+        "observed_source": {"source_posture": "docs_only"},
+        "project_brief": {
+            "purpose": "Field teams need one place to hand off a request, understand ownership, and see the decision.",
+            "operator_value": "The requester and reviewer can see the same request state without reconstructing context from chat.",
+        },
+        "project_intelligence": {
+            "intent": [
+                "Project objective: Field teams need one place to hand off a request, understand ownership, and see the decision.",
+                "User or stakeholder outcome: The requester and reviewer can see who owns the next action and what evidence supports the decision.",
+                "Success condition: Proof must show that one request moves through review with visible state, evidence, and outcome.",
+            ],
+            "owners": [
+                (
+                    "Request coordinator: uses Request Handoff App to complete "
+                    "A field team submits a request that needs review. The workspace suggests an accountable owner."
+                ),
+                "Review lead: verifies that The proof is strong enough before broader scope is accepted.",
+            ],
+        },
+        "validation_strategy": [f"first_slice_proof: {first_path}"],
+        "release_plan": {"label": "0.0.1"},
+        "backlog": [
+            {
+                "title": "Establish Request Handoff Program",
+                "customer": (
+                    "Request coordinator: uses Request Handoff App to complete "
+                    "A field team submits a request that needs review. The workspace suggests an accountable owner."
+                ),
+                "recommended_first_slice": first_path,
+            }
+        ],
+        "components": [
+            {"label": "Request Intake Surface"},
+            {"label": "Owner Assignment Service"},
+            {"label": "Decision Review Workspace"},
+            {"label": "Evidence Attachment Store"},
+            {"label": "Notification Freshness Worker"},
+        ],
+        "diagrams": [],
+    }
+
+    payload = builder.build_project_intelligence_payload(repo_root=tmp_path, shell_payload={"greenfield_proposal": proposal})
+    rendered = json.dumps(payload, sort_keys=True)
+    actor_bodies = [row[2] for row in payload["actors"]]
+    release_contract = json.dumps(payload["product_story"]["release_contract"], sort_keys=True)
+
+    assert any("to complete the accepted first path" in body for body in actor_bodies)
+    assert "to complete A field team" not in rendered
+    assert "when the path is." not in rendered
+    assert "verifies that The" not in rendered
+    assert "plus 2 more" not in release_contract
+    assert "plus 1 more" not in rendered
+    assert "with additional accepted capabilities tracked separately" in release_contract
+
+
 def test_project_intelligence_presenter_renders_fallback_without_payload() -> None:
     html = presenter.render_project_html({})
 

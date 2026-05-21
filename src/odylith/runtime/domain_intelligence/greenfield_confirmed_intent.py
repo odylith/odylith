@@ -807,7 +807,10 @@ def _concise_system_description(name: str, *, context_text: str) -> str:
     subject = _clean(name).casefold()
     clause = _best_context_clause(name, context_text)
     if clause:
-        return f"owns the {subject} responsibility and keeps it tied to this product behavior: {_brief_clause(clause, limit=180)}"
+        return (
+            f"handles {subject} inputs, state changes, outputs, evidence, and handoff for this product behavior: "
+            f"{_brief_clause(clause, limit=180)}"
+        )
     return f"defines the input, state change, output, and evidence needed to trust the {subject} responsibility"
 
 

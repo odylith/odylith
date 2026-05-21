@@ -57,8 +57,10 @@ _STOPWORDS = {
     "research",
     "runner",
     "service",
+    "surface",
     "store",
     "system",
+    "view",
 }
 
 
@@ -215,8 +217,10 @@ def _component_workstream_ids(
     scored: list[tuple[int, str]] = []
     for workstream in workstreams[1:]:
         tokens = _semantic_tokens(_workstream_haystack(workstream.row, fallback_title=workstream.title))
-        score = (3 * len(primary & tokens)) + len(detail & tokens)
-        if score >= 2:
+        primary_overlap = len(primary & tokens)
+        detail_overlap = len(detail & tokens)
+        score = (3 * primary_overlap) + detail_overlap
+        if primary_overlap >= 1 or detail_overlap >= 3:
             scored.append((score, workstream.idea_id))
     return tuple(_unique([*(item.idea_id for item in parent), *(idea_id for _score, idea_id in sorted(scored, reverse=True))]))
 

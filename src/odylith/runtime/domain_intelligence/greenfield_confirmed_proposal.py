@@ -86,6 +86,8 @@ def build_confirmed_greenfield_proposal(
         label_slug=label_slug,
         internal_systems=internal_systems,
         first_path=first_path,
+        state_object=state_object,
+        proof_boundary=proof_boundary,
     )
     workflow_title, boundary_title, proof_title = _workstream_titles(
         label=label,
@@ -600,7 +602,7 @@ def _join_system_labels(items: list[str] | None, *, limit: int = 4) -> str:
     if not values:
         return ""
     selected = values[:limit]
-    suffix = "" if len(values) <= limit else f", plus {len(values) - limit} more"
+    suffix = "" if len(values) <= limit else "; additional accepted systems remain in the intent"
     return ", ".join(selected) + suffix
 
 
@@ -625,7 +627,7 @@ def _join_items(items: list[str] | None, *, limit: int = 4) -> str:
     if not values:
         return ""
     selected = values[:limit]
-    suffix = "" if len(values) <= limit else f", plus {len(values) - limit} more"
+    suffix = "" if len(values) <= limit else "; additional accepted items remain in the intent"
     return "; ".join(selected) + suffix
 
 
@@ -639,7 +641,7 @@ def _join_brief_items(items: list[str] | None, *, limit: int = 3, item_limit: in
     if not values:
         return ""
     selected = values[:limit]
-    suffix = "" if len(values) <= limit else f", plus {len(values) - limit} more"
+    suffix = "" if len(values) <= limit else "; additional accepted items remain in the intent"
     return ", ".join(selected) + suffix
 
 
@@ -1012,7 +1014,7 @@ def _domain_intelligence(
             f"Out of scope for now: {non_goal_text}.",
         ],
         "ontology": [
-            f"Human actors: {_join_items(actors)}.",
+            f"Actors include {_join_items(actors)}.",
             f"State object: {state_object}.",
             f"Evidence record: {evidence_record}.",
             f"Proof boundary: {proof_boundary}.",

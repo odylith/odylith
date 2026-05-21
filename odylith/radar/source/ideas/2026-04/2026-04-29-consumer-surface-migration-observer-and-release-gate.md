@@ -2118,3 +2118,65 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   Registry, and the top-level shell mirrors settled. Existing consumer-owned
   truth remains unchanged; upgraded installs receive only regenerated managed
   read-only surfaces and the stronger future confirmed-create generator.
+- The component-specific Registry contract and prose-quality gate is covered by
+  `migration-observer:0.1.15:operator-cli-contracts:5eacf727cef0`. The pass
+  keeps the `odylith greenfield create --confirm` operator contract stable while
+  tightening the internal confirmed-create pipeline: component-local ownership
+  contracts are derived before durable writes, repetitive or malformed governed
+  prose fails closed, and late rendered-spec quality failures roll back the
+  create transaction instead of leaving partial records. Existing consumer-owned
+  governance truth remains readable and does not need a bespoke migration;
+  upgraded installs receive the stronger future generator behavior through the
+  normal managed runtime path.
+- The post-sync browser-surface settlement for the component-specific Registry
+  contract gate is covered by
+  `migration-observer:0.1.15:browser-surfaces:e27da18caf1e`. The pass binds the
+  regenerated Radar and Registry evidence surfaces after the migration
+  assessment, component-spec forensics, and browser-test wait hardening settled.
+  Existing consumer-owned governance truth remains unchanged; upgraded installs
+  receive regenerated read-only browser surfaces through the normal dashboard or
+  runtime refresh path.
+- The final Atlas and generated-surface settlement for the same contract gate
+  is covered by `migration-observer:0.1.15:browser-surfaces:5dc4c5cf73b7` and
+  `migration-observer:0.1.15:install-managed-assets:b926865c0556`. The pass
+  binds the refreshed Atlas catalog fingerprints, regenerated Radar browser
+  surface, and install-managed mirrors after all source-truth and forensics
+  updates settled. Existing consumer-owned governance truth remains unchanged;
+  upgraded installs receive only regenerated read-only surfaces and managed
+  bundle assets through the normal dashboard, runtime, install, upgrade, or
+  doctor refresh paths.
+- The terminal component-specific Registry contract settlement is covered by
+  `migration-observer:0.1.15:browser-surfaces:6cd3cf02caff` and
+  `migration-observer:0.1.15:install-managed-assets:2d8d34d5525e`. The pass binds
+  the final regenerated browser surfaces and bundled managed HTML mirrors after
+  the component contract generator, prose-quality gate, rendered-spec overlap
+  checks, and migration-observer source assessment settled. Existing
+  consumer-owned governance truth remains unchanged; upgraded installs receive
+  only the stricter future confirmed-create behavior plus regenerated read-only
+  browser and bundle assets through normal runtime, dashboard, install, upgrade,
+  doctor, or managed asset refresh.
+- The terminal install-managed mirror fingerprint for that settlement is covered
+  by `migration-observer:0.1.15:install-managed-assets:5d8afa42d2f4`. The pass
+  binds the final bundled managed HTML mirrors emitted after the governed force
+  sync. Existing consumer-owned records remain unchanged; upgraded installs
+  receive only regenerated managed assets and the stronger future confirmed-create
+  generator.
+- The migration-observer freshness-loop repair is covered by
+  `migration-observer:0.1.15:operator-cli-contracts:0d60e05f3d43`,
+  `migration-observer:0.1.15:browser-surfaces:bbade698e694`, and
+  `migration-observer:0.1.15:install-managed-assets:f94b89bb86e4`. The pass keeps
+  migration-observer assessment records out of synthetic component activity so
+  release-marker bookkeeping does not churn delivery-intelligence timestamps or
+  force another generated-surface loop. Existing consumer-owned records remain
+  unchanged; upgraded installs receive only the corrected runtime evidence rule
+  and regenerated read-only surfaces.
+- The neutral greenfield grammar and Project-tab surface settlement is covered
+  by `migration-observer:0.1.15:browser-surfaces:84b9db79d2d9` and
+  `migration-observer:0.1.15:install-managed-assets:2330c13aa47e`. The pass binds
+  the regenerated browser surfaces and install-managed bundle assets after
+  actor-body prose cleanup, first-path splice prevention, summary-overflow
+  wording, and shared Project utility extraction settled. Existing
+  consumer-owned governance truth remains unchanged; upgraded installs receive
+  only the stricter future generator behavior, regenerated read-only browser
+  surfaces, and refreshed managed bundle assets through normal runtime,
+  dashboard, install, upgrade, doctor, or managed asset refresh.

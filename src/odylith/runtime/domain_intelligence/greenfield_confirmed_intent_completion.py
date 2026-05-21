@@ -62,7 +62,6 @@ _ROLE_WORDS = {
     "renter",
     "resident",
     "seller",
-    "specialist",
     "staff",
     "submitter",
     "supervisor",
@@ -159,8 +158,9 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
             f"Turn the confirmed {title.lower()} intent into a narrow first release that proves one complete path before adding broader automation, integrations, or scale."
         )
     if not _clean(intent.get("product_view")):
+        state_phrase = _lower_first(state) if state else "the accepted state object"
         intent["product_view"] = _sentence(
-            f"{title} is useful when a reviewer can inspect {state}, the first-path result, risk posture, and evidence from {_join(systems[:3]) or 'the product-owned systems'} together."
+            f"{title} is useful when a reviewer can inspect {state_phrase}, the first-path result, risk posture, and evidence from {_join(systems[:3]) or 'the product-owned systems'} together."
         )
     if len(_strings(intent.get("success_metrics"))) < 3:
         intent["success_metrics"] = list(
@@ -219,13 +219,13 @@ def _completed_actor_rows(intent: Mapping[str, Any], *, title: str) -> list[str]
 
 def _actor_description(*, label: str, index: int, title: str, first_path: str, state: str, proof: str) -> str:
     if index == 0:
-        body = f"uses {title} to complete {first_path}, records or reviews {state}, and decides what should happen next before the outcome is trusted"
+        body = f"uses {title} to complete the accepted first path, keep the result reviewable, and decide what should happen next"
     elif index == 1:
-        body = f"benefits from or reviews the shared {title.lower()} state, checks evidence quality, and can challenge the outcome when the path is incomplete"
+        body = "reviews shared product state, checks evidence quality, and challenges incomplete or disputed outcomes"
     elif index == 2:
         body = f"has limited or supporting access to the relevant task, evidence, or follow-up and must not see or change unrelated private state"
     elif index == 3:
-        body = f"owns release or operational readiness and verifies that {proof} is strong enough before broader scope is accepted"
+        body = "owns release or operational readiness and verifies that release proof is strong enough before broader scope is accepted"
     else:
         body = "supports recovery, import, escalation, or troubleshooting with narrow audit-friendly access and clear privacy limits"
     return f"{label}: {body}."
@@ -451,7 +451,10 @@ def _short(value: str, *, fallback: str = "", limit: int = 220) -> str:
     if len(text) <= limit:
         return text.rstrip(".")
     clipped = text[:limit].rsplit(" ", 1)[0].rstrip(" ,;:")
-    return clipped.rstrip(".")
+    words = clipped.split()
+    while words and words[-1].casefold().strip(".,;:") in {"and", "or", "to", "with", "for", "from", "of", "the", "a", "an", "required"}:
+        words.pop()
+    return " ".join(words).rstrip(".")
 
 
 def _sentence(value: str) -> str:
@@ -459,6 +462,13 @@ def _sentence(value: str) -> str:
     if text and text[-1] not in ".!?":
         text += "."
     return text
+
+
+def _lower_first(value: str) -> str:
+    text = _clean(value)
+    if not text:
+        return ""
+    return text[:1].lower() + text[1:]
 
 
 def _title_case(value: str) -> str:

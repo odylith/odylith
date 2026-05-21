@@ -576,6 +576,8 @@ def _actor_label(values: Sequence[str], *, fallback: str) -> str:
 def _pick_state_objects(glossary: Sequence[str], state: Sequence[str]) -> list[str]:
     rows = []
     for value in [*glossary, *state]:
+        if not _looks_like_state_object(value):
+            continue
         lowered = value.casefold()
         if any(
             token in lowered
@@ -589,7 +591,30 @@ def _pick_state_objects(glossary: Sequence[str], state: Sequence[str]) -> list[s
             )
         ):
             rows.append(value)
-    return unique_text(rows)[:5] or unique_text([*glossary, *state])[:3]
+    fallback = [value for value in [*glossary, *state] if _looks_like_state_object(value)]
+    return unique_text(rows)[:5] or unique_text(fallback)[:3]
+
+
+def _looks_like_state_object(value: str) -> bool:
+    text = clean_text(value)
+    lowered = text.casefold()
+    if not text:
+        return False
+    actor_markers = (
+        "human actor",
+        "actors include",
+        "actor:",
+        "first-release actor",
+        "operator",
+        "reviewer",
+        "owner",
+        "maintainer",
+        "lead",
+        "user:",
+    )
+    if any(marker in lowered for marker in actor_markers):
+        return False
+    return True
 
 
 def _pick_actor_rows(values: Sequence[str]) -> list[str]:

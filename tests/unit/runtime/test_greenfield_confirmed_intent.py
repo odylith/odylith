@@ -6,6 +6,10 @@ from pathlib import Path
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence.greenfield_component_contract import (
+    CONTRACT_KEYS,
+    rendered_component_spec_quality_issues,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import normalize_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
@@ -198,6 +202,116 @@ Release 0.0.1 succeeds when an engineer can import one run, inspect the equipmen
     assert not greenfield_quality_issues(proposal)
 
 
+def test_confirmed_create_generates_component_specific_document_and_status_specs(tmp_path: Path, monkeypatch) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+
+    intent = parse_confirmed_intent_text(
+        """Request Handoff Workspace — Product Intent Confirmation
+
+Product story
+A source team needs one place to create a request packet, attach required context, send it to a destination team, and see whether the request is accepted, declined, scheduled, completed, or blocked. The first release proves that one request can move from draft to sent, received, accepted, declined, more-info-requested, scheduled, and completed without losing subject identity, required documentation, or status history.
+
+State object
+A request handoff record tracks subject identity, source team, destination team, handoff reason, urgency, required documentation, uploaded request context, matching decision, lifecycle status, next-action owner, notifications, stale or blocked markers, and audit history.
+
+First complete path
+A coordinator creates a draft request, attaches subject identity and required request context, validates uploaded documents, sends the packet to a destination team, sees received status, handles an accept, decline, or more-info request, schedules the request when accepted, and reviews the completed status history.
+
+Human actors
+- Source coordinator — creates the request packet, attaches subject identity and request context, and follows up on missing information.
+- Destination coordinator — reviews request context, accepts, declines, or requests more information, and coordinates scheduling.
+- Workspace administrator — audits status history and sensitive request-context access.
+
+External systems
+- Source record export for subject details and supporting documents.
+- Scheduling system for appointment outcome.
+- Notification provider for status freshness.
+
+Internal product systems
+- Recipient Matching Surface — helps the source coordinator choose a destination team before request send.
+- Document and Context Handling Surface — creates request packets, attaches subject identity, captures handoff reason, validates uploaded documents, blocks missing required documentation, records request context provenance, protects sensitive request materials, and hands context into request lifecycle tracking.
+- Request Lifecycle Tracking Service — records sent, received, accepted, declined, more-info-requested, scheduled, completed, blocked, and stale lifecycle events.
+- Request Status View Service — renders the request status timeline, current next-action owner, role-appropriate status visibility, stale or blocked request indicators, notification-backed freshness, and audit history for both teams.
+
+Critical assumptions
+- Release 0.0.1 proves one request path before live source-system write-back or broad automation.
+- Sensitive request materials require role-appropriate access control and audit history.
+
+Ambiguities
+- Which document types are mandatory for the first destination team?
+- Whether scheduling starts as a manual status or a live scheduling integration.
+
+Proof boundary
+Release 0.0.1 succeeds when a request packet can be created with subject identity and required request context, missing documentation blocks submission, uploaded context stays attached to the correct request, unauthorized users cannot view or mutate request context, role-appropriate status is visible to both teams, stale or blocked requests are visible, invalid transitions are rejected or hidden, and status history is traceable to source events.
+""",
+        prompt="Draft a product-first greenfield proposal for a request handoff workspace.",
+    )
+
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="Draft a product-first greenfield proposal for a request handoff workspace.",
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+
+    encoded = json.dumps(proposal)
+    assert "inspect The" not in encoded
+    assert "Human actors:" not in encoded
+    assert "plus 1 more" not in encoded
+    assert "responsibility and keeps it tied" not in encoded
+    for component in proposal["components"]:
+        assert set(CONTRACT_KEYS) <= set(component["component_contract"])
+
+    result = greenfield_proposals.apply_greenfield_proposal(
+        repo_root=tmp_path,
+        proposal=proposal,
+        confirm=True,
+        release_selector="0.0.1",
+    )
+    specs = {
+        row["label"]: Path(row["spec_path"]).read_text(encoding="utf-8")
+        for row in result["components"]
+    }
+    assert rendered_component_spec_quality_issues(specs, project_title=proposal["intent"]["title"]) == []
+    joined_specs = "\n".join(specs.values())
+    assert "inspect The" not in joined_specs
+    assert "Human actors:" not in joined_specs
+    assert "plus 1 more" not in joined_specs
+    assert "responsibility and keeps it tied" not in joined_specs
+
+    document_spec = next(text for label, text in specs.items() if "Document and Context" in label)
+    document_spec_lower = document_spec.casefold()
+    for phrase in (
+        "request packet creation",
+        "subject identity attachment",
+        "handoff reason capture",
+        "required documentation completeness",
+        "uploaded document validation",
+        "missing document blocking",
+        "request context provenance",
+        "sensitive access control",
+        "handoff into Request Lifecycle Tracking Service",
+        "Unauthorized users cannot view or mutate request context",
+    ):
+        assert phrase.casefold() in document_spec_lower
+
+    status_spec = next(text for label, text in specs.items() if "Request Status" in label)
+    status_spec_lower = status_spec.casefold()
+    for phrase in (
+        "request status timeline",
+        "next-action owner",
+        "role-appropriate status views",
+        "draft, sent, received, accepted, declined, more-info-requested, scheduled, completed",
+        "stale or blocked request indicators",
+        "Status history is traceable to source events",
+    ):
+        assert phrase.casefold() in status_spec_lower
+    assert "Define Recipient Matching Surface Boundary" not in status_spec
+
+
 def test_confirmed_intent_parser_still_rejects_exact_generic_system_scaffold() -> None:
     with pytest.raises(ValueError, match="internal_systems"):
         parse_confirmed_intent_text(
@@ -242,7 +356,7 @@ def test_confirmed_intent_parser_accepts_internal_external_heading_and_prose_sys
 	Low-Cost Field Water Quality Monitor
 
 	Product story:
-	The product is a compact low-cost field water-quality monitor for community groups that need quick local screening before sending samples to a lab. It captures pH, turbidity, temperature, and conductivity readings, guides a non-specialist through calibration, and produces a readable result that explains whether the sample is safe, uncertain, or needs lab review. The value is practical screening without turning the device into a professional laboratory instrument.
+	The product is a compact low-cost field water-quality monitor for community groups that need quick local screening before sending samples to a lab. It captures pH, turbidity, temperature, and conductivity readings, guides a novice operator through calibration, and produces a readable result that explains whether the sample is safe, uncertain, or needs lab review. The value is practical screening without turning the device into a professional laboratory instrument.
 
 	State object that changes through the first journey:
 	The primary state object is the water sample assessment. An assessment starts as prepared, tracks calibration state, sample source, readings, confidence bands, battery level, contamination warnings, and reviewer notes, then ends as passed, flagged for retest, escalated to lab review, or safely discarded.
@@ -471,7 +585,8 @@ Release proof must show one supported device path from pairing through live read
 
     systems = intent["internal_systems"]
     assert len(systems) == 5
-    assert systems[0].startswith("Device Pairing And Sync — owns the device pairing and sync responsibility")
+    assert systems[0].startswith("Device Pairing And Sync — handles device pairing and sync inputs")
+    assert "responsibility and keeps it tied" not in systems[0]
     assert all("—" in row for row in systems)
     assert all("missing or too thin" not in row for row in systems)
 

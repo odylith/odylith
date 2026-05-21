@@ -7,6 +7,7 @@ import subprocess
 
 from odylith.runtime.governance import delivery_intelligence_engine as engine
 from odylith.runtime.governance import delivery_intelligence_refresh as refresh
+from odylith.runtime.governance import component_registry_intelligence as registry
 from odylith.runtime.governance import delivery_intelligence_support as support
 
 
@@ -105,6 +106,36 @@ def test_delivery_registry_watch_paths_ignore_forensics_sidecars(tmp_path: Path)
     assert all("FORENSICS.v1.json" not in path for path in watched_paths)
     assert support.registry_delivery_watched_paths(tmp_path) == watched_paths
     assert refresh._registry_delivery_watched_paths(tmp_path) == watched_paths  # noqa: SLF001
+
+
+def test_migration_observer_assessments_do_not_create_workspace_activity(tmp_path: Path) -> None:
+    assessment = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "migration.md"
+    assessment.parent.mkdir(parents=True)
+    assessment.write_text(
+        "\n".join(
+            [
+                "status: finished",
+                "idea_id: B-999",
+                "title: Migration assessment",
+                "",
+                "## Migration Observer Needs",
+                "- `migration-observer:0.1.15:install-managed-assets:abc123abc123`",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    ordinary = assessment.with_name("ordinary.md")
+    ordinary.write_text("status: implementation\n\n## Problem\nReal product work.\n", encoding="utf-8")
+
+    assert registry.is_meaningful_workspace_artifact(
+        "odylith/radar/source/ideas/2026-04/migration.md",
+        repo_root=tmp_path,
+    ) is False
+    assert registry.is_meaningful_workspace_artifact(
+        "odylith/radar/source/ideas/2026-04/ordinary.md",
+        repo_root=tmp_path,
+    ) is True
 
 
 def test_delivery_support_current_local_head_returns_empty_on_git_failure(monkeypatch, tmp_path: Path) -> None:

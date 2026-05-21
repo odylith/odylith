@@ -20,8 +20,20 @@
   "timeline": [
     {
       "artifacts": [
+        "src/odylith/runtime/domain_intelligence/artifact_enrichment.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_proposal.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_experience.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_quality_gate.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_traceability.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
+        "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_quality.py"
       ],
       "confidence": "high",
       "event_index": 468,
@@ -31,8 +43,8 @@
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
-      "ts_iso": "2026-05-19T22:16:45-07:00",
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/domain_intelligence/artifact_enrichment.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py +12 more",
+      "ts_iso": "2026-05-20T17:59:45-07:00",
       "workstreams": []
     },
     {

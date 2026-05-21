@@ -338,10 +338,13 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
     zoning_spec = specs["zoning-check-ledger"]
     revision_spec = next(text for slug, text in specs.items() if slug.endswith("revision-tracker"))
     decision_spec = specs["decision-package-review"]
-    assert "Owns permit identity, applicant metadata, submitted documents, and decision state" in permit_spec
-    assert "Records zoning checks, reviewer comments, rule references, and pass or block outcomes" in zoning_spec
-    assert "Links applicant revisions to the documents and checks they are meant to address" in revision_spec
-    assert "Assembles evidence, reviewer notes, unresolved blockers, and final approval state" in decision_spec
+    assert "permit identity attachment" in permit_spec
+    assert "required document completeness" in permit_spec
+    assert "missing document blockers" in permit_spec
+    assert "handoff into Zoning Check Ledger" in permit_spec
+    assert "zoning checks, reviewer comments, rule references, and pass or block outcomes" in zoning_spec
+    assert "applicant revisions to the documents and checks they are meant to address" in revision_spec
+    assert "evidence, reviewer notes, unresolved blockers, and final approval state" in decision_spec
     role_sections = [
         _markdown_section(permit_spec, "## Component Role"),
         _markdown_section(zoning_spec, "## Component Role"),
@@ -355,9 +358,14 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
         assert "Release 0.0.1 contribution:" not in text
         assert "accepted first release path" not in text
         assert "Contract proof covers" not in text
-        assert "Contract focus:" in text
-        assert "Primary interface:" in text
-        assert "Proof obligation:" in text
+        assert "Contract focus:" not in text
+        assert "Primary interface:" not in text
+        assert "Proof obligation:" not in text
+        assert ". and" not in text
+        assert ". or" not in text
+        assert "zoning, check" not in text
+        assert "revision, tracker" not in text
+        assert "decision, package" not in text
         assert "Failure Modes" in text
         assert "Domain risk:" in text
         assert "Security and policy posture:" in text

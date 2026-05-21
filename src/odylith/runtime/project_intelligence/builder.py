@@ -637,7 +637,6 @@ def _has_material_posture(risk_classes: Sequence[Mapping[str, Any]], validation_
         "security",
         "privacy",
         "customer",
-        "patient",
         "regulatory",
         "data loss",
         "rollback",

@@ -36,6 +36,7 @@ _LOCAL_DETAIL_SHARD_JS_RE = re.compile(
 _EXTERNAL_MERMAID_CDN_REQUEST_RE = re.compile(
     r"^GET https://cdn\.jsdelivr\.net/npm/mermaid@11/dist/mermaid\.min\.js(?:\s+.*)?$"
 )
+_SHELL_QUERY_PARAM_TIMEOUT_MS = 30000
 
 
 @contextlib.contextmanager
@@ -512,7 +513,7 @@ def _wait_for_shell_query_param(
     tab: str,
     key: str,
     value: str,
-    timeout: int = 15000,
+    timeout: int = _SHELL_QUERY_PARAM_TIMEOUT_MS,
 ) -> None:  # noqa: ANN001
     page.wait_for_function(
         """({ tab, key, value }) => {

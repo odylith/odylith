@@ -6,6 +6,7 @@ from collections.abc import Mapping
 import re
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_component_contract import public_prose_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
@@ -199,6 +200,7 @@ def greenfield_quality_issues(proposal: Mapping[str, Any]) -> list[str]:
     issues.extend(_mechanical_artifact_issues(public_leaves))
     issues.extend(_qualitative_structure_issues(proposal))
     issues.extend(_governance_prep_language_issues(proposal))
+    issues.extend(public_prose_quality_issues(proposal))
     if prompt_terms:
         issues.extend(_prompt_echo_issues(proposal, public_leaves=public_leaves))
     return _dedupe(issues)
