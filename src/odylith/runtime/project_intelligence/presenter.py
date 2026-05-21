@@ -108,6 +108,24 @@ def _answer_table(items: object) -> str:
     )
 
 
+def _risk_cards(items: object) -> str:
+    cards: list[str] = []
+    for row in _mappings(items):
+        title = display_text(row.get("risk") or row.get("title") or row.get("label"))
+        body = display_text(row.get("meaning") or row.get("description") or row.get("body"))
+        if not title and not body:
+            continue
+        if not title:
+            title = "Project risk"
+        cards.append(
+            '<article class="project-risk-card">'
+            f"<h3>{_d(title)}</h3>"
+            f"<p>{_d(body)}</p>"
+            "</article>"
+        )
+    return "".join(cards)
+
+
 def _use_cases(items: object) -> str:
     rows: list[str] = []
     for raw in _sequence(items):
@@ -768,6 +786,13 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
         if answer_table
         else ""
     )
+    risk_cards = _risk_cards(project.get("risk_items") or project.get("risk_classes"))
+    risks_html = (
+        f"""      <section class="project-panel project-risks"><div class="project-panel-head"><h2>{_d(project.get("risk_title"))}</h2>{f'<p>{_d(project.get("risk_note"))}</p>' if str(project.get("risk_note") or "").strip() else ''}</div><div class="project-card-grid project-risk-grid">{risk_cards}</div></section>
+"""
+        if _enabled(project, "risks") and risk_cards
+        else ""
+    )
     participants_html = (
         f"""      <section class="project-panel project-participants"><div class="project-panel-head"><h2>{_d(project.get("participants_title"))}</h2><p>{_d(project.get("participants_note"))}</p></div><div class="project-card-grid project-actor-grid">{_cards(project.get("actors") or project.get("participants"), "project-actor-card")}</div></section>
 """
@@ -828,7 +853,7 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
 
   <div class="project-page-grid">
     <main class="project-main">
-{product_story_html}{participants_html}{answers_html}{scenario_html}{jobs_html}{claim_html}{trust_html}{posture_html}{boundary_html}{state_html}{next_html}{proof_html}
+{product_story_html}{participants_html}{risks_html}{answers_html}{scenario_html}{jobs_html}{claim_html}{trust_html}{posture_html}{boundary_html}{state_html}{next_html}{proof_html}
     </main>
   </div>
 </div>

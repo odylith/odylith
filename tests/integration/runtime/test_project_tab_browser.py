@@ -105,6 +105,7 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
     page.locator(".project-host-handoff").wait_for(timeout=15000)
     surface_text = page.locator(".project-surface").inner_text()
     assert "Product Story" in surface_text
+    assert "Risks" in surface_text
     assert "Project not defined yet" not in surface_text
     assert "Current orienting work" not in surface_text
     assert "Mockrepo" not in surface_text
@@ -122,8 +123,12 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
     assert "How the story becomes governance" not in surface_text
     assert "Status now" not in surface_text
     assert "Where does this stand" not in surface_text
+    assert "Who uses it?" not in surface_text
     assert page.locator(".project-state-grid").count() == 0
     assert page.locator(".project-scenario").count() == 0
+    assert page.locator(".project-risks").count() == 1
+    assert page.locator(".project-risk-card").count() >= 1
+    assert page.locator(".project-answer-strip").count() == 0
     assert page.locator('.project-job-card a[href*="tab=radar"][href*="workstream="]').count() >= 1
     assert page.locator(".project-job-card em").count() == 0
 

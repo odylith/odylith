@@ -65,7 +65,6 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
     first_path_summary = summarize_first_path(first_path) or sentence(first_path)
     intro = _project_intro(title=raw_title, intent=intent, project=project)
     title = _display_title(raw_title=raw_title, intro=intro)
-    purpose = _change_body(project=project, intro=intro, first_path=first_path)
     focus = sentence(release_plan.get("strategy")) or sentence(first_path) or "Review the proposed first path before implementation starts."
     open_items = _dashboard_open_items(questions=questions, risks=risk_labels) or ["No open proposal question found."]
     evidence_state = "User-stated and inferred"
@@ -88,8 +87,6 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
     )
     unknown = _unknown(questions=questions, assumptions=assumptions, risks=risks, non_goals=non_goals)
     actors = _actors(project, proposal=proposal)
-    user_title = _user_title(project=project, project_brief=project_brief, actors=actors)
-    user_body = _user_body(project=project, project_brief=project_brief, actors=actors)
     jobs = _jobs(
         backlog=backlog,
         program=program,
@@ -113,9 +110,11 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
         diagrams=diagrams,
         actors=actors,
     )
+    risk_classes = _risk_classes(risks)
     sections = ["product_story"]
     if actors:
         sections.append("participants")
+    sections.append("risks")
     if jobs:
         sections.append("jobs")
     sections.append("next")
@@ -131,23 +130,10 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
         "product_story_title": "Product Story",
         "product_story_note": "",
         "product_story": product_story,
-        "answers": [
-            ("Who uses it?", user_title, user_body),
-            ("What changes?", _state_change(project, first_path=first_path), purpose),
-            (
-                "What matters now?",
-                f"Release {release} proof boundary" if accepted_project else "Accept or revise the project shape",
-                "Open the first implementation plan next; it should name the source boundary, proof gates, blockers, validation commands, and stop conditions before source changes."
-                if accepted_project
-                else "Implementation should wait until assumptions, first path, and proof gates are reviewed.",
-            ),
-            ("What risk matters?", _risk_title(risk_labels or risks), _risk_answer_body(risks=risks)),
-            (
-                "What proves it?",
-                _proof_answer_title(validation=validation, first_path=first_path),
-                _proof_answer_body(validation=validation, first_path=first_path),
-            ),
-        ],
+        "answers": [],
+        "risk_title": "Risks",
+        "risk_note": "Risks that must stay visible before implementation proof exists.",
+        "risk_items": risk_classes,
         "scenario": [
             "Proposed first path",
             title,
@@ -225,7 +211,7 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
         "topology_spine": [],
         "contradictions": ["No source-backed implementation state exists yet for this greenfield proposal."],
         "delta": ["No previous source-backed project state is available; this projection starts from proposal intent."],
-        "risk_classes": _risk_classes(risks),
+        "risk_classes": risk_classes,
         "audience_emphasis": [],
         "degraded_state": ["Greenfield claims are not source-backed until accepted records, implementation, and validation exist."],
         "known": known,
@@ -712,59 +698,6 @@ def _capitalize_first(value: str) -> str:
     return f"{value[:1].upper()}{value[1:]}" if value else value
 
 
-def _owner_title(project: Mapping[str, Any]) -> str:
-    owners = strings(project.get("owners"))
-    if not owners:
-        return "Product decision owner"
-    head = owners[0].split(":", 1)[0]
-    for marker in (" owns ", " is responsible for ", " reviews "):
-        before, sep, _after = head.partition(marker)
-        if sep and before.strip():
-            head = before
-            break
-    return sentence(head)
-
-
-def _owner_body(project: Mapping[str, Any]) -> str:
-    owners = strings(project.get("owners"))
-    if not owners:
-        return "Owner is user-stated or still unresolved."
-    text = owners[0]
-    for marker in (" owns ", " is responsible for ", " reviews "):
-        before, sep, after = text.partition(marker)
-        if sep and after.strip():
-            verb = marker.strip().split()[0].capitalize()
-            return sentence(f"{verb} {after.strip()}")
-    return sentence(text)
-
-
-def _user_title(
-    *,
-    project: Mapping[str, Any],
-    project_brief: Mapping[str, Any],
-    actors: Sequence[tuple[str, str, str]],
-) -> str:
-    actor_titles = [sentence(row[1]) for row in actors if sentence(row[1])]
-    if actor_titles:
-        return actor_titles[0]
-    return _owner_title(project)
-
-
-def _user_body(
-    *,
-    project: Mapping[str, Any],
-    project_brief: Mapping[str, Any],
-    actors: Sequence[tuple[str, str, str]],
-) -> str:
-    operator_value = sentence(project_brief.get("operator_value"))
-    if operator_value:
-        return operator_value
-    actor_bodies = _dedupe_text([sentence(row[2]) for row in actors if sentence(row[2])])
-    if actor_bodies:
-        return actor_bodies[0]
-    return _owner_body(project)
-
-
 def _join_titles(values: Sequence[str]) -> str:
     items = [sentence(value) for value in values if sentence(value)]
     if not items:
@@ -774,26 +707,6 @@ def _join_titles(values: Sequence[str]) -> str:
     if len(items) == 2:
         return f"{items[0]} and {items[1]}"
     return f"{', '.join(items[:-1])}, and {items[-1]}"
-
-
-def _state_change(project: Mapping[str, Any], *, first_path: str) -> str:
-    state_title = _state_object_change(project)
-    if state_title:
-        return state_title
-    rows = strings(project.get("state"))
-    for row in rows:
-        if row.lower().startswith("desired state"):
-            return short(row.split(":", 1)[-1], limit=80)
-    first_path_text = summarize_first_path(first_path) or sentence(first_path)
-    if first_path_text:
-        natural = _first_path_title(first_path_text)
-        if natural:
-            return natural
-        before, sep, _after = first_path_text.partition(" through ")
-        if sep and before.strip():
-            return short(before.strip(), limit=80)
-        return "Accepted first release state"
-    return "Proposal becomes accepted project direction"
 
 
 def _state_object_change(project: Mapping[str, Any]) -> str:
@@ -853,41 +766,6 @@ def _state_owned_pieces(value: object) -> list[str]:
     tail = match.group(1).strip(" .")
     pieces = [piece.strip(" .") for piece in re.split(r",|\s+and\s+", tail) if piece.strip(" .")]
     return [piece for piece in pieces if len(piece.split()) <= 8][:6]
-
-
-def _first_path_title(value: str) -> str:
-    text = sentence(value).strip(" .")
-    lowered = text.casefold()
-    if lowered.startswith("prove one "):
-        text = "One " + text[len("Prove one ") :]
-    elif lowered.startswith("prove a "):
-        text = "A " + text[len("Prove a ") :]
-    elif lowered.startswith("prove an "):
-        text = "An " + text[len("Prove an ") :]
-    else:
-        return ""
-    for marker in (" through ", " with ", " before ", " so ", " while "):
-        head, sep, _tail = text.partition(marker)
-        if sep and head.strip():
-            text = head.strip()
-            break
-    from_head, sep, _tail = text.partition(" from ")
-    if sep and from_head.strip():
-        text = from_head.strip()
-    return short(text, limit=80)
-
-
-def _change_body(*, project: Mapping[str, Any], intro: str, first_path: str) -> str:
-    state_body = _state_change_body(project)
-    if state_body:
-        return state_body
-    path = summarize_first_path(first_path) or sentence(first_path)
-    if path:
-        return f"The first release should prove this product behavior: {path.rstrip('.')}."
-    clean_purpose = _clean_project_purpose(project.get("purpose"))
-    if clean_purpose:
-        return clean_purpose
-    return short(intro, limit=180)
 
 
 def _desired_state(
@@ -1077,21 +955,6 @@ def _non_goal_rows(project: Mapping[str, Any]) -> list[str]:
     return [f"Not in the first release: {piece}." for piece in pieces[:4]]
 
 
-def _risk_title(risks: Sequence[str]) -> str:
-    if not risks:
-        return "Unvalidated assumptions"
-    return _risk_label(_risk_meaning(risks[0]), used=set())
-
-
-def _risk_answer_body(*, risks: Sequence[str]) -> str:
-    if not risks:
-        return "No explicit proposal risk found."
-    risk = _risk_without_embedded_path(risks[0])
-    if risk:
-        return risk
-    return sentence(risks[0])
-
-
 def _host_handoff_prompts(*, title: str, accepted: bool = False) -> list[dict[str, str]]:
     if accepted:
         return [
@@ -1175,13 +1038,6 @@ def _proof_body(*, validation: Sequence[str], first_path: str) -> str:
     if path:
         return f"{path.rstrip('.')} must pass with reviewer-visible evidence."
     return "Validation path must be confirmed before source-backed claims."
-
-
-def _proof_answer_title(*, validation: Sequence[str], first_path: str) -> str:
-    proof = summarize_proof(validation[0] if validation else "", first_path=first_path)
-    if proof and not _looks_path_echo(proof, first_path=first_path):
-        return short(proof, limit=70, fallback="Reviewer-visible release evidence")
-    return "Reviewer-visible release evidence"
 
 
 def _proof_answer_body(*, validation: Sequence[str], first_path: str) -> str:

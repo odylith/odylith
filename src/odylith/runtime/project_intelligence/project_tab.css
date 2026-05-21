@@ -206,6 +206,7 @@
 
 .project-card,
 .project-actor-card,
+.project-risk-card,
 .project-job-card,
 .project-signal-grid article,
 .project-proof-grid article {
@@ -223,6 +224,7 @@
 
 .project-card h3,
 .project-actor-card h3,
+.project-risk-card h3,
 .project-job-card h3,
 .project-signal-grid h3 {
   display: block;
@@ -662,6 +664,17 @@
   letter-spacing: 0.08em;
   line-height: 1.15;
   text-transform: uppercase;
+}
+
+.project-risk-grid {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.project-risk-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--project-type-content-size);
+  line-height: 1.45;
 }
 
 .project-job-grid {

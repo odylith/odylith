@@ -703,12 +703,15 @@ def test_project_intelligence_accepted_greenfield_story_uses_product_narrative_b
     assert all(term not in payload["desired"] for term in ("Radar", "Registry", "Atlas", "Compass", "Casebook"))
     assert not any(row.startswith("After the product path is clear") for row in story["paragraphs"])
     assert story["supporting_records"] == []
-    assert "Who uses it?" in html
+    assert payload["answers"] == []
+    assert "risks" in payload["sections"]
+    assert 'class="project-panel project-risks"' in html
+    assert "Who uses it?" not in html
     assert "Steward" in html
     assert "Field observer and community monitor" in html
     assert "Verifier" in html
     assert "Observer safety leakage" in html
-    assert "Release 0.0.1 proof boundary" in html
+    assert "Release 0.0.1 proof boundary" not in html
     assert "Planning can continue" not in html
     assert "Build is still blocked" not in html
     assert "Risks that block build" not in html
@@ -928,7 +931,8 @@ def test_greenfield_project_sections_do_not_reuse_first_path_as_page_filler(tmp_
     assert payload["jobs"][0][0] == "Establish Program"
     assert "Establish Practice Score Assistant Program" not in html
     assert payload["jobs"][0][1].startswith("Sets the accepted product story")
-    assert payload["answers"][1][1] == "Take moves from idle to exported"
+    assert payload["answers"] == []
+    assert 'class="project-panel project-answer-strip"' not in html
     assert payload["jobs"][1][1] == "Owns microphone input and take buffering."
     assert payload["jobs"][2][0] == "Define Pitch and Onset Detection Engine Boundary"
     assert len({row[1] for row in payload["jobs"]}) == len(payload["jobs"])
@@ -1301,8 +1305,12 @@ def test_project_intelligence_renders_greenfield_origin_from_proposal(tmp_path: 
     assert story["supporting_records"] == []
     assert all(term not in json.dumps(story) for term in ("Radar", "Registry", "Atlas", "Compass"))
     assert "Product Story" in html
-    assert html.index("project-product-story") < html.index("project-participants") < html.index("project-answer-strip")
-    assert 'class="project-panel project-answer-strip"' in html
+    assert payload["answers"] == []
+    assert "risks" in payload["sections"]
+    assert html.index("project-product-story") < html.index("project-participants") < html.index("project-risks")
+    assert 'class="project-panel project-risks"' in html
+    assert 'class="project-panel project-answer-strip"' not in html
+    assert "Who uses it?" not in html
     assert "the team can prove" not in html
     assert "project-story-contract" in html
     assert payload["host_handoff_title"] == "How to continue in the host chat"
@@ -1510,6 +1518,8 @@ def test_project_intelligence_css_uses_shared_surface_typography() -> None:
     assert ".project-answer-table th" in css
     assert ".project-answer-table td strong" in css
     assert ".project-answer-table td p" in css
+    assert ".project-risk-card" in css
+    assert ".project-risk-grid" in css
     assert ".project-workstream-chip" in css
     assert "var(--surface-workstream-button-padding, 1px 8px)" in css
     assert "var(--surface-workstream-button-font-size, 12px)" in css
