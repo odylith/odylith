@@ -247,10 +247,14 @@ def test_greenfield_apply_shapes_radar_specs_with_domain_intelligence_substrate(
         release_selector="0.0.1",
     )
 
-    child_specs = [
-        Path(row["idea_path"]).read_text(encoding="utf-8")
+    specs_by_title = {
+        row["title"]: Path(row["idea_path"]).read_text(encoding="utf-8")
         for row in result["backlog"]
-        if not row["title"].startswith("Govern Commerce Launch System")
+    }
+    child_specs = [
+        text
+        for title, text in specs_by_title.items()
+        if not title.startswith("Govern Commerce Launch System")
     ]
     joined = "\n".join(child_specs)
 
@@ -262,12 +266,12 @@ def test_greenfield_apply_shapes_radar_specs_with_domain_intelligence_substrate(
     assert "Proof:" in joined
     assert "Gate:" in joined
     assert "source-backed implementation claims" in joined
-    parent_spec = next(
-        Path(row["idea_path"]).read_text(encoding="utf-8")
-        for row in result["backlog"]
-        if row["title"].startswith("Govern Commerce Launch System")
-    )
+    parent_spec = specs_by_title["Govern Commerce Launch System"]
     all_radar_text = parent_spec + "\n" + joined
+    assert "impacted_parts: application,registry,atlas,radar" not in all_radar_text
+    assert "impacted_parts: Storefront, Checkout Orchestrator, Catalog Boundary" in parent_spec
+    assert "impacted_parts: Storefront, Checkout Orchestrator" in specs_by_title["Define Storefront boundary"]
+    assert "impacted_parts: Catalog Boundary" in specs_by_title["Define Catalog boundary"]
     assert "## Project Intelligence" not in all_radar_text
     assert "## Project Brief" not in all_radar_text
     assert "## Project Requirements" not in all_radar_text
@@ -711,7 +715,9 @@ def test_greenfield_apply_rejects_missing_security_compliance_posture(tmp_path) 
 
 def test_greenfield_backlog_overrides_preserve_child_specific_sections() -> None:
     proposal = _host_reasoned_ecommerce_proposal()
+    proposal["backlog"][0]["impacted_parts"] = "application,registry,atlas,radar"
     child = next(row for row in proposal["backlog"] if row["title"].startswith("Define "))
+    overrides = greenfield_proposals._backlog_section_overrides(proposal)
     args = argparse.Namespace(
         problem="parent",
         customer="parent",
@@ -721,17 +727,23 @@ def test_greenfield_backlog_overrides_preserve_child_specific_sections() -> None
         domain_risk="parent domain risk",
         security_posture="parent security posture",
         priority="P1",
+        impacted_parts="parent",
         sizing="M",
         complexity="Medium",
         ordering_rationale="parent",
-        section_overrides_by_title=greenfield_proposals._backlog_section_overrides(proposal),
+        section_overrides_by_title=overrides,
     )
 
     resolved = backlog_authoring._title_specific_args(title=child["title"], args=args)
 
+    assert (
+        overrides[proposal["backlog"][0]["title"]]["impacted_parts"]
+        == "Storefront, Checkout Orchestrator, Catalog Boundary"
+    )
     assert resolved.problem == child["problem"]
     assert resolved.product_view == child["product_view"]
     assert child["success_metrics"][0] in resolved.success_metrics
+    assert resolved.impacted_parts == "Storefront, Checkout Orchestrator"
 
 
 def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatch) -> None:

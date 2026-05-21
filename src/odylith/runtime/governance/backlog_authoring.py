@@ -381,6 +381,7 @@ def _title_specific_args(*, title: str, args: argparse.Namespace) -> argparse.Na
         "domain_risk",
         "security_posture",
         "priority",
+        "impacted_parts",
         "sizing",
         "complexity",
         "ordering_rationale",

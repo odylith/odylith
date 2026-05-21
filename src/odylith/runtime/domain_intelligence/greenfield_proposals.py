@@ -35,6 +35,7 @@ from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.artifact_enrichment import build_artifact_enrichment
 from odylith.runtime.domain_intelligence.greenfield_cli_output import print_apply_result
+from odylith.runtime.domain_intelligence.greenfield_backlog_impact import derive_greenfield_impacted_parts
 from odylith.runtime.domain_intelligence.greenfield_experience import proposal_posture_tuple
 from odylith.runtime.domain_intelligence.greenfield_experience import row_text_tuple
 from odylith.runtime.domain_intelligence.greenfield_text import join_sentence_text
@@ -386,6 +387,7 @@ def _backlog_section_overrides(proposal: Mapping[str, Any]) -> dict[str, dict[st
             "priority": str(row.get("priority", "P1")).strip() or "P1",
             "sizing": str(row.get("sizing", "M")).strip() or "M",
             "complexity": str(row.get("complexity", "Medium")).strip() or "Medium",
+            "impacted_parts": derive_greenfield_impacted_parts(row, proposal),
             "ordering_rationale": _greenfield_ordering_rationale(row),
             "rationale_lines": _greenfield_rationale_lines(row),
         }
@@ -442,7 +444,7 @@ def _backlog_apply_args(proposal: Mapping[str, Any], *, release_selector: str) -
         commercial_value=3,
         product_impact=4,
         market_value=3,
-        impacted_parts="application,registry,atlas,radar",
+        impacted_parts=derive_greenfield_impacted_parts(first, proposal),
         sizing=str(first.get("sizing", "M")).strip() or "M",
         complexity=str(first.get("complexity", "Medium")).strip() or "Medium",
         ordering_score=None,
