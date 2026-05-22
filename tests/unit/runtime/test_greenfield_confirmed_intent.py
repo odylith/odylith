@@ -246,6 +246,62 @@ def test_component_semantic_contract_preserves_accepted_component_facts() -> Non
     assert contract.confidence >= 8
 
 
+def test_component_semantic_contract_keeps_ledger_assessment_and_alert_axes_separate() -> None:
+    decision = derive_component_semantic_contract(
+        {
+            "label": "Decision Ledger",
+            "source_system_description": "records final decision, reviewer notes, recheck status, and final release decision",
+        },
+        proposal={},
+        sibling=None,
+        previous_label="Quality Review",
+        next_label="Release Proof",
+        state_label="Decision Record",
+    )
+    decision_text = json.dumps(decision.fields).casefold()
+    assert "final decision" in decision_text
+    assert "alert event" not in decision_text
+    assert "alert lifecycle" not in decision_text
+    assert "threshold signal" not in decision_text
+
+    assessment = derive_component_semantic_contract(
+        {
+            "label": "Quality Assessment and Scoring",
+            "source_system_description": (
+                "records quality criteria, risk ratings, scoring inputs, rubric version, "
+                "missing-field blockers, and assessment output"
+            ),
+        },
+        proposal={},
+        sibling=None,
+        previous_label="Evidence Extraction",
+        next_label="Decision Ledger",
+        state_label="Decision Record",
+    )
+    assessment_text = json.dumps(assessment.fields).casefold()
+    assert "scoring rubric" in assessment_text
+    assert "score inputs" in assessment_text or "scoring inputs" in assessment_text
+    assert "model input snapshot" not in assessment_text
+    assert "derived state estimate" not in assessment_text
+
+    alert = derive_component_semantic_contract(
+        {
+            "label": "Degradation Alert Ledger",
+            "source_system_description": (
+                "owns alert events, severity state, acknowledgement state, and alert resolution history"
+            ),
+        },
+        proposal={},
+        sibling=None,
+        previous_label="State Model",
+        next_label="Decision Workspace",
+        state_label="Health Record",
+    )
+    alert_text = json.dumps(alert.fields).casefold()
+    for phrase in ("alert event", "severity state", "acknowledgement state", "alert lifecycle"):
+        assert phrase in alert_text
+
+
 def test_confirmed_create_generates_component_specific_document_and_status_specs(tmp_path: Path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
     monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)

@@ -85,6 +85,7 @@ _GENERIC_TERMS = {
 }
 
 _DANGLING_TAILS = {"a", "an", "and", "for", "from", "of", "or", "the", "to", "with"}
+_ALERT_LIFECYCLE_PATTERN = r"\b(alert|warning|notification|breach|anomaly)\b"
 
 
 def derive_component_semantic_contract(
@@ -216,9 +217,9 @@ def _enrich_object_phrases(
     label_text = _clean(label).casefold()
     front_extras: list[str] = []
     tail_extras: list[str] = []
-    label_has_alert = bool(re.search(r"\b(alert|warning|notification|ledger|threshold|breach|anomaly)\b", label_text))
-    label_has_model = bool(re.search(r"\b(model|metric|assessment|estimator|classifier|trend|health)\b", label_text))
-    if label_has_alert or re.search(r"^\s*owns\s+[^.]*\b(alert|warning|notification|ledger|threshold|breach|anomaly)\b", text):
+    label_has_alert = bool(re.search(_ALERT_LIFECYCLE_PATTERN, label_text))
+    label_has_model = bool(re.search(r"\b(model|metric|estimator|classifier|trend|health)\b", label_text))
+    if label_has_alert or re.search(rf"^\s*owns\s+[^.]*{_ALERT_LIFECYCLE_PATTERN}", text):
         front_extras.extend(("alert event", "threshold signal", "severity state", "acknowledgement state", "alert lifecycle"))
     if label_has_model or (
         not label_has_alert
@@ -262,8 +263,7 @@ def _enrich_object_phrases(
 
 
 def _strip_action(value: str) -> str:
-    verbs = "|".join(re.escape(verb) for verb in _ACTION_VERBS)
-    return _clean(re.sub(rf"^(?:{verbs})(?:s|es|ed|ing)?\s+", "", value, flags=re.IGNORECASE))
+    return _clean(re.sub(rf"^(?:{_action_forms_pattern()})\s+", "", value, flags=re.IGNORECASE))
 
 
 def _strip_source_action(value: str) -> str:
@@ -277,9 +277,28 @@ def _actions(value: str) -> list[str]:
     text = _clean(value).casefold()
     result: list[str] = []
     for verb in _ACTION_VERBS:
-        if re.search(rf"\b{re.escape(verb)}(?:s|es|ed|ing)?\b", text):
+        if re.search(rf"\b(?:{_verb_forms_pattern(verb)})\b", text):
             result.append(verb)
     return result
+
+
+def _action_forms_pattern() -> str:
+    forms: list[str] = []
+    for verb in _ACTION_VERBS:
+        forms.extend(_verb_forms(verb))
+    return "|".join(re.escape(form) for form in sorted(set(forms), key=lambda value: (-len(value), value)))
+
+
+def _verb_forms_pattern(verb: str) -> str:
+    return "|".join(re.escape(form) for form in sorted(_verb_forms(verb), key=lambda value: (-len(value), value)))
+
+
+def _verb_forms(verb: str) -> set[str]:
+    forms = {verb, f"{verb}s", f"{verb}es", f"{verb}ed", f"{verb}ing"}
+    if verb.endswith("e") and len(verb) > 1:
+        stem = verb[:-1]
+        forms.update({f"{verb}d", f"{stem}ing"})
+    return forms
 
 
 def _local_terms(label: str, description: str, object_phrases: Sequence[str]) -> list[str]:
@@ -306,7 +325,7 @@ def _input_focus(*, object_phrases: Sequence[str], action_terms: Sequence[str], 
     if "define" in action_terms:
         return "question, rule draft, threshold, policy source, exception note, and prior version"
     if "score" in action_terms:
-        return "required fields, rubric version, assessment evidence, score input, and reviewer answer"
+        return "required fields, scoring rubric version, assessment evidence, score inputs, and reviewer answer"
     if "export" in action_terms or "synthesize" in action_terms:
         return "validated upstream evidence, source references, output format request, and completeness rule"
     if "audit" in action_terms or "preserve" in action_terms:
