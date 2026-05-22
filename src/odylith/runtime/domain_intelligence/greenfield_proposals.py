@@ -30,6 +30,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import bu
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import load_confirmed_intent_file
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
 from odylith.runtime.domain_intelligence.greenfield_component_contract import rendered_component_spec_quality_issues
+from odylith.runtime.domain_intelligence.greenfield_component_contract_differentiation import (
+    operator_component_spec_issues,
+)
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_traceability
@@ -1194,7 +1197,7 @@ def _raise_for_component_spec_quality(
     title = str(intent.get("title", "")).strip()
     issues = rendered_component_spec_quality_issues(specs, project_title=title)
     if issues:
-        detail = "\n".join(f"- {issue}" for issue in issues)
+        detail = "\n".join(f"- {issue}" for issue in operator_component_spec_issues(issues))
         raise ValueError(f"greenfield component spec quality gate failed with {len(issues)} issue(s):\n{detail}")
 
 

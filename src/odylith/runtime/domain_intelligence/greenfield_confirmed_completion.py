@@ -11,12 +11,17 @@ from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence.greenfield_component_contract import (
     boundary_from_contract,
     component_contract_issues,
+    contract_is_complete,
     dependencies_from_contract,
     ensure_component_contract,
     interfaces_from_contract,
     responsibility_from_contract,
     risks_from_contract,
     validation_from_contract,
+)
+from odylith.runtime.domain_intelligence.greenfield_component_contract_differentiation import (
+    component_spec_preflight_issues,
+    differentiate_component_contracts,
 )
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -45,6 +50,7 @@ def complete_confirmed_proposal(
         changed |= _complete_project_posture(payload)
         changed |= _complete_backlog(payload)
         changed |= _complete_components(payload)
+        changed |= differentiate_component_contracts(payload)
         changed |= _complete_diagrams(payload)
         issues = _preflight_issues(payload, release_selector=release_selector)
         if not issues:
@@ -197,15 +203,19 @@ def _complete_components(proposal: dict[str, Any]) -> bool:
         label = _component_label(row, index)
         previous_label = _component_label(rows[index - 2], index - 1) if index > 1 and isinstance(rows[index - 2], Mapping) else ""
         next_label = _component_label(rows[index], index + 1) if index < len(rows) and isinstance(rows[index], Mapping) else ""
-        contract = ensure_component_contract(
-            row,
-            proposal=proposal,
-            previous_label=previous_label,
-            next_label=next_label,
-        )
-        if row.get("component_contract") != contract:
-            row["component_contract"] = contract
-            changed = True
+        existing_contract = row.get("component_contract")
+        if isinstance(existing_contract, Mapping) and contract_is_complete(existing_contract):
+            contract = existing_contract
+        else:
+            contract = ensure_component_contract(
+                row,
+                proposal=proposal,
+                previous_label=previous_label,
+                next_label=next_label,
+            )
+            if row.get("component_contract") != contract:
+                row["component_contract"] = contract
+                changed = True
         if _component_field_is_weak(row.get("responsibility")):
             row["responsibility"] = responsibility_from_contract(label, contract)
             changed = True
@@ -274,6 +284,7 @@ def _preflight_issues(proposal: Mapping[str, Any], *, release_selector: str) -> 
     issues: list[str] = []
     issues.extend(collect_host_reasoned_proposal_issues(proposal))
     issues.extend(component_contract_issues(proposal))
+    issues.extend(component_spec_preflight_issues(proposal))
     selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
     tribunal = run_greenfield_tribunal(proposal, release_selector=selector)
     issues.extend(tribunal.issues)

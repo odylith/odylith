@@ -22,6 +22,9 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract import (
     risks_from_contract,
     validation_from_contract,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_contract_differentiation import (
+    differentiate_component_contracts,
+)
 
 
 _STOPWORDS = {
@@ -305,6 +308,8 @@ def _confirmed_system_components(
         if _generated_sequence(row.get("validation")):
             row["validation"] = validation_from_contract(contract)
         row["risks"] = risks_from_contract(str(row.get("label", "")), contract)
+    proposal_context["components"] = rows
+    differentiate_component_contracts(proposal_context)
     return rows
 
 

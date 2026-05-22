@@ -329,6 +329,112 @@ Release 0.0.1 succeeds when a request packet can be created with subject identit
     assert "Define Recipient Matching Surface Boundary" not in status_spec
 
 
+def test_confirmed_create_repairs_overlapping_structured_review_components(tmp_path: Path, monkeypatch, capsys) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    intent_path = tmp_path / ".odylith/runtime/greenfield/confirmed-intent.md"
+    intent_path.parent.mkdir(parents=True, exist_ok=True)
+    intent_path.write_text(
+        """# Structured Review Workspace
+
+Product story
+A review operations team needs one workspace to assign reviewers, collect structured scores, compare decisions, and preserve audit history before a final approval decision. The first release proves one submission can move from assignment through scored review, dashboard comparison, decision, version history, and retention review without hiding permissions, scoring evidence, or audit obligations.
+
+State object
+A review decision record tracks submission identity, assigned reviewer, permission state, review form answers, scoring rubric version, score output, dashboard comparison state, decision readiness, final decision, audit trail, version history, retention rule, and replay evidence.
+
+First complete path
+A review manager assigns an eligible reviewer, grants the correct permission, the reviewer completes the structured form with required scoring fields, the dashboard compares the scored review against prior evidence, the manager records a decision, and the audit history preserves the versioned decision and retention state.
+
+Human actors
+- Review manager - assigns reviewers, grants permission, compares decisions, and records the final decision.
+- Assigned reviewer - completes the structured review form and submits required scoring evidence.
+- Audit reviewer - checks version history, retention state, and replay evidence before release.
+
+External systems
+- Submission intake export for incoming review items.
+- Identity provider for reviewer role and permission attributes.
+- Retention policy catalog for retention rule selection.
+
+Internal product systems
+- Review Assignment and Permission System - owns reviewer eligibility, assignment routing, access grants, conflict checks, and permission state before a reviewer can work.
+- Structured Review Form and Scoring Templates - owns required review fields, scoring rubric versions, validation rules, scoring inputs, and score outputs.
+- Decision Dashboard and Comparison View - owns current decision summary, comparison display, review readiness, visible blockers, and user-facing decision state.
+- Audit Trail, Version History, and Retention Controls - owns immutable event history, version chain, retention policy state, audit reconstruction, change provenance, and replay evidence.
+
+Critical assumptions
+- Release 0.0.1 proves one structured review before broad workflow automation.
+- Permission, scoring, decision comparison, and audit retention are separate product responsibilities.
+
+Ambiguities
+- Whether the first rubric has weighted scoring or pass/fail scoring.
+- Whether retention starts as a manual policy choice or a live policy integration.
+
+Proof boundary
+Release 0.0.1 succeeds when reviewer assignment respects eligibility and permissions, missing scoring fields block submission, dashboard comparison shows current decision readiness without hiding blockers, audit history preserves the versioned decision and retention state, and replay evidence distinguishes assignment, scoring, dashboard, and audit responsibilities.
+""",
+        encoding="utf-8",
+    )
+
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Draft a product-first greenfield proposal for a structured review workspace.",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--release",
+            "0.0.1",
+            "--confirm",
+        ]
+    )
+
+    output = capsys.readouterr().out
+    assert rc == 0, output
+    assert "too similar" not in output
+    assert "greenfield create wrote confirmed proposal" in output
+    assert (tmp_path / ".odylith/runtime/greenfield/confirmed-intent.json").is_file()
+    assert (tmp_path / "odylith/runtime/source/accepted-project.v1.json").is_file()
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
+    assert list((tmp_path / "odylith/atlas/source/catalog").glob("*.json"))
+    accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
+    assert accepted["proposal"]["release_plan"]
+
+    specs = {
+        path.parent.name: path.read_text(encoding="utf-8")
+        for path in (tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md")
+    }
+    assert rendered_component_spec_quality_issues(specs, project_title="Structured Review Workspace") == []
+    joined_specs = "\n".join(specs.values())
+    for banned in (
+        "inspect The",
+        "Human actors:",
+        "plus 1 more",
+        "responsibility and keeps it tied",
+    ):
+        assert banned not in joined_specs
+
+    def spec_for(title: str) -> str:
+        return next(text for text in specs.values() if text.splitlines()[0].startswith(f"# {title}"))
+
+    assignment_spec = spec_for("Review Assignment and Permission System")
+    form_spec = spec_for("Structured Review Form and Scoring Templates")
+    dashboard_spec = spec_for("Decision Dashboard and Comparison View")
+    audit_spec = spec_for("Audit Trail, Version History, and Retention Controls")
+    for phrase in ("reviewer eligibility", "access grants", "conflict constraints", "refuses form layout"):
+        assert phrase.casefold() in assignment_spec.casefold()
+    for phrase in ("review fields", "scoring rubric", "score outputs", "refuses reviewer assignment"):
+        assert phrase.casefold() in form_spec.casefold()
+    for phrase in ("current decision summary", "comparison display", "review readiness", "refuses immutable audit storage"):
+        assert phrase.casefold() in dashboard_spec.casefold()
+    for phrase in ("immutable event history", "version chain", "retention policy state", "refuses dashboard ranking"):
+        assert phrase.casefold() in audit_spec.casefold()
+
+
 def test_confirmed_intent_parser_still_rejects_exact_generic_system_scaffold() -> None:
     with pytest.raises(ValueError, match="internal_systems"):
         parse_confirmed_intent_text(
