@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract import (
 from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import (
     normalize_contract,
     ordered_domain_terms,
+    public_prose_quality_issues,
     rendered_component_spec_quality_issues,
 )
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import (
@@ -347,6 +348,8 @@ def _contract_repair_targets(rows: Sequence[dict[str, Any]], *, proposal: Mappin
 
 
 def _contract_needs_repair(contract: Mapping[str, Any]) -> bool:
+    if public_prose_quality_issues(contract):
+        return True
     values = text_values(contract)
     if any(_starts_with_generic_actor(value) for value in values):
         return True
