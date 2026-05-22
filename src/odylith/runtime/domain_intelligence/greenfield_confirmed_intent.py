@@ -805,13 +805,10 @@ def _concise_system_row(value: str, *, context_text: str = "") -> str:
 
 def _concise_system_description(name: str, *, context_text: str) -> str:
     subject = _clean(name).casefold()
-    clause = _best_context_clause(name, context_text)
-    if clause:
-        return (
-            f"handles {subject} inputs, state changes, outputs, evidence, and handoff for this product behavior: "
-            f"{_brief_clause(clause, limit=180)}"
-        )
-    return f"defines the input, state change, output, and evidence needed to trust the {subject} responsibility"
+    return (
+        f"handles {subject} inputs, produced outputs, blocked states, evidence, and handoff boundaries "
+        "for the confirmed first path"
+    )
 
 
 def _format_system_row(name: str, body: str, *, context_text: str = "") -> str:

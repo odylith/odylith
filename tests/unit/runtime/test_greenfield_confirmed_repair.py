@@ -11,6 +11,9 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_different
     component_spec_preflight_issues,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.governance.component_spec_rendering import build_component_spec
+from odylith.runtime.project_intelligence.greenfield import build_greenfield_payload
 from tests.unit.runtime.greenfield_proposal_fixtures import _confirmed_intent
 
 
@@ -104,3 +107,131 @@ def test_confirmed_repair_loop_cleans_dirty_public_prose_across_artifact_familie
         assert set(CONTRACT_KEYS) <= set(row["component_contract"])
         contract_text = json.dumps(row["component_contract"]).casefold()
         assert "permit" in contract_text or "zoning" in contract_text or "revision" in contract_text
+
+
+PEER_REVIEW_INTENT_TEXT = """Science Paper Peer Review App
+
+Product story
+A research venue or editorial team needs a structured review workspace for scientific papers. Authors submit manuscripts, editors assign qualified reviewers, reviewers evaluate claims and reproducibility, and the editor reaches a decision with a clear audit trail.
+
+State object
+The core state is a review case: a submitted paper, its authors, editorial status, assigned reviewers, review forms, conflicts of interest, decision history, revision rounds, files, comments, and notification state.
+
+First complete path
+An author submits a paper. An editor screens it, checks conflicts, assigns reviewers, and tracks review progress. Reviewers submit structured feedback with scores, strengths, weaknesses, reproducibility notes, and recommendation. The editor compares reviews, requests revisions or makes a decision, and the author receives the outcome.
+
+Human actors
+- Author submitting a scientific manuscript
+- Editor or program chair managing review flow
+- Reviewer evaluating scientific quality and reproducibility
+- Admin configuring venue policies, templates, deadlines, and permissions
+
+External systems
+- Email or notification service
+- File storage for manuscripts, supplements, and review attachments
+- Identity provider for login and reviewer access
+
+Internal product systems
+- Submission intake and manuscript versioning
+- Reviewer assignment and conflict-of-interest tracking
+- Structured review forms and scoring rubrics
+- Editorial decision workflow
+- Revision-round management
+- Role-based access control and audit history
+- Notification and deadline tracking
+- Search, filtering, and status dashboards
+
+Critical assumptions
+- Human editors make all final decisions.
+- Confidential review data must be protected by role and review stage.
+
+Proof boundary
+The first proof is a working review cycle from paper submission through editorial decision. It must show correct role-based visibility, reviewer assignment, review submission, deadline tracking, decision history, and a clear author-facing outcome.
+"""
+
+
+def test_confirmed_peer_review_shape_stays_component_specific_and_actor_complete(tmp_path) -> None:
+    intent = parse_confirmed_intent_text(
+        PEER_REVIEW_INTENT_TEXT,
+        prompt="Draft a product-first greenfield proposal for a science research paper peer review app.",
+    )
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="Draft a product-first greenfield proposal for a science research paper peer review app.",
+        confirmed_intent=intent,
+        release_selector="0.0.1",
+    )
+
+    payload = build_greenfield_payload(proposal=proposal, repo_root=tmp_path)
+    participant_titles = [row[1] for row in payload["participants"]]
+    assert len(participant_titles) >= 4
+    assert "Scientific Manuscript Author" in participant_titles
+    assert "Editor Or Program Chair Managing Review Flow" in participant_titles
+    assert "Scientific Quality And Reproducibility Reviewer" in participant_titles
+    assert "Venue Policies, Templates, Deadlines, And Permissions Admin" in participant_titles
+
+    components = {row["label"]: row for row in proposal["components"]}
+    submission = components["Submission Intake and Manuscript Versioning Service"]["component_contract"]
+    assignment = components["Review Assignment and Conflict-of-interest Tracking"]["component_contract"]
+    scoring = components["Structured Review Forms and Scoring Rubrics"]["component_contract"]
+    decision = components["Editorial Decision Workflow Service"]["component_contract"]
+    revision = components["Revision-round Management Service"]["component_contract"]
+    access = components["Role-based Access Control and Audit History Service"]["component_contract"]
+    notification = components["Notification and Deadline Tracking Service"]["component_contract"]
+    dashboard = components["Search, Filtering, and Status Dashboards Surface"]["component_contract"]
+
+    assert "submitted item identity" in submission["owned_state"].casefold()
+    assert "assignment routing" not in " ".join([submission["owned_state"], submission["accepted_inputs"], submission["produced_outputs"]]).casefold()
+    assert "assignment routing" in assignment["owned_state"].casefold()
+    assert "scoring rubric" in scoring["owned_state"].casefold()
+    assert "decision evidence package" in decision["owned_state"].casefold()
+    assert "revision round" in revision["owned_state"].casefold()
+    assert "permission grant" in access["owned_state"].casefold()
+    assert "notification delivery request" in notification["owned_state"].casefold()
+    assert "filtered result set" in dashboard["produced_outputs"].casefold()
+
+    encoded = json.dumps(proposal)
+    for banned in (
+        "preserves handles",
+        "maintains defines",
+        "refuses refuses",
+        "scor,",
+        "shows whether The",
+        "inspect the core state is",
+        "plus 1 more",
+        "responsibility and keeps it tied",
+    ):
+        assert banned not in encoded
+    assert public_prose_quality_issues(proposal) == []
+
+    mermaid_sources = "\n".join(str(row.get("mermaid_source", "")) for row in proposal["diagrams"])
+    assert "…" not in mermaid_sources
+    assert "..." not in mermaid_sources
+    assert "A1->>C1: An author submits a paper" in mermaid_sources
+    assert "A2->>C2: An editor screens it" in mermaid_sources
+    assert "A3->>C3: Reviewers submit structured" in mermaid_sources
+    assert "A1->>C7: The author receives" in mermaid_sources
+
+    specs = {
+        row["label"]: build_component_spec(
+            component_id=row["component_id"],
+            label=row["label"],
+            path=row.get("intended_path"),
+            kind=row.get("kind"),
+            status=row.get("status"),
+            sources=(row.get("evidence_tier"),),
+            workstreams=tuple(row.get("workstreams", ()) or ()),
+            diagrams=tuple(row.get("diagrams", ()) or ()),
+            responsibility=row.get("responsibility"),
+            boundary=row.get("boundary"),
+            dependencies=tuple(row.get("dependencies", ())),
+            interfaces=tuple(row.get("interfaces", ())),
+            validation=tuple(row.get("validation", ())),
+            risks=tuple(row.get("risks", ())),
+            qualification=row.get("qualification"),
+            component_contract=row.get("component_contract"),
+        )
+        for row in proposal["components"]
+    }
+    assert component_spec_preflight_issues(proposal) == []
+    assert "assignment routing" not in specs["Submission Intake and Manuscript Versioning Service"].split("### Owns", 1)[1].split("###", 1)[0]

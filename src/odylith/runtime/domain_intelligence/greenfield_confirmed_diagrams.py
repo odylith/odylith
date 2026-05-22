@@ -515,18 +515,19 @@ def _context_mermaid(
     first_component = _node_id("component", 1)
     for index, actor in enumerate(actors[:5], start=1):
         node = _node_id("actor", index)
-        lines.append(f'  {node}["{_flow_label(actor, limit=72)}"] --> {first_component}')
+        target = _best_component_node_for_text(actor, components=components) or first_component
+        lines.append(f'  {node}["{_flow_label(actor, limit=96)}"] --> {target}')
     if not components:
         lines.append(f'  {first_component}["{_flow_label(label, limit=60)}<br/>product core"]')
     for index, component in enumerate(components[:7], start=1):
         node = _node_id("component", index)
         lines.append(f'  {node}["{_flow_label(str(component.get("label", "")), limit=72)}"]')
         if index > 1:
-            lines.append(f"  {first_component} --> {node}")
-    target_component = _adapter_node(components) or first_component
+            lines.append(f"  {_node_id('component', index - 1)} --> {node}")
     for index, external in enumerate(external_systems[:5], start=1):
         node = _node_id("external", index)
-        lines.append(f'  {node}["{_flow_label(external, limit=72)}"] --> {target_component}')
+        target_component = _best_component_node_for_text(external, components=components) or _adapter_node(components) or first_component
+        lines.append(f'  {node}["{_flow_label(external, limit=96)}"] --> {target_component}')
     lines.extend(
         [
             "  classDef actor fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;",
@@ -542,23 +543,211 @@ def _context_mermaid(
 
 
 def _sequence_mermaid(*, label: str, actors: list[str], components: list[dict[str, Any]], first_path: str) -> str:
-    actor = _participant_label(actors[0] if actors else f"{label} user")
-    selected = components[:4] or [{"label": f"{label} product core"}]
+    selected = components[:7] or [{"label": f"{label} product core"}]
+    actor_rows = actors[:5] or [f"{label} user"]
     lines = [
         "sequenceDiagram",
         "  autonumber",
-        f"  participant A as {actor}",
     ]
+    for index, actor in enumerate(actor_rows, start=1):
+        lines.append(f"  participant A{index} as {_participant_label(actor)}")
     for index, component in enumerate(selected, start=1):
         lines.append(f"  participant C{index} as {_participant_label(str(component.get('label', 'Component')))}")
-    lines.append(f"  A->>C1: start accepted first path")
-    if first_path:
-        lines.append(f"  Note over A,C1: {_sequence_text(first_path)}")
-    for index in range(1, len(selected)):
-        lines.append(f"  C{index}->>C{index + 1}: pass state and evidence")
-        lines.append(f"  C{index + 1}-->>C{index}: return traceable result")
-    lines.append("  C1-->>A: show state, evidence, and blockers")
+    steps = _first_path_steps(first_path)
+    if not steps:
+        steps = ["Start the accepted first path", "Record product state and evidence", "Review the outcome and blockers"]
+    for index, step in enumerate(steps[:8]):
+        actor_node = _step_actor(step, actors=actor_rows, fallback_index=min(index, len(actor_rows) - 1))
+        component_node = _step_component(step, components=selected, fallback_index=min(index, len(selected) - 1))
+        lines.append(f"  {actor_node}->>{component_node}: {_step_message(step)}")
+        if index + 1 < len(steps[:8]):
+            next_component_node = _step_component(
+                steps[index + 1],
+                components=selected,
+                fallback_index=min(index + 1, len(selected) - 1),
+            )
+            if next_component_node != component_node:
+                lines.append(f"  {component_node}->>{next_component_node}: hand off state, evidence, and blockers")
+    first_actor = "A1"
+    final_component = _step_component(steps[min(len(steps), 8) - 1], components=selected, fallback_index=min(len(selected) - 1, len(steps) - 1))
+    lines.append(f"  {final_component}-->>{first_actor}: show outcome, evidence, and next action")
     return "\n".join(lines) + "\n"
+
+
+def _best_component_node_for_text(value: str, *, components: list[dict[str, Any]]) -> str:
+    scored: list[tuple[int, int, str]] = []
+    terms = _domain_terms(value)
+    if not terms:
+        return ""
+    for index, component in enumerate(components[:7], start=1):
+        component_text = " ".join(
+            str(component.get(key, ""))
+            for key in ("label", "source_system_description", "responsibility", "boundary")
+        )
+        score = len(terms & _domain_terms(component_text))
+        if score:
+            scored.append((score, -index, _node_id("component", index)))
+    scored.sort(reverse=True)
+    return scored[0][2] if scored else ""
+
+
+def _first_path_steps(value: str) -> list[str]:
+    text = _compact_text(value)
+    if not text:
+        return []
+    numbered = [part.strip(" .") for part in re.split(r"(?:^|\s)\d+[.)]\s*", text) if part.strip(" .")]
+    if len(numbered) > 1:
+        first = numbered[0]
+        if ":" in first:
+            first = first.rsplit(":", 1)[-1].strip(" .")
+        steps = [first, *numbered[1:]] if first else numbered[1:]
+        return [_sentence(step).rstrip(".") for step in steps if len(re.findall(r"[A-Za-z0-9]+", step)) >= 3]
+    steps = [part.strip(" .") for part in re.split(r"(?<=[.!?])\s+|;\s+", text) if part.strip(" .")]
+    expanded: list[str] = []
+    for step in steps:
+        expanded.extend(
+            part.strip(" .")
+            for part in re.split(r"\s+and\s+(?=(?:the\s+)?[A-Za-z]+\s+receives?\b)", step)
+            if part.strip(" .")
+        )
+    steps = expanded
+    if len(steps) == 1:
+        steps = [part.strip(" .") for part in re.split(r",\s+(?=(?:and\s+)?[A-Z][a-z]+\b|(?:the|a|an)\s+[a-z]+\b)", text) if part.strip(" .")]
+    return [_sentence(step).rstrip(".") for step in steps if step]
+
+
+def _step_actor(step: str, *, actors: list[str], fallback_index: int) -> str:
+    axis_index = _step_axis_actor_index(step, rows=actors)
+    if axis_index is not None:
+        return f"A{axis_index + 1}"
+    target = _best_index_for_text(step, rows=actors, default=fallback_index)
+    return f"A{target + 1}"
+
+
+def _step_axis_actor_index(step: str, *, rows: list[str]) -> int | None:
+    text = _compact_text(step).casefold()
+    direct_subjects: tuple[tuple[tuple[str, ...], tuple[str, ...]], ...] = (
+        (("editor", "chair"), ("editor", "chair", "manager", "coordinator", "supervisor", "owner")),
+        (("applicant", "submit", "request"), ("applicant", "submitter", "requester", "customer")),
+        (("reviewer", "reviewers"), ("reviewer", "evaluator", "analyst", "inspector", "approver")),
+        (("admin", "administrator"), ("admin", "administrator", "config", "maintainer", "support")),
+    )
+    for step_tokens, actor_tokens in direct_subjects:
+        if not any(token in text for token in step_tokens):
+            continue
+        for index, row in enumerate(rows):
+            row_text = row.casefold()
+            if any(token in row_text for token in actor_tokens):
+                return index
+    axes: tuple[tuple[tuple[str, ...], tuple[str, ...]], ...] = (
+        (("reviewer", "feedback", "score", "quality", "reproducibility"), ("reviewer", "evaluator", "analyst", "inspector", "approver")),
+        (("editor", "chair", "screen", "assign", "compare", "decision"), ("editor", "chair", "manager", "coordinator", "supervisor", "owner")),
+        (("applicant", "submit", "request", "receives"), ("applicant", "submitter", "requester", "customer")),
+        (("admin", "configure", "policy", "template", "deadline", "permission"), ("admin", "administrator", "config", "maintainer", "support")),
+    )
+    for step_tokens, actor_tokens in axes:
+        if not any(token in text for token in step_tokens):
+            continue
+        for index, row in enumerate(rows):
+            row_text = row.casefold()
+            if any(token in row_text for token in actor_tokens):
+                return index
+    return None
+
+
+def _step_component(step: str, *, components: list[dict[str, Any]], fallback_index: int) -> str:
+    label_rows = [str(component.get("label", "")) for component in components]
+    rows = [
+        " ".join(str(component.get(key, "")) for key in ("label", "source_system_description", "responsibility", "boundary"))
+        for component in components
+    ]
+    axis_index = _step_axis_component_index(step, rows=label_rows)
+    if axis_index is not None:
+        return f"C{axis_index + 1}"
+    target = _best_index_for_text(step, rows=rows, default=fallback_index)
+    return f"C{target + 1}"
+
+
+def _step_axis_component_index(step: str, *, rows: list[str]) -> int | None:
+    text = _compact_text(step).casefold()
+    axes: tuple[tuple[tuple[str, ...], tuple[str, ...]], ...] = (
+        (("feedback", "score", "scores", "rubric", "structured", "strength", "weakness", "reproducibility"), ("form", "scoring", "rubric", "assessment")),
+        (("submit", "submission", "upload", "file"), ("submission", "intake", "version", "file")),
+        (("screen", "assign", "conflict", "reviewer"), ("assignment", "conflict", "permission", "access", "role")),
+        (("receives", "received", "notified", "notification"), ("notification", "deadline", "status", "dashboard", "view")),
+        (("compare", "decision", "decide", "outcome", "approval", "reject"), ("decision", "approval", "outcome", "comparison")),
+        (("revision", "revise", "revisions", "resubmit"), ("revision", "round", "resubmission", "response")),
+        (("deadline", "reminder", "overdue"), ("notification", "deadline", "status", "dashboard", "view")),
+    )
+    for step_tokens, component_tokens in axes:
+        if not any(token in text for token in step_tokens):
+            continue
+        for index, row in enumerate(rows):
+            if any(_has_word(row, token) for token in component_tokens):
+                return index
+    return None
+
+
+def _has_word(value: str, token: str) -> bool:
+    return bool(re.search(rf"\b{re.escape(token.casefold())}(?:s|es|ing|ed)?\b", value.casefold()))
+
+
+def _best_index_for_text(value: str, *, rows: list[str], default: int) -> int:
+    terms = _domain_terms(value)
+    scored: list[tuple[int, int]] = []
+    for index, row in enumerate(rows):
+        score = len(terms & _domain_terms(row))
+        if score:
+            scored.append((score, -index))
+    if not scored:
+        return max(0, min(default, max(0, len(rows) - 1)))
+    scored.sort(reverse=True)
+    return -scored[0][1]
+
+
+def _step_message(value: str) -> str:
+    text = _strip_dangling_tail(_trim(value, 110))
+    return _without_ellipsis(mermaid_text.wrap_mermaid_label(text, width=34, max_lines=3, limit=120)) or "advance accepted path"
+
+
+def _domain_terms(value: object) -> set[str]:
+    stop = {
+        "accepted",
+        "actor",
+        "and",
+        "app",
+        "application",
+        "boundary",
+        "component",
+        "evidence",
+        "first",
+        "from",
+        "outcome",
+        "path",
+        "product",
+        "proof",
+        "record",
+        "release",
+        "result",
+        "state",
+        "system",
+        "that",
+        "the",
+        "through",
+        "with",
+    }
+    terms: set[str] = set()
+    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", _compact_text(str(value)).casefold()):
+        token = raw.strip("-_")
+        if token.endswith("ies") and len(token) > 5:
+            token = f"{token[:-3]}y"
+        elif token.endswith("ing") and len(token) > 6:
+            token = token[:-3]
+        elif token.endswith("s") and len(token) > 4 and not token.endswith("ss"):
+            token = token[:-1]
+        if len(token) >= 4 and token not in stop:
+            terms.add(token)
+    return terms
 
 
 def _ownership_mermaid(
@@ -755,30 +944,48 @@ def _short_label(value: str) -> str:
 
 def _flow_label(value: str, *, limit: int) -> str:
     text = str(value or "").split("—", 1)[0].split(":", 1)[0].strip() or "Item"
-    return mermaid_text.wrap_mermaid_label(text, width=30, max_lines=3, limit=limit)
+    return _without_ellipsis(mermaid_text.wrap_mermaid_label(text, width=30, max_lines=4, limit=limit))
 
 
 def _participant_label(value: str) -> str:
     text = str(value or "").split("—", 1)[0].split(":", 1)[0].strip()
-    return mermaid_text.wrap_sequence_participant(text)
+    return _without_ellipsis(mermaid_text.wrap_mermaid_label(text, width=24, max_lines=5, limit=120) or "Participant")
 
 
 def _sequence_text(value: str) -> str:
-    return mermaid_text.wrap_sequence_note(_brief_first_path(value) or value)
+    return _without_ellipsis(mermaid_text.wrap_sequence_note(_brief_first_path(value) or value))
 
 
 def _escape_label(value: str) -> str:
     return mermaid_text.escape_mermaid_label(value)
 
 
+def _without_ellipsis(value: str) -> str:
+    return str(value or "").replace("…", "").replace("...", "").rstrip(" ,;:")
+
+
 def _trim(value: str, limit: int) -> str:
     text = _compact_text(value)
     if len(text) <= limit:
         return text
-    clipped = text[: max(0, limit - 1)].rstrip(" ,;:")
+    clipped = text[: max(0, limit)].rstrip(" ,;:")
     if " " in clipped:
         clipped = clipped.rsplit(" ", 1)[0].rstrip(" ,;:")
-    return clipped + "…"
+    return _strip_dangling_tail(clipped)
+
+
+def _strip_dangling_tail(value: str) -> str:
+    text = _compact_text(value).rstrip(" ,;:.")
+    while True:
+        cleaned = re.sub(
+            r"\b(?:a|an|and|as|at|because|by|for|from|if|in|into|of|on|or|the|to|when|while|with|without)$",
+            "",
+            text,
+            flags=re.IGNORECASE,
+        ).rstrip(" ,;:.")
+        if cleaned == text:
+            return cleaned
+        text = cleaned
 
 
 __all__ = ["confirmed_diagrams"]

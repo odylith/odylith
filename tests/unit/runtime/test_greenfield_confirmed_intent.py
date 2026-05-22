@@ -1230,7 +1230,7 @@ def test_confirmed_intent_json_splits_labeled_roles_and_sentence_systems() -> No
 
     assert intent["human_actors"] == [
         "Submitter: provides the source material and needs a clear status",
-        "Reviewer: checks evidence, records the decision, and explains uncertainty",
+        "Evidence Reviewer: reviews assigned work, submits structured evidence or decisions, and can challenge incomplete, disputed, or unsafe outcomes.",
         "Operations lead: watches escalations and decides whether the process is ready to trust",
     ]
     assert intent["internal_systems"][0].startswith("Intake Console — captures the submitted request")

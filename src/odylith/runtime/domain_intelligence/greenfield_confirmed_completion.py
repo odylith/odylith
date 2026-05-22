@@ -77,6 +77,7 @@ def greenfield_repair_until_clean(
         changed |= _complete_backlog(payload)
         changed |= _complete_components(payload)
         changed |= differentiate_component_contracts(payload)
+        changed |= _reconcile_backlog_with_components(payload)
         changed |= _complete_diagrams(payload)
         issues = _preflight_issues(payload, release_selector=release_selector)
         if not issues:
@@ -273,6 +274,101 @@ def _complete_components(proposal: dict[str, Any]) -> bool:
         changed |= _ensure_text(row, "qualification", "candidate")
         changed |= _ensure_text(row, "evidence_tier", "user_intent")
     return changed
+
+
+def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
+    rows = _dict_rows(proposal.get("backlog"))
+    components = _dict_rows(proposal.get("components"))
+    if len(rows) < 2 or not components:
+        return False
+    by_id = {_clean(component.get("component_id")): component for component in components if _clean(component.get("component_id"))}
+    changed = False
+    for row in rows[1:]:
+        component = _primary_component_for_backlog(row, components=components, by_id=by_id)
+        if not component:
+            continue
+        contract = component.get("component_contract") if isinstance(component.get("component_contract"), Mapping) else {}
+        if not contract:
+            continue
+        title = _clean(row.get("title")) or _component_label(component, 0)
+        label = _component_label(component, 0)
+        owned = _fragment(contract.get("owned_state"), fallback=f"{label} owned state", limit=260)
+        inputs = _fragment(contract.get("accepted_inputs"), fallback="accepted local inputs", limit=220)
+        outputs = _fragment(contract.get("produced_outputs"), fallback="local output and handoff", limit=220)
+        states = _fragment(contract.get("states_or_transitions"), fallback="success, blocked, and handed-off states", limit=180)
+        proof = _first_text(contract.get("local_proof")) or f"{label} proves its local inputs, outputs, blockers, and handoff."
+        drifted = _row_drifted_from_component(row, component)
+        if _text_needs_repair(row.get("product_view")) or drifted:
+            row["product_view"] = (
+                f"{label} owns {owned}. It accepts {inputs}, produces {outputs}, and keeps {states} visible for {title}."
+            )
+            changed = True
+        if _text_needs_repair(row.get("recommended_first_slice")) or drifted:
+            row["recommended_first_slice"] = (
+                f"Implement {label} around its local inputs, outputs, blocked states, sibling refusals, and downstream handoff."
+            )
+            changed = True
+        if _sequence_needs_repair(row.get("success_metrics"), required_tokens=("success", "block", "evidence"), min_items=3) or drifted:
+            metrics = [
+                f"{label} accepts its required inputs and produces the expected local output: {outputs}.",
+                f"{label} blocks readiness when required input, access, state, validation, or evidence is missing.",
+                f"{label} keeps its local proof separate from sibling responsibilities: {proof}",
+            ]
+            if _row_is_release_proof(row):
+                metrics.append(
+                    f"{label} keeps the accepted release proof boundary visible: {_fragment(_proof_boundary(proposal), fallback='the accepted release proof boundary', limit=260)}."
+                )
+            row["success_metrics"] = metrics
+            changed = True
+        if _sequence_needs_repair(row.get("interfaces"), required_tokens=("input", "output"), min_items=1) or drifted:
+            row["interfaces"] = [
+                f"{label} input contract: {inputs}.",
+                f"{label} output contract: {outputs}.",
+            ]
+            changed = True
+        if _sequence_needs_repair(row.get("validation"), required_tokens=("success", "block"), min_items=1) or drifted:
+            row["validation"] = [
+                f"Validate {label} success, blocked, invalid-input, access, replay, and handoff behavior against its local proof.",
+            ]
+            changed = True
+    return changed
+
+
+def _primary_component_for_backlog(
+    row: Mapping[str, Any],
+    *,
+    components: Sequence[dict[str, Any]],
+    by_id: Mapping[str, dict[str, Any]],
+) -> dict[str, Any] | None:
+    for ref in text_values(row.get("component_focus")):
+        if component := by_id.get(_clean(ref)):
+            return component
+    title_terms = _keywords([row.get("title")])
+    scored: list[tuple[int, int, dict[str, Any]]] = []
+    for index, component in enumerate(components):
+        score = len(title_terms & _keywords([component.get("label"), component.get("component_id")]))
+        if score:
+            scored.append((score, -index, component))
+    scored.sort(reverse=True)
+    return scored[0][2] if scored else None
+
+
+def _row_drifted_from_component(row: Mapping[str, Any], component: Mapping[str, Any]) -> bool:
+    label_terms = _keywords([component.get("label"), component.get("component_id")])
+    row_terms = _keywords([row.get("title"), row.get("product_view"), row.get("recommended_first_slice")])
+    if not label_terms:
+        return False
+    return len(label_terms & row_terms) < min(2, len(label_terms))
+
+
+def _row_is_release_proof(row: Mapping[str, Any]) -> bool:
+    text = " ".join(text_values([row.get("title"), row.get("product_view"), row.get("recommended_first_slice")])).casefold()
+    return "proof" in text or "release evidence" in text or "release readiness" in text
+
+
+def _first_text(value: Any) -> str:
+    values = text_values(value)
+    return _sentence(values[0], limit=260) if values else ""
 
 
 def _complete_diagrams(proposal: dict[str, Any]) -> bool:
@@ -652,7 +748,15 @@ def _sentence_needs_repair(value: Any) -> bool:
         return True
     if re.search(r"\.\s+(?:and|or)\b", text, flags=re.IGNORECASE):
         return True
-    if re.search(r"\b(?:inspect\s+The|verifies\s+that\s+The|Human\s+actors\s*:|plus\s+\d+\s+more)", text, flags=re.IGNORECASE):
+    if re.search(
+        r"\b(?:inspect\s+The|verifies\s+that\s+The|shows\s+whether\s+The|Human\s+actors\s*:|plus\s+\d+\s+more|preserves\s+handles|maintains\s+defines|accepting\s+eligible)",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        return True
+    if re.search(r"\brefuses\b[^.]{0,140}\brefuses\b", text, flags=re.IGNORECASE):
+        return True
+    if re.search(r"\bscor\b", text, flags=re.IGNORECASE):
         return True
     return False
 

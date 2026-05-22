@@ -355,7 +355,7 @@ def _project_intelligence(
     first_path_summary = _short_summary(first_path, limit=360)
     proof_summary = _short_summary(proof_boundary, limit=320)
     state_summary = _state_detail_summary(state_object, state_label=state_label, limit=260)
-    actors = _short_summary(customer, limit=220) or _join_items(human_actors) or f"the first {label_lower} operator and reviewer"
+    actors = _join_items(human_actors) or _short_summary(customer, limit=220) or f"the first {label_lower} operator and reviewer"
     internals = _join_system_labels(internal_systems) or f"{state_lower} owner and {evidence_lower} owner"
     externals = _join_items(external_systems) or "explicitly deferred external systems"
     non_goal_text = _join_items(non_goals) or "broad platform automation and live irreversible integrations"
@@ -494,10 +494,11 @@ def _workstream_titles(*, label: str, components: list[dict[str, Any]], internal
         if str(row.get("label", "")).strip()
     ]
     if len(labels) >= 3 and internal_systems:
+        proof_label = labels[-1] if len(labels) > 3 else labels[2]
         return (
             f"Build {labels[0]} First Path",
             f"Implement {labels[1]} State Handoffs",
-            f"Build {labels[2]} Proof Review",
+            f"Build {proof_label} Proof Review",
         )
     return (
         f"Build {label} First Path",
@@ -519,7 +520,7 @@ def _workstream_subject(value: str) -> str:
 def _evidence_record_label(*, label: str, proof_boundary: str, internal_systems: list[str]) -> str:
     for system in internal_systems:
         name = str(system).casefold()
-        if any(token in name for token in ("evidence", "audit", "proof", "review", "ledger")):
+        if any(token in name for token in ("evidence", "audit", "proof", "ledger", "history", "trace")):
             first = str(system).split("—", 1)[0].split("-", 1)[0].split(":", 1)[0].strip()
             if first:
                 return f"{system_component_name(first)} proof record"
@@ -690,7 +691,7 @@ def _backlog(
     first_path_entry = _first_clause(first_path_summary)
     proof_summary = _short_summary(proof_boundary, limit=340)
     evidence_phrase = "quality evidence" if "quality evidence" in first_path_summary.casefold() else f"{state_label} evidence"
-    actors = _short_summary(customer, limit=260) or _join_items(human_actors) or f"{label} users and reviewers"
+    actors = _join_items(human_actors) or _short_summary(customer, limit=260) or f"{label} users and reviewers"
     non_goal_text = _join_items(non_goals) or "broader automation, live integrations, and production-scale decisions"
     primary_component = _workstream_subject(_component_label_at(components, 0, fallback=f"{label} first path"))
     second_component = _workstream_subject(_component_label_at(components, 1, fallback=primary_component))
@@ -817,7 +818,7 @@ def _backlog(
         opportunity=(
             f"Build the {proof_component} review output with validation results, state references, reviewer decision, and deferred scope."
         ),
-        product_view=f"{proof_component} produces {proof_outputs} and shows whether {proof_summary} passes, fails, or is blocked.",
+        product_view=f"{proof_component} produces {proof_outputs} and shows proof status for the accepted boundary: {proof_summary}.",
         first_slice=f"Implement one reviewable {evidence_label} output for the first path, validation result, and reviewer decision.",
         metrics=[
             f"{evidence_label} links source input, {state_label}, validation output, reviewer decision, and outcome.",
@@ -1101,11 +1102,12 @@ def _project_specific_actor_rows(*, label: str, rows: list[str]) -> list[str]:
 
 def _project_specific_actor_row(row: str, *, focus: str) -> str:
     for prefix in _GENERIC_ACTOR_PREFIXES:
-        match = re.match(rf"^{re.escape(prefix)}(?P<tail>(?:\s|:|[-–—/]|$).*)", row)
+        match = re.match(rf"^{re.escape(prefix)}(?P<tail>\s*(?::|[-–—/]|$).*)", row)
         if not match:
             continue
-        replacement = f"{focus} {prefix.casefold()}"
-        return f"{replacement}{match.group('tail')}".strip()
+        replacement = f"{_role_focus(focus, prefix)} {prefix}"
+        tail = re.sub(r"^\s+", " ", match.group("tail"))
+        return f"{replacement}{tail}".strip()
     return row
 
 
@@ -1118,6 +1120,13 @@ def _actor_focus_label(label: str) -> str:
     )
     text = " ".join(text.replace(":", " ").split()).strip(" -")
     return text or str(label or "Project").strip() or "Project"
+
+
+def _role_focus(focus: str, role: str) -> str:
+    text = str(focus or "").strip()
+    if role.casefold() == "reviewer":
+        text = re.sub(r"\breview$", "", text, flags=re.IGNORECASE).strip()
+    return text or str(focus or "").strip() or "Project"
 
 
 

@@ -303,6 +303,8 @@ def _profile(*, label: str, kind: str, context: str) -> str:
     text = f"{focused} {context}".casefold()
     if focused_words & {"document", "attachment", "upload", "packet", "file"} or "context handling" in focused:
         return "document_context"
+    if focused_words & {"access", "permission", "rbac", "audit", "retention"}:
+        return "generic"
     if focused_words & {"status", "timeline", "history", "notification", "stale"} or "current owner" in focused:
         return "status_view"
     if "context" in focused_words and any(token in text for token in ("document", "attachment", "packet", "upload", "file")):

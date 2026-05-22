@@ -446,7 +446,7 @@ def _node_action_sentence(label: str, *, context: DiagramBoxContext) -> str:
         return f"{subject} turns governed state into user-visible language without changing the underlying source truth."
     if _has_any(lowered, ("handshake", "contract")):
         return f"{subject} passes agreed state across a boundary and preserves the rules the next step must obey."
-    if _has_any(lowered, ("owner", "operator", "reviewer", "approver", "advocate", "user", "customer", "patient", "merchant", "scientist", "engineer", "maintainer")):
+    if _has_any(lowered, ("owner", "operator", "reviewer", "approver", "advocate", "user", "customer", "merchant", "scientist", "engineer", "maintainer")):
         return f"{subject} makes or accepts the decisions this part of the flow depends on."
     if _has_any(lowered, ("sensor", "sensing", "monitor", "measurement", "telemetry", "signal", "probe", "scanner")):
         return f"{subject} measures the current state and feeds the decision or proof step that follows."

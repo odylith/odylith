@@ -42,16 +42,10 @@
   },
   "digest": {
     "24h": [
-      "Completed in this window: Greenfield overlap repair landed before writing forward. That removed a real collision risk and gave the current greenfield work cleaner footing. | Repair text ownership was explicitly decomposed, so the confirmed-greenfield correction path now has named owners and less ambiguity on who moves what.",
-      "Current execution: The active thread is building an Odylith-owned confirmed-greenfield path that turns intent into backlog, release framing, and a planned Registry shape. | B-142 still drives the heaviest movement, while some lanes have weak or missing checklist capture and need better progress evidence. | ETA sits around one day with high confidence, so the team expects this path to settle quickly if execution stays clean. | Because checklist capture is uneven in active lanes, today\u2019s work is partly strong and partly hard to measure until those traces land.",
-      "Next planned: The immediate next chunk is B-021: benchmark corpus expansion and frontier improvement to bring Registry, Radar, Atlas, Compass, and benchmark docs back into the maintained surface. | More real maintainer coding through the CLI contract is the right follow-on, so this lane moves from status shaping into proof-bearing execution.",
-      "Risks to watch: P0 remains open on confirmed-greenfield create fail-closed behavior without accepted product narrative, so release safety can still stall even when implementation looks active."
+      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
     ],
     "48h": [
-      "Completed in this window: Greenfield confirmed-governance generation was hardened. That makes confirmed intent handling safer before write actions continue. | Greenfield component overlap is now repaired before write, so a likely conflict path is being blocked earlier in the flow.",
-      "Current execution: Implementation is actively building an Odylith-owned confirmed greenfield path that turns project intent into concrete backlog, program waves, a provisional release plan, and planned Registry entries. | The window estimate is still close: about 1 day with high confidence. | Movement is strongest in Universal greenfield domain intelligence and Product Self-Governance/Repo Boundary, while some active lanes still lack checklist progress capture.",
-      "Next planned: Immediate work is on B-021: adding Registry, Radar, Atlas, Compass, and benchmark docs back into the expanded benchmark frontier. | B-021 also needs additional maintainer-side coding through the CLI contract, so execution stays observable in real work, not just plan shape.",
-      "Risks to watch: The confirmed-greenfield create fail-closed guard is still open at P0. If accepted product narrative is missing, write flow remains a hard stop risk and can still block reliable progression."
+      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
     ]
   },
   "digest_scoped": {
@@ -132,7 +126,7 @@
         "Nothing moved in this window: B-141 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-142": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-001": [
         "Nothing moved in this window: B-001 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -542,7 +536,7 @@
         "Nothing moved in this window: B-090 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-091": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-092": [
         "Nothing moved in this window: B-092 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -560,13 +554,10 @@
         "Nothing moved in this window: B-141 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-142": [
-        "Completed in this window: Greenfield confirmed governance generation is hardened. This stabilizes the lane after earlier pathing work and reduces fragility in downstream reporting.",
-        "Current execution: Work remains active on the Odylith-owned confirmed path that converts intent into backlog, program waves, provisional release planning, and planned Registry.",
-        "Next planned: The next open checklist item is being shaped into a named checkpoint so the earlier greenfield failure stays explicit during consumer-lane hardening.",
-        "Risks to watch: Primary watch item is closure: two plan items are still open, so confidence in completion depends on timely close-out."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-001": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-002": [
         "Nothing moved in this window: B-002 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -911,305 +902,58 @@
         "Nothing moved in this window: B-139 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-140": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ]
     }
   },
   "standup_brief": {
     "24h": {
       "schema_version": "v25",
-      "status": "ready",
-      "source": "provider",
+      "status": "unavailable",
+      "source": "unavailable",
       "fingerprint": "85c2652f5b6f70e7d2b90ba90ebe81f3ec7e5bab3a96696f6b94072505171944",
-      "generated_utc": "2026-05-22T19:13:59Z",
-      "sections": [
-        {
-          "key": "completed",
-          "label": "Completed in this window",
-          "bullets": [
-            {
-              "text": "Greenfield overlap repair landed before writing forward. That removed a real collision risk and gave the current greenfield work cleaner footing.",
-              "fact_ids": [
-                "F-001"
-              ]
-            },
-            {
-              "text": "Repair text ownership was explicitly decomposed, so the confirmed-greenfield correction path now has named owners and less ambiguity on who moves what.",
-              "fact_ids": [
-                "F-002"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "current_execution",
-          "label": "Current execution",
-          "bullets": [
-            {
-              "text": "The active thread is building an Odylith-owned confirmed-greenfield path that turns intent into backlog, release framing, and a planned Registry shape.",
-              "fact_ids": [
-                "F-004"
-              ]
-            },
-            {
-              "text": "B-142 still drives the heaviest movement, while some lanes have weak or missing checklist capture and need better progress evidence.",
-              "fact_ids": [
-                "F-006"
-              ]
-            },
-            {
-              "text": "ETA sits around one day with high confidence, so the team expects this path to settle quickly if execution stays clean.",
-              "fact_ids": [
-                "F-005"
-              ]
-            },
-            {
-              "text": "Because checklist capture is uneven in active lanes, today\u2019s work is partly strong and partly hard to measure until those traces land.",
-              "fact_ids": [
-                "F-006"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "next_planned",
-          "label": "Next planned",
-          "bullets": [
-            {
-              "text": "The immediate next chunk is B-021: benchmark corpus expansion and frontier improvement to bring Registry, Radar, Atlas, Compass, and benchmark docs back into the maintained surface.",
-              "fact_ids": [
-                "F-008"
-              ]
-            },
-            {
-              "text": "More real maintainer coding through the CLI contract is the right follow-on, so this lane moves from status shaping into proof-bearing execution.",
-              "fact_ids": [
-                "F-009"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "risks_to_watch",
-          "label": "Risks to watch",
-          "bullets": [
-            {
-              "text": "P0 remains open on confirmed-greenfield create fail-closed behavior without accepted product narrative, so release safety can still stall even when implementation looks active.",
-              "fact_ids": [
-                "F-010"
-              ]
-            }
-          ]
-        }
-      ],
-      "evidence_lookup": {
-        "F-001": {
-          "text": "Repair greenfield component overlap before write.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-002": {
-          "text": "Decompose greenfield confirmed repair text owners.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-003": {
-          "text": "Nothing fully closed across the portfolio in the last 24 hours.",
-          "section_key": "completed",
-          "kind": "window_summary"
-        },
-        "F-004": {
-          "text": "Add an Odylith-owned confirmed greenfield path that turns vague or precise project intent into concrete backlog, program waves, provisional release plan, planned Registry; Universal greenfield domain intelligence (B-142) is in active implementation.",
-          "section_key": "current_execution",
-          "kind": "direction",
-          "workstreams": [
-            "B-142"
-          ]
-        },
-        "F-005": {
-          "text": "ETA is projected at roughly 1 days (high confidence).",
-          "section_key": "current_execution",
-          "kind": "timeline"
-        },
-        "F-006": {
-          "text": "Implementation is moving, but some active lanes still do not have checklist progress captured Heaviest movement is in Universal greenfield domain intelligence (B-142).",
-          "section_key": "current_execution",
-          "kind": "portfolio_posture"
-        },
-        "F-007": {
-          "text": "Work stayed inside B-142.",
-          "section_key": "current_execution",
-          "kind": "window_coverage",
-          "workstreams": [
-            "B-142"
-          ]
-        },
-        "F-008": {
-          "text": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
-          "section_key": "next_planned",
-          "kind": "forcing_function"
-        },
-        "F-009": {
-          "text": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Add more real maintainer coding work through CLI contract.",
-          "section_key": "next_planned",
-          "kind": "follow_on"
-        },
-        "F-010": {
-          "text": "Confirmed greenfield create must fail closed without accepted product narrative. It is still open at P0.",
-          "section_key": "risks_to_watch",
-          "kind": "bug"
-        }
-      },
       "substrate_fingerprint": "85c2652f5b6f70e7d2b90ba90ebe81f3ec7e5bab3a96696f6b94072505171944",
-      "bundle_fingerprint": "2e0dc8deba971fcb2cccc1d31f6e76d6bf3a2ac4ee2c742f6260e2ea06d038fb",
-      "provider_decision": "provider_called",
-      "last_successful_narration_fingerprint": "85c2652f5b6f70e7d2b90ba90ebe81f3ec7e5bab3a96696f6b94072505171944"
+      "bundle_fingerprint": "",
+      "provider_decision": "provider_deferred",
+      "last_successful_narration_fingerprint": "",
+      "generated_utc": "2026-05-22T19:13:59Z",
+      "sections": [],
+      "diagnostics": {
+        "reason": "provider_deferred",
+        "title": "Fresh brief still warming",
+        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+        "fallback_title": "Local runtime facts",
+        "fallback_digest": [
+          "Current: Add an Odylith-owned confirmed greenfield path that turns vague or precise project intent into concrete backlog, program waves, provisional release plan, planned Registry; Universal.",
+          "Next: Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
+          "Watch: Confirmed greenfield create must fail closed without accepted product narrative. It is still open at P0."
+        ]
+      },
+      "evidence_lookup": {}
     },
     "48h": {
       "schema_version": "v25",
-      "status": "ready",
-      "source": "provider",
+      "status": "unavailable",
+      "source": "unavailable",
       "fingerprint": "af24668cdf21a28551ddced2ebf6de5ba10fe813b5c9ff2afdf9e718bafeb71f",
-      "generated_utc": "2026-05-22T19:13:59Z",
-      "sections": [
-        {
-          "key": "completed",
-          "label": "Completed in this window",
-          "bullets": [
-            {
-              "text": "Greenfield confirmed-governance generation was hardened. That makes confirmed intent handling safer before write actions continue.",
-              "fact_ids": [
-                "F-001"
-              ]
-            },
-            {
-              "text": "Greenfield component overlap is now repaired before write, so a likely conflict path is being blocked earlier in the flow.",
-              "fact_ids": [
-                "F-002"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "current_execution",
-          "label": "Current execution",
-          "bullets": [
-            {
-              "text": "Implementation is actively building an Odylith-owned confirmed greenfield path that turns project intent into concrete backlog, program waves, a provisional release plan, and planned Registry entries.",
-              "fact_ids": [
-                "F-004"
-              ]
-            },
-            {
-              "text": "The window estimate is still close: about 1 day with high confidence.",
-              "fact_ids": [
-                "F-005"
-              ]
-            },
-            {
-              "text": "Movement is strongest in Universal greenfield domain intelligence and Product Self-Governance/Repo Boundary, while some active lanes still lack checklist progress capture.",
-              "fact_ids": [
-                "F-006"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "next_planned",
-          "label": "Next planned",
-          "bullets": [
-            {
-              "text": "Immediate work is on B-021: adding Registry, Radar, Atlas, Compass, and benchmark docs back into the expanded benchmark frontier.",
-              "fact_ids": [
-                "F-008"
-              ]
-            },
-            {
-              "text": "B-021 also needs additional maintainer-side coding through the CLI contract, so execution stays observable in real work, not just plan shape.",
-              "fact_ids": [
-                "F-009"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "risks_to_watch",
-          "label": "Risks to watch",
-          "bullets": [
-            {
-              "text": "The confirmed-greenfield create fail-closed guard is still open at P0. If accepted product narrative is missing, write flow remains a hard stop risk and can still block reliable progression.",
-              "fact_ids": [
-                "F-010"
-              ]
-            }
-          ]
-        }
-      ],
-      "evidence_lookup": {
-        "F-001": {
-          "text": "Harden greenfield confirmed governance generation.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-002": {
-          "text": "Repair greenfield component overlap before write.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-003": {
-          "text": "Nothing fully closed across the portfolio in the last 48 hours.",
-          "section_key": "completed",
-          "kind": "window_summary"
-        },
-        "F-004": {
-          "text": "Add an Odylith-owned confirmed greenfield path that turns vague or precise project intent into concrete backlog, program waves, provisional release plan, planned Registry; Universal greenfield domain intelligence (B-142) is in active implementation.",
-          "section_key": "current_execution",
-          "kind": "direction",
-          "workstreams": [
-            "B-142"
-          ]
-        },
-        "F-005": {
-          "text": "ETA is projected at roughly 1 days (high confidence).",
-          "section_key": "current_execution",
-          "kind": "timeline"
-        },
-        "F-006": {
-          "text": "Implementation is moving, but some active lanes still do not have checklist progress captured Heaviest movement is in Universal greenfield domain intelligence (B-142), Product Self-Governance and Repo Boundary (B-001).",
-          "section_key": "current_execution",
-          "kind": "portfolio_posture"
-        },
-        "F-007": {
-          "text": "Work moved across 4 workstreams: B-142, B-001, B-091, and B-140.",
-          "section_key": "current_execution",
-          "kind": "window_coverage",
-          "workstreams": [
-            "B-142",
-            "B-001",
-            "B-091",
-            "B-140"
-          ]
-        },
-        "F-008": {
-          "text": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
-          "section_key": "next_planned",
-          "kind": "forcing_function"
-        },
-        "F-009": {
-          "text": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Add more real maintainer coding work through CLI contract.",
-          "section_key": "next_planned",
-          "kind": "follow_on"
-        },
-        "F-010": {
-          "text": "Confirmed greenfield create must fail closed without accepted product narrative. It is still open at P0.",
-          "section_key": "risks_to_watch",
-          "kind": "bug"
-        }
-      },
       "substrate_fingerprint": "af24668cdf21a28551ddced2ebf6de5ba10fe813b5c9ff2afdf9e718bafeb71f",
-      "bundle_fingerprint": "87e678ebc875e68220ecdf3d141f5613cd113f5cc58dd757fd41ede745f46480",
-      "provider_decision": "provider_called",
-      "last_successful_narration_fingerprint": "af24668cdf21a28551ddced2ebf6de5ba10fe813b5c9ff2afdf9e718bafeb71f"
+      "bundle_fingerprint": "",
+      "provider_decision": "provider_deferred",
+      "last_successful_narration_fingerprint": "",
+      "generated_utc": "2026-05-22T19:13:59Z",
+      "sections": [],
+      "diagnostics": {
+        "reason": "provider_deferred",
+        "title": "Fresh brief still warming",
+        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+        "fallback_title": "Local runtime facts",
+        "fallback_digest": [
+          "Current: Add an Odylith-owned confirmed greenfield path that turns vague or precise project intent into concrete backlog, program waves, provisional release plan, planned Registry; Universal.",
+          "Next: Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
+          "Watch: Confirmed greenfield create must fail closed without accepted product narrative. It is still open at P0."
+        ]
+      },
+      "evidence_lookup": {}
     }
   },
   "standup_brief_scoped": {
@@ -1543,19 +1287,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "7bfe4e473cc6919868011648884348b2ffd175464e1e6a5f2dce45fc709bd79f",
+        "substrate_fingerprint": "7bfe4e473cc6919868011648884348b2ffd175464e1e6a5f2dce45fc709bd79f",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-05-22T19:13:59Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Add an Odylith-owned confirmed greenfield path that turns vague or precise project intent into concrete backlog, program waves, provisional release plan, planned Registry; Universal.",
+            "Next: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Universal greenfield domain intelligence (B-142) so the greenfield failure was reported during.",
+            "Watch: Primary watch item is closure discipline: 2 plan items remain open for Universal greenfield domain intelligence (B-142)."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -3320,19 +3068,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "2875855380c7156bf5fdd5c10e24e338e4d6ce21a84215b97cef8b4c477eb5b6",
+        "substrate_fingerprint": "2875855380c7156bf5fdd5c10e24e338e4d6ce21a84215b97cef8b4c477eb5b6",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-05-22T19:13:59Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Land - introduce one sync-scoped shared session that hoists repo root, consumer profile, truth-root resolution, canonical path tokens, parsed idea specs; Sub-Second Governed Sync via Shared.",
+            "Next: Immediate forcing function is to log the next concrete checkpoint for Sub-Second Governed Sync via Shared Read Models, Incremental Derivation, and Content-Addressed Surface Writes (B-091).",
+            "Watch: Freshness signal is stale: latest linked execution proof for Sub-Second Governed Sync via Shared Read Models, Incremental Derivation, and Content-Addressed Surface Writes (B-091) is more."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -3403,148 +3155,49 @@
       },
       "B-142": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "provider",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "14602fd23f42bf386294329c6b3d65597ef5bf149f83592ed190295ec28969d4",
-        "generated_utc": "2026-05-22T19:13:59Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Greenfield confirmed governance generation is hardened. This stabilizes the lane after earlier pathing work and reduces fragility in downstream reporting.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "Work remains active on the Odylith-owned confirmed path that converts intent into backlog, program waves, provisional release planning, and planned Registry.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "The next open checklist item is being shaped into a named checkpoint so the earlier greenfield failure stays explicit during consumer-lane hardening.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "Primary watch item is closure: two plan items are still open, so confidence in completion depends on timely close-out.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Harden greenfield confirmed governance generation.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-142"
-            ]
-          },
-          "F-002": {
-            "text": "Repair greenfield component overlap before write.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-142"
-            ]
-          },
-          "F-003": {
-            "text": "Nothing fully closed for Universal greenfield domain intelligence (B-142) in the last 48 hours.",
-            "section_key": "completed",
-            "kind": "window_summary",
-            "workstreams": [
-              "B-142"
-            ]
-          },
-          "F-004": {
-            "text": "Add an Odylith-owned confirmed greenfield path that turns vague or precise project intent into concrete backlog, program waves, provisional release plan, planned Registry; Universal greenfield domain intelligence (B-142) is in active implementation.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-142"
-            ]
-          },
-          "F-005": {
-            "text": "Checklist is 140/142; execution checklist closure is underway while implementation execution remains active.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-142"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 1 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-142"
-            ]
-          },
-          "F-007": {
-            "text": "Immediate forcing function is to turn the next open checklist item into a named checkpoint for Universal greenfield domain intelligence (B-142) so the greenfield failure was reported during the consumer-lane hardening pass.",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-142"
-            ]
-          },
-          "F-008": {
-            "text": "Primary watch item is closure discipline: 2 plan items remain open for Universal greenfield domain intelligence (B-142).",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-142"
-            ]
-          }
-        },
         "substrate_fingerprint": "14602fd23f42bf386294329c6b3d65597ef5bf149f83592ed190295ec28969d4",
-        "bundle_fingerprint": "bf08ad6499321aca78570d05199d69a196efca4b731b75f9ae086b760db70591",
-        "provider_decision": "provider_called",
-        "last_successful_narration_fingerprint": "14602fd23f42bf386294329c6b3d65597ef5bf149f83592ed190295ec28969d4"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-05-22T19:13:59Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Add an Odylith-owned confirmed greenfield path that turns vague or precise project intent into concrete backlog, program waves, provisional release plan, planned Registry; Universal.",
+            "Next: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Universal greenfield domain intelligence (B-142) so the greenfield failure was reported during.",
+            "Watch: Primary watch item is closure discipline: 2 plan items remain open for Universal greenfield domain intelligence (B-142)."
+          ]
+        },
+        "evidence_lookup": {}
       },
       "B-001": {
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "0e4738bee0e8496cc0cadcd857f14fc2b0aaa648e4fd660cfc0f6b94de34b876",
+        "substrate_fingerprint": "0e4738bee0e8496cc0cadcd857f14fc2b0aaa648e4fd660cfc0f6b94de34b876",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-05-22T19:13:59Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Land By letting the public repo govern itself, Odylith can ship a cleaner product boundary, cleaner public docs, and a clearer repo-integration contract; Product Self-Governance and Repo.",
+            "Next: Immediate forcing function is to log the next concrete checkpoint for Product Self-Governance and Repo Boundary (B-001) so Compass stops leaning on aging evidence.",
+            "Watch: Freshness signal is stale: latest linked execution proof for Product Self-Governance and Repo Boundary (B-001) is more than a day old, so a new checkpoint is needed before momentum claims."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -5034,19 +4687,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "06ad5dcf1044b4bae5f439cd8bb2d86ce4cbbb8c862e7435297a924e6d4671e2",
+        "substrate_fingerprint": "06ad5dcf1044b4bae5f439cd8bb2d86ce4cbbb8c862e7435297a924e6d4671e2",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-05-22T19:13:59Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Make consumer-lane migration assessment automatic whenever product surfaces move, so every release can prove that changed surfaces were either migration-safe, planned as; Consumer Surface.",
+            "Next: Immediate forcing function is to log the next concrete checkpoint for Consumer Surface Migration Observer And Release Gate (B-140) so Compass stops leaning on aging evidence.",
+            "Watch: Freshness signal is stale: latest linked execution proof for Consumer Surface Migration Observer And Release Gate (B-140) is more than a day old, so a new checkpoint is needed before."
+          ]
         },
         "evidence_lookup": {}
       }

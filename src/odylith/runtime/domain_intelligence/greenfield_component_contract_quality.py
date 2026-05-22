@@ -45,6 +45,12 @@ _BANNED_PROSE_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ),
     ("dangling path clause", re.compile(r"\bwhen\s+the\s+path\s+is\s*\.", re.IGNORECASE)),
     ("bad capitalized proof splice", re.compile(r"\bverifies\s+that\s+The\b")),
+    ("bad proof status splice", re.compile(r"\bshows\s+whether\s+The\b")),
+    ("bad state inspection splice", re.compile(r"\binspect\s+(?:the\s+)?(?:core\s+)?state\s+is\b", re.IGNORECASE)),
+    ("malformed verb pair", re.compile(r"\b(?:preserves\s+handles|maintains\s+defines)\b", re.IGNORECASE)),
+    ("doubled refusal phrase", re.compile(r"\brefuses\b[^.]{0,140}\brefuses\b", re.IGNORECASE)),
+    ("clipped scoring fragment", re.compile(r"\bscor\b", re.IGNORECASE)),
+    ("clipped eligibility phrase", re.compile(r"\baccepting\s+eligible\b", re.IGNORECASE)),
 )
 
 _DANGLING_WORDS = {

@@ -63,7 +63,7 @@ architect a new project before source code exists.
    operational risk posture instead of generic risk copy. For science and math, reason from the
    domain named by the user and propose correctness obligations such as proof
    checking, reproducibility, units, tolerances, derivation review, datasets,
-   peer review, or validation fixtures only when they actually fit.
+   independent review, or validation fixtures only when they actually fit.
 8. For vague or broad prompts, preserve the project-first and
    program-formation contract without forcing a fixed bucket: show the parent
    workstream, child-boundary strategy, wave-to-workstream policy,

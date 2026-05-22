@@ -8,7 +8,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-05-20",
+      "last_reviewed_utc": "2026-05-22",
       "source_mmd": "odylith/atlas/source/odylith-product-governance-loop.mmd",
       "source_svg": "odylith/atlas/source/odylith-product-governance-loop.svg",
       "source_png": "odylith/atlas/source/odylith-product-governance-loop.png",
@@ -90,7 +90,7 @@
       "reviewed_watch_fingerprints": {
         "odylith/registry/source/component_registry.v1.json": "cccd494aaded4b8d11935747508a73fbf21f6f0d82cd5111fa3f1db896ca0875",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "6e0a1422978fdef63436e0036da27adcdb80aba6bb7546142e805d9ce0548dc2",
-        "odylith/radar/source/INDEX.md": "1e008e44ba7fb893c4da737e43fe36860b0402d03eb82cf7f17ca6b4e9595f04",
+        "odylith/radar/source/INDEX.md": "a32ce79696ef13ee06a50ca4eae5796474464398d6824f79ab98d554d174c428",
         "odylith/technical-plans/INDEX.md": "ebcdbe1e0bf3069a12aa20af5b1c91b72b6941325bfedb12f5b608d2d1139d25"
       }
     },
@@ -4143,7 +4143,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-05-20",
+      "last_reviewed_utc": "2026-05-22",
       "source_mmd": "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
       "source_svg": "odylith/atlas/source/domain-intelligence-greenfield-governance.svg",
       "source_png": "odylith/atlas/source/domain-intelligence-greenfield-governance.png",
@@ -4197,8 +4197,8 @@
         "src/odylith/runtime/surfaces/compass_transaction_runtime.py"
       ],
       "reviewed_watch_fingerprints": {
-        "src/odylith/runtime/domain_intelligence": "a7beb7d589a4bdc614d55ca41fc7131e01d18f61b4ab60ef829bf648d0cce12d",
-        "odylith/skills/odylith-greenfield-governance/SKILL.md": "96e94af01c9aeb460efc90afbee75711341d1cdc7e25ff19251749e6d73df930"
+        "src/odylith/runtime/domain_intelligence": "fb92a4bb0d2b1aabc89b5e8e4f92c4de961cd4a05a111247cbebee275e3c456e",
+        "odylith/skills/odylith-greenfield-governance/SKILL.md": "23bbbbc35b664649d96685a211d05ca06e9c32e5768ff6402d7a30927eef8ae8"
       },
       "render_source_fingerprint": "ad9a717d3991041a6ef4d417883821a34a6af2984b91bec119d3ec704644dec5"
     },

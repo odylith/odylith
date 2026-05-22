@@ -1245,7 +1245,7 @@ def _role_description_parts(value: str) -> tuple[str, str]:
         if sep and head.strip() and body.strip():
             return sentence(head), sentence(body)
     head, sep, body = text.partition(":")
-    if sep and head.strip() and body.strip() and len(head.split()) <= 6:
+    if sep and head.strip() and body.strip() and len(head.split()) <= 10:
         return sentence(head), sentence(body)
     return "", ""
 
@@ -1269,7 +1269,7 @@ def _is_project_actor_label(value: str) -> bool:
     label = sentence(value)
     if not label:
         return False
-    if len(label.split()) > 6:
+    if len(label.split()) > 10:
         return False
     lowered = label.casefold().replace("_", " ")
     if lowered in {
@@ -1284,7 +1284,7 @@ def _is_project_actor_label(value: str) -> bool:
         "primary user",
     }:
         return False
-    if lowered.startswith("the first-release actors are"):
+    if lowered.startswith(("the first-release actors are", "actors involved in")):
         return False
     internal_markers = (
         "program boundary",

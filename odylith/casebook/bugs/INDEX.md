@@ -1,6 +1,6 @@
 # Bug Index
 
-Last updated (UTC): 2026-05-21
+Last updated (UTC): 2026-05-22
 
 ## Open Bugs
 

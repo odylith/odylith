@@ -150,29 +150,26 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
             f"{focus} work becomes hard to trust when the user path, state, evidence, decision, and follow-up are scattered or under-specified."
         )
     if not _clean(intent.get("customer")):
+        actor_text = _join_actor_segments(actors[:5]) or f"{focus} operators and reviewers"
         intent["customer"] = _sentence(
-            f"{_join(actors[:3]) or f'{focus} operators and reviewers'} who need the accepted outcome to be understandable before broader scope is built."
+            f"{actor_text} need the accepted outcome to be understandable before broader scope is built."
         )
     if not _clean(intent.get("opportunity")):
         intent["opportunity"] = _sentence(
             f"Turn the confirmed {title.lower()} intent into a narrow first release that proves one complete path before adding broader automation, integrations, or scale."
         )
-    if not _clean(intent.get("product_view")):
-        state_phrase = _lower_first(state) if state else "the accepted state object"
+    if not _clean(intent.get("product_view")) or _product_view_needs_repair(intent.get("product_view")):
+        state_phrase = _state_label(state, title=title) if state else "the accepted state object"
         intent["product_view"] = _sentence(
-            f"{title} is useful when a reviewer can inspect {state_phrase}, the first-path result, risk posture, and evidence from {_join(systems[:3]) or 'the product-owned systems'} together."
+            f"{title} is useful when users can inspect {state_phrase}, the first-path outcome, visible blockers, risk posture, and evidence from {_join(systems[:3]) or 'the product-owned systems'} together."
         )
-    if len(_strings(intent.get("success_metrics"))) < 3:
-        intent["success_metrics"] = list(
-            unique_text(
-                [
-                    *_strings(intent.get("success_metrics")),
-                    f"One accepted path completes with state, evidence, actor, timestamp, and final outcome visible: {_short(first_path)}.",
-                    "At least one blocked, missing-data, or degraded path is visible and does not get mistaken for success.",
-                    f"Release readiness stays inside the confirmed proof boundary: {_short(proof)}.",
-                ]
-            )
-        )
+    metrics = _strings(intent.get("success_metrics"))
+    if len(metrics) < 3 or any(_metric_needs_repair(metric) for metric in metrics):
+        intent["success_metrics"] = [
+            "One accepted path reaches a visible outcome with actor, timestamp, state, evidence, and decision context.",
+            "At least one blocked, missing-data, stale, invalid, or degraded path is visible and cannot be mistaken for success.",
+            f"Release readiness stays inside the confirmed proof boundary and preserves explicit non-goals: {_short(proof, limit=180)}.",
+        ]
     if not _strings(intent.get("assumptions")):
         intent["assumptions"] = [
             f"The first release proves one concrete {title.lower()} path before broader scope or automation.",
@@ -210,7 +207,12 @@ def _completed_actor_rows(intent: Mapping[str, Any], *, title: str) -> list[str]
     completed: list[str] = []
     for index, label in enumerate(labels):
         original = rows[index] if index < len(rows) else label
-        if _word_count(original) >= 7 and _semantic_overlap(original, f"{first_path} {state} {proof}") >= 1:
+        original_head = _title_case(_clean(str(original).split("—", 1)[0].split(":", 1)[0]))
+        if (
+            original_head == label
+            and _actor_row_has_usable_description(original)
+            and _semantic_overlap(original, f"{first_path} {state} {proof}") >= 1
+        ):
             completed.append(original)
             continue
         completed.append(_actor_description(label=label, index=index, title=title, first_path=first_path, state=state, proof=proof))
@@ -218,17 +220,56 @@ def _completed_actor_rows(intent: Mapping[str, Any], *, title: str) -> list[str]
 
 
 def _actor_description(*, label: str, index: int, title: str, first_path: str, state: str, proof: str) -> str:
-    if index == 0:
-        body = f"uses {title} to complete the accepted first path, keep the result reviewable, and decide what should happen next"
-    elif index == 1:
-        body = "reviews shared product state, checks evidence quality, and challenges incomplete or disputed outcomes"
-    elif index == 2:
-        body = f"has limited or supporting access to the relevant task, evidence, or follow-up and must not see or change unrelated private state"
-    elif index == 3:
-        body = "owns release or operational readiness and verifies that release proof is strong enough before broader scope is accepted"
+    label_text = label.casefold()
+    if re.search(r"\b(author|applicant|submitter|requester|customer|client|resident|buyer|seller)\b", label_text):
+        body = f"starts the accepted path in {title}, supplies required input, sees feedback or blockers, and receives the visible outcome"
+    elif re.search(r"\b(editor|manager|chair|coordinator|operator|supervisor|lead|owner)\b", label_text):
+        body = "moves the work through screening, assignment, review, decision, exception handling, and recovery without losing state ownership"
+    elif re.search(r"\b(reviewer|inspector|evaluator|analyst|auditor|expert|approver)\b", label_text):
+        body = "reviews assigned work, submits structured evidence or decisions, and can challenge incomplete, disputed, or unsafe outcomes"
+    elif re.search(r"\b(admin|administrator|config|maintainer|support|scheduler|planner)\b", label_text):
+        body = "configures policy, templates, access, deadlines, notifications, recovery, and operational readiness for the accepted path"
     else:
-        body = "supports recovery, import, escalation, or troubleshooting with narrow audit-friendly access and clear privacy limits"
+        body = "supports the accepted path with narrow access, clear responsibility, recovery handling, and reviewable evidence"
     return f"{label}: {body}."
+
+
+def _actor_row_has_usable_description(value: str) -> bool:
+    text = _clean(value)
+    for separator in (" — ", " – ", " - ", ":"):
+        head, sep, body = text.partition(separator)
+        if sep and _word_count(head) <= 8 and _word_count(body) >= 8:
+            return True
+    return False
+
+
+def _join_actor_segments(values: Sequence[str]) -> str:
+    labels = [_clean(value).split("—", 1)[0].split(":", 1)[0].strip(" .") for value in values]
+    labels = [label for label in labels if label]
+    return "; ".join(labels)
+
+
+def _product_view_needs_repair(value: Any) -> bool:
+    text = _clean(value)
+    if not text:
+        return False
+    return bool(
+        re.search(r"\binspect\s+(?:the\s+)?(?:core\s+)?state\s+is\b", text, re.IGNORECASE)
+        or re.search(r"\bto\s+complete\s+(?:A|The)\b", text)
+        or re.search(r"\.\s*,", text)
+    )
+
+
+def _metric_needs_repair(value: Any) -> bool:
+    text = _clean(value)
+    if not text:
+        return True
+    if re.search(r"[,:]\.$", text):
+        return True
+    if text.rstrip().endswith(","):
+        return True
+    tail = text.rstrip(".;:, ").split()[-1].casefold() if text.split() else ""
+    return tail in {"and", "or", "to", "with", "for", "from", "of", "the", "a", "an", "required"}
 
 
 def _completed_system_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
@@ -308,12 +349,45 @@ def _role_candidates(text: str) -> list[str]:
 
 def _actor_label(row: str, *, title: str) -> str:
     raw = _clean(str(row).split("—", 1)[0].split(":", 1)[0])
-    raw = re.sub(r"^(?:a|an|the|primary|main)\s+", "", raw, flags=re.IGNORECASE).strip()
+    raw = re.sub(r"^(?:a|an|the)\s+", "", raw, flags=re.IGNORECASE).strip()
     if not raw:
         return ""
+    specific = _specific_role_label(raw)
+    if specific:
+        return specific
     if raw.casefold() in {"operator", "reviewer", "user", "owner", "helper", "support", "admin"}:
-        raw = f"{_focus_label(title)} {raw}"
+        raw = f"{_role_focus(_focus_label(title), raw)} {raw}"
     return _title_case(raw)
+
+
+def _specific_role_label(value: str) -> str:
+    match = re.match(
+        r"^(?P<role>author|reviewer|admin|administrator|editor|operator|manager|coordinator|supervisor|owner)\s+(?P<tail>.+)$",
+        _clean(value),
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return ""
+    role = match.group("role")
+    if match.group("tail").casefold().startswith("or "):
+        return ""
+    tail = re.sub(
+        r"^(?:submitting|evaluating|configuring|managing|reviewing|approving|owning|operating|coordinating)\s+",
+        "",
+        match.group("tail"),
+        flags=re.IGNORECASE,
+    ).strip(" .")
+    tail = re.sub(r"^(?:a|an|the)\s+", "", tail, flags=re.IGNORECASE)
+    if _word_count(tail) < 2:
+        return ""
+    return _title_case(f"{_role_focus(tail, role)} {role}")
+
+
+def _role_focus(focus: str, role: str) -> str:
+    text = _clean(focus)
+    if role.casefold() == "reviewer":
+        text = re.sub(r"\breview$", "", text, flags=re.IGNORECASE).strip()
+    return text or _clean(focus) or "Project"
 
 
 def _actor_labels(intent: Mapping[str, Any]) -> list[str]:
@@ -454,7 +528,7 @@ def _short(value: str, *, fallback: str = "", limit: int = 220) -> str:
     words = clipped.split()
     while words and words[-1].casefold().strip(".,;:") in {"and", "or", "to", "with", "for", "from", "of", "the", "a", "an", "required"}:
         words.pop()
-    return " ".join(words).rstrip(".")
+    return " ".join(words).rstrip(" ,;:.")
 
 
 def _sentence(value: str) -> str:

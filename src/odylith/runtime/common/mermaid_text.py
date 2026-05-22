@@ -147,14 +147,28 @@ def _trim_text(value: str, *, limit: int) -> str:
     clipped = text[: max(0, limit - 1)].rstrip(" ,;:")
     if " " in clipped:
         clipped = clipped.rsplit(" ", 1)[0].rstrip(" ,;:")
-    return f"{clipped}…"
+    return _strip_dangling_tail(clipped)
 
 
 def _append_ellipsis(value: str, *, width: int) -> str:
     text = value.rstrip(" …")
     if len(text) >= width:
         text = text[: max(1, width - 1)].rstrip(" ,;:")
-    return f"{text}…"
+    return _strip_dangling_tail(text)
+
+
+def _strip_dangling_tail(value: str) -> str:
+    text = clean_mermaid_text(value).rstrip(" ,;:.")
+    while True:
+        cleaned = re.sub(
+            r"\b(?:a|an|and|as|at|because|by|for|from|if|in|into|of|on|or|the|to|when|while|with|without)$",
+            "",
+            text,
+            flags=re.IGNORECASE,
+        ).rstrip(" ,;:.")
+        if cleaned == text:
+            return cleaned
+        text = cleaned
 
 
 __all__ = [

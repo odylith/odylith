@@ -68,11 +68,14 @@ def test_confirmed_greenfield_diagrams_use_compact_atlas_narration() -> None:
     assert len(rows) == 6
     assert "Walk the accepted first path" not in copy
     assert "participant C1 as Audio Capture and<br/>Pre-processing Service" in sequence["mermaid_source"]
-    assert "pass state and evidence" in sequence["mermaid_source"]
-    assert "show state, evidence, and blockers" in sequence["mermaid_source"]
+    assert "hand off state, evidence, and blockers" in sequence["mermaid_source"]
+    assert "show outcome, evidence, and next action" in sequence["mermaid_source"]
+    assert "A1->>C1: User opens LiveScore and taps<br/>Record" in sequence["mermaid_source"]
+    assert "A1->>C3: 2" not in sequence["mermaid_source"]
     assert "<br/>" in sequence["mermaid_source"]
     assert "**" not in sequence["mermaid_source"]
     assert "The first complete path" not in sequence["mermaid_source"]
+    assert "…" not in sequence["mermaid_source"]
     assert "component cards to decode" not in copy
     assert "User opens LiveScore" not in sequence["summary"]
     assert "This sequence shows what the first release must prove from Solo performer (primary)" in sequence["summary"]
@@ -174,8 +177,9 @@ def test_mermaid_text_normalizes_sequence_labels_notes_and_messages() -> None:
     assert "**" not in normalized
     assert "participant A as Account owner" in normalized
     assert "participant C1 as Transaction Ingestion<br/>and Normalization<br/>Adapter" in normalized
-    assert "A->>C1: this is a very long message<br/>label with semicolon, and…" in normalized
-    assert "Note over A,C1: This note carries a very long<br/>accepted path explanation that<br/>previously leaked outside the…" in normalized
+    assert "A->>C1: this is a very long message<br/>label with semicolon" in normalized
+    assert "Note over A,C1: This note carries a very long<br/>accepted path explanation that<br/>previously leaked outside" in normalized
+    assert "…" not in normalized
 
 
 def test_confirmed_greenfield_create_handles_generic_reviewer_and_action_systems(tmp_path: Path) -> None:
@@ -236,7 +240,7 @@ Release 0.0.1 succeeds when a reviewer can follow one item through registration,
     assert "Reviewer —" not in encoded
     assert "Reviewer Dashboard" not in encoded
     assert "Review Dashboard and Export" in encoded
-    assert "Volunteer Equipment Checkout reviewer" in encoded
+    assert "Volunteer Equipment Checkout Reviewer" in encoded
     assert not greenfield_quality_issues(proposal)
     assert "owns captures" not in encoded
     assert "owns shows" not in encoded
@@ -248,5 +252,3 @@ Release 0.0.1 succeeds when a reviewer can follow one item through registration,
             assert "accepted first release path" not in component["description"]
             assert "owns owns" not in component["description"].casefold()
             assert component["description"].endswith(".")
-
-

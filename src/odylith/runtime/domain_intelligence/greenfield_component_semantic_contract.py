@@ -38,8 +38,11 @@ _ACTION_VERBS = (
     "export",
     "grant",
     "handoff",
+    "handle",
     "import",
+    "keep",
     "link",
+    "maintain",
     "normalize",
     "preserve",
     "record",
@@ -215,6 +218,7 @@ def _enrich_object_phrases(
 
     text = _clean(description).casefold()
     label_text = _clean(label).casefold()
+    local_text = f"{label_text} {text.split('product behavior:', 1)[0]}"
     front_extras: list[str] = []
     tail_extras: list[str] = []
     label_has_alert = bool(re.search(_ALERT_LIFECYCLE_PATTERN, label_text))
@@ -226,38 +230,38 @@ def _enrich_object_phrases(
         and re.search(r"^\s*owns\s+[^.]*\b(model|metric|assessment|estimator|classifier|trend|health)\b", text)
     ):
         front_extras.extend(("model input snapshot", "derived state estimate", "trend signal", "confidence marker", "readiness state"))
-    if "define" in action_terms or re.search(r"\b(criteria|criterion)\b", text):
+    if "define" in action_terms or re.search(r"\b(criteria|criterion)\b", local_text):
         front_extras.append("criteria definitions")
-    if "define" in action_terms or re.search(r"\b(criteria|criterion|protocol|rule|policy|threshold)\b", text):
+    if "define" in action_terms or re.search(r"\b(criteria|criterion|protocol|rule|policy|threshold)\b", local_text):
         tail_extras.extend(("protocol version", "rule validity"))
-        if re.search(r"\binclusion\b", text):
+        if re.search(r"\binclusion\b", local_text):
             tail_extras.append("inclusion rules")
-        if re.search(r"\bexclusion\b", text):
+        if re.search(r"\bexclusion\b", local_text):
             tail_extras.append("exclusion rules")
-        if re.search(r"\bexception\b", text):
+        if re.search(r"\bexception\b", local_text):
             tail_extras.append("rule exceptions")
-        if re.search(r"\bchange|history|version\b", text):
+        if re.search(r"\bchange|history|version\b", local_text):
             tail_extras.append("rule-change history")
     if (
         any(action in action_terms for action in ("assign", "grant", "route", "resolve"))
-        or re.search(r"\b(assignment|assigned|permission|access|conflict|eligibility|role|routing)\b", text)
+        or re.search(r"\b(assignment|assigned|permission|access|conflict|eligibility|role|routing)\b", local_text)
     ):
         front_extras.extend(("reviewer eligibility", "assignment routing", "access grants", "conflict constraints", "permission state"))
-    if "import" in action_terms or re.search(r"\b(import|dedupe|deduplicate|duplicate|normalize|metadata|provenance|source record|intake)\b", text):
+    if "import" in action_terms or re.search(r"\b(import|dedupe|deduplicate|duplicate|normalize|metadata|provenance|source record|intake)\b", local_text):
         tail_extras.extend(("source identity", "normalized record", "duplicate signal", "malformed input blocker", "provenance marker"))
-    if re.search(r"\b(screen|include|exclude|uncertain|disagreement|resolution)\b", text):
+    if re.search(r"\b(screen|include|exclude|uncertain|disagreement|resolution)\b", local_text):
         tail_extras.extend(("separate reviewer decisions", "decision reasons", "disagreement markers", "resolution decision", "included-source handoff"))
-    if "capture" in action_terms or re.search(r"\b(annotation|extraction|extract|field|source location|missing evidence|document)\b", text):
+    if "capture" in action_terms or re.search(r"\b(annotation|extraction|extract|field|source location|missing evidence|document)\b", local_text):
         tail_extras.extend(("source annotations", "extracted fields", "source locations", "missing-evidence blockers", "extraction provenance"))
-    if "score" in action_terms or re.search(r"\b(score|scoring|rubric|rating|assessment|quality|required field|validation rule)\b", text):
+    if "score" in action_terms or re.search(r"\b(score|scoring|rubric|rating|assessment|quality|required field|validation rule)\b", local_text):
         tail_extras.extend(("review fields", "scoring rubric", "required-field validation", "score inputs", "score outputs"))
-    if any(action in action_terms for action in ("synthesize", "export")) or re.search(r"\b(synthesis|table|export|package|report|summary|output|deliverable)\b", text):
+    if any(action in action_terms for action in ("synthesize", "export")) or re.search(r"\b(synthesis|table|export|package|report|summary|output|deliverable)\b", local_text):
         tail_extras.extend(("synthesis table", "export package", "source references", "completeness blockers", "release handoff"))
-    if "audit" in action_terms or "preserve" in action_terms or re.search(r"\b(audit|trail|version|history|retention|archive|replay)\b", text):
+    if "audit" in action_terms or "preserve" in action_terms or re.search(r"\b(audit|trail|version|history|retention|archive|replay)\b", local_text):
         tail_extras.extend(("immutable event history", "version chain", "retention policy state", "audit reconstruction", "replay evidence"))
-    if re.search(r"\b(dashboard|comparison|compare|readiness|display|current decision|visible blocker)\b", text):
+    if re.search(r"\b(dashboard|comparison|compare|readiness|display|current decision|visible blocker)\b", local_text):
         tail_extras.extend(("current decision summary", "comparison display", "review readiness", "visible blockers", "user-facing decision state"))
-    if "assemble" in action_terms or re.search(r"\b(decision package|approval|final approval|unresolved blocker|reviewer note|rationale)\b", text):
+    if "assemble" in action_terms or re.search(r"\b(decision package|approval|final approval|unresolved blocker|reviewer note|rationale)\b", local_text):
         tail_extras.extend(("evidence", "reviewer notes", "unresolved blockers", "final approval state", "decision rationale"))
     return _unique([*front_extras, *object_phrases, *tail_extras])
 
