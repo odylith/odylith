@@ -425,7 +425,13 @@ Release 0.0.1 succeeds when reviewer assignment respects eligibility and permiss
     form_spec = spec_for("Structured Review Form and Scoring Templates")
     dashboard_spec = spec_for("Decision Dashboard and Comparison View")
     audit_spec = spec_for("Audit Trail, Version History, and Retention Controls")
-    for phrase in ("reviewer eligibility", "access grants", "conflict constraints", "refuses form layout"):
+    for phrase in (
+        "reviewer eligibility",
+        "access grants",
+        "conflict constraints",
+        "form layout",
+        "refuses criteria definition",
+    ):
         assert phrase.casefold() in assignment_spec.casefold()
     for phrase in ("review fields", "scoring rubric", "score outputs", "refuses reviewer assignment"):
         assert phrase.casefold() in form_spec.casefold()
@@ -433,6 +439,150 @@ Release 0.0.1 succeeds when reviewer assignment respects eligibility and permiss
         assert phrase.casefold() in dashboard_spec.casefold()
     for phrase in ("immutable event history", "version chain", "retention policy state", "refuses dashboard ranking"):
         assert phrase.casefold() in audit_spec.casefold()
+
+
+def test_confirmed_create_self_repairs_multi_gate_evidence_review_shape(tmp_path: Path, monkeypatch, capsys) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    intent_path = tmp_path / ".odylith/runtime/greenfield/confirmed-intent.md"
+    intent_path.parent.mkdir(parents=True, exist_ok=True)
+    intent_path.write_text(
+        """# Structured Evidence Review Workspace
+
+## Product Story
+
+A review team needs one workspace to run a structured evidence review from question definition through final evidence package. The app helps them import source records, deduplicate candidates, define protocol rules, screen independently, resolve disagreements, extract evidence, assess quality, synthesize findings, and export a traceable review package.
+
+The product is not just a document library. Its value is turning scattered review work into a repeatable process where every include, exclude, extraction, assessment, synthesis, and export decision can be traced to source evidence.
+
+## State Object
+
+The central state object is an Evidence Review Project. It tracks the review question, protocol version, eligibility criteria, imported records, deduplicated candidates, reviewer assignments, screening decisions, disagreement history, source documents, extracted fields, quality assessments, synthesis tables, export package, and audit evidence.
+
+## First Complete Path
+
+A review lead creates an Evidence Review Project, defines the question and eligibility criteria, imports source records, deduplicates candidates, assigns two independent reviewers, captures screening decisions, resolves one disagreement, moves included sources into evidence extraction, records quality assessment, builds a synthesis table, and exports a review package with source references and decision history.
+
+## Human Actors
+
+- Review lead: defines the review question, protocol, eligibility criteria, and final export readiness.
+- Independent reviewer: screens assigned records and records include, exclude, or uncertain decisions.
+- Method reviewer: checks evidence quality, synthesis readiness, and decision traceability.
+- Compliance reviewer: audits access, export evidence, retention, and reproducibility.
+
+## External Systems
+
+- Literature, document, or source-record databases.
+- CSV, RIS, BibTeX, DOI, or reference-manager imports.
+- Identity provider for reviewer roles and access.
+- Document storage for source files and attachments.
+- Export targets for spreadsheet, document, CSV, and citation outputs.
+
+## Internal Product Systems
+
+- Source Record Import and Deduplication — imports source records, normalizes metadata, detects duplicates, rejects malformed rows, preserves provenance, and hands candidates into protocol-based review.
+- Eligibility Criteria and Protocol Management — defines the review question, criteria, protocol version, inclusion rules, exclusion rules, rule exceptions, and rule-change history before downstream decisions use them.
+- Review Assignment and Conflict Resolution — assigns eligible reviewers, grants appropriate access, detects conflicts, tracks assignment state, and blocks work when a reviewer cannot safely review an item.
+- Independent Screening Workflow — captures separate reviewer decisions, include or exclude reasons, uncertainty, disagreement markers, resolution decision, and downstream handoff for included sources.
+- Evidence Annotation and Extraction — links included sources to annotations, captures extracted fields, records source locations, validates missing evidence, and hands extracted evidence into assessment.
+- Quality Assessment and Scoring — records quality criteria, risk ratings, scoring inputs, rubric version, missing-field blockers, and assessment output for each included source.
+- Evidence Synthesis and Export Package — builds synthesis tables, assembles exportable outputs, checks completeness, keeps source references visible, and blocks export when required evidence is missing.
+- Audit Trail and Retention Controls — records immutable event history, actor identity, version chain, retention policy state, replay evidence, and export audit reconstruction.
+
+## Critical Assumptions
+
+- Human reviewers remain responsible for review decisions.
+- AI assistance, if added later, must stay optional, explainable, and separate from human judgment.
+- Every decision needs source traceability for reproducibility.
+- Release 0.0.1 starts with a small team and deterministic imports before live enterprise scale.
+- Access, privacy, audit, retention, and reproducibility matter because review notes and source metadata may be sensitive.
+
+## Ambiguities
+
+- Whether the first import source is a file upload or a live database connection.
+- Whether quality assessment starts with weighted scoring or simple categorical ratings.
+- Whether export must support spreadsheet output first or document output first.
+- Whether cross-organization collaborators are needed in release 0.0.1.
+
+## Proof Boundary
+
+Release 0.0.1 succeeds when one review team can create a project, import and deduplicate records, apply criteria, screen independently, resolve a disagreement, extract evidence, assess quality, build a synthesis table, and export a review package.
+
+Success means the exported package explains which records were included or excluded, who made each decision, which evidence was extracted, what quality assessment was recorded, which source references support the synthesis, and which audit events prove the result.
+
+## Next Step
+
+- Confirm: accept this interpretation and create the governed greenfield records.
+- Edit: tell me what to change in the product story, actors, systems, assumptions, first path, or proof boundary.
+- Reject: stop here with no records written.
+""",
+        encoding="utf-8",
+    )
+
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Draft a product-first greenfield proposal for a structured evidence review workspace.",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--release",
+            "0.0.1",
+            "--confirm",
+        ]
+    )
+
+    output = capsys.readouterr().out
+    assert rc == 0, output
+    for blocker in (
+        "proof boundary needs",
+        "validation-strategy item was clipped",
+        "too similar",
+        "need clearer separation",
+    ):
+        assert blocker not in output
+    assert (tmp_path / ".odylith/runtime/greenfield/confirmed-intent.json").is_file()
+    assert (tmp_path / "odylith/runtime/source/accepted-project.v1.json").is_file()
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
+    assert list((tmp_path / "odylith/atlas/source/catalog").glob("*.json"))
+
+    specs = {
+        path.parent.name: path.read_text(encoding="utf-8")
+        for path in (tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md")
+    }
+    assert rendered_component_spec_quality_issues(specs, project_title="Structured Evidence Review Workspace") == []
+    joined_specs = "\n".join(specs.values())
+    for banned in (
+        "inspect The",
+        "Human actors:",
+        "plus 1 more",
+        "responsibility and keeps it tied",
+        "with clear ownership, protected access, required",
+    ):
+        assert banned not in joined_specs
+
+    def spec_for(title: str) -> str:
+        return next(text for text in specs.values() if title in text.splitlines()[0])
+
+    criteria_spec = spec_for("Eligibility Criteria and Protocol Management")
+    assignment_spec = spec_for("Review Assignment and Conflict Resolution")
+    assert "criteria definitions" in criteria_spec.casefold()
+    assert "protocol version" in criteria_spec.casefold()
+    assert "refuses assignment routing" in criteria_spec.casefold()
+    assert "assignment routing" in assignment_spec.casefold()
+    assert "access grants" in assignment_spec.casefold()
+    assert "refuses criteria definition" in assignment_spec.casefold()
+
+    source_text = "\n".join(
+        path.read_text(encoding="utf-8", errors="ignore")
+        for path in Path("src/odylith/runtime/domain_intelligence").glob("greenfield*.py")
+    )
+    assert "/Users/freedom/mock/research-review" not in source_text
+    assert "Scientific Research Review App" not in source_text
 
 
 def test_confirmed_intent_parser_still_rejects_exact_generic_system_scaffold() -> None:

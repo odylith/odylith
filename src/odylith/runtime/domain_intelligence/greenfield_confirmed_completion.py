@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
@@ -31,7 +32,7 @@ from odylith.runtime.domain_intelligence.proposal_validation import format_propo
 from odylith.runtime.governance import artifact_tribunal
 
 
-_MAX_COMPLETION_PASSES = 6
+_MAX_COMPLETION_PASSES = 10
 
 
 def complete_confirmed_proposal(
@@ -44,6 +45,17 @@ def complete_confirmed_proposal(
     payload = copy.deepcopy(dict(proposal))
     if not _is_confirmed_greenfield(payload):
         return payload
+    return greenfield_repair_until_clean(payload, release_selector=release_selector)
+
+
+def greenfield_repair_until_clean(
+    proposal: dict[str, Any],
+    *,
+    release_selector: str = "",
+) -> dict[str, Any]:
+    """Run deterministic confirmed-create repairs until all pre-write gates pass."""
+
+    payload = proposal
     last_issues: tuple[str, ...] = ()
     for _pass in range(_MAX_COMPLETION_PASSES):
         changed = False
@@ -55,6 +67,7 @@ def complete_confirmed_proposal(
         issues = _preflight_issues(payload, release_selector=release_selector)
         if not issues:
             return payload
+        changed |= _repair_preflight_issues(payload, issues=issues, release_selector=release_selector)
         if tuple(issues) == last_issues and not changed:
             break
         last_issues = tuple(issues)
@@ -346,6 +359,222 @@ def _artifact_issues(proposal: Mapping[str, Any]) -> list[str]:
     return issues
 
 
+def _repair_preflight_issues(
+    proposal: dict[str, Any],
+    *,
+    issues: Sequence[str],
+    release_selector: str,
+) -> bool:
+    issue_text = " ".join(str(issue) for issue in issues).casefold()
+    changed = False
+    proof_or_validation = (
+        _validation_strategy_needs_repair(proposal)
+        or "proof boundary" in issue_text
+        or "validation_strategy" in issue_text
+        or "validation-strategy" in issue_text
+        or "validation strategy" in issue_text
+        or "clipped" in issue_text
+        or "unfinished" in issue_text
+        or "concrete success" in issue_text
+    )
+    if proof_or_validation:
+        changed |= _repair_release_success_language(proposal, release_selector=release_selector)
+        changed |= _repair_validation_strategy(proposal, release_selector=release_selector)
+        changed |= _repair_backlog_success_language(proposal, release_selector=release_selector)
+        changed |= _repair_project_intelligence_validation(proposal, release_selector=release_selector)
+    if (
+        "too interchangeable" in issue_text
+        or "too similar" in issue_text
+        or "could not distinguish" in issue_text
+        or "component-local" in issue_text
+        or "clearer separation" in issue_text
+    ):
+        changed |= differentiate_component_contracts(proposal, max_passes=_MAX_COMPLETION_PASSES)
+    if "generated prose" in issue_text or "malformed" in issue_text or "sentence" in issue_text:
+        changed |= _repair_generated_sentence_lists(proposal, release_selector=release_selector)
+    return changed
+
+
+def _repair_release_success_language(proposal: dict[str, Any], *, release_selector: str) -> bool:
+    release = greenfield_programs.proposal_release_selector(proposal, release_selector)
+    label = _project_title(proposal)
+    first_path = _first_path(proposal)
+    state_object = _state_object(proposal)
+    proof_boundary = _proof_boundary(proposal)
+    proof_success = _sentence(
+        f"Release {release} succeeds only when {label} completes the accepted first path, records {state_object}, "
+        f"shows reviewer-visible evidence, and blocks readiness when the accepted proof boundary is missing: {proof_boundary}",
+        limit=520,
+    )
+    changed = False
+    intent = proposal.get("intent")
+    if isinstance(intent, dict):
+        summary = _sentence(
+            f"{_clean(intent.get('product_story')) or label} {proof_success}",
+            limit=620,
+        )
+        changed |= _set_text(intent, "summary", summary)
+        if _proof_boundary_is_weak(_clean(intent.get("proof_boundary"))):
+            changed |= _set_text(intent, "proof_boundary", proof_success)
+    release_plan = proposal.get("release_plan")
+    if isinstance(release_plan, dict):
+        criteria = [
+            _sentence(f"{label} success proof exercises the accepted first path end to end: {first_path}", limit=520),
+            _sentence(f"{label} replay proof reconstructs {state_object} with actor, source, timestamp, status, and evidence references.", limit=520),
+            _sentence(f"{label} blocked-path proof prevents release readiness when required input, validation, access, privacy, or evidence is missing.", limit=520),
+            _sentence(f"{label} release proof matches the accepted proof boundary and keeps deferred scope visible: {proof_boundary}", limit=520),
+        ]
+        changed |= _set_list(release_plan, "promotion_criteria", criteria)
+        stages = release_plan.get("release_stages")
+        if isinstance(stages, list) and stages and isinstance(stages[0], dict):
+            changed |= _set_text(stages[0], "release_gate", proof_success)
+    return changed
+
+
+def _repair_validation_strategy(proposal: dict[str, Any], *, release_selector: str) -> bool:
+    release = greenfield_programs.proposal_release_selector(proposal, release_selector)
+    label = _project_title(proposal)
+    first_path = _first_path(proposal)
+    state_object = _state_object(proposal)
+    proof_boundary = _proof_boundary(proposal)
+    rows = [
+        _sentence(f"Success proof: release {release} completes the accepted first path and produces a reviewer-visible result: {first_path}", limit=520),
+        _sentence(f"Blocked-path proof: missing input, invalid state, failed validation, absent evidence, or unresolved review blocks readiness for {state_object}.", limit=520),
+        _sentence(f"Replay proof: {state_object} can be reconstructed with actor, source, timestamp, prior state, current state, evidence reference, and outcome.", limit=520),
+        _sentence(f"Access and privacy proof: only authorized actors can view or mutate protected state, and audit, retention, privacy, accessibility, and safety obligations stay visible.", limit=520),
+        _sentence(f"Component proof: every generated component proves its own inputs, outputs, transitions, sibling refusals, unique failure, upstream truth, and downstream handoff.", limit=520),
+        _sentence(f"Release proof: {label} cannot promote unless validation output satisfies the accepted proof boundary: {proof_boundary}", limit=520),
+    ]
+    return _set_list(proposal, "validation_strategy", rows)
+
+
+def _repair_backlog_success_language(proposal: dict[str, Any], *, release_selector: str) -> bool:
+    release = greenfield_programs.proposal_release_selector(proposal, release_selector)
+    label = _project_title(proposal)
+    first_path = _first_path(proposal)
+    state_object = _state_object(proposal)
+    proof_boundary = _proof_boundary(proposal)
+    changed = False
+    for row in _dict_rows(proposal.get("backlog")):
+        title = _clean(row.get("title")) or label
+        metrics = [
+            _sentence(f"{title} proves the accepted success path for release {release}: {first_path}", limit=500),
+            _sentence(f"{title} blocks readiness when required input, state, access, privacy, validation, or evidence is missing.", limit=500),
+            _sentence(f"{title} keeps {state_object} replayable with actor, source, timestamp, status, and evidence references.", limit=500),
+            _sentence(f"{title} release evidence matches the accepted proof boundary: {proof_boundary}", limit=500),
+        ]
+        if _sequence_needs_repair(row.get("success_metrics"), required_tokens=("success", "block", "replay", "evidence")):
+            changed |= _set_list(row, "success_metrics", metrics)
+        validation = [
+            _sentence(f"Validate success, blocked, replay, access, privacy, and evidence paths for {title}.", limit=360),
+            _sentence(f"Reject release readiness when {title} cannot explain its state change, source evidence, reviewer decision, or recovery path.", limit=420),
+        ]
+        if _sequence_needs_repair(row.get("validation"), required_tokens=("success", "block", "replay")):
+            changed |= _set_list(row, "validation", validation)
+    return changed
+
+
+def _repair_project_intelligence_validation(proposal: dict[str, Any], *, release_selector: str) -> bool:
+    intelligence = proposal.get("project_intelligence")
+    if not isinstance(intelligence, dict):
+        return False
+    release = greenfield_programs.proposal_release_selector(proposal, release_selector)
+    label = _project_title(proposal)
+    state_object = _state_object(proposal)
+    proof_boundary = _proof_boundary(proposal)
+    rows = [
+        _sentence(f"Validate the {label} success path from first input to reviewer-visible outcome.", limit=360),
+        _sentence(f"Validate a blocked path where missing input, invalid state, failed validation, or missing evidence prevents release readiness.", limit=420),
+        _sentence(f"Validate replay for {state_object} with actor, source, timestamp, status, evidence reference, and outcome.", limit=420),
+        _sentence(f"Validate role-appropriate access, privacy, audit, retention, accessibility, safety, and recovery behavior before release {release}.", limit=420),
+        _sentence(f"Validate that release proof satisfies the accepted proof boundary: {proof_boundary}", limit=500),
+    ]
+    return _set_list(intelligence, "validation_obligations", rows)
+
+
+def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_selector: str) -> bool:
+    changed = False
+    if _validation_strategy_needs_repair(proposal):
+        changed |= _repair_validation_strategy(proposal, release_selector=release_selector)
+    for row in _dict_rows(proposal.get("backlog")):
+        for key in ("success_metrics", "validation", "rationale_lines"):
+            values = text_values(row.get(key))
+            if values and any(_sentence_needs_repair(value) for value in values):
+                changed |= _set_list(row, key, [_sentence(value, limit=420) for value in values if _clean(value)])
+    return changed
+
+
+def _validation_strategy_needs_repair(proposal: Mapping[str, Any]) -> bool:
+    return _sequence_needs_repair(
+        proposal.get("validation_strategy"),
+        required_tokens=("success", "block", "replay", "access", "privacy", "evidence"),
+        min_items=6,
+    )
+
+
+def _sequence_needs_repair(value: Any, *, required_tokens: Sequence[str], min_items: int = 2) -> bool:
+    values = text_values(value)
+    if len(values) < min_items:
+        return True
+    joined = " ".join(values).casefold()
+    if any(token not in joined for token in required_tokens):
+        return True
+    return any(_sentence_needs_repair(item) for item in values)
+
+
+def _sentence_needs_repair(value: Any) -> bool:
+    text = _clean(value)
+    if not text:
+        return True
+    if _has_bad_tail(text):
+        return True
+    if re.search(r"\.\s+(?:and|or)\b", text, flags=re.IGNORECASE):
+        return True
+    if re.search(r"\b(?:inspect\s+The|verifies\s+that\s+The|Human\s+actors\s*:|plus\s+\d+\s+more)\b", text, flags=re.IGNORECASE):
+        return True
+    return False
+
+
+def _proof_boundary_is_weak(value: str) -> bool:
+    text = _clean(value).casefold()
+    if len(text.split()) < 14:
+        return True
+    return not ("success" in text or "succeeds" in text or "proof" in text) or not (
+        "evidence" in text or "trace" in text or "review" in text
+    )
+
+
+def _has_bad_tail(value: str) -> bool:
+    words = _clean(value).rstrip(".;:, ").split()
+    if len(words) < 6:
+        return False
+    return words[-1].casefold().strip(".,;:") in {"a", "an", "and", "for", "from", "of", "or", "the", "to", "with"}
+
+
+def _dict_rows(value: Any) -> list[dict[str, Any]]:
+    if not isinstance(value, list):
+        return []
+    return [row for row in value if isinstance(row, dict)]
+
+
+def _set_text(row: dict[str, Any], key: str, value: str) -> bool:
+    text = _sentence(value, limit=700)
+    if _clean(row.get(key)) == text:
+        return False
+    row[key] = text
+    return True
+
+
+def _set_list(row: dict[str, Any], key: str, values: Sequence[str]) -> bool:
+    cleaned = [_sentence(value, limit=700) for value in values if _clean(value)]
+    cleaned = list(unique_text(cleaned))
+    existing = text_values(row.get(key))
+    if existing == cleaned:
+        return False
+    row[key] = cleaned
+    return True
+
+
 def _component_interfaces(row: Mapping[str, Any], label: str, contract: Mapping[str, Any]) -> list[str]:
     return interfaces_from_contract(contract)
 
@@ -585,4 +814,4 @@ def _trim_incomplete_tail(value: str) -> str:
     return " ".join(words)
 
 
-__all__ = ["complete_confirmed_proposal"]
+__all__ = ["complete_confirmed_proposal", "greenfield_repair_until_clean"]
