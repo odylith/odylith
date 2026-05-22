@@ -650,6 +650,12 @@ def _contract_clause(contract: Mapping[str, Any], key: str, *, fallback: str) ->
     return value or fallback
 
 
+def _first_clause(value: str) -> str:
+    text = _short_summary(value, limit=220)
+    parts = [part.strip(" .") for part in re.split(r"[,.;]", text, maxsplit=1) if part.strip(" .")]
+    return parts[0] if parts else text
+
+
 def _backlog(
     *,
     label: str,
@@ -681,7 +687,9 @@ def _backlog(
     opportunity_summary = _short_summary(opportunity, limit=360)
     product_view_summary = _short_summary(product_view, limit=360)
     first_path_summary = _short_summary(first_path, limit=380)
+    first_path_entry = _first_clause(first_path_summary)
     proof_summary = _short_summary(proof_boundary, limit=340)
+    evidence_phrase = "quality evidence" if "quality evidence" in first_path_summary.casefold() else f"{state_label} evidence"
     actors = _short_summary(customer, limit=260) or _join_items(human_actors) or f"{label} users and reviewers"
     non_goal_text = _join_items(non_goals) or "broader automation, live integrations, and production-scale decisions"
     primary_component = _workstream_subject(_component_label_at(components, 0, fallback=f"{label} first path"))
@@ -735,16 +743,16 @@ def _backlog(
     workflow = _backlog_row(
         label=label,
         title=workflow_title,
-        problem=f"{primary_component} cannot yet let the first user complete this product path: {first_path_summary}.",
+        problem=f"{primary_component} can fail when the first accepted action is missing or unclear: {first_path_entry}.",
         customer=actors,
         opportunity=(
             f"Build the narrow {primary_component} entry, actions, feedback, and handoff before adding deferred scope."
         ),
         product_view=(
-            f"{primary_component} supports the first path: {first_path_summary}. It accepts {primary_inputs}, "
+            f"{primary_component} accepts {primary_inputs}, keeps {evidence_phrase} visible for {state_label}, "
             f"coordinates with {second_component}, and produces {primary_outputs}."
         ),
-        first_slice=f"Implement the first usable {primary_component} path: {first_path_summary}.",
+        first_slice=f"Implement {primary_component} intake, validation feedback, blocked-state recovery, and handoff to {second_component}.",
         metrics=[
             f"A user completes the path through {primary_component} and sees a clear success, blocked, or recovery result.",
             f"Missing or invalid domain input is rejected before it corrupts {state_label}.",
@@ -774,7 +782,7 @@ def _backlog(
             "and external-source references."
         ),
         product_view=f"{second_component} keeps {state_label} trustworthy by owning {state_owned} and producing {state_outputs}.",
-        first_slice=f"Implement {state_label} lifecycle states and handoffs for: {first_path_summary}.",
+        first_slice=f"Implement {second_component} state transitions, ownership markers, blocked states, and downstream handoffs for {state_label}.",
         metrics=[
             f"Every {state_label} change names actor, source, status, owner, and evidence expectation.",
             f"External inputs are accepted, quarantined, or rejected before they change {state_label}.",

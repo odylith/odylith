@@ -20,6 +20,9 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_quality i
     ordered_domain_terms,
     rendered_component_spec_quality_issues,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import (
+    derive_component_semantic_contract,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.governance.component_spec_rendering import build_component_spec
@@ -424,19 +427,26 @@ def _repair_row(
     downstream = next_label or "release proof review"
     outside = _outside_boundary(axis=axis, sibling_axis=sibling_axis, sibling_label=sibling_label)
     previous_contract = row.get("component_contract") if isinstance(row.get("component_contract"), Mapping) else {}
-    contract = normalize_contract(
-        {
-            "owned_state": f"{axis.owned_state} for {state_label}",
-            "accepted_inputs": axis.accepted_inputs,
-            "produced_outputs": axis.produced_outputs,
-            "states_or_transitions": axis.states_or_transitions,
-            "outside_boundary": outside,
-            "local_proof": _local_proof(axis=axis, label=label, sibling_label=sibling_label),
-            "upstream_truth": upstream,
-            "downstream_consumers": downstream,
-            "unique_failure": axis.unique_failure,
-        }
+    axis_payload = {
+        "owned_state": f"{axis.owned_state} for {state_label}",
+        "accepted_inputs": axis.accepted_inputs,
+        "produced_outputs": axis.produced_outputs,
+        "states_or_transitions": axis.states_or_transitions,
+        "outside_boundary": outside,
+        "local_proof": _local_proof(axis=axis, label=label, sibling_label=sibling_label),
+        "upstream_truth": upstream,
+        "downstream_consumers": downstream,
+        "unique_failure": axis.unique_failure,
+    }
+    semantic_contract = derive_component_semantic_contract(
+        row,
+        proposal=proposal,
+        sibling=sibling,
+        previous_label=previous_label,
+        next_label=next_label,
+        state_label=state_label,
     )
+    contract = normalize_contract(_contract_payload(axis_payload, semantic_contract))
     row["component_contract"] = contract
     _sync_generated_component_fields(row, label=label, contract=contract, previous_contract=previous_contract)
 
@@ -449,6 +459,7 @@ def _axis_for(*, row: Mapping[str, Any] | None, proposal: Mapping[str, Any]) -> 
     proposal_text = _proposal_context(proposal)
     scored = [
         (
+            _axis_local_score(axis, label_text=label_text, description_text=description_text),
             _trigger_hits(axis.triggers, label_text),
             _trigger_hits(axis.triggers, description_text),
             axis,
@@ -459,12 +470,13 @@ def _axis_for(*, row: Mapping[str, Any] | None, proposal: Mapping[str, Any]) -> 
         key=lambda item: (
             -item[0],
             -item[1],
-            -_trigger_hits(item[2].triggers, proposal_text),
-            item[2].key,
+            -item[2],
+            -_trigger_hits(item[3].triggers, proposal_text),
+            item[3].key,
         )
     )
     if scored and scored[0][0] > 0:
-        return scored[0][2]
+        return scored[0][3]
     return _fallback_axis(
         label_text,
         _fallback_context(row=row, proposal=proposal),
@@ -502,6 +514,36 @@ def _fallback_axis(label: str, context: str, *, focus: str = "") -> _Axis:
         ),
         unique_failure=f"{primary} can look complete while required {secondary} is missing, stale, or assigned to the wrong boundary.",
     )
+
+
+def _contract_payload(axis_payload: Mapping[str, Any], semantic_contract: Any) -> Mapping[str, Any]:
+    if not _semantic_contract_is_strong(semantic_contract):
+        return axis_payload
+    semantic_fields = dict(semantic_contract.fields)
+    semantic_fields["outside_boundary"] = _join_contract_clauses(
+        axis_payload.get("outside_boundary"),
+        semantic_fields.get("outside_boundary"),
+    )
+    semantic_fields["local_proof"] = list(
+        _unique_terms([*text_values(semantic_fields.get("local_proof")), *text_values(axis_payload.get("local_proof"))[:1]])
+    )
+    return semantic_fields
+
+
+def _semantic_contract_is_strong(semantic_contract: Any) -> bool:
+    local_terms = getattr(semantic_contract, "local_terms", ())
+    confidence = int(getattr(semantic_contract, "confidence", 0) or 0)
+    return confidence >= 8 and len(tuple(local_terms)) >= 3
+
+
+def _join_contract_clauses(*values: Any) -> str:
+    clauses: list[str] = []
+    for value in values:
+        for clause in re.split(r",\s*(?=(?:and\s+)?[a-z0-9])", _clean(value)):
+            cleaned = _clean(re.sub(r"^(?:and|or)\s+", "", clause, flags=re.IGNORECASE)).strip(" .")
+            if cleaned:
+                clauses.append(cleaned)
+    return _phrase(_unique_terms(clauses))
 
 
 def _outside_boundary(*, axis: _Axis, sibling_axis: _Axis | None, sibling_label: str) -> str:

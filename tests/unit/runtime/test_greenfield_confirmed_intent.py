@@ -10,6 +10,9 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract import (
     CONTRACT_KEYS,
     rendered_component_spec_quality_issues,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import (
+    derive_component_semantic_contract,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import normalize_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
@@ -217,6 +220,30 @@ Release 0.0.1 succeeds when an engineer can import one run, inspect the equipmen
     encoded = json.dumps(proposal)
     assert "Run Evidence Review Surface" in encoded
     assert not greenfield_quality_issues(proposal)
+
+
+def test_component_semantic_contract_preserves_accepted_component_facts() -> None:
+    contract = derive_component_semantic_contract(
+        {
+            "label": "Decision Package Review",
+            "source_system_description": "assembles evidence, reviewer notes, unresolved blockers, and final approval state",
+        },
+        proposal={},
+        sibling={
+            "label": "Revision Tracker",
+            "source_system_description": "links applicant revisions to the documents and checks they are meant to address",
+        },
+        previous_label="Revision Tracker",
+        next_label="Release Proof Review",
+        state_label="Permit Review File",
+    )
+
+    encoded = json.dumps(contract.fields).casefold()
+    for phrase in ("evidence", "reviewer notes", "unresolved blockers", "final approval state"):
+        assert phrase in encoded
+    assert "revision tracker ownership" in encoded
+    assert "independent review decision" not in encoded
+    assert contract.confidence >= 8
 
 
 def test_confirmed_create_generates_component_specific_document_and_status_specs(tmp_path: Path, monkeypatch) -> None:
