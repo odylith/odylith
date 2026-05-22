@@ -3,6 +3,11 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
+from typing import Any
+
+from odylith.runtime.domain_intelligence.greenfield_text import text_values
+from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
 def compact_text(value: str) -> str:
@@ -174,3 +179,37 @@ def join_brief_items(items: list[str] | None, *, limit: int = 3, item_limit: int
     selected = values[:limit]
     suffix = "" if len(values) <= limit else "; additional accepted items remain in the intent"
     return "; ".join(selected) + suffix
+
+
+def clean_generated_text(value: Any) -> str:
+    return compact_text(str(value or ""))
+
+
+def sentence_text(value: Any, *, fallback: str = "", limit: int = 320) -> str:
+    text = clean_generated_text(value) or fallback
+    if not text:
+        return ""
+    if len(text) > limit:
+        text = text[:limit].rsplit(" ", 1)[0].rstrip(" ,;:")
+        text = strip_dangling_tail(text)
+        text = text.rstrip(" ,;:")
+    if text and text[-1] not in ".!?":
+        text += "."
+    return text
+
+
+def set_sentence_text(row: dict[str, Any], key: str, value: str, *, limit: int = 700) -> bool:
+    text = sentence_text(value, limit=limit)
+    if clean_generated_text(row.get(key)) == text:
+        return False
+    row[key] = text
+    return True
+
+
+def set_sentence_list(row: dict[str, Any], key: str, values: Sequence[str], *, limit: int = 700) -> bool:
+    cleaned = [sentence_text(value, limit=limit) for value in values if clean_generated_text(value)]
+    cleaned = list(unique_text(cleaned))
+    if text_values(row.get(key)) == tuple(cleaned):
+        return False
+    row[key] = cleaned
+    return True
