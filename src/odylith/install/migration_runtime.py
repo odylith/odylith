@@ -175,7 +175,15 @@ class MigrationPlan:
     @property
     def blocked_reason(self) -> str:
         """Return the first blocking reason, if any."""
-        return "; ".join(decision.reason for decision in self.blocked if decision.reason)
+        reasons: list[str] = []
+        seen: set[str] = set()
+        for decision in self.blocked:
+            reason = str(decision.reason or "").strip()
+            if not reason or reason in seen:
+                continue
+            seen.add(reason)
+            reasons.append(reason)
+        return "; ".join(reasons)
 
     @property
     def ledger_state(self) -> dict[str, str]:
@@ -377,7 +385,15 @@ def classify_repo_migration_scenario(
     if legacy_layout_present(repo_root=root):
         scenario = SCENARIO_LEGACY_ODYSSEY
         reasons.append("legacy odyssey/.odyssey root is present")
-    elif source_repo or _is_source_local(observed_active) or _is_source_local(observed_pin):
+    elif (
+        source_repo
+        or _is_source_local(target)
+        or _is_source_local(observed_pin)
+        or (
+            _is_source_local(observed_active)
+            and str(repo_role or "").strip() != PRODUCT_REPO_ROLE
+        )
+    ):
         scenario = SCENARIO_DETACHED_SOURCE_LOCAL
         reasons.append("source-local maintainer runtime is active or requested")
     elif not (root / "odylith").exists() and not state_exists:
@@ -401,12 +417,15 @@ def classify_repo_migration_scenario(
     elif int(manifest.get("repo_schema_version") or DEFAULT_REPO_SCHEMA_VERSION) != DEFAULT_REPO_SCHEMA_VERSION:
         scenario = SCENARIO_REPO_SCHEMA_MISMATCH
         reasons.append("target release repo_schema_version differs from this runtime contract")
+    elif str(repo_role or "").strip() == PRODUCT_REPO_ROLE:
+        scenario = SCENARIO_PRODUCT_REPO_PINNED_DOGFOOD
+        if _is_source_local(observed_active) and target and not _is_source_local(target):
+            reasons.append("Odylith product repo is realigning detached source-local runtime to the pinned release target")
+        else:
+            reasons.append("Odylith product repo is using pinned dogfood posture")
     elif bool(manifest.get("migration_required")):
         scenario = SCENARIO_RELEASE_MIGRATION_REQUIRED
         reasons.append("target release manifest declares migration_required=true")
-    elif str(repo_role or "").strip() == PRODUCT_REPO_ROLE:
-        scenario = SCENARIO_PRODUCT_REPO_PINNED_DOGFOOD
-        reasons.append("Odylith product repo is using pinned dogfood posture")
     elif runtime is not None and not verification and observed_active:
         scenario = SCENARIO_RUNTIME_VERIFICATION_MISSING
         reasons.append("runtime artifact exists but verification evidence is missing")
@@ -905,13 +924,17 @@ def plan_release_migrations(
             reasons=("one or more migration ledgers exist but no longer verify",),
             state=scenario.state,
         )
-    if bool(manifest.get("migration_required")) and not any(
-        _decision_satisfies_manifest_requirement(
-            decision,
-            previous_version=previous,
-            target_version=target,
+    if (
+        scenario.scenario != SCENARIO_PRODUCT_REPO_PINNED_DOGFOOD
+        and bool(manifest.get("migration_required"))
+        and not any(
+            _decision_satisfies_manifest_requirement(
+                decision,
+                previous_version=previous,
+                target_version=target,
+            )
+            for decision in decisions
         )
-        for decision in decisions
     ):
         blocked.append(
             _repo_state_decision(

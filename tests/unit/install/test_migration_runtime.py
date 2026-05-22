@@ -316,6 +316,41 @@ def test_classifies_source_local_as_release_migration_blocked(tmp_path: Path) ->
     assert "source-local" in plan.blocked_reason
 
 
+def test_product_repo_can_realign_source_local_to_release_target(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, active_version="source-local")
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="product_repo",
+        previous_version="source-local",
+        target_version="0.1.15",
+        source_repo=False,
+        pinned_version="0.1.15",
+        release_manifest={"repo_schema_version": 1, "migration_required": True},
+    )
+
+    assert plan.scenario.scenario == migration_runtime.SCENARIO_PRODUCT_REPO_PINNED_DOGFOOD
+    assert plan.blocked == ()
+    assert plan.selected == ()
+    assert plan.satisfies_manifest_requirement()
+    assert "realigning detached source-local runtime" in plan.scenario.reasons[0]
+
+
+def test_blocked_reason_deduplicates_repeated_migration_blockers(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="product_repo",
+        previous_version="source-local",
+        target_version="0.1.12",
+        source_repo=True,
+    )
+
+    reason = "release migrations are blocked while the product repo is in detached source-local posture"
+    assert plan.blocked_reason == reason
+
+
 def test_missing_pin_blocks_release_migration_with_repair_command(tmp_path: Path) -> None:
     _seed_repo(tmp_path)
     (tmp_path / "odylith" / "runtime" / "source" / "product-version.v1.json").unlink()

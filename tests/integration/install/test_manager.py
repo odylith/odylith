@@ -1927,6 +1927,57 @@ def test_source_repo_upgrade_is_detached_override_and_preserves_last_known_good(
     assert status.diverged_from_pin is True
 
 
+def test_product_repo_upgrade_realigns_source_local_to_packaged_release(tmp_path: Path, monkeypatch) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_repo_root(repo_root)
+    _write_product_repo_shape(repo_root)
+    source_root = _write_fake_source_checkout(tmp_path)
+
+    install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
+    upgrade_install(repo_root=repo_root, release_repo="odylith/odylith", source_repo=source_root)
+
+    staged_root, staged_python = _seed_verified_release_runtime(repo_root, version="1.2.3")
+    monkeypatch.setattr(
+        install_manager_module,
+        "fetch_release",
+        lambda **kwargs: SimpleNamespace(version="1.2.3"),
+    )
+    monkeypatch.setattr(
+        install_manager_module,
+        "install_release_runtime",
+        lambda **kwargs: SimpleNamespace(
+            version="1.2.3",
+            manifest={"repo_schema_version": 1, "migration_required": True},
+            python=staged_python,
+            root=staged_root,
+            verification={"wheel_sha256": "wheel-1.2.3"},
+        ),
+    )
+    monkeypatch.setattr(install_manager_module, "_ensure_managed_context_engine_pack", lambda **kwargs: {})
+    monkeypatch.setattr(
+        install_manager_module.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
+    )
+
+    summary = upgrade_install(
+        repo_root=repo_root,
+        release_repo="odylith/odylith",
+        version="1.2.3",
+        write_pin=True,
+    )
+
+    state = load_install_state(repo_root=repo_root)
+    status = version_status(repo_root=repo_root)
+    assert summary.active_version == "1.2.3"
+    assert summary.previous_version == "source-local"
+    assert state["active_version"] == "1.2.3"
+    assert state["detached"] is False
+    assert (repo_root / ".odylith" / "runtime" / "current").resolve().name == "1.2.3"
+    assert status.posture != "detached_source_local"
+
+
 def test_source_repo_upgrade_normalizes_current_runtime_symlink_fallback(monkeypatch, tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()

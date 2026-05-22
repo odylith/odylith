@@ -2246,7 +2246,11 @@ def upgrade_install(
         )
         if migration_plan.blocked_reason:
             raise ValueError(migration_plan.blocked_reason)
-        if bool(manifest.get("migration_required")) and not migration_plan.satisfies_manifest_requirement():
+        if (
+            repo_role != PRODUCT_REPO_ROLE
+            and bool(manifest.get("migration_required"))
+            and not migration_plan.satisfies_manifest_requirement()
+        ):
             raise ValueError(
                 f"release {staged.version} is marked as migration_required but no registered migration plan satisfies it"
             )
