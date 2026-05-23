@@ -52,6 +52,12 @@ STANDARD_SURFACE_WORKSTREAM_BUTTON_PADDING = (
 _STANDARD_SURFACE_WORKSTREAM_BUTTON_PADDING_TEMPLATE_TOKEN = (
     "__ODYLITH_STANDARD_SURFACE_WORKSTREAM_BUTTON_PADDING__"
 )
+STANDARD_SURFACE_WORKSTREAM_BUTTON_BORDER_COLOR = "#93c5fd"
+STANDARD_SURFACE_WORKSTREAM_BUTTON_BACKGROUND = "#eff6ff"
+STANDARD_SURFACE_WORKSTREAM_BUTTON_COLOR = "#1e3a8a"
+STANDARD_SURFACE_WORKSTREAM_BUTTON_HOVER_BORDER_COLOR = "#60a5fa"
+STANDARD_SURFACE_WORKSTREAM_BUTTON_HOVER_BACKGROUND = "#deebff"
+STANDARD_SURFACE_WORKSTREAM_BUTTON_HOVER_COLOR = "#1d4ed8"
 SURFACE_DEEP_LINK_BUTTON_FONT_SIZE_CSS_VAR = "--surface-deep-link-button-font-size"
 STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_SIZE_PX = 11
 STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_SIZE = f"{STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_SIZE_PX}px"
@@ -522,17 +528,18 @@ def surface_workstream_button_surface_css(
 def surface_workstream_button_chip_css(
     *,
     selector: str,
-    color: str = "var(--chip-link-text)",
+    color: str = STANDARD_SURFACE_WORKSTREAM_BUTTON_COLOR,
     min_height_px: int = 0,
     radius_px: int = 999,
-    border_color: str = "#b9c7db",
-    background: str = "#f3f6fb",
-    hover_border_color: str = "#9aaec9",
-    hover_background: str = "#e8eef7",
-    hover_color: str = "#1e293b",
+    border_color: str = STANDARD_SURFACE_WORKSTREAM_BUTTON_BORDER_COLOR,
+    background: str = STANDARD_SURFACE_WORKSTREAM_BUTTON_BACKGROUND,
+    hover_border_color: str = STANDARD_SURFACE_WORKSTREAM_BUTTON_HOVER_BORDER_COLOR,
+    hover_background: str = STANDARD_SURFACE_WORKSTREAM_BUTTON_HOVER_BACKGROUND,
+    hover_color: str = STANDARD_SURFACE_WORKSTREAM_BUTTON_HOVER_COLOR,
     focus_outline: str = "#bfdbfe",
     line_height: float = 1.0,
     letter_spacing_em: float = 0.01,
+    typography_color: str = "var(--chip-link-text)",
 ) -> str:
     """Return the canonical interactive B-### workstream-button contract.
 
@@ -562,7 +569,7 @@ def surface_workstream_button_chip_css(
             ),
             surface_workstream_button_typography_css(
                 selector=selector,
-                color=color,
+                color=typography_color,
                 line_height=line_height,
                 letter_spacing_em=letter_spacing_em,
             ),

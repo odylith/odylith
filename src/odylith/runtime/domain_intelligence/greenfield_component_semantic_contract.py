@@ -249,6 +249,16 @@ def _enrich_object_phrases(
         front_extras.extend(("reviewer eligibility", "assignment routing", "access grants", "conflict constraints", "permission state"))
     if "import" in action_terms or re.search(r"\b(import|dedupe|deduplicate|duplicate|normalize|metadata|provenance|source record|intake)\b", local_text):
         tail_extras.extend(("source identity", "normalized record", "duplicate signal", "malformed input blocker", "provenance marker"))
+    if re.search(r"\b(case|workspace|checklist|agenda|notes?|readiness|status)\b", local_text):
+        tail_extras.extend(("case identity", "workspace status", "checklist progress", "actor notes", "readiness marker", "blocked item"))
+    if re.search(r"\b(map|location|geospatial|geometry|boundary|overlay|layer|context)\b", local_text):
+        tail_extras.extend(("location context", "spatial identity", "boundary geometry", "contextual overlay", "map layer selection", "source freshness"))
+    if re.search(r"\b(recommendation|recommended|impact|findings?|summary|analysis|supporting)\b", local_text):
+        tail_extras.extend(("recommendation text", "impact findings", "supporting source references", "comparison points", "summary handoff"))
+    if re.search(r"\b(feedback|comments?|theme|grouping|cluster|concern)\b", local_text):
+        tail_extras.extend(("feedback source", "comment grouping", "theme label", "duplicate marker", "concern summary", "visibility state"))
+    if re.search(r"\b(questions?|issues?|follow-up|followup|response|answer|unresolved)\b", local_text):
+        tail_extras.extend(("question list", "issue category", "follow-up request", "answer status", "unresolved blocker", "response history"))
     if re.search(r"\b(screen|include|exclude|uncertain|disagreement|resolution)\b", local_text):
         tail_extras.extend(("separate reviewer decisions", "decision reasons", "disagreement markers", "resolution decision", "included-source handoff"))
     if "capture" in action_terms or re.search(r"\b(annotation|extraction|extract|field|source location|missing evidence|document)\b", local_text):
@@ -259,8 +269,12 @@ def _enrich_object_phrases(
         tail_extras.extend(("synthesis table", "export package", "source references", "completeness blockers", "release handoff"))
     if "audit" in action_terms or "preserve" in action_terms or re.search(r"\b(audit|trail|version|history|retention|archive|replay)\b", local_text):
         tail_extras.extend(("immutable event history", "version chain", "retention policy state", "audit reconstruction", "replay evidence"))
+    if re.search(r"\b(claims?|citations?|lineage|traceability|provenance|references?)\b", local_text):
+        tail_extras.extend(("claim-source lineage", "citation set", "source reference history", "provenance marker", "replayable claim version"))
     if re.search(r"\b(dashboard|comparison|compare|readiness|display|current decision|visible blocker)\b", local_text):
         tail_extras.extend(("current decision summary", "comparison display", "review readiness", "visible blockers", "user-facing decision state"))
+    if re.search(r"\b(vote|motion|rationale|abstain|abstention|final outcome|approval|denial)\b", local_text):
+        tail_extras.extend(("decision rationale", "motion or decision command", "vote outcome", "condition set", "abstention marker", "final outcome state"))
     if "assemble" in action_terms or re.search(r"\b(decision package|approval|final approval|unresolved blocker|reviewer note|rationale)\b", local_text):
         tail_extras.extend(("evidence", "reviewer notes", "unresolved blockers", "final approval state", "decision rationale"))
     return _unique([*front_extras, *object_phrases, *tail_extras])
@@ -370,14 +384,28 @@ def _states_for(description: str, *, object_phrases: Sequence[str]) -> str:
         return "unassigned, eligible, assigned, access-granted, access-denied, conflict-blocked, and reassigned"
     if re.search(r"\b(?:criteria|protocol|rule|policy|threshold|definition)\b", text):
         return "draft, active, revised, superseded, exception-blocked, invalid-rule, and retired"
-    if re.search(r"\b(?:import|dedupe|duplicate|normalize|source|metadata)\b", text):
+    if re.search(r"\b(?:claim-source lineage|citation set|source reference history|replayable claim)\b", text):
+        return "uncited, cited, source-linked, disputed, versioned, replayed, retained, missing-source-blocked, and handed-off"
+    if re.search(r"\b(?:import|dedupe|duplicate|normalize|metadata|source identity|source payload)\b", text):
         return "not-imported, imported, normalized, duplicate-found, rejected, quarantined, provenance-attached, and handed-off"
+    if re.search(r"\b(?:case identity|workspace status|checklist progress|actor notes|readiness marker)\b", text):
+        return "not-started, opened, in-review, noted, blocked, ready, revised, decided, closed, and handed-off"
+    if re.search(r"\b(?:location context|spatial identity|boundary geometry|contextual overlay|map layer)\b", text):
+        return "unlocated, located, layer-selected, source-stale, missing-context, context-ready, revised, and handed-off"
+    if re.search(r"\b(?:recommendation text|impact findings|comparison points|summary handoff)\b", text):
+        return "draft, source-linked, incomplete, ready-for-comparison, disputed, revised, accepted-for-decision, and handed-off"
+    if re.search(r"\b(?:feedback source|comment grouping|theme label|concern summary)\b", text):
+        return "received, grouped, duplicate-marked, hidden-by-policy, source-linked, disputed, summarized, and handed-off"
+    if re.search(r"\b(?:question list|issue category|follow-up request|answer status|unresolved blocker)\b", text):
+        return "draft, open, assigned, answered, unresolved, escalated, closed, stale, and handed-off"
     if re.search(r"\b(?:screen|include|exclude|disagree|resolution)\b", text):
         return "not-screened, in-review, included, excluded, disagreed, resolution-needed, resolved, and handed-off"
     if re.search(r"\b(?:extract|annotation|document|field|missing)\b", text):
         return "not-started, annotated, extracted, missing-evidence, validation-failed, revised, source-linked, and handed-off"
     if re.search(r"\b(?:score|rubric|assessment|rating|quality)\b", text):
         return "not-started, in-progress, missing-required-field, validation-failed, scored, revised, and submitted"
+    if re.search(r"\b(?:decision rationale|motion or decision command|vote outcome|abstention marker)\b", text):
+        return "draft, ready-for-decision, blocked, approved, denied, conditioned, abstained, finalized, and handed-off"
     if re.search(r"\b(?:decision|approval|approve|blocker|final|outcome)\b", text):
         return "draft, review-ready, blocked, returned, approved, rejected, finalized, and handed-off"
     if re.search(r"\b(?:synthesis|export|package|report|table|summary)\b", text):

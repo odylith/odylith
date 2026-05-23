@@ -516,30 +516,38 @@ def _context_mermaid(
 ) -> str:
     lines = ["flowchart LR"]
     first_component = _node_id("component", 1)
+    product_node = "P"
+    if components:
+        lines.append(f'  {product_node}["{_flow_label(label, limit=64)}<br/>product boundary"]')
     for index, actor in enumerate(actors[:5], start=1):
         node = _node_id("actor", index)
-        target = _best_component_node_for_text(actor, components=components) or first_component
+        target = _best_component_node_for_text(actor, components=components) or (product_node if components else first_component)
         lines.append(f'  {node}["{_flow_label(actor, limit=96)}"] --> {target}')
     if not components:
         lines.append(f'  {first_component}["{_flow_label(label, limit=60)}<br/>product core"]')
     for index, component in enumerate(components[:7], start=1):
         node = _node_id("component", index)
         lines.append(f'  {node}["{_flow_label(str(component.get("label", "")), limit=72)}"]')
+        if index == 1 and components:
+            lines.append(f"  {product_node} --> {node}")
         if index > 1:
             lines.append(f"  {_node_id('component', index - 1)} --> {node}")
     for index, external in enumerate(external_systems[:5], start=1):
         node = _node_id("external", index)
-        target_component = _best_component_node_for_text(external, components=components) or _adapter_node(components) or first_component
+        target_component = _best_component_node_for_text(external, components=components) or _adapter_node(components) or (product_node if components else first_component)
         lines.append(f'  {node}["{_flow_label(external, limit=96)}"] --> {target_component}')
     lines.extend(
         [
             "  classDef actor fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;",
+            "  classDef boundary fill:#F8FAFC,stroke:#CBD5E1,color:#17233A,stroke-width:1px;",
             "  classDef service fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;",
             "  classDef external fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1px;",
             "  class " + ",".join(_node_id("actor", index) for index in range(1, min(len(actors), 5) + 1)) + " actor;",
             "  class " + ",".join(_node_id("component", index) for index in range(1, max(1, min(len(components), 7)) + 1)) + " service;",
         ]
     )
+    if components:
+        lines.append(f"  class {product_node} boundary;")
     if external_systems:
         lines.append("  class " + ",".join(_node_id("external", index) for index in range(1, min(len(external_systems), 5) + 1)) + " external;")
     return "\n".join(lines) + "\n"
@@ -570,7 +578,7 @@ def _sequence_mermaid(*, label: str, actors: list[str], components: list[dict[st
                 fallback_index=min(index + 1, len(selected) - 1),
             )
             if next_component_node != component_node:
-                lines.append(f"  {component_node}->>{next_component_node}: hand off state, evidence, and blockers")
+                lines.append(f"  {component_node}->>{next_component_node}: {_handoff_message(steps[index + 1])}")
     first_actor = "A1"
     final_component = _step_component(steps[min(len(steps), 8) - 1], components=selected, fallback_index=min(len(selected) - 1, len(steps) - 1))
     lines.append(f"  {final_component}-->>{first_actor}: show outcome, evidence, and next action")
@@ -578,20 +586,22 @@ def _sequence_mermaid(*, label: str, actors: list[str], components: list[dict[st
 
 
 def _best_component_node_for_text(value: str, *, components: list[dict[str, Any]]) -> str:
-    scored: list[tuple[int, int, str]] = []
+    scored: list[tuple[int, int, int, str]] = []
     terms = _domain_terms(value)
     if not terms:
         return ""
     for index, component in enumerate(components[:7], start=1):
+        label_score = len(terms & _domain_terms(component.get("label", "")))
         component_text = " ".join(
             str(component.get(key, ""))
             for key in ("label", "source_system_description", "responsibility", "boundary")
         )
-        score = len(terms & _domain_terms(component_text))
+        body_score = len(terms & _domain_terms(component_text))
+        score = label_score * 3 + body_score
         if score:
-            scored.append((score, -index, _node_id("component", index)))
+            scored.append((score, label_score, -index, _node_id("component", index)))
     scored.sort(reverse=True)
-    return scored[0][2] if scored else ""
+    return scored[0][3] if scored else ""
 
 
 def _first_path_steps(value: str) -> list[str]:
@@ -691,6 +701,7 @@ def _step_axis_component_index(step: str, *, rows: list[str]) -> int | None:
     text = _compact_text(step).casefold()
     axes: tuple[tuple[tuple[str, ...], tuple[str, ...]], ...] = (
         (("publish", "published", "audit", "history", "replay"), ("audit", "trail", "history", "retention", "source-backed")),
+        (("claim", "claims", "citation", "citations", "lineage", "traceability", "source-backed"), ("audit", "trail", "claim", "claims", "citation", "lineage", "source-backed")),
         (("open", "opens", "packet", "intake"), ("intake", "packet", "submission", "version")),
         (("context", "location", "map", "source freshness", "freshness"), ("context", "location", "map", "viewer", "evidence")),
         (("question", "follow-up", "followup", "response", "answer", "unresolved"), ("question", "response", "tracker", "issue", "follow-up")),
@@ -732,10 +743,11 @@ def _best_index_for_text(value: str, *, rows: list[str], default: int) -> int:
 
 
 def _starts_with_path_action(step: str) -> bool:
+    text = re.sub(r"^(?:and|then)\s+", "", _compact_text(step), flags=re.IGNORECASE)
     return bool(
         re.match(
-            r"^(?:checks?|opens?|reviews?|reads?|compares?|saves?|records?|creates?|submits?|receives?|assigns?|captures?|resolves?|moves?|exports?|imports?|routes?|validates?|groups?|links?|shows?|tracks?|decides?|votes?|approves?|rejects?|declines?|requests?)\b",
-            _compact_text(step),
+            r"^(?:checks?|opens?|reviews?|reads?|compares?|saves?|records?|creates?|submits?|receives?|assigns?|captures?|resolves?|moves?|exports?|imports?|routes?|validates?|groups?|links?|shows?|sees?|tracks?|decides?|votes?|approves?|rejects?|declines?|requests?)\b",
+            text,
             flags=re.IGNORECASE,
         )
     )
@@ -746,6 +758,16 @@ def _step_message(value: str) -> str:
     if text:
         text = text[:1].upper() + text[1:]
     return _without_ellipsis(mermaid_text.wrap_mermaid_label(text, width=34, max_lines=3, limit=120)) or "advance accepted path"
+
+
+def _handoff_message(next_step: str) -> str:
+    focus = re.sub(r"^(?:and|then)\s+", "", _strip_dangling_tail(_trim(next_step, 90)), flags=re.IGNORECASE)
+    focus = re.sub(r"^(?:a|an|the)\s+", "", focus, flags=re.IGNORECASE).strip(" .")
+    if not focus:
+        focus = "next accepted action"
+    elif not focus.split()[0].isupper():
+        focus = focus[:1].lower() + focus[1:]
+    return _without_ellipsis(mermaid_text.wrap_mermaid_label(f"prepare {focus}", width=34, max_lines=2, limit=96))
 
 
 def _domain_terms(value: object) -> set[str]:

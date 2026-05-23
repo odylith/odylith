@@ -647,7 +647,7 @@ def _collect_sample_tokens(page, base_url: str) -> dict[str, str]:  # noqa: ANN0
     assert response is not None and response.ok
     compass = page.frame_locator("#frame-compass")
     compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
-    compass_workstream = compass.locator("a.ws-id-btn").first.inner_text().strip()
+    compass_workstream = compass.locator("a.ws-id-btn, a.ws-covered-id-btn").first.inner_text().strip()
     assert re.fullmatch(r"B-\d{3,}", compass_workstream), compass_workstream
 
     return {

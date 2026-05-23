@@ -194,7 +194,7 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
 
 
 def _completed_actor_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
-    rows = _strings(intent.get("human_actors"))
+    rows = [row for row in _strings(intent.get("human_actors")) if not _actor_row_is_meta(row)]
     labels = [_actor_label(row, title=title) for row in rows]
     labels = [label for label in labels if label]
     if len(labels) < 3:
@@ -208,15 +208,23 @@ def _completed_actor_rows(intent: Mapping[str, Any], *, title: str) -> list[str]
     for index, label in enumerate(labels):
         original = rows[index] if index < len(rows) else label
         original_head = _title_case(_clean(str(original).split("—", 1)[0].split(":", 1)[0]))
-        if (
-            original_head == label
-            and _actor_row_has_usable_description(original)
-            and _semantic_overlap(original, f"{first_path} {state} {proof}") >= 1
-        ):
+        if original_head == label and _actor_row_has_usable_description(original):
             completed.append(original)
             continue
         completed.append(_actor_description(label=label, index=index, title=title, first_path=first_path, state=state, proof=proof))
     return list(unique_text(completed))
+
+
+def _actor_row_is_meta(value: str) -> bool:
+    """Reject generated summary rows that are not human participants."""
+
+    text = _clean(value).casefold()
+    return bool(
+        re.search(r"\badditional\s+accepted\s+(?:items|actors|systems)\s+remain\b", text)
+        or re.search(r"\bother\s+accepted\s+(?:items|actors|systems)\b", text)
+        or re.search(r"\bplus\s+\d+\s+more\b", text)
+        or text in {"human actors", "participants", "people named in the accepted product direction"}
+    )
 
 
 def _actor_description(*, label: str, index: int, title: str, first_path: str, state: str, proof: str) -> str:

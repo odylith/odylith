@@ -386,9 +386,15 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
         f"{dashboard_ui_primitives.STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_WEIGHT};"
     ) in base_css
     assert ".pill, .ws-id-btn, .chip-link {" not in base_css
-    assert ".pill, .chip-link:not(.workstream-id-chip):not(.execution-wave-chip-link) {" in base_css
-    assert ".ws-id-btn {" in base_css
-    assert ".ws-id-btn, .workstream-id-chip {" in base_css
+    assert (
+        ".pill, .chip-link:not(.workstream-id-chip):not(.ws-covered-id-btn):not(.execution-wave-chip-link) {"
+        in base_css
+    )
+    assert ".ws-id-btn {\n      --chip-link-border:" not in base_css
+    assert ".ws-id-btn, .ws-covered-id-btn, .workstream-id-chip {" in base_css
+    assert f"--chip-link-border: {dashboard_ui_primitives.STANDARD_SURFACE_WORKSTREAM_BUTTON_BORDER_COLOR};" in base_css
+    assert f"--chip-link-bg: {dashboard_ui_primitives.STANDARD_SURFACE_WORKSTREAM_BUTTON_BACKGROUND};" in base_css
+    assert f"--chip-link-text: {dashboard_ui_primitives.STANDARD_SURFACE_WORKSTREAM_BUTTON_COLOR};" in base_css
     assert (
         "padding: "
         f"var({dashboard_ui_primitives.SURFACE_DEEP_LINK_BUTTON_PADDING_CSS_VAR}, "

@@ -1142,7 +1142,7 @@ def test_compass_deeplinks_into_radar_and_registry_contexts(browser_context) -> 
     compass = page.frame_locator("#frame-compass")
     compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
 
-    first_workstream_link = compass.locator("a.ws-id-btn").first
+    first_workstream_link = compass.locator("a.ws-id-btn, a.ws-covered-id-btn").first
     first_workstream_id = first_workstream_link.inner_text().strip()
     assert re.fullmatch(r"B-\d{3,}", first_workstream_id), first_workstream_id
     first_workstream_link.click()
@@ -1183,7 +1183,7 @@ def test_shell_history_and_cross_surface_deeplinks_round_trip_cleanly(browser_co
 
     compass = page.frame_locator("#frame-compass")
     compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
-    compass.locator("a.ws-id-btn").first.click()
+    compass.locator("a.ws-id-btn, a.ws-covered-id-btn").first.click()
     page.wait_for_url(re.compile(r".*/odylith/index\.html\?tab=radar(&.*)?workstream=B-\d{3,}(&.*|$)"), timeout=15000)
     assert page.locator("#tab-radar").get_attribute("aria-selected") == "true"
 

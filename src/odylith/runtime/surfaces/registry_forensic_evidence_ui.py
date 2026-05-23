@@ -27,7 +27,6 @@ def css() -> str:
 
     workstream_chip_css = dashboard_ui_primitives.surface_workstream_button_chip_css(
         selector=".forensic-workstream-chip",
-        color="#334155",
     )
     artifact_chip_css = dashboard_ui_primitives.detail_action_chip_css(
         selector=".artifact",

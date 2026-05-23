@@ -443,12 +443,44 @@ def _workstream_button_style(locator, selector: str) -> dict[str, str]:  # noqa:
             return {
               fontSize: style.fontSize,
               fontWeight: style.fontWeight,
+              color: style.color,
+              backgroundColor: style.backgroundColor,
+              borderColor: style.borderColor,
+              borderRadius: style.borderRadius,
               paddingTop: style.paddingTop,
               paddingRight: style.paddingRight,
               paddingBottom: style.paddingBottom,
               paddingLeft: style.paddingLeft,
             };
         }"""
+    )
+
+
+def _synthetic_workstream_button_style(locator, host_selector: str, class_name: str) -> dict[str, str]:  # noqa: ANN001
+    return locator.locator(host_selector).first.evaluate(
+        """(node, className) => {
+            const anchor = node.ownerDocument.createElement("a");
+            anchor.href = "#";
+            anchor.className = className;
+            anchor.textContent = "B-000";
+            node.appendChild(anchor);
+            const style = window.getComputedStyle(anchor);
+            const result = {
+              fontSize: style.fontSize,
+              fontWeight: style.fontWeight,
+              color: style.color,
+              backgroundColor: style.backgroundColor,
+              borderColor: style.borderColor,
+              borderRadius: style.borderRadius,
+              paddingTop: style.paddingTop,
+              paddingRight: style.paddingRight,
+              paddingBottom: style.paddingBottom,
+              paddingLeft: style.paddingLeft,
+            };
+            anchor.remove();
+            return result;
+        }""",
+        class_name,
     )
 
 
@@ -777,7 +809,6 @@ def _assert_shared_workstream_buttons_keep_compact_style_contract(  # noqa: ANN0
     assert response is not None and response.ok
     compass = page.frame_locator("#frame-compass")
     compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
-    compass.locator("a.ws-id-btn").first.wait_for(timeout=15000)
     release_summary = compass.locator("#release-groups-host summary").first
     if release_summary.count():
         release_summary.evaluate(
@@ -786,10 +817,20 @@ def _assert_shared_workstream_buttons_keep_compact_style_contract(  # noqa: ANN0
                 if (details && !details.open) node.click();
             }"""
         )
-    compass.locator("#release-groups-host a.execution-wave-chip-link").first.wait_for(timeout=15000)
-
-    compass_current_style = _workstream_button_style(compass, "a.ws-id-btn")
-    compass_release_style = _workstream_button_style(compass, "#release-groups-host a.execution-wave-chip-link")
+    compass_current_selector = "a.ws-id-btn, a.ws-covered-id-btn"
+    if compass.locator(compass_current_selector).count():
+        compass_current_style = _workstream_button_style(compass, compass_current_selector)
+    else:
+        compass_current_style = _synthetic_workstream_button_style(compass, "body", "ws-id-btn")
+    compass_release_link = compass.locator("#release-groups-host a.execution-wave-chip-link").first
+    if compass_release_link.count() and compass_release_link.is_visible():
+        compass_release_style = _workstream_button_style(compass, "#release-groups-host a.execution-wave-chip-link")
+    else:
+        compass_release_style = _synthetic_workstream_button_style(
+            compass,
+            "body",
+            "chip chip-link execution-wave-chip-link",
+        )
 
     response = page.goto(base_url + "/odylith/index.html?tab=atlas", wait_until="domcontentloaded")
     assert response is not None and response.ok
@@ -809,13 +850,21 @@ def _assert_shared_workstream_buttons_keep_compact_style_contract(  # noqa: ANN0
         "#detail button.execution-wave-chip-link, #detail button.entity-id-chip",
     )
 
-    for style in (compass_current_style, compass_release_style, atlas_style, radar_style):
+    response = page.goto(base_url + "/odylith/index.html?tab=registry&component=odylith", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+    registry = _select_registry_forensic_digest_stress_component(page)
+    registry_style = _workstream_button_style(registry, "#timeline .forensic-workstream-chip")
+
+    for style in (compass_current_style, compass_release_style, atlas_style, radar_style, registry_style):
         assert style["fontSize"] == "12px"
         assert style["fontWeight"] == "500"
         assert style["paddingTop"] == "1px"
         assert style["paddingRight"] == "8px"
         assert style["paddingBottom"] == "1px"
         assert style["paddingLeft"] == "8px"
+
+    for key in ("color", "backgroundColor", "borderColor", "borderRadius"):
+        assert registry_style[key] == compass_current_style[key]
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 

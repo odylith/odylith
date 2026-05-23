@@ -577,7 +577,7 @@ def test_render_registry_dashboard_forensic_evidence_uses_digest_first_contract(
     assert "forensic-overflow" not in html
     assert '<a class="forensic-workstream-chip"' in html
     assert re.search(
-        r"\.forensic-workstream-chip\s*\{[^}]*--chip-link-border:\s*#b9c7db;[^}]*--chip-link-bg:\s*#f3f6fb;[^}]*--chip-link-text:\s*#334155;",
+        r"\.forensic-workstream-chip\s*\{[^}]*--chip-link-border:\s*#93c5fd;[^}]*--chip-link-bg:\s*#eff6ff;[^}]*--chip-link-text:\s*#1e3a8a;",
         html,
         flags=re.S,
     )
@@ -591,9 +591,9 @@ def test_render_registry_dashboard_forensic_evidence_uses_digest_first_contract(
         html,
         flags=re.S,
     )
-    assert not re.search(r"\.forensic-workstream-chip\s*\{[^}]*#8cb8f4", html, flags=re.S)
-    assert not re.search(r"\.forensic-workstream-chip\s*\{[^}]*#eaf3ff", html, flags=re.S)
-    assert not re.search(r"\.forensic-workstream-chip\s*\{[^}]*#1f4795", html, flags=re.S)
+    assert not re.search(r"\.forensic-workstream-chip\s*\{[^}]*#b9c7db", html, flags=re.S)
+    assert not re.search(r"\.forensic-workstream-chip\s*\{[^}]*#f3f6fb", html, flags=re.S)
+    assert not re.search(r"\.forensic-workstream-chip\s*\{[^}]*#334155", html, flags=re.S)
     assert re.search(
         r"\.artifact\s*\{[^}]*--chip-link-border:\s*#cbd5e1;[^}]*--chip-link-bg:\s*#f8fafc;[^}]*--chip-link-text:\s*#334155;",
         html,

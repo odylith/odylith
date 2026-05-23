@@ -776,14 +776,6 @@ h1 {
     .ws-row-meta td {
       padding-top: 0;
     }
-    .ws-id-btn {
-      --chip-link-border: #93c5fd;
-      --chip-link-bg: #eff6ff;
-      --chip-link-text: #1e3a8a;
-      --chip-link-border-hover: #60a5fa;
-      --chip-link-bg-hover: #deebff;
-      --chip-link-text-hover: #1d4ed8;
-    }
     .ws-id-stack {
       display: flex;
       align-items: center;

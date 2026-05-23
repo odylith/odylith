@@ -305,6 +305,10 @@ def _axis_for(*, row: Mapping[str, Any] | None, proposal: Mapping[str, Any]) -> 
         )
         for axis in COMPONENT_AXES
     ]
+    if re.search(r"\b(claim|claims|citation|citations|lineage|traceability|source-backed)\b", f"{label_text} {description_text}", flags=re.IGNORECASE):
+        for score, _label_hits, _description_hits, axis in scored:
+            if axis.key == "source_claim_lineage" and score > 0:
+                return axis
     if re.search(r"\b(rationale|vote|motion|abstain|abstention)\b", label_text, flags=re.IGNORECASE):
         for score, _label_hits, _description_hits, axis in scored:
             if axis.key == "decision_rationale_vote" and score > 0:

@@ -380,7 +380,7 @@ def test_compass_cross_surface_links_round_trip_cleanly(browser_context) -> None
     compass = page.frame_locator("#frame-compass")
     _wait_for_compass_ready(compass)
     workstream_link_specs = [
-        ("a.ws-id-btn", "expected Compass current workstream deeplinks"),
+        ("a.ws-id-btn, a.ws-covered-id-btn", "expected Compass workstream deeplinks"),
     ]
     optional_workstream_link_specs = [
         ("#execution-waves-host a.execution-wave-chip-link", "expected Compass execution-wave workstream deeplinks"),

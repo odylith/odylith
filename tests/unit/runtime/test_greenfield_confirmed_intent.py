@@ -524,6 +524,124 @@ Release 0.0.1 succeeds when reviewer assignment respects eligibility and permiss
         assert phrase.casefold() in audit_spec.casefold()
 
 
+def test_confirmed_create_preserves_title_actors_and_domain_local_artifacts(tmp_path: Path, monkeypatch) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+
+    intent = parse_confirmed_intent_text(
+        """Civic Case Review Workbench — Product Intent Confirmation
+
+Product story
+A civic case workbench helps case board members review land-use cases before a public hearing. It brings the agenda item, parcel map, zoning and impact summaries, staff recommendation, public concerns, saved questions, vote rationale, and source traceability into one reviewable case so board members can prepare and explain decisions without losing the public record.
+
+State object
+A civic review case tracks agenda item identity, parcel and location context, zoning district, staff recommendation, impact summary, public comment themes, saved board member questions, hearing vote, rationale, source citations, and audit history.
+
+First complete path
+A case board member opens one agenda item, reviews the parcel map and zoning overlays, reads the staff recommendation and impact summary, groups public comments by concern, saves questions for staff, compares the recommendation to concerns, records a vote rationale at the hearing, and sees claim-source traceability for the public record.
+
+Human actors
+- Case board member: reviews agenda material, asks questions, records hearing rationale, and needs source-backed context before voting.
+- Staff analyst: prepares staff recommendation, impact summary, map context, and responses to board member questions.
+- Public participant or resident: submits comments or concerns that must remain visible and traceable.
+- Compliance reviewer: checks whether decision rationale and public-record handling satisfy process constraints.
+
+External systems
+- Agenda management system supplies hearing items and staff reports.
+- GIS or parcel map source supplies location, zoning overlays, and district boundaries.
+- Public comment portal supplies resident concerns and attachments.
+
+Internal product systems
+- Case Review Workspace — organizes the agenda item, case status, review checklist, board member notes, and hearing-ready state.
+- Map and Parcel Context Viewer — presents parcel geometry, zoning overlays, district boundaries, map layers, source freshness, and location constraints.
+- Staff Recommendation and Impact Summary — records recommendation text, impact findings, supporting sources, conditions, and comparison points for the case.
+- Public Comment Grouping — groups comments by concern, source, attachment, duplicate marker, visibility rule, and unresolved theme.
+- Question and Issue Tracker — tracks board member questions, staff responses, open issues, answer status, follow-up owner, and unresolved blockers.
+- Vote Rationale and Hearing Outcome Record — records motion, vote, rationale, conditions, abstentions, and final outcome.
+- Audit Trail for Source-backed Claims — preserves claim-source lineage, citation history, version replay, access events, and public-record retention.
+
+Critical assumptions
+- Release 0.0.1 supports one agenda item review path before live hearing-scale workflow.
+- Map and public comment sources can start from imported fixtures before live integrations.
+- The product supports decision preparation and rationale capture; it does not automate legal approval or public hearing procedure.
+
+Ambiguities
+- Whether public comments need redaction before board member review.
+- Whether map context is live GIS or a static exported layer in the first release.
+
+Proof boundary
+Release 0.0.1 succeeds when a board member can open one civic case, inspect map and zoning context, compare staff recommendation with public concerns, save questions, record vote rationale, and trace every material claim back to its source without exposing out-of-scope private or legal decision automation.
+""",
+        prompt="Draft a product-first greenfield proposal for a civic case workbench.",
+    )
+
+    assert intent["title"] == "Civic Case Review Workbench"
+    assert len(intent["human_actors"]) == 4
+    assert any(row.startswith("Compliance reviewer:") for row in intent["human_actors"])
+
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="Draft a product-first greenfield proposal for a civic case workbench.",
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    encoded = json.dumps(proposal)
+    for banned in (
+        "Additional accepted items remain",
+        "supports the accepted path",
+        "inputs and produced outputs",
+        "scoring rubric",
+    ):
+        assert banned not in encoded
+    assert proposal["intent"]["title"] == "Civic Case Review Workbench"
+    assert not greenfield_quality_issues(proposal)
+
+    sequence = next(row for row in proposal["diagrams"] if row["title"] == "First Path Sequence")["mermaid_source"]
+    for phrase in ("parcel map", "public comments", "vote rationale", "claim-source"):
+        assert phrase in sequence
+    context = next(row for row in proposal["diagrams"] if row["title"] == "System Context View")["mermaid_source"]
+    assert "Public comment portal" in context
+    assert "component4" in context
+
+    result = greenfield_proposals.apply_greenfield_proposal(
+        repo_root=tmp_path,
+        proposal=proposal,
+        confirm=True,
+        release_selector="0.0.1",
+    )
+    specs = {
+        row["label"]: Path(row["spec_path"]).read_text(encoding="utf-8")
+        for row in result["components"]
+    }
+    assert rendered_component_spec_quality_issues(specs, project_title=proposal["intent"]["title"]) == []
+    joined_specs = "\n".join(specs.values())
+    for banned in ("supports the accepted path", "inputs and produced outputs", "scoring rubric"):
+        assert banned not in joined_specs
+
+    expected_spec_terms = {
+        "Case Review Workspace": ("case identity", "checklist progress", "actor notes", "readiness marker"),
+        "Map and Parcel Context Viewer": ("boundary geometry", "map layer selection", "source freshness", "missing-context blocker"),
+        "Staff Recommendation and Impact Summary": ("recommendation text", "impact findings", "comparison points", "source references"),
+        "Public Comment Grouping": ("comment grouping", "theme label", "concern summary", "visibility state"),
+        "Question and Issue Tracker": ("question list", "answer status", "unresolved blocker", "response history"),
+        "Vote Rationale and Hearing Outcome Record": ("decision rationale", "vote outcome", "condition set", "abstention marker"),
+        "Audit Trail for Source-backed Claims": ("claim-source lineage", "citation set", "replayable claim version", "missing-source blocker"),
+    }
+    for label, phrases in expected_spec_terms.items():
+        spec = next(text for spec_label, text in specs.items() if label in spec_label).casefold()
+        for phrase in phrases:
+            assert phrase.casefold() in spec
+
+    radar_text = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in (tmp_path / "odylith/radar/source/ideas").glob("**/*.md")
+    )
+    for banned in ("inputs and produced outputs", "produced outputs input", "component boundary, diagram view, and release gate"):
+        assert banned not in radar_text
+
+
 def test_confirmed_create_self_repairs_multi_gate_evidence_review_shape(tmp_path: Path, monkeypatch, capsys) -> None:
     _seed_empty_governance_repo(tmp_path)
     monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)

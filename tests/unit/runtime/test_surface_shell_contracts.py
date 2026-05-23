@@ -278,8 +278,11 @@ def test_compass_shell_base_css_shares_standard_shell_width_contract() -> None:
         f"{expected_deep_link_weight});"
     ) in css
     assert ".pill, .ws-id-btn, .chip-link {" not in css
-    assert ".pill, .chip-link:not(.workstream-id-chip):not(.execution-wave-chip-link) {" in css
-    assert ".ws-id-btn, .workstream-id-chip {" in css
+    assert (
+        ".pill, .chip-link:not(.workstream-id-chip):not(.ws-covered-id-btn):not(.execution-wave-chip-link) {"
+        in css
+    )
+    assert ".ws-id-btn, .ws-covered-id-btn, .workstream-id-chip {" in css
 
 
 @pytest.mark.parametrize(
@@ -385,8 +388,11 @@ def test_bundle_compass_shell_base_css_shares_standard_shell_width_contract() ->
         f"{expected_deep_link_weight});"
     ) in css
     assert ".pill, .ws-id-btn, .chip-link {" not in css
-    assert ".pill, .chip-link:not(.workstream-id-chip):not(.execution-wave-chip-link) {" in css
-    assert ".ws-id-btn, .workstream-id-chip {" in css
+    assert (
+        ".pill, .chip-link:not(.workstream-id-chip):not(.ws-covered-id-btn):not(.execution-wave-chip-link) {"
+        in css
+    )
+    assert ".ws-id-btn, .ws-covered-id-btn, .workstream-id-chip {" in css
 
 
 @pytest.mark.parametrize(
