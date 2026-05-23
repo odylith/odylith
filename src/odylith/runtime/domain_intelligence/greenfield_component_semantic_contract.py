@@ -325,7 +325,7 @@ def _input_focus(*, object_phrases: Sequence[str], action_terms: Sequence[str], 
     if "import" in action_terms:
         return "source payload, source timestamp, provenance marker, malformed-input signal, and import request"
     if "assign" in action_terms or "grant" in action_terms or "route" in action_terms:
-        return "eligible actor, role attribute, conflict signal, permission request, and assignment trigger"
+        return "actor eligibility, role attribute, conflict signal, permission request, and assignment trigger"
     if "define" in action_terms:
         return "question, rule draft, threshold, policy source, exception note, and prior version"
     if "score" in action_terms:
@@ -403,7 +403,7 @@ def _sibling_focus(sibling: Mapping[str, Any] | None) -> str:
 def _outside_boundary(*, sibling_focus: str) -> str:
     base = [
         "sibling-owned product responsibilities",
-        "external-provider truth",
+        "upstream source truth",
         "release approval",
         "runtime implementation outside the accepted proof boundary",
     ]
@@ -432,7 +432,7 @@ def _proof_rows(
     if sibling_label and sibling_focus:
         rows.append(f"{label} refuses {sibling_label} ownership over {sibling_focus}.")
     else:
-        rows.append(f"{label} keeps its local proof separate from release approval and external-provider truth.")
+        rows.append(f"{label} keeps its local proof separate from release approval and upstream source truth.")
     return tuple(_clean(row).rstrip(".") for row in rows if _clean(row))
 
 

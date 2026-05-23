@@ -60,6 +60,16 @@ def build_component_contract(
     first_path = _proposal_text(proposal, "first_path", "intent.first_path")
     proof_boundary = _proposal_text(proposal, "proof_boundary", "intent.proof_boundary")
     description = _component_description(row)
+    local_context = _context_text(
+        [
+            label,
+            description,
+            _clean(row.get("boundary")),
+            " ".join(text_values(row.get("interfaces"))),
+            " ".join(text_values(row.get("validation"))),
+            workstream_title,
+        ]
+    )
     context = _context_text(
         [
             _proposal_title(proposal),
@@ -79,7 +89,7 @@ def build_component_contract(
         contract = _document_context_contract(
             label=label,
             state_label=state_label,
-            context=context,
+            context=local_context or context,
             previous_label=previous_label,
             next_label=next_label,
         )
@@ -307,7 +317,11 @@ def _profile(*, label: str, kind: str, context: str) -> str:
         return "generic"
     if focused_words & {"status", "timeline", "history", "notification", "stale"} or "current owner" in focused:
         return "status_view"
-    if "context" in focused_words and any(token in text for token in ("document", "attachment", "packet", "upload", "file")):
+    if (
+        "context" in focused_words
+        and focused_words & {"handling", "handler", "bundle", "packet"}
+        and any(token in text for token in ("document", "attachment", "packet", "upload", "file"))
+    ):
         return "document_context"
     if "view" in focused_words and any(token in text for token in ("status", "timeline", "current owner", "notification", "stale")):
         return "status_view"
@@ -398,7 +412,7 @@ def _object_base(object_name: str) -> str:
     words = [
         word
         for word in _clean(object_name).casefold().split()
-        if word not in {"request", "record", "file", "case", "item", "profile", "object"}
+        if word not in {"record", "file", "case", "item", "profile", "object"}
     ]
     return " ".join(words[:3]) or _clean(object_name).casefold() or "domain item"
 
@@ -436,8 +450,10 @@ def _identity_phrase(context: str, *, object_name: str) -> str:
 
 def _context_label(context: str, *, object_name: str) -> str:
     lowered = context.casefold()
-    match = re.search(r"\b(?P<context>[a-z][a-z-]+\s+context)\b", lowered)
-    if match:
+    for match in re.finditer(r"\b(?P<context>[a-z][a-z-]+\s+context)\b", lowered):
+        subject = match.group("context").split()[0]
+        if subject in {"and", "or", "the", "a", "an"}:
+            continue
         return match.group("context")
     return f"{_object_base(object_name)} context"
 
@@ -506,14 +522,20 @@ def _recipient_actor(context: str) -> str:
         match = re.search(pattern, lowered)
         if match:
             return match.group(1)
-    return "downstream reviewer"
+    return "downstream actor"
 
 
 def _document_outside_boundary(context: str) -> str:
     lowered = context.casefold()
-    outside = ["matching decisions", "lifecycle status decisions", "external provider truth", "release approval"]
+    outside = [
+        "sibling product responsibilities",
+        "downstream decision ownership",
+        "status or lifecycle state",
+        "upstream source truth",
+        "release approval",
+    ]
     if "scheduling" in lowered or "scheduled" in lowered:
-        outside.insert(2, "scheduling outcome")
+        outside.insert(3, "scheduling outcome")
     return ", ".join(outside)
 
 
@@ -757,10 +779,10 @@ def _label_semantic_terms(label: str) -> tuple[str, ...]:
 
 def _outside_boundary(*, kind: str) -> str:
     if kind.casefold() in {"client", "surface", "ui", "web"}:
-        return "domain derivation, persistence, external-provider truth, and release approval unless a later plan assigns them here"
+        return "domain derivation, persistence, upstream source truth, and release approval unless a later plan assigns them here"
     if kind.casefold() == "adapter":
-        return "upstream provider truth, product decisions, presentation, and release approval"
-    return "presentation, external-provider truth, adjacent product decisions, and release approval unless explicitly assigned"
+        return "upstream source truth, product decisions, presentation, and release approval"
+    return "presentation, upstream source truth, adjacent product decisions, and release approval unless explicitly assigned"
 
 
 def _component_subject(label: str) -> str:

@@ -638,13 +638,65 @@ def _actor_journey_intro(actors: Sequence[tuple[str, str, str]]) -> str:
         detail = _actor_story_detail(body).rstrip(".")
         if not actor:
             continue
-        subject = actor if re.match(r"^(?:a|an|the)\b", actor, flags=re.IGNORECASE) else f"The {_lower_first(actor).rstrip('.')}"
         if detail.casefold().startswith("who "):
             detail = detail[4:].strip()
         if detail:
-            return _story_excerpt(f"{subject} {_lower_first(detail).rstrip('.')}.", limit=190)
-        return _story_excerpt(f"{subject} has one concrete first journey to complete.", limit=190)
+            actor_sentence = _actor_sentence_subject(actor=actor, detail=detail)
+            return _story_excerpt(f"{actor_sentence} {_finite_actor_detail(detail).rstrip('.')}.", limit=190)
+        return _story_excerpt(f"{actor} has one concrete first journey to complete.", limit=190)
     return ""
+
+
+def _actor_sentence_subject(*, actor: str, detail: str) -> str:
+    text = display_text(actor).rstrip(".")
+    if _starts_with_gerund(detail) and not text.casefold().endswith("s"):
+        return f"The {_lower_first(text)}"
+    return text
+
+
+def _finite_actor_detail(value: str) -> str:
+    text = _lower_first(display_text(value)).rstrip(".")
+    if not _starts_with_gerund(text):
+        return text
+    parts = re.split(r"(\s+and\s+|\s+or\s+)", text, maxsplit=2)
+    converted: list[str] = []
+    for part in parts:
+        if re.fullmatch(r"\s+(?:and|or)\s+", part):
+            converted.append(part)
+            continue
+        converted.append(_finite_gerund_part(part))
+    return "".join(converted)
+
+
+def _starts_with_gerund(value: str) -> bool:
+    return bool(re.match(r"^[a-z][a-z-]+ing\b", display_text(value).strip(), flags=re.IGNORECASE))
+
+
+def _finite_gerund_part(value: str) -> str:
+    text = display_text(value)
+    first, separator, rest = text.partition(" ")
+    verb = first.casefold()
+    overrides = {
+        "filing": "files",
+        "maintaining": "maintains",
+        "making": "makes",
+        "moving": "moves",
+        "reading": "reads",
+        "receiving": "receives",
+        "registering": "registers",
+        "running": "runs",
+        "taking": "takes",
+        "using": "uses",
+        "writing": "writes",
+    }
+    if verb in overrides:
+        finite = overrides[verb]
+    elif verb.endswith("ing") and len(verb) > 5:
+        base = verb[:-3]
+        finite = f"{base}s"
+    else:
+        return text
+    return f"{finite}{separator}{rest}" if separator else finite
 
 
 def _contract_first_path_body(first_path: str) -> str:

@@ -941,7 +941,7 @@ Release proof must show one supported device path from pairing through live read
 
     systems = intent["internal_systems"]
     assert len(systems) == 5
-    assert systems[0].startswith("Device Pairing And Sync — handles device pairing and sync inputs")
+    assert systems[0].startswith("Device Pairing And Sync — owns device pairing and sync state")
     assert "responsibility and keeps it tied" not in systems[0]
     assert all("—" in row for row in systems)
     assert all("missing or too thin" not in row for row in systems)

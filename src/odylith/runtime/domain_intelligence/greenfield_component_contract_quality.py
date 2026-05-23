@@ -51,6 +51,9 @@ _BANNED_PROSE_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("doubled refusal phrase", re.compile(r"\brefuses\b[^.]{0,140}\brefuses\b", re.IGNORECASE)),
     ("clipped scoring fragment", re.compile(r"\bscor\b", re.IGNORECASE)),
     ("clipped eligibility phrase", re.compile(r"\baccepting\s+eligible\b", re.IGNORECASE)),
+    ("generic input-output filler", re.compile(r"\binputs\s+and\s+produced\s+outputs\b", re.IGNORECASE)),
+    ("generic accepted-path actor filler", re.compile(r"\bsupports\s+the\s+accepted\s+path\b", re.IGNORECASE)),
+    ("accepted-items summary leaked", re.compile(r"\badditional\s+accepted\s+(?:items|systems)\s+remain\s+in\s+the\s+intent\b", re.IGNORECASE)),
 )
 
 _DANGLING_WORDS = {

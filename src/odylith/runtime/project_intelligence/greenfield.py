@@ -1166,11 +1166,13 @@ def _customer_actor_rows(*, proposal: Mapping[str, Any]) -> list[tuple[str, str,
         if not customer:
             continue
         context = sentence(item.get("opportunity") or item.get("problem") or item.get("product_view"))
-        for segment in _customer_segments(customer):
+        segments = _customer_segments(customer)
+        actor_list = _customer_segments_are_actor_list(customer, segments)
+        for segment in segments:
             title = _customer_actor_title(segment)
             if not _is_project_actor_label(title):
                 continue
-            body = _customer_actor_body(segment=segment, context=context)
+            body = _customer_actor_body(segment=segment, context="" if actor_list else context)
             rows.append(("", title, body))
     return rows
 
@@ -1178,7 +1180,30 @@ def _customer_actor_rows(*, proposal: Mapping[str, Any]) -> list[tuple[str, str,
 def _customer_segments(value: str) -> list[str]:
     text = display_text(value)
     pieces = [piece.strip(" .") for piece in re.split(r";|\s+;\s+", text) if piece.strip(" .")]
+    if len(pieces) == 1 and "," in text:
+        comma_pieces = [
+            re.sub(r"^(?:and\s+)", "", piece.strip(" ."), flags=re.IGNORECASE)
+            for piece in text.split(",")
+            if piece.strip(" .")
+        ]
+        if len(comma_pieces) >= 2 and all(1 <= len(piece.split()) <= 5 for piece in comma_pieces):
+            pieces = comma_pieces
     return pieces or ([text] if text else [])
+
+
+def _customer_segments_are_actor_list(value: str, segments: Sequence[str]) -> bool:
+    """Return true when a customer field is only a compact list of roles."""
+
+    text = display_text(value)
+    if len(segments) < 2 or "," not in text:
+        return False
+    for segment in segments:
+        clean = display_text(segment)
+        if not clean or len(clean.split()) > 6:
+            return False
+        if _role_description_parts(clean)[1]:
+            return False
+    return True
 
 
 def _customer_actor_title(value: str) -> str:
@@ -1274,6 +1299,7 @@ def _is_project_actor_label(value: str) -> bool:
     lowered = label.casefold().replace("_", " ")
     if lowered in {
         "actor",
+        "other accepted items",
         "beneficiary advocate",
         "domain operator",
         "risk owner",
@@ -1285,6 +1311,8 @@ def _is_project_actor_label(value: str) -> bool:
     }:
         return False
     if lowered.startswith(("the first-release actors are", "actors involved in")):
+        return False
+    if "accepted items" in lowered and "intent" in lowered:
         return False
     internal_markers = (
         "program boundary",
@@ -1350,7 +1378,11 @@ def _dedupe_actor_rows(rows: Sequence[tuple[str, str, str]]) -> list[tuple[str, 
         if key in seen:
             existing_index = seen[key]
             existing_role, existing_title, existing_body = result[existing_index]
-            if len(clean_body) > len(existing_body):
+            if _should_replace_actor_body(
+                title=existing_title,
+                existing_body=existing_body,
+                candidate_body=clean_body,
+            ):
                 result[existing_index] = (
                     existing_role or sentence(role),
                     existing_title,
@@ -1361,6 +1393,35 @@ def _dedupe_actor_rows(rows: Sequence[tuple[str, str, str]]) -> list[tuple[str, 
         result.append((sentence(role), clean_title, clean_body))
 
     return result
+
+
+def _should_replace_actor_body(*, title: str, existing_body: str, candidate_body: str) -> bool:
+    if not candidate_body:
+        return False
+    if _is_default_actor_body(title=title, body=existing_body) and not _is_default_actor_body(
+        title=title, body=candidate_body
+    ):
+        return True
+    if _looks_generated_actor_context(existing_body) and not _looks_generated_actor_context(candidate_body):
+        return True
+    return len(candidate_body) > len(existing_body)
+
+
+def _is_default_actor_body(*, title: str, body: str) -> bool:
+    return _repeat_key(body) == _repeat_key(_default_actor_body(title))
+
+
+def _looks_generated_actor_context(value: str) -> bool:
+    lowered = sentence(value).casefold()
+    return lowered.startswith(("build the ", "implement ", "turn the confirmed ")) or any(
+        marker in lowered
+        for marker in (
+            "can fail when the first accepted action",
+            "cannot support release review unless",
+            "review output with validation results",
+            "as the state and handoff boundary",
+        )
+    )
 
 
 def _actor_display_parts(*, title: object, body: object) -> tuple[str, str]:
@@ -1698,7 +1759,7 @@ def _join_boundary_values(values: Sequence[str], *, total: int) -> str:
     joined = "; ".join(clean_values)
     remaining = max(0, total - len(clean_values))
     if remaining:
-        joined = f"{joined}; additional accepted items remain outside this summary"
+        joined = f"{joined}; other accepted items stay outside this summary"
     return joined
 
 

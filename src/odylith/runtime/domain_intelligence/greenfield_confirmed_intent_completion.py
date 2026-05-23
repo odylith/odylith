@@ -223,15 +223,61 @@ def _actor_description(*, label: str, index: int, title: str, first_path: str, s
     label_text = label.casefold()
     if re.search(r"\b(author|applicant|submitter|requester|customer|client|resident|buyer|seller)\b", label_text):
         body = f"starts the accepted path in {title}, supplies required input, sees feedback or blockers, and receives the visible outcome"
-    elif re.search(r"\b(editor|manager|chair|coordinator|operator|supervisor|lead|owner)\b", label_text):
+    elif re.search(r"\b(editor|manager|chair|coordinator|operator|supervisor|lead|owner|director)\b", label_text):
         body = "moves the work through screening, assignment, review, decision, exception handling, and recovery without losing state ownership"
-    elif re.search(r"\b(reviewer|inspector|evaluator|analyst|auditor|expert|approver)\b", label_text):
+    elif re.search(r"\b(reviewer|inspector|evaluator|analyst|auditor|expert|approver|compliance)\b", label_text):
         body = "reviews assigned work, submits structured evidence or decisions, and can challenge incomplete, disputed, or unsafe outcomes"
-    elif re.search(r"\b(admin|administrator|config|maintainer|support|scheduler|planner)\b", label_text):
+    elif re.search(r"\b(participant|observer|applicant)\b", label_text):
+        body = "supplies input, context, or objections that must remain traceable to the first-path decision"
+    elif re.search(r"\b(admin|administrator|config|maintainer|support|scheduler)\b", label_text):
         body = "configures policy, templates, access, deadlines, notifications, recovery, and operational readiness for the accepted path"
     else:
-        body = "supports the accepted path with narrow access, clear responsibility, recovery handling, and reviewable evidence"
+        path_role = _actor_path_role(label=label, first_path=first_path, state=state, proof=proof)
+        if path_role:
+            return f"{label}: {path_role}."
+        body = "can own a named responsibility in the accepted path and see the state, blockers, evidence, or outcome relevant to that responsibility"
     return f"{label}: {body}."
+
+
+def _actor_path_role(*, label: str, first_path: str, state: str, proof: str) -> str:
+    """Prefer accepted-path language over generic role templates."""
+
+    terms = _semantic_terms(label)
+    if not terms:
+        return ""
+    context = _clean(". ".join(value.strip(" .") for value in (first_path, state, proof) if value))
+    if not context:
+        return ""
+    clauses = _path_clauses(context)
+    scored: list[tuple[int, int, str]] = []
+    for index, clause in enumerate(clauses):
+        overlap = len(terms & _semantic_terms(clause))
+        if overlap <= 0:
+            continue
+        scored.append((overlap, -index, clause))
+    if not scored:
+        return ""
+    scored.sort(reverse=True)
+    clause = _short(scored[0][2], limit=170)
+    if not clause:
+        return ""
+    clause = re.sub(r"^(?:a|an|the)\s+", "", clause, flags=re.IGNORECASE)
+    return f"can act where the accepted path requires {clause[:1].lower() + clause[1:]}"
+
+
+def _path_clauses(value: str) -> list[str]:
+    rows: list[str] = []
+    for sentence in re.split(r"(?<=[.!?])\s+", _clean(value)):
+        for clause in re.split(
+            r";\s+|,\s+(?=(?:and\s+)?(?:a|an|the|[A-Za-z][a-z]+)\s+"
+            r"(?:opens?|reviews?|reads?|compares?|saves?|records?|creates?|submits?|receives?|checks?|"
+            r"assigns?|captures?|resolves?|moves?|builds?|exports?|imports?|sees?|supplies?|provides?))",
+            sentence,
+        ):
+            cleaned = _clean(re.sub(r"^(?:and|then)\s+", "", clause, flags=re.IGNORECASE)).strip(" .")
+            if _word_count(cleaned) >= 4:
+                rows.append(cleaned)
+    return rows
 
 
 def _actor_row_has_usable_description(value: str) -> bool:

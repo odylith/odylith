@@ -334,11 +334,24 @@ def system_component_name(value: str) -> str:
 
 def _system_kind(name: str, description: str) -> str:
     text = f"{name} {description}".casefold()
-    if any(token in text for token in ("web", "ui", "surface", "mobile", "portal", "client", "dashboard")):
+    if _contains_kind_token(text, ("web", "ui", "surface", "mobile", "portal", "client", "dashboard")):
         return "client"
-    if any(token in text for token in ("adapter", "provider", "integration", "connector", "source", "import")):
+    if _contains_kind_token(text, ("adapter", "provider", "integration", "connector", "source", "import")):
         return "adapter"
     return "service"
+
+
+def _contains_kind_token(text: str, tokens: tuple[str, ...]) -> bool:
+    words = re.findall(r"[a-z0-9]+", text.casefold())
+    for token in tokens:
+        normalized = token.casefold()
+        if normalized in {"ui", "web"}:
+            if normalized in words:
+                return True
+            continue
+        if any(word == normalized or word == f"{normalized}s" for word in words):
+            return True
+    return False
 
 
 def _component_label(name: str, kind: str) -> str:
@@ -398,7 +411,7 @@ def _boundary(*, name: str, description: str, kind: str) -> str:
     if kind == "client":
         return (
             f"{name} owns the user-facing actions and visible states for {responsibility}. "
-            "Domain derivation, persistence, and external-provider truth stay with the product systems it calls."
+            "Domain derivation, persistence, and upstream source truth stay with the product systems it calls."
         )
     if kind == "adapter":
         return (
@@ -408,7 +421,7 @@ def _boundary(*, name: str, description: str, kind: str) -> str:
     rationale_text = f" {_evidence_sentence(rationale)}" if rationale else ""
     return (
         f"{name} owns state, rules, and handoff for {responsibility}. It produces the records, decisions, or handoffs other components depend on."
-        f"{rationale_text} Presentation, external-provider truth, and adjacent product decisions stay outside unless explicitly assigned."
+        f"{rationale_text} Presentation, upstream source truth, and adjacent product decisions stay outside unless explicitly assigned."
     )
 
 
@@ -621,7 +634,7 @@ def _join_domain_items(items: list[str] | None, *, limit: int = 4) -> str:
     if not values:
         return ""
     selected = values[:limit]
-    suffix = "" if len(values) <= limit else "; additional accepted items remain in the intent"
+    suffix = "" if len(values) <= limit else "; other accepted items are tracked separately"
     return "; ".join(selected) + suffix
 
 
@@ -631,7 +644,7 @@ def _join_system_names(items: list[str] | None, *, limit: int = 4) -> str:
     if not values:
         return ""
     selected = values[:limit]
-    suffix = "" if len(values) <= limit else "; additional accepted systems remain in the intent"
+    suffix = "" if len(values) <= limit else ", and other accepted systems"
     return ", ".join(selected) + suffix
 
 

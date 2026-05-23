@@ -138,7 +138,7 @@ def join_system_labels(items: list[str] | None, *, limit: int = 4) -> str:
     if not values:
         return ""
     selected = values[:limit]
-    suffix = "" if len(values) <= limit else "; additional accepted systems remain in the intent"
+    suffix = "" if len(values) <= limit else ", and other accepted systems"
     return ", ".join(selected) + suffix
 
 
@@ -163,7 +163,7 @@ def join_items(items: list[str] | None, *, limit: int = 4) -> str:
     if not values:
         return ""
     selected = values[:limit]
-    suffix = "" if len(values) <= limit else "; additional accepted items remain in the intent"
+    suffix = "" if len(values) <= limit else ", and other accepted items"
     return ", ".join(selected) + suffix
 
 
@@ -177,7 +177,7 @@ def join_brief_items(items: list[str] | None, *, limit: int = 3, item_limit: int
     if not values:
         return ""
     selected = values[:limit]
-    suffix = "" if len(values) <= limit else "; additional accepted items remain in the intent"
+    suffix = "" if len(values) <= limit else "; other accepted items are tracked separately"
     return "; ".join(selected) + suffix
 
 

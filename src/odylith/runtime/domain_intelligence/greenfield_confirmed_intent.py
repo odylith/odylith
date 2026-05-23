@@ -806,7 +806,7 @@ def _concise_system_row(value: str, *, context_text: str = "") -> str:
 def _concise_system_description(name: str, *, context_text: str) -> str:
     subject = _clean(name).casefold()
     return (
-        f"handles {subject} inputs, produced outputs, blocked states, evidence, and handoff boundaries "
+        f"owns {subject} state, required inputs, rejected or blocked cases, evidence links, and handoff boundaries "
         "for the confirmed first path"
     )
 
@@ -900,7 +900,7 @@ def _internal_system_rationale(paragraph: str) -> str:
     match = re.search(r"\bmust\s+(.+?)(?:[.!?]|$)", text, re.IGNORECASE)
     if match:
         return "must " + _clean(match.group(1))
-    return "supports the accepted first path and proof boundary"
+    return "keeps the accepted first path, product state, evidence, and proof boundary connected"
 
 
 def _title_case_phrase(value: str) -> str:

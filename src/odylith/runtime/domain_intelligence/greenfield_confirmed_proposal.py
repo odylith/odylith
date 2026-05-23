@@ -355,7 +355,7 @@ def _project_intelligence(
     first_path_summary = _short_summary(first_path, limit=360)
     proof_summary = _short_summary(proof_boundary, limit=320)
     state_summary = _state_detail_summary(state_object, state_label=state_label, limit=260)
-    actors = _join_items(human_actors) or _short_summary(customer, limit=220) or f"the first {label_lower} operator and reviewer"
+    actors = _join_actor_labels(human_actors) or _short_summary(customer, limit=220) or f"the first {label_lower} operator and reviewer"
     internals = _join_system_labels(internal_systems) or f"{state_lower} owner and {evidence_lower} owner"
     externals = _join_items(external_systems) or "explicitly deferred external systems"
     non_goal_text = _join_items(non_goals) or "broad platform automation and live irreversible integrations"
@@ -691,7 +691,7 @@ def _backlog(
     first_path_entry = _first_clause(first_path_summary)
     proof_summary = _short_summary(proof_boundary, limit=340)
     evidence_phrase = "quality evidence" if "quality evidence" in first_path_summary.casefold() else f"{state_label} evidence"
-    actors = _join_items(human_actors) or _short_summary(customer, limit=260) or f"{label} users and reviewers"
+    actors = _join_actor_labels(human_actors) or _short_summary(customer, limit=260) or f"{label} users and reviewers"
     non_goal_text = _join_items(non_goals) or "broader automation, live integrations, and production-scale decisions"
     primary_component = _workstream_subject(_component_label_at(components, 0, fallback=f"{label} first path"))
     second_component = _workstream_subject(_component_label_at(components, 1, fallback=primary_component))
@@ -981,7 +981,7 @@ def _domain_intelligence(
             f"Out of scope for now: {non_goal_text}.",
         ],
         "ontology": [
-            f"Actors include {_join_items(actors)}.",
+            f"Actors include {_join_actor_labels(actors) or _join_items(actors)}.",
             f"State object: {state_object}.",
             f"Evidence record: {evidence_record}.",
             f"Proof boundary: {proof_boundary}.",
@@ -1038,7 +1038,7 @@ def _domain_intelligence(
             f"{evidence_record} captures validation output, replay output, reviewer decision, and deferred scope.",
         ],
         "authority": [
-            f"Only accepted actors or systems can move first-path state: {_join_items(actors)}.",
+            f"Only accepted actors or systems can move first-path state: {_join_actor_labels(actors) or _join_items(actors)}.",
             f"{row_title} can block the first release when validation, replay, access, or evidence is incomplete.",
         ],
         "owners": [
@@ -1098,6 +1098,19 @@ def _project_specific_actor_rows(*, label: str, rows: list[str]) -> list[str]:
             continue
         result.append(_project_specific_actor_row(text, focus=focus))
     return result
+
+
+def _join_actor_labels(values: list[str] | None, *, limit: int = 5) -> str:
+    labels: list[str] = []
+    for value in values or []:
+        label = _compact_text(str(value)).split("—", 1)[0].split(":", 1)[0].strip(" .")
+        if label and label.casefold() not in {"other accepted items"}:
+            labels.append(label)
+    selected = list(dict.fromkeys(labels))[:limit]
+    if not selected:
+        return ""
+    suffix = "" if len(labels) <= limit else ", and other accepted actors"
+    return ", ".join(selected) + suffix
 
 
 def _project_specific_actor_row(row: str, *, focus: str) -> str:
