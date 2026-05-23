@@ -333,7 +333,7 @@ def _contract_outside_boundary_lines(contract: Mapping[str, Any]) -> tuple[str, 
     outside = sentence_fragment(str(contract.get("outside_boundary", "")))
     if not outside:
         return ()
-    rows = [sentence_fragment(part) for part in re.split(r",|\band\b|\bor\b", outside) if sentence_fragment(part)]
+    rows = [_strip_conjunction(sentence_fragment(part)) for part in re.split(r",|;", outside) if sentence_fragment(part)]
     return _unique_lines(rows or (outside,))
 
 
@@ -481,11 +481,15 @@ def _extract_exclusions(boundary: str) -> tuple[str, ...]:
         if not match:
             continue
         tail = match.group("tail")
-        for part in re.split(r",|\band\b|\bor\b", tail):
-            text = _sentence_case(part)
+        for part in re.split(r",|;", tail):
+            text = _sentence_case(_strip_conjunction(part))
             if text:
                 rows.append(text)
     return _unique_lines(rows)
+
+
+def _strip_conjunction(value: str) -> str:
+    return sentence_fragment(re.sub(r"^(?:and|or)\s+", "", str(value or "").strip(), flags=re.IGNORECASE))
 
 
 def _sentence_case(value: str) -> str:

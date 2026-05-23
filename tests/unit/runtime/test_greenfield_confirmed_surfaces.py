@@ -68,7 +68,7 @@ def test_confirmed_greenfield_diagrams_use_compact_atlas_narration() -> None:
     assert len(rows) == 6
     assert "Walk the accepted first path" not in copy
     assert "participant C1 as Audio Capture and<br/>Pre-processing Service" in sequence["mermaid_source"]
-    assert "prepare user plays a roughly<br/>30-second monophonic line" in sequence["mermaid_source"]
+    assert "handoff: user plays a roughly<br/>30-second monophonic line" in sequence["mermaid_source"]
     assert "show outcome, evidence, and next action" in sequence["mermaid_source"]
     assert "A1->>C1: User opens LiveScore and taps<br/>Record" in sequence["mermaid_source"]
     assert "A1->>C3: 2" not in sequence["mermaid_source"]
@@ -88,7 +88,7 @@ def test_confirmed_greenfield_diagrams_use_compact_atlas_narration() -> None:
     assert "release boundary" in boundary["mermaid_source"]
     assert ownership["summary"].startswith("Trace release ownership")
     assert "polyphony" not in ownership["summary"]
-    assert proof_review["summary"].startswith("Show the review path")
+    assert proof_review["summary"].startswith("Show which first-path result")
     assert "Outside release" in proof_review["mermaid_source"]
     for row in rows:
         if row["kind"] == "flowchart":

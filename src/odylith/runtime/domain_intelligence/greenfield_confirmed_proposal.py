@@ -730,7 +730,9 @@ def _backlog(
         interfaces=[
             f"Release scope connects {primary_component}, {second_component}, and {proof_component} without absorbing deferred scope."
         ],
-        validation=[f"Release review exercises {first_path_summary} and checks {proof_summary}."],
+        validation=[
+            f"Release review validates the accepted first path and proof boundary. First path: {first_path_summary}. Proof boundary: {proof_summary}."
+        ],
         state_object=state_label,
         evidence_record=evidence_label,
         first_path=first_path_summary,
@@ -818,12 +820,12 @@ def _backlog(
         opportunity=(
             f"Build the {proof_component} review output with validation results, state references, reviewer decision, and deferred scope."
         ),
-        product_view=f"{proof_component} produces {proof_outputs} and shows proof status for the accepted boundary: {proof_summary}.",
+        product_view=f"{proof_component} produces {proof_outputs} and shows whether the accepted proof boundary is satisfied.",
         first_slice=f"Implement one reviewable {evidence_label} output for the first path, validation result, and reviewer decision.",
         metrics=[
             f"{evidence_label} links source input, {state_label}, validation output, reviewer decision, and outcome.",
             f"Missing evidence blocks proof review instead of producing a release-ready claim.",
-            f"The proof view uses the accepted proof boundary: {proof_summary}.",
+            "The proof view checks the accepted proof boundary without expanding deferred scope.",
             f"The proof view keeps deferred scope visible: {non_goal_text}.",
         ],
         component_focus=[component_ids[-1]] if component_ids else [],
@@ -832,7 +834,9 @@ def _backlog(
         interfaces=[
             f"{proof_component} exposes validation summary, state references, evidence references, reviewer decision, and deferred scope."
         ],
-        validation=[f"Proof review fails closed when any part of the accepted proof boundary is missing: {proof_summary}"],
+        validation=[
+            "Proof review fails closed when success evidence, replay evidence, access proof, privacy proof, or reviewer evidence is missing."
+        ],
         state_object=state_label,
         evidence_record=evidence_label,
         first_path=first_path_summary,

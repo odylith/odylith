@@ -7,6 +7,7 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence.greenfield_component_contract import (
     boundary_from_contract,
@@ -24,6 +25,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_different
     component_spec_preflight_issues,
     differentiate_component_contracts,
 )
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_project_intelligence import complete_project_intelligence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_generated_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_text as _sentence
@@ -34,6 +36,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.domain_intelligence.proposal_validation import collect_host_reasoned_proposal_issues
 from odylith.runtime.domain_intelligence.proposal_validation import format_proposal_issue_report
+from odylith.runtime.domain_intelligence.project_intelligence_binding import attach_project_intelligence_bindings
 from odylith.runtime.governance import artifact_tribunal
 
 
@@ -64,6 +67,7 @@ def greenfield_repair_until_clean(
     last_issues: tuple[str, ...] = ()
     for _pass in range(_MAX_COMPLETION_PASSES):
         changed = False
+        changed |= _repair_project_title(payload)
         changed |= _complete_project_posture(payload)
         changed |= complete_project_intelligence(
             payload,
@@ -97,6 +101,161 @@ def _is_confirmed_greenfield(proposal: Mapping[str, Any]) -> bool:
         str(intent.get("reasoning_mode", "")).strip() == "odylith_confirmed_governed_proposal"
         and str(proposal.get("write_policy", "")).strip() == "confirmed_intent_before_confirmed_create"
     )
+
+
+def _repair_project_title(proposal: dict[str, Any]) -> bool:
+    intent = proposal.get("intent")
+    if not isinstance(intent, dict):
+        return False
+    current = _clean(intent.get("title"))
+    if not current:
+        return False
+    if not _project_title_needs_repair(current):
+        return False
+    existing_candidate = _existing_project_title_candidate(proposal, current=current)
+    seed = {
+        "title": existing_candidate or current,
+        "product_story": intent.get("product_story") or _project_intelligence_first_row(proposal, "intent"),
+        "state_object": _state_object(proposal),
+        "first_path": _first_path(proposal),
+        "proof_boundary": _proof_boundary(proposal),
+        "human_actors": _project_intelligence_rows(proposal, "operators"),
+        "internal_systems": _component_system_rows(proposal),
+        "assumptions": text_values(proposal.get("assumptions")),
+        "ambiguities": text_values(proposal.get("open_questions")),
+        "non_goals": text_values(proposal.get("non_goals")),
+    }
+    repaired = complete_confirmed_intent(seed)
+    replacement = _clean(repaired.get("title"))
+    if not replacement or replacement == current:
+        return False
+    _replace_title_text(proposal, current=current, replacement=replacement)
+    repaired_intent = proposal.get("intent")
+    if isinstance(repaired_intent, dict):
+        repaired_intent["title"] = replacement
+        repaired_intent["project_slug"] = slugify(replacement)
+    rebound = attach_project_intelligence_bindings(proposal)
+    proposal.clear()
+    proposal.update(rebound)
+    return True
+
+
+def _project_title_needs_repair(value: str) -> bool:
+    text = _clean(value)
+    words = re.findall(r"[A-Za-z0-9]+", text)
+    if not text or not words:
+        return True
+    if text.casefold() in {"greenfield project", "confirmed project"}:
+        return True
+    if words[-1].casefold() in {"a", "an", "and", "for", "from", "in", "of", "on", "or", "the", "to", "with"}:
+        return True
+    return len(words) > 10 and bool(
+        re.search(r"\b(?:that|what|so|because|captures?|follows?|makes?|buying|doing|needs?|wants?)\b", text, re.IGNORECASE)
+    )
+
+
+def _existing_project_title_candidate(proposal: Mapping[str, Any], *, current: str) -> str:
+    candidates: list[str] = []
+    release_plan = proposal.get("release_plan")
+    if isinstance(release_plan, Mapping):
+        candidates.extend(_title_candidates_from_text(release_plan.get("label")))
+        candidates.extend(_title_candidates_from_text(release_plan.get("strategy")))
+    program = proposal.get("program")
+    if isinstance(program, Mapping):
+        candidates.extend(_title_candidates_from_text(program.get("recommended_first_wave")))
+        blueprint = program.get("blueprint")
+        if isinstance(blueprint, Mapping):
+            candidates.extend(_title_candidates_from_text(blueprint.get("parent_workstream")))
+            candidates.extend(_title_candidates_from_text(blueprint.get("child_workstream_strategy")))
+    project_brief = proposal.get("project_brief")
+    if isinstance(project_brief, Mapping):
+        candidates.extend(_title_candidates_from_text(project_brief.get("purpose")))
+        candidates.extend(_title_candidates_from_text(project_brief.get("project_outcome")))
+    intelligence = proposal.get("project_intelligence")
+    if isinstance(intelligence, Mapping):
+        candidates.extend(_title_candidates_from_text(intelligence.get("purpose")))
+        candidates.extend(_title_candidates_from_text(intelligence.get("coding_posture")))
+    for candidate in candidates:
+        if _title_candidate_is_better(candidate, current=current):
+            return candidate
+    return ""
+
+
+def _title_candidates_from_text(value: Any) -> list[str]:
+    text = _clean(value).strip(" .")
+    if not text:
+        return []
+    rows: list[str] = []
+    patterns = (
+        r"^Ship\s+(?P<title>.+?)\s+First\s+Release$",
+        r"^(?P<title>.+?)\s+\d+(?:\.\d+){1,2}\s+first\s+path\b",
+        r"^(?P<title>.+?)\s+first[-\s]path\s+proof\b",
+        r"^(?P<title>.+?)\s+state\s+and\s+evidence\s+boundary\b",
+        r"^(?P<title>.+?)\s+release\s+review\b",
+        r"^(?P<title>.+?)\s+translates\s+the\s+accepted\b",
+        r"^Promote\s+(?P<title>.+?)\s+only\s+after\b",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        if match:
+            rows.append(_clean(match.group("title")))
+    return rows
+
+
+def _title_candidate_is_better(value: str, *, current: str) -> bool:
+    candidate = _clean(value).strip(" .")
+    if not candidate or candidate == current:
+        return False
+    words = re.findall(r"[A-Za-z0-9]+", candidate)
+    if not 2 <= len(words) <= 8:
+        return False
+    if words[-1].casefold() in {"a", "an", "and", "for", "from", "in", "of", "on", "or", "the", "to", "with"}:
+        return False
+    lowered = candidate.casefold()
+    if lowered in {"greenfield project", "confirmed project"}:
+        return False
+    if re.search(r"\b(?:that|what|so that|because|captures?|follows?|make money)\b", lowered):
+        return False
+    return True
+
+
+def _project_intelligence_rows(proposal: Mapping[str, Any], key: str) -> tuple[str, ...]:
+    intelligence = proposal.get("project_intelligence")
+    if not isinstance(intelligence, Mapping):
+        return ()
+    return text_values(intelligence.get(key))
+
+
+def _project_intelligence_first_row(proposal: Mapping[str, Any], key: str) -> str:
+    rows = _project_intelligence_rows(proposal, key)
+    return rows[0] if rows else ""
+
+
+def _component_system_rows(proposal: Mapping[str, Any]) -> tuple[str, ...]:
+    rows: list[str] = []
+    for component in _mapping_rows(proposal.get("components")):
+        label = _clean(component.get("label"))
+        description = _clean(component.get("source_system_description")) or _clean(component.get("responsibility"))
+        if label and description:
+            rows.append(f"{label} — {description}")
+        elif label:
+            rows.append(label)
+    return tuple(rows)
+
+
+def _replace_title_text(value: Any, *, current: str, replacement: str) -> None:
+    if isinstance(value, dict):
+        for key, nested in list(value.items()):
+            if isinstance(nested, str):
+                value[key] = nested.replace(current, replacement)
+            else:
+                _replace_title_text(nested, current=current, replacement=replacement)
+    elif isinstance(value, list):
+        for index, nested in enumerate(list(value)):
+            if isinstance(nested, str):
+                value[index] = nested.replace(current, replacement)
+            else:
+                _replace_title_text(nested, current=current, replacement=replacement)
 
 
 def _complete_project_posture(proposal: dict[str, Any]) -> bool:
@@ -299,8 +458,13 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
         proof = _first_text(contract.get("local_proof")) or f"{label} proves its local inputs, outputs, blockers, and handoff."
         drifted = _row_drifted_from_component(row, component)
         if _text_needs_repair(row.get("product_view")) or drifted:
+            proof_tail = (
+                " It keeps reviewer decision, release proof, deferred scope, and recovery evidence visible."
+                if _row_is_release_proof(row)
+                else ""
+            )
             row["product_view"] = (
-                f"{label} owns {owned}. It accepts {inputs}, produces {outputs}, and keeps {states} visible for {title}."
+                f"{label} owns {owned}. It accepts {inputs}, produces {outputs}, and keeps {states} visible for {title}.{proof_tail}"
             )
             changed = True
         if _text_needs_repair(row.get("recommended_first_slice")) or drifted:

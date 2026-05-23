@@ -108,7 +108,7 @@ def _intent_title(prompt: str) -> str:
         return "Greenfield Project"
     words = [_title_token(word) for word in text.split()]
     clipped = words[:16]
-    while clipped and clipped[-1].casefold() in {"and", "for", "from", "in", "of", "on", "or", "to", "with"}:
+    while clipped and clipped[-1].casefold().strip(".,;:") in {"a", "an", "and", "for", "from", "in", "of", "on", "or", "the", "to", "with"}:
         clipped.pop()
     return " ".join(clipped or words[:1])
 

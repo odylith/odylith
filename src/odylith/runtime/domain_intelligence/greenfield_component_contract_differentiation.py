@@ -252,7 +252,8 @@ def _repair_row(
     sibling_label = _component_label(sibling, 0) if isinstance(sibling, Mapping) else ""
     axis = _axis_for(row=row, proposal=proposal)
     sibling_axis = _axis_for(row=sibling, proposal=proposal) if isinstance(sibling, Mapping) else None
-    state_label = _state_label(_proposal_text(proposal, "state_object", "intent.state_object"), fallback="accepted state")
+    title_state = f"{_project_title(proposal)} state" if _project_title(proposal) else "accepted state"
+    state_label = _state_label(_proposal_text(proposal, "state_object", "intent.state_object"), fallback=title_state)
     upstream = previous_label or "accepted first-path input"
     downstream = next_label or "release proof review"
     outside = _outside_boundary(axis=axis, sibling_axis=sibling_axis, sibling_label=sibling_label)
@@ -313,6 +314,11 @@ def _axis_for(*, row: Mapping[str, Any] | None, proposal: Mapping[str, Any]) -> 
         for score, _label_hits, _description_hits, axis in scored:
             if axis.key == "decision_rationale_vote" and score > 0:
                 return axis
+    priority_axis = _priority_axis(label_text)
+    if priority_axis:
+        for score, _label_hits, _description_hits, axis in scored:
+            if axis.key == priority_axis and score > 0:
+                return axis
     scored.sort(
         key=lambda item: (
             -item[0],
@@ -328,6 +334,56 @@ def _axis_for(*, row: Mapping[str, Any] | None, proposal: Mapping[str, Any]) -> 
         _fallback_context(row=row, proposal=proposal),
         focus=_focus_phrase(_scrub_generated_context(_clean(row.get("source_system_description")))),
     )
+
+
+def _priority_axis(label_text: str) -> str:
+    """Resolve labels where one broad trigger would otherwise steal ownership."""
+
+    text = _clean(label_text).casefold()
+    if re.search(r"\b(criteria|criterion|protocol|rule|eligibility policy|inclusion|exclusion)\b", text):
+        return "definition_rules"
+    if re.search(r"\b(submission|submit|file upload|upload)\b", text):
+        return "submission_versioning"
+    if re.search(r"\b(admin|inspection|disputed|readiness|evidence review|review tools)\b", text) and re.search(
+        r"\b(review|evidence|source|signal|quality|disputed|inspection)\b", text
+    ):
+        return "evidence_review"
+    if re.search(r"\b(confidence|signal quality|quality signal)\b", text) or (
+        re.search(r"\b(signal|signals|deduplication|dedupe|duplicate)\b", text)
+        and not re.search(r"\b(intake|ingestion|ingest|import|source attribution|metadata import)\b", text)
+    ):
+        return "signal_quality_deduplication"
+    if re.search(r"\b(intake|ingestion|ingest|import|deduplication|dedupe|normalize)\b", text):
+        return "intake_import"
+    if re.search(r"\b(access|permission|role|rbac|grant|visibility|redaction)\b", text) and re.search(
+        r"\b(audit|history|version|retention|replay)\b", text
+    ):
+        return "access_audit"
+    if re.search(r"\b(assignment|assign|permission|access|conflict|routing|eligibility)\b", text):
+        return "assignment_permission"
+    if re.search(r"\b(form|scoring|score|template|rubric|assessment)\b", text):
+        return "form_scoring"
+    if re.search(r"\b(case|workspace|agenda|checklist)\b", text):
+        return "case_workspace"
+    if re.search(r"\b(map|parcel|location|geospatial|geometry|overlay|layer|zoning)\b", text):
+        return "spatial_context"
+    if re.search(r"\b(question|issue|concern|follow-up|followup|response|answer|unresolved)\b", text):
+        return "question_issue_tracking"
+    if re.search(r"\b(feedback|comment|comments|theme|grouping|cluster|sentiment)\b", text):
+        return "feedback_grouping"
+    if re.search(r"\b(journal|decision note|decision journal|rationale journal)\b", text):
+        return "user_decision_journal"
+    if re.search(r"\b(dashboard|comparison|compare|display|readiness view)\b", text):
+        return "dashboard_comparison"
+    if re.search(r"\b(decision|approval|approve|final outcome|outcome|blocker)\b", text):
+        return "decision_review"
+    if re.search(r"\b(audit|trail|retention|archive|history)\b", text):
+        return "audit_retention"
+    if re.search(r"\b(risk|disclaimer|compliance|policy|privacy|guardrails?|safety|consent)\b", text):
+        return "policy_risk_guardrails"
+    if re.search(r"\b(follow list|watchlist|watch list|saved list|selected list|bookmark)\b", text):
+        return "tracked_selection_list"
+    return ""
 
 
 def _fallback_axis(label: str, context: str, *, focus: str = "") -> ComponentAxis:
@@ -369,7 +425,7 @@ def _contract_payload(
     axis: ComponentAxis,
     local_score: int,
 ) -> Mapping[str, Any]:
-    if not axis.key.startswith("fallback_") and local_score >= 12:
+    if not axis.key.startswith("fallback_") and local_score >= 24:
         return axis_payload
     if not _semantic_contract_is_strong(semantic_contract):
         return axis_payload
@@ -736,6 +792,8 @@ def _weak_text(value: Any) -> bool:
             "representative input covering",
             "first implementation plan",
             "accepted first path",
+            "required inputs, rejected or blocked cases",
+            "handoff boundaries for the confirmed first path",
             "responsibility and keeps it tied",
             "component proof",
         )

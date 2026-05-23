@@ -157,15 +157,8 @@ def confirmed_diagrams(
             "title": "Ownership and Proof View",
             "kind": "flowchart",
             "summary": _sentence(
-                (
-                    "Trace release ownership from product-owned components to the proof boundary. "
-                    f"The proof target is {proof_brief}"
-                )
-                if proof_brief
-                else (
-                    "Trace release ownership from product-owned components to the proof boundary. "
-                    "Use this view to see which boundary owns state, which boundary produces evidence, and where the release claim is reviewed."
-                )
+                "Trace release ownership from product-owned components to the accepted proof boundary. "
+                "Use this view to see which boundary owns state, which boundary produces evidence, and where the release claim is reviewed."
             ),
             "read_guide": (
                 "Read from each state or evidence owner toward the proof boundary. A box matters when it owns data, "
@@ -191,9 +184,7 @@ def confirmed_diagrams(
             "title": "Release Proof Review",
             "kind": "flowchart",
             "summary": _sentence(
-                f"Show the review path from first-path result to release decision. The proof target is {proof_brief}"
-                if proof_brief
-                else "Show which evidence, checks, and reviewer decision must exist before release trust increases."
+                "Show which first-path result, evidence checks, replay output, access proof, and reviewer decision must exist before release trust increases."
             ),
             "read_guide": (
                 "Read this as the release gate. The product result, domain state, evidence trail, validation output, "
@@ -765,9 +756,52 @@ def _handoff_message(next_step: str) -> str:
     focus = re.sub(r"^(?:a|an|the)\s+", "", focus, flags=re.IGNORECASE).strip(" .")
     if not focus:
         focus = "next accepted action"
-    elif not focus.split()[0].isupper():
-        focus = focus[:1].lower() + focus[1:]
-    return _without_ellipsis(mermaid_text.wrap_mermaid_label(f"prepare {focus}", width=34, max_lines=2, limit=96))
+    focus = _imperative_handoff_focus(focus)
+    if _starts_with_path_action(focus):
+        label = f"prepare to {focus[:1].lower()}{focus[1:]}"
+    else:
+        label = f"handoff: {focus[:1].lower()}{focus[1:]}"
+    return _without_ellipsis(mermaid_text.wrap_mermaid_label(label, width=34, max_lines=4, limit=160))
+
+
+def _imperative_handoff_focus(value: str) -> str:
+    text = _compact_text(value).strip(" .")
+    replacements = {
+        "adds": "add",
+        "assigns": "assign",
+        "captures": "capture",
+        "checks": "check",
+        "chooses": "choose",
+        "compares": "compare",
+        "creates": "create",
+        "decides": "decide",
+        "exports": "export",
+        "groups": "group",
+        "imports": "import",
+        "links": "link",
+        "opens": "open",
+        "reads": "read",
+        "receives": "receive",
+        "records": "record",
+        "requests": "request",
+        "resolves": "resolve",
+        "reviews": "review",
+        "routes": "route",
+        "saves": "save",
+        "sees": "see",
+        "shows": "show",
+        "submits": "submit",
+        "tracks": "track",
+        "validates": "validate",
+        "votes": "vote",
+    }
+    first, sep, rest = text.partition(" ")
+    replacement = replacements.get(first.casefold())
+    if replacement:
+        text = f"{replacement}{sep}{rest}".strip()
+    for source, target in replacements.items():
+        text = re.sub(rf"([,;]\s+){re.escape(source)}\b", rf"\1{target}", text, flags=re.IGNORECASE)
+    return text
 
 
 def _domain_terms(value: object) -> set[str]:

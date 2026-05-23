@@ -639,12 +639,12 @@
 }
 
 .execution-wave-chip-link {
-  --chip-link-border: #b9c7db;
-  --chip-link-bg: #f3f6fb;
-  --chip-link-text: var(--chip-link-text);
-  --chip-link-border-hover: #9aaec9;
-  --chip-link-bg-hover: #e8eef7;
-  --chip-link-text-hover: #1e293b;
+  --chip-link-border: #93c5fd;
+  --chip-link-bg: #eff6ff;
+  --chip-link-text: #1e3a8a;
+  --chip-link-border-hover: #60a5fa;
+  --chip-link-bg-hover: #deebff;
+  --chip-link-text-hover: #1d4ed8;
   appearance: none;
   display: inline-flex;
   align-items: center;

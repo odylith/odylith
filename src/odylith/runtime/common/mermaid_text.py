@@ -67,7 +67,7 @@ def wrap_sequence_participant(value: object) -> str:
 def wrap_sequence_message(value: object) -> str:
     """Keep sequence arrow labels readable without stretching the diagram."""
 
-    return wrap_mermaid_label(value, width=30, max_lines=2, limit=80)
+    return wrap_mermaid_label(value, width=30, max_lines=3, limit=110)
 
 
 def wrap_sequence_note(value: object) -> str:

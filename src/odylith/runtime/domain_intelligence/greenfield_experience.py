@@ -8,6 +8,7 @@ consistent across CLI output and candidate component specs.
 
 from __future__ import annotations
 
+import re
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine.types import slugify
@@ -135,6 +136,9 @@ def build_component_handoffs(
         proposal_row = _proposal_row_for_created_id(proposal=proposal, created=created, created_id=start_id)
         wave = _wave_for_workstream(program_result=program_result, workstream_id=start_id)
         title = str(by_id.get(start_id, {}).get("title", "")).strip()
+        first_slice = _first_slice_text(proposal_row)
+        if not _workstream_title_matches_component(title, row):
+            first_slice = _component_local_first_slice(row, fallback=first_slice)
         handoffs[key] = {
             **project_context,
             "workstream_id": start_id,
@@ -143,7 +147,7 @@ def build_component_handoffs(
             "wave_label": _wave_label(wave),
             "wave_status": str(wave.get("status", "")).strip(),
             "release_selector": release_selector,
-            "first_slice": _first_slice_text(proposal_row),
+            "first_slice": first_slice,
             "validation_gates": list(_validation_items(row=proposal_row, wave=wave)[:6]),
             "verification_commands": verification_commands(start_id),
         }
@@ -342,6 +346,69 @@ def _first_slice_text(row: Mapping[str, Any]) -> str:
         " ".join(row_text_tuple(row, "recommended_first_slice", "first_slice_proof")).strip()
         or "Implement the smallest source-backed slice for this workstream and prove it with the listed validation gates."
     )
+
+
+def _component_local_first_slice(row: Mapping[str, Any], *, fallback: str) -> str:
+    label = str(row.get("label", "") or row.get("component_id", "") or "component").strip()
+    contract = row.get("component_contract") if isinstance(row.get("component_contract"), Mapping) else {}
+    inputs = _short_contract_text(contract.get("accepted_inputs") if isinstance(contract, Mapping) else "")
+    outputs = _short_contract_text(contract.get("produced_outputs") if isinstance(contract, Mapping) else "")
+    proof = _short_contract_text(_first_contract_text(contract.get("local_proof")) if isinstance(contract, Mapping) else "")
+    if label and proof:
+        return (
+            f"Implement {label} local proof: {proof}. Block missing or invalid inputs and keep upstream and downstream "
+            "handoff evidence reviewable."
+        )
+    if label and inputs and outputs:
+        return f"Implement {label} local contract: accept {inputs}, produce {outputs}, and block invalid or missing state."
+    return fallback
+
+
+def _first_contract_text(value: Any) -> str:
+    for item in text_values(value):
+        text = " ".join(str(item or "").split()).strip(" .")
+        if text:
+            return text
+    return ""
+
+
+def _short_contract_text(value: Any, *, limit: int = 180) -> str:
+    text = " ".join(str(value or "").split()).strip(" .")
+    if len(text) <= limit:
+        return text
+    clipped = text[:limit].rsplit(" ", 1)[0].strip(" ,;:")
+    return clipped or text[:limit].strip(" ,;:")
+
+
+def _workstream_title_matches_component(title: str, row: Mapping[str, Any]) -> bool:
+    title_terms = _meaningful_terms(title)
+    label_terms = _meaningful_terms(str(row.get("label", "") or row.get("component_id", "")))
+    if not title_terms or not label_terms:
+        return False
+    return len(title_terms & label_terms) >= min(2, len(label_terms))
+
+
+def _meaningful_terms(value: str) -> set[str]:
+    stop = {
+        "adapter",
+        "build",
+        "component",
+        "first",
+        "handoffs",
+        "implement",
+        "path",
+        "proof",
+        "review",
+        "service",
+        "state",
+        "surface",
+        "system",
+    }
+    return {
+        token
+        for token in re.findall(r"[a-z0-9]+", str(value or "").casefold())
+        if len(token) >= 4 and token not in stop
+    }
 
 
 def _validation_items(*, row: Mapping[str, Any], wave: Mapping[str, Any]) -> tuple[str, ...]:

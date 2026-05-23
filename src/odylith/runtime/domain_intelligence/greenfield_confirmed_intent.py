@@ -226,7 +226,7 @@ def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: 
     """Parse the human Product Intent Confirmation that the host already showed."""
 
     sections = _sections(text)
-    title = _title_from_text(text) or _title_from_sections(sections) or fallback_title
+    title = _title_from_text(text) or _title_from_sections(sections) or _title_from_preamble(sections) or fallback_title
     preamble_story = _preamble_story(sections, title)
     result: dict[str, Any] = {
         "title": _clean(title),
@@ -416,7 +416,9 @@ def _title_from_text(text: str) -> str:
         if match:
             return _clean(match.group(1))
         if "product intent confirmation" in line.casefold():
-            return _clean(re.sub(r"product intent confirmation", "", line, flags=re.IGNORECASE))
+            candidate = _clean(re.sub(r"product intent confirmation", "", line, flags=re.IGNORECASE))
+            if candidate:
+                return candidate
     for raw_line in str(text or "").splitlines():
         raw = str(raw_line or "").strip()
         if not raw.startswith("#"):
@@ -437,6 +439,38 @@ def _title_from_sections(sections: Mapping[str, list[str]]) -> str:
         if line and "product intent confirmation" not in line.casefold():
             return line
     return ""
+
+
+def _title_from_preamble(sections: Mapping[str, list[str]]) -> str:
+    lines = [
+        _clean(str(raw_line).lstrip("#").strip())
+        for raw_line in sections.get("preamble", [])
+        if _clean(raw_line)
+    ]
+    for line in lines[:3]:
+        if "product intent confirmation" in line.casefold():
+            continue
+        if _looks_like_bare_title(line):
+            return line
+    return ""
+
+
+def _looks_like_bare_title(value: str) -> bool:
+    text = _clean(value).strip(" .")
+    if not text or _classify_heading(text):
+        return False
+    if text[-1:] in ".!?":
+        return False
+    words = re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", text)
+    if not 1 <= len(words) <= 10:
+        return False
+    lowered = text.casefold()
+    if re.search(
+        r"\b(?:wants?|needs?|helps?|uses?|creates?|submits?|reviews?|records?|tracks?|decides?|should|must|can|will)\b",
+        lowered,
+    ):
+        return False
+    return True
 
 
 def _section_text(sections: Mapping[str, list[str]], key: str) -> str:
