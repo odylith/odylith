@@ -8,11 +8,13 @@ native language instead of being pasted into every artifact as a generic
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.domain_intelligence.greenfield_actor_labels import accepted_actor_label
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -280,9 +282,12 @@ def _domain_actor_names(graph: DomainIntelligenceGraph, *, proposal: Mapping[str
         ownerish_fallback=False,
     )
     approvers = _role_candidates(graph.approvers)
-    risk_owners = _role_specific_candidates([*graph.risk_owners, *graph.actors], ("risk", "safety", "compliance", "loss"))
+    risk_owners = _role_specific_candidates(
+        [*proposal_actors, *graph.risk_owners, *graph.actors],
+        ("risk", "safety", "compliance", "loss"),
+    )
     evidence_owners = _role_specific_candidates(
-        [*graph.evidence_types, *graph.proof_standards, *graph.actors],
+        [*proposal_actors, *graph.evidence_types, *graph.proof_standards, *graph.actors],
         ("proof", "evidence", "validation"),
     )
     implementation_owners = _role_specific_candidates(
@@ -359,6 +364,9 @@ def _actor_candidate_label(value: str) -> str:
     text = clean_text(value).strip(" .")
     if not text:
         return ""
+    direct = accepted_actor_label(text)
+    if direct and _looks_like_actor_label(direct):
+        return direct
     for separator in (" — ", " – ", " - ", ":"):
         head, sep, _body = text.partition(separator)
         if sep and head.strip():
@@ -384,8 +392,66 @@ def _actor_candidate_label(value: str) -> str:
     if len(text.split()) > 6:
         role_phrase = _role_phrase_label(text)
         if role_phrase:
-            return role_phrase
+            text = role_phrase
+    normalized = accepted_actor_label(text)
+    if normalized and _looks_like_actor_label(normalized):
+        return normalized
+    if clean_text(text).casefold() in {"primary user", "project operator", "domain reviewer", "workflow operator", "risk reviewer", "proof reviewer"}:
+        return ""
     return text
+
+
+def _looks_like_actor_label(value: str) -> bool:
+    lowered = clean_text(value).casefold()
+    if not lowered or lowered in {"evidence for this slice", "proof for this slice"}:
+        return False
+    if re.search(
+        r"\b(?:owns|must show|source of truth|proof evidence|validate|assemble|actors include|actors involved|review ownership follows)\b",
+        lowered,
+    ):
+        return False
+    if lowered.endswith((" proof record", " evidence record", " release gate")):
+        return False
+    role_words = {
+        "admin",
+        "administrator",
+        "advocate",
+        "analyst",
+        "applicant",
+        "approver",
+        "auditor",
+        "author",
+        "beneficiary",
+        "buyer",
+        "chair",
+        "client",
+        "coach",
+        "coordinator",
+        "customer",
+        "editor",
+        "engineer",
+        "evaluator",
+        "inspector",
+        "lead",
+        "manager",
+        "operator",
+        "owner",
+        "participant",
+        "planner",
+        "preparer",
+        "recipient",
+        "requester",
+        "researcher",
+        "resident",
+        "reviewer",
+        "specialist",
+        "submitter",
+        "support",
+        "trainer",
+        "user",
+    }
+    words = {word.strip(".,;:()") for word in lowered.split()}
+    return bool(words & role_words)
 
 
 def _role_phrase_label(label: str) -> str:
@@ -532,6 +598,7 @@ def _actor_label(values: Sequence[str], *, fallback: str) -> str:
         label = clean_text(value)
         if (
             label
+            and _looks_like_actor_label(label)
             and label.casefold()
             not in {
                 "actor",
@@ -545,6 +612,7 @@ def _actor_label(values: Sequence[str], *, fallback: str) -> str:
                 "team",
                 "user",
                 "evidence record",
+                "evidence for this slice",
                 "release gate",
                 "the first-release actors are",
                 "actors involved in the first release are",
@@ -553,9 +621,11 @@ def _actor_label(values: Sequence[str], *, fallback: str) -> str:
                 "evidence owner",
                 "implementation owner",
                 "proof owner",
+                "proof for this slice",
                 "proof reviewer",
                 "release owner",
                 "release reviewer",
+                "result reviewer",
                 "risk owner",
                 "risk reviewer",
                 "workflow operator",
@@ -567,7 +637,7 @@ def _actor_label(values: Sequence[str], *, fallback: str) -> str:
                 "validate",
                 "verify",
             }
-            and len(label.split()) <= 6
+            and len(label.split()) <= 14
         ):
             return label
     return fallback

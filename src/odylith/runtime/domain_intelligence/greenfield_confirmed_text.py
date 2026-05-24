@@ -79,8 +79,9 @@ def short_summary(value: str, *, limit: int = 280) -> str:
 def strip_dangling_tail(value: str) -> str:
     text = compact_text(value).rstrip(" ,;:.")
     while True:
+        text = re.sub(r"(?:^|(?<=[.!?])\s+)It\s+should$", "", text, flags=re.IGNORECASE).rstrip(" ,;:.")
         cleaned = re.sub(
-            r"\b(?:a|an|and|as|at|because|by|for|from|if|in|into|of|on|or|the|to|when|while|with|without)$",
+            r"\b(?:a|an|and|as|at|because|by|for|from|if|in|into|of|on|or|required|the|to|when|while|with|without)$",
             "",
             text,
             flags=re.IGNORECASE,

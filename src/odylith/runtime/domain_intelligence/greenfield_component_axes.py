@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
 
@@ -92,6 +93,81 @@ COMPONENT_AXES: tuple[ComponentAxis, ...] = (
             "Changing assignment routing does not mutate criteria or protocol state.",
         ),
         unique_failure="The wrong rule version can drive downstream decisions, an invalid criterion can look active, or a protocol change can lose its audit context.",
+    ),
+    ComponentAxis(
+        key="onboarding_consent",
+        triggers=("onboarding", "consent", "signup", "sign", "registration", "profile", "preference", "permission"),
+        owned_state="onboarding step, consent choice, actor profile, required disclosure, eligibility answer, preference snapshot, and entry handoff state",
+        accepted_inputs="actor identity, onboarding answer, consent decision, required disclosure, eligibility response, preference value, and entry command",
+        produced_outputs="created profile, consent record, missing-disclosure blocker, eligibility marker, preference snapshot, and downstream entry handoff",
+        states_or_transitions="not-started, started, consented, declined, missing-disclosure, ineligible, profile-created, revised, and handed-off",
+        outside_boundary="measurement storage, plan recommendation, daily tracking, analytics calculation, immutable audit retention, and sibling product responsibilities",
+        local_proof=(
+            "The entry flow records actor identity, consent, required disclosures, eligibility answers, and preferences before downstream state uses them.",
+            "Missing consent, missing disclosure, or ineligible answers block downstream handoff instead of creating trusted state.",
+            "Measurement, plan, tracking, analytics, and retention changes do not rewrite onboarding consent state.",
+        ),
+        unique_failure="A downstream workflow can start without valid consent, required disclosures, eligibility context, or the actor profile needed to explain the first path.",
+    ),
+    ComponentAxis(
+        key="measurement_capture",
+        triggers=("measurement", "measure", "metric", "metrics", "reading", "capture", "baseline", "observation", "value"),
+        owned_state="measurement entry, baseline snapshot, metric value, unit, capture timestamp, source reference, invalid-measurement blocker, and measurement handoff state",
+        accepted_inputs="actor identity, metric value, unit, measurement timestamp, baseline context, source reference, and validation rule",
+        produced_outputs="validated measurement record, baseline snapshot, invalid-measurement blocker, source reference, and downstream measurement handoff",
+        states_or_transitions="empty, entered, validated, rejected, source-linked, baseline-set, revised, and handed-off",
+        outside_boundary="onboarding consent, goal recommendation, habit logging, analytics interpretation, privacy deletion authority, and sibling product responsibilities",
+        local_proof=(
+            "A measurement keeps actor identity, metric value, unit, timestamp, source, and validation status before downstream guidance uses it.",
+            "Invalid, missing, stale, or unauthorized measurements block downstream handoff instead of appearing trusted.",
+            "Goal, habit, analytics, safety, and privacy changes do not mutate captured measurement history.",
+        ),
+        unique_failure="A user can see guidance based on the wrong metric, unit, timestamp, source, or baseline measurement.",
+    ),
+    ComponentAxis(
+        key="goal_plan_generation",
+        triggers=("goal", "goals", "plan", "planning", "generation", "generate", "guidance", "recommendation", "adjustment"),
+        owned_state="goal target, plan rule, recommendation rationale, adjustment trigger, user preference, safety constraint, and plan handoff state",
+        accepted_inputs="baseline state, actor preference, target goal, plan rule, safety constraint, prior progress signal, and generation command",
+        produced_outputs="first plan, goal target, recommendation rationale, adjustment marker, unsafe-plan blocker, and downstream plan handoff",
+        states_or_transitions="not-generated, goal-set, generated, blocked, adjusted, accepted, revised, ignored, and handed-off",
+        outside_boundary="raw measurement capture, daily habit logging, trend analytics, policy guardrail ownership, immutable audit retention, and sibling product responsibilities",
+        local_proof=(
+            "The generated plan ties goal target, baseline context, preference, safety constraint, and recommendation rationale together.",
+            "Unsafe, impossible, or missing goal context blocks plan generation instead of producing trusted guidance.",
+            "Measurement capture, habit logging, analytics, and policy guardrails do not rewrite the plan rationale.",
+        ),
+        unique_failure="A generated plan can imply unsafe guidance, detach from baseline context, ignore user preference, or lose the rationale needed to review it.",
+    ),
+    ComponentAxis(
+        key="habit_activity_tracking",
+        triggers=("habit", "habits", "activity", "tracking", "track", "log", "logging", "daily", "adherence", "checkin"),
+        owned_state="daily log entry, habit status, activity summary, check-in response, adherence signal, missed-entry blocker, and tracking handoff state",
+        accepted_inputs="actor identity, habit log, activity event, check-in answer, timestamp, reminder context, and prior tracking state",
+        produced_outputs="recorded daily log, adherence signal, missed-entry marker, habit summary, check-in status, and downstream tracking handoff",
+        states_or_transitions="not-logged, logged, partial, missed, corrected, stale, summarized, and handed-off",
+        outside_boundary="onboarding consent, measurement baseline ownership, plan generation, trend interpretation, immutable audit retention, and sibling product responsibilities",
+        local_proof=(
+            "Daily tracking records the actor, timestamp, habit entry, activity marker, check-in response, and adherence status.",
+            "Missing, partial, stale, or corrected logs stay visible instead of being counted as ordinary completed adherence.",
+            "Plan, measurement, analytics, safety, and retention changes do not rewrite daily tracking entries.",
+        ),
+        unique_failure="Adherence can look complete when logs are missing, stale, attached to the wrong actor, or detached from the check-in state.",
+    ),
+    ComponentAxis(
+        key="privacy_data_lifecycle",
+        triggers=("privacy", "retention", "export", "deletion", "delete", "erase", "consent", "data", "download"),
+        owned_state="privacy preference, retention rule, export request, deletion request, protected-data classification, consent history, and data-lifecycle handoff state",
+        accepted_inputs="actor identity, privacy preference, retention policy, export command, deletion command, protected-state reference, consent record, and audit context",
+        produced_outputs="privacy decision, retained or deleted marker, export package, deletion confirmation, access blocker, consent-history reference, and lifecycle handoff",
+        states_or_transitions="requested, allowed, denied, exported, deletion-pending, deleted, retained, restored, blocked, and handed-off",
+        outside_boundary="onboarding question ownership, measurement interpretation, plan generation, daily tracking, trend analytics, and sibling product responsibilities",
+        local_proof=(
+            "Privacy lifecycle proof shows who requested export or deletion, what protected state was affected, and which retention rule applied.",
+            "Unauthorized export, missing consent, or blocked deletion remains visible instead of silently changing protected data.",
+            "Onboarding, measurement, plan, tracking, and analytics changes do not override privacy or retention decisions.",
+        ),
+        unique_failure="Protected data can be exported, retained, deleted, or exposed without the right actor, consent, retention rule, or replayable lifecycle evidence.",
     ),
     ComponentAxis(
         key="check_rule_ledger",
@@ -570,4 +646,91 @@ COMPONENT_AXES: tuple[ComponentAxis, ...] = (
 )
 
 
-__all__ = ["COMPONENT_AXES", "ComponentAxis"]
+def component_axis_key_for_label(label_text: str) -> str:
+    """Return the strongest generic ownership axis implied by a component label."""
+
+    text = _normalize_axis_text(label_text)
+    if re.search(r"\b(criteria|criterion|protocol|rule|eligibility policy|inclusion|exclusion)\b", text):
+        return "definition_rules"
+    if re.search(r"\b(onboarding|consent|signup|registration)\b", text):
+        return "onboarding_consent"
+    if re.search(r"\b(privacy|export|deletion|delete|erase|protected data)\b", text):
+        return "privacy_data_lifecycle"
+    if re.search(r"\b(risk|disclaimer|compliance|policy|guardrails?|safety|medical|pregnancy|underage)\b", text):
+        return "policy_risk_guardrails"
+    if re.search(r"\b(measurement|measurements?|metrics?|readings?|capture|baseline|observation|value)\b", text):
+        return "measurement_capture"
+    if re.search(r"\b(goals?|plan|planning|generation|guidance)\b", text):
+        return "goal_plan_generation"
+    if re.search(r"\b(access|permission|role|rbac|grant|visibility|redaction)\b", text) and re.search(
+        r"\b(audit|history|version|retention|replay)\b", text
+    ):
+        return "access_audit"
+    if re.search(r"\b(audit|trail|version|history|retention|archive)\b", text) and not re.search(
+        r"\b(privacy|export|deletion|delete|erase|protected data)\b", text
+    ):
+        return "audit_retention"
+    if re.search(r"\b(submission|submit|file upload|upload)\b", text):
+        return "submission_versioning"
+    if re.search(r"\b(assignment|assign|permission|access|conflict|routing|eligibility)\b", text):
+        return "assignment_permission"
+    if re.search(r"\b(notification|notify|deadline|reminder|due|overdue|email|escalation)\b", text):
+        return "notification_deadline"
+    if re.search(r"\b(habits?|activity|logs?|logging|daily|adherence|check[- ]?in)\b", text):
+        return "habit_activity_tracking"
+    if re.search(r"\b(admin|inspection|disputed|readiness|evidence review|review tools)\b", text) and re.search(
+        r"\b(review|evidence|source|signal|quality|disputed|inspection)\b", text
+    ):
+        return "evidence_review"
+    if re.search(r"\b(confidence|signal quality|quality signal)\b", text) or (
+        re.search(r"\b(signal|signals|deduplication|dedupe|duplicate)\b", text)
+        and not re.search(r"\b(intake|ingestion|ingest|import|source attribution|metadata import)\b", text)
+    ):
+        return "signal_quality_deduplication"
+    if re.search(r"\b(intake|ingestion|ingest|import|deduplication|dedupe|normalize)\b", text):
+        return "intake_import"
+    if re.search(r"\b(form|scoring|score|template|rubric|assessment)\b", text):
+        return "form_scoring"
+    if re.search(r"\b(case|workspace|agenda|checklist)\b", text):
+        return "case_workspace"
+    if re.search(r"\b(map|parcel|location|geospatial|geometry|overlay|layer|zoning)\b", text):
+        return "spatial_context"
+    if re.search(r"\b(question|issue|concern|follow-up|followup|response|answer|unresolved)\b", text):
+        return "question_issue_tracking"
+    if re.search(r"\b(feedback|comment|comments|theme|grouping|cluster|sentiment)\b", text):
+        return "feedback_grouping"
+    if re.search(r"\b(journal|decision note|decision journal|rationale journal)\b", text):
+        return "user_decision_journal"
+    if re.search(r"\b(dashboard|comparison|compare|display|readiness view)\b", text):
+        return "dashboard_comparison"
+    if re.search(r"\b(decision|approval|approve|final outcome|outcome|blocker)\b", text):
+        return "decision_review"
+    if re.search(r"\b(follow list|watchlist|watch list|saved list|selected list|bookmark)\b", text):
+        return "tracked_selection_list"
+    return ""
+
+
+def component_axis_for_label(label_text: str) -> ComponentAxis | None:
+    """Resolve a component label to a reusable semantic ownership axis."""
+
+    key = component_axis_key_for_label(label_text)
+    if key:
+        for axis in COMPONENT_AXES:
+            if axis.key == key:
+                return axis
+    text = _normalize_axis_text(label_text)
+    if not text:
+        return None
+    best: tuple[int, ComponentAxis] | None = None
+    for axis in COMPONENT_AXES:
+        score = sum(1 for trigger in axis.triggers if re.search(rf"\b{re.escape(trigger)}\b", text))
+        if score and (best is None or score > best[0]):
+            best = (score, axis)
+    return best[1] if best else None
+
+
+def _normalize_axis_text(value: str) -> str:
+    return re.sub(r"\s+", " ", str(value or "").replace("_", " ").replace("-", " ")).strip().casefold()
+
+
+__all__ = ["COMPONENT_AXES", "ComponentAxis", "component_axis_for_label", "component_axis_key_for_label"]

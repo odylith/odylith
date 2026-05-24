@@ -452,7 +452,7 @@ def _proof_rows(
     source_fact: str,
 ) -> tuple[str, ...]:
     rows = [
-        f"{label} proves {_safe_leading_actor(object_list)} by accepting {_safe_leading_actor(input_focus)} and producing {_safe_leading_actor(output_focus)}.",
+        f"{label} proves {_safe_leading_actor(object_list)} with input coverage for {_safe_leading_actor(input_focus)} and output coverage for {_safe_leading_actor(output_focus)}.",
         f"Missing or invalid {_safe_leading_actor(critical)} blocks {_safe_leading_actor(output_focus)} before downstream handoff.",
     ]
     if source_fact and source_fact != object_list:

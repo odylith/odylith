@@ -58,6 +58,12 @@ _BANNED_PROSE_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("generic input-output filler", re.compile(r"\binputs\s+and\s+produced\s+outputs\b", re.IGNORECASE)),
     ("generic accepted-path actor filler", re.compile(r"\bsupports\s+the\s+accepted\s+path\b", re.IGNORECASE)),
     ("accepted-items summary leaked", re.compile(r"\badditional\s+accepted\s+(?:items|systems)\s+remain\s+in\s+the\s+intent\b", re.IGNORECASE)),
+    (
+        "check-in tracking misread as checklist",
+        re.compile(r"\b(?:owns|maintains|accepts|produces|recorded)\s+and\s+check\b", re.IGNORECASE),
+    ),
+    ("dangling weak sentence", re.compile(r"\bIt\s+should\s*[.]?$", re.IGNORECASE)),
+    ("clipped proof clause", re.compile(r"\bby\s+accepting\s*[.]?$", re.IGNORECASE)),
 )
 
 _DANGLING_WORDS = {

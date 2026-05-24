@@ -51,6 +51,7 @@ _GLOBAL_BRIEF_NOTICE_REASONS = {
     "invalid_batch",
     "validation_failed",
     "global_provider_error_showing_previous",
+    "global_provider_deferred_showing_previous",
 }
 
 

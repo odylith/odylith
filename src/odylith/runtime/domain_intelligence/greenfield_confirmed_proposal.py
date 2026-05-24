@@ -8,6 +8,7 @@ from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence import greenfield_programs
+from odylith.runtime.domain_intelligence.greenfield_actor_labels import project_specific_actor_row
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import (
     confirmed_components,
     confirmed_project_brief,
@@ -23,6 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_s
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import problem_text as _problem_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary as _short_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_summary as _state_detail_summary
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label as _title_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagrams import confirmed_diagrams
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import (
     confirmed_intent_list,
@@ -519,9 +521,9 @@ def _workstream_subject(value: str) -> str:
 
 def _evidence_record_label(*, label: str, proof_boundary: str, internal_systems: list[str]) -> str:
     for system in internal_systems:
-        name = str(system).casefold()
+        first = str(system).split("—", 1)[0].split("-", 1)[0].split(":", 1)[0].strip()
+        name = first.casefold()
         if any(token in name for token in ("evidence", "audit", "proof", "ledger", "history", "trace")):
-            first = str(system).split("—", 1)[0].split("-", 1)[0].split(":", 1)[0].strip()
             if first:
                 return f"{system_component_name(first)} proof record"
     if proof_boundary:
@@ -698,6 +700,7 @@ def _backlog(
     proof_component = _workstream_subject(
         _component_label_at(components, len(components) - 1, fallback=f"{label} proof review")
     )
+    proof_record_label = _title_label(f"{proof_component} proof record") or evidence_label
     primary_contract = _component_contract_at(components, 0)
     state_contract = _component_contract_at(components, 1 if len(components) > 1 else 0)
     proof_contract = _component_contract_at(components, len(components) - 1)
@@ -821,9 +824,9 @@ def _backlog(
             f"Build the {proof_component} review output with validation results, state references, reviewer decision, and deferred scope."
         ),
         product_view=f"{proof_component} produces {proof_outputs} and shows whether the accepted proof boundary is satisfied.",
-        first_slice=f"Implement one reviewable {evidence_label} output for the first path, validation result, and reviewer decision.",
+        first_slice=f"Implement one reviewable {proof_record_label} output for the first path, validation result, and reviewer decision.",
         metrics=[
-            f"{evidence_label} links source input, {state_label}, validation output, reviewer decision, and outcome.",
+            f"{proof_record_label} links source input, {state_label}, validation output, reviewer decision, and outcome.",
             f"Missing evidence blocks proof review instead of producing a release-ready claim.",
             "The proof view checks the accepted proof boundary without expanding deferred scope.",
             f"The proof view keeps deferred scope visible: {non_goal_text}.",
@@ -838,7 +841,7 @@ def _backlog(
             "Proof review fails closed when success evidence, replay evidence, access proof, privacy proof, or reviewer evidence is missing."
         ],
         state_object=state_label,
-        evidence_record=evidence_label,
+        evidence_record=proof_record_label,
         first_path=first_path_summary,
         proof_boundary=proof_summary,
         human_actors=human_actors,
@@ -1008,7 +1011,7 @@ def _domain_intelligence(
             f"{evidence_record} is the source of truth for proof readiness and reviewer confidence.",
         ],
         "evidence_model": [
-            f"Evidence for this slice: {validation_summary or proof_boundary}.",
+            f"Proof evidence: {validation_summary or proof_boundary}.",
             f"{evidence_record} must show source input, state reference, validation result, reviewer decision, and visible outcome.",
         ],
         "decisions": [
@@ -1076,23 +1079,6 @@ def _domain_intelligence(
     }
 
 
-_GENERIC_ACTOR_PREFIXES: tuple[str, ...] = (
-    "Operator",
-    "Maintainer",
-    "Reviewer",
-    "Primary user",
-    "Project operator",
-    "Domain reviewer",
-    "Implementation owner",
-    "Evidence owner",
-    "End-user advocate",
-    "Workflow operator",
-    "Risk reviewer",
-    "Proof reviewer",
-    "Build owner",
-)
-
-
 def _project_specific_actor_rows(*, label: str, rows: list[str]) -> list[str]:
     focus = _actor_focus_label(label)
     result: list[str] = []
@@ -1118,14 +1104,7 @@ def _join_actor_labels(values: list[str] | None, *, limit: int = 5) -> str:
 
 
 def _project_specific_actor_row(row: str, *, focus: str) -> str:
-    for prefix in _GENERIC_ACTOR_PREFIXES:
-        match = re.match(rf"^{re.escape(prefix)}(?P<tail>\s*(?::|[-–—/]|$).*)", row)
-        if not match:
-            continue
-        replacement = f"{_role_focus(focus, prefix)} {prefix}"
-        tail = re.sub(r"^\s+", " ", match.group("tail"))
-        return f"{replacement}{tail}".strip()
-    return row
+    return project_specific_actor_row(row, project_focus=focus) or row
 
 
 def _actor_focus_label(label: str) -> str:
@@ -1137,14 +1116,6 @@ def _actor_focus_label(label: str) -> str:
     )
     text = " ".join(text.replace(":", " ").split()).strip(" -")
     return text or str(label or "Project").strip() or "Project"
-
-
-def _role_focus(focus: str, role: str) -> str:
-    text = str(focus or "").strip()
-    if role.casefold() == "reviewer":
-        text = re.sub(r"\breview$", "", text, flags=re.IGNORECASE).strip()
-    return text or str(focus or "").strip() or "Project"
-
 
 
 __all__ = ["build_confirmed_greenfield_proposal"]

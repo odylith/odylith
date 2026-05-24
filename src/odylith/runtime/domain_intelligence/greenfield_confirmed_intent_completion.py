@@ -7,6 +7,8 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_actor_labels import accepted_actor_label
+from odylith.runtime.domain_intelligence.greenfield_component_axes import component_axis_for_label
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -209,9 +211,9 @@ def _completed_actor_rows(intent: Mapping[str, Any], *, title: str) -> list[str]
     completed: list[str] = []
     for index, label in enumerate(labels):
         original = rows[index] if index < len(rows) else label
-        original_head = _title_case(_clean(str(original).split("—", 1)[0].split(":", 1)[0]))
-        if original_head == label and _actor_row_has_usable_description(original):
-            completed.append(original)
+        description = _actor_row_description(original)
+        if description and _actor_label(original, title=title).casefold() == label.casefold():
+            completed.append(f"{label}: {description}")
             continue
         completed.append(_actor_description(label=label, index=index, title=title, first_path=first_path, state=state))
     return list(unique_text(completed))
@@ -243,6 +245,8 @@ def _actor_description(*, label: str, index: int, title: str, first_path: str, s
         body = "moves the work through screening, assignment, review, decision, exception handling, and recovery without losing state ownership"
     elif re.search(r"\b(reviewer|inspector|evaluator|analyst|auditor|expert|approver|compliance)\b", label_text):
         body = "reviews assigned work, submits structured evidence or decisions, and can challenge incomplete, disputed, or unsafe outcomes"
+    elif re.search(r"\b(coach|trainer|advisor|consultant|specialist)\b", label_text):
+        body = "reviews progress, guidance quality, evidence, and escalation signals where the accepted path needs human support"
     elif re.search(r"\b(participant|observer|applicant)\b", label_text):
         body = "supplies input, context, or objections that must remain traceable to the first-path decision"
     elif re.search(r"\b(admin|administrator|config|maintainer|support|scheduler)\b", label_text):
@@ -297,12 +301,22 @@ def _path_clauses(value: str) -> list[str]:
 
 
 def _actor_row_has_usable_description(value: str) -> bool:
+    return bool(_actor_row_description(value))
+
+
+def _actor_row_description(value: str) -> str:
     text = _clean(value)
     for separator in (" — ", " – ", " - ", ":"):
         head, sep, body = text.partition(separator)
-        if sep and _word_count(head) <= 8 and _word_count(body) >= 8:
-            return True
-    return False
+        body = body.strip(" .")
+        if (
+            sep
+            and _word_count(head) <= 10
+            and _word_count(body) >= 4
+            and not re.search(r"\b(can act|supports the accepted path|additional accepted items)\b", body, re.IGNORECASE)
+        ):
+            return body
+    return ""
 
 
 def _join_actor_segments(values: Sequence[str]) -> str:
@@ -356,9 +370,40 @@ def _system_row(row: str, *, context: str, title: str) -> str:
     if not name:
         return ""
     clause = _best_context_clause(name, context)
+    axis_description = _axis_system_description(name)
+    if axis_description:
+        return f"{name} — {axis_description}"
     if clause:
-        return f"{name} — owns {name.lower()} behavior for the accepted path. Relevant evidence: {_short(clause, limit=180)}"
+        return (
+            f"{name} — owns its accepted inputs, blocked states, produced outputs, and handoff evidence. "
+            f"Context: {_short(clause, limit=180)}"
+        )
     return f"{name} — owns input capture, state change, validation evidence, blocked states, and handoff for the accepted {title.lower()} path"
+
+
+def _axis_system_description(name: str) -> str:
+    axis = component_axis_for_label(name)
+    if axis is None:
+        return ""
+    owned = _axis_item_phrase(axis.owned_state, max_items=5)
+    outputs = _axis_item_phrase(axis.produced_outputs, max_items=5)
+    states = _axis_item_phrase(axis.states_or_transitions, max_items=6)
+    return f"owns {owned}, produces {outputs}, and keeps {states} visible"
+
+
+def _axis_item_phrase(value: str, *, max_items: int) -> str:
+    items = []
+    for raw in str(value or "").split(","):
+        item = raw.strip(" .")
+        item = re.sub(r"^(?:and|or)\s+", "", item, flags=re.IGNORECASE).strip()
+        if item:
+            items.append(item)
+    selected = items[:max_items]
+    if not selected:
+        return _short(value, limit=120)
+    if len(selected) == 1:
+        return selected[0]
+    return ", ".join(selected[:-1]) + f", and {selected[-1]}"
 
 
 def _derived_system_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
@@ -414,6 +459,9 @@ def _actor_label(row: str, *, title: str) -> str:
     raw = re.sub(r"^(?:a|an|the)\s+", "", raw, flags=re.IGNORECASE).strip()
     if not raw:
         return ""
+    accepted = accepted_actor_label(str(row), project_focus=_focus_label(title))
+    if accepted:
+        return accepted if _actor_row_has_usable_description(str(row)) else _title_case(accepted)
     specific = _specific_role_label(raw)
     if specific:
         return specific
@@ -468,10 +516,32 @@ def _system_labels(intent: Mapping[str, Any]) -> list[str]:
 
 def _system_label(row: str, *, title: str) -> str:
     raw = _clean(row)
-    if _word_count(raw) > 9:
-        raw = " ".join(raw.split()[:7])
     raw = re.sub(r"^(?:a|an|the)\s+", "", raw, flags=re.IGNORECASE)
+    raw = _repair_system_label_tail(raw)
+    if _word_count(raw) > 14:
+        raw = _compact_system_label(raw)
     return _title_case(raw or f"{_focus_label(title)} system")
+
+
+def _repair_system_label_tail(value: str) -> str:
+    text = _clean(value).strip(" ,;:.")
+    words = text.split()
+    while words and words[-1].casefold().strip(".,;:") in {"and", "or", "for", "of", "the", "to", "with"}:
+        words.pop()
+    return " ".join(words).strip(" ,;:.")
+
+
+def _compact_system_label(value: str) -> str:
+    text = _repair_system_label_tail(value)
+    if _word_count(text) <= 12:
+        return text
+    match = re.match(r"(?P<head>.+?\b(?:flow|capture|tracking|tracker|analytics|explanations|guardrails|controls|viewer|dashboard|workspace|workflow|service|engine|ledger|registry|store|journal|planner|generation|management|intake|versioning))\b", text, flags=re.IGNORECASE)
+    if match and _word_count(match.group("head")) >= 2:
+        return _repair_system_label_tail(match.group("head"))
+    words = text.split()[:12]
+    while words and words[-1].casefold().strip(".,;:") in {"and", "or", "for", "of", "the", "to", "with"}:
+        words.pop()
+    return " ".join(words)
 
 
 def _state_label(value: str, *, title: str) -> str:
@@ -732,7 +802,7 @@ def _short(value: str, *, fallback: str = "", limit: int = 220) -> str:
         return text.rstrip(".")
     clipped = text[:limit].rsplit(" ", 1)[0].rstrip(" ,;:")
     words = clipped.split()
-    while words and words[-1].casefold().strip(".,;:") in {"and", "or", "to", "with", "for", "from", "of", "the", "a", "an", "required"}:
+    while words and words[-1].casefold().strip(".,;:") in {"and", "or", "to", "with", "without", "for", "from", "of", "the", "a", "an", "required"}:
         words.pop()
     return " ".join(words).rstrip(" ,;:.")
 

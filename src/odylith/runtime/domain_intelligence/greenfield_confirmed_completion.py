@@ -938,7 +938,23 @@ def _has_bad_tail(value: str) -> bool:
     words = _clean(value).rstrip(".;:, ").split()
     if len(words) < 6:
         return False
-    return words[-1].casefold().strip(".,;:") in {"a", "an", "and", "for", "from", "of", "or", "the", "to", "with"}
+    return words[-1].casefold().strip(".,;:") in {
+        "a",
+        "an",
+        "and",
+        "for",
+        "from",
+        "if",
+        "of",
+        "or",
+        "required",
+        "the",
+        "to",
+        "when",
+        "while",
+        "with",
+        "without",
+    }
 
 
 def _dict_rows(value: Any) -> list[dict[str, Any]]:

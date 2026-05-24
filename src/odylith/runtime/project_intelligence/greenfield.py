@@ -1170,6 +1170,8 @@ def _customer_actor_rows(*, proposal: Mapping[str, Any]) -> list[tuple[str, str,
         actor_list = _customer_segments_are_actor_list(customer, segments)
         for segment in segments:
             title = _customer_actor_title(segment)
+            if "," in title and not actor_list:
+                continue
             if not _is_project_actor_label(title):
                 continue
             body = _customer_actor_body(segment=segment, context="" if actor_list else context)

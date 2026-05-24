@@ -333,10 +333,13 @@ def system_component_name(value: str) -> str:
 
 
 def _system_kind(name: str, description: str) -> str:
-    text = f"{name} {description}".casefold()
-    if _contains_kind_token(text, ("web", "ui", "surface", "mobile", "portal", "client", "dashboard")):
+    name_text = name.casefold()
+    description_text = description.casefold()
+    if _contains_kind_token(f"{name_text} {description_text}", ("web", "ui", "surface", "mobile", "portal", "client", "dashboard")):
         return "client"
-    if _contains_kind_token(text, ("adapter", "provider", "integration", "connector", "source", "import")):
+    if _contains_kind_token(name_text, ("adapter", "provider", "integration", "connector", "source", "import")):
+        return "adapter"
+    if _contains_kind_token(description_text, ("adapter", "provider", "integration", "connector", "external", "import")):
         return "adapter"
     return "service"
 

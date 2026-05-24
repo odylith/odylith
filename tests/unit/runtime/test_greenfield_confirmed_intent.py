@@ -110,7 +110,8 @@ Release 0.0.1 succeeds when a reviewer can see the imported items, the stale-ite
 
     encoded = json.dumps(intent)
     assert "**" not in encoded
-    assert "Primary operator: wants to reduce stale work" in encoded
+    assert "Shared Operations Operator: wants to reduce stale work" in encoded
+    assert "Primary operator" not in encoded
     assert "Support reviewer: checks ambiguous follow-up attempts" in encoded
 
 
@@ -1348,7 +1349,7 @@ def test_confirmed_intent_json_splits_labeled_roles_and_sentence_systems() -> No
 
     assert intent["human_actors"] == [
         "Submitter: provides the source material and needs a clear status",
-        "Evidence Reviewer: reviews assigned work, submits structured evidence or decisions, and can challenge incomplete, disputed, or unsafe outcomes.",
+        "Evidence Reviewer: checks evidence, records the decision, and explains uncertainty",
         "Operations lead: watches escalations and decides whether the process is ready to trust",
     ]
     assert intent["internal_systems"][0].startswith("Intake Console — captures the submitted request")

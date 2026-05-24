@@ -853,11 +853,11 @@ def _ownership_mermaid(
 ) -> str:
     lines = ["flowchart TB"]
     if not components:
-        lines.append(f'  product["{_escape_label(label)}<br/>product boundary"] --> proof["Release<br/>proof"]')
+        lines.append(f'  product["{_flow_label(label, limit=96)}<br/>product boundary"] --> proof["Release<br/>proof"]')
     for index, component in enumerate(components[:7], start=1):
         node = _node_id("owner", index)
         label_text = str(component.get("label", "")) or (internal_systems[index - 1] if index <= len(internal_systems) else f"Component {index}")
-        lines.append(f'  {node}["{_escape_label(label_text)}"]')
+        lines.append(f'  {node}["{_flow_label(label_text, limit=112)}"]')
         if index > 1:
             lines.append(f"  {_node_id('owner', index - 1)} --> {node}")
     proof_node = _node_id("proof", 1)

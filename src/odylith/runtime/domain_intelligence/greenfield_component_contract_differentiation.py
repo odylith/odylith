@@ -10,6 +10,7 @@ from typing import Any
 from odylith.runtime.domain_intelligence.greenfield_component_axes import (
     COMPONENT_AXES,
     ComponentAxis,
+    component_axis_key_for_label,
 )
 from odylith.runtime.domain_intelligence.greenfield_component_contract import (
     boundary_from_contract,
@@ -339,51 +340,7 @@ def _axis_for(*, row: Mapping[str, Any] | None, proposal: Mapping[str, Any]) -> 
 def _priority_axis(label_text: str) -> str:
     """Resolve labels where one broad trigger would otherwise steal ownership."""
 
-    text = _clean(label_text).casefold()
-    if re.search(r"\b(criteria|criterion|protocol|rule|eligibility policy|inclusion|exclusion)\b", text):
-        return "definition_rules"
-    if re.search(r"\b(submission|submit|file upload|upload)\b", text):
-        return "submission_versioning"
-    if re.search(r"\b(admin|inspection|disputed|readiness|evidence review|review tools)\b", text) and re.search(
-        r"\b(review|evidence|source|signal|quality|disputed|inspection)\b", text
-    ):
-        return "evidence_review"
-    if re.search(r"\b(confidence|signal quality|quality signal)\b", text) or (
-        re.search(r"\b(signal|signals|deduplication|dedupe|duplicate)\b", text)
-        and not re.search(r"\b(intake|ingestion|ingest|import|source attribution|metadata import)\b", text)
-    ):
-        return "signal_quality_deduplication"
-    if re.search(r"\b(intake|ingestion|ingest|import|deduplication|dedupe|normalize)\b", text):
-        return "intake_import"
-    if re.search(r"\b(access|permission|role|rbac|grant|visibility|redaction)\b", text) and re.search(
-        r"\b(audit|history|version|retention|replay)\b", text
-    ):
-        return "access_audit"
-    if re.search(r"\b(assignment|assign|permission|access|conflict|routing|eligibility)\b", text):
-        return "assignment_permission"
-    if re.search(r"\b(form|scoring|score|template|rubric|assessment)\b", text):
-        return "form_scoring"
-    if re.search(r"\b(case|workspace|agenda|checklist)\b", text):
-        return "case_workspace"
-    if re.search(r"\b(map|parcel|location|geospatial|geometry|overlay|layer|zoning)\b", text):
-        return "spatial_context"
-    if re.search(r"\b(question|issue|concern|follow-up|followup|response|answer|unresolved)\b", text):
-        return "question_issue_tracking"
-    if re.search(r"\b(feedback|comment|comments|theme|grouping|cluster|sentiment)\b", text):
-        return "feedback_grouping"
-    if re.search(r"\b(journal|decision note|decision journal|rationale journal)\b", text):
-        return "user_decision_journal"
-    if re.search(r"\b(dashboard|comparison|compare|display|readiness view)\b", text):
-        return "dashboard_comparison"
-    if re.search(r"\b(decision|approval|approve|final outcome|outcome|blocker)\b", text):
-        return "decision_review"
-    if re.search(r"\b(audit|trail|retention|archive|history)\b", text):
-        return "audit_retention"
-    if re.search(r"\b(risk|disclaimer|compliance|policy|privacy|guardrails?|safety|consent)\b", text):
-        return "policy_risk_guardrails"
-    if re.search(r"\b(follow list|watchlist|watch list|saved list|selected list|bookmark)\b", text):
-        return "tracked_selection_list"
-    return ""
+    return component_axis_key_for_label(label_text)
 
 
 def _fallback_axis(label: str, context: str, *, focus: str = "") -> ComponentAxis:

@@ -653,7 +653,7 @@ def _runway_lines(
         if local_proof and not _workstream_title_matches_component(first_workstream_title, label):
             lines.append(
                 "This is a broad project workstream; the component still needs its narrower local proof: "
-                f"{_brief_sentence(local_proof, limit=220)}."
+                f"{_brief_sentence(local_proof, limit=360)}."
             )
     elif first_workstream:
         lines.append(f"Use `{first_workstream}` as the implementation-plan anchor.")
@@ -665,7 +665,7 @@ def _runway_lines(
     if release_selector:
         lines.append(f"Release target: {release_selector}.")
     if first_slice:
-        lines.append(f"First coding slice: {_brief_sentence(first_slice, limit=240)}.")
+        lines.append(f"First coding slice: {_brief_sentence(first_slice, limit=360)}.")
     lines.append("Promote this component from candidate only after source-backed proof refreshes the component record and project status.")
     return _bullet_lines(lines)
 
@@ -717,9 +717,21 @@ def _brief_sentence(value: str, *, limit: int = 220) -> str:
 
 def _strip_dangling_tail(value: str) -> str:
     text = value.rstrip(" ,;:.")
+    text = re.sub(
+        r"\bby\s+(?:accepting|producing|using|recording|showing|validating)\b.*$",
+        "",
+        text,
+        flags=re.I,
+    ).rstrip(" ,;:.")
+    text = re.sub(
+        r"\band\s+(?:accepting|producing|using|recording|showing|validating)\b.*$",
+        "",
+        text,
+        flags=re.I,
+    ).rstrip(" ,;:.")
     while True:
         cleaned = re.sub(
-            r"\b(?:a|an|and|as|at|because|by|for|from|if|in|into|of|on|or|the|to|when|while|with|without)$",
+            r"\b(?:a|an|and|as|at|because|by|for|from|if|in|into|of|on|or|required|the|to|when|while|with|without)$",
             "",
             text,
             flags=re.I,
