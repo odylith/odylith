@@ -25,7 +25,6 @@ COMPONENT_AXES: tuple[ComponentAxis, ...] = (
         triggers=(
             "submission",
             "submit",
-            "intake",
             "version",
             "versioning",
             "file",
@@ -44,6 +43,135 @@ COMPONENT_AXES: tuple[ComponentAxis, ...] = (
         unique_failure="A submitted item can enter review with the wrong identity, missing files, stale metadata, or an incorrect version snapshot.",
     ),
     ComponentAxis(
+        key="request_intake_capture",
+        triggers=(
+            "intake",
+            "capture",
+            "captures",
+            "form",
+            "answer",
+            "answers",
+            "request",
+            "entry",
+            "input",
+        ),
+        owned_state="intake request, submitted answers, required-input status, validation context, actor identity, intake timestamp, and handoff state",
+        accepted_inputs="actor identity, intake command, submitted answers, required fields, validation rules, source context, and prior intake state",
+        produced_outputs="validated intake request, missing-input blocker, rejected-input signal, accepted answer set, intake summary, and downstream handoff",
+        states_or_transitions="not-started, in-progress, submitted, missing-required-input, validation-failed, accepted, corrected, withdrawn, and handed-off",
+        outside_boundary="source import ownership, downstream calculation, final decision authority, immutable audit retention, notification delivery, and sibling product responsibilities",
+        local_proof=(
+            "Intake proof shows actor identity, submitted answers, required-input status, validation context, and downstream handoff.",
+            "Missing, malformed, stale, or unauthorized intake data blocks downstream handoff instead of creating trusted state.",
+            "Import, calculation, decision, notification, and audit changes do not rewrite the submitted intake answer set.",
+        ),
+        unique_failure="Downstream work can trust the wrong request, missing required input, stale context, or an answer set that lost actor and validation evidence.",
+    ),
+    ComponentAxis(
+        key="option_evaluation_ranking",
+        triggers=(
+            "comparison",
+            "compare",
+            "ranking",
+            "rank",
+            "select",
+            "selection",
+            "order",
+            "ordered",
+            "alternative",
+            "alternatives",
+            "option",
+            "choice",
+        ),
+        owned_state="candidate option set, comparison criteria, ranking rule, selected option, ordered alternatives, explanation, and ranking handoff state",
+        accepted_inputs="candidate options, comparison criteria, actor context, ranking command, tie-break rule, exclusion reason, and prior selection state",
+        produced_outputs="ranked option list, selected option, ordered alternatives, comparison explanation, blocked-selection marker, and downstream handoff",
+        states_or_transitions="empty, candidates-loaded, comparable, ranked, selected, tied, blocked, revised, and handed-off",
+        outside_boundary="raw option intake, quote calculation, final user commitment, notification delivery, immutable audit retention, and sibling product responsibilities",
+        local_proof=(
+            "Ranking proof shows candidate options, comparison criteria, tie-break rule, selected option, ordered alternatives, and explanation together.",
+            "Missing candidates, invalid criteria, excluded options, or unresolved ties block selection instead of producing a trusted ranking.",
+            "Input capture, quote calculation, final commitment, and audit changes do not rewrite the ranked option list or selection rationale.",
+        ),
+        unique_failure="A user can trust the wrong selected option, an excluded alternative can be ranked as eligible, or the ranking rationale can detach from the criteria.",
+    ),
+    ComponentAxis(
+        key="external_handoff",
+        triggers=(
+            "handoff",
+            "handoffs",
+            "provider",
+            "recipient",
+            "endpoint",
+            "fulfillment",
+            "delivery",
+            "dispatch",
+        ),
+        owned_state="approved handoff payload, recipient reference, provider status, failed-handoff marker, retry state, provider reference, and handoff evidence",
+        accepted_inputs="approved handoff command, actor identity, recipient reference, payload snapshot, provider status, validation context, and prior handoff state",
+        produced_outputs="provider handoff record, accepted or failed marker, provider reference, retry blocker, handoff evidence, and downstream status handoff",
+        states_or_transitions="not-requested, ready, sent, accepted, failed, retry-blocked, acknowledged, reconciled, and handed-off",
+        outside_boundary="upstream approval ownership, provider system truth, fulfillment execution, notification delivery, immutable audit retention, and sibling product responsibilities",
+        local_proof=(
+            "Handoff proof shows actor identity, approved payload, recipient reference, provider status, failure marker, and provider reference together.",
+            "Missing approval, recipient, payload, or provider acknowledgement blocks downstream handoff instead of creating trusted external state.",
+            "Approval, provider execution, notification, and audit changes do not rewrite the submitted handoff payload or failure evidence.",
+        ),
+        unique_failure="An external handoff can look sent while the payload, recipient, provider status, or failure evidence is missing or assigned to the wrong boundary.",
+    ),
+    ComponentAxis(
+        key="quote_calculation",
+        triggers=(
+            "price",
+            "pricing",
+            "quote",
+            "cost",
+            "estimate",
+            "rate",
+            "amount",
+            "charge",
+        ),
+        owned_state="quote request, pricing inputs, cost rule, calculated amount, quote explanation, invalid-quote blocker, and quote handoff state",
+        accepted_inputs="quote request, actor context, priced item or option, quantity or usage context, cost rule, validation context, and prior quote state",
+        produced_outputs="calculated quote, cost breakdown, quote explanation, invalid-quote blocker, pricing provenance reference, and downstream quote handoff",
+        states_or_transitions="not-requested, input-ready, calculated, invalid-input-blocked, stale, revised, accepted, expired, and handed-off",
+        outside_boundary="raw intake ownership, option ranking, payment capture, final commitment authority, immutable audit retention, and sibling product responsibilities",
+        local_proof=(
+            "Quote proof ties request input, priced option, cost rule, calculated amount, explanation, and provenance reference together.",
+            "Missing, stale, malformed, or unauthorized quote inputs block calculated output instead of creating trusted pricing state.",
+            "Input capture, option ranking, payment, and audit changes do not rewrite calculated quote state or explanation.",
+        ),
+        unique_failure="A calculated quote can use the wrong input, stale cost rule, missing quantity context, or detached explanation while still looking trusted.",
+    ),
+    ComponentAxis(
+        key="review_presentation_surface",
+        triggers=(
+            "surface",
+            "screen",
+            "view",
+            "dashboard",
+            "display",
+            "presentation",
+            "visible",
+            "shows",
+            "show",
+            "review",
+            "rationale",
+            "selected",
+        ),
+        owned_state="visible item state, display context, user action state, explanation panel, blocker message, selected item marker, and presentation handoff state",
+        accepted_inputs="upstream result, evidence reference, actor context, display request, visible blocker state, selected item command, and prior visible state",
+        produced_outputs="reviewable display, selected item acknowledgement, visible blocker message, correction request, user action event, and downstream presentation handoff",
+        states_or_transitions="empty, loading, visible, explanation-visible, action-pending, selected, corrected, blocked, confirmed, and handed-off",
+        outside_boundary="upstream calculation, source import, final decision authority, notification delivery, immutable audit retention, and sibling product responsibilities",
+        local_proof=(
+            "Presentation proof shows upstream result, evidence reference, visible explanation, blocker message, and actor action together.",
+            "Missing upstream evidence, hidden blockers, or invalid actor actions keep the display blocked instead of producing trusted downstream state.",
+            "Upstream calculation, source import, final decision, notification, and audit changes do not rewrite the visible action state.",
+        ),
+        unique_failure="A user can act on a stale display, miss a blocker, trust an unexplained result, or select an item without evidence tied to the upstream result.",
+    ),
+    ComponentAxis(
         key="case_workspace",
         triggers=(
             "case",
@@ -52,9 +180,6 @@ COMPONENT_AXES: tuple[ComponentAxis, ...] = (
             "checklist",
             "notes",
             "note",
-            "readiness",
-            "item",
-            "status",
         ),
         owned_state="case identity, workspace status, checklist progress, actor notes, readiness marker, blocked item, and workspace handoff state",
         accepted_inputs="case or item identity, actor note, checklist answer, status update, source context, blocker signal, and workspace command",
@@ -125,34 +250,135 @@ COMPONENT_AXES: tuple[ComponentAxis, ...] = (
         unique_failure="A user can see guidance based on the wrong metric, unit, timestamp, source, or baseline measurement.",
     ),
     ComponentAxis(
-        key="goal_plan_generation",
-        triggers=("goal", "goals", "plan", "planning", "generation", "generate", "guidance", "recommendation", "adjustment"),
-        owned_state="goal target, plan rule, recommendation rationale, adjustment trigger, user preference, safety constraint, and plan handoff state",
-        accepted_inputs="baseline state, actor preference, target goal, plan rule, safety constraint, prior progress signal, and generation command",
-        produced_outputs="first plan, goal target, recommendation rationale, adjustment marker, unsafe-plan blocker, and downstream plan handoff",
-        states_or_transitions="not-generated, goal-set, generated, blocked, adjusted, accepted, revised, ignored, and handed-off",
-        outside_boundary="raw measurement capture, daily habit logging, trend analytics, policy guardrail ownership, immutable audit retention, and sibling product responsibilities",
-        local_proof=(
-            "The generated plan ties goal target, baseline context, preference, safety constraint, and recommendation rationale together.",
-            "Unsafe, impossible, or missing goal context blocks plan generation instead of producing trusted guidance.",
-            "Measurement capture, habit logging, analytics, and policy guardrails do not rewrite the plan rationale.",
+        key="symptom_self_tracking",
+        triggers=(
+            "symptom",
+            "symptoms",
+            "pain",
+            "episode",
+            "intensity",
+            "body",
+            "location",
+            "relief",
+            "medication",
+            "dose",
+            "side",
+            "effect",
+            "trigger",
+            "timeline",
         ),
-        unique_failure="A generated plan can imply unsafe guidance, detach from baseline context, ignore user preference, or lose the rationale needed to review it.",
+        owned_state="symptom entry, episode timestamp, intensity rating, body location, trigger note, relief method, medication-taken record, dose-as-recorded value, side-effect note, timeline event, correction history, and safety disclaimer marker",
+        accepted_inputs="actor identity, symptom entry command, episode timestamp, intensity rating, body location, trigger note, relief method, medication-taken record, dose-as-recorded value, side-effect note, and validation context",
+        produced_outputs="validated symptom entry, timeline event, trend snapshot update, correction history, safety disclaimer marker, invalid-entry blocker, and downstream handoff",
+        states_or_transitions="draft, recorded, validated, corrected, deleted, blocked, stale, visible-on-timeline, and handed-off",
+        outside_boundary="diagnosis, prescribing, medication dosing advice, emergency-care authority, clinician sharing, immutable audit retention, and sibling product responsibilities",
+        local_proof=(
+            "Symptom entry proof keeps actor identity, timestamp, intensity, body location, trigger, relief method, and medication facts attached to the timeline event.",
+            "Invalid, missing, stale, or corrected symptom entries remain visible instead of becoming trusted trend evidence.",
+            "Safety proof keeps diagnosis, prescribing, dosing advice, emergency escalation, and clinician-sharing authority outside symptom-entry ownership.",
+        ),
+        unique_failure="A user can trust a timeline or trend built from the wrong symptom entry, missing intensity, hidden correction, unreviewed medication fact, or unsafe health claim.",
+    ),
+    ComponentAxis(
+        key="medication_relief_tracking",
+        triggers=(
+            "medication",
+            "medicine",
+            "dose",
+            "dosage",
+            "relief",
+            "reminder",
+            "reminders",
+            "missed",
+            "side",
+            "effect",
+        ),
+        owned_state="medication-taken record, dose-as-recorded value, relief attempt, reminder preference, missed-reminder marker, side-effect note, safety disclaimer marker, and medication-relief handoff state",
+        accepted_inputs="actor identity, medication fact command, dose-as-recorded value, relief attempt, reminder preference, side-effect note, validation context, and prior tracking state",
+        produced_outputs="validated medication fact, relief tracking event, reminder setting state, missed-reminder state, side-effect review marker, safety disclaimer marker, and downstream handoff",
+        states_or_transitions="not-recorded, recorded, validated, corrected, reminder-disabled, reminder-set, missed, side-effect-noted, safety-blocked, and handed-off",
+        outside_boundary="diagnosis, prescribing, medication dosing advice, emergency-care authority, clinician sharing, immutable audit retention, and sibling product responsibilities",
+        local_proof=(
+            "Medication fact proof keeps actor identity, dose-as-recorded value, relief attempt, reminder preference, side-effect note, and safety disclaimer evidence attached.",
+            "Invalid, missing, stale, or corrected medication facts remain visible instead of becoming trusted trend or summary evidence.",
+            "Safety proof records medication facts exactly as user-entered while refusing diagnosis, prescribing, dosing advice, and emergency-care authority.",
+        ),
+        unique_failure="A medication or relief record can imply unsafe advice, hide a correction, lose reminder state, or treat a user-entered dose as a recommendation.",
+    ),
+    ComponentAxis(
+        key="goal_plan_generation",
+        triggers=(
+            "goal",
+            "goals",
+            "plan",
+            "planning",
+            "generation",
+            "generate",
+            "guidance",
+            "recommendation",
+            "recommend",
+            "adjustment",
+            "adjust",
+            "target",
+            "targets",
+            "computed",
+        ),
+        owned_state="goal target, plan rule, progress snapshot, status window, adjustment rationale, safety constraint, and plan handoff state",
+        accepted_inputs="baseline state, progress snapshot, status window, actor preference, target goal, safety constraint, and adjustment request",
+        produced_outputs="plan target, recommendation result, adjustment rationale, unsafe-plan blocker, confidence marker, and downstream plan handoff",
+        states_or_transitions="not-generated, goal-set, input-ready, generated, stale-input-blocked, safety-blocked, adjusted, accepted, revised, and handed-off",
+        outside_boundary="raw measurement capture, daily progress logging, status analytics, policy guardrail ownership, immutable audit retention, and sibling product responsibilities",
+        local_proof=(
+            "Plan adjustment proof ties baseline context, progress snapshot, status window, safety constraint, recommendation result, and adjustment rationale together.",
+            "Unsafe, impossible, missing, or stale goal context blocks plan generation instead of producing trusted guidance.",
+            "Measurement capture, progress logging, analytics, and policy guardrails do not rewrite the recommendation result or rationale.",
+        ),
+        unique_failure="A generated plan or adjustment result can imply unsafe guidance, detach from baseline context, ignore progress evidence, or lose the rationale needed to review it.",
     ),
     ComponentAxis(
         key="habit_activity_tracking",
-        triggers=("habit", "habits", "activity", "tracking", "track", "log", "logging", "daily", "adherence", "checkin"),
-        owned_state="daily log entry, habit status, activity summary, check-in response, adherence signal, missed-entry blocker, and tracking handoff state",
+        triggers=("habit", "habits", "activity", "tracking", "track", "log", "logging", "daily", "progress", "checkin"),
+        owned_state="daily log entry, habit status, activity summary, check-in response, progress signal, missed-entry blocker, and tracking handoff state",
         accepted_inputs="actor identity, habit log, activity event, check-in answer, timestamp, reminder context, and prior tracking state",
-        produced_outputs="recorded daily log, adherence signal, missed-entry marker, habit summary, check-in status, and downstream tracking handoff",
+        produced_outputs="recorded daily log, progress signal, missed-entry marker, habit summary, check-in status, and downstream tracking handoff",
         states_or_transitions="not-logged, logged, partial, missed, corrected, stale, summarized, and handed-off",
-        outside_boundary="onboarding consent, measurement baseline ownership, plan generation, trend interpretation, immutable audit retention, and sibling product responsibilities",
+        outside_boundary="onboarding consent, measurement baseline ownership, plan generation, status interpretation, immutable audit retention, and sibling product responsibilities",
         local_proof=(
-            "Daily tracking records the actor, timestamp, habit entry, activity marker, check-in response, and adherence status.",
-            "Missing, partial, stale, or corrected logs stay visible instead of being counted as ordinary completed adherence.",
+            "Daily tracking records the actor, timestamp, habit entry, activity marker, check-in response, and progress status.",
+            "Missing, partial, stale, or corrected logs stay visible instead of being counted as ordinary completed progress.",
             "Plan, measurement, analytics, safety, and retention changes do not rewrite daily tracking entries.",
         ),
-        unique_failure="Adherence can look complete when logs are missing, stale, attached to the wrong actor, or detached from the check-in state.",
+        unique_failure="Progress can look complete when logs are missing, stale, attached to the wrong actor, or detached from the check-in state.",
+    ),
+    ComponentAxis(
+        key="status_analytics_explanation",
+        triggers=("analytics", "analysis", "explanation", "explanations", "status", "progress", "trend", "summary"),
+        owned_state="progress summary, status explanation, analytics window, trend signal, evidence reference, confidence marker, and explanation handoff state",
+        accepted_inputs="tracking summary, measurement snapshot, status window, evidence reference, explanation rule, actor context, and prior analytics state",
+        produced_outputs="status explanation, progress trend, analytics finding, confidence marker, stale-data blocker, and downstream explanation handoff",
+        states_or_transitions="not-calculated, input-ready, explained, low-confidence, stale-data-blocked, disputed, revised, and handed-off",
+        outside_boundary="raw tracking entry ownership, measurement capture, plan generation, policy guardrail ownership, immutable audit retention, and sibling product responsibilities",
+        local_proof=(
+            "Analytics proof links tracking summary, measurement snapshot, status window, evidence reference, status explanation, and confidence marker.",
+            "Missing, stale, low-confidence, or disputed inputs block the status explanation instead of creating trusted analytics output.",
+            "Tracking, measurement, plan, policy, and audit changes do not rewrite the analytics finding or explanation rationale.",
+        ),
+        unique_failure="A status explanation can look current while progress inputs are stale, confidence is low, evidence is missing, or the analytics rationale is detached from source state.",
+    ),
+    ComponentAxis(
+        key="communication_log",
+        triggers=("communication", "message", "messages", "notify", "notification", "response", "reply"),
+        owned_state="message history, notification request, delivery status, response marker, unresolved-response blocker, actor contact reference, and communication handoff state",
+        accepted_inputs="actor identity, message command, contact reference, message template or body, delivery context, response event, and prior communication state",
+        produced_outputs="recorded message, delivery marker, response status, unresolved-response blocker, communication summary, and downstream handoff",
+        states_or_transitions="not-started, drafted, sent, delivered, failed, response-needed, responded, stale, and handed-off",
+        outside_boundary="upstream decision ownership, provider delivery execution, source import ownership, immutable audit retention, and sibling product responsibilities",
+        local_proof=(
+            "Communication proof records actor identity, contact reference, message body or template, delivery marker, response status, and downstream handoff.",
+            "Missing contact details, failed delivery, or unresolved response requirements remain visible instead of appearing complete.",
+            "Decision, provider delivery, source import, and audit changes do not rewrite the message history or response marker.",
+        ),
+        unique_failure="A user can appear notified or responded-to when contact evidence, delivery status, message content, or response state is missing.",
     ),
     ComponentAxis(
         key="privacy_data_lifecycle",
@@ -197,7 +423,7 @@ COMPONENT_AXES: tuple[ComponentAxis, ...] = (
     ),
     ComponentAxis(
         key="intake_import",
-        triggers=("ingestion", "ingest", "import", "deduplication", "dedupe", "citation", "metadata", "intake", "case", "activity", "attribution", "normalize", "record"),
+        triggers=("ingestion", "ingest", "import", "deduplication", "dedupe", "citation", "metadata", "activity", "attribution", "normalize", "record"),
         owned_state="import batch, source identity, normalized record, duplicate match, rejected input, provenance marker, and intake handoff state",
         accepted_inputs="source payload, import file, source timestamp, actor identity, deduplication key, normalization rule, and upstream source metadata",
         produced_outputs="normalized record, duplicate or rejected-input signal, provenance reference, import summary, and downstream intake handoff",
@@ -227,7 +453,7 @@ COMPONENT_AXES: tuple[ComponentAxis, ...] = (
     ),
     ComponentAxis(
         key="signal_quality_deduplication",
-        triggers=("signal", "signals", "confidence", "deduplication", "dedupe", "duplicate", "quality", "score", "ranking"),
+        triggers=("signal", "signals", "confidence", "deduplication", "dedupe", "duplicate", "quality", "score"),
         owned_state="candidate signal identity, confidence marker, duplicate cluster, quality flag, source reference, rejected-signal blocker, and signal handoff state",
         accepted_inputs="normalized source signal, source reference, duplicate key, confidence rule, quality threshold, actor context, and prior signal state",
         produced_outputs="deduplicated signal, confidence result, duplicate marker, rejected or low-quality blocker, source-linked explanation, and downstream signal handoff",
@@ -287,15 +513,15 @@ COMPONENT_AXES: tuple[ComponentAxis, ...] = (
     ComponentAxis(
         key="action_decision",
         triggers=("maintenance", "action", "recommendation", "clearance", "resolve", "resolution"),
-        owned_state="action recommendation, decision rationale, approval or blocked outcome, required follow-up, responsible actor, and decision handoff evidence",
-        accepted_inputs="condition profile, alert evidence, actor identity, policy constraint, decision command, unresolved blocker, and prior action state",
-        produced_outputs="action decision, blocked or approved outcome, rationale note, follow-up requirement, reviewer-visible decision evidence, and release handoff",
+        owned_state="action recommendation, source evidence, decision rationale, approval or blocked outcome, required follow-up, responsible actor, and decision handoff evidence",
+        accepted_inputs="recommendation context, source evidence, actor identity, policy constraint, decision command, unresolved blocker, and prior action state",
+        produced_outputs="action decision, blocked or approved outcome, rationale note, follow-up requirement, review-visible decision evidence, and release handoff",
         states_or_transitions="draft, review-ready, blocked, approved, rejected, watched, deferred, completed, and handed-off",
         outside_boundary="raw source import, model calculation, alert triggering, notification delivery, immutable audit retention, and sibling product responsibilities",
         local_proof=(
-            "The action decision shows source condition, alert evidence, responsible actor, rationale, and final outcome.",
+            "The action decision shows source evidence, responsible actor, unresolved blockers, rationale, and final outcome.",
             "Unresolved blockers prevent an approved or cleared outcome from appearing final.",
-            "Source import, model, and alert state changes do not silently rewrite the recorded decision rationale.",
+            "Source import, evidence review, and sibling state changes do not silently rewrite the recorded decision rationale.",
         ),
         unique_failure="A decision can appear approved while blockers remain unresolved, the rationale can detach from evidence, or a follow-up requirement can disappear.",
     ),
@@ -345,7 +571,7 @@ COMPONENT_AXES: tuple[ComponentAxis, ...] = (
         accepted_inputs="upstream case context, source evidence, impact finding, recommendation draft, comparison point, actor identity, and summary command",
         produced_outputs="recommendation summary, impact finding set, source-backed comparison point, missing-evidence blocker, and downstream decision handoff",
         states_or_transitions="draft, source-linked, incomplete, ready-for-comparison, disputed, revised, accepted-for-decision, and handed-off",
-        outside_boundary="workspace intake, final vote or approval authority, immutable audit retention, feedback grouping, assignment routing, and sibling product responsibilities",
+        outside_boundary="upstream summary intake, final vote or approval authority, immutable audit retention, feedback grouping, and sibling product responsibilities",
         local_proof=(
             "The recommendation summary keeps recommendation text, impact findings, comparison points, and source references together before a decision uses it.",
             "Missing source evidence or disputed impact findings block decision readiness instead of appearing as trusted summary output.",
@@ -358,35 +584,42 @@ COMPONENT_AXES: tuple[ComponentAxis, ...] = (
         triggers=(
             "assignment",
             "assign",
-            "permission",
-            "access",
-            "role",
             "routing",
             "conflict",
-            "grant",
             "eligibility",
             "escalation",
         ),
-        owned_state="assignment reviewer eligibility, assignment routing, access grants, conflict constraints, permission state, and assignment state",
-        accepted_inputs="assignment reviewer role, availability, conflict signal, permission request, source actor, and review assignment trigger",
-        produced_outputs="assignment reviewer selection, permission decision, access grant or denial, conflict blocker, and assignment handoff",
+        owned_state="assignee eligibility, assignment routing, access grants, conflict constraints, permission state, and assignment state",
+        accepted_inputs="assignee role, availability, conflict signal, permission request, source actor, and assignment trigger",
+        produced_outputs="assignee selection, permission decision, access grant or denial, conflict blocker, and assignment handoff",
         states_or_transitions="unassigned, eligible, assigned, access-granted, access-denied, conflict-blocked, and reassigned",
         outside_boundary="criteria definition, form layout, scoring rubric, score calculation, immutable audit storage, comparison dashboard, and sibling product responsibilities",
         local_proof=(
-            "The right reviewer is assigned, permission limits are applied, and conflicts block assignment.",
-            "A reviewer without permission cannot access or mutate the assigned review.",
+            "The right assignee is selected, permission limits are applied, and conflicts block assignment.",
+            "An actor without permission cannot access or mutate the assigned work.",
             "Missing eligibility creates an assignment blocker instead of a valid assignment.",
         ),
-        unique_failure="The wrong reviewer can receive access, a conflict can be hidden, or an unauthorized assignment can look valid.",
+        unique_failure="The wrong assignee can receive access, a conflict can be hidden, or an unauthorized assignment can look valid.",
     ),
     ComponentAxis(
         key="access_audit",
-        triggers=("access", "permission", "role", "visibility", "rbac", "grant", "redaction"),
+        triggers=(
+            "access",
+            "permission",
+            "role",
+            "visibility",
+            "rbac",
+            "grant",
+            "redaction",
+            "subscription",
+            "entitlement",
+            "paid",
+        ),
         owned_state="role policy, visibility rule, permission grant, protected access decision, audit event, version reference, and history retention state",
         accepted_inputs="actor identity, role attribute, visibility rule, access request, protected state reference, state-change event, timestamp, and retention rule",
         produced_outputs="access grant or denial, protected visibility decision, audit entry, version snapshot, retention decision, and replay evidence",
         states_or_transitions="requested, granted, denied, redacted, recorded, versioned, retained, expired, restored, and audit-blocked",
-        outside_boundary="submission intake, actor selection, score ownership, read-model ranking, notification delivery, final decision authority, and sibling product responsibilities",
+        outside_boundary="domain workflow intake, sibling state derivation, recommendation logic, notification delivery, final release approval, and sibling product responsibilities",
         local_proof=(
             "Only authorized actors can view or mutate protected state, and every access decision is replayable.",
             "A denied or redacted view blocks protected data exposure while preserving an audit entry.",
@@ -427,9 +660,9 @@ COMPONENT_AXES: tuple[ComponentAxis, ...] = (
     ComponentAxis(
         key="evidence_review",
         triggers=("evidence", "review", "trace", "inspect", "inspection", "source", "readiness"),
-        owned_state="review evidence package, source references, inspection notes, evidence completeness, reviewer-visible blockers, readiness evidence, and review handoff state",
+        owned_state="review evidence package, source references, inspection notes, evidence completeness, review-visible blockers, readiness evidence, and review handoff state",
         accepted_inputs="source evidence, inspection notes, derived signals, actor identity, completeness rule, blocker state, and review command",
-        produced_outputs="review-ready evidence package, missing-evidence blocker, source trace, readiness finding, reviewer-visible explanation, and downstream decision handoff",
+        produced_outputs="review-ready evidence package, missing-evidence blocker, source trace, readiness finding, review-visible explanation, and downstream decision handoff",
         states_or_transitions="not-reviewed, evidence-linked, incomplete, blocked, review-ready, disputed, accepted-for-decision, and handed-off",
         outside_boundary="final decision authority, action recommendation ownership, assignment routing, permission grants, immutable audit retention, and sibling product responsibilities",
         local_proof=(
@@ -440,11 +673,26 @@ COMPONENT_AXES: tuple[ComponentAxis, ...] = (
         unique_failure="A downstream decision can trust incomplete evidence, a source reference can detach from the review, or a disputed finding can look ready.",
     ),
     ComponentAxis(
+        key="risk_review_workspace",
+        triggers=("risk", "review", "readiness", "blocker", "blocked", "flag", "flags", "note", "notes", "workspace", "assessment"),
+        owned_state="risk review record, risk flags, reviewer notes, readiness blockers, review status, decision rationale, and review handoff state",
+        accepted_inputs="item or request identity, source evidence, risk signal, reviewer note, actor identity, readiness rule, and prior review state",
+        produced_outputs="risk review finding, readiness blocker, review-visible rationale, approval or blocked recommendation, and downstream review handoff",
+        states_or_transitions="not-reviewed, in-review, risk-flagged, blocked, rationale-recorded, ready, returned, and handed-off",
+        outside_boundary="source intake, checklist rule ownership, final decision authority, notification delivery, immutable audit retention, and sibling product responsibilities",
+        local_proof=(
+            "Risk review proof shows source evidence, risk flags, reviewer notes, readiness blockers, and rationale before downstream approval uses it.",
+            "Missing rationale, unresolved risk flags, or stale source evidence block readiness instead of producing a trusted review handoff.",
+            "Checklist rules, source intake, notification, final decision, and audit changes do not rewrite the risk review record.",
+        ),
+        unique_failure="A product can appear ready while risk flags, reviewer rationale, source evidence, or readiness blockers are missing or assigned to the wrong boundary.",
+    ),
+    ComponentAxis(
         key="decision_review",
         triggers=("decision", "workflow", "editorial", "ledger", "approval", "approve", "package", "blocker", "note", "readiness", "final", "outcome", "compare", "comparison"),
         owned_state="decision evidence package, reviewer notes, unresolved blockers, final approval state, decision readiness, and decision rationale",
         accepted_inputs="assembled evidence, reviewer note, blocker state, actor identity, readiness signal, approval command, and prior decision state",
-        produced_outputs="decision package, approval or blocked outcome, reviewer-visible rationale, final decision state, and release handoff",
+        produced_outputs="decision package, approval or blocked outcome, review-visible rationale, final decision state, and release handoff",
         states_or_transitions="draft, review-ready, blocked, returned, approved, rejected, finalized, and handed-off",
         outside_boundary="criteria definition, work routing, permission grants, revision intake, raw evidence extraction, score ownership, immutable audit storage, and sibling product responsibilities",
         local_proof=(
@@ -650,17 +898,59 @@ def component_axis_key_for_label(label_text: str) -> str:
     """Return the strongest generic ownership axis implied by a component label."""
 
     text = _normalize_axis_text(label_text)
+    check_text = re.sub(r"\bcheck\s+in\b", "", text)
     if re.search(r"\b(criteria|criterion|protocol|rule|eligibility policy|inclusion|exclusion)\b", text):
         return "definition_rules"
+    if re.search(r"\b(checklists?|checks?)\b", check_text) or (
+        re.search(r"\bledger\b", check_text)
+        and re.search(r"\b(rule|reference|pass|block|outcome|compliance|check)\b", check_text)
+    ):
+        return "check_rule_ledger"
+    if re.search(r"\brisk\b", text) and re.search(r"\b(review|assessment|workspace|readiness|flags?)\b", text):
+        return "risk_review_workspace"
     if re.search(r"\b(onboarding|consent|signup|registration)\b", text):
         return "onboarding_consent"
     if re.search(r"\b(privacy|export|deletion|delete|erase|protected data)\b", text):
         return "privacy_data_lifecycle"
-    if re.search(r"\b(risk|disclaimer|compliance|policy|guardrails?|safety|medical|pregnancy|underage)\b", text):
+    if re.search(r"\b(risk|disclaimer|compliance|policy|guardrails?|safety)\b", text):
         return "policy_risk_guardrails"
+    if re.search(r"\b(submission|submit|file upload|upload)\b", text):
+        return "submission_versioning"
+    if re.search(r"\b(evidence|checklist|photos?|findings?|diagnostics?|inspection)\b", text) and re.search(
+        r"\b(capture|review|trace|source|readiness|complete|completion)\b",
+        text,
+    ):
+        return "evidence_review"
+    if re.search(r"\b(medication|medicine|dose|dosage|relief|reminders?|missed reminder|side effect)\b", text) and not re.search(
+        r"\b(?:pain|symptom)\s+entry\b|\bentry\s+capture\b",
+        text,
+    ):
+        return "medication_relief_tracking"
+    if re.search(r"\b(symptoms?|pain|episode|intensity|body location|relief|medication|dose|side effect|trigger|timeline)\b", text):
+        return "symptom_self_tracking"
+    if re.search(r"\b(intake|capture|captures|form|answers?|request|entry|input)\b", text) and not re.search(
+        r"\b(import|ingestion|ingest|deduplication|dedupe|duplicate|normalize|metadata|measurement|metric|reading|baseline|observation|evidence|checklist|photos?|findings?|scoring|score|rubric|assessment)\b",
+        text,
+    ):
+        return "request_intake_capture"
     if re.search(r"\b(measurement|measurements?|metrics?|readings?|capture|baseline|observation|value)\b", text):
         return "measurement_capture"
-    if re.search(r"\b(goals?|plan|planning|generation|guidance)\b", text):
+    if re.search(r"\b(price|pricing|quote|cost|estimate|rate|amount|charge)\b", text):
+        return "quote_calculation"
+    if re.search(r"\b(handoff|handoffs|provider|recipient|endpoint|fulfillment|delivery|dispatch)\b", text):
+        return "external_handoff"
+    if re.search(r"\b(surface|screen|presentation|portal|ui|client)\b", text) and re.search(
+        r"\b(comparison|compare|ranking|ranked|select|selected|selection|options?|choices?|alternatives?|rationale|review)\b",
+        text,
+    ):
+        return "review_presentation_surface"
+    if re.search(r"\b(dashboard|display|readiness view)\b", text):
+        return "dashboard_comparison"
+    if re.search(r"\b(comparison|compare|ranking|rank|select|selection|order|ordered|alternatives?|options?|choices?)\b", text):
+        return "option_evaluation_ranking"
+    if re.search(r"\b(summary|summaries|report|package|findings?|analysis|supporting)\b", text):
+        return "recommendation_impact_summary"
+    if re.search(r"\b(goals?|plan|planning|guidance|targets?|adjustment|computed)\b", text):
         return "goal_plan_generation"
     if re.search(r"\b(access|permission|role|rbac|grant|visibility|redaction)\b", text) and re.search(
         r"\b(audit|history|version|retention|replay)\b", text
@@ -670,13 +960,27 @@ def component_axis_key_for_label(label_text: str) -> str:
         r"\b(privacy|export|deletion|delete|erase|protected data)\b", text
     ):
         return "audit_retention"
-    if re.search(r"\b(submission|submit|file upload|upload)\b", text):
-        return "submission_versioning"
     if re.search(r"\b(assignment|assign|permission|access|conflict|routing|eligibility)\b", text):
         return "assignment_permission"
+    if (
+        re.search(r"\b(communication|message|messages|notify|notification)\b", text)
+        or (
+            re.search(r"\b(response|reply)\b", text)
+            and re.search(r"\b(contact|message|communication|notify|notification)\b", text)
+        )
+    ) and not re.search(
+        r"\b(deadline|reminder|due|overdue|escalation)\b",
+        text,
+    ):
+        return "communication_log"
     if re.search(r"\b(notification|notify|deadline|reminder|due|overdue|email|escalation)\b", text):
         return "notification_deadline"
-    if re.search(r"\b(habits?|activity|logs?|logging|daily|adherence|check[- ]?in)\b", text):
+    if re.search(r"\b(analytics|analysis|explanations?|trend|summary)\b", text) and re.search(
+        r"\b(progress|status|readiness|state)\b",
+        text,
+    ):
+        return "status_analytics_explanation"
+    if re.search(r"\b(habits?|activity|logs?|logging|daily|progress|check[- ]?in)\b", text):
         return "habit_activity_tracking"
     if re.search(r"\b(admin|inspection|disputed|readiness|evidence review|review tools)\b", text) and re.search(
         r"\b(review|evidence|source|signal|quality|disputed|inspection)\b", text
@@ -687,7 +991,7 @@ def component_axis_key_for_label(label_text: str) -> str:
         and not re.search(r"\b(intake|ingestion|ingest|import|source attribution|metadata import)\b", text)
     ):
         return "signal_quality_deduplication"
-    if re.search(r"\b(intake|ingestion|ingest|import|deduplication|dedupe|normalize)\b", text):
+    if re.search(r"\b(ingestion|ingest|import|deduplication|dedupe|normalize)\b", text):
         return "intake_import"
     if re.search(r"\b(form|scoring|score|template|rubric|assessment)\b", text):
         return "form_scoring"
@@ -701,8 +1005,6 @@ def component_axis_key_for_label(label_text: str) -> str:
         return "feedback_grouping"
     if re.search(r"\b(journal|decision note|decision journal|rationale journal)\b", text):
         return "user_decision_journal"
-    if re.search(r"\b(dashboard|comparison|compare|display|readiness view)\b", text):
-        return "dashboard_comparison"
     if re.search(r"\b(decision|approval|approve|final outcome|outcome|blocker)\b", text):
         return "decision_review"
     if re.search(r"\b(follow list|watchlist|watch list|saved list|selected list|bookmark)\b", text):

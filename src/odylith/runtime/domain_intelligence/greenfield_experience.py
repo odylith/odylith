@@ -180,7 +180,6 @@ def verification_commands(start_workstream_id: str) -> list[str]:
         f"./.odylith/bin/odylith context --repo-root . {start_id}",
         "./.odylith/bin/odylith validate plan-workstream-binding --repo-root .",
         "./.odylith/bin/odylith validate plan-traceability --repo-root .",
-        "run the repo-native test, lint, typecheck, build, and browser proof named by the first technical plan",
         "./.odylith/bin/odylith sync --repo-root . --impact-mode selective",
     ]
 

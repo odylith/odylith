@@ -169,6 +169,61 @@ Reject: stop without writing records.
     assert len(intent["internal_systems"]) == 3
 
 
+def test_confirmed_intent_completion_preserves_explicit_actor_and_system_rows() -> None:
+    intent = parse_confirmed_intent_text(
+        """Product Intent Confirmation
+
+Cost Option Planner
+
+Product story
+A planner needs one narrow workspace to capture one request, compare a small set of options, show the selected option with ordered alternatives, and keep proof that the comparison used the accepted criteria.
+
+State object
+A planning request tracks actor identity, request answers, candidate options, comparison criteria, ranked options, selected option, ordered alternatives, explanation, blockers, and proof history.
+
+First complete path
+The planner enters one request, adds three candidate options, compares them against the accepted criteria, reviews the selected option and ordered alternatives, and confirms the explanation before the result is handed off.
+
+Human actors
+- Planner: enters the request, reviews the selected option, and confirms the explanation.
+
+External systems
+- Optional external option source is deferred until manual option entry works.
+
+Internal product systems
+- Option Ranking Engine: compares candidate options, applies accepted criteria, selects one option, orders alternatives, and records the explanation.
+- Result Handoff Log: records the selected option, ordered alternatives, explanation approval, blocker state, and proof history.
+
+Critical assumptions
+- Manual option entry is enough for the first release.
+
+Ambiguities
+- Whether the first comparison uses one criterion or multiple weighted criteria.
+
+Proof boundary
+Release 0.0.1 succeeds when one planner can enter a request, compare three options, see a selected option with ordered alternatives, and inspect the explanation without claiming external option-source integration.
+""",
+        prompt="Draft a product-first greenfield proposal for a cost option planner.",
+    )
+
+    encoded = json.dumps(intent)
+    assert intent["human_actors"] == [
+        "Planner: enters the request, reviews the selected option, and confirms the explanation"
+    ]
+    assert len(intent["internal_systems"]) == 2
+    assert str(intent["internal_systems"][0]).startswith(
+        "Option Ranking Engine — compares candidate options, applies accepted criteria"
+    )
+    assert str(intent["internal_systems"][1]).startswith(
+        "Result Handoff Log — records the selected option, ordered alternatives"
+    )
+    assert "operator" not in encoded.casefold()
+    assert "reviewer" not in encoded.casefold()
+    assert "dashboard" not in encoded.casefold()
+    assert "case identity" not in encoded.casefold()
+    assert "workspace status" not in encoded.casefold()
+
+
 def test_confirmed_intent_parser_accepts_domain_specific_evidence_review_surface(tmp_path: Path) -> None:
     intent = parse_confirmed_intent_text(
         """Equipment Reliability Review Workspace — Product Intent Confirmation
@@ -514,15 +569,19 @@ Release 0.0.1 succeeds when reviewer assignment respects eligibility and permiss
         "access grants",
         "conflict constraints",
         "form layout",
-        "refuses criteria definition",
+        "criteria definition",
     ):
         assert phrase.casefold() in assignment_spec.casefold()
-    for phrase in ("review fields", "scoring rubric", "score outputs", "refuses reviewer assignment"):
+    assert "refused domain responsibilities:" in assignment_spec.casefold()
+    for phrase in ("review fields", "scoring rubric", "score outputs"):
         assert phrase.casefold() in form_spec.casefold()
-    for phrase in ("current decision summary", "comparison display", "review readiness", "refuses immutable audit storage"):
+    assert "refused domain responsibilities:" in form_spec.casefold()
+    for phrase in ("current decision summary", "comparison display", "review readiness", "immutable audit storage"):
         assert phrase.casefold() in dashboard_spec.casefold()
-    for phrase in ("immutable event history", "version chain", "retention policy state", "refuses dashboard ranking"):
+    assert "refused domain responsibilities:" in dashboard_spec.casefold()
+    for phrase in ("immutable event history", "version chain", "retention policy state", "dashboard ranking"):
         assert phrase.casefold() in audit_spec.casefold()
+    assert "refused domain responsibilities:" in audit_spec.casefold()
 
 
 def test_confirmed_create_preserves_title_actors_and_domain_local_artifacts(tmp_path: Path, monkeypatch) -> None:
@@ -774,10 +833,12 @@ Success means the exported package explains which records were included or exclu
     assignment_spec = spec_for("Review Assignment and Conflict Resolution")
     assert "criteria definitions" in criteria_spec.casefold()
     assert "protocol version" in criteria_spec.casefold()
-    assert "refuses assignment routing" in criteria_spec.casefold()
+    assert "refused domain responsibilities:" in criteria_spec.casefold()
+    assert "assignment routing" in criteria_spec.casefold()
     assert "assignment routing" in assignment_spec.casefold()
     assert "access grants" in assignment_spec.casefold()
-    assert "refuses criteria definition" in assignment_spec.casefold()
+    assert "refused domain responsibilities:" in assignment_spec.casefold()
+    assert "criteria definition" in assignment_spec.casefold()
 
     source_text = "\n".join(
         path.read_text(encoding="utf-8", errors="ignore")

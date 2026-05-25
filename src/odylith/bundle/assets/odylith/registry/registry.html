@@ -103,7 +103,7 @@
   margin: 0 0 8px;
   font-size: 31px;
   line-height: 1.08;
-  letter-spacing: -0.01em;
+  letter-spacing: 0em;
   font-weight: 700;
 }
 
@@ -214,7 +214,7 @@
   color: var(--ink, #0b1324);
   font-size: 23px;
   line-height: 1;
-  letter-spacing: -0.01em;
+  letter-spacing: 0em;
   font-weight: 700; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
     .kpi-card.warn .kpi-label,
@@ -614,11 +614,11 @@
   color: var(--ink, #0b1324);
   font-size: 24px;
   line-height: 1.15;
-  letter-spacing: -0.02em;
+  letter-spacing: 0em;
   font-weight: 700;
 }
 
-.component-subtitle-unused {
+.component-full-name {
   margin: 0;
   color: var(--ink-muted, #64748b);
   font-size: 13px;
@@ -990,7 +990,7 @@
   color: var(--ink, #0b1324);
   font-size: 23px;
   line-height: 1;
-  letter-spacing: -0.01em;
+  letter-spacing: 0em;
   font-weight: 700; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
@@ -1248,6 +1248,67 @@
     .forensic-artifact-disclosure[open] .forensic-artifact-disclosure-panel {
       display: flex;
     }
+    .component-btn {
+  min-height: 104px;
+  align-content: start;
+}
+
+.component-card-title,
+.component-meta {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.summary-row {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.summary-artifact-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.artifact-compact {
+  max-width: min(100%, 420px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: normal;
+}
+
+.component-identity {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.component-name {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.component-full-name {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow-wrap: anywhere;
+}
+
+.component-id-line {
+  color: #48617f;
+  font-size: 12px;
+  -webkit-line-clamp: 1;
+}
     .diagnostics {
       border: 1px solid var(--warn-line);
       border-radius: 10px;
@@ -1578,7 +1639,7 @@
   }
 })();
 </script>
-  <script id="registryData" src="registry-payload.v1.js?v=f31b513e5f35"></script>
-  <script src="registry-app.v1.js?v=f31b513e5f35"></script>
+  <script id="registryData" src="registry-payload.v1.js?v=daa529c3d834"></script>
+  <script src="registry-app.v1.js?v=daa529c3d834"></script>
 </body>
 </html>

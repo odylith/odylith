@@ -316,7 +316,7 @@ def test_visible_intervention_detects_only_assist_visibility_feedback(tmp_path) 
     _assert_user_facing_visible_voice(rendered)
 
 
-def test_visible_intervention_can_record_manual_visible_fallback(tmp_path) -> None:
+def test_visible_intervention_records_unconfirmed_fallback_by_default(tmp_path) -> None:
     rendered = host_visible_intervention.render_visible_intervention(
         repo_root=tmp_path,
         host_family="codex",
@@ -334,12 +334,36 @@ def test_visible_intervention_can_record_manual_visible_fallback(tmp_path) -> No
         "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
     )
     assert "**Odylith Assist:**" not in rendered
-    assert events[-1]["delivery_status"] == "manual_visible"
-    assert events[-1]["delivery_channel"] == "manual_visible_command"
+    assert events[-1]["delivery_status"] == "assistant_render_required"
+    assert events[-1]["delivery_channel"] == "assistant_visible_fallback"
     assert events[-1]["host_family"] == "codex"
     assert events[-1]["session_id"] == "visible-session"
-    assert any(row.get("metadata", {}).get("manual_visible") is True for row in events)
+    assert all(row.get("metadata", {}).get("manual_visible") is not True for row in events)
     _assert_user_facing_visible_voice(rendered)
+
+
+def test_visible_intervention_confirm_chat_records_manual_visible_fallback(tmp_path) -> None:
+    rendered = host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
+        host_family="codex",
+        phase="prompt_submit",
+        prompt="I do not think it is working",
+        session_id="visible-session-confirmed",
+        record_delivery=True,
+        confirm_chat_delivery=True,
+    )
+
+    events = host_visible_intervention.stream_state.load_recent_intervention_events(
+        repo_root=tmp_path,
+        session_id="visible-session-confirmed",
+    )
+
+    assert rendered.startswith(
+        "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
+    )
+    assert events[0]["delivery_status"] == "manual_visible"
+    assert events[0]["delivery_channel"] == "manual_visible_command"
+    assert events[-1]["delivery_status"] == "assistant_chat_confirmed"
 
 
 def test_chat_confirmation_can_promote_manual_visible_fallback_once(tmp_path) -> None:

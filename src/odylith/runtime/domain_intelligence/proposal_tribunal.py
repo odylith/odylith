@@ -8,10 +8,12 @@ not form a coherent workstream/component/diagram/program/release topology.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import re
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence.artifact_enrichment import tribunal_actor_projection
+from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_text import collect_text_values
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence import greenfield_programs
@@ -150,6 +152,7 @@ def run_greenfield_tribunal(
     visible_actors = tribunal_actor_projection(proposal)
 
     issues.extend(project_intelligence_binding_issues(proposal))
+    issues.extend(f"quality gate: {issue}" for issue in greenfield_quality_issues(proposal))
     dimensions["product_story"] = (
         "accepted product story, first path, release boundary, and proof boundary stay connected"
     )
@@ -185,6 +188,15 @@ def run_greenfield_tribunal(
         issues=issues,
     )
     dimensions["architecture_views"] = "diagrams carry explicit work item and component traceability hints"
+
+    _check_confirmed_artifact_substance(
+        proposal=proposal,
+        backlog=backlog,
+        components=components,
+        diagrams=diagrams,
+        issues=issues,
+    )
+    dimensions["artifact_substance"] = "confirmed Radar, Registry, and Atlas records carry product-specific substance"
 
     _check_domain_security_posture(proposal=proposal, issues=issues)
     dimensions["domain_security"] = "explicit domain risk, security, compliance, policy, and abuse posture present"
@@ -350,6 +362,220 @@ def _check_diagram_traceability(
             issues.append(f"diagram `{slug}` components do not match planned components")
 
 
+def _check_confirmed_artifact_substance(
+    *,
+    proposal: Mapping[str, Any],
+    backlog: Sequence[Mapping[str, Any]],
+    components: Sequence[Mapping[str, Any]],
+    diagrams: Sequence[Mapping[str, Any]],
+    issues: list[str],
+) -> None:
+    if not _is_confirmed_generated_proposal(proposal):
+        return
+    project_terms = _project_terms(proposal)
+    component_label_terms = _term_set(" ".join(str(row.get("label", "")) for row in components))
+    required_terms = project_terms | component_label_terms
+    _check_confirmed_radar_substance(backlog=backlog, required_terms=required_terms, issues=issues)
+    _check_confirmed_registry_substance(components=components, issues=issues)
+    _check_confirmed_atlas_substance(
+        proposal=proposal,
+        diagrams=diagrams,
+        required_terms=required_terms,
+        issues=issues,
+    )
+
+
+def _is_confirmed_generated_proposal(proposal: Mapping[str, Any]) -> bool:
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    return str(intent.get("reasoning_mode", "")).strip() == "odylith_confirmed_governed_proposal"
+
+
+def _check_confirmed_radar_substance(
+    *,
+    backlog: Sequence[Mapping[str, Any]],
+    required_terms: set[str],
+    issues: list[str],
+) -> None:
+    for index, row in enumerate(backlog, start=1):
+        title = str(row.get("title", f"row {index}")).strip() or f"row {index}"
+        body = _joined_fields(
+            row,
+            "problem",
+            "customer",
+            "opportunity",
+            "product_view",
+            "recommended_first_slice",
+            "success_metrics",
+            "dependencies",
+            "interfaces",
+            "validation",
+        )
+        local_terms = _term_set(body)
+        if index > 1 and len(local_terms) < 14:
+            issues.append(f"confirmed Radar workstream `{title}` is too thin to guide implementation")
+        if index > 1 and required_terms and len(local_terms & required_terms) < 4:
+            issues.append(f"confirmed Radar workstream `{title}` is not anchored to enough project-specific nouns")
+        if _repeated_scaffold_count(body) >= 6:
+            issues.append(f"confirmed Radar workstream `{title}` repeats scaffold language instead of adding new product detail")
+        metrics = [text for text in text_values(row.get("success_metrics")) if str(text).strip()]
+        if index > 1 and len({_normalized_text(metric) for metric in metrics}) < min(2, len(metrics)):
+            issues.append(f"confirmed Radar workstream `{title}` repeats success metrics")
+
+
+def _check_confirmed_registry_substance(
+    *,
+    components: Sequence[Mapping[str, Any]],
+    issues: list[str],
+) -> None:
+    for index, row in enumerate(components, start=1):
+        label = str(row.get("label", "") or row.get("component_id", "") or f"component {index}").strip()
+        contract = row.get("component_contract")
+        if not isinstance(contract, Mapping):
+            issues.append(f"confirmed Registry component `{label}` is missing component_contract")
+            continue
+        contract_text = _joined_fields(
+            contract,
+            "owned_state",
+            "accepted_inputs",
+            "produced_outputs",
+            "states_or_transitions",
+            "outside_boundary",
+            "local_proof",
+            "upstream_truth",
+            "downstream_consumers",
+            "unique_failure",
+        )
+        if len(_term_set(contract_text)) < 12:
+            issues.append(f"confirmed Registry component `{label}` contract is too thin to guide implementation")
+        proofs = [text for text in text_values(contract.get("local_proof")) if str(text).strip()]
+        if len(proofs) < 3:
+            issues.append(f"confirmed Registry component `{label}` must carry at least three local proof obligations")
+        if len({_normalized_text(proof) for proof in proofs}) != len(proofs):
+            issues.append(f"confirmed Registry component `{label}` repeats local proof obligations")
+        label_text = label.casefold()
+        owned_text = " ".join(text_values(contract.get("owned_state"))).casefold()
+        if re.search(r"\b(surface|screen|view|dashboard|display|presentation|portal|ui|client)\b", label_text) and re.search(
+            r"\b(ranking rule|calculation rule|cost rule|model rule|source truth)\b",
+            owned_text,
+        ):
+            issues.append(
+                f"confirmed Registry component `{label}` is a presentation boundary but owns computation or source-truth state"
+            )
+        contract_lower = contract_text.casefold()
+        ownership_context = _joined_fields(
+            contract,
+            "owned_state",
+            "accepted_inputs",
+            "produced_outputs",
+            "states_or_transitions",
+            "outside_boundary",
+            "upstream_truth",
+            "downstream_consumers",
+            "unique_failure",
+        ).casefold()
+        label_and_contract = f"{label_text} {ownership_context}"
+        if "privacy lifecycle proof" in contract_lower and not re.search(
+            r"\b(privacy|export|deletion|delete|erase|protected-data|protected data|consent)\b",
+            label_and_contract,
+        ):
+            issues.append(
+                f"confirmed Registry component `{label}` uses privacy lifecycle proof for a non-privacy ownership boundary"
+            )
+        non_question_context = re.sub(r"\bquestion\s+list\b", "", label_and_contract)
+        if "question list" in contract_lower and not re.search(
+            r"\b(question|questions|issue|issues|response|answer|follow-up|followup)\b",
+            non_question_context,
+        ):
+            issues.append(
+                f"confirmed Registry component `{label}` imports question-tracking state without a question or response boundary"
+            )
+
+
+def _check_confirmed_atlas_substance(
+    *,
+    proposal: Mapping[str, Any],
+    diagrams: Sequence[Mapping[str, Any]],
+    required_terms: set[str],
+    issues: list[str],
+) -> None:
+    banned_nodes = (
+        "Accepted<br/>user action",
+        "Reviewer can trace<br/>claim to source",
+        "Reviewer decision<br/>accept, revise, or block",
+        "Release claim<br/>can move forward",
+    )
+    for index, row in enumerate(diagrams, start=1):
+        title = str(row.get("title", "") or row.get("slug", "") or f"diagram {index}").strip()
+        text = _joined_fields(row, "summary", "read_guide", "mermaid_source")
+        terms = _term_set(text)
+        if required_terms and len(terms & required_terms) < 4:
+            issues.append(f"confirmed Atlas diagram `{title}` is not anchored to enough project-specific nouns")
+        source = str(row.get("mermaid_source", "") or "")
+        if any(node in source for node in banned_nodes):
+            issues.append(f"confirmed Atlas diagram `{title}` still contains generic scaffold nodes")
+        if source.lstrip().startswith("sequenceDiagram") and source.count("->>") < 3:
+            issues.append(f"confirmed Atlas sequence diagram `{title}` collapses the first path into too few events")
+        if source.lstrip().startswith("sequenceDiagram"):
+            _check_sequence_preserves_first_path_tail(
+                proposal=proposal,
+                title=title,
+                source=source,
+                issues=issues,
+            )
+            _check_sequence_starts_at_first_boundary(
+                proposal=proposal,
+                title=title,
+                source=source,
+                issues=issues,
+            )
+
+
+def _check_sequence_preserves_first_path_tail(
+    *,
+    proposal: Mapping[str, Any],
+    title: str,
+    source: str,
+    issues: list[str],
+) -> None:
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    first_path = " ".join(text_values(intent.get("first_path")))
+    if not first_path:
+        return
+    final_clause = re.split(r",\s+and\s+|;\s+and\s+|[.!?]\s+", first_path.strip(" ."))[-1]
+    tail = final_clause if len(_term_set(final_clause)) >= 2 else " ".join(first_path.split()[max(0, len(first_path.split()) - 18) :])
+    tail_terms = _term_set(tail)
+    if not tail_terms:
+        return
+    source_terms = _term_set(source)
+    required_tail_hits = min(2, len(tail_terms))
+    if len(tail_terms & source_terms) < required_tail_hits:
+        issues.append(f"confirmed Atlas sequence diagram `{title}` omits the tail of the accepted first path")
+
+
+def _check_sequence_starts_at_first_boundary(
+    *,
+    proposal: Mapping[str, Any],
+    title: str,
+    source: str,
+    issues: list[str],
+) -> None:
+    components = _mapping_rows(proposal.get("components"))
+    if not components:
+        return
+    first_component = str(components[0].get("label", "") or components[0].get("component_id", "")).casefold()
+    if not re.search(r"\b(intake|import|capture|request|signal|submission|adapter|entry)\b", first_component):
+        return
+    first_arrow = re.search(r"\bA\d+->>C(?P<target>\d+):\s*(?P<message>.+)", source)
+    if not first_arrow:
+        return
+    message = first_arrow.group("message").casefold()
+    if first_arrow.group("target") != "1" and re.search(
+        r"\b(open|opens|import|imports|enter|enters|submit|submits|request|requests|capture|captures)\b",
+        message,
+    ):
+        issues.append(f"confirmed Atlas sequence diagram `{title}` routes the first material path action away from the first boundary")
+
+
 def _check_domain_security_posture(*, proposal: Mapping[str, Any], issues: list[str]) -> None:
     explicit_posture = collect_text_values(proposal, _SECURITY_POSTURE_FIELDS)
     if not explicit_posture:
@@ -433,6 +659,96 @@ def _has_any_text(row: Mapping[str, Any], keys: Sequence[str]) -> bool:
 
 def _contains_any(text: str, tokens: Sequence[str]) -> bool:
     return any(token in text for token in tokens)
+
+
+def _project_terms(proposal: Mapping[str, Any]) -> set[str]:
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    project = proposal.get("project_intelligence") if isinstance(proposal.get("project_intelligence"), Mapping) else {}
+    text = " ".join(
+        [
+            *text_values(intent.get("title")),
+            *text_values(intent.get("product_story")),
+            *text_values(intent.get("first_path")),
+            *text_values(intent.get("proof_boundary")),
+            *text_values(project.get("intent")),
+            *text_values(project.get("ontology")),
+            *text_values(project.get("evidence")),
+        ]
+    )
+    return _term_set(text)
+
+
+def _joined_fields(row: Mapping[str, Any], *keys: str) -> str:
+    return " ".join(text for key in keys for text in text_values(row.get(key)) if str(text).strip())
+
+
+def _term_set(value: str) -> set[str]:
+    stop = {
+        "accepted",
+        "actor",
+        "after",
+        "before",
+        "blocked",
+        "boundary",
+        "candidate",
+        "component",
+        "context",
+        "decision",
+        "downstream",
+        "evidence",
+        "first",
+        "greenfield",
+        "handoff",
+        "input",
+        "local",
+        "output",
+        "owned",
+        "owner",
+        "path",
+        "product",
+        "proof",
+        "record",
+        "release",
+        "review",
+        "reviewer",
+        "source",
+        "state",
+        "system",
+        "trusted",
+        "upstream",
+        "validation",
+        "visible",
+        "workstream",
+    }
+    terms: set[str] = set()
+    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", str(value or "").casefold()):
+        token = raw.strip("-_")
+        if token.endswith("ies") and len(token) > 5:
+            token = f"{token[:-3]}y"
+        elif token.endswith("ing") and len(token) > 6:
+            token = token[:-3]
+        elif token.endswith("s") and len(token) > 4 and not token.endswith("ss"):
+            token = token[:-1]
+        if len(token) >= 4 and token not in stop:
+            terms.add(token)
+    return terms
+
+
+def _repeated_scaffold_count(text: str) -> int:
+    lowered = str(text or "").casefold()
+    return sum(
+        lowered.count(phrase)
+        for phrase in (
+            "state object",
+            "evidence record",
+            "reviewer decision",
+            "sibling responsibilities",
+        )
+    )
+
+
+def _normalized_text(value: str) -> str:
+    return re.sub(r"\s+", " ", str(value or "").casefold()).strip(" .")
 
 
 def _slug_values(values: Sequence[str]) -> set[str]:

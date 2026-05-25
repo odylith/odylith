@@ -8,7 +8,8 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import accepted_actor_label
-from odylith.runtime.domain_intelligence.greenfield_component_axes import component_axis_for_label
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import material_first_path_action
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -85,6 +86,10 @@ def complete_confirmed_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
     """Fill reviewable fields that can be inferred from accepted intent text."""
 
     result = copy.deepcopy(dict(intent))
+    title_normalization = normalize_project_title(_title(result), fallback="Greenfield Project")
+    if title_normalization.changed:
+        result["source_title"] = result.get("source_title") or title_normalization.raw_title
+        result["title"] = title_normalization.canonical_title
     title = _title(result)
     if not _completion_seed_is_sufficient(result):
         return result
@@ -119,9 +124,14 @@ def _complete_core_fields(intent: dict[str, Any], *, title: str) -> None:
 
     if _word_count(story) < CORE_FIELD_MIN_WORDS["product_story"]:
         actor_text = _join(actors[:2]) or f"{_focus_label(title)} users"
+        story_head = _short(
+            story,
+            fallback=f"{title} helps {actor_text} complete the accepted first path",
+            limit=220,
+        )
         intent["product_story"] = _sentence(
-            f"{title} helps {actor_text} complete the accepted first path without losing the state, evidence, decision, and risk context needed to trust the outcome. "
-            f"The product keeps {_short(state, fallback='the first release state')} and {_short(first_path, fallback='the first user journey')} connected so reviewers can understand what changed and why."
+            f"{story_head}. It keeps {_short(state, fallback='the first release state')} tied to "
+            f"{_short(first_path, fallback='the first user journey')} so the outcome, blockers, and evidence can be explained."
         )
     if _word_count(state) < CORE_FIELD_MIN_WORDS["state_object"]:
         state_label = _state_label(state, title=title)
@@ -136,7 +146,7 @@ def _complete_core_fields(intent: dict[str, Any], *, title: str) -> None:
         )
     if _word_count(proof) < CORE_FIELD_MIN_WORDS["proof_boundary"]:
         intent["proof_boundary"] = _sentence(
-            f"Release 0.0.1 is trusted only when the accepted path can be replayed from input through state change, reviewer-visible evidence, blocked or degraded states, access posture, and final decision. "
+            f"Release 0.0.1 is trusted only when the accepted path can be replayed from input through state change, release-review evidence, blocked or degraded states, access posture, and final decision. "
             f"It must not claim live integrations, broad automation, regulated correctness, or production-scale operation beyond the confirmed {title.lower()} boundary."
         )
 
@@ -151,8 +161,10 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
     focus = _focus_label(title)
 
     if not _clean(intent.get("problem")):
+        state_phrase = _state_label(state, title=title) if state else f"{focus} state"
+        path_head = _path_headline(first_path, fallback=f"the first {title.lower()} path")
         intent["problem"] = _sentence(
-            f"{focus} work becomes hard to trust when the user path, state, evidence, decision, and follow-up are scattered or under-specified."
+            f"{focus} is not trustworthy when the first path entry ({path_head}) is detached from {state_phrase}, source evidence, visible blockers, and the systems that own the handoff."
         )
     if not _clean(intent.get("customer")):
         actor_text = _join_actor_segments(actors[:5]) or f"{focus} operators and reviewers"
@@ -165,15 +177,18 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
         )
     if not _clean(intent.get("product_view")) or _product_view_needs_repair(intent.get("product_view")):
         state_phrase = _state_label(state, title=title) if state else "the accepted state object"
+        path_head = _path_headline(first_path, fallback=f"the first {title.lower()} action")
         intent["product_view"] = _sentence(
-            f"{title} is useful when users can inspect {state_phrase}, the first-path outcome, visible blockers, risk posture, and evidence from {_join(systems[:3]) or 'the product-owned systems'} together."
+            f"{title} is useful when users can complete the first path entry ({path_head}), inspect {state_phrase}, see blockers and evidence from {_join(systems[:3]) or 'the product-owned systems'}, and recover before an untrusted outcome is treated as ready."
         )
     metrics = _strings(intent.get("success_metrics"))
     if len(metrics) < 3 or any(_metric_needs_repair(metric) for metric in metrics):
+        state_phrase = _state_label(state, title=title) if state else f"{focus} state"
+        path_head = _path_headline(first_path, fallback=f"the first {title.lower()} path")
         intent["success_metrics"] = [
-            "One accepted path reaches a visible outcome with actor, timestamp, state, evidence, and decision context.",
-            "At least one blocked, missing-data, stale, invalid, or degraded path is visible and cannot be mistaken for success.",
-            f"Release readiness stays inside the confirmed proof boundary and preserves explicit non-goals: {_short(proof, limit=180)}.",
+            f"The accepted path completes from the first path entry ({path_head}) to a visible outcome with actor, timestamp, {state_phrase}, and evidence context.",
+            f"A missing, stale, invalid, blocked, or degraded {state_phrase} path stays visible and cannot be mistaken for success.",
+            _proof_boundary_metric(proof),
         ]
     if not _strings(intent.get("assumptions")):
         intent["assumptions"] = [
@@ -202,7 +217,7 @@ def _completed_actor_rows(intent: Mapping[str, Any], *, title: str) -> list[str]
     rows = [row for row in _strings(intent.get("human_actors")) if not _actor_row_is_meta(row)]
     labels = [_actor_label(row, title=title) for row in rows]
     labels = [label for label in labels if label]
-    if len(labels) < 3:
+    if not labels:
         labels.extend(_derived_actor_labels(intent, title=title))
     labels = list(unique_text(labels))[:5]
 
@@ -348,17 +363,29 @@ def _metric_needs_repair(value: Any) -> bool:
     return tail in {"and", "or", "to", "with", "for", "from", "of", "the", "a", "an", "required"}
 
 
+def _proof_boundary_metric(proof_boundary: str) -> str:
+    """Summarize proof scope without clipping confirmed proof prose mid-claim."""
+
+    proof = _clean(proof_boundary)
+    if not proof:
+        return "Release readiness stays inside the confirmed proof boundary and preserves explicit non-goals."
+    non_goal_hint = ""
+    if re.search(r"\b(?:must not|without claiming|does not claim|no claim|non-goals?)\b", proof, re.IGNORECASE):
+        non_goal_hint = " and keeps deferred or forbidden claims outside release readiness"
+    return f"Release readiness stays inside the confirmed proof boundary{non_goal_hint}."
+
+
 def _completed_system_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
     rows = _strings(intent.get("internal_systems")) or _strings(intent.get("component_responsibilities"))
     context = _context(intent)
-    completed = [_system_row(row, context=context, title=title) for row in rows]
+    completed = [_system_row(row, context=context, title=title, explicit=bool(rows)) for row in rows]
     completed = [row for row in completed if row]
-    if len(completed) < 2:
+    if not completed:
         completed = _derived_system_rows(intent, title=title)
     return list(unique_text(completed))[:8]
 
 
-def _system_row(row: str, *, context: str, title: str) -> str:
+def _system_row(row: str, *, context: str, title: str, explicit: bool = False) -> str:
     raw = _clean(row)
     if not raw:
         return ""
@@ -370,40 +397,16 @@ def _system_row(row: str, *, context: str, title: str) -> str:
     if not name:
         return ""
     clause = _best_context_clause(name, context)
-    axis_description = _axis_system_description(name)
-    if axis_description:
-        return f"{name} — {axis_description}"
+    if explicit:
+        if clause:
+            return f"{name} — {_short(clause, limit=180)}"
+        return name
     if clause:
         return (
             f"{name} — owns its accepted inputs, blocked states, produced outputs, and handoff evidence. "
             f"Context: {_short(clause, limit=180)}"
         )
     return f"{name} — owns input capture, state change, validation evidence, blocked states, and handoff for the accepted {title.lower()} path"
-
-
-def _axis_system_description(name: str) -> str:
-    axis = component_axis_for_label(name)
-    if axis is None:
-        return ""
-    owned = _axis_item_phrase(axis.owned_state, max_items=5)
-    outputs = _axis_item_phrase(axis.produced_outputs, max_items=5)
-    states = _axis_item_phrase(axis.states_or_transitions, max_items=6)
-    return f"owns {owned}, produces {outputs}, and keeps {states} visible"
-
-
-def _axis_item_phrase(value: str, *, max_items: int) -> str:
-    items = []
-    for raw in str(value or "").split(","):
-        item = raw.strip(" .")
-        item = re.sub(r"^(?:and|or)\s+", "", item, flags=re.IGNORECASE).strip()
-        if item:
-            items.append(item)
-    selected = items[:max_items]
-    if not selected:
-        return _short(value, limit=120)
-    if len(selected) == 1:
-        return selected[0]
-    return ", ".join(selected[:-1]) + f", and {selected[-1]}"
 
 
 def _derived_system_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
@@ -415,7 +418,7 @@ def _derived_system_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
     descriptions = [
         f"owns identity, current status, version history, and traceable changes for {state}",
         f"guides the first path, captures allowed commands, exposes blocked states, and keeps the next action clear: {first_path}",
-        f"records source evidence, validation output, reviewer decision, failure reason, and release-readiness proof: {proof}",
+        f"records source evidence, validation output, release decision, failure reason, and release-readiness proof: {proof}",
         "keeps authorization, shared access, privacy, safety, retention, accessibility, reminders, and recovery behavior explicit before wider rollout",
     ]
     return [f"{_title_case(name)} — {description.rstrip('.')}" for name, description in zip(names, descriptions)]
@@ -551,9 +554,17 @@ def _state_label(value: str, *, title: str) -> str:
         match = re.search(r"\b(?:state object is|primary state object is|is)\s+(?:a|an|the)?\s*(?P<label>[^.;:]+)", first, re.IGNORECASE)
         if match:
             return _title_case(match.group("label"))
+        match = re.match(
+            r"^(?:a|an|the)\s+(?P<label>[A-Za-z][A-Za-z0-9 _-]{1,90}?)\s+"
+            r"(?:tracks|records|stores|captures|moves|starts|changes)\b",
+            first,
+            flags=re.IGNORECASE,
+        )
+        if match:
+            return _title_case(match.group("label"))
         if _word_count(first) <= 8:
             return _title_case(first)
-    return f"{_focus_label(title)} state profile"
+    return f"{_focus_label(title)} state"
 
 
 def _title(intent: Mapping[str, Any]) -> str:
@@ -562,6 +573,8 @@ def _title(intent: Mapping[str, Any]) -> str:
 
 def _title_needs_repair(value: str) -> bool:
     text = _clean(value)
+    if normalize_project_title(text).changed:
+        return True
     if not text or text.casefold() == "greenfield project":
         return True
     words = re.findall(r"[A-Za-z0-9]+", text)
@@ -793,6 +806,8 @@ def _join(values: Sequence[str]) -> str:
     cleaned = [_clean(value).rstrip(".") for value in values if _clean(value)]
     if len(cleaned) <= 1:
         return cleaned[0] if cleaned else ""
+    if len(cleaned) == 2:
+        return f"{cleaned[0]} and {cleaned[1]}"
     return ", ".join(cleaned[:-1]) + f", and {cleaned[-1]}"
 
 
@@ -805,6 +820,27 @@ def _short(value: str, *, fallback: str = "", limit: int = 220) -> str:
     while words and words[-1].casefold().strip(".,;:") in {"and", "or", "to", "with", "without", "for", "from", "of", "the", "a", "an", "required"}:
         words.pop()
     return " ".join(words).rstrip(" ,;:.")
+
+
+def _path_headline(value: str, *, fallback: str, limit: int = 140) -> str:
+    material = material_first_path_action(value)
+    text = _clean(material) or _clean(value)
+    if not text:
+        return fallback
+    text = re.sub(
+        r"^the first complete path (?:the product )?(?:must|should) prove (?:before broader scope )?is\s+",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(r"^the first complete path to prove should be\s*:?\s*", "", text, flags=re.IGNORECASE)
+    text = re.split(r"[.;]", text, maxsplit=1)[0].strip(" .:")
+    action_pattern = (
+        r"the\s+product\s+(?:fetches?|calculates?|ranks?|highlights?|lets?|stores?|shows?|records?|routes?)|"
+        r"(?:receives?|logs?|reviews?|records?|stores?|fetches?|calculates?|ranks?|highlights?|lets?|chooses?|selects?)\b"
+    )
+    text = re.split(rf",\s+(?=(?:and\s+)?(?:{action_pattern}))", text, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .:")
+    return _short(text, fallback=fallback, limit=limit)
 
 
 def _sentence(value: str) -> str:

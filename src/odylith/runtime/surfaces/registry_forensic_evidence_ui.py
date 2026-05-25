@@ -64,6 +64,7 @@ def css() -> str:
     coverage_typography_css = dashboard_ui_primitives.governance_kpi_label_value_css(
         label_selector=".forensic-stat-label",
         value_selector=".forensic-stat-value",
+        value_letter_spacing_em=0.0,
     )
 
     return "\n\n".join((r"""

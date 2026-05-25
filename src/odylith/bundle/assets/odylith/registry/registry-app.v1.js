@@ -66,7 +66,7 @@ const DATA = window["__ODYLITH_REGISTRY_DATA__"] || {};
     const allComponents = Array.isArray(payload.components) ? payload.components.slice() : [];
     const REGISTRY_LIST_WINDOW_THRESHOLD = 160;
     const REGISTRY_LIST_OVERSCAN = 20;
-    const REGISTRY_LIST_ROW_HEIGHT = 86;
+    const REGISTRY_LIST_ROW_HEIGHT = 104;
     const REGISTRY_LIST_HEADER_HEIGHT = 30;
     let latestRenderedComponents = [];
     let latestListWindowKey = "";
@@ -337,6 +337,121 @@ initSharedQuickTooltips();
       return `${raw.slice(0, cut).replace(/[ ,;:-]+$/, "")}...`;
     }
 
+    function componentKind(row) {
+  return humanizeToken(row && row.kind || "").trim();
+}
+
+function componentRawName(row) {
+  return String(row && (row.name || row.component_id) || "").replace(/\s+/g, " ").trim();
+}
+
+function componentCompactName(row, limit = 64) {
+  const raw = componentRawName(row);
+  if (!raw) return "Component";
+  const kind = componentKind(row);
+  let candidate = raw;
+  if (candidate.length > limit) {
+    const relativeClause = candidate.match(/\s+(?:that|which|who|where|when|whose)\s+/i);
+    if (relativeClause && relativeClause.index >= 12) {
+      candidate = candidate.slice(0, relativeClause.index).replace(/[ ,;:-]+$/, "").trim();
+    }
+  }
+  if (
+    kind
+    && candidate
+    && candidate !== raw
+    && raw.toLowerCase().endsWith(` ${kind.toLowerCase()}`)
+    && !candidate.toLowerCase().endsWith(` ${kind.toLowerCase()}`)
+  ) {
+    candidate = `${candidate} ${kind}`;
+  }
+  return clipText(candidate || raw, limit);
+}
+
+function componentFullIdentity(row) {
+  const raw = componentRawName(row);
+  const componentId = String(row && row.component_id || "").trim();
+  if (raw && componentId && raw.toLowerCase() !== componentId.toLowerCase()) {
+    return `${raw} (${componentId})`;
+  }
+  return raw || componentId || "Component";
+}
+
+function componentIdPreview(componentId, limit = 54) {
+  return clipText(String(componentId || "").trim(), limit);
+}
+
+function compactPathLabel(path, fallback = "Artifact") {
+  const raw = String(path || "").trim();
+  if (!raw) return fallback;
+  if (raw.endsWith("/CURRENT_SPEC.md")) return "Component spec";
+  if (raw.startsWith("src/")) return "Source boundary";
+  return clipText(basenamePath(raw) || raw, 54);
+}
+
+function compactRegistryNarrative(value, row, limit = 420) {
+  let text = String(value || "").replace(/\s+/g, " ").trim();
+  if (!text) return "";
+  const rawName = componentRawName(row);
+  const compactName = componentCompactName(row, 72);
+  if (rawName && compactName && rawName !== compactName) {
+    text = text.split(rawName).join(compactName);
+  }
+  return clipText(text, limit);
+}
+
+function splitInitialSourceBoundary(value) {
+  const raw = String(value || "").replace(/\s+/g, " ").trim();
+  if (!raw) return { body: "", source: "" };
+  const match = raw.match(/\bInitial source boundary:\s*(.+)$/i);
+  if (!match) return { body: raw, source: "" };
+  const body = raw.slice(0, match.index).trim().replace(/[. ]*$/, ".");
+  const source = String(match[1] || "").trim().replace(/[. ]+$/, "");
+  return { body, source };
+}
+
+function summaryTextRow(title, body) {
+  const text = String(body || "").trim();
+  return `<p class="summary-row"><strong>${escapeHtml(title)}:</strong> ${escapeHtml(text || "Not documented.")}</p>`;
+}
+
+function summaryArtifactRow(title, path, label) {
+  const token = String(path || "").trim();
+  if (!token) return "";
+  return `
+    <div class="summary-row summary-artifact-row">
+      <strong>${escapeHtml(title)}:</strong>
+      <span class="artifact-list">
+        ${artifactChip(
+          { path: token, href: token },
+          token,
+          "artifact artifact-compact",
+          label || compactPathLabel(token, title),
+        )}
+      </span>
+    </div>
+  `;
+}
+
+function renderComponentListButton(row, selectedId) {
+  const categoryToken = String(row.category || "").trim().toLowerCase();
+  const coverage = row && typeof row.forensic_coverage === "object" ? row.forensic_coverage : {};
+  const fullIdentity = componentFullIdentity(row);
+  const eventCount = Number(row.timeline_count || 0);
+  const metaText = [componentIdPreview(row.component_id), humanizeToken(row.kind), humanizeToken(row.status || "active"), forensicCoverageLabel(coverage), `${eventCount} ${pluralize(eventCount, "event", "events")}`].filter(Boolean).join(" · ");
+  return `
+    <li>
+      <button type="button" class="component-btn${row.component_id === selectedId ? " active" : ""}" data-component="${escapeHtml(row.component_id)}" title="${escapeHtml(fullIdentity)}" aria-label="${escapeHtml(fullIdentity)}">
+        <span class="component-card-title">${escapeHtml(componentCompactName(row, 58))}</span>
+        <span class="component-meta" title="${escapeHtml(fullIdentity)}">${escapeHtml(metaText)}</span>
+        <span class="inline">
+          <span class="label ${escapeHtml(toneClassForCategory(categoryToken))}">${escapeHtml(humanizeToken(categoryToken))}</span>
+          <span class="label">${escapeHtml(humanizeToken(row.qualification || "curated"))}</span>
+        </span>
+      </button>
+    </li>
+  `;
+}
     function normalizedEventKind(event) {
       return String(event && event.kind || "").trim().toLowerCase();
     }
@@ -1065,22 +1180,7 @@ initSharedQuickTooltips();
           blocks.push(`<li class="group-head">${escapeHtml(humanizeToken(item.category))} · ${item.count}</li>`);
           return;
         }
-        const row = item.row;
-          const categoryToken = String(row.category || "").trim().toLowerCase();
-          const toneClass = toneClassForCategory(categoryToken);
-          const coverage = row && typeof row.forensic_coverage === "object" ? row.forensic_coverage : {};
-        blocks.push(`
-          <li>
-            <button type="button" class="component-btn${row.component_id === selectedId ? " active" : ""}" data-component="${escapeHtml(row.component_id)}">
-              <span class="component-card-title">${escapeHtml(row.name || row.component_id)}</span>
-              <span class="component-meta">${escapeHtml(row.component_id)} · ${escapeHtml(humanizeToken(row.kind))} · ${escapeHtml(humanizeToken(row.status || "active"))} · ${escapeHtml(forensicCoverageLabel(coverage))} · ${escapeHtml(Number(row.timeline_count || 0))} events</span>
-              <span class="inline">
-                <span class="label ${escapeHtml(toneClass)}">${escapeHtml(humanizeToken(categoryToken))}</span>
-                <span class="label">${escapeHtml(humanizeToken(row.qualification || "curated"))}</span>
-              </span>
-            </button>
-          </li>
-        `);
+        blocks.push(renderComponentListButton(item.row, selectedId));
       });
       if (windowed.afterPx > 0) {
         blocks.push(`<li class="list-spacer" aria-hidden="true" style="height:${windowed.afterPx}px"></li>`);
@@ -1139,11 +1239,12 @@ initSharedQuickTooltips();
       return `<span class="label" data-tooltip="${escapeHtml(tooltip || "")}">${escapeHtml(label)}</span>`;
     }
 
-    function artifactChip(item, tooltip, className = "artifact") {
+    function artifactChip(item, tooltip, className = "artifact", labelOverride = "") {
       const path = String(item && item.path || "").trim();
       const href = String(item && item.href || path).trim();
       if (!path || !href) return "";
-      return `<a class="${escapeHtml(className)}" href="${escapeHtml(href)}" target="_top" data-tooltip="${escapeHtml(tooltip || "Artifact evidence path.")}">${escapeHtml(path)}</a>`;
+      const label = String(labelOverride || path).trim() || "artifact";
+      return `<a class="${escapeHtml(className)}" href="${escapeHtml(href)}" target="_top" data-tooltip="${escapeHtml(tooltip || path || "Artifact evidence path.")}">${escapeHtml(label)}</a>`;
     }
 
     function renderSpecLinkGroup(title, items, emptyLabel, tooltip) {
@@ -1583,7 +1684,7 @@ initSharedQuickTooltips();
       const syntheticExecutiveEvents = windowEvents.filter((event) => isSyntheticTimelineEvent(event));
       const baselineExecutiveEvents = windowEvents.filter((event) => isBaselineTimelineEvent(event));
       const primaryWorkstream = workstreamPreview[0] || "";
-      const componentName = String(row.name || row.component_id || "This component").trim() || "This component";
+      const componentName = componentCompactName(row, 72);
       const confidence = intelligenceConfidence(
         explicitExecutiveEvents.length,
         syntheticExecutiveEvents.length,
@@ -1701,7 +1802,9 @@ initSharedQuickTooltips();
         contextRow("Path Prefixes", pathPrefixes.length, pathLabels, "Artifact prefixes used in event mapping."),
       ].join("");
 
-      const displayName = String(row.name || row.component_id || "").trim();
+      const displayName = componentCompactName(row, 72);
+      const rawDisplayName = componentRawName(row);
+      const fullIdentity = componentFullIdentity(row);
       const fallbackToken = String(row.component_id || "").trim();
       const specPath = String(row.spec_ref || "").trim();
       const specLastUpdated = String(row.spec_last_updated || "").trim() || "Unknown";
@@ -1725,12 +1828,16 @@ initSharedQuickTooltips();
           </details>
         `
         : '<p class="summary-row"><strong>Triggers:</strong> No trigger phrases documented.</p>';
+      const whatItIsParts = splitInitialSourceBoundary(compactRegistryNarrative(row.what_it_is || "", row));
+      const whyTracked = compactRegistryNarrative(row.why_tracked || "Not documented.", row);
+      const fullNameSubtitle = rawDisplayName && rawDisplayName !== displayName ? `<p class="component-full-name">${escapeHtml(rawDisplayName)}</p>` : "";
 
       detailEl.innerHTML = `
-        <h2 class="component-name">${escapeHtml(displayName || fallbackToken)}</h2>
+        <div class="component-identity"><h2 class="component-name" title="${escapeHtml(fullIdentity)}">${escapeHtml(displayName || fallbackToken)}</h2>${fullNameSubtitle}<p class="component-full-name component-id-line">${escapeHtml(fallbackToken)}</p></div>
         <div class="summary-strip">
-          <p class="summary-row"><strong>What it is:</strong> ${escapeHtml(row.what_it_is || "Not documented.")}</p>
-          <p class="summary-row"><strong>Why tracked:</strong> ${escapeHtml(row.why_tracked || "Not documented.")}</p>
+          ${summaryTextRow("What it is", whatItIsParts.body || row.what_it_is || "Not documented.")}
+          ${summaryArtifactRow("Source boundary", whatItIsParts.source, "Source boundary")}
+          ${summaryTextRow("Why tracked", whyTracked || "Not documented.")}
           ${productLayer ? `<p class="summary-row"><strong>Product layer:</strong> ${escapeHtml(productLayerLabel(productLayer))}</p>` : ""}
           <p class="summary-row"><strong>Forensic coverage:</strong> ${escapeHtml(forensicCoverageSummary(forensicCoverage))}</p>
           ${triggerBlock}
@@ -1746,7 +1853,7 @@ initSharedQuickTooltips();
             </span>
           </summary>
           <div class="spec-expand-body">
-            <p class="summary-row"><strong>Spec source:</strong> ${escapeHtml(specPath || "Not documented.")}</p>
+            ${specPath ? summaryArtifactRow("Spec source", specPath, compactPathLabel(specPath, "Component spec")) : '<p class="summary-row"><strong>Spec source:</strong> Not documented.</p>'}
             ${renderSpecLinkGroup(
               "Runbooks",
               specRunbooks,

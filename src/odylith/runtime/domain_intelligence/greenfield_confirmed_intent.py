@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 
 
 FIELD_MIN_WORDS = {
@@ -131,7 +132,9 @@ def normalize_confirmed_intent(value: object, *, prompt: str = "", fallback_titl
     if not isinstance(value, Mapping):
         raise ValueError("confirmed intent must be Markdown text or a JSON object")
     payload = dict(value)
-    title = _clean(payload.get("title") or payload.get("product_title") or fallback_title)
+    raw_title = _clean(payload.get("title") or payload.get("product_title") or fallback_title)
+    title_normalization = normalize_project_title(raw_title, fallback=fallback_title or "Greenfield Project")
+    title = title_normalization.canonical_title
     component_rows = _role_or_system_rows(
         payload.get("component_responsibilities")
         or payload.get("component_rows")
@@ -140,7 +143,7 @@ def normalize_confirmed_intent(value: object, *, prompt: str = "", fallback_titl
     )
     result: dict[str, Any] = {
         "title": title,
-        "prompt": _clean(payload.get("prompt") or prompt),
+        "prompt": _canonical_prompt_text(payload.get("prompt") or prompt, title_normalization=title_normalization),
         "product_story": _clean(payload.get("product_story") or payload.get("story")),
         "state_object": _clean(payload.get("state_object") or payload.get("state_object_first_journey")),
         "first_path": _clean(payload.get("first_path") or payload.get("first_workflow")),
@@ -160,6 +163,8 @@ def normalize_confirmed_intent(value: object, *, prompt: str = "", fallback_titl
         ),
         "non_goals": _strings(payload.get("non_goals")),
     }
+    if title_normalization.changed:
+        result["source_title"] = title_normalization.raw_title
     result["internal_systems"] = _expand_internal_system_rows(
         _preferred_internal_rows(
             _role_or_system_rows(payload.get("internal_systems") or payload.get("internal_product_systems")),
@@ -190,6 +195,7 @@ def write_structured_confirmed_intent_file(path: Path, intent: Mapping[str, Any]
     target.parent.mkdir(parents=True, exist_ok=True)
     keys = (
         "title",
+        "source_title",
         "prompt",
         "product_story",
         "state_object",
@@ -226,11 +232,13 @@ def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: 
     """Parse the human Product Intent Confirmation that the host already showed."""
 
     sections = _sections(text)
-    title = _title_from_text(text) or _title_from_sections(sections) or _title_from_preamble(sections) or fallback_title
+    raw_title = _title_from_text(text) or _title_from_sections(sections) or _title_from_preamble(sections) or fallback_title
+    title_normalization = normalize_project_title(raw_title, fallback=fallback_title or "Greenfield Project")
+    title = title_normalization.canonical_title
     preamble_story = _preamble_story(sections, title)
     result: dict[str, Any] = {
         "title": _clean(title),
-        "prompt": _clean(prompt),
+        "prompt": _canonical_prompt_text(prompt, title_normalization=title_normalization),
         "product_story": _section_text(sections, "product_story") or preamble_story,
         "state_object": _section_text(sections, "state_object"),
         "first_path": _section_text(sections, "first_path"),
@@ -248,10 +256,26 @@ def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: 
         "ambiguities": _section_list(sections, "ambiguities"),
         "non_goals": _section_list(sections, "non_goals"),
     }
+    if title_normalization.changed:
+        result["source_title"] = title_normalization.raw_title
     result["internal_systems"] = _internal_system_rows(sections, context_text=_intent_context_text(result))
     result = _complete_confirmed_intent_before_validation(result)
     _validate_confirmed_intent(result)
     return result
+
+
+def _canonical_prompt_text(value: Any, *, title_normalization: Any) -> str:
+    """Keep raw provisional title text out of normalized public prompt fields."""
+
+    text = _clean(value)
+    if not text:
+        return ""
+    raw_title = _clean(getattr(title_normalization, "raw_title", ""))
+    canonical_title = _clean(getattr(title_normalization, "canonical_title", ""))
+    if raw_title and canonical_title and raw_title != canonical_title:
+        text = re.sub(re.escape(raw_title), canonical_title, text, flags=re.IGNORECASE)
+    text = normalize_project_title(text, fallback=canonical_title or "Greenfield Project").canonical_title
+    return _clean(text)
 
 
 def confirmed_intent_summary(intent: Mapping[str, Any] | None, key: str, fallback: str) -> str:
@@ -583,6 +607,8 @@ def _combined_system_rows(sections: Mapping[str, list[str]], target: str) -> lis
 
 def _expand_internal_system_rows(rows: list[str], *, context_text: str = "") -> list[str]:
     cleaned = [_clean(row) for row in rows if _clean(row)]
+    if len(cleaned) == 1 and _explicit_system_row(cleaned[0]):
+        return [_system_sentence_row(cleaned[0], context_text=context_text) or cleaned[0]]
     sentence_rows = _system_sentence_rows(" ".join(cleaned), context_text=context_text)
     if len(cleaned) == 1 and len(sentence_rows) >= 2:
         return sentence_rows
@@ -607,6 +633,16 @@ def _expand_internal_system_rows(rows: list[str], *, context_text: str = "") -> 
             description = f"{description}. Rationale: {rationale.rstrip('.')}"
         expanded.append(f"{_title_case_phrase(candidate)} — {description}")
     return expanded
+
+
+def _explicit_system_row(value: str) -> bool:
+    text = _clean(value)
+    separator = re.search(r"\s+[—-]\s+|:\s+", text)
+    if not separator:
+        return False
+    name = _clean(text[: separator.start()])
+    body = _clean(text[separator.end() :])
+    return _usable_internal_system_candidate(name) and _word_count(body) >= 4
 
 
 def _intent_context_text(intent: Mapping[str, Any]) -> str:
@@ -840,7 +876,7 @@ def _concise_system_row(value: str, *, context_text: str = "") -> str:
 def _concise_system_description(name: str, *, context_text: str) -> str:
     subject = _clean(name).casefold()
     return (
-        f"owns {subject} state, required inputs, rejected or blocked cases, evidence links, and handoff boundaries "
+        f"owns {subject} state, required inputs, blocked-case evidence links, and handoff boundaries "
         "for the confirmed first path"
     )
 

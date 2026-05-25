@@ -408,7 +408,11 @@ def test_render_registry_dashboard_happy_path(tmp_path: Path) -> None:
     assert re.search(r"\.component-name\s*\{[^}]*font-size:\s*24px;[^}]*line-height:\s*1\.15;", html, flags=re.S)
     assert re.search(r"\.workspace\s*\{[^}]*grid-template-columns:\s*minmax\(330px,\s*420px\) minmax\(0,\s*1fr\);[^}]*gap:\s*12px;[^}]*align-items:\s*start;", html, flags=re.S)
     assert re.search(r"\.kpi-label\s*\{[^}]*font-size:\s*12px;[^}]*line-height:\s*1\.15;[^}]*letter-spacing:\s*0\.06em;", html, flags=re.S)
-    assert re.search(r"\.kpi-value\s*\{[^}]*font-size:\s*23px;[^}]*line-height:\s*1;[^}]*letter-spacing:\s*-0\.01em;", html, flags=re.S)
+    assert re.search(r"\.kpi-value\s*\{[^}]*font-size:\s*23px;[^}]*line-height:\s*1;[^}]*letter-spacing:\s*0em;", html, flags=re.S)
+    assert "function componentCompactName(row, limit = 64)" in html
+    assert "function summaryArtifactRow(title, path, label)" in html
+    assert 'class="component-identity"' in html
+    assert "artifact-compact" in html
     assert "Triggers:" in html
     assert "Trigger Tiers:" not in html
     assert "structured baseline/deep" not in html

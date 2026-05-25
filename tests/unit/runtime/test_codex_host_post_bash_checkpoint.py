@@ -7,6 +7,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from odylith.runtime.intervention_engine import surface_runtime
+from odylith.runtime.intervention_engine import stream_state
 from odylith.runtime.surfaces import codex_host_shared
 from odylith.runtime.surfaces import codex_host_post_bash_checkpoint
 from odylith.runtime.surfaces import host_dirty_checkpoint
@@ -535,6 +536,13 @@ def test_main_records_checkpoint_context_with_live_intervention_payload(
     assert payload["hookSpecificOutput"]["hookEventName"] == "PostToolUse"
     assert "**Odylith Observation:** Codex kept the live intervention lane." in payload["systemMessage"]
     assert "Odylith Assist:" not in payload["systemMessage"]
+    intervention_events = stream_state.load_recent_intervention_events(
+        repo_root=tmp_path,
+        session_id="bash-main",
+    )
+    assert intervention_events
+    assert intervention_events[-1]["delivery_status"] == "assistant_render_required"
+    assert intervention_events[-1]["delivery_channel"] == "assistant_visible_fallback"
     events = host_dirty_checkpoint.read_dirty_events(
         repo_root=tmp_path,
         host_family="codex",

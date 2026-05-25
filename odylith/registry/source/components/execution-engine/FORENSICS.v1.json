@@ -15,12 +15,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 130,
+    "explicit_event_count": 131,
     "mapped_workstream_evidence_count": 121,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 130
+    "timeline_event_count": 131
   },
   "name": "Execution Engine",
   "path_prefixes": [
@@ -28,6 +28,21 @@
   ],
   "spec_ref": "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 474,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "execution-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Risks: Execution Engine has an active recovery constraint. Why it matters: chat-visible Odylith intervention proof is unproven for this session.",
+      "ts_iso": "2026-05-25T21:32:42Z",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
@@ -7053,19 +7068,9 @@
     }
   ],
   "traceability": {
-    "code_references": [
-      "src/odylith/cli.py",
-      "src/odylith/runtime/governance/component_registry_intelligence.py",
-      "src/odylith/runtime/governance/sync_workstream_artifacts.py"
-    ],
-    "developer_docs": [
-      "docs/specs/odylith-repo-integration-contract.md",
-      "odylith/PRODUCT_COMPONENTS.md",
-      "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
-    ],
-    "runbooks": [
-      "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md"
-    ]
+    "code_references": [],
+    "developer_docs": [],
+    "runbooks": []
   },
   "version": "v1",
   "what_it_is": "Constraint-aware execution runtime that materializes task contracts, admissibility decisions, frontiers, closure, receipts, contradiction records, and host-aware execution hints before Odylith acts.",

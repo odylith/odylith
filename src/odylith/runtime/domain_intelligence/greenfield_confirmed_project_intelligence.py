@@ -148,7 +148,7 @@ def _layer_defaults(
             "Deferred variants remain outside scope until their own evidence and proof are explicit.",
         ),
         "scope": (
-            f"Release {release} includes the first path, its state changes, and reviewer-visible evidence.",
+            f"Release {release} includes the first path, its state changes, and release-review evidence.",
             "Broader workflows, optional variants, and unproved automations stay outside the first release.",
         ),
         "ontology": (
@@ -211,7 +211,7 @@ def _layer_defaults(
             "Atlas records state architecture views, related components, evidence, and refresh ownership.",
         ),
         "owners": (
-            "Product owners preserve accepted intent, release scope, user value, and risk posture.",
+            "Product owners preserve accepted intent, release scope, user value, and risk evidence.",
             "Engineering owners preserve component contracts, validation output, and implementation evidence.",
         ),
         "execution_memory": (
@@ -231,7 +231,7 @@ def _layer_defaults(
             "Invalidate generated records when prose is malformed, repetitive, interchangeable, or detached from intent.",
         ),
         "conflict_model": (
-            "Resolve conflicts by preferring accepted intent, explicit state ownership, and reviewer-visible proof.",
+            "Resolve conflicts by preferring accepted intent, explicit state ownership, and release-review proof.",
             "Escalate conflicts when two components claim the same state, decision, or source of truth.",
         ),
         "transfer_priors": (

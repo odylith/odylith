@@ -69,6 +69,20 @@ def _extract_context_signals_payload(payload: Mapping[str, Any]) -> dict[str, An
         value = payload.get(key)
         if isinstance(value, Mapping):
             extracted[key] = dict(value)
+    for key in (
+        "host_runtime",
+        "host_family",
+        "route_ready",
+        "native_spawn_ready",
+        "narrowing_required",
+        "odylith_execution_profile",
+        "odylith_execution_route_ready",
+        "odylith_execution_narrowing_required",
+        "odylith_execution_delegate_preference",
+        "odylith_execution_selection_mode",
+    ):
+        if key in payload:
+            extracted[key] = payload.get(key)
     diagram_watch_gaps = payload.get("diagram_watch_gaps")
     if isinstance(diagram_watch_gaps, list):
         extracted["diagram_watch_gaps"] = list(diagram_watch_gaps)

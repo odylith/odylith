@@ -17,6 +17,7 @@ from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import generated_surface_refresh_guards
+from odylith.runtime.surfaces import registry_component_identity_ui
 from odylith.runtime.surfaces import registry_forensic_evidence_ui
 from odylith.runtime.surfaces import source_bundle_mirror
 from odylith.runtime.surfaces import surface_path_helpers
@@ -937,6 +938,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       margin: 0;
     }
     __ODYLITH_REGISTRY_FORENSIC_EVIDENCE_CSS__
+    __ODYLITH_REGISTRY_COMPONENT_IDENTITY_CSS__
     .diagnostics {
       border: 1px solid var(--warn-line);
       border-radius: 10px;
@@ -1087,7 +1089,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     const allComponents = Array.isArray(payload.components) ? payload.components.slice() : [];
     const REGISTRY_LIST_WINDOW_THRESHOLD = 160;
     const REGISTRY_LIST_OVERSCAN = 20;
-    const REGISTRY_LIST_ROW_HEIGHT = 86;
+    const REGISTRY_LIST_ROW_HEIGHT = 104;
     const REGISTRY_LIST_HEADER_HEIGHT = 30;
     let latestRenderedComponents = [];
     let latestListWindowKey = "";
@@ -1247,6 +1249,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       return `${raw.slice(0, cut).replace(/[ ,;:-]+$/, "")}...`;
     }
 
+    __ODYLITH_REGISTRY_COMPONENT_IDENTITY_RUNTIME__
     function normalizedEventKind(event) {
       return String(event && event.kind || "").trim().toLowerCase();
     }
@@ -1975,22 +1978,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           blocks.push(`<li class="group-head">${escapeHtml(humanizeToken(item.category))} · ${item.count}</li>`);
           return;
         }
-        const row = item.row;
-          const categoryToken = String(row.category || "").trim().toLowerCase();
-          const toneClass = toneClassForCategory(categoryToken);
-          const coverage = row && typeof row.forensic_coverage === "object" ? row.forensic_coverage : {};
-        blocks.push(`
-          <li>
-            <button type="button" class="component-btn${row.component_id === selectedId ? " active" : ""}" data-component="${escapeHtml(row.component_id)}">
-              <span class="component-card-title">${escapeHtml(row.name || row.component_id)}</span>
-              <span class="component-meta">${escapeHtml(row.component_id)} · ${escapeHtml(humanizeToken(row.kind))} · ${escapeHtml(humanizeToken(row.status || "active"))} · ${escapeHtml(forensicCoverageLabel(coverage))} · ${escapeHtml(Number(row.timeline_count || 0))} events</span>
-              <span class="inline">
-                <span class="label ${escapeHtml(toneClass)}">${escapeHtml(humanizeToken(categoryToken))}</span>
-                <span class="label">${escapeHtml(humanizeToken(row.qualification || "curated"))}</span>
-              </span>
-            </button>
-          </li>
-        `);
+        blocks.push(renderComponentListButton(item.row, selectedId));
       });
       if (windowed.afterPx > 0) {
         blocks.push(`<li class="list-spacer" aria-hidden="true" style="height:${windowed.afterPx}px"></li>`);
@@ -2049,11 +2037,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       return `<span class="label" data-tooltip="${escapeHtml(tooltip || "")}">${escapeHtml(label)}</span>`;
     }
 
-    function artifactChip(item, tooltip, className = "artifact") {
+    function artifactChip(item, tooltip, className = "artifact", labelOverride = "") {
       const path = String(item && item.path || "").trim();
       const href = String(item && item.href || path).trim();
       if (!path || !href) return "";
-      return `<a class="${escapeHtml(className)}" href="${escapeHtml(href)}" target="_top" data-tooltip="${escapeHtml(tooltip || "Artifact evidence path.")}">${escapeHtml(path)}</a>`;
+      const label = String(labelOverride || path).trim() || "artifact";
+      return `<a class="${escapeHtml(className)}" href="${escapeHtml(href)}" target="_top" data-tooltip="${escapeHtml(tooltip || path || "Artifact evidence path.")}">${escapeHtml(label)}</a>`;
     }
 
     function renderSpecLinkGroup(title, items, emptyLabel, tooltip) {
@@ -2493,7 +2482,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       const syntheticExecutiveEvents = windowEvents.filter((event) => isSyntheticTimelineEvent(event));
       const baselineExecutiveEvents = windowEvents.filter((event) => isBaselineTimelineEvent(event));
       const primaryWorkstream = workstreamPreview[0] || "";
-      const componentName = String(row.name || row.component_id || "This component").trim() || "This component";
+      const componentName = componentCompactName(row, 72);
       const confidence = intelligenceConfidence(
         explicitExecutiveEvents.length,
         syntheticExecutiveEvents.length,
@@ -2611,7 +2600,9 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         contextRow("Path Prefixes", pathPrefixes.length, pathLabels, "Artifact prefixes used in event mapping."),
       ].join("");
 
-      const displayName = String(row.name || row.component_id || "").trim();
+      const displayName = componentCompactName(row, 72);
+      const rawDisplayName = componentRawName(row);
+      const fullIdentity = componentFullIdentity(row);
       const fallbackToken = String(row.component_id || "").trim();
       const specPath = String(row.spec_ref || "").trim();
       const specLastUpdated = String(row.spec_last_updated || "").trim() || "Unknown";
@@ -2635,12 +2626,16 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           </details>
         `
         : '<p class="summary-row"><strong>Triggers:</strong> No trigger phrases documented.</p>';
+      const whatItIsParts = splitInitialSourceBoundary(compactRegistryNarrative(row.what_it_is || "", row));
+      const whyTracked = compactRegistryNarrative(row.why_tracked || "Not documented.", row);
+      const fullNameSubtitle = rawDisplayName && rawDisplayName !== displayName ? `<p class="component-full-name">${escapeHtml(rawDisplayName)}</p>` : "";
 
       detailEl.innerHTML = `
-        <h2 class="component-name">${escapeHtml(displayName || fallbackToken)}</h2>
+        <div class="component-identity"><h2 class="component-name" title="${escapeHtml(fullIdentity)}">${escapeHtml(displayName || fallbackToken)}</h2>${fullNameSubtitle}<p class="component-full-name component-id-line">${escapeHtml(fallbackToken)}</p></div>
         <div class="summary-strip">
-          <p class="summary-row"><strong>What it is:</strong> ${escapeHtml(row.what_it_is || "Not documented.")}</p>
-          <p class="summary-row"><strong>Why tracked:</strong> ${escapeHtml(row.why_tracked || "Not documented.")}</p>
+          ${summaryTextRow("What it is", whatItIsParts.body || row.what_it_is || "Not documented.")}
+          ${summaryArtifactRow("Source boundary", whatItIsParts.source, "Source boundary")}
+          ${summaryTextRow("Why tracked", whyTracked || "Not documented.")}
           ${productLayer ? `<p class="summary-row"><strong>Product layer:</strong> ${escapeHtml(productLayerLabel(productLayer))}</p>` : ""}
           <p class="summary-row"><strong>Forensic coverage:</strong> ${escapeHtml(forensicCoverageSummary(forensicCoverage))}</p>
           ${triggerBlock}
@@ -2656,7 +2651,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
             </span>
           </summary>
           <div class="spec-expand-body">
-            <p class="summary-row"><strong>Spec source:</strong> ${escapeHtml(specPath || "Not documented.")}</p>
+            ${specPath ? summaryArtifactRow("Spec source", specPath, compactPathLabel(specPath, "Component spec")) : '<p class="summary-row"><strong>Spec source:</strong> Not documented.</p>'}
             ${renderSpecLinkGroup(
               "Runbooks",
               specRunbooks,
@@ -2769,6 +2764,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         kicker_selector=".hero-overline",
         title_selector=".registry-title",
         subtitle_selector=".registry-subtitle",
+        title_letter_spacing_em=0.0,
         subtitle_max_width="100%",
         mobile_breakpoint_px=760,
         mobile_title_size_px=22,
@@ -2818,8 +2814,9 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     )
     detail_identity_css = dashboard_ui_primitives.detail_identity_typography_css(
         title_selector=".component-name",
-        subtitle_selector=".component-subtitle-unused",
+        subtitle_selector=".component-full-name",
         title_size_px=24,
+        title_letter_spacing_em=0.0,
         medium_title_size_px=22,
         small_title_size_px=19,
     )
@@ -2834,6 +2831,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     kpi_typography_css = dashboard_ui_primitives.governance_kpi_label_value_css(
         label_selector=".kpi-label",
         value_selector=".kpi-value",
+        value_letter_spacing_em=0.0,
     )
     workspace_layout_css = dashboard_ui_primitives.split_detail_workspace_css(
         selector=".workspace",
@@ -3112,8 +3110,10 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         .replace("__ODYLITH_REGISTRY_QUICK_TOOLTIP_RUNTIME__", tooltip_runtime_js)
         .replace("__ODYLITH_REGISTRY_CONTENT_COPY__", content_copy_css)
         .replace("__ODYLITH_REGISTRY_FORENSIC_EVIDENCE_CSS__", registry_forensic_evidence_ui.css())
+        .replace("__ODYLITH_REGISTRY_COMPONENT_IDENTITY_CSS__", registry_component_identity_ui.css())
         .replace("__ODYLITH_REGISTRY_FORENSIC_EVIDENCE_MARKUP__", registry_forensic_evidence_ui.markup())
         .replace("__ODYLITH_REGISTRY_FORENSIC_EVIDENCE_RUNTIME__", registry_forensic_evidence_ui.runtime_js())
+        .replace("__ODYLITH_REGISTRY_COMPONENT_IDENTITY_RUNTIME__", registry_component_identity_ui.runtime_js())
         .replace("__ODYLITH_BRAND_HEAD__", str(payload.get("brand_head_html", "")).strip())
         .replace("__DATA__", data_json)
     )

@@ -338,9 +338,10 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
     zoning_spec = specs["zoning-check-ledger"]
     revision_spec = next(text for slug, text in specs.items() if slug.endswith("revision-tracker"))
     decision_spec = specs["decision-package-review"]
-    assert "permit identity attachment" in permit_spec
-    assert "required document completeness" in permit_spec
-    assert "missing document blockers" in permit_spec
+    permit_spec_lower = permit_spec.casefold()
+    assert "permit identity attachment" in permit_spec_lower
+    assert "required document completeness" in permit_spec_lower
+    assert "missing document blockers" in permit_spec_lower
     assert "handoff into Zoning Check Ledger" in permit_spec
     assert "zoning checks, reviewer comments, rule references, and pass or block outcomes" in zoning_spec
     assert "applicant revisions to the documents and checks they are meant to address" in revision_spec

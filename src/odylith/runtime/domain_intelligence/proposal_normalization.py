@@ -69,6 +69,15 @@ _WORKSTREAM_REF_LIST_FIELDS = (
     "primary_workstreams",
     "first_target_workstreams",
 )
+_WORKSTREAM_TITLE_LIST_FIELDS = (
+    "workstream_titles",
+    "target_workstream_titles",
+    "related_workstream_titles",
+    "backlog_titles",
+)
+_WORKSTREAM_SCALAR_REF_LIST_FIELDS = tuple(
+    field for field in _WORKSTREAM_REF_LIST_FIELDS if field not in _WORKSTREAM_TITLE_LIST_FIELDS
+)
 
 
 def normalize_host_reasoned_proposal(proposal: Mapping[str, Any]) -> dict[str, Any]:
@@ -158,6 +167,11 @@ def _normalize_list_fields(row: dict[str, Any], fields: Sequence[str], *, split_
             row[key] = normalize_text_list(row.get(key), split_commas=split_commas)
 
 
+def _normalize_workstream_ref_fields(row: dict[str, Any]) -> None:
+    _normalize_list_fields(row, _WORKSTREAM_TITLE_LIST_FIELDS)
+    _normalize_list_fields(row, _WORKSTREAM_SCALAR_REF_LIST_FIELDS, split_commas=True)
+
+
 def _normalize_validation_strategy(value: Any) -> list[Any]:
     return _proposal_sequence(value)
 
@@ -166,7 +180,7 @@ def _normalize_release_plan(value: Any) -> dict[str, Any]:
     if isinstance(value, list):
         rows = [_proposal_object(row) for row in value if isinstance(row, Mapping)]
         for row in rows:
-            _normalize_list_fields(row, _WORKSTREAM_REF_LIST_FIELDS, split_commas=True)
+            _normalize_workstream_ref_fields(row)
         first = rows[0] if rows else {}
         selector = clean_text(first.get("release")) or DEFAULT_GREENFIELD_RELEASE_SELECTOR
         target_workstreams = first.get("first_target_workstreams") or first.get("target_workstreams") or []
@@ -189,7 +203,7 @@ def _normalize_release_plan(value: Any) -> dict[str, Any]:
         stages = releases if isinstance(releases, list) else []
     stage_rows = [_proposal_object(row) for row in stages if isinstance(row, Mapping)]
     for row in stage_rows:
-        _normalize_list_fields(row, _WORKSTREAM_REF_LIST_FIELDS, split_commas=True)
+        _normalize_workstream_ref_fields(row)
     first = stage_rows[0] if stage_rows else {}
     selector = (
         clean_text(plan.get("selector"))
@@ -209,7 +223,7 @@ def _normalize_release_plan(value: Any) -> dict[str, Any]:
         plan["milestones"] = _release_milestones(stage_rows)
     if not plan.get("promotion_criteria"):
         plan["promotion_criteria"] = _release_promotion_criteria(stage_rows)
-    _normalize_list_fields(plan, _WORKSTREAM_REF_LIST_FIELDS, split_commas=True)
+    _normalize_workstream_ref_fields(plan)
     _normalize_list_fields(plan, ("milestones", "promotion_criteria"))
     return plan
 
@@ -251,7 +265,7 @@ def _normalize_program(value: Any, *, release_rows: Sequence[Mapping[str, Any]])
         if not isinstance(raw, Mapping):
             continue
         row = dict(raw)
-        _normalize_list_fields(row, _WORKSTREAM_REF_LIST_FIELDS, split_commas=True)
+        _normalize_workstream_ref_fields(row)
         row.setdefault("wave_id", clean_text(row.get("id")) or clean_text(row.get("wave")) or f"W{index}")
         row.setdefault("label", clean_text(row.get("title")) or clean_text(row.get("name")) or str(row["wave_id"]))
         gate = (

@@ -32,12 +32,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 75,
+    "explicit_event_count": 80,
     "mapped_workstream_evidence_count": 71,
     "recent_path_match_count": 0,
     "spec_history_event_count": 5,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 75
+    "timeline_event_count": 80
   },
   "name": "Casebook",
   "path_prefixes": [
@@ -47,6 +47,81 @@
   ],
   "spec_ref": "odylith/registry/source/components/casebook/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 478,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: A local Casebook record is linked to this path: CB-122. Why it matters: Hidden host messages do not count as delivered to the user.",
+      "ts_iso": "2026-05-25T21:33:04Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 476,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith History: A local Casebook record is linked to this path: CB-122. Why it matters: Hidden host messages do not count as delivered to the user.",
+      "ts_iso": "2026-05-25T21:32:42Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 472,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: A local Casebook record is linked to this path: CB-122. Why it matters: Hidden host messages do not count as delivered to the user.",
+      "ts_iso": "2026-05-25T19:50:14Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 470,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: A local Casebook record is linked to this path: CB-122. Why it matters: Hidden host messages do not count as delivered to the user.",
+      "ts_iso": "2026-05-25T19:49:31Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 468,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: A local Casebook record is linked to this path: CB-122. Why it matters: Hidden host messages do not count as delivered to the user.",
+      "ts_iso": "2026-05-25T19:34:22Z",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
@@ -5069,19 +5144,9 @@
     }
   ],
   "traceability": {
-    "code_references": [
-      "src/odylith/cli.py",
-      "src/odylith/runtime/governance/component_registry_intelligence.py",
-      "src/odylith/runtime/governance/sync_workstream_artifacts.py"
-    ],
-    "developer_docs": [
-      "docs/specs/odylith-repo-integration-contract.md",
-      "odylith/PRODUCT_COMPONENTS.md",
-      "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
-    ],
-    "runbooks": [
-      "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md"
-    ]
+    "code_references": [],
+    "developer_docs": [],
+    "runbooks": []
   },
   "version": "v1",
   "what_it_is": "Bug intelligence and learning surface for Odylith product defects and regressions.",

@@ -50,6 +50,14 @@ _BANNED_PROSE_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("bad path proof splice", re.compile(r"\bexercises\s+(?:A|An|The)\s+.+?\s+and\s+checks\s+(?:A|An|The)\b")),
     ("bad state inspection splice", re.compile(r"\binspect\s+(?:the\s+)?(?:core\s+)?state\s+is\b", re.IGNORECASE)),
     ("malformed verb pair", re.compile(r"\b(?:preserves\s+handles|maintains\s+defines)\b", re.IGNORECASE)),
+    ("malformed ownership verb pair", re.compile(r"\bowns\s+maintains\b", re.IGNORECASE)),
+    ("malformed prevents/can clause", re.compile(r"\bprevents\s+[^.]{1,120}\bcan\s+\w+", re.IGNORECASE)),
+    ("provisional title qualifier", re.compile(r"(?:[\(\[]\s*)?(?:working\s+title|placeholder\s+title|title\s+tbd|tbd)(?:\s*[\)\]])?", re.IGNORECASE)),
+    ("token-soup proof phrase", re.compile(r"\bdone,\s*path,\s*mean,\s*person,\s*create,\s*view,\s*edit\b", re.IGNORECASE)),
+    ("mechanical first-action scaffold", re.compile(r"\bfirst\s+accepted\s+action\b", re.IGNORECASE)),
+    ("clipped later phrase", re.compile(r"\bas\s+a\s+later\s*[.]?$", re.IGNORECASE)),
+    ("clipped stale transition", re.compile(r"\bvalid\s+transition\s+display,\s*stale\s*[.]?$", re.IGNORECASE)),
+    ("clipped evidence phrase", re.compile(r"\brejected\s+or\s+blocked\s+cases,\s*evidence\s*[.]?$", re.IGNORECASE)),
     ("doubled refusal phrase", re.compile(r"\brefuses\b[^.]{0,140}\brefuses\b", re.IGNORECASE)),
     ("clipped scoring fragment", re.compile(r"\bscor\b", re.IGNORECASE)),
     ("clipped eligibility phrase", re.compile(r"\baccepting\s+eligible\b", re.IGNORECASE)),
@@ -57,6 +65,15 @@ _BANNED_PROSE_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("raw proof target splice", re.compile(r"\bproof\s+target\s+is\s+(?:A|An|The)\s+first\s+release\b")),
     ("generic input-output filler", re.compile(r"\binputs\s+and\s+produced\s+outputs\b", re.IGNORECASE)),
     ("generic accepted-path actor filler", re.compile(r"\bsupports\s+the\s+accepted\s+path\b", re.IGNORECASE)),
+    (
+        "generic governance posture filler",
+        re.compile(
+            r"\b(?:user\s+path,\s+state,\s+evidence,\s+decision,\s+and\s+follow-up|"
+            r"entry,\s+actions,\s+feedback,\s+and\s+handoff|"
+            r"state\s+profile,\s+the\s+first-path\s+outcome,\s+visible\s+blockers,\s+risk\s+posture)\b",
+            re.IGNORECASE,
+        ),
+    ),
     ("accepted-items summary leaked", re.compile(r"\badditional\s+accepted\s+(?:items|systems)\s+remain\s+in\s+the\s+intent\b", re.IGNORECASE)),
     (
         "check-in tracking misread as checklist",
@@ -64,6 +81,28 @@ _BANNED_PROSE_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ),
     ("dangling weak sentence", re.compile(r"\bIt\s+should\s*[.]?$", re.IGNORECASE)),
     ("clipped proof clause", re.compile(r"\bby\s+accepting\s*[.]?$", re.IGNORECASE)),
+    ("missing sentence boundary before proof obligation", re.compile(r"(?<![.!?])\s+Its\s+proof\s+obligation\b")),
+    (
+        "missing object after quantified action",
+        re.compile(
+            r"\b(?:receives?|gets?|shows?|produces?|records?|exports?|deletes?)\s+"
+            r"(?:at\s+least|at\s+most|exactly)\s+(?:one|two|three|four|five|\d+)\s*[.]$",
+            re.IGNORECASE,
+        ),
+    ),
+    (
+        "verb phrase inserted into contract artifact slot",
+        re.compile(
+            r"\b(?:accepts?|produces?|blocks?|proves?|coverage\s+for)\s+"
+            r"(?:recomputes|computes?|calculates?|generates?|derives?|exports?|deletes?|records?|tracks?|validates?)\s+"
+            r"[^.]{0,120}\b(?:input|result|output|state)\b",
+            re.IGNORECASE,
+        ),
+    ),
+    (
+        "unnormalized recompute artifact phrase",
+        re.compile(r"\brecomputes\s+[^.]{0,100}\b(?:input|result|output|state)\b", re.IGNORECASE),
+    ),
 )
 
 _DANGLING_WORDS = {
@@ -221,6 +260,7 @@ def rendered_component_spec_quality_issues(
     for name, text in specs.items():
         for issue in public_prose_quality_issues(text):
             issues.append(f"`{name}` {issue}")
+        issues.extend(_section_overlap_issues(name=name, text=text))
         local_terms = _local_domain_terms(
             text,
             all_texts=tuple(specs.values()),
@@ -319,6 +359,7 @@ def _is_path_excluded(path: str) -> bool:
             "source_mmd",
             "source_png",
             "source_svg",
+            "source_title",
         )
     )
 
@@ -338,9 +379,94 @@ def _normalized_spec_lines(text: str, *, project_title: str, names: Sequence[str
 def _substantive_spec_line(line: str) -> bool:
     if not line or line.startswith("#") or line.startswith("|") or line.startswith("- `./.odylith"):
         return False
-    if line in {"### Owns", "### Outside Boundary", "### Collaborators And Dependencies", "### Definition Of Done", "### Operator Verification"}:
+    if line in {
+        "### Owns",
+        "### Accepts",
+        "### Produces",
+        "### Refuses",
+        "### Outside Boundary",
+        "### Collaborators And Dependencies",
+        "### Definition Of Done",
+        "### Operator Verification",
+    }:
         return False
     return len(domain_terms(line)) >= 4
+
+
+def _section_overlap_issues(*, name: str, text: str, max_overlap: float = 0.80) -> list[str]:
+    sections = _spec_sections(text)
+    issues: list[str] = []
+    structured_contract = not re.search(
+        r"\b(?:the\s+)?first implementation plan must name accepted inputs\b",
+        text,
+        flags=re.IGNORECASE,
+    )
+    for left_index, (left_name, left_body) in enumerate(sections):
+        left_terms = _section_terms(left_body)
+        if len(left_terms) < 10:
+            continue
+        for right_name, right_body in sections[left_index + 1 :]:
+            if not structured_contract and "Component Role" in {left_name, right_name}:
+                continue
+            right_terms = _section_terms(right_body)
+            if len(right_terms) < 10:
+                continue
+            overlap = len(left_terms & right_terms) / max(1, min(len(left_terms), len(right_terms)))
+            if overlap > max_overlap:
+                issues.append(
+                    f"component spec `{name}` repeats section content between `{left_name}` and `{right_name}` ({overlap:.2f} token overlap)"
+                )
+    return issues
+
+
+def _spec_sections(text: str) -> list[tuple[str, str]]:
+    result: list[tuple[str, str]] = []
+    current_name = ""
+    current_lines: list[str] = []
+    for raw in str(text or "").splitlines():
+        line = _clean(raw)
+        if line.startswith("## "):
+            if current_name and current_lines:
+                result.append((current_name, "\n".join(current_lines)))
+            current_name = line.lstrip("# ").strip()
+            current_lines = []
+            continue
+        if line.startswith("|") or line.startswith("#") or not line:
+            continue
+        if current_name in {"Component Snapshot", "Feature History"}:
+            continue
+        current_lines.append(line)
+    if current_name and current_lines:
+        result.append((current_name, "\n".join(current_lines)))
+    return result
+
+
+def _section_terms(text: str) -> set[str]:
+    return {
+        token
+        for token in ordered_domain_terms(text)
+        if token
+        not in {
+            "accept",
+            "accepted",
+            "block",
+            "boundary",
+            "candidate",
+            "component",
+            "contract",
+            "field",
+            "first",
+            "handoff",
+            "input",
+            "local",
+            "output",
+            "proof",
+            "refus",
+            "runtime",
+            "source-backed",
+            "structured",
+        }
+    }
 
 
 def _mask_spec_line(line: str, *, project_title: str, names: Sequence[str]) -> str:

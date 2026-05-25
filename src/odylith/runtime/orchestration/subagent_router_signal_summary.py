@@ -86,6 +86,23 @@ def _preferred_value(summary: Mapping[str, Any], key: str, *fallbacks: Any) -> A
     return None
 
 
+def _mapping_has_token(payload: Mapping[str, Any], key: str) -> bool:
+    wanted = _normalize_token(key)
+    return any(_normalize_token(raw_key) == wanted for raw_key in payload.keys())
+
+
+def _context_signal_present(payload: Mapping[str, Any], *path: str) -> bool:
+    """Return True when a context path was explicitly supplied, even if false."""
+    current: Any = payload
+    for index, key in enumerate(path):
+        if not isinstance(current, Mapping) or not _mapping_has_token(current, key):
+            return False
+        if index == len(path) - 1:
+            return True
+        current = _mapping_value(current, key)
+    return False
+
+
 def request_with_consumer_write_policy(
     request: subagent_router.RouteRequest,
     *,
@@ -320,6 +337,51 @@ def _context_signal_summary(request: subagent_router.RouteRequest) -> dict[str, 
         dict(execution_profile.get("constraints", {}))
         if isinstance(execution_profile.get("constraints", {}), Mapping)
         else {}
+    )
+    route_ready_signal_present = (
+        _context_signal_present(root, "route_ready")
+        or _context_signal_present(context_packet, "route", "route_ready")
+        or _context_signal_present(execution_constraints, "route_ready")
+        or _context_signal_present(execution_profile, "route_ready")
+    )
+    native_spawn_ready_signal_present = (
+        _context_signal_present(root, "native_spawn_ready")
+        or _context_signal_present(root, "spawn", "native_ready")
+        or _context_signal_present(root, "packet_quality", "native_spawn_ready")
+        or _context_signal_present(context_packet, "route", "native_spawn_ready")
+        or _context_signal_present(context_packet, "packet_quality", "native_spawn_ready")
+        or _context_signal_present(execution_constraints, "native_spawn_ready")
+        or _context_signal_present(execution_profile, "native_spawn_ready")
+    )
+    narrowing_required_signal_present = (
+        _context_signal_present(root, "narrowing_required")
+        or _context_signal_present(context_packet, "route", "narrowing_required")
+        or _context_signal_present(execution_constraints, "narrowing_required")
+        or _context_signal_present(execution_profile, "narrowing_required")
+    )
+    execution_profile_signal_present = any(
+        _normalize_string(execution_profile.get(key))
+        for key in (
+            "profile",
+            "model",
+            "reasoning_effort",
+            "agent_role",
+            "source",
+            "selection_mode",
+            "delegate_preference",
+        )
+    )
+    host_runtime_signal_present = (
+        _context_signal_present(root, "host_runtime")
+        or _context_signal_present(context_signals, "host_runtime")
+        or _context_signal_present(execution_profile, "host_runtime")
+    )
+    routing_signal_present = bool(
+        route_ready_signal_present
+        or native_spawn_ready_signal_present
+        or narrowing_required_signal_present
+        or execution_profile_signal_present
+        or host_runtime_signal_present
     )
     execution_signals = (
         dict(execution_profile.get("signals", {}))
@@ -604,6 +666,26 @@ def _context_signal_summary(request: subagent_router.RouteRequest) -> dict[str, 
         root=root,
         execution_engine_summary=execution_engine_summary,
     )
+    explicit_native_spawn_ready = _context_signal_bool(
+        _context_lookup(root, "native_spawn_ready")
+        or _context_lookup(root, "spawn", "native_ready")
+        or _context_lookup(root, "packet_quality", "native_spawn_ready")
+        or _context_lookup(context_packet, "route", "native_spawn_ready")
+        or _context_lookup(context_packet, "packet_quality", "native_spawn_ready")
+        or _context_lookup(execution_constraints, "native_spawn_ready")
+        or _context_lookup(execution_profile, "native_spawn_ready")
+    )
+    inferred_native_spawn_ready = bool(
+        native_spawn_supported
+        and host_runtime not in {"", "unknown", "unsupported"}
+        and not native_spawn_ready_signal_present
+    )
+    route_ready = _context_signal_bool(
+        _context_lookup(root, "route_ready")
+        or _context_lookup(context_packet, "route", "route_ready")
+        or _context_lookup(execution_constraints, "route_ready")
+        or _context_lookup(execution_profile, "route_ready")
+    )
     return {
         "grounding_score": max(
             execution_grounding_score,
@@ -719,18 +801,11 @@ def _context_signal_summary(request: subagent_router.RouteRequest) -> dict[str, 
         "same_prefix_disjoint_exception": same_prefix_disjoint_exception,
         "host_runtime": host_runtime,
         "native_spawn_supported": native_spawn_supported,
-        "native_spawn_ready": _context_signal_bool(
-            native_spawn_supported
-            and (
-                _context_lookup(root, "native_spawn_ready")
-                or _context_lookup(root, "spawn", "native_ready")
-                or _context_lookup(root, "packet_quality", "native_spawn_ready")
-            )
-        ),
-        "route_ready": _context_signal_bool(
-            _context_lookup(root, "route_ready")
-            or _context_lookup(context_packet, "route", "route_ready")
-        ),
+        "native_spawn_ready": explicit_native_spawn_ready if native_spawn_ready_signal_present else inferred_native_spawn_ready,
+        "native_spawn_ready_explicit": native_spawn_ready_signal_present,
+        "route_ready": route_ready,
+        "route_ready_explicit": route_ready_signal_present,
+        "odylith_routing_signal_present": routing_signal_present,
         "narrowing_required": narrowing_required,
         "reasoning_bias": reasoning_bias,
         "parallelism_hint": parallelism_hint,

@@ -10,6 +10,8 @@ import shutil
 import time
 from urllib.parse import quote
 
+from odylith.runtime.surfaces import render_backlog_ui
+
 from tests.integration.runtime.surface_browser_test_support import (
     _assert_atlas_selection,
     _assert_casebook_counts,
@@ -170,30 +172,52 @@ def _first_backlog_document_workstream_id(view: str) -> str:
     return str(match.group(1))
 
 
-def _load_backlog_document_shard(path: Path) -> dict[str, object]:
-    text = path.read_text(encoding="utf-8")
-    payload = text.split(" || {}, ", 1)[1].rsplit(");", 1)[0]
-    loaded = json.loads(payload)
-    assert isinstance(loaded, dict)
-    return loaded
-
-
-def _first_traceable_plan_workstream_id() -> str:
-    for path in sorted((_REPO_ROOT / "odylith" / "radar").glob("backlog-document-shard-*.v1.js")):
-        for key, raw_document in _load_backlog_document_shard(path).items():
-            html = (
-                str(raw_document.get("html", ""))
-                if isinstance(raw_document, dict)
-                else str(raw_document or "")
+def _write_traceability_plan_browser_fixture(repo_root: Path) -> Path:
+    plan_path = repo_root / "odylith" / "technical-plans" / "in-progress" / "2026-05-25-traceability-cards.md"
+    plan_path.parent.mkdir(parents=True)
+    existing_doc = repo_root / "docs" / "runbooks" / "visible-recovery.md"
+    existing_doc.parent.mkdir(parents=True)
+    existing_doc.write_text("# Visible recovery\n", encoding="utf-8")
+    source_file = repo_root / "src" / "odylith" / "runtime" / "surfaces" / "traceability_fixture.py"
+    source_file.parent.mkdir(parents=True)
+    source_file.write_text("VALUE = 1\n", encoding="utf-8")
+    plan_path.write_text(
+        "\n".join(
+            (
+                "# Traceability Cards",
+                "",
+                "Status: In progress",
+                "Created: 2026-05-25",
+                "Updated: 2026-05-25",
+                "",
+                "## Traceability",
+                "### Runbooks",
+                "- [Visible recovery](docs/runbooks/visible-recovery.md)",
+                "- `docs/runbooks/missing-recovery.md`",
+                "### Code references",
+                "- `src/odylith/runtime/surfaces/traceability_fixture.py`",
+                "- `src/odylith/runtime/surfaces/missing_traceability_fixture.py`",
+                "",
+                "## Goal",
+                "Keep existing and missing plan traceability readable in narrow and wide layouts.",
             )
-            if (
-                key.startswith("plan:")
-                and 'class="trace-groups"' in html
-                and 'class="trace-link"' in html
-                and 'class="trace-link trace-link-missing"' in html
-            ):
-                return key.split(":", 1)[1]
-    raise AssertionError("expected at least one Radar plan document with existing and missing traceability cards")
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    html = render_backlog_ui._render_plan_html(
+        repo_root=repo_root,
+        index_output_path=repo_root / "odylith" / "radar" / "radar.html",
+        entry={
+            "idea_id": "B-TRACE",
+            "title": "Traceability Cards",
+            "promoted_to_plan_file": plan_path.relative_to(repo_root).as_posix(),
+        },
+    )
+    output_path = repo_root / "odylith" / "radar" / "traceability-cards.html"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(html, encoding="utf-8")
+    return output_path
 
 
 def _wait_for_radar_standalone_document(page, *, workstream_id: str, view: str, timeout: int = 15000) -> None:  # noqa: ANN001
@@ -1403,28 +1427,25 @@ def test_radar_plan_entrypoint_redirects_into_shell_standalone_plan_view(browser
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
-def test_radar_plan_traceability_cards_stay_bounded_on_mobile_and_desktop(browser_context) -> None:  # noqa: ANN001
-    base_url, context = browser_context
+def test_radar_plan_traceability_cards_stay_bounded_on_mobile_and_desktop(
+    browser_context,
+    tmp_path: Path,
+) -> None:  # noqa: ANN001
+    _base_url, context = browser_context
+    fixture_root = tmp_path / "radar-traceability-browser-fixture"
+    fixture_page = _write_traceability_plan_browser_fixture(fixture_root)
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    workstream_id = _first_traceable_plan_workstream_id()
     page.set_viewport_size({"width": 390, "height": 844})
 
-    response = page.goto(
-        base_url + f"/odylith/index.html?tab=radar&workstream={quote(workstream_id, safe='')}&view=plan",
-        wait_until="domcontentloaded",
-    )
-    assert response is not None and response.ok
-
     def _assert_traceability_cards_fit() -> None:
-        radar = page.frame_locator("#frame-radar")
-        radar.locator(".trace-groups").wait_for(timeout=15000)
-        assert radar.locator(".trace-group").count() >= 1
-        assert radar.locator(".trace-link").count() >= 2
-        assert radar.locator(".trace-link-missing").count() >= 1
-        trace_paths = [text.strip() for text in radar.locator(".trace-path").all_inner_texts()]
+        page.locator(".trace-groups").wait_for(timeout=15000)
+        assert page.locator(".trace-group").count() >= 1
+        assert page.locator(".trace-link").count() >= 2
+        assert page.locator(".trace-link-missing").count() >= 1
+        trace_paths = [text.strip() for text in page.locator(".trace-path").all_inner_texts()]
         assert trace_paths
         assert not [text for text in trace_paths if ".." in text or text.startswith(("http://", "https://"))]
-        style_rows = radar.locator(".trace-path").evaluate_all(
+        style_rows = page.locator(".trace-path").evaluate_all(
             """nodes => nodes.map((node) => {
               const style = window.getComputedStyle(node);
               return {
@@ -1438,7 +1459,7 @@ def test_radar_plan_traceability_cards_stay_bounded_on_mobile_and_desktop(browse
         assert all(row["overflow"] == "hidden" for row in style_rows)
         assert all(row["textOverflow"] == "ellipsis" for row in style_rows)
         assert all(row["whiteSpace"] == "nowrap" for row in style_rows)
-        overflow_rows = radar.locator(".trace-link").evaluate_all(
+        overflow_rows = page.locator(".trace-link").evaluate_all(
             """nodes => nodes
               .map((node) => {
                 const parent = node.closest(".trace-group").getBoundingClientRect();
@@ -1449,13 +1470,17 @@ def test_radar_plan_traceability_cards_stay_bounded_on_mobile_and_desktop(browse
         )
         assert overflow_rows == []
 
-    _wait_for_radar_standalone_document(page, workstream_id=workstream_id, view="plan")
-    _assert_traceability_cards_fit()
+    with _static_server(root=fixture_root) as fixture_url:
+        response = page.goto(
+            fixture_url + "/" + fixture_page.relative_to(fixture_root).as_posix(),
+            wait_until="domcontentloaded",
+        )
+        assert response is not None and response.ok
+        _assert_traceability_cards_fit()
 
-    page.set_viewport_size({"width": 1440, "height": 920})
-    page.reload(wait_until="domcontentloaded")
-    _wait_for_radar_standalone_document(page, workstream_id=workstream_id, view="plan")
-    _assert_traceability_cards_fit()
+        page.set_viewport_size({"width": 1440, "height": 920})
+        page.reload(wait_until="domcontentloaded")
+        _assert_traceability_cards_fit()
 
     _discard_external_mermaid_cdn_failures(failed_requests)
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)

@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "734a7f91579f76324df40496ca950dcdacaf7c784d73edd02a36ac9fe376000f",
+    "digest": "01ae89d71ef0f160d3af5e076f407b77dc54af6161b77412ec7be6ede3810608",
     "file_count": 312,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -367,19 +367,9 @@
       "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
       "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
       "plan_traceability": {
-        "runbooks": [
-          "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md"
-        ],
-        "developer_docs": [
-          "docs/specs/odylith-repo-integration-contract.md",
-          "odylith/PRODUCT_COMPONENTS.md",
-          "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
-        ],
-        "code_references": [
-          "src/odylith/cli.py",
-          "src/odylith/runtime/governance/component_registry_intelligence.py",
-          "src/odylith/runtime/governance/sync_workstream_artifacts.py"
-        ]
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
       },
       "active_release_id": "",
       "active_release": {},
@@ -388,9 +378,9 @@
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 20,
-        "runbook_count": 1,
-        "developer_doc_count": 3,
-        "code_reference_count": 3
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
       },
       "execution_wave_refs": []
     },
@@ -459,19 +449,9 @@
       "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-27-compass-history-retention-compressed-archive-and-restore.md",
       "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-27-compass-history-retention-compressed-archive-and-restore.md",
       "plan_traceability": {
-        "runbooks": [
-          "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md"
-        ],
-        "developer_docs": [
-          "odylith/README.md",
-          "odylith/registry/source/components/compass/CURRENT_SPEC.md"
-        ],
-        "code_references": [
-          "src/odylith/cli.py",
-          "src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
-          "src/odylith/runtime/surfaces/render_compass_dashboard.py",
-          "src/odylith/runtime/surfaces/update_compass.py"
-        ]
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
       },
       "active_release_id": "",
       "active_release": {},
@@ -480,9 +460,9 @@
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
-        "runbook_count": 1,
-        "developer_doc_count": 2,
-        "code_reference_count": 4
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
       },
       "execution_wave_refs": []
     },
@@ -509,24 +489,9 @@
       "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-self-hosting-posture-hardening.md",
       "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-27-odylith-self-hosting-posture-hardening.md",
       "plan_traceability": {
-        "runbooks": [
-          "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md"
-        ],
-        "developer_docs": [
-          "docs/specs/odylith-repo-integration-contract.md",
-          "odylith/registry/source/components/compass/CURRENT_SPEC.md",
-          "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
-          "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
-        ],
-        "code_references": [
-          "github/workflows/release.yml",
-          "src/odylith/cli.py",
-          "src/odylith/install/manager.py",
-          "src/odylith/runtime/governance/validate_self_host_posture.py",
-          "src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
-          "src/odylith/runtime/surfaces/compass_dashboard_shell.py",
-          "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
-        ]
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
       },
       "active_release_id": "",
       "active_release": {},
@@ -535,9 +500,9 @@
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 1,
-        "runbook_count": 1,
-        "developer_doc_count": 4,
-        "code_reference_count": 7
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
       },
       "execution_wave_refs": []
     },
@@ -569,29 +534,9 @@
       "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md",
       "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-28-odylith-managed-runtime-bundles-and-supported-platform-contract.md",
       "plan_traceability": {
-        "runbooks": [
-          "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
-          "odylith/MAINTAINER_RELEASE_RUNBOOK.md"
-        ],
-        "developer_docs": [
-          "odylith/README.md",
-          "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
-          "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
-          "odylith/registry/source/components/release/CURRENT_SPEC.md"
-        ],
-        "code_references": [
-          "github/workflows/test.yml",
-          "src/odylith/cli.py",
-          "src/odylith/install/managed_runtime.py",
-          "src/odylith/install/manager.py",
-          "src/odylith/install/release_assets.py",
-          "src/odylith/install/runtime.py",
-          "src/odylith/runtime/common/consumer_profile.py",
-          "tests/integration/install/test_manager.py",
-          "tests/unit/install/test_release_assets.py",
-          "tests/unit/install/test_runtime.py",
-          "tests/unit/test_cli.py"
-        ]
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
       },
       "active_release_id": "",
       "active_release": {},
@@ -600,9 +545,9 @@
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 5,
-        "runbook_count": 2,
-        "developer_doc_count": 4,
-        "code_reference_count": 11
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
       },
       "execution_wave_refs": []
     },
@@ -671,18 +616,9 @@
       "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-ga-promotion-and-supported-platform-contract.md",
       "promoted_to_plan": "odylith/technical-plans/done/2026-03/2026-03-28-odylith-ga-promotion-and-supported-platform-contract.md",
       "plan_traceability": {
-        "runbooks": [
-          "odylith/MAINTAINER_RELEASE_RUNBOOK.md"
-        ],
-        "developer_docs": [
-          "odylith/README.md",
-          "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
-          "odylith/registry/source/components/release/CURRENT_SPEC.md"
-        ],
-        "code_references": [
-          "src/odylith/install/manager.py",
-          "tests/integration/install/test_manager.py"
-        ]
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
       },
       "active_release_id": "",
       "active_release": {},
@@ -691,9 +627,9 @@
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 5,
-        "runbook_count": 1,
-        "developer_doc_count": 3,
-        "code_reference_count": 2
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
       },
       "execution_wave_refs": []
     },
@@ -3528,7 +3464,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -4463,7 +4399,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -4563,7 +4499,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -4661,7 +4597,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -4797,7 +4733,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -4905,7 +4841,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -5122,7 +5058,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -5222,7 +5158,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -5460,7 +5396,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -6996,7 +6932,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7090,7 +7026,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7193,7 +7129,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7296,7 +7232,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7399,7 +7335,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7502,7 +7438,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7605,7 +7541,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7708,7 +7644,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7811,7 +7747,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -8504,7 +8440,7 @@
         "completed_workstreams": [
           "B-140"
         ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 2,
         "completed_workstream_count": 1
@@ -8608,7 +8544,7 @@
         "completed_workstreams": [
           "B-140"
         ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 2,
         "completed_workstream_count": 1
@@ -8716,7 +8652,7 @@
         "B-116",
         "B-117"
       ],
-      "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+      "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": true,
       "active_workstream_count": 0,
       "completed_workstream_count": 36
@@ -8750,7 +8686,7 @@
       "completed_workstreams": [
         "B-127"
       ],
-      "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+      "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
       "active_workstream_count": 10,
       "completed_workstream_count": 1
@@ -8771,7 +8707,7 @@
       "aliases": [],
       "active_workstreams": [],
       "completed_workstreams": [],
-      "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+      "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
       "active_workstream_count": 0,
       "completed_workstream_count": 0
@@ -8801,7 +8737,7 @@
         "B-125"
       ],
       "completed_workstreams": [],
-      "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+      "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
       "active_workstream_count": 8,
       "completed_workstream_count": 0
@@ -8829,7 +8765,7 @@
       "completed_workstreams": [
         "B-140"
       ],
-      "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+      "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
       "active_workstream_count": 2,
       "completed_workstream_count": 1
@@ -8859,7 +8795,7 @@
       "completed_workstreams": [
         "B-140"
       ],
-      "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+      "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
       "active_workstream_count": 2,
       "completed_workstream_count": 1
@@ -8888,7 +8824,7 @@
     "completed_workstreams": [
       "B-140"
     ],
-    "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+    "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
     "terminal": false,
     "active_workstream_count": 2,
     "completed_workstream_count": 1
@@ -10724,216 +10660,6 @@
       "status": "implementation",
       "workstream_type": "standalone",
       "file": "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md"
-    },
-    {
-      "id": "artifact:docs/specs/odylith-repo-integration-contract.md",
-      "type": "artifact",
-      "label": "docs/specs/odylith-repo-integration-contract.md",
-      "bucket": "developer_docs",
-      "file": "docs/specs/odylith-repo-integration-contract.md"
-    },
-    {
-      "id": "artifact:github/workflows/release.yml",
-      "type": "artifact",
-      "label": "github/workflows/release.yml",
-      "bucket": "code_references",
-      "file": "github/workflows/release.yml"
-    },
-    {
-      "id": "artifact:github/workflows/test.yml",
-      "type": "artifact",
-      "label": "github/workflows/test.yml",
-      "bucket": "code_references",
-      "file": "github/workflows/test.yml"
-    },
-    {
-      "id": "artifact:odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
-      "type": "artifact",
-      "label": "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
-      "bucket": "runbooks",
-      "file": "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md"
-    },
-    {
-      "id": "artifact:odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-      "type": "artifact",
-      "label": "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-      "bucket": "runbooks",
-      "file": "odylith/MAINTAINER_RELEASE_RUNBOOK.md"
-    },
-    {
-      "id": "artifact:odylith/PRODUCT_COMPONENTS.md",
-      "type": "artifact",
-      "label": "odylith/PRODUCT_COMPONENTS.md",
-      "bucket": "developer_docs",
-      "file": "odylith/PRODUCT_COMPONENTS.md"
-    },
-    {
-      "id": "artifact:odylith/README.md",
-      "type": "artifact",
-      "label": "odylith/README.md",
-      "bucket": "developer_docs",
-      "file": "odylith/README.md"
-    },
-    {
-      "id": "artifact:odylith/registry/source/components/compass/CURRENT_SPEC.md",
-      "type": "artifact",
-      "label": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
-      "bucket": "developer_docs",
-      "file": "odylith/registry/source/components/compass/CURRENT_SPEC.md"
-    },
-    {
-      "id": "artifact:odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
-      "type": "artifact",
-      "label": "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
-      "bucket": "developer_docs",
-      "file": "odylith/registry/source/components/dashboard/CURRENT_SPEC.md"
-    },
-    {
-      "id": "artifact:odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
-      "type": "artifact",
-      "label": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
-      "bucket": "developer_docs",
-      "file": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md"
-    },
-    {
-      "id": "artifact:odylith/registry/source/components/odylith/CURRENT_SPEC.md",
-      "type": "artifact",
-      "label": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
-      "bucket": "developer_docs",
-      "file": "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
-    },
-    {
-      "id": "artifact:odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "type": "artifact",
-      "label": "odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "bucket": "developer_docs",
-      "file": "odylith/registry/source/components/release/CURRENT_SPEC.md"
-    },
-    {
-      "id": "artifact:src/odylith/cli.py",
-      "type": "artifact",
-      "label": "src/odylith/cli.py",
-      "bucket": "code_references",
-      "file": "src/odylith/cli.py"
-    },
-    {
-      "id": "artifact:src/odylith/install/managed_runtime.py",
-      "type": "artifact",
-      "label": "src/odylith/install/managed_runtime.py",
-      "bucket": "code_references",
-      "file": "src/odylith/install/managed_runtime.py"
-    },
-    {
-      "id": "artifact:src/odylith/install/manager.py",
-      "type": "artifact",
-      "label": "src/odylith/install/manager.py",
-      "bucket": "code_references",
-      "file": "src/odylith/install/manager.py"
-    },
-    {
-      "id": "artifact:src/odylith/install/release_assets.py",
-      "type": "artifact",
-      "label": "src/odylith/install/release_assets.py",
-      "bucket": "code_references",
-      "file": "src/odylith/install/release_assets.py"
-    },
-    {
-      "id": "artifact:src/odylith/install/runtime.py",
-      "type": "artifact",
-      "label": "src/odylith/install/runtime.py",
-      "bucket": "code_references",
-      "file": "src/odylith/install/runtime.py"
-    },
-    {
-      "id": "artifact:src/odylith/runtime/common/consumer_profile.py",
-      "type": "artifact",
-      "label": "src/odylith/runtime/common/consumer_profile.py",
-      "bucket": "code_references",
-      "file": "src/odylith/runtime/common/consumer_profile.py"
-    },
-    {
-      "id": "artifact:src/odylith/runtime/governance/component_registry_intelligence.py",
-      "type": "artifact",
-      "label": "src/odylith/runtime/governance/component_registry_intelligence.py",
-      "bucket": "code_references",
-      "file": "src/odylith/runtime/governance/component_registry_intelligence.py"
-    },
-    {
-      "id": "artifact:src/odylith/runtime/governance/sync_workstream_artifacts.py",
-      "type": "artifact",
-      "label": "src/odylith/runtime/governance/sync_workstream_artifacts.py",
-      "bucket": "code_references",
-      "file": "src/odylith/runtime/governance/sync_workstream_artifacts.py"
-    },
-    {
-      "id": "artifact:src/odylith/runtime/governance/validate_self_host_posture.py",
-      "type": "artifact",
-      "label": "src/odylith/runtime/governance/validate_self_host_posture.py",
-      "bucket": "code_references",
-      "file": "src/odylith/runtime/governance/validate_self_host_posture.py"
-    },
-    {
-      "id": "artifact:src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
-      "type": "artifact",
-      "label": "src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
-      "bucket": "code_references",
-      "file": "src/odylith/runtime/surfaces/compass_dashboard_runtime.py"
-    },
-    {
-      "id": "artifact:src/odylith/runtime/surfaces/compass_dashboard_shell.py",
-      "type": "artifact",
-      "label": "src/odylith/runtime/surfaces/compass_dashboard_shell.py",
-      "bucket": "code_references",
-      "file": "src/odylith/runtime/surfaces/compass_dashboard_shell.py"
-    },
-    {
-      "id": "artifact:src/odylith/runtime/surfaces/render_compass_dashboard.py",
-      "type": "artifact",
-      "label": "src/odylith/runtime/surfaces/render_compass_dashboard.py",
-      "bucket": "code_references",
-      "file": "src/odylith/runtime/surfaces/render_compass_dashboard.py"
-    },
-    {
-      "id": "artifact:src/odylith/runtime/surfaces/render_tooling_dashboard.py",
-      "type": "artifact",
-      "label": "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
-      "bucket": "code_references",
-      "file": "src/odylith/runtime/surfaces/render_tooling_dashboard.py"
-    },
-    {
-      "id": "artifact:src/odylith/runtime/surfaces/update_compass.py",
-      "type": "artifact",
-      "label": "src/odylith/runtime/surfaces/update_compass.py",
-      "bucket": "code_references",
-      "file": "src/odylith/runtime/surfaces/update_compass.py"
-    },
-    {
-      "id": "artifact:tests/integration/install/test_manager.py",
-      "type": "artifact",
-      "label": "tests/integration/install/test_manager.py",
-      "bucket": "code_references",
-      "file": "tests/integration/install/test_manager.py"
-    },
-    {
-      "id": "artifact:tests/unit/install/test_release_assets.py",
-      "type": "artifact",
-      "label": "tests/unit/install/test_release_assets.py",
-      "bucket": "code_references",
-      "file": "tests/unit/install/test_release_assets.py"
-    },
-    {
-      "id": "artifact:tests/unit/install/test_runtime.py",
-      "type": "artifact",
-      "label": "tests/unit/install/test_runtime.py",
-      "bucket": "code_references",
-      "file": "tests/unit/install/test_runtime.py"
-    },
-    {
-      "id": "artifact:tests/unit/test_cli.py",
-      "type": "artifact",
-      "label": "tests/unit/test_cli.py",
-      "bucket": "code_references",
-      "file": "tests/unit/test_cli.py"
     },
     {
       "id": "component:atlas",
@@ -14821,41 +14547,6 @@
     },
     {
       "source": "B-001",
-      "target": "artifact:docs/specs/odylith-repo-integration-contract.md",
-      "edge_type": "plan_traceability:developer_docs"
-    },
-    {
-      "source": "B-001",
-      "target": "artifact:odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
-      "edge_type": "plan_traceability:runbooks"
-    },
-    {
-      "source": "B-001",
-      "target": "artifact:odylith/PRODUCT_COMPONENTS.md",
-      "edge_type": "plan_traceability:developer_docs"
-    },
-    {
-      "source": "B-001",
-      "target": "artifact:odylith/registry/source/components/odylith/CURRENT_SPEC.md",
-      "edge_type": "plan_traceability:developer_docs"
-    },
-    {
-      "source": "B-001",
-      "target": "artifact:src/odylith/cli.py",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-001",
-      "target": "artifact:src/odylith/runtime/governance/component_registry_intelligence.py",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-001",
-      "target": "artifact:src/odylith/runtime/governance/sync_workstream_artifacts.py",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-001",
       "target": "component:atlas",
       "edge_type": "component_linkage"
     },
@@ -15156,41 +14847,6 @@
     },
     {
       "source": "B-003",
-      "target": "artifact:odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
-      "edge_type": "plan_traceability:runbooks"
-    },
-    {
-      "source": "B-003",
-      "target": "artifact:odylith/README.md",
-      "edge_type": "plan_traceability:developer_docs"
-    },
-    {
-      "source": "B-003",
-      "target": "artifact:odylith/registry/source/components/compass/CURRENT_SPEC.md",
-      "edge_type": "plan_traceability:developer_docs"
-    },
-    {
-      "source": "B-003",
-      "target": "artifact:src/odylith/cli.py",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-003",
-      "target": "artifact:src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-003",
-      "target": "artifact:src/odylith/runtime/surfaces/render_compass_dashboard.py",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-003",
-      "target": "artifact:src/odylith/runtime/surfaces/update_compass.py",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-003",
       "target": "component:compass",
       "edge_type": "component_linkage"
     },
@@ -15213,66 +14869,6 @@
       "source": "B-004",
       "target": "B-027",
       "edge_type": "depends_on"
-    },
-    {
-      "source": "B-004",
-      "target": "artifact:docs/specs/odylith-repo-integration-contract.md",
-      "edge_type": "plan_traceability:developer_docs"
-    },
-    {
-      "source": "B-004",
-      "target": "artifact:github/workflows/release.yml",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-004",
-      "target": "artifact:odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
-      "edge_type": "plan_traceability:runbooks"
-    },
-    {
-      "source": "B-004",
-      "target": "artifact:odylith/registry/source/components/compass/CURRENT_SPEC.md",
-      "edge_type": "plan_traceability:developer_docs"
-    },
-    {
-      "source": "B-004",
-      "target": "artifact:odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
-      "edge_type": "plan_traceability:developer_docs"
-    },
-    {
-      "source": "B-004",
-      "target": "artifact:odylith/registry/source/components/odylith/CURRENT_SPEC.md",
-      "edge_type": "plan_traceability:developer_docs"
-    },
-    {
-      "source": "B-004",
-      "target": "artifact:src/odylith/cli.py",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-004",
-      "target": "artifact:src/odylith/install/manager.py",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-004",
-      "target": "artifact:src/odylith/runtime/governance/validate_self_host_posture.py",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-004",
-      "target": "artifact:src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-004",
-      "target": "artifact:src/odylith/runtime/surfaces/compass_dashboard_shell.py",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-004",
-      "target": "artifact:src/odylith/runtime/surfaces/render_tooling_dashboard.py",
-      "edge_type": "plan_traceability:code_references"
     },
     {
       "source": "B-004",
@@ -15323,91 +14919,6 @@
       "source": "B-005",
       "target": "B-057",
       "edge_type": "depends_on"
-    },
-    {
-      "source": "B-005",
-      "target": "artifact:github/workflows/test.yml",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-005",
-      "target": "artifact:odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
-      "edge_type": "plan_traceability:runbooks"
-    },
-    {
-      "source": "B-005",
-      "target": "artifact:odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-      "edge_type": "plan_traceability:runbooks"
-    },
-    {
-      "source": "B-005",
-      "target": "artifact:odylith/README.md",
-      "edge_type": "plan_traceability:developer_docs"
-    },
-    {
-      "source": "B-005",
-      "target": "artifact:odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
-      "edge_type": "plan_traceability:developer_docs"
-    },
-    {
-      "source": "B-005",
-      "target": "artifact:odylith/registry/source/components/odylith/CURRENT_SPEC.md",
-      "edge_type": "plan_traceability:developer_docs"
-    },
-    {
-      "source": "B-005",
-      "target": "artifact:odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "edge_type": "plan_traceability:developer_docs"
-    },
-    {
-      "source": "B-005",
-      "target": "artifact:src/odylith/cli.py",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-005",
-      "target": "artifact:src/odylith/install/managed_runtime.py",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-005",
-      "target": "artifact:src/odylith/install/manager.py",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-005",
-      "target": "artifact:src/odylith/install/release_assets.py",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-005",
-      "target": "artifact:src/odylith/install/runtime.py",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-005",
-      "target": "artifact:src/odylith/runtime/common/consumer_profile.py",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-005",
-      "target": "artifact:tests/integration/install/test_manager.py",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-005",
-      "target": "artifact:tests/unit/install/test_release_assets.py",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-005",
-      "target": "artifact:tests/unit/install/test_runtime.py",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-005",
-      "target": "artifact:tests/unit/test_cli.py",
-      "edge_type": "plan_traceability:code_references"
     },
     {
       "source": "B-005",
@@ -15508,36 +15019,6 @@
       "source": "B-006",
       "target": "component:registry",
       "edge_type": "component_linkage"
-    },
-    {
-      "source": "B-007",
-      "target": "artifact:odylith/MAINTAINER_RELEASE_RUNBOOK.md",
-      "edge_type": "plan_traceability:runbooks"
-    },
-    {
-      "source": "B-007",
-      "target": "artifact:odylith/README.md",
-      "edge_type": "plan_traceability:developer_docs"
-    },
-    {
-      "source": "B-007",
-      "target": "artifact:odylith/registry/source/components/odylith/CURRENT_SPEC.md",
-      "edge_type": "plan_traceability:developer_docs"
-    },
-    {
-      "source": "B-007",
-      "target": "artifact:odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "edge_type": "plan_traceability:developer_docs"
-    },
-    {
-      "source": "B-007",
-      "target": "artifact:src/odylith/install/manager.py",
-      "edge_type": "plan_traceability:code_references"
-    },
-    {
-      "source": "B-007",
-      "target": "artifact:tests/integration/install/test_manager.py",
-      "edge_type": "plan_traceability:code_references"
     },
     {
       "source": "B-007",
@@ -23989,9 +23470,9 @@
     "B-001": {
       "linked_plan_count": 1,
       "linked_diagram_count": 20,
-      "runbook_count": 1,
-      "developer_doc_count": 3,
-      "code_reference_count": 3
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     },
     "B-002": {
       "linked_plan_count": 0,
@@ -24003,23 +23484,23 @@
     "B-003": {
       "linked_plan_count": 1,
       "linked_diagram_count": 0,
-      "runbook_count": 1,
-      "developer_doc_count": 2,
-      "code_reference_count": 4
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     },
     "B-004": {
       "linked_plan_count": 1,
       "linked_diagram_count": 1,
-      "runbook_count": 1,
-      "developer_doc_count": 4,
-      "code_reference_count": 7
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     },
     "B-005": {
       "linked_plan_count": 1,
       "linked_diagram_count": 5,
-      "runbook_count": 2,
-      "developer_doc_count": 4,
-      "code_reference_count": 11
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     },
     "B-006": {
       "linked_plan_count": 0,
@@ -24031,9 +23512,9 @@
     "B-007": {
       "linked_plan_count": 1,
       "linked_diagram_count": 5,
-      "runbook_count": 1,
-      "developer_doc_count": 3,
-      "code_reference_count": 2
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     },
     "B-008": {
       "linked_plan_count": 1,
@@ -25081,12 +24562,12 @@
     "active_release_assignment_count": 20,
     "execution_program_count": 5,
     "execution_wave_count": 30,
-    "node_count": 376,
-    "edge_count": 1847,
+    "node_count": 346,
+    "edge_count": 1798,
     "warning_count": 6,
     "warning_item_count": 6,
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-05-23 22:18:36Z"
+  "generated_utc": "2026-05-25 21:43:19Z"
 }

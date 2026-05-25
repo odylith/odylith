@@ -12,73 +12,73 @@ from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield
 from odylith.runtime.governance.component_spec_rendering import build_component_spec
 
 
-BODY_COMPOSITION_INTENT = """Body Composition and Waist Reduction App
+SERVICE_READINESS_INTENT = """# Service Readiness Review App
 
 Product story
 
-A consumer wellness app helps adults understand body composition changes and reduce abdominal fat risk markers through measurable habits, progress tracking, and safer guidance. It should not promise spot reduction. The product frames tummy fat reduction as waist measurement improvement driven by overall fat loss, strength training, nutrition, sleep, and consistency.
+An operations app helps coordinators understand service readiness changes through measurable intake, progress tracking, and conservative guidance. It should not promise automatic operational approval. The product frames readiness improvement as capacity, availability, inspection evidence, and follow-through moving in a traceable direction.
 
 State object
 
-The core product state is a user progress profile: baseline body metrics, waist and weight history, optional photos, goals, activity and nutrition habits, adherence signals, recommendations, check-ins, and privacy consent choices.
+The core product state is a service readiness profile: baseline service metrics, capacity and availability history, optional attachments, goals, work habits, progress signals, recommendations, check-ins, and privacy consent choices.
 
 First complete path
 
-A user signs up, completes a baseline assessment, records waist and body composition measurements, chooses a realistic goal, receives a first-week plan, logs daily habits, and gets a weekly progress review that adjusts guidance based on trend data rather than single-day changes.
+A coordinator signs up, completes a baseline assessment, records capacity and availability measurements, chooses a realistic goal, receives a first-week plan, logs daily work signals, and gets a weekly readiness review that adjusts guidance based on status data rather than single-day changes.
 
 Human actors
 
-- Primary user trying to improve body composition and waist measurements
-- Optional coach, dietitian, or trainer reviewing progress and guidance
+- Primary coordinator trying to improve service readiness and capacity visibility
+- Optional supervisor or reviewer checking progress and guidance
 - Support or safety reviewer handling risky inputs, complaints, and account issues
 - Product operator managing content, privacy settings, and recommendation rules
 
 External systems
 
-- Apple Health, Google Fit, or wearable activity feeds
-- Smart scale or body composition device integrations
-- Nutrition and food database provider
+- Inventory, scheduling, or service activity feeds
+- Attachment storage or inspection evidence providers
+- Reference data provider
 - Push notification, email, and authentication services
-- Payment provider if the app includes subscriptions or coaching
+- Payment provider if the app includes subscriptions or support services
 
 Internal product systems
 
 - Onboarding and consent flow
-- Measurement capture for weight, waist, photos, and body composition estimates
+- Measurement capture for capacity, availability, attachments, and readiness estimates
 - Goal setting and plan generation
-- Habit, activity, nutrition, and check-in tracking
-- Progress analytics and trend explanations
-- Safety guardrails for medical, eating disorder, pregnancy, underage, and extreme weight-loss cases
+- Habit, activity, status, and check-in tracking
+- Progress analytics and status explanations
+- Policy guardrails for approval limits, escalation, restricted actions, evidence gaps, and high-risk cases
 - Privacy, retention, export, and deletion controls
 
 Critical assumptions
 
-- The app is a wellness product, not a medical diagnosis or treatment tool.
-- Guidance prioritizes sustainable fat loss and health markers over cosmetic promises.
-- Tummy fat reduction is expressed as waist trend reduction, not targeted fat burning.
-- Optional photos are sensitive data and require explicit consent, strong privacy controls, and easy deletion.
+- The app is an operations planning product, not an automatic approval system.
+- Guidance prioritizes traceable readiness and reviewable evidence over unsupported promises.
+- Readiness improvement is expressed as status movement, not hidden automatic scoring.
+- Optional attachments are sensitive data and require explicit consent, strong privacy controls, and easy deletion.
 - The first release can work with manual measurement entry before advanced integrations.
 - Recommendations must be conservative, explainable, and easy for users to ignore or adjust.
 
 Ambiguities
 
-- Whether body composition is estimated from manual inputs, photos, smart scales, or professional measurements.
-- Whether the product is self-serve only or includes human coaching.
-- Whether the target audience is general consumers, postpartum users, fitness users, or metabolic health users.
-- Whether nutrition logging should be detailed calorie tracking or lower-friction habit tracking.
-- Which jurisdictions and age groups the app will support.
-- Whether the business model is subscription, paid coaching, device companion, or employer wellness.
+- Whether readiness is estimated from manual inputs, attachments, provider feeds, or reviewer measurements.
+- Whether the product is self-serve only or includes human review.
+- Whether the target audience is internal coordinators, supervisors, vendor teams, or customer support.
+- Whether activity logging should be detailed task tracking or lower-friction status tracking.
+- Which jurisdictions and access groups the app will support.
+- Whether the business model is subscription, paid support, provider companion, or internal operations.
 
 Proof boundary
 
-The first governed product slice should prove that a user can safely create a baseline, understand what is being measured, follow a first plan, and review progress without misleading claims. It should validate privacy handling, measurement clarity, recommendation guardrails, and a coherent first-week loop. It should not claim proven fat-loss efficacy until there is real outcome data.
+The first governed product slice should prove that a coordinator can safely create a baseline, understand what is being measured, follow a first plan, and review progress without misleading claims. It should validate privacy handling, measurement clarity, recommendation guardrails, and a coherent first-week loop. It should not claim automatic readiness approval until there is real outcome data.
 """
 
 
-def test_confirmed_body_composition_intent_repairs_actor_and_system_labels() -> None:
+def test_confirmed_service_readiness_intent_repairs_actor_and_system_labels() -> None:
     intent = parse_confirmed_intent_text(
-        BODY_COMPOSITION_INTENT,
-        prompt="Draft a product-first greenfield proposal for a body composition and tummy fat reduction app.",
+        SERVICE_READINESS_INTENT,
+        prompt="Draft a product-first greenfield proposal for a service readiness review app.",
     )
 
     encoded = json.dumps(intent)
@@ -87,18 +87,18 @@ def test_confirmed_body_composition_intent_repairs_actor_and_system_labels() -> 
     assert "Relevant evidence" not in encoded
     assert "and downstream, and keeps" not in encoded
     assert "Evidence for this slice" not in encoded
-    assert "Body Composition User" in encoded
+    assert "Readiness And Capacity Visibility Coordinator" in encoded
     assert "Content Privacy Operator" in encoded
-    assert "Measurement Capture For Weight, Waist, Photos, And —" not in encoded
-    assert "Safety Guardrails For Medical, Eating Disorder, Pregnancy, —" not in encoded
-    assert "Measurement Capture For Weight, Waist, Photos, And Body Composition Estimates" in encoded
-    assert "Safety Guardrails For Medical, Eating Disorder, Pregnancy, Underage, And Extreme Weight-loss Cases" in encoded
+    assert "Measurement Capture For Capacity, Availability, Attachments, And —" not in encoded
+    assert "Policy Guardrails For Approval Limits, Escalation, Restricted Actions, —" not in encoded
+    assert "Measurement Capture For Capacity, Availability, Attachments, And Readiness Estimates" in encoded
+    assert "Policy Guardrails For Approval Limits, Escalation, Restricted Actions, Evidence Gaps, And High-risk Cases" in encoded
     assert "without." not in encoded
 
 
-def test_confirmed_body_composition_create_reaches_all_prewrite_gates(tmp_path) -> None:
-    prompt = "Draft a product-first greenfield proposal for a body composition and tummy fat reduction app."
-    intent = parse_confirmed_intent_text(BODY_COMPOSITION_INTENT, prompt=prompt)
+def test_confirmed_service_readiness_create_reaches_all_prewrite_gates(tmp_path) -> None:
+    prompt = "Draft a product-first greenfield proposal for a service readiness review app."
+    intent = parse_confirmed_intent_text(SERVICE_READINESS_INTENT, prompt=prompt)
 
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
@@ -111,10 +111,10 @@ def test_confirmed_body_composition_create_reaches_all_prewrite_gates(tmp_path) 
     assert "Primary User" not in encoded
     assert "behavior for the accepted path" not in encoded
     assert "Relevant evidence" not in encoded
-    assert "Measurement Capture for Weight, Waist, Photos, and Service" not in encoded
-    assert "Safety Guardrails for Medical, Eating Disorder, Pregnancy, Service" not in encoded
-    assert "Measurement Capture for Weight, Waist, Photos, and Body Composition Estimates Service" in encoded
-    assert "Safety Guardrails for Medical, Eating Disorder, Pregnancy, Underage, and Extreme Weight-loss Cases Service" in encoded
+    assert "Measurement Capture for Capacity, Availability, Attachments, and Service" not in encoded
+    assert "Policy Guardrails for Approval Limits, Escalation, Restricted Actions, Service" not in encoded
+    assert "Measurement Capture for Capacity, Availability, Attachments, and Readiness Estimates Service" in encoded
+    assert "Policy Guardrails for Approval Limits, Escalation, Restricted Actions, Evidence Gaps, and High-risk Cases Service" in encoded
     measurement = next(row for row in proposal["components"] if row["component_id"].startswith("measurement-capture"))
     privacy = next(row for row in proposal["components"] if row["component_id"].startswith("privacy-retention"))
     assert measurement["kind"] == "service"

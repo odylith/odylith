@@ -7480,19 +7480,9 @@
     }
   ],
   "traceability": {
-    "code_references": [
-      "src/odylith/cli.py",
-      "src/odylith/runtime/governance/component_registry_intelligence.py",
-      "src/odylith/runtime/governance/sync_workstream_artifacts.py"
-    ],
-    "developer_docs": [
-      "docs/specs/odylith-repo-integration-contract.md",
-      "odylith/PRODUCT_COMPONENTS.md",
-      "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
-    ],
-    "runbooks": [
-      "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md"
-    ]
+    "code_references": [],
+    "developer_docs": [],
+    "runbooks": []
   },
   "version": "v1",
   "what_it_is": "Workstream backlog and queue-governance surface.",

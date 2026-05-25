@@ -12,6 +12,7 @@ from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import prompt_signal_runtime
 from odylith.runtime.intervention_engine import stream_state
+from odylith.runtime.intervention_engine import visibility_broker
 from odylith.runtime.intervention_engine import visibility_replay
 from odylith.runtime.surfaces import host_intervention_support
 
@@ -135,6 +136,16 @@ def render_visible_intervention(
                     rendered=replay,
                 )
             return replay
+    delivery_channel = (
+        "manual_visible_command"
+        if confirm_chat_delivery
+        else visibility_broker.ASSISTANT_RENDER_REQUIRED_CHANNEL
+    )
+    delivery_status = (
+        "manual_visible"
+        if confirm_chat_delivery
+        else visibility_broker.ASSISTANT_RENDER_REQUIRED_STATUS
+    )
     decision = host_surface_runtime.visible_intervention_decision(
         repo_root=repo_root,
         bundle=bundle,
@@ -144,8 +155,8 @@ def render_visible_intervention(
         include_proposal=proposal,
         include_closeout=closeout,
         developer_include_closeout=closeout,
-        delivery_channel="manual_visible_command",
-        delivery_status="manual_visible",
+        delivery_channel=delivery_channel,
+        delivery_status=delivery_status,
         visible_markdown_override=visible_override,
     )
     rendered = decision.visible_markdown

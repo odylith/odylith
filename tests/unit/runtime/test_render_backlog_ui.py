@@ -685,6 +685,12 @@ def test_render_backlog_ui_keeps_decision_basis_labeling_self_contained() -> Non
     assert 'class="bullets decision-bullets"' in html
     assert "decision-basis-label" in html
     assert "decision-basis-copy" in html
+    assert "text-transform: none;" in html
+    assert "letter-spacing: 0em;" in html
+    assert "font-size: 0.88rem;" in html
+    assert "font-weight: 700;" in html
+    assert "grid-template-columns: minmax(128px, 178px) minmax(0, 1fr);" in html
+    assert "text-transform: uppercase;" not in html[html.index(".decision-basis-label") : html.index(".decision-basis-copy")]
 
 
 def test_render_backlog_ui_includes_release_filters_summary_cards_and_release_chips() -> None:

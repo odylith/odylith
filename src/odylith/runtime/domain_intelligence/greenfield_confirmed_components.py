@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import (
     confirmed_system_description,
     confirmed_system_name,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import release_scope_for_component
 from odylith.runtime.domain_intelligence.greenfield_component_contract import (
     boundary_from_contract,
     dependencies_from_contract,
@@ -95,6 +96,7 @@ def confirmed_components(
     first_path: str = "",
     state_object: str = "",
     proof_boundary: str = "",
+    non_goals: list[str] | None = None,
 ) -> list[dict[str, Any]]:
     if not internal_systems:
         raise ValueError(
@@ -108,6 +110,7 @@ def confirmed_components(
         first_path=first_path,
         state_object=state_object,
         proof_boundary=proof_boundary,
+        non_goals=non_goals or [],
     )
 
 
@@ -250,6 +253,7 @@ def _confirmed_system_components(
     first_path: str = "",
     state_object: str = "",
     proof_boundary: str = "",
+    non_goals: list[str] | None = None,
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     path_slug = _path_slug(label_slug)
@@ -261,6 +265,7 @@ def _confirmed_system_components(
             component_id = _component_id(label_slug, component_slug)
         else:
             component_id = component_slug
+        component_id = _dedupe_slug_tokens(component_id)
         kind = _system_kind(name, description)
         responsibility = _responsibility(name=name, description=description)
         row: dict[str, Any] = {
@@ -278,6 +283,12 @@ def _confirmed_system_components(
             "evidence_tier": "user_intent",
             "source_system_description": description,
         }
+        row["release_scope"] = release_scope_for_component(
+            row,
+            first_path=first_path,
+            proof_boundary=proof_boundary,
+            non_goals=non_goals or (),
+        )
         rows.append(row)
     proposal_context = {
         "intent": {
@@ -712,7 +723,35 @@ def _title_word(value: str, *, first: bool = True, previous: str = "") -> str:
 
 
 def _component_id(label_slug: str, suffix: str) -> str:
-    return slugify(f"{label_slug}-{suffix}")
+    prefix_tokens = _slug_tokens(label_slug)
+    suffix_tokens = _slug_tokens(suffix)
+    if not prefix_tokens and not suffix_tokens:
+        return ""
+    if not prefix_tokens:
+        return "-".join(suffix_tokens)
+    if not suffix_tokens:
+        return "-".join(prefix_tokens)
+    overlap = 0
+    max_overlap = min(len(prefix_tokens), len(suffix_tokens))
+    for size in range(max_overlap, 0, -1):
+        if prefix_tokens[-size:] == suffix_tokens[:size]:
+            overlap = size
+            break
+    return "-".join([*prefix_tokens, *suffix_tokens[overlap:]])
+
+
+def _slug_tokens(value: str) -> list[str]:
+    return [token for token in slugify(value).split("-") if token]
+
+
+def _dedupe_slug_tokens(value: str) -> str:
+    tokens = _slug_tokens(value)
+    result: list[str] = []
+    for token in tokens:
+        if result and result[-1] == token:
+            continue
+        result.append(token)
+    return "-".join(result)
 
 
 def _path_slug(label_slug: str) -> str:

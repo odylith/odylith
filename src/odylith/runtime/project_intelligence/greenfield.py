@@ -1418,7 +1418,7 @@ def _looks_generated_actor_context(value: str) -> bool:
     return lowered.startswith(("build the ", "implement ", "turn the confirmed ")) or any(
         marker in lowered
         for marker in (
-            "can fail when the first accepted action",
+            "can fail when the first material path action",
             "cannot support release review unless",
             "review output with validation results",
             "as the state and handoff boundary",

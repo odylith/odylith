@@ -9,13 +9,13 @@ from typing import Any, Mapping, Sequence
 from odylith.runtime.common import display_text
 from odylith.runtime.common.prose_grammar import finite_action_clause
 from odylith.runtime.domain_intelligence.greenfield_component_contract import (
-    boundary_from_contract,
     dependencies_from_contract,
     interfaces_from_contract,
     responsibility_from_contract,
     risks_from_contract,
     validation_from_contract,
 )
+from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
 
 def sentence_fragment(value: str) -> str:
@@ -62,7 +62,7 @@ def build_component_spec(
     responsibility_source = responsibility_from_contract(label, contract) if has_contract else responsibility
     responsibility_text = sentence_fragment(responsibility_source)
     responsibility_line = responsibility_text if has_contract else _responsibility_sentence(responsibility_text, default_verb=profile["default_verb"])
-    boundary_source = boundary_from_contract(label, contract) if has_contract else boundary
+    boundary_source = _contract_boundary_intro(label=label, profile=profile, contract=contract) if has_contract else boundary
     boundary_text = sentence_fragment(boundary_source) or responsibility_text
     evidence_text = _evidence_text(normalized_sources=normalized_sources, path=path)
     plan_link = _plan_link(first_workstream)
@@ -79,6 +79,9 @@ def build_component_spec(
     dependency_lines = _dependency_lines(dependencies_from_contract(contract) if has_contract else dependencies or (profile["default_dependency"],))
     risk_lines = _unique_lines(risks_from_contract(label, contract) if has_contract else risks or (profile["default_risk"],))
     outside_boundary = _contract_outside_boundary_lines(contract) if has_contract else _outside_boundary_lines(boundary=boundary_text, profile=profile)
+    owns_lines = _contract_field_lines(contract, "owned_state") if has_contract else ((responsibility_line,) if responsibility_line else (profile["default_owns"],))
+    accepts_lines = _contract_field_lines(contract, "accepted_inputs") if has_contract else ()
+    produces_lines = _contract_field_lines(contract, "produced_outputs") if has_contract else ()
     contract_summary = (
         _contract_summary_from_contract(label=label, contract=contract)
         if has_contract
@@ -136,9 +139,17 @@ def build_component_spec(
             "",
             "### Owns",
             "",
-            _bullet_lines((responsibility_line,) if responsibility_line else (profile["default_owns"],)),
+            _bullet_lines(owns_lines),
             "",
-            "### Outside Boundary",
+            "### Accepts",
+            "",
+            _bullet_lines(accepts_lines or ("The first implementation plan must name accepted inputs.",)),
+            "",
+            "### Produces",
+            "",
+            _bullet_lines(produces_lines or ("The first implementation plan must name produced outputs.",)),
+            "",
+            "### Refuses",
             "",
             _bullet_lines(outside_boundary),
             "",
@@ -156,7 +167,12 @@ def build_component_spec(
             "",
             f"## {profile['proof_heading']}",
             "",
-            _proof_table(proof_lines or (profile["default_validation"],), commands=handoff_commands),
+            _proof_table(
+                proof_lines or (profile["default_validation"],),
+                commands=handoff_commands,
+                label=label,
+                contract=contract if has_contract else {},
+            ),
             "",
             f"## {profile['risk_heading']}",
             "",
@@ -173,7 +189,7 @@ def build_component_spec(
                 release_selector=release_selector,
                 first_slice=first_slice,
                 label=label,
-                local_proof=proof_lines[0] if proof_lines else "",
+                local_proof=_proof_handle(label, proof_lines[0], index=1) if proof_lines else "",
             ),
             "",
             "### Definition Of Done",
@@ -285,34 +301,29 @@ def _component_contract_role_paragraphs(
     contract: Mapping[str, Any],
 ) -> tuple[str, ...]:
     role = profile.get("role_noun", "ownership boundary")
-    owned = sentence_fragment(str(contract.get("owned_state", "")))
-    inputs = sentence_fragment(str(contract.get("accepted_inputs", "")))
-    outputs = sentence_fragment(str(contract.get("produced_outputs", "")))
+    owned = _first_contract_item(str(contract.get("owned_state", "")))
+    failure = sentence_fragment(str(contract.get("unique_failure", "")))
     proof = _first_text(contract.get("local_proof"))
-    first = (
-        f"{label} is a {role}. It owns {_lower_first(owned)}, accepts {_lower_first(inputs)}, and produces {_lower_first(outputs)}"
-        if owned and inputs and outputs
-        else f"{label} is a {role} with a local contract that must remain visible in implementation and review"
-    )
-    second = f"Its distinguishing proof is {_lower_first(proof)}" if proof else ""
-    collaborators = _contract_collaborator_sentence(contract)
-    return tuple(_paragraph(row) for row in (first, second, collaborators) if sentence_fragment(row))
+    focus = f" for {_lower_first(owned)}" if owned else ""
+    sentences = [f"{label} is a {role}{focus}"]
+    if failure:
+        sentences.append(f"It exists to make this failure testable: {_lower_first(failure)}")
+    if proof:
+        sentences.append(f"Its proof obligation is `{_proof_handle(label, proof, index=1)}`")
+    else:
+        sentences.append("Its proof obligation must be named by the first implementation plan")
+    return (_paragraph(". ".join(sentences)),)
 
 
 def _contract_summary_from_contract(*, label: str, contract: Mapping[str, Any]) -> str:
-    owned = sentence_fragment(str(contract.get("owned_state", "")))
-    inputs = sentence_fragment(str(contract.get("accepted_inputs", "")))
-    outputs = sentence_fragment(str(contract.get("produced_outputs", "")))
     states = sentence_fragment(str(contract.get("states_or_transitions", "")))
-    outside = sentence_fragment(str(contract.get("outside_boundary", "")))
-    proof = _first_text(contract.get("local_proof"))
+    proof_rows = tuple(_strip_proof_prefix(value) for value in text_values(contract.get("local_proof")))
+    blocking = next((row for row in proof_rows if re.search(r"\b(block|reject|invalid|missing|stale|unauthorized)\b", row, re.I)), "")
+    provenance = next((row for row in proof_rows if re.search(r"\b(provenance|replay|history|source|snapshot|rationale)\b", row, re.I)), "")
     rows = [
-        f"{label} owns {_lower_first(owned)}" if owned else "",
-        f"It accepts {_lower_first(inputs)} and produces {_lower_first(outputs)}" if inputs and outputs else "",
-        f"It can render, emit, or transition {_lower_first(states)}" if states else "",
-        f"It refuses {_lower_first(outside)}" if outside else "",
-        _contract_collaborator_sentence(contract),
-        f"Its local proof is {proof}" if proof else "",
+        f"{label} transitions through {_lower_first(states)}" if states else "",
+        f"Blocking invariant: {_lower_first(blocking)}" if blocking else "",
+        f"Traceability invariant: {_lower_first(provenance)}" if provenance and provenance != blocking else "",
     ]
     return ". ".join(sentence_fragment(row) for row in rows if sentence_fragment(row))
 
@@ -329,12 +340,101 @@ def _contract_collaborator_sentence(contract: Mapping[str, Any]) -> str:
     return ""
 
 
+def _contract_boundary_intro(*, label: str, profile: Mapping[str, str], contract: Mapping[str, Any]) -> str:
+    owned = _first_contract_item(str(contract.get("owned_state", "")))
+    role = profile.get("role_noun", "ownership boundary")
+    if owned:
+        return f"{label} is the {role} for {owned}; the structured contract below keeps state, inputs, outputs, transitions, and refusals separate"
+    return f"{label} is the {role}; the structured contract below keeps state, inputs, outputs, transitions, and refusals separate"
+
+
+def _contract_field_lines(contract: Mapping[str, Any], key: str) -> tuple[str, ...]:
+    raw = sentence_fragment(str(contract.get(key, "")))
+    if not raw:
+        return ()
+    rows = [_strip_conjunction(sentence_fragment(part)) for part in re.split(r",|;", raw) if sentence_fragment(part)]
+    if len(rows) <= 1:
+        return (raw,)
+    return _unique_lines(rows)
+
+
+def _first_contract_item(value: str) -> str:
+    text = sentence_fragment(str(value))
+    if not text:
+        return ""
+    head = re.split(r",|;", text, maxsplit=1)[0]
+    return _strip_conjunction(head)
+
+
 def _contract_outside_boundary_lines(contract: Mapping[str, Any]) -> tuple[str, ...]:
     outside = sentence_fragment(str(contract.get("outside_boundary", "")))
     if not outside:
         return ()
-    rows = [_strip_conjunction(sentence_fragment(part)) for part in re.split(r",|;", outside) if sentence_fragment(part)]
-    return _unique_lines(rows or (outside,))
+    return _outside_boundary_bucket_lines(outside)
+
+
+def _outside_boundary_bucket_lines(outside: str) -> tuple[str, ...]:
+    buckets = {
+        "Refused domain responsibilities": [],
+        "Sibling-owned state": [],
+        "Forbidden runtime authorities": [],
+    }
+    current_label = ""
+    for part in re.split(r";", outside):
+        segment = sentence_fragment(part)
+        if not segment:
+            continue
+        match = re.match(
+            r"^(?P<label>refused domain responsibilities|sibling-owned state|forbidden runtime authorities)\s*:\s*(?P<body>.+)$",
+            segment,
+            flags=re.I,
+        )
+        if match:
+            current_label = _bucket_label(match.group("label"))
+            _extend_bucket(buckets[current_label], match.group("body"))
+            continue
+        for clause in re.split(r",", segment):
+            text = _strip_conjunction(clause)
+            if text:
+                buckets[_classify_outside_clause(text, current_label)].append(text)
+    if not buckets["Forbidden runtime authorities"]:
+        buckets["Forbidden runtime authorities"].append("runtime implementation outside the accepted proof boundary")
+    rows: list[str] = []
+    for label, values in buckets.items():
+        cleaned = _unique_lines(values)
+        if cleaned:
+            body = _join_phrase(cleaned)
+            rows.append(f"{label}: {body}")
+    return tuple(rows)
+
+
+def _bucket_label(value: str) -> str:
+    text = sentence_fragment(value).casefold()
+    if text.startswith("sibling"):
+        return "Sibling-owned state"
+    if text.startswith("forbidden"):
+        return "Forbidden runtime authorities"
+    return "Refused domain responsibilities"
+
+
+def _extend_bucket(target: list[str], body: str) -> None:
+    for part in re.split(r",|;", body):
+        text = _strip_conjunction(part)
+        if text:
+            target.append(text)
+
+
+def _classify_outside_clause(value: str, current_label: str = "") -> str:
+    text = sentence_fragment(value).casefold()
+    if current_label and not re.search(r"\b(upstream|release|runtime|authority|mutation|source truth)\b", text):
+        return current_label
+    if "sibling" in text or "owned by" in text:
+        return "Sibling-owned state"
+    if re.search(r"\b(upstream source truth|release approval|runtime implementation|silent overwrite|mutation|provider truth)\b", text):
+        return "Forbidden runtime authorities"
+    if re.search(r"\b(state|record|comment|snapshot|marker|history|evidence|handoff)\b", text) and "authority" not in text:
+        return "Sibling-owned state"
+    return "Refused domain responsibilities"
 
 
 def _first_text(value: Any) -> str:
@@ -516,19 +616,11 @@ def _promotion_bar_lines(
 ) -> tuple[str, ...]:
     source = f"`{path}`" if path else "the source boundary named by the first technical plan"
     anchor = f"`{first_workstream}`" if first_workstream else "the first implementation plan"
-    proof = (
-        " and ".join(_brief_sentence(_strip_proof_prefix(line), limit=220) for line in proof_lines[:2])
-        if proof_lines
-        else "the listed component proof"
-    )
-    promotion_proof = (
-        f"source-backed evidence for: {_lower_first(proof)}"
-        if proof_lines
-        else "the listed component proof"
-    )
+    proof_handles = [_proof_handle(label, line, index=index) for index, line in enumerate(proof_lines[:3], start=1)]
+    promotion_proof = ", ".join(f"`{handle}`" for handle in proof_handles) if proof_handles else "the listed component proof"
     return (
         f"{label} remains candidate until {anchor} lands source-backed behavior inside {source}.",
-        f"Promotion requires {promotion_proof}; proposal text alone is not enough.",
+        f"Promotion requires source-backed {promotion_proof}; proposal text alone is not enough.",
         "The component record, implementation plan, architecture view, and project status must refresh from that proof before active status.",
     )
 
@@ -548,28 +640,114 @@ def _paragraph(value: str) -> str:
 
 
 def _bullet_lines(values: Sequence[str]) -> str:
-    lines = [sentence_fragment(str(item)) for item in values if str(item).strip()]
+    lines = [_sentence_case(sentence_fragment(str(item))) for item in values if str(item).strip()]
     return "\n".join(f"- {line}." for line in lines)
 
 
-def _proof_table(values: Sequence[str], *, commands: Sequence[str]) -> str:
+def _proof_table(
+    values: Sequence[str],
+    *,
+    commands: Sequence[str],
+    label: str,
+    contract: Mapping[str, Any],
+) -> str:
     rows = ["| Claim | Required proof |", "| --- | --- |"]
-    command_hint = _first_command_hint(commands)
-    for value in values:
+    for index, value in enumerate(values, start=1):
         claim = _sentence_case(_strip_proof_prefix(str(value)))
         if claim:
-            rows.append(f"| {claim} | {command_hint} |")
+            required = _proof_requirement(claim=claim, label=label, contract=contract, index=index, commands=commands)
+            rows.append(f"| {claim} | {required} |")
     return "\n".join(rows)
 
 
-def _first_command_hint(commands: Sequence[str]) -> str:
+def _proof_requirement(
+    *,
+    claim: str,
+    label: str,
+    contract: Mapping[str, Any],
+    index: int,
+    commands: Sequence[str],
+) -> str:
+    claim_text = sentence_fragment(claim).casefold()
+    text = " ".join([claim, label, *text_values(contract)]).casefold()
+    handle = _proof_handle(label, claim, index=index)
+    label_text = sentence_fragment(label).casefold()
+    if re.search(r"\b(refus|boundary|sibling|outside|mutat|overwrite|rewrite)\b", claim_text):
+        requirement = f"`{handle}` boundary test proving adjacent components cannot mutate this component's owned state"
+    elif re.search(r"^\s*intake\s+proof\b", claim_text):
+        requirement = (
+            f"`{handle}` fixture with actor identity, submitted answers, required fields, validation context, "
+            "missing-input blocker, accepted answer set, and downstream handoff"
+        )
+    elif re.search(r"^\s*ranking\s+proof\b", claim_text):
+        requirement = (
+            f"`{handle}` fixture with candidate options, comparison criteria, tie-break rule, ranked option list, "
+            "selected option, ordered alternatives, explanation, and downstream handoff"
+        )
+    elif re.search(r"^\s*quote\s+proof\b", claim_text):
+        requirement = (
+            f"`{handle}` fixture with quote request, priced option, usage context, cost rule, calculated quote, "
+            "cost breakdown, explanation, provenance reference, and downstream handoff"
+        )
+    elif re.search(r"^\s*plan\s+adjustment\s+proof\b", claim_text):
+        requirement = (
+            f"`{handle}` fixture with plan adjustment request, progress snapshot, status window, actor context, "
+            "plan adjustment result, rationale, blocker signal, and downstream handoff"
+        )
+    elif re.search(r"\b(blocker|blocked|reject|invalid|missing|stale|unauthorized|malformed|unresolved)\b", claim_text):
+        requirement = (
+            f"`{handle}` fixture showing missing, stale, unauthorized, or malformed input blocks trusted output and downstream handoff"
+        )
+    elif re.search(r"\b(check ledger|required checks?|rule references?|pass or block|reviewer comment)\b", claim_text):
+        requirement = (
+            f"`{handle}` fixture with reviewed item, rule reference, reviewer comment, pass or block outcome, "
+            "blocker signal, and handoff evidence"
+        )
+    elif re.search(r"\b(provenance|replay|history|source|snapshot|audit)\b", claim_text):
+        requirement = f"`{handle}` replay test linking persisted output to source evidence, validation context, and rationale"
+    elif re.search(r"\b(target|recompute|computed|adjustment|plan|goal|recommendation)\b", f"{claim_text} {label_text}"):
+        requirement = (
+            f"`{handle}` fixture with plan adjustment request, progress snapshot, status window, actor context, "
+            "plan adjustment result, rationale, blocker signal, and downstream handoff"
+        )
+    elif re.search(r"\b(intake|submitted answers|required-input|accepted answer set)\b", text):
+        requirement = (
+            f"`{handle}` fixture with actor identity, submitted answers, required fields, validation context, "
+            "missing-input blocker, accepted answer set, and downstream handoff"
+        )
+    elif re.search(r"\b(candidate option|comparison criteria|ranking|selected option|ordered alternatives)\b", text):
+        requirement = (
+            f"`{handle}` fixture with candidate options, comparison criteria, tie-break rule, ranked option list, "
+            "selected option, ordered alternatives, explanation, and downstream handoff"
+        )
+    elif re.search(r"\b(quote|pricing|cost rule|calculated amount|cost breakdown)\b", text):
+        requirement = (
+            f"`{handle}` fixture with quote request, priced option, usage context, cost rule, calculated quote, "
+            "cost breakdown, explanation, provenance reference, and downstream handoff"
+        )
+    elif re.search(r"\b(privacy|retention|export|deletion|delete|consent|protected)\b", f"{claim_text} {label_text}"):
+        requirement = (
+            f"`{handle}` fixture with actor identity, consent history, protected-state reference, retention rule, "
+            "export or deletion result, lifecycle marker, and audit event"
+        )
+    elif re.search(r"\b(provenance|replay|history|source|snapshot|rationale|audit)\b", text):
+        requirement = f"`{handle}` replay test linking persisted output to source evidence, validation context, and rationale"
+    else:
+        requirement = f"`{handle}` contract fixture covering accepted input, state transition, produced output, blocker behavior, and handoff evidence"
+    command_hint = _first_command_hint(commands, fallback=False)
+    if command_hint:
+        requirement = f"{requirement}; check with {command_hint}"
+    return requirement
+
+
+def _first_command_hint(commands: Sequence[str], *, fallback: bool = True) -> str:
     for command in commands:
         text = " ".join(str(command).split()).strip()
         if text:
             if _is_odylith_context_or_sync_command(text):
                 continue
             return f"`{text}`" if not text.startswith("run ") else text
-    return "Source-backed proof named by the first implementation plan"
+    return "Source-backed proof named by the first implementation plan" if fallback else ""
 
 
 def _is_odylith_context_or_sync_command(value: str) -> bool:
@@ -653,7 +831,7 @@ def _runway_lines(
         if local_proof and not _workstream_title_matches_component(first_workstream_title, label):
             lines.append(
                 "This is a broad project workstream; the component still needs its narrower local proof: "
-                f"{_brief_sentence(local_proof, limit=360)}."
+                f"`{local_proof}`."
             )
     elif first_workstream:
         lines.append(f"Use `{first_workstream}` as the implementation-plan anchor.")
@@ -665,7 +843,7 @@ def _runway_lines(
     if release_selector:
         lines.append(f"Release target: {release_selector}.")
     if first_slice:
-        lines.append(f"First coding slice: {_brief_sentence(first_slice, limit=360)}.")
+        lines.append(f"First coding slice: {_brief_sentence(first_slice, limit=220)}.")
     lines.append("Promote this component from candidate only after source-backed proof refreshes the component record and project status.")
     return _bullet_lines(lines)
 
@@ -754,9 +932,64 @@ def _strip_proof_prefix(value: str) -> str:
     return text
 
 
+def _proof_handle(label: str, proof: str, *, index: int) -> str:
+    proof_text = str(proof).casefold()
+    text = f"{proof_text} {label}".casefold()
+    if re.search(r"\b(boundary|refus|sibling|outside|mutat|overwrite|rewrite)\b", proof_text):
+        return "boundary_mutation_proof"
+    if re.search(r"\b(deletion|delete|blocked deletion|retention)\b", text) and re.search(r"\b(block|invalid|unauthorized|missing)\b", text):
+        return "deletion_block_proof"
+    if re.search(r"^\s*intake\s+proof\b", text):
+        return "intake_capture_proof"
+    if re.search(r"^\s*ranking\s+proof\b", text):
+        return "option_ranking_proof"
+    if re.search(r"^\s*quote\s+proof\b", text):
+        return "quote_calculation_proof"
+    if re.search(r"^\s*plan\s+adjustment\s+proof\b", text):
+        return "plan_adjustment_proof"
+    if re.search(r"\b(blocker|blocked|reject|invalid|missing|stale|unauthorized|malformed|unresolved)\b", text):
+        return "invalid_input_proof"
+    if re.search(r"\b(check ledger|required checks?|rule references?|pass or block|reviewer comment)\b", text):
+        return "check_rule_ledger_proof"
+    if re.search(r"\b(provenance|replay|history|source|snapshot|audit)\b", text):
+        return "provenance_replay_proof"
+    if re.search(r"\b(privacy|retention|export|deletion|delete|consent|protected)\b", text):
+        return "privacy_lifecycle_proof"
+    if re.search(r"\b(intake|submitted answers|required-input|accepted answer set)\b", text):
+        return "intake_capture_proof"
+    if re.search(r"\b(candidate option|comparison criteria|ranking|selected option|ordered alternatives)\b", text):
+        return "option_ranking_proof"
+    if re.search(r"\b(quote|pricing|cost rule|calculated amount|cost breakdown)\b", text):
+        return "quote_calculation_proof"
+    if re.search(r"\b(target|recompute|computed|adjustment|plan|goal|recommendation)\b", text):
+        return "plan_adjustment_proof"
+    terms = [
+        word.replace("-", "_")
+        for word in re.findall(r"[a-z0-9][a-z0-9_-]*", text)
+        if word
+        not in {
+            "and",
+            "boundary",
+            "component",
+            "contract",
+            "evidence",
+            "local",
+            "proof",
+            "release",
+            "service",
+            "state",
+            "the",
+            "with",
+        }
+    ]
+    if terms:
+        return "_".join(terms[:3]) + "_proof"
+    return f"component_contract_proof_{index}"
+
+
 def _command_lines(values: Sequence[str]) -> str:
     lines = [_command_bullet(line) for line in values if str(line).strip()]
-    return "\n".join(lines) or "- Run the repo-native proof command selected by the first technical plan."
+    return "\n".join(lines) or "- Bind this component to a technical plan, then run that plan's concrete repo-native proof commands."
 
 
 def _command_bullet(value: str) -> str:
@@ -796,6 +1029,17 @@ def _unique_lines(values: Sequence[str]) -> tuple[str, ...]:
         seen.add(key)
         result.append(text)
     return tuple(result)
+
+
+def _join_phrase(values: Sequence[str]) -> str:
+    rows = [sentence_fragment(str(value)) for value in values if sentence_fragment(str(value))]
+    if not rows:
+        return ""
+    if len(rows) == 1:
+        return rows[0]
+    if len(rows) == 2:
+        return f"{rows[0]} and {rows[1]}"
+    return f"{', '.join(rows[:-1])}, and {rows[-1]}"
 
 
 __all__ = ["build_component_spec", "sentence_fragment"]

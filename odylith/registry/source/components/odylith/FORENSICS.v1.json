@@ -45,12 +45,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 273,
+    "explicit_event_count": 280,
     "mapped_workstream_evidence_count": 129,
     "recent_path_match_count": 0,
     "spec_history_event_count": 32,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 273
+    "timeline_event_count": 280
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -64,6 +64,110 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 478,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: A local Casebook record is linked to this path: CB-122. Why it matters: Hidden host messages do not count as delivered to the user.",
+      "ts_iso": "2026-05-25T21:33:04Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 476,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith History: A local Casebook record is linked to this path: CB-122. Why it matters: Hidden host messages do not count as delivered to the user.",
+      "ts_iso": "2026-05-25T21:32:42Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 475,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Risks: The user says Odylith output is not visible in this chat. Why it matters: Answer in normal assistant text and do not rely on hidden host channels.",
+      "ts_iso": "2026-05-25T21:32:42Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 474,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "execution-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Risks: Execution Engine has an active recovery constraint. Why it matters: chat-visible Odylith intervention proof is unproven for this session.",
+      "ts_iso": "2026-05-25T21:32:42Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 472,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: A local Casebook record is linked to this path: CB-122. Why it matters: Hidden host messages do not count as delivered to the user.",
+      "ts_iso": "2026-05-25T19:50:14Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 470,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: A local Casebook record is linked to this path: CB-122. Why it matters: Hidden host messages do not count as delivered to the user.",
+      "ts_iso": "2026-05-25T19:49:31Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 468,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: A local Casebook record is linked to this path: CB-122. Why it matters: Hidden host messages do not count as delivered to the user.",
+      "ts_iso": "2026-05-25T19:34:22Z",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "github/workflows/release.yml",
@@ -9803,42 +9907,9 @@
     }
   ],
   "traceability": {
-    "code_references": [
-      "src/odylith/cli.py",
-      "src/odylith/runtime/governance/component_registry_intelligence.py",
-      "src/odylith/runtime/governance/sync_workstream_artifacts.py",
-      "github/workflows/release.yml",
-      "src/odylith/install/manager.py",
-      "src/odylith/runtime/governance/validate_self_host_posture.py",
-      "src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
-      "src/odylith/runtime/surfaces/compass_dashboard_shell.py",
-      "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
-      "github/workflows/test.yml",
-      "src/odylith/install/managed_runtime.py",
-      "src/odylith/install/release_assets.py",
-      "src/odylith/install/runtime.py",
-      "src/odylith/runtime/common/consumer_profile.py",
-      "tests/integration/install/test_manager.py",
-      "tests/unit/install/test_release_assets.py",
-      "tests/unit/install/test_runtime.py",
-      "tests/unit/test_cli.py",
-      "src/odylith/runtime/surfaces/render_compass_dashboard.py",
-      "src/odylith/runtime/surfaces/update_compass.py"
-    ],
-    "developer_docs": [
-      "docs/specs/odylith-repo-integration-contract.md",
-      "odylith/PRODUCT_COMPONENTS.md",
-      "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
-      "odylith/registry/source/components/compass/CURRENT_SPEC.md",
-      "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
-      "odylith/README.md",
-      "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
-      "odylith/registry/source/components/release/CURRENT_SPEC.md"
-    ],
-    "runbooks": [
-      "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
-      "odylith/MAINTAINER_RELEASE_RUNBOOK.md"
-    ]
+    "code_references": [],
+    "developer_docs": [],
+    "runbooks": []
   },
   "version": "v1",
   "what_it_is": "Installable local governance and execution agent and a platform that packages context grounding, governance surfaces, delivery intelligence, subagent control, and operator tooling behind one CLI.",

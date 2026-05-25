@@ -1,16 +1,26 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+import re
+import shutil
+
 from tests.integration.runtime.surface_browser_test_support import (
     _assert_clean_page,
+    _browser,
     _select_casebook_bug_with_detail_selector,
     _select_radar_row_with_link,
     _select_radar_workstream_with_detail_selector,
     _select_registry_component_with_detail_selector,
     _new_page,
+    _static_server,
     _wait_for_shell_query_param,
     browser_context,
     compact_browser_context,
 )
+
+
+_REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 def _casebook_header_layout(casebook) -> dict[str, object]:  # noqa: ANN001
@@ -649,6 +659,140 @@ def _select_registry_deep_link_chip_for_style_audit(page):  # noqa: ANN001
         failure_message="expected a Registry detail with at least one deep-link chip",
     )
     return registry
+
+
+def _load_registry_payload(path: Path) -> dict[str, object]:
+    payload_text = path.read_text(encoding="utf-8")
+    match = re.search(r"=\s*(\{.*\})\s*;\s*$", payload_text, flags=re.S)
+    assert match is not None
+    payload = json.loads(match.group(1))
+    assert isinstance(payload, dict)
+    return payload
+
+
+def _write_registry_payload(path: Path, payload: dict[str, object]) -> None:
+    path.write_text(
+        'window["__ODYLITH_REGISTRY_DATA__"] = ' + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+
+
+def test_registry_compacts_sentence_shaped_component_names_without_losing_identity(tmp_path) -> None:  # noqa: ANN001
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+
+    payload_path = fixture_root / "odylith" / "registry" / "registry-payload.v1.js"
+    payload = _load_registry_payload(payload_path)
+    components = payload.get("components")
+    assert isinstance(components, list)
+    long_name = "Evidence Review That Explains the Recommended Option and Orders the Alternatives Service"
+    component_id = "evidence-review-that-explains-the-recommended-option-and-orders-the-alternatives"
+    long_source = "src/generated/evidence_review_that_explains_the_recommended_option_and_orders_the_alternatives"
+    components.append(
+        {
+            "component_id": component_id,
+            "name": long_name,
+            "kind": "service",
+            "category": "governance_engine",
+            "qualification": "candidate",
+            "owner": "governance",
+            "status": "planned",
+            "what_it_is": (
+                f"{long_name} is planned as a service boundary. "
+                "It owns review state and prevents stale recommendation evidence from looking current. "
+                f"Initial source boundary: {long_source}"
+            ),
+            "why_tracked": "Tracked from user-stated intent as a named ownership boundary.",
+            "product_layer": "intelligence",
+            "timeline_count": 1,
+            "workstreams": [],
+            "diagrams": [],
+            "aliases": [],
+            "sources": [],
+            "path_prefixes": [long_source],
+            "subcomponents": [],
+            "forensic_coverage": {
+                "status": "forensic_coverage_present",
+                "timeline_event_count": 1,
+                "explicit_event_count": 1,
+                "recent_path_match_count": 0,
+                "mapped_workstream_evidence_count": 1,
+                "spec_history_event_count": 0,
+            },
+            "spec_ref": (
+                "odylith/registry/source/components/"
+                "evidence-review-that-explains-the-recommended-option-and-orders-the-alternatives/CURRENT_SPEC.md"
+            ),
+            "spec_markdown": "# Evidence Review Service\n\nCurrent spec placeholder.\n",
+            "spec_feature_history": [],
+            "spec_runbooks": [],
+            "spec_developer_docs": [],
+            "timeline": [],
+        }
+    )
+    _write_registry_payload(payload_path, payload)
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(base_url + "/odylith/index.html?tab=registry", wait_until="domcontentloaded")
+                assert response is not None and response.ok
+
+                registry = page.frame_locator("#frame-registry")
+                registry.locator("h1", has_text="Component Registry").wait_for(timeout=15000)
+                registry.locator("#search").fill(component_id)
+                registry.locator(f'button[data-component="{component_id}"]').wait_for(timeout=15000)
+                registry.locator(f'button[data-component="{component_id}"]').click()
+                _wait_for_shell_query_param(page, tab="registry", key="component", value=component_id)
+                registry.locator("#detail .component-name", has_text="Evidence Review Service").wait_for(timeout=15000)
+
+                layout = registry.locator("body").evaluate(
+                    """(body) => {
+                      const title = body.querySelector("#detail .component-name");
+                      const fullName = body.querySelector("#detail .component-full-name");
+                      const idLine = body.querySelector("#detail .component-id-line");
+                      const cardTitle = body.querySelector(".component-card-title");
+                      const cardButton = body.querySelector(`button[data-component="${CSS.escape("evidence-review-that-explains-the-recommended-option-and-orders-the-alternatives")}"]`);
+                      const summary = body.querySelector("#detail .summary-strip");
+                      const sourceChip = body.querySelector("#detail .summary-artifact-row .artifact-compact");
+                      const html = body.ownerDocument.documentElement;
+                      const rowBox = cardButton ? cardButton.getBoundingClientRect() : { height: 0 };
+                      return {
+                        title: String(title && title.textContent || "").trim(),
+                        fullName: String(fullName && fullName.textContent || "").trim(),
+                        idLine: String(idLine && idLine.textContent || "").trim(),
+                        cardTitle: String(cardTitle && cardTitle.textContent || "").trim(),
+                        cardTitleHeight: cardTitle ? Number(cardTitle.getBoundingClientRect().height.toFixed(2)) : 0,
+                        rowHeight: Number(rowBox.height.toFixed(2)),
+                        summaryText: String(summary && summary.textContent || "").trim(),
+                        sourceChipText: String(sourceChip && sourceChip.textContent || "").trim(),
+                        sourceChipTooltip: String(sourceChip && sourceChip.getAttribute("data-tooltip") || "").trim(),
+                        documentOverflow: html.scrollWidth > html.clientWidth + 4,
+                        bodyOverflow: body.scrollWidth > body.clientWidth + 4,
+                        detailOverflow: Boolean(summary && summary.scrollWidth > summary.clientWidth + 4),
+                      };
+                    }"""
+                )
+
+                assert layout["title"] == "Evidence Review Service"
+                assert layout["cardTitle"] == "Evidence Review Service"
+                assert layout["fullName"] == long_name
+                assert layout["idLine"] == component_id
+                assert long_name not in str(layout["summaryText"])
+                assert long_source not in str(layout["summaryText"])
+                assert layout["sourceChipText"] == "Source boundary"
+                assert layout["sourceChipTooltip"] == long_source
+                assert float(layout["cardTitleHeight"]) <= 40
+                assert float(layout["rowHeight"]) <= 112
+                assert not layout["documentOverflow"], layout
+                assert not layout["bodyOverflow"], layout
+                assert not layout["detailOverflow"], layout
+
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
 
 
 def _select_registry_forensic_digest_stress_component(page):  # noqa: ANN001

@@ -2180,3 +2180,24 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   only the stricter future generator behavior, regenerated read-only browser
   surfaces, and refreshed managed bundle assets through normal runtime,
   dashboard, install, upgrade, doctor, or managed asset refresh.
+- The subagent/intervention activation and anti-slop QA settlement is covered by
+  `migration-observer:0.1.15:guidance-and-skills:d222852902aa`,
+  `migration-observer:0.1.15:operator-cli-contracts:c4d8a811a499`,
+  `migration-observer:0.1.15:browser-surfaces:899e4a0554fa`, and
+  `migration-observer:0.1.15:install-managed-assets:49297e0b4e03`. The pass
+  binds the Codex skill-shim ownership correction, subagent router and
+  orchestrator install surfaces, host-visible intervention proof surfaces,
+  Registry/Radar browser polish, and bundled managed-asset mirrors after the
+  aggressive QA matrix settled. Existing consumer-owned governance truth remains
+  unchanged; upgraded installs receive only corrected managed guidance, refreshed
+  read-only dashboard surfaces, and the same explicit operator CLI contracts
+  through normal install, upgrade, doctor, dashboard, or runtime refresh paths.
+- The final governed-sync surface settlement for the same QA pass is covered by
+  `migration-observer:0.1.15:browser-surfaces:8b59a3d0b567` and
+  `migration-observer:0.1.15:install-managed-assets:b83022c87957`. The pass
+  binds the post-sync Atlas, Registry, Radar, Casebook, Compass, delivery
+  intelligence, and shipped bundle mirrors after the final browser matrix passed.
+  Existing consumer-owned governance truth remains unchanged; upgraded installs
+  receive regenerated read-only dashboard surfaces and managed bundle assets
+  through the normal install, upgrade, doctor, dashboard, or runtime refresh
+  paths.

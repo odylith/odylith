@@ -52,6 +52,7 @@ _INFINITIVE_TO_FINITE = {
     "ingest": "ingests",
     "link": "links",
     "manage": "manages",
+    "maintain": "maintains",
     "map": "maps",
     "normalize": "normalizes",
     "own": "owns",

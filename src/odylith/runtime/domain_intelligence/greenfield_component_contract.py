@@ -116,8 +116,10 @@ def build_component_contract(
 
 def responsibility_from_contract(label: str, contract: Mapping[str, Any]) -> str:
     owned = _clause(contract.get("owned_state"))
-    outputs = _clause(contract.get("produced_outputs"))
     inputs = _clause(contract.get("accepted_inputs"))
+    outputs = _clause(contract.get("produced_outputs"))
+    failure = _clause(contract.get("unique_failure"))
+    primary = _first_contract_item(owned)
     if _is_document_context(label, owned):
         return _sentence(
             f"Assembles context packets, accepts {inputs}, validates required evidence, protects sensitive context, and hands complete context to downstream tracking"
@@ -127,20 +129,18 @@ def responsibility_from_contract(label: str, contract: Mapping[str, Any]) -> str
             f"Maintains {_lower_clause(owned)} and produces {_lower_clause(outputs)}"
         )
     subject = _component_subject(label)
-    if owned and outputs:
-        return _sentence(f"Maintains {_lower_clause(owned)} and turns accepted inputs into {_lower_clause(outputs)}")
+    if primary and failure:
+        return _sentence(f"Maintains {_lower_clause(primary)}. Failure avoided: {_lower_clause(failure)}")
     if owned:
-        return _sentence(f"Maintains {_lower_clause(owned)} for {subject}")
+        return _sentence(f"Maintains {_lower_clause(primary or owned)} for {subject}")
     return _sentence(f"Maintains the {subject} state, handoff, and local proof boundary")
 
 
 def boundary_from_contract(label: str, contract: Mapping[str, Any]) -> str:
     owned = _clause(contract.get("owned_state"))
-    inputs = _clause(contract.get("accepted_inputs"))
-    outputs = _clause(contract.get("produced_outputs"))
-    outside = _clause(contract.get("outside_boundary"))
+    primary = _first_contract_item(owned) or f"{_component_subject(label)} state"
     return _sentence(
-        f"{label} owns {_lower_clause(owned)}. It accepts {_lower_clause(inputs)} and produces {_lower_clause(outputs)}. It refuses {_lower_clause(outside)}"
+        f"{label} owns a {_lower_clause(primary)} boundary; accepted inputs, produced outputs, transitions, and refusals stay as separate contract fields"
     )
 
 
@@ -164,12 +164,14 @@ def validation_from_contract(contract: Mapping[str, Any]) -> list[str]:
 
 
 def risks_from_contract(label: str, contract: Mapping[str, Any]) -> list[str]:
-    failure = _clean(contract.get("unique_failure"))
+    owned = _first_contract_item(_clause(contract.get("owned_state"))) or _component_subject(label)
+    outside = _first_contract_item(_clause(contract.get("outside_boundary"))) or "adjacent product authority"
     return [
-        _sentence(f"Domain risk: {failure}"),
         _sentence(
-            f"Security and policy posture: {label} must enforce role-appropriate access, audit history, privacy, retention, "
-            "safety obligations, and reviewer-visible recovery for its local state"
+            f"Domain risk: missing proof for {owned} can let blockers, recovery evidence, or handoff rules promote without behavior"
+        ),
+        _sentence(
+            f"Security and policy posture: {label} must enforce access control, privacy, retention, and safety handling for {owned}, preserve recovery evidence, and prevent {outside} from silently changing local state"
         ),
     ]
 
@@ -256,7 +258,7 @@ def _status_view_contract(
             f"lifecycle events, actor identity, source timestamps, notification delivery markers, role context, and outcome updates from {upstream}"
         ),
         "produced_outputs": (
-            f"role-appropriate status views, current owner, valid transition display, {stale_indicator}, and audit history entries"
+            f"role-appropriate status views, current owner, transition-validation display, {stale_indicator}, and audit history entries"
         ),
         "states_or_transitions": ", ".join(transitions),
         "outside_boundary": _status_outside_boundary(context, object_base=object_base),
@@ -815,6 +817,15 @@ def _clause(value: Any) -> str:
 def _lower_clause(value: str) -> str:
     text = _clause(value)
     return text[:1].lower() + text[1:] if text else ""
+
+
+def _first_contract_item(value: str) -> str:
+    text = _clause(value)
+    if not text:
+        return ""
+    segment = re.split(r",|;", text, maxsplit=1)[0]
+    segment = re.sub(r"^(?:and|or)\s+", "", segment, flags=re.IGNORECASE).strip(" .")
+    return segment
 
 
 def _word_set(text: str) -> set[str]:

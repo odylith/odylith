@@ -712,7 +712,8 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
         "python3 ./.agents/bin/odylith-host-launcher.py codex session-start-ground --repo-root ."
     )
     assert (repo_root / ".agents" / "skills" / "odylith-start" / "SKILL.md").is_file()
-    assert not (repo_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").exists()
+    assert (repo_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").is_file()
+    assert (repo_root / ".agents" / "skills" / "odylith-subagent-orchestrator" / "SKILL.md").is_file()
     assert (repo_root / "odylith" / "runtime" / "source" / "product-version.v1.json").is_file()
     assert (repo_root / "odylith" / "runtime" / "source" / "tooling_shell.v1.json").is_file()
     assert (repo_root / "odylith" / "index.html").is_file()
@@ -1691,7 +1692,8 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     assert (repo_root / "odylith" / "skills" / "odylith-subagent-router" / "SKILL.md").is_file()
     assert (repo_root / ".codex" / "config.toml").is_file()
     assert (repo_root / ".agents" / "skills" / "odylith-start" / "SKILL.md").is_file()
-    assert not (repo_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").exists()
+    assert (repo_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").is_file()
+    assert (repo_root / ".agents" / "skills" / "odylith-subagent-orchestrator" / "SKILL.md").is_file()
 
 
 def test_upgrade_resyncs_guidance_from_activated_runtime_assets(monkeypatch, tmp_path: Path) -> None:

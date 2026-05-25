@@ -95,7 +95,7 @@ def test_component_spec_template_uses_greenfield_responsibility_and_links() -> N
     assert "- Wave: Checkout spine (active)." in text
     assert "- Release target: 0.0.1." in text
     assert "- First coding slice: Implement browse-to-checkout with payment sandbox failure recovery." in text
-    assert "- Promotion requires source-backed evidence for: happy-path checkout smoke proof and Payment failure recovery proof; proposal text alone is not enough." in text
+    assert "- Promotion requires source-backed `happy_path_checkout_smoke_proof`, `payment_failure_recovery_proof`; proposal text alone is not enough." in text
     assert "- `./.odylith/bin/odylith context --repo-root . B-201`" in text
     assert "- run npm test" in text
 

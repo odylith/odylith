@@ -917,7 +917,7 @@ def _auto_ground_request_with_odylith(
         correctness_critical=request.correctness_critical,
         requires_multi_agent_adjudication=request.requires_multi_agent_adjudication,
         evolving_context_required=request.evolving_context_required,
-        evidence_cone_grounded=grounded,
+        evidence_cone_grounded=bool(request.evidence_cone_grounded or grounded),
         use_working_tree=request.use_working_tree,
         working_tree_scope=request.working_tree_scope,
         session_id=request.session_id,

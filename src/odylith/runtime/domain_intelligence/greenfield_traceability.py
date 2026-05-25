@@ -313,7 +313,6 @@ def _patch_sections(
         [
             first_slice or str(row.get("scope", "")).strip(),
             *_section_items(row.get("scope_items", [])),
-            *component_lines[:6],
         ]
     )
     sections["Non-Goals"] = _bullets(
@@ -498,10 +497,7 @@ def _component_lines_for_workstream(
             continue
         label = str(row.get("label", "")).strip() or key
         component_id = str(row.get("component_id", "")).strip() or key
-        responsibility = str(row.get("responsibility", "")).strip()
-        diagrams = ", ".join(plan.component_diagrams.get(key, ()))
-        suffix = f" Related diagrams: {diagrams}." if diagrams else ""
-        lines.append(f"`{component_id}` ({label}): {responsibility}{suffix}".strip())
+        lines.append(f"`{component_id}` ({label})")
     return lines
 
 

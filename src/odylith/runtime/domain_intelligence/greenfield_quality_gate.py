@@ -7,6 +7,7 @@ import re
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_component_contract import public_prose_quality_issues
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
@@ -130,6 +131,7 @@ _EXCLUDED_PUBLIC_KEYS = {
     "source_mmd",
     "source_png",
     "source_svg",
+    "source_title",
     "status",
     "watch_paths",
     "write_policy",
@@ -199,7 +201,9 @@ def greenfield_quality_issues(proposal: Mapping[str, Any]) -> list[str]:
     issues.extend(_scaffold_marker_issues(public_leaves))
     issues.extend(_mechanical_artifact_issues(public_leaves))
     issues.extend(_qualitative_structure_issues(proposal))
+    issues.extend(_release_workstream_reference_issues(proposal))
     issues.extend(_governance_prep_language_issues(proposal))
+    issues.extend(f"semantic slop: {issue}" for issue in generated_semantic_slop_issues(proposal, root="proposal"))
     issues.extend(public_prose_quality_issues(proposal))
     if prompt_terms:
         issues.extend(_prompt_echo_issues(proposal, public_leaves=public_leaves))
@@ -413,6 +417,59 @@ def _governance_prep_language_issues(proposal: Mapping[str, Any]) -> list[str]:
                     f"backlog row {index} uses governance-prep phrase `{label}` where product/business language is required"
                 )
     return issues
+
+
+def _release_workstream_reference_issues(proposal: Mapping[str, Any]) -> list[str]:
+    issues: list[str] = []
+    backlog = proposal.get("backlog")
+    release_plan = proposal.get("release_plan")
+    if not isinstance(backlog, list) or not isinstance(release_plan, Mapping):
+        return issues
+    titles = [
+        clean_text(row.get("title"))
+        for row in backlog
+        if isinstance(row, Mapping) and clean_text(row.get("title"))
+    ]
+    title_lookup = {title.casefold() for title in titles}
+    for label, ref in _release_title_refs(release_plan):
+        if ref.casefold() not in title_lookup:
+            issues.append(
+                f"release plan {label} references workstream title `{ref}` that is not a generated backlog row"
+            )
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    if str(intent.get("reasoning_mode", "")).strip() == "odylith_confirmed_governed_proposal":
+        child_titles = titles[1:]
+        target_titles = [
+            ref
+            for label, ref in _release_title_refs(release_plan)
+            if label == "target_workstream_titles"
+        ]
+        missing = [title for title in child_titles if title.casefold() not in {ref.casefold() for ref in target_titles}]
+        if target_titles and missing:
+            issues.append(
+                "release plan target_workstream_titles omits generated first-release workstreams: "
+                + ", ".join(missing[:3])
+            )
+    return issues
+
+
+def _release_title_refs(release_plan: Mapping[str, Any]) -> list[tuple[str, str]]:
+    rows: list[tuple[str, str]] = [
+        ("target_workstream_titles", ref)
+        for ref in text_values(release_plan.get("target_workstream_titles"))
+        if clean_text(ref)
+    ]
+    stages = release_plan.get("release_stages")
+    if isinstance(stages, list):
+        for index, stage in enumerate(stages, start=1):
+            if not isinstance(stage, Mapping):
+                continue
+            rows.extend(
+                (f"release_stages[{index}].workstream_titles", ref)
+                for ref in text_values(stage.get("workstream_titles"))
+                if clean_text(ref)
+            )
+    return rows
 
 
 def _prompt_echo_issues(

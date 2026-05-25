@@ -31,6 +31,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_text as _sentence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import set_sentence_list as _set_list
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import set_sentence_text as _set_text
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
@@ -142,6 +143,8 @@ def _repair_project_title(proposal: dict[str, Any]) -> bool:
 
 def _project_title_needs_repair(value: str) -> bool:
     text = _clean(value)
+    if normalize_project_title(text).changed:
+        return True
     words = re.findall(r"[A-Za-z0-9]+", text)
     if not text or not words:
         return True
@@ -270,7 +273,7 @@ def _complete_project_posture(proposal: dict[str, Any]) -> bool:
                     f"If the accepted first path is not proven with visible evidence, {_project_title(proposal)} "
                     f"can produce records that look ready while the product outcome remains untrusted: {_first_path(proposal)}"
                 ),
-                "Keep release proof tied to the accepted first path, state object, validation output, and reviewer decision.",
+                "Keep release proof tied to the accepted first path, state object, validation output, and release decision.",
             ),
             _risk_row(
                 "RISK-002",
@@ -309,7 +312,7 @@ def _complete_project_posture(proposal: dict[str, Any]) -> bool:
                     *(validation if isinstance(validation, list) else []),
                     f"The accepted first path passes end to end: {_first_path(proposal)}",
                     f"The state object can be reconstructed with actor, source, timestamp, and evidence references: {_state_object(proposal)}",
-                    f"The proof boundary blocks release readiness when validation, replay, access, privacy, safety, or reviewer evidence is missing: {_proof_boundary(proposal)}",
+                    f"The proof boundary blocks release readiness when validation, replay, access, privacy, safety, or review evidence is missing: {_proof_boundary(proposal)}",
                 ]
             )
         )
@@ -361,7 +364,7 @@ def _complete_backlog(proposal: dict[str, Any]) -> bool:
         if not _clean(row.get("domain_risk")) or _text_needs_repair(row.get("domain_risk")):
             row["domain_risk"] = (
                 f"Domain risk: {title} can mislead operators if it loses the accepted product context, state object, "
-                f"reviewer evidence, or release proof: {_proof_boundary(proposal)}"
+                    f"review evidence, or release proof: {_proof_boundary(proposal)}"
             )
             changed = True
         if not _clean(row.get("security_posture")) or _text_needs_repair(row.get("security_posture")):
@@ -459,17 +462,19 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
         drifted = _row_drifted_from_component(row, component)
         if _text_needs_repair(row.get("product_view")) or drifted:
             proof_tail = (
-                " It keeps reviewer decision, release proof, deferred scope, and recovery evidence visible."
+                " It keeps the release decision, proof boundary, deferred scope, and recovery evidence visible."
                 if _row_is_release_proof(row)
                 else ""
             )
             row["product_view"] = (
-                f"{label} owns {owned}. It accepts {inputs}, produces {outputs}, and keeps {states} visible for {title}.{proof_tail}"
+                f"{label} owns {owned}. It accepts {inputs} and produces {outputs}. "
+                f"The visible contract covers {states}.{proof_tail}"
             )
             changed = True
         if _text_needs_repair(row.get("recommended_first_slice")) or drifted:
             row["recommended_first_slice"] = (
-                f"Implement {label} around its local inputs, outputs, blocked states, sibling refusals, and downstream handoff."
+                f"Implement {label} by validating {inputs}, producing {outputs}, preserving {states}, "
+                "and refusing sibling-owned state before downstream handoff."
             )
             changed = True
         if _sequence_needs_repair(row.get("success_metrics"), required_tokens=("success", "block", "evidence"), min_items=3) or drifted:
@@ -682,7 +687,7 @@ def _repair_release_success_language(proposal: dict[str, Any], *, release_select
     proof_boundary = _proof_boundary(proposal)
     proof_success = _sentence(
         f"Release {release} succeeds only when {label} completes the accepted first path, records {state_object}, "
-        f"shows reviewer-visible evidence, and blocks readiness when the accepted proof boundary is missing: {proof_boundary}",
+        f"shows release-review evidence, and blocks readiness when the accepted proof boundary is missing: {proof_boundary}",
         limit=520,
     )
     changed = False
@@ -717,7 +722,7 @@ def _repair_validation_strategy(proposal: dict[str, Any], *, release_selector: s
     state_object = _state_object(proposal)
     proof_boundary = _proof_boundary(proposal)
     rows = [
-        _sentence(f"Success proof: release {release} completes the accepted first path and produces a reviewer-visible result: {first_path}", limit=520),
+        _sentence(f"Success proof: release {release} completes the accepted first path and produces a release-review result: {first_path}", limit=700),
         _sentence(f"Blocked-path proof: missing input, invalid state, failed validation, absent evidence, or unresolved review blocks readiness for {state_object}.", limit=520),
         _sentence(f"Replay proof: {state_object} can be reconstructed with actor, source, timestamp, prior state, current state, evidence reference, and outcome.", limit=520),
         _sentence(f"Access and privacy proof: only authorized actors can view or mutate protected state, and audit, retention, privacy, accessibility, and safety obligations stay visible.", limit=520),
@@ -737,16 +742,16 @@ def _repair_backlog_success_language(proposal: dict[str, Any], *, release_select
     for row in _dict_rows(proposal.get("backlog")):
         title = _clean(row.get("title")) or label
         metrics = [
-            _sentence(f"{title} proves the accepted success path for release {release}: {first_path}", limit=500),
+            _sentence(f"{title} proves the accepted success path for release {release}: {first_path}", limit=900),
             _sentence(f"{title} blocks readiness when required input, state, access, privacy, validation, or evidence is missing.", limit=500),
             _sentence(f"{title} keeps {state_object} replayable with actor, source, timestamp, status, and evidence references.", limit=500),
             _sentence(f"{title} release evidence matches the accepted proof boundary: {proof_boundary}", limit=500),
         ]
         if _sequence_needs_repair(row.get("success_metrics"), required_tokens=("success", "block", "replay", "evidence")):
-            changed |= _set_list(row, "success_metrics", metrics)
+            changed |= _set_list(row, "success_metrics", metrics, limit=1000)
         validation = [
             _sentence(f"Validate success, blocked, replay, access, privacy, and evidence paths for {title}.", limit=360),
-            _sentence(f"Reject release readiness when {title} cannot explain its state change, source evidence, reviewer decision, or recovery path.", limit=420),
+            _sentence(f"Reject release readiness when {title} cannot explain its state change, source evidence, release decision, or recovery path.", limit=420),
         ]
         if _sequence_needs_repair(row.get("validation"), required_tokens=("success", "block", "replay")):
             changed |= _set_list(row, "validation", validation)
@@ -762,7 +767,7 @@ def _repair_project_intelligence_validation(proposal: dict[str, Any], *, release
     state_object = _state_object(proposal)
     proof_boundary = _proof_boundary(proposal)
     rows = [
-        _sentence(f"Validate the {label} success path from first input to reviewer-visible outcome.", limit=360),
+        _sentence(f"Validate the {label} success path from first input to release-review outcome.", limit=360),
         _sentence(f"Validate a blocked path where missing input, invalid state, failed validation, or missing evidence prevents release readiness.", limit=420),
         _sentence(f"Validate replay for {state_object} with actor, source, timestamp, status, evidence reference, and outcome.", limit=420),
         _sentence(f"Validate role-appropriate access, privacy, audit, retention, accessibility, safety, and recovery behavior before release {release}.", limit=420),
@@ -800,7 +805,7 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
         changed |= _repair_bad_scalar(
             row,
             "domain_risk",
-            fallback=f"Domain risk: {title} can mislead users if {state_object} changes without clear source evidence, reviewer decision, and recovery path.",
+            fallback=f"Domain risk: {title} can mislead users if {state_object} changes without clear source evidence, release decision, and recovery path.",
         )
         changed |= _repair_bad_scalar(
             row,
@@ -1173,7 +1178,11 @@ def _diagram_title(row: Mapping[str, Any], *, proposal: Mapping[str, Any], index
 
 def _first_path(proposal: Mapping[str, Any]) -> str:
     intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
-    return _sentence(intent.get("first_path") if isinstance(intent, Mapping) else "", fallback="the accepted first path")
+    return _sentence(
+        intent.get("first_path") if isinstance(intent, Mapping) else "",
+        fallback="the accepted first path",
+        limit=900,
+    )
 
 
 def _proof_boundary(proposal: Mapping[str, Any]) -> str:

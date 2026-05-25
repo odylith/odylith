@@ -52,6 +52,8 @@ from odylith.runtime.domain_intelligence.proposal_normalization import normalize
 from odylith.runtime.domain_intelligence.proposal_rendering import format_proposal_text
 from odylith.runtime.domain_intelligence.proposal_tribunal import raise_for_failed_greenfield_tribunal
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
 from odylith.runtime.domain_intelligence.proposal_validation import validated_mermaid_source
 from odylith.runtime.common import display_text
@@ -110,7 +112,7 @@ def _intent_title(prompt: str) -> str:
     clipped = words[:16]
     while clipped and clipped[-1].casefold().strip(".,;:") in {"a", "an", "and", "for", "from", "in", "of", "on", "or", "the", "to", "with"}:
         clipped.pop()
-    return " ".join(clipped or words[:1])
+    return normalize_project_title(" ".join(clipped or words[:1]), fallback="Greenfield Project").canonical_title
 
 
 _GREENFIELD_DIRECTIVE_RE = re.compile(
@@ -1091,7 +1093,10 @@ def _write_greenfield_proposal(
         diagram_ids=diagram_ids,
     )
 
-    component_rows = [row for row in proposal.get("components", []) if isinstance(row, Mapping)]
+    raw_component_rows = [row for row in proposal.get("components", []) if isinstance(row, Mapping)]
+    component_rows = [row for row in raw_component_rows if _is_first_release_component(row)]
+    if not component_rows:
+        component_rows = [row for row in active_release_components(raw_component_rows)]
     component_dependency_lookup = _component_dependency_lookup(component_rows)
     components_created: list[dict[str, Any]] = []
     for row in component_rows:
@@ -1199,6 +1204,10 @@ def _raise_for_component_spec_quality(
     if issues:
         detail = "\n".join(f"- {issue}" for issue in operator_component_spec_issues(issues))
         raise ValueError(f"greenfield component spec quality gate failed with {len(issues)} issue(s):\n{detail}")
+
+
+def _is_first_release_component(row: Mapping[str, Any]) -> bool:
+    return str(row.get("release_scope", "")).strip().casefold() not in {"deferred", "out_of_scope", "external"}
 
 
 def _remove_stale_workstream_artifacts(*, root: Path, stale_ids: object) -> None:

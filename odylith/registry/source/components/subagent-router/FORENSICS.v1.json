@@ -34,10 +34,10 @@
     "empty_reasons": [],
     "explicit_event_count": 132,
     "mapped_workstream_evidence_count": 123,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 3,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 132
+    "timeline_event_count": 133
   },
   "name": "Subagent Router",
   "path_prefixes": [
@@ -46,6 +46,22 @@
   ],
   "spec_ref": "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/orchestration/subagent_router.py"
+      ],
+      "confidence": "high",
+      "event_index": 486,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/orchestration/subagent_router.py",
+      "ts_iso": "2026-05-25T12:46:21-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
@@ -7192,19 +7208,9 @@
     }
   ],
   "traceability": {
-    "code_references": [
-      "src/odylith/cli.py",
-      "src/odylith/runtime/governance/component_registry_intelligence.py",
-      "src/odylith/runtime/governance/sync_workstream_artifacts.py"
-    ],
-    "developer_docs": [
-      "docs/specs/odylith-repo-integration-contract.md",
-      "odylith/PRODUCT_COMPONENTS.md",
-      "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
-    ],
-    "runbooks": [
-      "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md"
-    ]
+    "code_references": [],
+    "developer_docs": [],
+    "runbooks": []
   },
   "version": "v1",
   "what_it_is": "Bounded leaf-routing engine that selects local vs delegated execution and the requested model plus reasoning posture.",

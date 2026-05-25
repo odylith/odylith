@@ -3,13 +3,30 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import (
+    public_prose_quality_issues,
     rendered_component_spec_quality_issues,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_axes import component_axis_key_for_label
+from odylith.runtime.domain_intelligence.greenfield_component_contract_differentiation import _assignment_actor
+from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import derive_component_semantic_contract
+from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import _first_action_clause
+from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import _sentence_fragment
+from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import (
+    generated_semantic_slop_issues,
+    material_first_path_action,
+    normalize_project_title,
+    release_scope_for_component,
+)
+from odylith.runtime.domain_intelligence.proposal_normalization import _normalize_release_plan
 from odylith.runtime.governance.component_spec_rendering import build_component_spec
 from odylith.runtime.project_intelligence.greenfield import build_greenfield_payload
+from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 
 
 GENERIC_DECISION_REVIEW_INTENT = """# Decision Review Workspace
@@ -60,12 +77,161 @@ Release 0.0.1 succeeds when a representative packet can be imported with attachm
 """
 
 
+SERVICE_GOAL_PLANNING_INTENT = """# Service Goal Planning Workspace
+
+## Product Story
+Service Goal Planning Workspace helps an operations user move one service improvement goal through a simple planning loop: acknowledgement, baseline capture, daily progress logging, weekly status review, target adjustment, and follow-up reminders.
+
+## State Object
+A service-planning record tracks acknowledgement, baseline context, user goal, plan target, daily progress logs, status window, weekly review, target adjustments, guardrail flags, reminders, subscription entitlement, export requests, and deletion requests.
+
+## First Complete Path
+A user completes onboarding and acknowledgement, enters baseline capacity, current service level, planning preference, and goal, receives a starting plan target, logs progress for seven days, reviews the weekly status window, receives an adjusted plan target when progress is off track, and receives one follow-up reminder when progress updates stop.
+
+## Human Actors
+- Operations user: completes onboarding, enters baseline context, logs progress, reviews status, accepts or rejects reminders, exports or deletes data.
+- Product owner: reviews release evidence for the first planning loop before broader claims.
+
+## External Systems
+- Optional source import: deferred until manual logging works.
+- Payment processor: supplies entitlement events after the planning loop proves value.
+
+## Internal Product Systems
+- Onboarding and Acknowledgement Flow: records acknowledgement, eligibility, required disclosure, preferences, and baseline handoff.
+- Baseline Context Capture: records capacity, current service level, planning preference, and goal inputs.
+- Plan Target and Recommendation Engine: computes the starting target and target adjustments.
+- Daily Progress Logging: records progress entries, missing logs, and corrections.
+- Weekly Status and Check-in Review: calculates status window, progress status, and off-track reasons.
+- Reminder and Guardrail Service: sends follow-up reminders, blocks unsafe guidance, and shows guardrail flags.
+- Subscription and Entitlement: controls paid feature access after the core loop proves value.
+- Account Data Export and Deletion: exports or deletes user data with proof and retention boundaries.
+
+## Critical Assumptions
+- The first release supports manual logging only.
+- Guidance must avoid unsupported operational promises.
+- The first proof must show normal, missing-log, off-track, safety-blocked, export, and deletion paths.
+
+## Ambiguities
+- Exact planning rule and disclaimer text need product-owner confirmation.
+
+## Proof Boundary
+Release 0.0.1 succeeds when one operations user can complete onboarding, record baseline context, receive a starting plan target, log seven days of progress, review the weekly status window, get an adjusted plan target when off track, receive at least one follow-up reminder when progress updates stop, and prove export and deletion behavior without claiming automated source integrations.
+"""
+
+
+TRIP_COMPARISON_INTENT = """# Trip Planning Comparison
+
+## Product Story
+Trip Planning Comparison helps a commuter compare travel options for one trip using schedule, fare, walking time, and reliability evidence before choosing a route.
+
+## State Object
+A trip comparison request tracks origin, destination, departure time, rider preference, candidate options, fare evidence, schedule evidence, ranking rationale, selected route, and unresolved blockers.
+
+## First Complete Path
+A commuter enters origin, destination, departure time, and preference, the product fetches candidate options, calculates fare and schedule evidence, ranks alternatives, highlights the cheapest acceptable route, lets the commuter choose an option, and stores the comparison evidence.
+
+## Human Actors
+- Commuter: enters trip details, compares options, chooses a route, and needs transparent cost and timing evidence.
+- Transit planner: reviews release evidence that options, prices, schedules, and ranking rationale are correct.
+
+## External Systems
+- Transit schedule feed: supplies routes, departure times, transfer windows, and service alerts.
+- Fare table feed: supplies fare rules, zones, discounts, and transfer pricing.
+
+## Internal Product Systems
+- Trip Intake Adapter: captures origin, destination, departure time, rider preference, and validation blockers.
+- Schedule Candidate Service: normalizes schedule feed options, transfer windows, and service alerts.
+- Fare Evidence Service: calculates price options, fare rules, discounts, and transfer costs.
+- Option Ranking Engine: orders alternatives by fare, travel time, walking time, reliability, and preference.
+- Comparison Review Surface: shows ranked options, cheapest acceptable route, rationale, blockers, and selected route evidence.
+
+## Critical Assumptions
+- Release 0.0.1 uses deterministic fixture feeds before live provider credentials.
+- The first release supports one city and one rider profile.
+
+## Ambiguities
+- Exact weighting between cheapest and fastest needs product-owner confirmation.
+
+## Proof Boundary
+Release 0.0.1 succeeds when one commuter can enter a trip, see candidate options with fare and schedule evidence, understand why the cheapest acceptable route is ranked first, select a route, and replay the comparison evidence without claiming live agency integration.
+"""
+
+
+PAIN_RELIEF_TRACKING_INTENT = """# Pain Management Companion (working title)
+
+## Product Story
+Pain Management Companion helps a person track pain episodes, relief attempts, medication facts, and simple trend context so they can understand what happened before a care conversation without treating the app as medical advice.
+
+## State Object
+A pain journal entry tracks actor identity, episode timestamp, intensity rating, body location, trigger notes, relief method, medication taken as recorded by the user, side effect notes, timeline visibility, edit history, and safety disclaimer acknowledgement.
+
+## First Complete Path
+A person opens the app, logs a pain entry with intensity, body area, trigger notes, medication taken, and relief attempt, the product persists the entry, shows it on a timeline and trend view, and lets the person edit the entry if they made a mistake.
+
+## Human Actors
+- Person managing pain: logs pain entries, reviews trends, edits mistakes, and decides what to discuss with a clinician.
+- Product owner: reviews release evidence for the first tracking loop and safety boundaries.
+
+## External Systems
+- Authentication provider: signs the person in.
+- Clinician portal: deferred until the personal journal loop works.
+
+## Internal Product Systems
+- Pain Entry Capture and Editing: records pain episode details, validates required fields, stores correction history, and blocks unsafe or incomplete entries.
+- Personal History, Trends, and Timeline Views: shows persisted pain entries, trend snapshots, edit history, and empty or stale states.
+- Medication and Relief Tracking with Reminders: records user-entered medication facts, relief attempts, reminder preferences, and missed reminder state.
+- Shareable Visit Summary Generation: creates clinician-facing summaries from selected journal data.
+- Account and Profile Management: owns identity, consent, privacy preferences, export, deletion, and caregiver delegation.
+
+## Critical Assumptions
+- The first release is a personal tracking product, not diagnosis or medication dosing advice.
+- Reminders and clinician sharing are deferred until the create-view-edit loop is proven.
+- Health data is sensitive and export or deletion must be explicit.
+
+## Ambiguities
+- Exact body-location taxonomy and intensity scale need product-owner confirmation.
+
+## Proof Boundary
+Release 0.0.1 succeeds when one person can create a pain entry, see the persisted entry on timeline and trend views, edit the entry, and replay the entry history without claiming diagnosis, medication dosing advice, reminders, clinician sharing, or emergency triage automation.
+"""
+
+
 def _proposal(tmp_path: Path) -> dict[str, object]:
     return greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
         prompt=GENERIC_DECISION_REVIEW_INTENT,
         release_selector="0.0.1",
         confirmed_intent=parse_confirmed_intent_text(GENERIC_DECISION_REVIEW_INTENT),
+    )
+
+
+def _service_goal_proposal(tmp_path: Path) -> dict[str, object]:
+    return greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=SERVICE_GOAL_PLANNING_INTENT,
+        release_selector="0.0.1",
+        confirmed_intent=parse_confirmed_intent_text(SERVICE_GOAL_PLANNING_INTENT),
+    )
+
+
+def _trip_comparison_proposal(tmp_path: Path) -> dict[str, object]:
+    return greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=TRIP_COMPARISON_INTENT,
+        release_selector="0.0.1",
+        confirmed_intent=parse_confirmed_intent_text(TRIP_COMPARISON_INTENT),
+    )
+
+
+def _pain_relief_tracking_proposal(tmp_path: Path) -> dict[str, object]:
+    return greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="Pain Management Companion (working title)",
+        release_selector="0.0.1",
+        confirmed_intent=parse_confirmed_intent_text(
+            PAIN_RELIEF_TRACKING_INTENT,
+            prompt="Pain Management Companion (working title)",
+        ),
     )
 
 
@@ -101,6 +267,20 @@ def _component_contract(proposal: dict[str, object], label_part: str) -> dict[st
         if label_part.casefold() in str(row.get("label", "")).casefold():
             return dict(row["component_contract"])
     raise AssertionError(f"missing component containing {label_part!r}")
+
+
+def _created_backlog(proposal: dict[str, object], tmp_path: Path) -> list[dict[str, str]]:
+    rows = []
+    for index, row in enumerate(proposal["backlog"], start=1):  # type: ignore[index]
+        title = str(dict(row).get("title", ""))
+        rows.append(
+            {
+                "idea_id": f"B-{index:03d}",
+                "title": title,
+                "idea_path": str(tmp_path / f"B-{index:03d}.md"),
+            }
+        )
+    return rows
 
 
 def test_greenfield_project_payload_keeps_actor_responsibilities_specific(tmp_path: Path) -> None:
@@ -189,3 +369,660 @@ def test_greenfield_atlas_uses_first_path_events_and_evidence_owner(tmp_path: Pa
     assert "Source-backed Audit Trail Adapter" in boundary
     assert "Source-backed Audit Trail Adapter proof record" in proof
     assert "Release 0.0.1 succeeds when a representative" not in proof
+
+
+def test_greenfield_health_tracking_artifacts_strip_working_title_and_parse_material_first_path(tmp_path: Path) -> None:
+    title = normalize_project_title("Pain Management Companion (working title)")
+    intent = parse_confirmed_intent_text(
+        PAIN_RELIEF_TRACKING_INTENT,
+        prompt="Pain Management Companion (working title)",
+    )
+    proposal = _pain_relief_tracking_proposal(tmp_path)
+    decision = greenfield_proposals.run_greenfield_tribunal(proposal, release_selector="0.0.1")
+    rendered_public = json.loads(json.dumps(proposal))
+    rendered_public["intent"].pop("source_title", None)
+    rendered = json.dumps(rendered_public, sort_keys=True).casefold()
+
+    assert title.canonical_title == "Pain Management Companion"
+    assert title.raw_title == "Pain Management Companion (working title)"
+    assert intent["title"] == "Pain Management Companion"
+    assert intent["source_title"] == "Pain Management Companion (working title)"
+    assert intent["prompt"] == "Pain Management Companion"
+    rendered_intent = dict(intent)
+    rendered_intent.pop("source_title", None)
+    assert "working title" not in json.dumps(rendered_intent, sort_keys=True).casefold()
+    first_action = material_first_path_action(str(intent["first_path"]))
+    assert first_action.startswith("Logs a pain entry with intensity")
+    assert "body area" in first_action
+    assert proposal["intent"]["title"] == "Pain Management Companion"
+    assert proposal["intent"]["source_title"] == "Pain Management Companion (working title)"
+    assert decision.passed, decision.issues
+    assert greenfield_quality_issues(proposal) == []
+    assert generated_semantic_slop_issues(proposal) == []
+
+    for banned in (
+        "working title",
+        "first accepted action",
+        "owns maintains",
+        "prevents downstream work can trust",
+        "valid transition display, stale",
+        "rejected or blocked cases, evidence",
+        "done, path, mean, person, create, view, edit",
+    ):
+        assert banned not in rendered
+
+
+def test_greenfield_health_tracking_registry_uses_domain_artifacts_and_safety_proof(tmp_path: Path) -> None:
+    assert component_axis_key_for_label("Pain Entry Capture and Editing Service") == "symptom_self_tracking"
+    assert component_axis_key_for_label("Medication and Relief Tracking with Reminders Service") == "medication_relief_tracking"
+
+    proposal = _pain_relief_tracking_proposal(tmp_path)
+    pain_entry = _component_contract(proposal, "Pain Entry Capture")
+    medication = _component_contract(proposal, "Medication and Relief")
+    account = _component_contract(proposal, "Account and Profile")
+    specs = _rendered_specs(proposal)
+    rendered = (json.dumps(proposal, sort_keys=True) + "\n" + "\n".join(specs.values())).casefold()
+
+    assert rendered_component_spec_quality_issues(specs, project_title=str(proposal["intent"]["title"])) == []
+    for expected in (
+        "symptom entry",
+        "intensity rating",
+        "body location",
+        "relief method",
+        "medication-taken record",
+        "dose-as-recorded value",
+        "timeline event",
+        "correction history",
+        "safety disclaimer marker",
+    ):
+        assert expected in json.dumps(pain_entry, sort_keys=True).casefold()
+    for expected in (
+        "medication-taken record",
+        "dose-as-recorded value",
+        "relief attempt",
+        "reminder preference",
+        "missed-reminder marker",
+        "side-effect note",
+    ):
+        assert expected in json.dumps(medication, sort_keys=True).casefold()
+    for expected in (
+        "diagnosis",
+        "prescribing",
+        "medication dosing advice",
+        "emergency-care authority",
+    ):
+        assert expected in rendered
+
+    assert "goal target" not in json.dumps(account, sort_keys=True).casefold()
+    assert "plan rule" not in json.dumps(account, sort_keys=True).casefold()
+    assert "status window" not in json.dumps(account, sort_keys=True).casefold()
+    assert "daily log entry" not in json.dumps(medication, sort_keys=True).casefold()
+    assert "habit status" not in json.dumps(medication, sort_keys=True).casefold()
+
+
+def test_greenfield_health_tracking_defers_later_scope_and_keeps_atlas_implementable(tmp_path: Path) -> None:
+    assert release_scope_for_component(
+        {
+            "label": "Medication and Relief Tracking with Reminders Service",
+            "responsibility": "records user-entered medication facts, relief attempts, reminder preferences, and missed reminder state.",
+        },
+        first_path="A person logs a pain entry and sees it on a timeline.",
+        proof_boundary="Release succeeds without claiming reminders or clinician sharing.",
+        non_goals=["Reminders and clinician sharing are deferred until the journal loop works."],
+    ) == "out_of_scope"
+    assert release_scope_for_component(
+        {
+            "label": "Shareable Visit Summary Generation Service",
+            "responsibility": "may later produce clinician-facing summaries.",
+        },
+        first_path="A person logs a pain entry, sees it on a timeline, and edits it.",
+        proof_boundary="Reminders and clinician sharing are explicitly out of scope for this release.",
+        non_goals=[],
+    ) == "out_of_scope"
+
+    proposal = _pain_relief_tracking_proposal(tmp_path)
+    release_scopes = {str(row["label"]): str(row["release_scope"]) for row in proposal["components"]}  # type: ignore[index]
+    active_labels = {
+        str(row["label"])
+        for row in proposal["components"]  # type: ignore[index]
+        if str(row.get("release_scope")) in {"first_path_required", "supporting"}
+    }
+    diagrams = {str(row["title"]): str(row["mermaid_source"]) for row in proposal["diagrams"]}  # type: ignore[index]
+    sequence = diagrams["First Path Sequence"]
+    boundary = diagrams["Component Boundary View"]
+    proof = diagrams["Release Proof Review"]
+
+    assert release_scopes["Pain Entry Capture and Editing Service"] == "first_path_required"
+    assert release_scopes["Personal History, Trends, and Timeline Views Service"] == "first_path_required"
+    assert release_scopes["Medication and Relief Tracking with Reminders Service"] == "out_of_scope"
+    assert release_scopes["Shareable Visit Summary Generation Service"] == "out_of_scope"
+    assert "Medication and Relief Tracking with Reminders Service" not in active_labels
+    assert "Shareable Visit Summary Generation Service" not in active_labels
+
+    assert "A1->>C1: Logs a pain entry with" in sequence
+    assert "A1->>C1: Persists the entry" in sequence
+    assert "A1->>C2: Shows it on a timeline" in sequence
+    assert "A1->>C1: Lets the person edit the entry" in sequence
+    assert "A person opens the app" not in sequence
+    assert "Medication and Relief" not in sequence
+    assert "Shareable Visit" not in sequence
+    assert "Clinician" not in sequence
+    assert ": capture" not in sequence.casefold()
+
+    assert "Deferred scope<br/>Medication and Relief Tracking with Reminders Service" in boundary
+    assert "Deferred scope<br/>Shareable Visit Summary Generation Service" in boundary
+    assert "Proof checkpoint<br/>pain, entry, persisted, timeline, trend, edit, replay" in proof
+    assert "done, path, mean, person" not in proof
+
+
+def test_greenfield_apply_keeps_deferred_components_out_of_first_release_registry(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(
+        greenfield_proposals.component_authoring.owned_surface_refresh,
+        "raise_for_failed_refresh",
+        lambda **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh,
+        "raise_for_failed_refresh",
+        lambda **_kwargs: None,
+    )
+    proposal = _pain_relief_tracking_proposal(tmp_path)
+
+    result = greenfield_proposals.apply_greenfield_proposal(
+        repo_root=tmp_path,
+        proposal=proposal,
+        confirm=True,
+        release_selector="0.0.1",
+    )
+
+    registered_labels = {str(row.get("label", "")) for row in result["components"]}
+    assert "Pain Entry Capture and Editing Service" in registered_labels
+    assert "Personal History, Trends, and Timeline Views Service" in registered_labels
+    assert "Account and Profile Management Service" in registered_labels
+    assert "Medication and Relief Tracking with Reminders Service" not in registered_labels
+    assert "Shareable Visit Summary Generation Service" not in registered_labels
+
+    registry_text = (tmp_path / "odylith/registry/source/component_registry.v1.json").read_text(encoding="utf-8")
+    assert "medication-and-relief-tracking-with-reminders" not in registry_text
+    assert "shareable-visit-summary-generation" not in registry_text
+
+
+def test_greenfield_service_goal_governance_preserves_intent_and_avoids_cross_domain_templates(tmp_path: Path) -> None:
+    intent = parse_confirmed_intent_text(SERVICE_GOAL_PLANNING_INTENT)
+    proposal = _service_goal_proposal(tmp_path)
+    specs = _rendered_specs(proposal)
+    rendered = json.dumps(proposal, sort_keys=True) + "\n" + "\n".join(specs.values())
+
+    assert "follow-up reminder when progress updates stop" in intent["proof_boundary"]
+    assert "prove export and deletion behavior" in intent["proof_boundary"]
+    assert "receive at least one." not in rendered
+
+    parent = dict(proposal["backlog"][0])  # type: ignore[index]
+    first_slice = str(parent["recommended_first_slice"])
+    for expected in (
+        "completes onboarding and acknowledgement",
+        "logs progress for seven days",
+        "receives an adjusted plan target",
+        "receives one follow-up reminder",
+    ):
+        assert expected in first_slice
+
+    backlog_titles = {str(dict(row)["title"]) for row in proposal["backlog"]}  # type: ignore[index]
+    release_targets = list(proposal["release_plan"]["target_workstream_titles"])  # type: ignore[index]
+    assert release_targets
+    assert set(release_targets) <= backlog_titles
+    assert str(proposal["backlog"][-1]["title"]) in release_targets  # type: ignore[index]
+
+    diagrams = {str(row["title"]): str(row["mermaid_source"]) for row in proposal["diagrams"]}  # type: ignore[index]
+    sequence = diagrams["First Path Sequence"]
+    assert "A1->>C1: A user completes onboarding" in sequence
+    assert "A1->>C2: Enters baseline capacity" in sequence
+    assert "A1->>C3: Receives a starting plan" in sequence
+    assert "A1->>C4: Logs progress" in sequence
+    assert "A1->>C5: Reviews the weekly status" in sequence
+    assert "A1->>C6: Receives one follow-up reminder" in sequence
+
+    for banned in (
+        "case identity",
+        "workspace status",
+        "checklist progress",
+        "saved notes",
+        "actor notes",
+        "reviewer eligibility",
+        "assignment routing",
+        "conflict constraints",
+        "accepts computes plan targets input",
+        "produces computes plan targets result",
+        "computes plan targets input",
+        "computes plan targets result",
+        "output coverage for computes plan targets and",
+        "one follow-up.",
+        "state profile",
+        "user path, state, evidence, decision, and follow-up",
+        "entry, actions, feedback, and handoff",
+        "evidence Its proof obligation",
+        "run the repo-native test, lint, typecheck, build, and browser proof named by the first technical plan",
+    ):
+        assert banned not in rendered
+
+    plan = greenfield_traceability.build_traceability_plan(
+        proposal=proposal,
+        created_backlog=_created_backlog(proposal, tmp_path),
+        diagram_ids=[f"D-{index:03d}" for index in range(1, len(proposal["diagrams"]) + 1)],  # type: ignore[index]
+    )
+    component_lines = greenfield_traceability._component_lines_for_workstream("B-001", proposal=proposal, plan=plan)
+    assert component_lines
+    assert all("Related diagrams:" not in line for line in component_lines)
+    assert all(line.count(":") == 0 for line in component_lines)
+
+
+def test_greenfield_ranking_engine_and_review_surface_stay_distinct(tmp_path: Path) -> None:
+    proposal = _trip_comparison_proposal(tmp_path)
+    ranking = _component_contract(proposal, "Option Ranking")
+    surface = _component_contract(proposal, "Comparison Review")
+    diagrams = {str(row["title"]): str(row["mermaid_source"]) for row in proposal["diagrams"]}  # type: ignore[index]
+    sequence = diagrams["First Path Sequence"]
+    boundary = diagrams["Component Boundary View"]
+    proof = diagrams["Release Proof Review"]
+    decision = greenfield_proposals.run_greenfield_tribunal(proposal, release_selector="0.0.1")
+    rendered = json.dumps(proposal, sort_keys=True)
+
+    assert decision.passed
+    assert "ranking rule" in str(ranking["owned_state"]).casefold()
+    assert "ranked option list" in str(ranking["produced_outputs"]).casefold()
+    assert "ranking rule" not in str(surface["owned_state"]).casefold()
+    assert "display state" in str(surface["owned_state"]).casefold()
+    assert "upstream result for ranked options" in str(surface["accepted_inputs"]).casefold()
+    assert "reviewable display for ranked options" in str(surface["produced_outputs"]).casefold()
+
+    assert "A1->>C1: A commuter enters origin" in sequence
+    assert "A1->>C2: Fetches candidate options" in sequence
+    assert "A1->>C3: Calculates fare and schedule" in sequence
+    assert "A1->>C4: Ranks alternatives" in sequence
+    assert "A1->>C5: Lets the commuter choose" in sequence
+    assert "A1->>C5: Stores the comparison evidence" in sequence
+    assert "A1->>C5: A commuter enters" not in sequence
+    assert 'input1["External input<br/>Transit schedule feed"] --> boundary2' in boundary
+    assert 'input2["External input<br/>Fare table feed"] --> boundary3' in boundary
+    assert "Proof checkpoint<br/>trip, candidate, option, fare, schedule" in proof
+    assert "check commuter" not in proof
+    assert "Commuter, and" not in rendered
+    assert "user path, state, evidence, decision, and follow-up" not in rendered
+    assert "entry, actions, feedback, and handoff" not in rendered
+    assert "state profile" not in rendered
+
+
+def test_greenfield_tribunal_rejects_shallow_confirmed_artifact_substance(tmp_path: Path) -> None:
+    proposal = _trip_comparison_proposal(tmp_path)
+    proposal["backlog"][1]["problem"] = "Do the thing."  # type: ignore[index]
+    proposal["backlog"][1]["opportunity"] = "Build it."  # type: ignore[index]
+    proposal["backlog"][1]["product_view"] = "Users use it."  # type: ignore[index]
+    proposal["backlog"][1]["recommended_first_slice"] = "Implement it."  # type: ignore[index]
+    proposal["backlog"][1]["success_metrics"] = ["It works.", "It is done."]  # type: ignore[index]
+    proposal["backlog"][1]["dependencies"] = ["Generic dependency."]  # type: ignore[index]
+    proposal["backlog"][1]["interfaces"] = ["Generic interface."]  # type: ignore[index]
+    proposal["backlog"][1]["validation"] = ["Generic validation."]  # type: ignore[index]
+    for component in proposal["components"]:  # type: ignore[index]
+        if "Comparison Review" in str(component["label"]):
+            component["component_contract"]["owned_state"] += ", ranking rule"  # type: ignore[index]
+    for diagram in proposal["diagrams"]:  # type: ignore[index]
+        if diagram["title"] == "First Path Sequence":
+            diagram["mermaid_source"] = "sequenceDiagram\n  A1->>C1: Start\n"
+
+    decision = greenfield_proposals.run_greenfield_tribunal(proposal, release_selector="0.0.1")
+    issues = "\n".join(decision.issues)
+
+    assert not decision.passed
+    assert "confirmed Radar workstream `Build Trip Intake Adapter First Path` is too thin" in issues
+    assert "presentation boundary but owns computation or source-truth state" in issues
+    assert "collapses the first path into too few events" in issues
+
+
+def test_greenfield_tribunal_rejects_cross_axis_registry_proof_leakage(tmp_path: Path) -> None:
+    proposal = _trip_comparison_proposal(tmp_path)
+    proposal["components"][0]["component_contract"]["local_proof"] = [  # type: ignore[index]
+        "Privacy lifecycle proof shows actor identity, consent history, protected-state reference, retention rule, lifecycle decision, and audit event.",
+        "Deletion block proof keeps protected state unchanged.",
+        "Lifecycle replay proof reconstructs protected-data lifecycle states.",
+    ]
+    proposal["components"][1]["component_contract"]["owned_state"] += ", question list"  # type: ignore[index]
+
+    decision = greenfield_proposals.run_greenfield_tribunal(proposal, release_selector="0.0.1")
+    issues = "\n".join(decision.issues)
+
+    assert not decision.passed
+    assert "uses privacy lifecycle proof for a non-privacy ownership boundary" in issues
+    assert "imports question-tracking state without a question or response boundary" in issues
+
+
+def test_greenfield_tribunal_rejects_sequence_tail_truncation(tmp_path: Path) -> None:
+    proposal = _trip_comparison_proposal(tmp_path)
+    for diagram in proposal["diagrams"]:  # type: ignore[index]
+        if diagram["title"] == "First Path Sequence":
+            diagram["mermaid_source"] = "\n".join(
+                [
+                    "sequenceDiagram",
+                    "  autonumber",
+                    "  participant A1 as Commuter",
+                    "  participant C1 as Trip Intake Adapter",
+                    "  participant C2 as Schedule Candidate Service",
+                    "  participant C3 as Fare Evidence Service",
+                    "  A1->>C1: A commuter enters trip details",
+                    "  C1->>C2: prepare to fetch candidate options",
+                    "  A1->>C2: Fetches candidate options",
+                    "  C2->>C3: prepare to calculate fare evidence",
+                    "  A1->>C3: Calculates fare evidence",
+                ]
+            )
+
+    decision = greenfield_proposals.run_greenfield_tribunal(proposal, release_selector="0.0.1")
+    issues = "\n".join(decision.issues)
+
+    assert not decision.passed
+    assert "omits the tail of the accepted first path" in issues
+
+
+def test_greenfield_release_title_normalization_preserves_comma_bearing_titles() -> None:
+    title = "Build Account, Data Export, and Deletion Proof Review"
+
+    release_plan = _normalize_release_plan(
+        {
+            "selector": "0.0.1",
+            "target_workstream_titles": title,
+            "release_stages": [{"stage": "wave-1", "workstream_titles": title}],
+        }
+    )
+
+    assert release_plan["target_workstream_titles"] == [title]
+    assert release_plan["release_stages"][0]["workstream_titles"] == [title]
+
+
+def test_greenfield_quality_gate_rejects_split_release_title_fragments(tmp_path: Path) -> None:
+    proposal = _service_goal_proposal(tmp_path)
+    proposal["release_plan"]["target_workstream_titles"] = [  # type: ignore[index]
+        "Build Account",
+        "Data Export",
+        "and Deletion Proof Review",
+    ]
+
+    issues = greenfield_quality_issues(proposal)
+
+    assert any("references workstream title" in issue for issue in issues)
+
+
+def test_greenfield_component_contract_normalizes_capability_phrases_into_artifacts() -> None:
+    contract = derive_component_semantic_contract(
+        {
+            "label": "Planning Engine",
+            "source_system_description": "computes plan targets from progress snapshots and status windows with rationale",
+        },
+        proposal={"intent": {"title": "Generic Planning", "first_path": "A user receives an adjusted plan target."}},
+        sibling=None,
+        previous_label="Daily Progress Logging",
+        next_label="Weekly Status Review",
+        state_label="planning record",
+    ).fields
+    rendered = json.dumps(contract, sort_keys=True).casefold()
+
+    assert "computes plan targets input" not in rendered
+    assert "computes plan targets result" not in rendered
+    assert "plan adjustment request" in str(contract["accepted_inputs"]).casefold()
+    assert "progress snapshot" in str(contract["accepted_inputs"]).casefold()
+    assert "status window" in str(contract["accepted_inputs"]).casefold()
+    assert "plan adjustment result" in str(contract["produced_outputs"]).casefold()
+    assert "adjustment rationale" in str(contract["produced_outputs"]).casefold()
+
+
+def test_greenfield_component_contract_nominalizes_inflected_verbs_and_notes() -> None:
+    guardrail = derive_component_semantic_contract(
+        {
+            "label": "Availability Guardrail Service",
+            "source_system_description": "verifies availability and checkout eligibility. Relevant behavior: approve checkout, and return condition.",
+        },
+        proposal={"intent": {"title": "Generic Resource Checkout"}},
+        sibling=None,
+        previous_label="Reservation Intake Adapter",
+        next_label="Checkout Approval Ledger",
+        state_label="resource item",
+    ).fields
+    rendered_guardrail = json.dumps(guardrail, sort_keys=True).casefold()
+
+    assert "verifies availability" not in rendered_guardrail
+    assert "approve checkout" not in rendered_guardrail
+    assert "availability and checkout eligibility" in rendered_guardrail
+    assert "checkout" in rendered_guardrail
+
+    recorder = derive_component_semantic_contract(
+        {
+            "label": "Return Condition Recorder",
+            "source_system_description": "records returned state, damage notes, and restoration blockers.",
+        },
+        proposal={"intent": {"title": "Generic Resource Checkout"}},
+        sibling=None,
+        previous_label="Checkout Approval Ledger",
+        next_label="Audit History Ledger",
+        state_label="resource item",
+    ).fields
+    rendered_recorder = json.dumps(recorder, sort_keys=True).casefold()
+
+    assert "damage notes" in rendered_recorder
+    assert "case identity" not in rendered_recorder
+    assert "workspace status" not in rendered_recorder
+    assert "checklist progress" not in rendered_recorder
+
+
+def test_greenfield_checklist_ledger_and_risk_review_workspace_stay_distinct(tmp_path: Path) -> None:
+    assert component_axis_key_for_label("Compliance Checklist Ledger") == "check_rule_ledger"
+    assert component_axis_key_for_label("Risk Review Workspace") == "risk_review_workspace"
+    assert component_axis_key_for_label("Habit, Activity, Status, and Check-in Tracking Service") == "habit_activity_tracking"
+    assert component_axis_key_for_label("Progress Analytics and Status Explanations Service") == "status_analytics_explanation"
+
+    text = """# Vendor Onboarding Review
+
+## Product Story
+Vendor Onboarding Review helps a procurement team collect vendor documents, verify required compliance evidence, approve or block onboarding, and record the reason before spend begins.
+
+## State Object
+A vendor onboarding file tracks vendor identity, submitted documents, compliance checklist, risk review, approval decision, blocked reason, spend-readiness status, notification status, and audit history.
+
+## First Complete Path
+A vendor submits onboarding documents, the product validates required files, runs compliance checks, routes risk review to procurement, records approval or blocked reason, notifies the vendor, marks spend readiness, and preserves audit history.
+
+## Human Actors
+- Vendor contact: submits documents and receives approval or blocked reason.
+- Procurement reviewer: verifies compliance evidence, records risk review, and approves or blocks readiness.
+
+## External Systems
+- Document repository: stores submitted vendor files.
+- Message provider: delivers vendor notifications.
+
+## Internal Product Systems
+- Vendor Intake Adapter: captures vendor identity, files, and missing-document blockers.
+- Compliance Checklist Ledger: records required checks, rule references, and pass or block outcomes.
+- Risk Review Workspace: records reviewer notes, risk flags, and readiness blockers.
+- Vendor Notification Log: records notification delivery and response state.
+- Spend Readiness Decision Service: records approval or blocked reason and readiness handoff.
+- Audit Retention Ledger: preserves immutable onboarding history.
+
+## Critical Assumptions
+- Release 0.0.1 supports deterministic document fixtures before live repository credentials.
+- The first release supports one procurement reviewer.
+
+## Ambiguities
+- Exact compliance checklist content needs legal owner confirmation.
+
+## Proof Boundary
+Release 0.0.1 succeeds when one vendor can submit documents, missing files block review, required checks are recorded, procurement can approve or block readiness with a reason, the vendor notification is recorded, and audit history can replay the decision.
+"""
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="Create vendor onboarding",
+        release_selector="0.0.1",
+        confirmed_intent=parse_confirmed_intent_text(text),
+    )
+    decision = greenfield_proposals.run_greenfield_tribunal(proposal, release_selector="0.0.1")
+
+    assert decision.passed, decision.issues
+    by_label = {str(component["label"]): component["component_contract"] for component in proposal["components"]}
+    checklist = by_label["Compliance Checklist Ledger"]
+    risk_review = by_label["Risk Review Workspace"]
+    checklist_rendered = json.dumps(checklist, sort_keys=True).casefold()
+    risk_owned = str(risk_review["owned_state"]).casefold()
+    risk_rendered = json.dumps(risk_review, sort_keys=True).casefold()
+    proposal_rendered = json.dumps(proposal, sort_keys=True).casefold()
+
+    assert "rule references" in checklist_rendered
+    assert "pass or block" in checklist_rendered
+    assert "policy rule" not in str(checklist["owned_state"]).casefold()
+    assert "risk flags" in risk_owned
+    assert "reviewer notes" in risk_owned
+    assert "readiness blockers" in risk_owned
+    assert "policy rule" not in risk_owned
+    assert "risk disclosure" not in risk_owned
+    assert "case identity" not in proposal_rendered
+    assert "workspace status" not in proposal_rendered
+    assert "checklist progress" not in proposal_rendered
+    assert "accepted source changes" not in proposal_rendered
+    assert "too interchangeable" not in risk_rendered
+
+    checklist_spec = build_component_spec(
+        component_id="compliance-checklist-ledger",
+        label="Compliance Checklist Ledger",
+        path="src/vendor_onboarding_review/compliance_checklist_ledger",
+        kind="service",
+        status="planned",
+        sources=("user_intent",),
+        workstreams=("B-003",),
+        component_contract=checklist,
+    )
+    proof_rows = [
+        line
+        for line in checklist_spec.splitlines()
+        if line.startswith("| ") and "_proof`" in line
+    ]
+    required_proofs = [line.split("|")[2].strip() for line in proof_rows]
+    assert "`check_rule_ledger_proof`" in checklist_spec
+    assert len(required_proofs) >= 3
+    assert len(set(required_proofs)) == len(required_proofs)
+
+
+def test_greenfield_component_spec_renderer_uses_structured_distinct_contract_sections() -> None:
+    contract = derive_component_semantic_contract(
+        {
+            "label": "Planning Engine",
+            "source_system_description": "computes plan targets from progress snapshots and status windows with rationale",
+        },
+        proposal={"intent": {"title": "Generic Planning"}},
+        sibling={"label": "Weekly Status Review", "source_system_description": "calculates weekly status and progress state"},
+        previous_label="Daily Progress Logging",
+        next_label="Weekly Status Review",
+        state_label="planning record",
+    ).fields
+
+    spec = build_component_spec(
+        component_id="planning-engine",
+        label="Planning Engine",
+        path="src/planning/engine.py",
+        kind="service",
+        status="planned",
+        sources=("user_intent",),
+        workstreams=("B-001",),
+        component_contract=contract,
+    )
+
+    assert rendered_component_spec_quality_issues({"Planning Engine": spec}, project_title="Generic Planning") == []
+    assert "### Accepts" in spec
+    assert "### Produces" in spec
+    assert "### Refuses" in spec
+    assert "Refused domain responsibilities:" in spec
+    assert "Sibling-owned state:" in spec
+    assert "Forbidden runtime authorities:" in spec
+    assert "Source-backed proof named by the first implementation plan" not in spec
+    assert "computes plan targets input" not in spec.casefold()
+
+    proof_rows = [
+        line
+        for line in spec.splitlines()
+        if line.startswith("| ") and "_proof`" in line
+    ]
+    required_proofs = [line.split("|")[2].strip() for line in proof_rows]
+    assert len(required_proofs) >= 3
+    assert len(set(required_proofs)) == len(required_proofs)
+
+
+def test_greenfield_component_ids_remove_product_component_word_overlap() -> None:
+    rows = confirmed_components(
+        label="Service Goal Planning",
+        label_slug="service-goal-planning",
+        internal_systems=[
+            "Planning Engine: computes plan targets from progress snapshots and status windows.",
+        ],
+        first_path="A user receives an adjusted plan target.",
+        state_object="planning record",
+        proof_boundary="Plan adjustment evidence is visible.",
+    )
+
+    component_id = str(rows[0]["component_id"])
+    assert component_id == "service-goal-planning-engine"
+    assert "planning-planning" not in component_id
+
+
+def test_greenfield_quality_gate_rejects_verb_phrase_slot_filling() -> None:
+    issues = public_prose_quality_issues(
+        {
+            "component_contract": {
+                "accepted_inputs": "Planning Engine accepts computes plan targets input.",
+                "produced_outputs": "Planning Engine produces computes plan targets result.",
+            }
+        }
+    )
+
+    assert any("verb phrase inserted into contract artifact slot" in issue for issue in issues)
+
+
+def test_greenfield_quality_gate_rejects_generic_governance_posture_filler() -> None:
+    issues = public_prose_quality_issues(
+        {
+            "problem": "The user path, state, evidence, decision, and follow-up are scattered.",
+            "opportunity": "Build the narrow entry, actions, feedback, and handoff before adding scope.",
+            "product_view": "Users inspect state profile, the first-path outcome, visible blockers, risk posture, and evidence.",
+        }
+    )
+
+    assert any("generic governance posture filler" in issue for issue in issues)
+
+
+def test_greenfield_assignment_actor_ignores_blocker_and_adjective_slots() -> None:
+    assert (
+        _assignment_actor(
+            {
+                "label": "Assignment Coordinator Service",
+                "source_system_description": "assigns responsible technicians and conflict blockers",
+            }
+        )
+        == "technician"
+    )
+    assert (
+        _assignment_actor(
+            {
+                "label": "Assignment Coordinator Service",
+                "source_system_description": "tracks conflict blockers and assignment handoff",
+            }
+        )
+        == ""
+    )
+
+
+def test_greenfield_first_action_clause_stops_before_next_product_action() -> None:
+    assert (
+        _first_action_clause(
+            "A requester submits a maintenance request, the product verifies required details, assigns a technician, estimates cost and timing, and notifies the requester."
+        )
+        == "A requester submits a maintenance request"
+    )
+    assert _sentence_fragment("Validated intake request and downstream handoff") == "validated intake request and downstream handoff"

@@ -68,7 +68,8 @@ def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     codex_hooks = (project_root / ".codex" / "hooks.json").read_text(encoding="utf-8")
     assert "python3 ./.agents/bin/odylith-host-launcher.py codex session-start-ground --repo-root ." in codex_hooks
     assert (project_root / ".agents" / "skills" / "odylith-start" / "SKILL.md").is_file()
-    assert not (project_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").exists()
+    assert (project_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").is_file()
+    assert (project_root / ".agents" / "skills" / "odylith-subagent-orchestrator" / "SKILL.md").is_file()
     assert "odylith-code-hygiene-guard" in (project_root / ".claude" / "CLAUDE.md").read_text(encoding="utf-8")
     assert "ANTI_SLOP_AND_DECOMPOSITION.md" in (project_root / ".claude" / "CLAUDE.md").read_text(encoding="utf-8")
     assert "odylith-code-hygiene-guard" in (project_root / ".claude" / "agents" / "odylith-reviewer.md").read_text(encoding="utf-8")

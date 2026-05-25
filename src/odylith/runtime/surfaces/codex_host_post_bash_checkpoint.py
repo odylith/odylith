@@ -34,6 +34,7 @@ from typing import Any
 from typing import Mapping
 
 from odylith.runtime.intervention_engine import host_surface_runtime
+from odylith.runtime.intervention_engine import visibility_broker
 from odylith.runtime.surfaces import claude_host_shared
 from odylith.runtime.surfaces import codex_host_shared
 from odylith.runtime.surfaces import host_dirty_checkpoint
@@ -752,6 +753,12 @@ def _codex_post_bash_payload(
     )
     if not bundle:
         return {}
+    bundle = dict(bundle)
+    observation = dict(bundle.get("observation", {})) if isinstance(bundle.get("observation"), Mapping) else {}
+    observation.setdefault("host_family", "codex")
+    observation.setdefault("turn_phase", "post_bash_checkpoint")
+    observation.setdefault("session_id", session_id)
+    bundle["observation"] = observation
     developer_context = host_surface_runtime.render_developer_context(
         bundle,
         markdown=True,
@@ -763,6 +770,26 @@ def _codex_post_bash_payload(
         markdown=True,
         include_proposal=True,
     )
+    decision = host_surface_runtime.visible_intervention_decision(
+        repo_root=project_dir,
+        bundle=bundle,
+        host_family="codex",
+        turn_phase="post_bash_checkpoint",
+        session_id=session_id,
+        include_proposal=True,
+        include_closeout=False,
+        delivery_channel=visibility_broker.ASSISTANT_RENDER_REQUIRED_CHANNEL,
+        delivery_status=visibility_broker.ASSISTANT_RENDER_REQUIRED_STATUS,
+        visible_markdown_override=visible_intervention,
+    )
+    if decision.visible_markdown or decision.developer_context:
+        host_surface_runtime.append_visible_intervention_events(
+            repo_root=project_dir,
+            bundle=bundle,
+            decision=decision,
+            render_surface="codex_post_bash_checkpoint",
+        )
+    visible_intervention = decision.visible_markdown or visible_intervention
     system_message = host_surface_runtime.compose_checkpoint_system_message(
         live_intervention=visible_intervention,
     )

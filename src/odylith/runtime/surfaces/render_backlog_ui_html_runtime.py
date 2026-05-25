@@ -601,20 +601,14 @@ def _render_html(*, payload: dict[str, object]) -> str:
     }
 
     .decision-bullets { list-style: none; padding-left: 0; }
-    .decision-bullets li {
-      display: grid; grid-template-columns: minmax(120px, 170px) minmax(0, 1fr);
-      gap: 8px 14px; padding: 8px 0; border-top: 1px solid #e2e8f0; margin: 0;
-    }
+    .decision-bullets li { display: grid; grid-template-columns: minmax(128px, 178px) minmax(0, 1fr); gap: 8px 18px; padding: 10px 0; border-top: 1px solid #e2e8f0; margin: 0; }
     .decision-bullets li:first-child { border-top: 0; padding-top: 0; }
-    .decision-basis-label {
-      color: #64748b; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
-    }
+    .decision-basis-label { align-self: start; color: #52657c; font-size: 0.88rem; font-weight: 700; line-height: 1.35; letter-spacing: 0em; text-transform: none; padding-top: 0.12rem; overflow-wrap: anywhere; }
     .decision-basis-copy { min-width: 0; }
 
     @media (max-width: 760px) {
-      .decision-bullets li {
-        grid-template-columns: 1fr;
-      }
+      .decision-bullets li { grid-template-columns: 1fr; gap: 3px; padding: 10px 0; }
+      .decision-basis-label { padding-top: 0; }
     }
 
     __ODYLITH_RADAR_READABLE_COPY__
