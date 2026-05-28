@@ -403,7 +403,7 @@ def _responsibility(*, name: str, description: str) -> str:
     if detail:
         return _ensure_responsibility_depth(_sentence_case(detail))
     return (
-        f"Owns the {name.lower()} responsibility named by the accepted product direction; "
+        f"Owns {name.lower()} responsibility named by the accepted product direction; "
         "the first implementation plan must name its inputs, outputs, state changes, and review evidence."
     )
 
@@ -424,7 +424,7 @@ def _boundary(*, name: str, description: str, kind: str) -> str:
     responsibility = _responsibility_reference(action=action, fallback=topic)
     if kind == "client":
         return (
-            f"{name} owns the user-facing actions and visible states for {responsibility}. "
+            f"{name} owns user-facing actions and visible states for {responsibility}. "
             "Domain derivation, persistence, and upstream source truth stay with the product systems it calls."
         )
     if kind == "adapter":

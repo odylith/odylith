@@ -1076,12 +1076,12 @@ h1 {
 }
 
 .execution-wave-chip-link {
-  --chip-link-border: #93c5fd;
-  --chip-link-bg: #eff6ff;
-  --chip-link-text: #1e3a8a;
-  --chip-link-border-hover: #60a5fa;
-  --chip-link-bg-hover: #deebff;
-  --chip-link-text-hover: #1d4ed8;
+  --chip-link-border: #b9c7db;
+  --chip-link-bg: #f3f6fb;
+  --chip-link-text: var(--chip-link-text);
+  --chip-link-border-hover: #9aaec9;
+  --chip-link-bg-hover: #e8eef7;
+  --chip-link-text-hover: #1e293b;
   appearance: none;
   display: inline-flex;
   align-items: center;
@@ -1924,12 +1924,12 @@ h1 {
 }
 
 .entity-id-chip {
-  --chip-link-border: #93c5fd;
-  --chip-link-bg: #eff6ff;
-  --chip-link-text: #1e3a8a;
-  --chip-link-border-hover: #60a5fa;
-  --chip-link-bg-hover: #deebff;
-  --chip-link-text-hover: #1d4ed8;
+  --chip-link-border: #b9c7db;
+  --chip-link-bg: #f3f6fb;
+  --chip-link-text: var(--chip-link-text);
+  --chip-link-border-hover: #9aaec9;
+  --chip-link-bg-hover: #e8eef7;
+  --chip-link-text-hover: #1e293b;
   appearance: none;
   display: inline-flex;
   align-items: center;
@@ -2163,14 +2163,20 @@ h1 {
     }
 
     .decision-bullets { list-style: none; padding-left: 0; }
-    .decision-bullets li { display: grid; grid-template-columns: minmax(128px, 178px) minmax(0, 1fr); gap: 8px 18px; padding: 10px 0; border-top: 1px solid #e2e8f0; margin: 0; }
+    .decision-bullets li {
+      display: grid; grid-template-columns: minmax(120px, 170px) minmax(0, 1fr);
+      gap: 8px 14px; padding: 8px 0; border-top: 1px solid #e2e8f0; margin: 0;
+    }
     .decision-bullets li:first-child { border-top: 0; padding-top: 0; }
-    .decision-basis-label { align-self: start; color: #52657c; font-size: 0.88rem; font-weight: 700; line-height: 1.35; letter-spacing: 0em; text-transform: none; padding-top: 0.12rem; overflow-wrap: anywhere; }
+    .decision-basis-label {
+      color: #64748b; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+    }
     .decision-basis-copy { min-width: 0; }
 
     @media (max-width: 760px) {
-      .decision-bullets li { grid-template-columns: 1fr; gap: 3px; padding: 10px 0; }
-      .decision-basis-label { padding-top: 0; }
+      .decision-bullets li {
+        grid-template-columns: 1fr;
+      }
     }
 
     .meta-row-val, .block p, .block ul, .block li, .bullets, .bullets li, .detail-copy p, .detail-copy ul, .detail-copy li, .detail-copy .check-text, .analytics-toggle-sub, .graph-sub, .graph-empty {
@@ -2587,7 +2593,7 @@ h1 {
   }
 })();
 </script>
-  <script id="backlogData" src="backlog-payload.v1.js?v=84bac9e1e46a"></script>
-  <script src="backlog-app.v1.js?v=84bac9e1e46a"></script>
+  <script id="backlogData" src="backlog-payload.v1.js?v=f0b33d583b11"></script>
+  <script src="backlog-app.v1.js?v=f0b33d583b11"></script>
 </body>
 </html>

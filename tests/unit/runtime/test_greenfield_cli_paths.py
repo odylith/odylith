@@ -2,13 +2,23 @@ from __future__ import annotations
 
 import json
 import os
+import re
 
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from tests.unit.runtime.greenfield_proposal_fixtures import _confirmed_intent
 from tests.unit.runtime.greenfield_proposal_fixtures import _host_reasoned_ecommerce_proposal
 from tests.unit.runtime.greenfield_proposal_fixtures import _markdown_section
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import _write_confirmed_intent
+
+
+def test_greenfield_domain_token_normalizer_keeps_common_words_legible() -> None:
+    assert normalize_domain_token("attaches") == "attach"
+    assert normalize_domain_token("matches") == "match"
+    assert normalize_domain_token("processes") == "process"
+    assert normalize_domain_token("statuses") == "status"
+    assert normalize_domain_token("readings") == "reading"
 
 
 def test_greenfield_text_starts_with_product_intent_confirmation(tmp_path, capsys) -> None:
@@ -376,6 +386,212 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
     for diagram in catalog["diagrams"]:
         assert diagram["change_watch_paths"]
         assert "odylith/atlas/source" not in diagram["change_watch_paths"]
+
+
+def test_greenfield_create_cli_completes_privacy_export_lifecycle_end_to_end(tmp_path, monkeypatch, capsys) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    intent_path = tmp_path / ".odylith/runtime/greenfield/confirmed-intent.md"
+    intent_path.parent.mkdir(parents=True, exist_ok=True)
+    intent_path.write_text(
+        """# Privacy Request Lifecycle Console
+
+Product story
+A privacy operations team needs one console to receive data-subject requests, verify requester authority, collect protected-record references, decide whether export or deletion is allowed, and preserve lifecycle evidence without hiding retention blockers.
+
+State object
+A privacy request lifecycle record tracks requester identity, authority proof, protected-record reference, request type, consent state, retention rule, export package state, deletion decision, blocked reason, audit event, and handoff status.
+
+First complete path
+A privacy coordinator opens one request, verifies requester authority, links the protected record, selects export or deletion, checks consent and retention rules, produces the allowed package or blocked decision, and reviews the audit event with lifecycle status.
+
+Human actors
+- Privacy coordinator: verifies requester authority, links records, and reviews lifecycle status.
+- Data owner: receives export package or deletion outcome.
+- Compliance reviewer: checks retention rules, blocked decisions, and audit evidence.
+
+External systems
+- Identity provider for requester authority.
+- Protected record store for referenced data.
+- Retention policy catalog for retention rules.
+
+Internal product systems
+- Request Intake and Authority Check - records requester identity, request type, authority proof, and missing-authority blockers.
+- Protected Record Reference Store - links protected records, consent state, classification, and access scope before lifecycle action.
+- Export and Deletion Decision Service - applies consent and retention rules, produces export package state or blocked deletion decision, and hands evidence to audit.
+- Lifecycle Audit and Review View - records audit events, lifecycle status, blocked reasons, reviewer notes, and replay evidence.
+
+Critical assumptions
+- Release 0.0.1 uses fixture records and policy rules before live data mutation.
+- The product must not delete protected data without explicit allowed-state proof.
+
+Ambiguities
+- Whether export package delivery is manual download or provider-backed delivery.
+- Which retention rule catalog is authoritative in the first release.
+
+Proof boundary
+Release 0.0.1 succeeds when one authorized request can link a protected record, produce an export package or blocked deletion decision, preserve consent and retention evidence, and show an audit event that explains who requested the action, which protected state was affected, which rule applied, and what lifecycle marker was emitted.
+""",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Draft a product-first greenfield proposal for a privacy request lifecycle console.",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--release",
+            "0.0.1",
+            "--confirm",
+        ]
+    )
+
+    output = capsys.readouterr().out
+    assert rc == 0, output
+    assert "greenfield create wrote confirmed proposal" in output
+    assert "- validation gate: passed" in output
+    assert (tmp_path / ".odylith/runtime/greenfield/confirmed-intent.json").is_file()
+    assert (tmp_path / "odylith/runtime/source/accepted-project.v1.json").is_file()
+    assert (tmp_path / "odylith/registry/source/component_registry.v1.json").is_file()
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
+    assert list((tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md"))
+    assert list((tmp_path / "odylith/atlas/source").glob("*.mmd"))
+    accepted = (tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8")
+    joined_specs = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in (tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md")
+    )
+    joined_diagrams = "\n".join(path.read_text(encoding="utf-8") for path in (tmp_path / "odylith/atlas/source").glob("*.mmd"))
+    rendered = "\n".join([accepted, joined_specs, joined_diagrams]).casefold()
+    for expected in (
+        "requester authority",
+        "protected record",
+        "consent",
+        "retention",
+        "export package",
+        "blocked deletion",
+        "audit event",
+    ):
+        assert expected in rendered
+    for banned in (
+        "owns maintains",
+        "first path entry",
+        "proof-token",
+        "checklist progress",
+        "workspace status",
+        "case identity",
+        "working title",
+    ):
+        assert banned not in rendered
+
+
+def test_greenfield_create_cli_bootstraps_missing_indexes_and_repairs_scaffold_language(
+    tmp_path,
+    monkeypatch,
+    capsys,
+) -> None:
+    intent_path = tmp_path / ".odylith/runtime/greenfield/confirmed-intent.md"
+    intent_path.parent.mkdir(parents=True, exist_ok=True)
+    intent_path.write_text(
+        """# Field Operations Evidence Console
+
+Product story
+A field operations team needs one console to receive site observations, review source evidence, decide whether an inspection is ready for action, and keep blocked cases visible until the missing evidence is resolved.
+
+State object
+An operations evidence record tracks site identity, observation source, captured readings, supporting files, readiness status, blocker reason, reviewer decision, and handoff evidence.
+
+First complete path
+An operator opens one site record, adds a source-backed observation, attaches supporting evidence, marks missing readings as blockers when needed, reviews readiness, and hands the reviewed decision to the next action queue.
+
+Human actors
+- Field operator: records observations and attaches evidence.
+- Operations reviewer: checks readiness, blockers, and handoff evidence.
+- Program lead: reviews the final decision queue.
+
+External systems
+- Site source register for site identity.
+- Sensor export file for fixture readings.
+- Evidence file store for attached supporting files.
+
+Internal product systems
+- Site Record Intake - owns site identity, source reference, required observation fields, and missing-source blockers.
+- Observation Evidence Ledger - records readings, supporting files, source references, invalid-input blockers, and evidence handoff.
+- Readiness Review Queue - shows readiness status, blocker reason, reviewer decision, and next-action handoff.
+
+Critical assumptions
+- Release 0.0.1 uses fixture sensor exports before live device ingestion.
+- Reviewers must see missing evidence instead of silently treating a record as ready.
+
+Ambiguities
+- Which source register is authoritative for the first release.
+- Whether the first action queue is internal only or exported.
+
+Proof boundary
+Release 0.0.1 succeeds when one site record can be opened, linked to source evidence, reviewed for missing readings, marked ready or blocked with a reason, and handed to the next action queue with the evidence and reviewer decision still traceable.
+""",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Build a field operations evidence console",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--release",
+            "0.0.1",
+            "--confirm",
+        ]
+    )
+
+    output = capsys.readouterr().out
+    assert rc == 0, output
+    assert "greenfield create wrote confirmed proposal" in output
+    assert (tmp_path / "odylith/technical-plans/INDEX.md").is_file()
+    assert (tmp_path / "odylith/radar/source/INDEX.md").is_file()
+    accepted = (tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8")
+    joined_specs = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in (tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md")
+    )
+    joined_diagrams = "\n".join(path.read_text(encoding="utf-8") for path in (tmp_path / "odylith/atlas/source").glob("*.mmd"))
+    rendered = "\n".join([accepted, joined_specs, joined_diagrams]).casefold()
+    for expected in (
+        "site identity",
+        "source reference",
+        "captured readings",
+        "supporting files",
+        "readiness status",
+        "blocker reason",
+    ):
+        assert expected in rendered
+    for banned in (
+        "owns maintains",
+        "first path entry",
+        "proof-token",
+        "case identity",
+        "workspace status",
+        "checklist progress",
+        "working title",
+        "no claim that",
+        "sibling responsibilities",
+        "accepted state object",
+    ):
+        assert banned not in rendered
+    assert not re.search(r"\battache\b", rendered)
 
 
 def test_greenfield_create_cli_requires_confirmation_before_writes(tmp_path, capsys) -> None:

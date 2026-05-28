@@ -107,6 +107,37 @@ def _finite_responsibility_clause(value: str) -> str:
     return finite_action_clause(text, default_verb="owns", default_single_token=False)
 
 
+def _registry_focus_phrase(*, label: str, responsibility: str) -> str:
+    label_text = component_spec_rendering.sentence_fragment(label)
+    label_focus = re.sub(
+        r"\b(?:adapter|service|engine|surface|client|module|system|component)\b$",
+        "",
+        label_text,
+        flags=re.IGNORECASE,
+    ).strip(" .")
+    text = component_spec_rendering.sentence_fragment(responsibility)
+    first_clause = re.split(r"\s*;\s*", text, maxsplit=1)[0] if text else ""
+    first_clause = re.split(r"\b(?:accepts?|produces?|prevents?|blocks?)\b", first_clause, maxsplit=1, flags=re.IGNORECASE)[0]
+    first_clause = re.sub(
+        r"^(?:owns?|maintains?|coordinates?|records?|captures?|stores?|tracks?|presents?|shows?|displays?|attaches?|assembles?|computes?|applies?|checks?)\s+",
+        "",
+        first_clause,
+        flags=re.IGNORECASE,
+    ).strip(" .,:;")
+    if first_clause and 2 <= len(first_clause.split()) <= 16 and not re.search(r"\b(?:actor identity|validation context|upstream handoff|blocker signal|downstream handoff)\b", first_clause, re.IGNORECASE):
+        return first_clause
+    return label_focus or label_text or "this boundary"
+
+
+def _public_what_it_is(*, label: str, kind: str, responsibility: str) -> str:
+    article = _kind_article(kind)
+    focus = _registry_focus_phrase(label=label, responsibility=responsibility)
+    return (
+        f"{label} is planned as {article} {kind} boundary for {focus}. "
+        "It keeps local state, blocked behavior, recovery evidence, and release proof reviewable."
+    )
+
+
 def _kind_article(kind: str) -> str:
     token = str(kind or "").strip().lower()
     return "an" if token[:1] in {"a", "e", "i", "o", "u"} else "a"
@@ -134,13 +165,7 @@ def _build_registry_entry(
         if "user_intent" in normalized_sources
         else "the initial source boundary"
     )
-    responsibility_text = _responsibility_clause(responsibility)
-    article = _kind_article(kind)
-    what_it_is = (
-        f"{label} is planned as {article} {kind} boundary. It {responsibility_text}."
-        if responsibility_text
-        else f"{label} is planned as {article} {kind} boundary awaiting a concrete responsibility summary."
-    )
+    what_it_is = _public_what_it_is(label=label, kind=kind, responsibility=responsibility)
     if path:
         what_it_is += f" Initial source boundary: {path}."
     return {

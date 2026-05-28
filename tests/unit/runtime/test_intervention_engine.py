@@ -314,7 +314,7 @@ def test_prompt_submit_status_review_prefers_current_visibility_truth_over_quote
     headlines = [row["headline"] for row in bundle["facts"]]
 
     assert bundle["candidate"]["stage"] == "teaser"
-    assert "no Odylith note has reached this chat yet" in bundle["candidate"]["teaser_text"]
+    assert "Odylith visibility is the blocker" in bundle["candidate"]["teaser_text"]
     assert "normal assistant text" in bundle["candidate"]["teaser_text"]
     assert "Radar already has B-096" not in bundle["candidate"]["teaser_text"]
     assert "Radar already has B-096" not in " ".join(headlines)
@@ -365,7 +365,7 @@ def test_stop_summary_status_review_uses_current_visibility_observation_not_inhe
     headlines = [row["headline"] for row in bundle["facts"]]
 
     assert bundle["candidate"]["stage"] == "card"
-    assert "Odylith is active, but no Odylith note has reached this chat yet." in bundle["candidate"]["markdown_text"]
+    assert "Odylith visibility is the blocker for this turn." in bundle["candidate"]["markdown_text"]
     assert "normal assistant text" in bundle["candidate"]["markdown_text"]
     assert "Radar already has B-096" not in bundle["candidate"]["markdown_text"]
     assert "Radar already has B-096" not in " ".join(headlines)

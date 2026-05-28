@@ -94,6 +94,7 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
         "normal non-passthrough prompts do not get an Assist line by default",
         "Do not add Assist just because Odylith ran",
         "concrete observed counts, measured deltas, or validation outcomes",
+        "Generic activity receipts are not premium interventions",
         "never say `fixed`, `cleared`, or `resolved` without qualification",
         "same fingerprint as the last falsification or not",
         "grounding Odylith is diagnosis authority, not blanket write authority",

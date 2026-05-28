@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
 
@@ -28,7 +29,6 @@ _PROVISIONAL_TITLE_RE = re.compile(
     (?:\s*(?:[-:;]|[–—])\s*
         (?:
             working\s+title|
-            draft|
             placeholder|
             tbd|
             temporary\s+title|
@@ -48,12 +48,12 @@ _TRIVIAL_START_RE = re.compile(
 
 _MATERIAL_ACTION_RE = re.compile(
     r"\b(?:"
-    r"add|adds|adjust|adjusts|approve|approves|attach|attaches|calculate|calculates|capture|captures|"
+    r"add|adds|adjust|adjusts|approve|approves|assign|assigns|attach|attaches|calculate|calculates|capture|captures|"
     r"check|checks|choose|chooses|compare|compares|complete|completes|confirm|confirms|correct|corrects|"
     r"create|creates|delete|deletes|edit|edits|enter|enters|export|exports|fetch|fetches|finalize|finalizes|"
     r"highlight|highlights|import|imports|inspect|inspects|let|lets|log|logs|mark|marks|notify|notifies|persist|persists|play|plays|"
     r"preserve|preserves|publish|publishes|rank|ranks|read|reads|receive|receives|record|records|request|requests|review|reviews|"
-    r"route|routes|run|runs|save|saves|schedule|schedules|see|sees|select|selects|send|sends|share|shares|"
+    r"route|routes|run|runs|save|saves|schedule|schedules|screen|screens|see|sees|select|selects|send|sends|share|shares|"
     r"show|shows|stop|stops|store|stores|submit|submits|sync|syncs|tap|taps|track|tracks|update|updates|"
     r"validate|validates|view|views"
     r")\b",
@@ -114,10 +114,22 @@ _DEFERRED_MARKERS = (
 _OUT_OF_SCOPE_MARKERS = ("out of scope", "must not claim", "should not claim", "without claiming", "not included", "not in release")
 _FIRST_PATH_REQUIRED_MARKERS = ("must", "required", "need", "needs", "first path", "first release", "succeeds when")
 _HEAD_SCOPED_MARKERS = frozenset({"deferred", "out of scope", "outside scope", "not included", "not in release"})
+_SINGLE_TERM_SCOPE_TERMS = frozenset(
+    {
+        "integration",
+        "lifecycle",
+        "live",
+        "multi",
+        "reminder",
+        "share",
+        "sharing",
+        "triage",
+    }
+)
 
-_HEALTH_RE = re.compile(
-    r"\b(?:health|medical|clinician|clinical|patient|caregiver|symptom|pain|medication|medicine|dose|dosage|"
-    r"treatment|relief|emergency|pregnancy|underage|injury|diagnosis|diagnose|therapy|side effect)\b",
+_SAFETY_RE = re.compile(
+    r"\b(?:safety|safe|sensitive|protected|regulated|compliance|consent|private|privacy|"
+    r"emergency|critical|restricted|retention|audit|access)\b",
     re.IGNORECASE,
 )
 
@@ -183,6 +195,32 @@ def first_path_steps(value: Any) -> tuple[str, ...]:
     return first_path_model(value).steps
 
 
+def first_path_capability_phrase(value: Any, *, fallback: str = "accepted first path", limit: int = 180) -> str:
+    """Return a compact action-chain phrase for Radar and project-story prose."""
+
+    model = first_path_model(value)
+    steps = [step for step in model.steps if step and not _TRIVIAL_START_RE.match(step)]
+    selected: list[str] = []
+    if model.material_action:
+        selected.append(model.material_action)
+    for step in steps:
+        if len(selected) >= 4:
+            break
+        if model.material_action and _clean(step).casefold() == _clean(model.material_action).casefold():
+            continue
+        if _MATERIAL_ACTION_RE.search(step) or re.search(
+            r"\b(?:see|sees|show|shows|view|views|review|reviews|receive|receives)\b",
+            step,
+            re.IGNORECASE,
+        ):
+            selected.append(step)
+    if model.visible_outcome:
+        selected.append(model.visible_outcome)
+    fragments = _unique([_gerund_action_fragment(step) for step in selected])
+    text = _join_series(fragments[:4]) or _clean(fallback)
+    return _clip_phrase(text, limit=limit) or _clean(fallback)
+
+
 def release_scope_for_component(
     component: Mapping[str, Any],
     *,
@@ -209,12 +247,14 @@ def release_scope_for_component(
     if not terms:
         return "supporting"
     deferred_text = " ".join([proof_boundary, *non_goals])
+    path_terms = _terms(" ".join((first_path, material_first_path_action(first_path))))
+    proof_terms = _terms(proof_boundary)
     if _scope_context_matches(deferred_text, terms, markers=_OUT_OF_SCOPE_MARKERS):
         return "out_of_scope"
     if _scope_context_matches(deferred_text, terms, markers=_DEFERRED_MARKERS):
         return "deferred"
-    path_terms = _terms(" ".join((first_path, material_first_path_action(first_path))))
-    proof_terms = _terms(proof_boundary)
+    if _material_overlap(terms, path_terms) >= 2:
+        return "first_path_required"
     if terms & path_terms:
         return "first_path_required"
     if terms & proof_terms:
@@ -234,15 +274,15 @@ def active_release_components(components: Sequence[Mapping[str, Any]]) -> list[M
 
 
 def health_safety_obligations(*values: Any) -> tuple[str, ...]:
-    """Return generic safety obligations for health or medical self-tracking products."""
+    """Return generic safety obligations when the accepted intent raises safety pressure."""
 
     text = _clean(" ".join(str(value or "") for value in values))
-    if not _HEALTH_RE.search(text):
+    if not _SAFETY_RE.search(text):
         return ()
     return (
-        "Health safety: the product records user-entered health observations and must not diagnose, prescribe, or recommend medication dosing.",
-        "Escalation safety: emergency symptoms, severe changes, pregnancy, underage use, or other red flags must direct the user to professional or emergency care instead of product guidance.",
-        "Sensitive-data safety: health data, caregiver access, clinician sharing, export, deletion, retention, and consent state require explicit privacy and audit evidence.",
+        "Safety posture: the product records accepted user-entered facts without expanding into advice, authority, or decisions outside the confirmed boundary.",
+        "Escalation posture: high-risk or explicitly restricted states must block ordinary readiness and route to the owner or external authority named by the accepted intent.",
+        "Sensitive-data posture: protected state, lifecycle actions, retention, consent, and access require explicit policy and audit evidence when the accepted intent names them.",
     )
 
 
@@ -263,6 +303,22 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
             issues.append(f"token-soup proof language leaked at {location}")
         if re.search(r"\bfirst\s+accepted\s+action\b", lowered):
             issues.append(f"mechanical first-action scaffold leaked at {location}")
+        if re.search(r"\bfirst\s+path\s+entry\b", lowered):
+            issues.append(f"mechanical first-path-entry scaffold leaked at {location}")
+        if re.search(r"\bcan\s+act\s+where\s+the\s+accepted\s+path\s+requires\b", lowered):
+            issues.append(f"mechanical actor-path scaffold leaked at {location}")
+        if re.search(r"\bexpected\s+local\s+output\s*:", lowered):
+            issues.append(f"generic local-output scaffold leaked at {location}")
+        if re.search(r"\bit\s+owns\s+for\b", lowered) or re.search(r"\bit\s+owns\s+the\s+central\s+object\s+is\b", lowered):
+            issues.append(f"malformed ownership sentence leaked at {location}")
+        if re.search(r"\bevidence\s+evidence\b", lowered):
+            issues.append(f"duplicated evidence word leaked at {location}")
+        if re.search(r"\b[a-z][a-z-]*\b(?:metrics?|state|input|output|record|proof)[)](?:\s|[.,;:]|$)", lowered):
+            issues.append(f"dangling close-parenthesis token leaked at {location}")
+        if re.search(r"\bmulti-user\s+roles\s+are\s*[.]?$", lowered):
+            issues.append(f"clipped out-of-scope sentence leaked at {location}")
+        if re.search(r"\bhand\s+[a-z][a-z-]*(?:\s+[a-z][a-z-]*){0,4}\s+(?:identity|state|evidence|result|record)\b", lowered):
+            issues.append(f"handoff verb leaked as an artifact noun at {location}")
         if (
             re.search(r"\bas a later\s*[.]?$", lowered)
             or re.search(r"\bvalid\s+transition\s+display,\s*stale\b", lowered)
@@ -287,6 +343,15 @@ def _first_path_steps(value: str) -> list[str]:
     for pattern in _FIRST_PATH_PREFIXES:
         text = re.sub(pattern, "", text, flags=re.IGNORECASE).strip()
     text = re.sub(r"\bthat\s+single\s+loop\s*[–—-]\s*", "", text, flags=re.IGNORECASE)
+    value_tail = ""
+    value_match = re.search(
+        r"\bso\s+the\s+(?:first\s+)?(?:end-to-end\s+)?value\s+is\s*:\s*(?P<tail>.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if value_match:
+        value_tail = value_match.group("tail")
+        text = text[: value_match.start()].strip(" ,.;:")
     if not re.search(r"\b\d+[.)]\s*", text):
         text = re.sub(r"\s+(?:flow|journey|path)\s*:\s*.*$", "", text, flags=re.IGNORECASE)
     numbered = [part.strip(" .") for part in re.split(r"(?:^|\s)\d+[.)]\s*", text) if part.strip(" .")]
@@ -301,6 +366,15 @@ def _first_path_steps(value: str) -> list[str]:
         cleaned = _clean_step(piece)
         if _valid_step(cleaned):
             normalized.append(cleaned)
+    if value_tail:
+        for piece in _split_action_pieces(value_tail):
+            cleaned = _clean_step(piece)
+            if _valid_step(cleaned) and re.search(
+                r"\b(?:see|sees|show|shows|view|views|review|reviews|receive|receives)\b",
+                cleaned,
+                re.IGNORECASE,
+            ):
+                normalized.append(cleaned)
     if len(normalized) > 1 and _TRIVIAL_START_RE.match(normalized[0]):
         normalized = normalized[1:]
     return _unique(normalized)
@@ -336,7 +410,7 @@ def _recovery_action(steps: Sequence[str]) -> str:
 
 def _clean_step(value: str) -> str:
     text = _clean(value).strip(" .")
-    text = re.sub(r"^(?:and|then)\s+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"^\d+[.)]\s*", "", text)
     text = re.sub(r"\bthat single loop\b\s*[–—-]?\s*", "", text, flags=re.IGNORECASE)
     return _sentence_case(text)
@@ -346,31 +420,57 @@ def _split_action_pieces(value: str) -> list[str]:
     pieces: list[str] = []
     for segment in [part.strip(" .") for part in _ACTION_SPLIT_RE.split(value) if part.strip(" .")]:
         current = ""
+        subject_prefix = ""
         for part in [piece.strip(" .") for piece in re.split(r",\s+", segment) if piece.strip(" .")]:
             if current and _starts_new_action_clause(part):
                 pieces.append(current.strip(" ."))
-                current = part
+                current = _with_carried_subject(part, subject_prefix)
             else:
                 current = f"{current}, {part}" if current else part
+            explicit_subject = _leading_subject_prefix(current)
+            if explicit_subject:
+                subject_prefix = explicit_subject
         if current:
             pieces.append(current.strip(" ."))
     return pieces
 
 
+def _with_carried_subject(value: str, subject_prefix: str) -> str:
+    text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _clean(value), flags=re.IGNORECASE).strip()
+    if not subject_prefix or _leading_subject_prefix(text):
+        return text
+    if _MATERIAL_ACTION_RE.match(text):
+        return f"{subject_prefix} {text[:1].lower()}{text[1:]}"
+    return text
+
+
+def _leading_subject_prefix(value: str) -> str:
+    text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _clean(value), flags=re.IGNORECASE).strip()
+    match = _MATERIAL_ACTION_RE.search(text)
+    if not match or match.start() == 0:
+        return ""
+    subject = text[: match.start()].strip()
+    if not re.match(r"^(?:a|an|the|one|this|that|each|another)\s+", subject, flags=re.IGNORECASE):
+        return ""
+    if len(re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", subject)) > 6:
+        return ""
+    return subject
+
+
 def _starts_new_action_clause(value: str) -> bool:
-    text = re.sub(r"^(?:and|then)\s+", "", _clean(value), flags=re.IGNORECASE).strip()
+    text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _clean(value), flags=re.IGNORECASE).strip()
     if not text:
         return False
     if re.match(
         r"^(?:a|an|the|one|this|that|each|another|product|system|user|person|actor|app|application)\s+"
         r"(?:[A-Za-z0-9'-]+\s+){0,5}?"
         r"(?:"
-        r"add|adds|adjust|adjusts|approve|approves|attach|attaches|calculate|calculates|capture|captures|"
+        r"add|adds|adjust|adjusts|approve|approves|assign|assigns|attach|attaches|calculate|calculates|capture|captures|"
         r"check|checks|choose|chooses|compare|compares|complete|completes|confirm|confirms|correct|corrects|"
         r"create|creates|delete|deletes|edit|edits|enter|enters|export|exports|fetch|fetches|finalize|finalizes|"
         r"import|imports|inspect|inspects|log|logs|mark|marks|notify|notifies|persist|persists|preserve|preserves|"
         r"publish|publishes|rank|ranks|read|reads|receive|receives|record|records|request|requests|review|reviews|route|routes|"
-        r"run|runs|save|saves|schedule|schedules|see|sees|select|selects|send|sends|share|shares|show|shows|"
+        r"run|runs|save|saves|schedule|schedules|screen|screens|see|sees|select|selects|send|sends|share|shares|show|shows|"
         r"store|stores|submit|submits|sync|syncs|tap|taps|track|tracks|update|updates|validate|validates|view|views"
         r")\b",
         text,
@@ -403,11 +503,21 @@ def _scope_context_matches(text: str, terms: set[str], *, markers: Sequence[str]
             if marker not in lowered:
                 continue
             head, tail = lowered.split(marker, 1)
-            if terms & _terms(tail):
+            tail_terms = _terms(tail)
+            if _material_overlap(terms, tail_terms) >= 2 or terms & tail_terms & _SINGLE_TERM_SCOPE_TERMS:
                 return True
-            if marker in _HEAD_SCOPED_MARKERS and _looks_like_head_scoped_clause(head) and terms & _terms(head):
+            head_terms = _terms(head)
+            if (
+                marker in _HEAD_SCOPED_MARKERS
+                and _looks_like_head_scoped_clause(head)
+                and (_material_overlap(terms, head_terms) >= 2 or terms & head_terms & _SINGLE_TERM_SCOPE_TERMS)
+            ):
                 return True
     return False
+
+
+def _material_overlap(left: set[str], right: set[str]) -> int:
+    return len(left & right)
 
 
 def _looks_like_head_scoped_clause(value: str) -> bool:
@@ -490,18 +600,14 @@ def _terms(value: Any) -> set[str]:
     }
     result: set[str] = set()
     for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", _clean(value).casefold()):
-        token = raw.strip("-_")
-        if token.endswith("ies") and len(token) > 5:
-            token = f"{token[:-3]}y"
-        elif token.endswith("ing") and len(token) > 6:
+        token = normalize_domain_token(raw, stopwords=stop)
+        if token.endswith("ing") and len(token) > 6:
             token = token[:-3]
-        elif token.endswith("s") and len(token) > 4 and not token.endswith("ss"):
-            token = token[:-1]
         if token.startswith("shar"):
             token = "share"
         if token.startswith("remind"):
             token = "reminder"
-        if len(token) >= 4 and token not in stop:
+        if token:
             result.add(token)
     return result
 
@@ -520,6 +626,113 @@ def _sentence_case(value: str) -> str:
     if not text:
         return ""
     return text[:1].upper() + text[1:]
+
+
+def _gerund_action_fragment(value: str) -> str:
+    text = _clean(value).strip(" .")
+    text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", text, flags=re.IGNORECASE)
+    verb_map = {
+        "add": "adding",
+        "adds": "adding",
+        "adjust": "adjusting",
+        "adjusts": "adjusting",
+        "approve": "approving",
+        "approves": "approving",
+        "check": "checking",
+        "checks": "checking",
+        "choose": "choosing",
+        "chooses": "choosing",
+        "compare": "comparing",
+        "compares": "comparing",
+        "complete": "completing",
+        "completes": "completing",
+        "create": "creating",
+        "creates": "creating",
+        "edit": "editing",
+        "edits": "editing",
+        "enter": "entering",
+        "enters": "entering",
+        "export": "exporting",
+        "exports": "exporting",
+        "fetch": "fetching",
+        "fetches": "fetching",
+        "finalize": "finalizing",
+        "finalizes": "finalizing",
+        "highlight": "highlighting",
+        "highlights": "highlighting",
+        "import": "importing",
+        "imports": "importing",
+        "let": "letting",
+        "lets": "letting",
+        "log": "logging",
+        "logs": "logging",
+        "publish": "publishing",
+        "publishes": "publishing",
+        "rank": "ranking",
+        "ranks": "ranking",
+        "read": "reading",
+        "reads": "reading",
+        "record": "recording",
+        "records": "recording",
+        "review": "reviewing",
+        "reviews": "reviewing",
+        "save": "saving",
+        "saves": "saving",
+        "see": "seeing",
+        "sees": "seeing",
+        "show": "showing",
+        "shows": "showing",
+        "store": "storing",
+        "stores": "storing",
+        "submit": "submitting",
+        "submits": "submitting",
+        "validate": "validating",
+        "validates": "validating",
+        "view": "viewing",
+        "views": "viewing",
+    }
+    pattern = "|".join(re.escape(item) for item in sorted(verb_map, key=len, reverse=True))
+    for match in re.finditer(rf"\b(?P<verb>{pattern})\b", text, flags=re.IGNORECASE):
+        verb = match.group("verb").casefold()
+        tail = text[match.end() :]
+        if verb in {"record", "records"} and re.match(
+            r"\s+(?:owner|reviewer|recipient|actor|user|operator|publisher)\b",
+            tail,
+            flags=re.IGNORECASE,
+        ):
+            continue
+        return f"{verb_map[verb]}{tail}".strip(" ,.")
+    return text[:1].casefold() + text[1:] if text else ""
+
+
+def _join_series(values: Sequence[str]) -> str:
+    rows = [_clean(value).strip(" .") for value in values if _clean(value).strip(" .")]
+    if not rows:
+        return ""
+    if len(rows) == 1:
+        return rows[0]
+    if len(rows) == 2:
+        return f"{rows[0]} and {rows[1]}"
+    return f"{', '.join(rows[:-1])}, and {rows[-1]}"
+
+
+def _clip_phrase(value: str, *, limit: int) -> str:
+    text = _clean(value).strip(" .")
+    if len(text) <= limit:
+        return text
+    clipped = text[: max(0, limit - 1)].rstrip(" ,;:")
+    if " " in clipped:
+        clipped = clipped.rsplit(" ", 1)[0].rstrip(" ,;:")
+    while True:
+        cleaned = re.sub(
+            r"\b(?:a|an|and|as|at|because|by|for|from|if|in|into|of|on|or|required|the|to|when|while|with)$",
+            "",
+            clipped,
+            flags=re.IGNORECASE,
+        ).rstrip(" ,;:")
+        if cleaned == clipped:
+            return cleaned
+        clipped = cleaned
 
 
 def _clean(value: Any) -> str:
@@ -545,6 +758,7 @@ __all__ = [
     "TitleNormalization",
     "active_release_components",
     "contains_provisional_title_marker",
+    "first_path_capability_phrase",
     "first_path_model",
     "first_path_steps",
     "generated_semantic_slop_issues",

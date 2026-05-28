@@ -7,7 +7,6 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence.greenfield_component_contract import (
     boundary_from_contract,
@@ -21,23 +20,24 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract import (
     risks_from_contract,
     validation_from_contract,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import normalize_contract
 from odylith.runtime.domain_intelligence.greenfield_component_contract_differentiation import (
     component_spec_preflight_issues,
     differentiate_component_contracts,
 )
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_project_intelligence import complete_project_intelligence
+from odylith.runtime.domain_intelligence.greenfield_confirmed_title_repair import repair_project_title
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_generated_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_text as _sentence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import set_sentence_list as _set_list
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import set_sentence_text as _set_text
-from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
+from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
+from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.domain_intelligence.proposal_validation import collect_host_reasoned_proposal_issues
 from odylith.runtime.domain_intelligence.proposal_validation import format_proposal_issue_report
-from odylith.runtime.domain_intelligence.project_intelligence_binding import attach_project_intelligence_bindings
 from odylith.runtime.governance import artifact_tribunal
 
 
@@ -68,7 +68,7 @@ def greenfield_repair_until_clean(
     last_issues: tuple[str, ...] = ()
     for _pass in range(_MAX_COMPLETION_PASSES):
         changed = False
-        changed |= _repair_project_title(payload)
+        changed |= repair_project_title(payload)
         changed |= _complete_project_posture(payload)
         changed |= complete_project_intelligence(
             payload,
@@ -83,6 +83,7 @@ def greenfield_repair_until_clean(
         changed |= _complete_components(payload)
         changed |= differentiate_component_contracts(payload)
         changed |= _reconcile_backlog_with_components(payload)
+        changed |= _complete_semantic_model(payload)
         changed |= _complete_diagrams(payload)
         issues = _preflight_issues(payload, release_selector=release_selector)
         if not issues:
@@ -104,163 +105,6 @@ def _is_confirmed_greenfield(proposal: Mapping[str, Any]) -> bool:
     )
 
 
-def _repair_project_title(proposal: dict[str, Any]) -> bool:
-    intent = proposal.get("intent")
-    if not isinstance(intent, dict):
-        return False
-    current = _clean(intent.get("title"))
-    if not current:
-        return False
-    if not _project_title_needs_repair(current):
-        return False
-    existing_candidate = _existing_project_title_candidate(proposal, current=current)
-    seed = {
-        "title": existing_candidate or current,
-        "product_story": intent.get("product_story") or _project_intelligence_first_row(proposal, "intent"),
-        "state_object": _state_object(proposal),
-        "first_path": _first_path(proposal),
-        "proof_boundary": _proof_boundary(proposal),
-        "human_actors": _project_intelligence_rows(proposal, "operators"),
-        "internal_systems": _component_system_rows(proposal),
-        "assumptions": text_values(proposal.get("assumptions")),
-        "ambiguities": text_values(proposal.get("open_questions")),
-        "non_goals": text_values(proposal.get("non_goals")),
-    }
-    repaired = complete_confirmed_intent(seed)
-    replacement = _clean(repaired.get("title"))
-    if not replacement or replacement == current:
-        return False
-    _replace_title_text(proposal, current=current, replacement=replacement)
-    repaired_intent = proposal.get("intent")
-    if isinstance(repaired_intent, dict):
-        repaired_intent["title"] = replacement
-        repaired_intent["project_slug"] = slugify(replacement)
-    rebound = attach_project_intelligence_bindings(proposal)
-    proposal.clear()
-    proposal.update(rebound)
-    return True
-
-
-def _project_title_needs_repair(value: str) -> bool:
-    text = _clean(value)
-    if normalize_project_title(text).changed:
-        return True
-    words = re.findall(r"[A-Za-z0-9]+", text)
-    if not text or not words:
-        return True
-    if text.casefold() in {"greenfield project", "confirmed project"}:
-        return True
-    if words[-1].casefold() in {"a", "an", "and", "for", "from", "in", "of", "on", "or", "the", "to", "with"}:
-        return True
-    return len(words) > 10 and bool(
-        re.search(r"\b(?:that|what|so|because|captures?|follows?|makes?|buying|doing|needs?|wants?)\b", text, re.IGNORECASE)
-    )
-
-
-def _existing_project_title_candidate(proposal: Mapping[str, Any], *, current: str) -> str:
-    candidates: list[str] = []
-    release_plan = proposal.get("release_plan")
-    if isinstance(release_plan, Mapping):
-        candidates.extend(_title_candidates_from_text(release_plan.get("label")))
-        candidates.extend(_title_candidates_from_text(release_plan.get("strategy")))
-    program = proposal.get("program")
-    if isinstance(program, Mapping):
-        candidates.extend(_title_candidates_from_text(program.get("recommended_first_wave")))
-        blueprint = program.get("blueprint")
-        if isinstance(blueprint, Mapping):
-            candidates.extend(_title_candidates_from_text(blueprint.get("parent_workstream")))
-            candidates.extend(_title_candidates_from_text(blueprint.get("child_workstream_strategy")))
-    project_brief = proposal.get("project_brief")
-    if isinstance(project_brief, Mapping):
-        candidates.extend(_title_candidates_from_text(project_brief.get("purpose")))
-        candidates.extend(_title_candidates_from_text(project_brief.get("project_outcome")))
-    intelligence = proposal.get("project_intelligence")
-    if isinstance(intelligence, Mapping):
-        candidates.extend(_title_candidates_from_text(intelligence.get("purpose")))
-        candidates.extend(_title_candidates_from_text(intelligence.get("coding_posture")))
-    for candidate in candidates:
-        if _title_candidate_is_better(candidate, current=current):
-            return candidate
-    return ""
-
-
-def _title_candidates_from_text(value: Any) -> list[str]:
-    text = _clean(value).strip(" .")
-    if not text:
-        return []
-    rows: list[str] = []
-    patterns = (
-        r"^Ship\s+(?P<title>.+?)\s+First\s+Release$",
-        r"^(?P<title>.+?)\s+\d+(?:\.\d+){1,2}\s+first\s+path\b",
-        r"^(?P<title>.+?)\s+first[-\s]path\s+proof\b",
-        r"^(?P<title>.+?)\s+state\s+and\s+evidence\s+boundary\b",
-        r"^(?P<title>.+?)\s+release\s+review\b",
-        r"^(?P<title>.+?)\s+translates\s+the\s+accepted\b",
-        r"^Promote\s+(?P<title>.+?)\s+only\s+after\b",
-    )
-    for pattern in patterns:
-        match = re.search(pattern, text, flags=re.IGNORECASE)
-        if match:
-            rows.append(_clean(match.group("title")))
-    return rows
-
-
-def _title_candidate_is_better(value: str, *, current: str) -> bool:
-    candidate = _clean(value).strip(" .")
-    if not candidate or candidate == current:
-        return False
-    words = re.findall(r"[A-Za-z0-9]+", candidate)
-    if not 2 <= len(words) <= 8:
-        return False
-    if words[-1].casefold() in {"a", "an", "and", "for", "from", "in", "of", "on", "or", "the", "to", "with"}:
-        return False
-    lowered = candidate.casefold()
-    if lowered in {"greenfield project", "confirmed project"}:
-        return False
-    if re.search(r"\b(?:that|what|so that|because|captures?|follows?|make money)\b", lowered):
-        return False
-    return True
-
-
-def _project_intelligence_rows(proposal: Mapping[str, Any], key: str) -> tuple[str, ...]:
-    intelligence = proposal.get("project_intelligence")
-    if not isinstance(intelligence, Mapping):
-        return ()
-    return text_values(intelligence.get(key))
-
-
-def _project_intelligence_first_row(proposal: Mapping[str, Any], key: str) -> str:
-    rows = _project_intelligence_rows(proposal, key)
-    return rows[0] if rows else ""
-
-
-def _component_system_rows(proposal: Mapping[str, Any]) -> tuple[str, ...]:
-    rows: list[str] = []
-    for component in _mapping_rows(proposal.get("components")):
-        label = _clean(component.get("label"))
-        description = _clean(component.get("source_system_description")) or _clean(component.get("responsibility"))
-        if label and description:
-            rows.append(f"{label} — {description}")
-        elif label:
-            rows.append(label)
-    return tuple(rows)
-
-
-def _replace_title_text(value: Any, *, current: str, replacement: str) -> None:
-    if isinstance(value, dict):
-        for key, nested in list(value.items()):
-            if isinstance(nested, str):
-                value[key] = nested.replace(current, replacement)
-            else:
-                _replace_title_text(nested, current=current, replacement=replacement)
-    elif isinstance(value, list):
-        for index, nested in enumerate(list(value)):
-            if isinstance(nested, str):
-                value[index] = nested.replace(current, replacement)
-            else:
-                _replace_title_text(nested, current=current, replacement=replacement)
-
-
 def _complete_project_posture(proposal: dict[str, Any]) -> bool:
     changed = False
     risks = proposal.get("risks")
@@ -273,7 +117,7 @@ def _complete_project_posture(proposal: dict[str, Any]) -> bool:
                     f"If the accepted first path is not proven with visible evidence, {_project_title(proposal)} "
                     f"can produce records that look ready while the product outcome remains untrusted: {_first_path(proposal)}"
                 ),
-                "Keep release proof tied to the accepted first path, state object, validation output, and release decision.",
+                f"Keep release proof tied to the accepted first path, {_state_object(proposal)}, validation output, and release decision.",
             ),
             _risk_row(
                 "RISK-002",
@@ -291,7 +135,7 @@ def _complete_project_posture(proposal: dict[str, Any]) -> bool:
         label = _project_title(proposal)
         proposal["security_compliance"] = {
             "domain": (
-                f"{label} carries domain risk around the accepted state object, first path, proof boundary, "
+                f"{label} carries domain risk around {_state_object(proposal)}, the accepted first path, proof boundary, "
                 "failure handling, and user decisions made from incomplete evidence."
             ),
             "security": (
@@ -311,7 +155,7 @@ def _complete_project_posture(proposal: dict[str, Any]) -> bool:
                 [
                     *(validation if isinstance(validation, list) else []),
                     f"The accepted first path passes end to end: {_first_path(proposal)}",
-                    f"The state object can be reconstructed with actor, source, timestamp, and evidence references: {_state_object(proposal)}",
+                    f"{_state_object(proposal)} can be reconstructed with actor, source, timestamp, and evidence references.",
                     f"The proof boundary blocks release readiness when validation, replay, access, privacy, safety, or review evidence is missing: {_proof_boundary(proposal)}",
                 ]
             )
@@ -332,7 +176,7 @@ def _complete_backlog(proposal: dict[str, Any]) -> bool:
         if not _clean(row.get("problem")) or _text_needs_repair(row.get("problem")):
             row["problem"] = (
                 f"{title} is required because the accepted product cannot be trusted unless the first path, "
-                f"state object, evidence, and proof boundary stay connected: {_first_path(proposal)}"
+                f"{_state_object(proposal)}, evidence, and proof boundary stay connected: {_first_path(proposal)}"
             )
             changed = True
         if not _clean(row.get("customer")) or _text_needs_repair(row.get("customer")):
@@ -355,7 +199,7 @@ def _complete_backlog(proposal: dict[str, Any]) -> bool:
                     [
                         *metrics,
                         f"The accepted first path can be exercised end to end: {_first_path(proposal)}",
-                        f"{_state_object(proposal)} records success, blocked, stale, and review-needed states.",
+                        f"{_state_object(proposal)} records success, blocked, stale, and review-needed outcomes.",
                         f"Proof evidence blocks promotion unless it matches the accepted boundary: {_proof_boundary(proposal)}",
                     ]
                 )
@@ -363,8 +207,8 @@ def _complete_backlog(proposal: dict[str, Any]) -> bool:
             changed = True
         if not _clean(row.get("domain_risk")) or _text_needs_repair(row.get("domain_risk")):
             row["domain_risk"] = (
-                f"Domain risk: {title} can mislead operators if it loses the accepted product context, state object, "
-                    f"review evidence, or release proof: {_proof_boundary(proposal)}"
+                f"Domain risk: {title} can mislead operators if it loses the accepted product context, "
+                f"{_state_object(proposal)}, review evidence, or release proof: {_proof_boundary(proposal)}"
             )
             changed = True
         if not _clean(row.get("security_posture")) or _text_needs_repair(row.get("security_posture")):
@@ -395,7 +239,10 @@ def _complete_components(proposal: dict[str, Any]) -> bool:
         next_label = _component_label(rows[index], index + 1) if index < len(rows) and isinstance(rows[index], Mapping) else ""
         existing_contract = row.get("component_contract")
         if isinstance(existing_contract, Mapping) and contract_is_complete(existing_contract):
-            contract = existing_contract
+            contract = normalize_contract(existing_contract)
+            if row.get("component_contract") != contract:
+                row["component_contract"] = contract
+                changed = True
         else:
             contract = ensure_component_contract(
                 row,
@@ -454,11 +301,10 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
             continue
         title = _clean(row.get("title")) or _component_label(component, 0)
         label = _component_label(component, 0)
-        owned = _fragment(contract.get("owned_state"), fallback=f"{label} owned state", limit=260)
-        inputs = _fragment(contract.get("accepted_inputs"), fallback="accepted local inputs", limit=220)
-        outputs = _fragment(contract.get("produced_outputs"), fallback="local output and handoff", limit=220)
-        states = _fragment(contract.get("states_or_transitions"), fallback="success, blocked, and handed-off states", limit=180)
         proof = _first_text(contract.get("local_proof")) or f"{label} proves its local inputs, outputs, blockers, and handoff."
+        state_object = _state_object(proposal)
+        focus = _component_focus_phrase(label=label, contract=contract, fallback=state_object)
+        first_path = _fragment(row.get("first_path") or _first_path(proposal), fallback="the accepted first path", limit=260)
         drifted = _row_drifted_from_component(row, component)
         if _text_needs_repair(row.get("product_view")) or drifted:
             proof_tail = (
@@ -467,21 +313,21 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
                 else ""
             )
             row["product_view"] = (
-                f"{label} owns {owned}. It accepts {inputs} and produces {outputs}. "
-                f"The visible contract covers {states}.{proof_tail}"
+                f"{label} owns local {focus} boundary for {state_object}. It keeps accepted input, "
+                f"blocker state, recovery evidence, and downstream handoff reviewable without absorbing sibling responsibilities.{proof_tail}"
             )
             changed = True
         if _text_needs_repair(row.get("recommended_first_slice")) or drifted:
             row["recommended_first_slice"] = (
-                f"Implement {label} by validating {inputs}, producing {outputs}, preserving {states}, "
-                "and refusing sibling-owned state before downstream handoff."
+                f"Implement {label} for the accepted path step: {first_path}. Prove success, missing input, "
+                "blocker visibility, recovery, and downstream handoff before the next wave starts."
             )
             changed = True
         if _sequence_needs_repair(row.get("success_metrics"), required_tokens=("success", "block", "evidence"), min_items=3) or drifted:
             metrics = [
-                f"{label} accepts its required inputs and produces the expected local output: {outputs}.",
+                f"{label} proves one successful local state transition for {state_object}.",
                 f"{label} blocks readiness when required input, access, state, validation, or evidence is missing.",
-                f"{label} keeps its local proof separate from sibling responsibilities: {proof}",
+                f"{label} leaves reviewable proof for actor, source, blocker, recovery, and handoff evidence.",
             ]
             if _row_is_release_proof(row):
                 metrics.append(
@@ -491,8 +337,8 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
             changed = True
         if _sequence_needs_repair(row.get("interfaces"), required_tokens=("input", "output"), min_items=1) or drifted:
             row["interfaces"] = [
-                f"{label} input contract: {inputs}.",
-                f"{label} output contract: {outputs}.",
+                f"{label} input contract: minimum first-path command, actor, source, validation context, and prior state.",
+                f"{label} output contract: local state update, blocker or recovery marker, proof evidence, and downstream handoff.",
             ]
             changed = True
         if _sequence_needs_repair(row.get("validation"), required_tokens=("success", "block"), min_items=1) or drifted:
@@ -501,6 +347,53 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
             ]
             changed = True
     return changed
+
+
+def _component_focus_phrase(*, label: str, contract: Mapping[str, Any], fallback: str) -> str:
+    if label_focus := _label_focus_phrase(label):
+        return label_focus
+    label_terms = _keywords([label])
+    blocked_terms = {
+        *label_terms,
+        "actor",
+        "boundary",
+        "blocker",
+        "component",
+        "downstream",
+        "evidence",
+        "handoff",
+        "input",
+        "local",
+        "output",
+        "proof",
+        "release",
+        "service",
+        "sibling",
+        "source",
+        "state",
+        "upstream",
+        "validation",
+    }
+    candidates: list[str] = []
+    for value in text_values(contract.get("owned_state")):
+        for part in re.split(r",|;|\band\b", value):
+            phrase = _clean(part).strip(" .")
+            terms = _keywords([phrase])
+            if not phrase or len(phrase.split()) > 5 or not terms or terms <= blocked_terms:
+                continue
+            candidates.append(phrase)
+    if candidates:
+        return _sentence("; ".join(candidates[:2]), fallback=fallback, limit=120).rstrip(".")
+    return _sentence(fallback, fallback="component state", limit=120).rstrip(".")
+
+
+def _label_focus_phrase(label: str) -> str:
+    words = [
+        word
+        for word in re.findall(r"[A-Za-z0-9][A-Za-z0-9-]*", _clean(label).casefold())
+        if word not in {"adapter", "component", "engine", "service", "surface", "system", "view"}
+    ]
+    return " ".join(words[:5]).strip()
 
 
 def _primary_component_for_backlog(
@@ -575,6 +468,28 @@ def _complete_diagrams(proposal: dict[str, Any]) -> bool:
             row["related_components"] = component_ids[:4]
             changed = True
     return changed
+
+
+def _complete_semantic_model(proposal: dict[str, Any]) -> bool:
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    model = semantic_model_mapping(
+        build_greenfield_semantic_model(
+            title=_project_title(proposal),
+            state_object=_clean(intent.get("state_object")) or _state_object(proposal),
+            first_path=_first_path(proposal),
+            proof_boundary=_proof_boundary(proposal),
+            components=_dict_rows(proposal.get("components")),
+            human_actors=text_values(intent.get("human_actors")),
+            internal_systems=text_values(intent.get("internal_systems")),
+            external_systems=text_values(intent.get("external_systems")),
+            non_goals=text_values(proposal.get("non_goals") or intent.get("non_goals")),
+            workstreams=_mapping_rows(proposal.get("backlog")),
+        )
+    )
+    if proposal.get("semantic_model") == model:
+        return False
+    proposal["semantic_model"] = model
+    return True
 
 
 def _preflight_issues(proposal: Mapping[str, Any], *, release_selector: str) -> list[str]:
@@ -660,6 +575,9 @@ def _repair_preflight_issues(
         or "clipped" in issue_text
         or "unfinished" in issue_text
         or "concrete success" in issue_text
+        or "too thin to guide implementation" in issue_text
+        or "not anchored to enough project-specific nouns" in issue_text
+        or "repeats scaffold language" in issue_text
     )
     if proof_or_validation:
         changed |= _repair_release_success_language(proposal, release_selector=release_selector)
@@ -903,6 +821,9 @@ def _text_needs_repair(value: Any) -> bool:
     return any(
         marker in lowered
         for marker in (
+            "actor identity, validation context, and upstream handoff",
+            "blocker signal, review rationale, and downstream handoff",
+            "expected local output:",
             "responsibility and keeps it tied",
             "with clear ownership, protected access, required",
         )
@@ -922,6 +843,12 @@ def _sentence_needs_repair(value: Any) -> bool:
         text,
         flags=re.IGNORECASE,
     ):
+        return True
+    if re.search(r"\bcomplete\s+(?:selects?|records?|saves?|creates?|opens?|logs?|fetches?|calculates?)\b", text, flags=re.IGNORECASE):
+        return True
+    if re.search(r"\baccepts\s+required\s+[^.]{0,180}\bcommand\b", text, flags=re.IGNORECASE):
+        return True
+    if re.search(r"\bproduce\s+validated\s+[^.]{0,180}\bblocker\s+signal\b", text, flags=re.IGNORECASE):
         return True
     if re.search(r"\brefuses\b[^.]{0,140}\brefuses\b", text, flags=re.IGNORECASE):
         return True
@@ -1191,12 +1118,15 @@ def _proof_boundary(proposal: Mapping[str, Any]) -> str:
 
 
 def _state_object(proposal: Mapping[str, Any]) -> str:
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    if isinstance(intent, Mapping) and _clean(intent.get("state_object")):
+        return _sentence(intent.get("state_object"), fallback="the accepted state")
     intelligence = proposal.get("project_intelligence")
     if isinstance(intelligence, Mapping):
         for value in text_values(intelligence.get("ontology")):
             if "state object:" in value.casefold():
-                return _sentence(value.split(":", 1)[1], fallback="the accepted state object")
-    return "the accepted state object"
+                return _sentence(value.split(":", 1)[1], fallback="the accepted state")
+    return "the accepted state"
 
 
 def _actor_summary(proposal: Mapping[str, Any]) -> str:

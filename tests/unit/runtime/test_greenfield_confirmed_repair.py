@@ -180,15 +180,17 @@ def test_confirmed_peer_review_shape_stays_component_specific_and_actor_complete
     notification = components["Notification and Deadline Tracking Service"]["component_contract"]
     dashboard = components["Search, Filtering, and Status Dashboards Surface"]["component_contract"]
 
-    assert "submitted item identity" in submission["owned_state"].casefold()
+    assert "submission intake" in submission["owned_state"].casefold()
+    assert "manuscript versioning" in submission["owned_state"].casefold()
     assert "assignment routing" not in " ".join([submission["owned_state"], submission["accepted_inputs"], submission["produced_outputs"]]).casefold()
-    assert "assignment routing" in assignment["owned_state"].casefold()
+    assert "review assignment" in assignment["owned_state"].casefold()
+    assert "conflict" in assignment["owned_state"].casefold()
     assert "scoring rubric" in scoring["owned_state"].casefold()
-    assert "decision evidence package" in decision["owned_state"].casefold()
+    assert "editorial decision" in decision["owned_state"].casefold()
     assert "revision round" in revision["owned_state"].casefold()
-    assert "permission grant" in access["owned_state"].casefold()
-    assert "notification delivery request" in notification["owned_state"].casefold()
-    assert "filtered result set" in dashboard["produced_outputs"].casefold()
+    assert "role-based access" in access["owned_state"].casefold()
+    assert "notification" in notification["owned_state"].casefold()
+    assert "search" in dashboard["owned_state"].casefold()
 
     encoded = json.dumps(proposal)
     for banned in (

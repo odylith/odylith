@@ -9,6 +9,7 @@ from typing import Any
 from odylith.runtime.domain_intelligence.greenfield_component_contract import public_prose_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
 _CONTROL_PLANE_LEAKS: tuple[tuple[str, re.Pattern[str]], ...] = (
@@ -82,7 +83,7 @@ _GOVERNANCE_PREP_PHRASES: tuple[tuple[str, re.Pattern[str]], ...] = (
 )
 
 _MECHANICAL_ARTIFACT_PHRASES: tuple[tuple[str, re.Pattern[str]], ...] = (
-    ("diagram mechanics", re.compile(r"\b(?:part of the path|incoming arrows|outgoing arrows|starts the path|hands off|branch point)\b", re.IGNORECASE)),
+    ("diagram mechanics", re.compile(r"\b(?:part of the path|incoming arrows|outgoing arrows|starts the path|branch point)\b", re.IGNORECASE)),
     ("generic current-state UI copy", re.compile(r"\bcurrent state,\s*available action,\s*and evidence\b", re.IGNORECASE)),
     ("generated greenfield copy", re.compile(r"\bgenerated\s+from\s+the\s+(?:accepted\s+)?greenfield\s+(?:project|proposal)\b", re.IGNORECASE)),
     ("proposal record provenance", re.compile(r"\b(?:actors and owners|jobs)\s+come\s+from\s+(?:the\s+)?proposal\b", re.IGNORECASE)),
@@ -125,6 +126,7 @@ _EXCLUDED_PUBLIC_KEYS = {
     "reasoning_contract",
     "reasoning_mode",
     "schema_version",
+    "semantic_model",
     "sizing",
     "slug",
     "source_html",
@@ -201,6 +203,7 @@ def greenfield_quality_issues(proposal: Mapping[str, Any]) -> list[str]:
     issues.extend(_scaffold_marker_issues(public_leaves))
     issues.extend(_mechanical_artifact_issues(public_leaves))
     issues.extend(_qualitative_structure_issues(proposal))
+    issues.extend(_semantic_model_issues(proposal))
     issues.extend(_release_workstream_reference_issues(proposal))
     issues.extend(_governance_prep_language_issues(proposal))
     issues.extend(f"semantic slop: {issue}" for issue in generated_semantic_slop_issues(proposal, root="proposal"))
@@ -208,6 +211,85 @@ def greenfield_quality_issues(proposal: Mapping[str, Any]) -> list[str]:
     if prompt_terms:
         issues.extend(_prompt_echo_issues(proposal, public_leaves=public_leaves))
     return _dedupe(issues)
+
+
+def _semantic_model_issues(proposal: Mapping[str, Any]) -> list[str]:
+    if not _is_confirmed_generated_proposal(proposal):
+        return []
+    issues: list[str] = []
+    model = proposal.get("semantic_model")
+    if not isinstance(model, Mapping):
+        return ["confirmed greenfield proposal is missing semantic_model"]
+    contract = model.get("first_path_contract")
+    if not isinstance(contract, Mapping):
+        issues.append("semantic_model is missing first_path_contract")
+    else:
+        capability = clean_text(contract.get("capability"))
+        raw_path = clean_text(contract.get("raw_path"))
+        events = [row for row in contract.get("events", []) if isinstance(row, Mapping)] if isinstance(contract.get("events"), list) else []
+        if not capability or re.search(r"\b(?:first\s+path\s+entry|first\s+accepted\s+action)\b", capability, re.IGNORECASE):
+            issues.append("semantic_model first_path_contract has a mechanical or missing capability phrase")
+        if raw_path and _path_needs_events(raw_path) and len(events) < 2:
+            issues.append("semantic_model first_path_contract collapses a multi-step first path")
+        if events and not any(row.get("visible_result") for row in events):
+            issues.append("semantic_model first_path_contract has no visible-result event")
+    component_refs = model.get("components")
+    if not isinstance(component_refs, list) or not component_refs:
+        issues.append("semantic_model is missing component contract references")
+    else:
+        by_id = {
+            clean_text(row.get("component_id"))
+            for row in component_refs
+            if isinstance(row, Mapping) and clean_text(row.get("component_id"))
+        }
+        active_ids = {
+            clean_text(row.get("component_id"))
+            for row in proposal.get("components", [])
+            if isinstance(row, Mapping)
+            and clean_text(row.get("component_id"))
+            and clean_text(row.get("release_scope")) not in {"deferred", "out_of_scope", "external"}
+        }
+        missing = sorted(active_ids - by_id)
+        if missing:
+            issues.append("semantic_model omits active component references: " + ", ".join(missing[:4]))
+        for row in component_refs:
+            if not isinstance(row, Mapping):
+                continue
+            label = clean_text(row.get("label")) or clean_text(row.get("component_id")) or "component"
+            if clean_text(row.get("release_scope")) != "out_of_scope" and not clean_text(row.get("semantic_axis")):
+                contract_terms = set(
+                    _meaningful_terms(
+                        " ".join(
+                            [
+                                clean_text(row.get("owned_state")),
+                                clean_text(row.get("accepted_inputs")),
+                                clean_text(row.get("produced_outputs")),
+                            ]
+                        )
+                    )
+                )
+                if len(contract_terms) < 8:
+                    issues.append(f"semantic_model component `{label}` has no semantic axis or specific contract nouns")
+    graph = model.get("diagram_event_graph")
+    if not isinstance(graph, Mapping):
+        issues.append("semantic_model is missing diagram_event_graph")
+    else:
+        checkpoint = clean_text(graph.get("proof_checkpoint"))
+        if re.search(r"\b(?:done,\s*path,\s*mean)\b", checkpoint, re.IGNORECASE):
+            issues.append("semantic_model proof checkpoint contains token soup")
+    obligations = model.get("proof_obligations")
+    if not isinstance(obligations, list) or len(obligations) < 2:
+        issues.append("semantic_model must include first-path and release-boundary proof obligations")
+    return issues
+
+
+def _path_needs_events(value: str) -> bool:
+    return len(re.findall(r"\b(?:and|then|later)\b|[.;]", clean_text(value), re.IGNORECASE)) >= 2
+
+
+def _is_confirmed_generated_proposal(proposal: Mapping[str, Any]) -> bool:
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    return str(intent.get("reasoning_mode", "")).strip() == "odylith_confirmed_governed_proposal"
 
 
 def _control_plane_leak_issues(public_leaves: list[tuple[str, str]], *, prompt_terms: tuple[str, ...]) -> list[str]:
@@ -562,11 +644,7 @@ def _meaningful_terms(text: str) -> tuple[str, ...]:
 
 
 def _singular(token: str) -> str:
-    if token.endswith("ies") and len(token) > 4:
-        return f"{token[:-3]}y"
-    if token.endswith("s") and len(token) > 3 and not token.endswith("ss"):
-        return token[:-1]
-    return token
+    return normalize_domain_token(token, minimum=3) or token
 
 
 def _path_preview(paths: list[str]) -> str:

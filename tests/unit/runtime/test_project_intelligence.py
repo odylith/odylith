@@ -1329,19 +1329,19 @@ def test_project_intelligence_renders_greenfield_origin_from_proposal(tmp_path: 
 
 def test_greenfield_risk_posture_uses_readable_categories() -> None:
     risks = [
-        "Overwatering can harm the plant if pump actuation is not volume-limited and followed by sensor recheck.",
-        "Nutrient concentration can damage roots if the reservoir mix is too strong or dosing is repeated too often.",
-        "Sensor drift or poor probe placement can make a healthy plant appear dry or a dry plant appear stable.",
-        "Water, electricity, and unattended operation create household safety risk even when data sensitivity is low.",
+        "Unsafe action can harm people or property if release safeguards do not block the change.",
+        "Repeated commands can exceed configured thresholds when the limit check is bypassed.",
+        "Measurement drift or poor signal placement can make an invalid state appear stable.",
+        "External provider downtime can block the handoff when retry and recovery behavior is unclear.",
     ]
 
     rows = _risk_classes(risks)
 
     assert [row["risk"] for row in rows] == [
-        "Physical operation safety",
+        "Safety boundary",
         "Control limits",
         "Measurement reliability",
-        "Operating environment",
+        "External dependency",
     ]
     for row, risk in zip(rows, risks, strict=True):
         assert row["meaning"] == risk

@@ -229,8 +229,8 @@ def _current_visibility_status_fact(
         and visible_event_count <= 0
         and chat_confirmed_event_count <= 0
     ):
-        headline = "Odylith is active, but no Odylith note has reached this chat yet."
-        detail = "The operator needs any Odylith note stated directly in normal assistant text."
+        headline = "Odylith visibility is the blocker for this turn."
+        detail = "Surface one specific Odylith note in normal assistant text, or keep the intervention claim unproven."
         priority = 98
     elif proof in {
         "pending_confirmation",

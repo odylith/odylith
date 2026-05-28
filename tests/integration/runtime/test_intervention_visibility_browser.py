@@ -294,7 +294,7 @@ def test_visible_intervention_fallback_markdown_is_transcript_visible_in_compact
     rendered_text = message.inner_text().strip()
     assert rendered_text.startswith("---\n\n**Odylith Observation:**")
     assert not rendered_text.lstrip().startswith("{")
-    assert "no Odylith note has reached this chat yet" in rendered_text
+    assert "intervention visibility is the blocker" in rendered_text
     assert "Show the next Odylith" not in rendered_text
     assert "chat-proved" not in rendered_text
     assert "hook" not in rendered_text

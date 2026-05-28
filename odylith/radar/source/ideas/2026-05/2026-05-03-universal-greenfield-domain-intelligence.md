@@ -136,6 +136,13 @@ Host prompt routing avoids noisy raw Observation chatter for normal greenfield i
 Greenfield create/apply runs a deterministic proposal Tribunal before any governed write and refreshes Radar, Registry, Atlas, and Compass once after all accepted artifacts are written.
 Compass timeline audit filters zero-file prompt-intervention narration so routing notes do not render as fake implementation history.
 
+## Current Completion Gate
+- Confirmed greenfield creation must build one typed semantic model before rendering any governed surface: `FirstPathContract`, `DomainOntology`, `ComponentContract`, `ReleaseScope`, `WorkstreamContract`, `DiagramEventGraph`, and `ProofObligation`.
+- Registry, Radar, Atlas, project intelligence, release topology, and proof review must render from that typed model instead of independently re-parsing loose prose.
+- The quality gate must fail closed before writes on first-path drift, provisional-title leakage, wrong-domain vocabulary, malformed ownership grammar, dangling punctuation, clipped sentences, duplicated words, proof-token soup, repeated proof walls, deferred-scope leakage, and missing active-release topology.
+- The proof suite must include adversarial greenfield fixtures across unrelated domains and must assert zero leakage between fixture term signatures.
+- Completion requires an end-to-end `greenfield create --confirm` proof that produces premium, domain-specific Radar workstreams, Registry component contracts, Atlas diagrams, project story, release assignment, and Tribunal evidence without adding project-specific logic to Odylith product code.
+
 ## Validation
 - Unit tests for the Product Intent request contract, open-world confirmed proposal generation, required Mermaid sources, duplicate-topology rejection, program waves, release plan, CLI JSON, host greenfield routing, component authoring user-intent metadata, and Compass zero-file intervention chatter filtering.
 - CLI proof for `odylith greenfield propose --format json` on empty/thin repo posture.

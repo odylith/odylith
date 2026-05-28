@@ -297,7 +297,7 @@ def _domain_actor_names(graph: DomainIntelligenceGraph, *, proposal: Mapping[str
         [*proposal_actors, *graph.invariants, *graph.validation_obligations, *graph.actors],
         ("maintainer",),
     )
-    return {
+    names = {
         "beneficiary_advocate": _actor_label(actors, fallback=f"{compact} beneficiary advocate"),
         "domain_operator": _actor_label(operators, fallback=actors[1] if len(actors) > 1 else f"{compact} operator"),
         "risk_owner": _actor_label(risk_owners, fallback=f"{compact} risk reviewer"),
@@ -324,6 +324,37 @@ def _domain_actor_names(graph: DomainIntelligenceGraph, *, proposal: Mapping[str
             role_suffix="release reviewer",
         ),
     }
+    return _dedupe_visible_actor_names(names)
+
+
+def _dedupe_visible_actor_names(names: Mapping[str, str]) -> dict[str, str]:
+    """Keep visible Tribunal roles distinct even when one human owns many hats."""
+
+    suffixes = {
+        "beneficiary_advocate": "beneficiary advocate",
+        "domain_operator": "workflow operator",
+        "risk_owner": "risk reviewer",
+        "evidence_owner": "proof reviewer",
+        "implementation_owner": "build owner",
+        "release_owner": "release reviewer",
+    }
+    result: dict[str, str] = {}
+    seen: set[str] = set()
+    for role in _TRIBUNAL_STABLE_ROLES:
+        label = clean_text(names.get(role, ""))
+        key = label.casefold()
+        if key and key in seen:
+            prefix = _actor_label_prefix(label) or label
+            suffix = suffixes.get(role, "reviewer")
+            label = f"{prefix} {suffix}".strip()
+            key = label.casefold()
+        if key and key in seen:
+            label = f"{label} for {role.replace('_', ' ')}"
+            key = label.casefold()
+        if key:
+            seen.add(key)
+        result[role] = label
+    return result
 
 
 def _proposal_actor_candidates(proposal: Mapping[str, Any]) -> tuple[str, ...]:
@@ -451,7 +482,12 @@ def _looks_like_actor_label(value: str) -> bool:
         "user",
     }
     words = {word.strip(".,;:()") for word in lowered.split()}
-    return bool(words & role_words)
+    if words & role_words:
+        return True
+    tokens = [word.strip(".,;:()") for word in lowered.split() if word.strip(".,;:()")]
+    if 1 <= len(tokens) <= 5 and any(re.search(r"(?:er|or|ist|ian|ant|ee)$", token) for token in tokens):
+        return True
+    return False
 
 
 def _role_phrase_label(label: str) -> str:

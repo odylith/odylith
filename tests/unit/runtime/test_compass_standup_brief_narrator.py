@@ -2619,7 +2619,7 @@ def test_build_standup_brief_rejects_exact_cache_when_current_execution_workstre
                         "kind": "portfolio_posture",
                         "text": (
                             "Planning and implementation are running in parallel across active lanes, and some "
-                            "implementation lanes still lack captured checklist progress Live focus lanes: "
+                            "implementation lanes still lack captured progress evidence Live focus lanes: "
                             "Cross-Surface Runtime Freshness and UX Browser Hardening (B-025), Scope Signal Ladder, "
                             "Cross-Surface Focus Gating, and Low-Signal Suppression (B-071)."
                         ),

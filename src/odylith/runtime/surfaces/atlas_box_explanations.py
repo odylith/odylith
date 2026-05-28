@@ -37,18 +37,18 @@ _COMMON_COMPONENT_TOKENS = {
     "view",
 }
 _SCOPE_OUT_RE = re.compile(
-    r"^(?:not\s+in\s+scope|out\s+of\s+scope|no\s+external|no\s+third[- ]party|no\s+payment|no\s+cloud)\b",
+    r"^(?:not\s+in\s+scope|out\s+of\s+scope|no\s+external|no\s+third[- ]party)\b",
     re.IGNORECASE,
 )
 _OWNED_ACTION_RE = re.compile(
     r"^owns?\s+"
     r"(accepts?|assembles?|binds?|captures?|computes?|derives?|engraves?|estimates?|exports?|handles?|imports?|"
-    r"links?|performs?|preserves?|records?|renders?|resolves?|stores?|tracks?|validates?|writes?)\b",
+    r"links?|maintains?|performs?|preserves?|records?|renders?|resolves?|stores?|tracks?|validates?|writes?)\b",
     re.IGNORECASE,
 )
 _ACTION_START_RE = re.compile(
     r"^(accepts?|assembles?|binds?|captures?|computes?|derives?|engraves?|estimates?|exports?|handles?|imports?|"
-    r"links?|performs?|preserves?|records?|renders?|resolves?|stores?|tracks?|validates?|writes?)\b",
+    r"links?|maintains?|performs?|preserves?|records?|renders?|resolves?|stores?|tracks?|validates?|writes?)\b",
     re.IGNORECASE,
 )
 _LEGACY_COMPONENT_APPENDIX_RE = re.compile(
@@ -411,7 +411,7 @@ def _node_action_sentence(label: str, *, context: DiagramBoxContext) -> str:
         )
     if _has_any(lowered, ("core services", "record core", "evidence core", "core:")):
         return (
-            f"{subject} owns the trusted record layer for {project}: records, state versions, evidence links, derivation, and audit history. "
+            f"{subject} owns trusted record layer for {project}: records, state versions, evidence links, derivation, and audit history. "
             "It matters because the first release must turn scattered inputs into traceable claims."
         )
     if matched_components:
@@ -446,13 +446,13 @@ def _node_action_sentence(label: str, *, context: DiagramBoxContext) -> str:
         return f"{subject} turns governed state into user-visible language without changing the underlying source truth."
     if _has_any(lowered, ("handshake", "contract")):
         return f"{subject} passes agreed state across a boundary and preserves the rules the next step must obey."
-    if _has_any(lowered, ("owner", "operator", "reviewer", "approver", "advocate", "user", "customer", "merchant", "scientist", "engineer", "maintainer")):
+    if _has_any(lowered, ("owner", "operator", "reviewer", "approver", "advocate", "user", "customer", "engineer", "maintainer")):
         return f"{subject} makes or accepts the decisions this part of the flow depends on."
     if _has_any(lowered, ("sensor", "sensing", "monitor", "measurement", "telemetry", "signal", "probe", "scanner")):
         return f"{subject} measures the current state and feeds the decision or proof step that follows."
     if _has_any(lowered, ("decision", "policy", "rule", "eligibility", "approval", "review", "gate", "core", "engine", "tribunal")):
         return f"{subject} decides whether the next action is allowed, blocked, or ready for review."
-    if _has_any(lowered, ("controller", "actuator", "pump", "dosing", "executor", "execution", "worker", "runner", "adapter")):
+    if _has_any(lowered, ("controller", "actuator", "executor", "execution", "worker", "runner", "adapter")):
         return f"{subject} performs the bounded action and should expose the result for verification."
     if _has_any(lowered, ("log", "record", "ledger", "evidence", "audit", "receipt", "proof", "history", "casebook")):
         return f"{subject} records the evidence needed to review what happened and why it was allowed."
@@ -493,23 +493,60 @@ def _project_name(*, title: str, summary: str, source_text: str) -> str:
 
 def _tracked_object_phrase(corpus: str) -> str:
     lowered = corpus.casefold()
-    object_terms = (
-        "parcel",
-        "boundary",
-        "observation",
-        "evidence record",
-        "state",
-        "take",
-        "plant",
-        "order",
-        "shipment",
-        "account",
-        "case",
-        "request",
-        "experiment",
-        "asset",
-        "document",
-    )
+    tokens = [_singular_token(match.group(0)) for match in re.finditer(r"\b[a-z][a-z-]{2,}\b", lowered)]
+    blocked = {
+        "accept",
+        "accepted",
+        "across",
+        "allowed",
+        "around",
+        "before",
+        "behind",
+        "between",
+        "block",
+        "blocked",
+        "change",
+        "claim",
+        "clear",
+        "complete",
+        "create",
+        "created",
+        "decision",
+        "diagram",
+        "downstream",
+        "external",
+        "first",
+        "flow",
+        "from",
+        "governed",
+        "handoff",
+        "inside",
+        "internal",
+        "later",
+        "missing",
+        "own",
+        "owns",
+        "outside",
+        "path",
+        "proof",
+        "ready",
+        "recorded",
+        "release",
+        "review",
+        "reviewer",
+        "scope",
+        "source",
+        "system",
+        "through",
+        "until",
+        "upstream",
+        "user",
+        "valid",
+        "visible",
+        "when",
+        "with",
+        "without",
+    }
     generic_modifiers = {
         "active",
         "available",
@@ -532,14 +569,88 @@ def _tracked_object_phrase(corpus: str) -> str:
         "versioned",
         "view",
     }
-    for term in object_terms:
-        for match in re.finditer(rf"\b([a-z][a-z-]{{2,}})\s+({re.escape(term)})s?\b", lowered):
-            if match.group(1) not in generic_modifiers:
-                return f"{match.group(1)} {match.group(2)}"
-    for phrase in object_terms:
-        if re.search(rf"\b{re.escape(phrase)}s?\b", lowered):
-            return phrase
+    scores: dict[str, int] = {}
+    for match in re.finditer(r"\b(?:one|a|an|the)\s+((?:[a-z][a-z-]{2,}\s+){0,2}[a-z][a-z-]{2,})\b", lowered):
+        phrase = _phrase_candidate(
+            match.group(1),
+            blocked=blocked,
+            generic_modifiers=generic_modifiers,
+        )
+        if phrase:
+            scores[phrase] = scores.get(phrase, 0) + 8
+    for match in re.finditer(r"\bowns?\s+((?:[a-z][a-z-]{2,}\s+){0,2}[a-z][a-z-]{2,})s?\b", lowered):
+        phrase = _phrase_candidate(
+            match.group(1),
+            blocked=blocked,
+            generic_modifiers=generic_modifiers,
+        )
+        if phrase:
+            phrase = _expand_single_token_phrase(
+                phrase,
+                lowered=lowered,
+                blocked=blocked,
+                generic_modifiers=generic_modifiers,
+            )
+            scores[phrase] = scores.get(phrase, 0) + 10
+    for left, right in zip(tokens, tokens[1:]):
+        if left in blocked or right in blocked or left in generic_modifiers or right in generic_modifiers:
+            continue
+        if left == right or len(left) < 3 or len(right) < 3:
+            continue
+        phrase = f"{left} {right}"
+        scores[phrase] = scores.get(phrase, 0) + 2
+    for first, second, third in zip(tokens, tokens[1:], tokens[2:]):
+        if any(token in blocked or token in generic_modifiers for token in (first, second, third)):
+            continue
+        if len({first, second, third}) < 3:
+            continue
+        phrase = f"{first} {second} {third}"
+        scores[phrase] = scores.get(phrase, 0) + 3
+    if scores:
+        return sorted(scores.items(), key=lambda item: (-item[1], len(item[0]), item[0]))[0][0]
+    for token in tokens:
+        if token not in blocked and token not in generic_modifiers:
+            return token
     return "tracked record"
+
+
+def _phrase_candidate(
+    value: str,
+    *,
+    blocked: set[str],
+    generic_modifiers: set[str],
+) -> str:
+    words = [_singular_token(match.group(0)) for match in re.finditer(r"\b[a-z][a-z-]{2,}\b", value.casefold())]
+    words = [word for word in words if word not in blocked and word not in generic_modifiers]
+    if not words:
+        return ""
+    return " ".join(words[-2:])
+
+
+def _expand_single_token_phrase(
+    phrase: str,
+    *,
+    lowered: str,
+    blocked: set[str],
+    generic_modifiers: set[str],
+) -> str:
+    if " " in phrase:
+        return phrase
+    for match in re.finditer(rf"\b([a-z][a-z-]{{2,}})\s+{re.escape(phrase)}s?\b", lowered):
+        modifier = _singular_token(match.group(1))
+        if modifier not in blocked and modifier not in generic_modifiers and modifier != phrase:
+            return f"{modifier} {phrase}"
+    return phrase
+
+
+def _singular_token(token: str) -> str:
+    if token.endswith("ies") and len(token) > 4:
+        return f"{token[:-3]}y"
+    if token.endswith("ses") and len(token) > 4:
+        return token[:-2]
+    if token.endswith("s") and not token.endswith("ss") and len(token) > 3:
+        return token[:-1]
+    return token
 
 
 def _matching_components(*, label: str, context: DiagramBoxContext) -> tuple[Mapping[str, str], ...]:
@@ -634,7 +745,7 @@ def _responsibility_phrase(value: str, *, subject: str) -> str:
         return "the domain responsibility assigned to this boundary"
     text = re.sub(rf"^{re.escape(subject)}\s+", "", text, flags=re.IGNORECASE).strip()
     text = re.sub(
-        r"^(?:is responsible for|is a [a-z ]+ responsible for|owns?|records?|stores?|tracks?|links?|assembles?|evaluates?|derives?|serves?)\s+",
+        r"^(?:is responsible for|is a [a-z ]+ responsible for|owns?|records?|stores?|tracks?|links?|maintains?|assembles?|evaluates?|derives?|serves?)\s+",
         "",
         text,
         flags=re.IGNORECASE,
@@ -660,6 +771,7 @@ def _ensure_gerund_phrase(value: str) -> str:
         (r"^exports?\b", "exporting"),
         (r"^imports?\b", "importing"),
         (r"^links?\b", "linking"),
+        (r"^maintains?\b", "maintaining"),
         (r"^performs?\b", "performing"),
         (r"^preserves?\b", "preserving"),
         (r"^records?\b", "recording"),
@@ -741,7 +853,7 @@ def _looks_like_state_object(label: str) -> bool:
     lowered = label.lower().strip()
     if lowered.startswith(("one ", "a ", "an ", "the ")):
         return True
-    return bool(re.search(r"\b(state|case|request|order|endpoint|contract|experiment|shipment|asset|record|object)\b", lowered))
+    return bool(re.search(r"\b(state|record|object|request|contract|endpoint|entity|item|artifact|package)\b", lowered))
 
 
 def extract_diagram_boxes_from_mermaid(

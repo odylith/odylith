@@ -144,7 +144,7 @@ def _layer_defaults(
     return {
         "intent": (
             f"{project_title} exists to make the accepted first path usable and reviewable: {first_path}",
-            f"Release {release} stays focused on the accepted state object: {state_object}",
+            f"Release {release} stays focused on {state_object}",
             "Deferred variants remain outside scope until their own evidence and proof are explicit.",
         ),
         "scope": (
@@ -194,7 +194,7 @@ def _layer_defaults(
         ),
         "invariants": (
             "Every state change keeps an actor, source, timestamp, status, and evidence reference.",
-            "Every component keeps its owned state separate from sibling responsibilities.",
+            "Every component keeps its owned state separate from adjacent ownership boundaries.",
         ),
         "risks": (
             f"{project_title} can mislead users if state changes without clear evidence and recovery behavior.",

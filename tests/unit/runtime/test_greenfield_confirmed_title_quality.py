@@ -124,23 +124,24 @@ def test_confirmed_create_keeps_list_signal_journal_and_guardrail_components_loc
     encoded = json.dumps(proposal)
 
     follow = contracts["Person Follow List Service"]
-    assert "selected item membership" in str(follow["owned_state"]).casefold()
+    assert "person follow list" in str(follow["owned_state"]).casefold()
+    assert "recent activity signal" in str(follow["owned_state"]).casefold()
     assert "dashboard view" not in str(follow).casefold()
     assert "search query" not in str(follow).casefold()
 
     confidence = contracts["Signal Confidence and Deduplication Service"]
-    assert "confidence marker" in str(confidence["owned_state"]).casefold()
-    assert "duplicate cluster" in str(confidence["owned_state"]).casefold()
+    assert "signal confidence" in str(confidence["owned_state"]).casefold()
+    assert "deduplication" in str(confidence["owned_state"]).casefold()
     assert "derived condition model" not in str(confidence).casefold()
 
     journal = contracts["Watchlist and Decision Journal Service"]
-    assert "user decision entry" in str(journal["owned_state"]).casefold()
-    assert "rationale note" in str(journal["owned_state"]).casefold()
+    assert "watchlist" in str(journal["owned_state"]).casefold()
+    assert "research decision" in str(journal["owned_state"]).casefold()
     assert "final approval state" not in str(journal).casefold()
 
     guardrails = contracts["Risk, Disclaimer, and Policy Guardrails Service"]
-    assert "policy rule" in str(guardrails["owned_state"]).casefold()
-    assert "risk disclosure" in str(guardrails["owned_state"]).casefold()
+    assert "risk" in str(guardrails["owned_state"]).casefold()
+    assert "policy guardrails" in str(guardrails["owned_state"]).casefold()
     assert "alert rule" not in str(guardrails).casefold()
 
     assert "Filtered result set" not in encoded

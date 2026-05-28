@@ -35,10 +35,10 @@ _LIVE_BLOCK_LABELS: tuple[str, ...] = (
     "Odylith Risks:",
 )
 _PROMPT_VISIBLE_ASSIST_MARKDOWN = (
-    "**Odylith Assist:** visibility feedback noted; this line is deliberately shown in chat."
+    "**Odylith Assist:** Visibility issue confirmed in chat; routine turns stay silent, and future Odylith notes require a concrete Observation, Proposal, validation result, or visibility failure."
 )
 _PROMPT_VISIBLE_ASSIST_PLAIN = (
-    "Odylith Assist: visibility feedback noted; this line is deliberately shown in chat."
+    "Odylith Assist: Visibility issue confirmed in chat; routine turns stay silent, and future Odylith notes require a concrete Observation, Proposal, validation result, or visibility failure."
 )
 _PROMPT_FIRST_FALLBACK = (
     "Odylith prompt-start substrate: alignment unavailable; keep the prompt Odylith-first, "

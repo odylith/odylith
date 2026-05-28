@@ -208,7 +208,7 @@ def test_host_conversation_bundle_carries_full_alignment_context_for_zero_signal
     )
 
     assert decision.visible_markdown.startswith(
-        "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
+        "---\n\n**Odylith Observation:** Codex intervention visibility is the blocker: this turn must render an Odylith note in chat before Odylith can claim the user saw it."
     )
     assert decision.delivery_status == "assistant_render_required"
     assert decision.proof_required is True

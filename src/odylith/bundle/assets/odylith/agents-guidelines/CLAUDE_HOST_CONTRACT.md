@@ -210,8 +210,9 @@
   for route locks, anchor context, and continuity, and emits an earned teaser
   through `systemMessage` for the host-visible lane. Additional context still
   carries an assistant-render fallback so the next assistant message can speak
-  the teaser, or the shared prompt-visible Assist line when no teaser is
-  earned, if the host hides hook output.
+  the teaser when it was earned. When no teaser is earned, Claude stays quiet;
+  Assist is visible only for concrete closeout proof, explicit visibility
+  failure, or a replayed earned live moment.
 - Plain `Odylith, show me what you can do` and `Odylith, help` prompts are
   first-match route locks, not requests for generic Claude Code capabilities.
   The route lock is now handled inside `prompt-bundle` so the default Claude
@@ -257,6 +258,10 @@
   manual low-latency escape hatch for Claude Code sessions that keep hook
   output hidden. It prints the exact Markdown the assistant should show; do
   not rewrite the copy by hand.
+- The visible-intervention fallback is not a receipt lane. It must suppress
+  generic "Odylith activity" copy and render only premium, inspectable notes
+  tied to a concrete Observation, Proposal, validation result, or visibility
+  failure.
 - `./.odylith/bin/odylith claude intervention-status --repo-root .` is the
   cheap activation proof surface. It reports static project-hook readiness,
   the active UX lanes, recent delivery-ledger events, pending proposals, and

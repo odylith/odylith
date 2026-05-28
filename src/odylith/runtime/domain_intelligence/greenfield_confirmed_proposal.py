@@ -6,6 +6,7 @@ from collections.abc import Mapping
 import re
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import project_specific_actor_row
@@ -18,7 +19,6 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_components import 
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_text as _compact_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label as _domain_object_label
-from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_brief_items as _join_brief_items
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_items as _join_items
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_system_labels as _join_system_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import problem_text as _problem_text
@@ -31,9 +31,15 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import (
     confirmed_intent_summary,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import health_safety_obligations
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import material_first_path_action
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
+from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
+from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
+from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import (
+    build_workstream_domain_intelligence,
+)
 
 
 def build_confirmed_greenfield_proposal(
@@ -74,7 +80,7 @@ def build_confirmed_greenfield_proposal(
     proof_boundary = confirmed_intent_summary(
         confirmed_intent,
         "proof_boundary",
-        f"Release {release} is trustworthy only when the first path, state object, and evidence record can be reviewed together.",
+        f"Release {release} is trustworthy only when the first path, {label_lower} record, and review evidence can be inspected together.",
     )
     human_actors = _project_specific_actor_rows(
         label=label,
@@ -123,6 +129,43 @@ def build_confirmed_greenfield_proposal(
         "ownership": f"{label_slug}-ownership-proof",
         "proof_review": f"{label_slug}-release-proof-review",
     }
+    backlog_rows = _backlog(
+        label=label,
+        parent_title=parent_title,
+        workflow_title=workflow_title,
+        boundary_title=boundary_title,
+        proof_title=proof_title,
+        state_object=state_object,
+        evidence_record=evidence_record,
+        product_story=product_story,
+        first_path=first_path,
+        proof_boundary=proof_boundary,
+        problem=problem_summary,
+        customer=customer_summary,
+        opportunity=opportunity_summary,
+        product_view=product_view_summary,
+        success_metrics=success_metrics,
+        human_actors=human_actors,
+        internal_systems=internal_systems,
+        external_systems=external_systems,
+        non_goals=non_goals,
+        components=release_components,
+        diagram_slugs=diagram_slugs,
+    )
+    semantic_model = semantic_model_mapping(
+        build_greenfield_semantic_model(
+            title=product_title,
+            state_object=state_object,
+            first_path=first_path,
+            proof_boundary=proof_boundary,
+            components=components,
+            human_actors=human_actors,
+            internal_systems=internal_systems,
+            external_systems=external_systems,
+            non_goals=non_goals,
+            workstreams=backlog_rows,
+        )
+    )
     proposal: dict[str, Any] = {
         "schema_version": "odylith.greenfield.proposal.v1",
         "mode": "host_reasoned_greenfield_proposal",
@@ -226,7 +269,7 @@ def build_confirmed_greenfield_proposal(
         ),
         "validation_strategy": [
             f"The accepted first path passes end to end: {first_path}",
-            f"The state object can be reconstructed and reviewed: {state_label}.",
+            f"{state_label} can be reconstructed and reviewed.",
             f"The release proof matches the accepted proof boundary: {proof_boundary}",
             *health_safety_obligations(
                 product_title,
@@ -290,30 +333,9 @@ def build_confirmed_greenfield_proposal(
             boundary_title=boundary_title,
             proof_title=proof_title,
         ),
-        "backlog": _backlog(
-            label=label,
-            parent_title=parent_title,
-            workflow_title=workflow_title,
-            boundary_title=boundary_title,
-            proof_title=proof_title,
-            state_object=state_object,
-            evidence_record=evidence_record,
-            product_story=product_story,
-            first_path=first_path,
-            proof_boundary=proof_boundary,
-            problem=problem_summary,
-            customer=customer_summary,
-            opportunity=opportunity_summary,
-            product_view=product_view_summary,
-            success_metrics=success_metrics,
-            human_actors=human_actors,
-            internal_systems=internal_systems,
-            external_systems=external_systems,
-            non_goals=non_goals,
-            components=release_components,
-            diagram_slugs=diagram_slugs,
-        ),
+        "backlog": backlog_rows,
         "components": components,
+        "semantic_model": semantic_model,
         "diagrams": confirmed_diagrams(
             label=label,
             components=components,
@@ -333,6 +355,7 @@ def build_confirmed_greenfield_proposal(
             external_systems=external_systems,
             internal_systems=internal_systems,
             non_goals=non_goals,
+            semantic_model=semantic_model,
         ),
         "apply_commands": [
             "odylith greenfield create --repo-root . --prompt "
@@ -362,7 +385,7 @@ def _security_compliance(
     safety_tail = f" {obligations}" if obligations else ""
     return {
         "domain": (
-            f"{label} carries domain risk around the accepted state object, evidence boundary, actors, "
+            f"{label} carries domain risk around {_short_summary(state_object, limit=180)}, evidence boundary, actors, "
             f"and decisions based on stale or incomplete data. First path: {_short_summary(first_path, limit=220)}."
             f"{safety_tail}"
         ),
@@ -692,19 +715,6 @@ def _component_label_at(components: list[dict[str, Any]], index: int, *, fallbac
     return value or fallback
 
 
-def _component_contract_at(components: list[dict[str, Any]], index: int) -> Mapping[str, Any]:
-    if not components:
-        return {}
-    bounded_index = min(max(index, 0), len(components) - 1)
-    contract = components[bounded_index].get("component_contract")
-    return contract if isinstance(contract, Mapping) else {}
-
-
-def _contract_clause(contract: Mapping[str, Any], key: str, *, fallback: str) -> str:
-    value = _short_summary(str(contract.get(key) or ""), limit=220)
-    return value or fallback
-
-
 def _first_clause(value: str) -> str:
     text = _short_summary(value, limit=220)
     parts = [part.strip(" .") for part in re.split(r"[.;]", text, maxsplit=1) if part.strip(" .")]
@@ -720,6 +730,23 @@ def _first_action_clause(value: str) -> str:
         r"(?:accepts?|assigns?|calculates?|chooses?|completes?|estimates?|fetches?|highlights?|lets?|logs?|notifies?|preserves?|ranks?|receives?|records?|reviews?|selects?|shows?|stores?|submits?|verifies?)\b"
     )
     return re.split(rf",\s+(?=(?:and\s+)?(?:{action_pattern}))", text, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .")
+
+
+def _first_path_capability(value: str) -> str:
+    return _sentence_fragment(
+        first_path_capability_phrase(
+            value,
+            fallback=_first_action_clause(value) or "the accepted first path",
+        )
+    )
+
+
+def _capability_action_clause(value: str) -> str:
+    text = _sentence_fragment(value)
+    if not text:
+        return "complete the accepted path"
+    converted = base_action_clause(text)
+    return converted or text
 
 
 def _sentence_fragment(value: str) -> str:
@@ -773,19 +800,14 @@ def _backlog(
         _component_label_at(components, len(components) - 1, fallback=f"{label} proof review")
     )
     proof_record_label = _title_label(f"{proof_component} proof record") or evidence_label
-    primary_contract = _component_contract_at(components, 0)
-    state_contract = _component_contract_at(components, 1 if len(components) > 1 else 0)
-    proof_contract = _component_contract_at(components, len(components) - 1)
-    primary_inputs = _contract_clause(primary_contract, "accepted_inputs", fallback="the first user action and required domain input")
-    primary_outputs = _contract_clause(primary_contract, "produced_outputs", fallback=f"a visible {label.lower()} result")
-    state_owned = _contract_clause(state_contract, "owned_state", fallback=f"{state_label} lifecycle and handoff state")
-    state_outputs = _contract_clause(state_contract, "produced_outputs", fallback=f"{state_label} status, blockers, and handoff output")
-    proof_outputs = _contract_clause(proof_contract, "produced_outputs", fallback=f"{evidence_label} review result")
     first_path_entry_text = _sentence_fragment(first_path_entry)
-    primary_inputs_text = _sentence_fragment(primary_inputs)
-    primary_outputs_text = _sentence_fragment(primary_outputs)
-    state_owned_text = _sentence_fragment(state_owned)
-    state_outputs_text = _sentence_fragment(state_outputs)
+    first_path_capability = _sentence_fragment(_first_path_capability(first_path_summary))
+    first_path_action = _capability_action_clause(first_path_capability)
+    first_step_problem = (
+        f"the first material step ({first_path_entry_text}) or "
+        if first_path_entry_text
+        else ""
+    )
     parent = _backlog_row(
         label=label,
         title=parent_title,
@@ -826,21 +848,21 @@ def _backlog(
     workflow = _backlog_row(
         label=label,
         title=workflow_title,
-        problem=f"{primary_component} can fail when the first path entry is missing or unclear: {first_path_entry}.",
+        problem=f"{primary_component} can fail when {first_step_problem}users cannot {first_path_action} with complete state, evidence, and recovery context.",
         customer=actors,
         opportunity=(
-            f"Build {primary_component} around {primary_inputs_text} so it can validate the first path entry ({first_path_entry_text}) and produce {primary_outputs_text} before deferred scope expands."
+            f"Build the smallest source-backed {primary_component} slice for the accepted first path before deferred scope expands."
         ),
         product_view=(
-            f"{primary_component} accepts {primary_inputs_text} and produces {primary_outputs_text}. "
-            f"It keeps {evidence_phrase} visible and must reject missing input before {second_component} treats {state_label} as trustworthy."
+            f"{primary_component} owns first-path input boundary. It keeps accepted input, blocker state, "
+            f"recovery evidence, and handoff to {second_component} reviewable."
         ),
         first_slice=(
-            f"Implement {primary_component} for the first path entry: {first_path_entry_text}. Validate the accepted inputs, show blocked-state recovery, "
-            f"produce {primary_outputs_text}, and hand off to {second_component}."
+            f"Implement {primary_component} for the accepted path step: {first_path_summary}. Prove success, missing input, "
+            f"blocker visibility, recovery, and handoff to {second_component}."
         ),
         metrics=[
-            f"{primary_component} accepts {primary_inputs_text} and produces {primary_outputs_text}.",
+            f"{primary_component} proves one successful first-path state change.",
             f"Missing or invalid input blocks handoff before it corrupts {state_label}.",
             f"The first-path result hands {state_label} to {second_component} with blocker and recovery context.",
         ],
@@ -866,10 +888,13 @@ def _backlog(
         opportunity=(
             f"Implement {second_component} so {state_label} has explicit ownership, accepted transitions, blocked-state handling, and handoff evidence."
         ),
-        product_view=f"{second_component} keeps {state_label} trustworthy by owning {state_owned_text} and producing {state_outputs_text}.",
+        product_view=(
+            f"{second_component} owns {state_label} transition boundary. It keeps state, blockers, recovery, "
+            "and evidence reviewable before downstream release proof."
+        ),
         first_slice=(
-            f"Implement {second_component} transitions for {state_label}: persist the owned state, emit {state_outputs_text}, "
-            "and reject changes that lack actor, status, or evidence context."
+            f"Implement {second_component} transitions for {state_label}. Prove valid updates, blocked updates, replay, "
+            "and handoff evidence without rewriting sibling state."
         ),
         metrics=[
             f"Every {state_label} change names actor, source, status, owner, and evidence expectation.",
@@ -903,10 +928,10 @@ def _backlog(
         ),
         customer=actors,
         opportunity=(
-            f"Build {proof_component} around {proof_outputs}, validation results, state references, release decision, and deferred scope."
+            f"Build {proof_component} around validation results, state references, release decision, and deferred scope."
         ),
         product_view=(
-            f"{proof_component} produces {proof_outputs}. It shows whether {state_label}, validation output, source evidence, "
+            f"{proof_component} keeps release proof reviewable. It shows whether {state_label}, validation output, source evidence, "
             f"and deferred scope satisfy the accepted proof boundary: {proof_summary}."
         ),
         first_slice=(
@@ -990,7 +1015,7 @@ def _backlog_row(
             first_slice=first_slice,
             proof_boundary=proof_boundary,
         ),
-        "domain_intelligence": _domain_intelligence(
+        "domain_intelligence": build_workstream_domain_intelligence(
             label=label,
             row_title=title,
             problem=problem,
@@ -1017,6 +1042,10 @@ def _rationale_lines(*, label: str, title: str, opportunity: str, first_slice: s
     why_now = _short_summary(opportunity, limit=180).strip(" .")
     expected_outcome = _short_summary(first_slice, limit=200).strip(" .")
     proof = _short_summary(proof_boundary, limit=180).strip(" .")
+    if _looks_mechanical_summary(why_now):
+        why_now = f"{title} proves a bounded part of the accepted {label} first path before adjacent scope expands"
+    if _looks_mechanical_summary(expected_outcome):
+        expected_outcome = f"{title} produces reviewable state, blocker behavior, recovery evidence, and handoff proof"
     if not why_now:
         why_now = "Clarify the accepted product boundary before implementation starts"
     if not expected_outcome:
@@ -1032,142 +1061,19 @@ def _rationale_lines(*, label: str, title: str, opportunity: str, first_slice: s
     ]
 
 
-def _domain_intelligence(
-    *,
-    label: str,
-    row_title: str,
-    problem: str,
-    opportunity: str,
-    product_view: str,
-    first_slice: str,
-    metrics: list[str],
-    dependencies: list[str],
-    interfaces: list[str],
-    validation: list[str],
-    state_object: str,
-    evidence_record: str,
-    first_path: str,
-    proof_boundary: str,
-    human_actors: list[str],
-    internal_systems: list[str],
-    external_systems: list[str],
-    non_goals: list[str],
-) -> dict[str, Any]:
-    actors = human_actors or [f"{label} product user: uses the accepted first path."]
-    internals = internal_systems or [f"{state_object}: owns domain state.", f"{evidence_record}: owns proof review."]
-    internal_labels = _join_system_labels(internals) or _join_items(internals)
-    externals = external_systems or ["No live external system is accepted for the first release."]
-    non_goal_text = _join_items(non_goals) or "unconfirmed broader platform behavior"
-    focus = _short_summary(product_view or first_slice or opportunity, limit=360)
-    risk = _short_summary(problem, limit=300) or f"{label} can fail if {row_title} is too vague to implement."
-    build_scope = _short_summary(first_slice or first_path, limit=320)
-    metric_summary = _join_brief_items(metrics, limit=3, item_limit=140)
-    dependency_summary = _join_brief_items(dependencies, limit=2, item_limit=150)
-    interface_summary = _join_brief_items(interfaces, limit=2, item_limit=150)
-    validation_summary = _join_brief_items(validation, limit=3, item_limit=150)
-    return {
-        "schema_version": "odylith.greenfield.workstream_intelligence.v1",
-        "family": slugify(label).replace("-", "_") or "confirmed_product",
-        "summary": focus or f"{row_title} turns the accepted {label} slice into buildable product behavior.",
-        "actors": actors,
-        "intent": [
-            focus or f"{row_title} advances {label} by building one concrete product slice.",
-            f"User problem: {risk}",
-        ],
-        "scope": [
-            f"Build scope: {build_scope}",
-            f"Out of scope for now: {non_goal_text}.",
-        ],
-        "ontology": [
-            f"Actors include {_join_actor_labels(actors) or _join_items(actors)}.",
-            f"State object: {state_object}.",
-            f"Evidence record: {evidence_record}.",
-            f"Proof boundary: {proof_boundary}.",
-        ],
-        "state": [
-            f"State focus: {build_scope}",
-            f"Owned state remains trustworthy only when {state_object} and {evidence_record} explain the visible outcome.",
-        ],
-        "operators": [
-            f"Build operations: {interface_summary or build_scope}.",
-            f"Internal systems involved here: {internal_labels}.",
-            f"External source boundaries here: {_join_items(externals)}.",
-        ],
-        "constraints": [
-            f"Keep {row_title} inside the accepted first-release scope: {non_goal_text}.",
-            f"Do not claim {row_title} ready until validation demonstrates: {validation_summary or proof_boundary}.",
-        ],
-        "source_of_truth_map": [
-            f"{state_object} is the source of truth for current first-path state.",
-            f"{evidence_record} is the source of truth for proof readiness and release confidence.",
-        ],
-        "evidence_model": [
-            f"Proof evidence: {validation_summary or proof_boundary}.",
-            f"{evidence_record} must show source input, state reference, validation result, release decision, and visible outcome.",
-        ],
-        "decisions": [
-            f"Decide whether {row_title} delivers its local outcome: {metric_summary or build_scope}.",
-            f"Decide whether dependencies are ready: {dependency_summary or internal_labels}.",
-        ],
-        "assumptions": [
-            f"User intent is the evidence tier until source-backed implementation exists.",
-            f"External systems stay simulated, sandboxed, or deferred unless the confirmed first path requires them.",
-        ],
-        "topology": [
-            f"Product-owned systems: {internal_labels}.",
-            f"External systems: {_join_items(externals)}.",
-        ],
-        "invariants": [
-            f"Every state change touched by {row_title} names actor, source, status, and evidence expectation.",
-            f"Every readiness assertion for {row_title} maps to {state_object}, {evidence_record}, validation output, and non-goals.",
-        ],
-        "risks": [
-            risk,
-            f"Trust fails if {row_title} hides missing state, source evidence, access limits, or deferred scope.",
-        ],
-        "validation_obligations": [
-            *(validation or []),
-            f"Validate that {row_title} preserves {state_object} and {evidence_record} in domain terms.",
-            f"Validate that {row_title} satisfies its local success criteria: {metric_summary or build_scope}.",
-            f"Validate that {row_title} handles a blocked or recovery path without hiding missing evidence.",
-        ],
-        "artifacts": [
-            f"{state_object} history captures the local states needed by {row_title}.",
-            f"{evidence_record} captures validation output, replay output, release decision, and deferred scope.",
-        ],
-        "authority": [
-            f"Only accepted actors or systems can move first-path state: {_join_actor_labels(actors) or _join_items(actors)}.",
-            f"{row_title} can block the first release when validation, replay, access, or evidence is incomplete.",
-        ],
-        "owners": [
-            f"Internal product systems own this slice: {internal_labels}.",
-            f"Review ownership follows the accepted proof boundary and this row's local validation.",
-        ],
-        "execution_memory": [
-            f"Future work starts from the accepted first path and this row's local build outcome.",
-            f"Product-owner correction or source-backed contradiction invalidates stale assumptions.",
-        ],
-        "metrics": [
-            metric_summary or f"{row_title} has a user-visible success, blocked, and recovery signal.",
-            f"Every readiness assertion for {row_title} has state, evidence, validation, release-review, and non-goal references.",
-        ],
-        "change_model": [
-            f"Changing the state object invalidates {row_title} validation and handoff assumptions.",
-            f"Changing external dependencies invalidates access, privacy, recovery, and proof for {row_title}.",
-        ],
-        "invalidation_rules": [
-            f"If {row_title} cannot run or be reviewed in product terms, release readiness stays blocked.",
-            f"If evidence cannot explain {state_object}, {evidence_record}, or non-goals, this slice is incomplete.",
-        ],
-        "conflict_model": [
-            f"Confirmed product intent beats generic builder fallback for {row_title}.",
-            f"Source-backed validation beats narrative claims when {row_title} behavior disagrees.",
-        ],
-        "transfer_priors": [
-            f"Keep {row_title} small enough for concrete behavior proof.",
-            f"Use confirmed actors, state, systems, evidence, and failure terms in this slice.",
-        ],
-    }
+def _looks_mechanical_summary(value: str) -> bool:
+    text = _compact_text(value)
+    if not text:
+        return False
+    lowered = text.casefold()
+    comma_count = text.count(",")
+    repeated_required = len(re.findall(r"\brequired\b", lowered))
+    return bool(
+        comma_count >= 5
+        or repeated_required >= 2
+        or re.search(r"\bactor identity,\s+validation context,\s+and upstream handoff\b", lowered)
+        or re.search(r"\bblocker signal,\s+review rationale,\s+and downstream handoff\b", lowered)
+    )
 
 
 def _project_specific_actor_rows(*, label: str, rows: list[str]) -> list[str]:

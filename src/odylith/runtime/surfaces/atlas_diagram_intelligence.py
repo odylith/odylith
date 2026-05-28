@@ -66,7 +66,7 @@ _SUCCESS_RE = re.compile(
     re.IGNORECASE,
 )
 _ACTION_RE = re.compile(
-    r"\b(action|execute|execution|run|runner|dose|dosing|pump|write|create|generate|apply|approve|review|coordinate|ship|release)\b",
+    r"\b(action|execute|execution|run|runner|write|create|generate|apply|approve|review|coordinate|release)\b",
     re.IGNORECASE,
 )
 _MECHANICAL_COPY_RE = re.compile(
@@ -367,7 +367,7 @@ def describe_graph_node(*, graph: MermaidGraph, node_id: str) -> str:
     if len(outgoing) > 1:
         branches = outgoing_conditions or "the labeled or visual branches"
         return f"{subject} decides between {outgoing_targets or 'different outcomes'} using {branches or 'the labeled conditions'}."
-    if _ACTION_RE.search(label) and outgoing:
+    if _looks_like_action_label(label) and outgoing:
         trigger = incoming_conditions or incoming_sources
         if trigger:
             return f"{subject} performs the bounded action after {trigger} and produces evidence for {outgoing_targets or 'verification'}."
@@ -400,7 +400,7 @@ def describe_graph_node_role(*, graph: MermaidGraph, node_id: str) -> str:
         return "Outcome"
     if not visible_incoming and outgoing:
         return "Start"
-    if _ACTION_RE.search(lowered):
+    if _looks_like_action_label(lowered):
         return "Action"
     if len(outgoing) > 1:
         return "Decision"
@@ -506,11 +506,13 @@ def _diagram_summary(*, graph: MermaidGraph, title: str, kind: str) -> str:
     starts = _start_nodes(graph)
     branches = _branch_nodes(graph)
     actions = _action_nodes(graph)
+    through = _state_through_nodes(graph)
     successes = _success_nodes(graph)
     exceptions = _exception_nodes(graph)
     starts_text = _node_label_list([graph.label(node_id) for node_id in starts], limit=2)
     branches_text = _node_label_list([graph.label(node_id) for node_id in branches], limit=2)
     actions_text = _node_label_list([graph.label(node_id) for node_id in actions], limit=2)
+    through_text = _node_label_list([graph.label(node_id) for node_id in through], limit=2)
     successes_text = _node_label_list([graph.label(node_id) for node_id in successes], limit=2)
     exceptions_text = _node_label_list([graph.label(node_id) for node_id in exceptions], limit=2)
     edge_conditions = _label_list([edge.label for edge in graph.edges if edge.label], limit=4)
@@ -523,6 +525,8 @@ def _diagram_summary(*, graph: MermaidGraph, title: str, kind: str) -> str:
             pieces.append(f"through {branches_text}")
         if actions_text:
             pieces.append(f"into {actions_text}")
+        elif through_text:
+            pieces.append(f"via {through_text}")
         if successes_text or exceptions_text:
             outcomes = _join_nonempty([successes_text, exceptions_text], joiner=" or ")
             pieces.append(f"and ends in {outcomes}")
@@ -725,7 +729,21 @@ def _exception_nodes(graph: MermaidGraph) -> tuple[str, ...]:
 
 
 def _action_nodes(graph: MermaidGraph) -> tuple[str, ...]:
-    return tuple(node_id for node_id in graph.node_ids() if _ACTION_RE.search(_primary_label(graph.label(node_id))))
+    return tuple(node_id for node_id in graph.node_ids() if _looks_like_action_label(_primary_label(graph.label(node_id))))
+
+
+def _looks_like_action_label(value: str) -> bool:
+    text = _primary_label(value).casefold()
+    return bool(_ACTION_RE.search(text) or re.search(r"\b[a-z][a-z0-9-]{2,}ing\b", text))
+
+
+def _state_through_nodes(graph: MermaidGraph) -> tuple[str, ...]:
+    excluded = {*_start_nodes(graph), *_branch_nodes(graph), *_success_nodes(graph), *_exception_nodes(graph)}
+    return tuple(
+        node_id
+        for node_id in graph.node_ids()
+        if node_id not in excluded and graph.incoming(node_id) and graph.outgoing(node_id)
+    )
 
 
 def _main_path_labels(graph: MermaidGraph) -> str:

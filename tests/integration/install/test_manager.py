@@ -800,6 +800,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "keep it crisp, authentic, clear, simple, insightful" in guidance_text
     assert "ground the line in concrete observed counts, measured deltas, or validation outcomes" in guidance_text
     assert "or a concrete chat-visibility complaint" in guidance_text
+    assert "Generic activity receipts are not premium interventions" in guidance_text
     assert "Silence is better than filler." in guidance_text
     assert "run the repo-local `odylith start`/`odylith context` step" not in guidance_text
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in guidance_text
@@ -862,6 +863,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "keep it crisp, authentic, clear, simple, insightful" in root_agents
     assert "ground the line in concrete observed counts, measured deltas, or validation outcomes" in root_agents
     assert "or a concrete chat-visibility complaint" in root_agents
+    assert "Generic activity receipts are not premium interventions" in root_agents
     assert "Silence is better than filler." in root_agents
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in root_agents
     assert "stop at diagnosis and maintainer-ready feedback" in root_agents
@@ -1668,6 +1670,7 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     assert "`odylith_off` or broader unguided path edge when supported" in guidance_text
     assert "ground the line in concrete observed counts, measured deltas, or validation outcomes" in guidance_text
     assert "or a concrete chat-visibility complaint" in guidance_text
+    assert "Generic activity receipts are not premium interventions" in guidance_text
     assert "Silence is better than filler." in guidance_text
     assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in guidance_text
     assert "Odylith grounding:" not in guidance_text
@@ -1767,6 +1770,7 @@ def test_install_bundle_product_repo_preserves_source_owned_odylith_guidance_and
     assert "frame the edge against `odylith_off` or the broader unguided path" in root_agents
     assert "ground the line in concrete observed counts, measured deltas, or validation outcomes" in root_agents
     assert "or a concrete chat-visibility complaint" in root_agents
+    assert "Generic activity receipts are not premium interventions" in root_agents
     assert "Silence is better than filler." in root_agents
     assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in root_agents
     assert "Odylith grounding:" not in root_agents

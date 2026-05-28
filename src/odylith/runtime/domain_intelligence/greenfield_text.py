@@ -15,6 +15,31 @@ def clean_text(value: Any) -> str:
     return " ".join(str(value or "").split()).strip()
 
 
+def normalize_domain_token(value: Any, *, minimum: int = 4, stopwords: Iterable[str] = ()) -> str:
+    """Normalize one extracted product term without corrupting common nouns.
+
+    Greenfield renderers use these tokens to derive artifact nouns from the
+    accepted intent. The normalization must stay conservative because a bad
+    stem leaks directly into human-visible governance text.
+    """
+
+    token = str(value or "").strip("-_").casefold()
+    if len(token) < minimum or token.isdigit() or any(char.isdigit() for char in token):
+        return ""
+    stop = {str(item or "").casefold() for item in stopwords}
+    if token in stop:
+        return ""
+    if token.endswith("ies") and len(token) > 5:
+        token = f"{token[:-3]}y"
+    elif token == "statuses":
+        token = "status"
+    elif token.endswith(("ches", "shes", "xes", "zes", "sses")) and len(token) > 5:
+        token = token[:-2]
+    elif token.endswith("s") and len(token) > 4 and not token.endswith(("ss", "us", "is")):
+        token = token[:-1]
+    return token if len(token) >= minimum and token not in stop else ""
+
+
 def text_values(
     value: Any,
     *,

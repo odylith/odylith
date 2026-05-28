@@ -231,7 +231,7 @@ def _build_scoped_standup_fact_packet(
                 "governed planning surfaces",
                 "packet-level bundle",
                 "plan updated:",
-                "checklist progress updated",
+                "implementation progress updated",
             )
         )
     ]
@@ -602,7 +602,7 @@ def _build_global_standup_fact_packet(
                 "detached source-local self-host mode",
                 "repo pin is",
                 "plan updated:",
-                "checklist progress updated",
+                "implementation progress updated",
             )
         )
     ]
@@ -786,13 +786,13 @@ def _build_global_standup_fact_packet(
     elif progressed_count > 0:
         if active_untracked_count > 0:
             portfolio_posture = (
-                "Implementation is moving, but some active lanes still do not have checklist progress captured."
+                "Implementation is moving, but some active lanes still do not have progress evidence captured."
             )
         else:
             portfolio_posture = "Implementation is moving while some active lanes are still clearing plan setup."
     else:
         if active_untracked_count > 0:
-            portfolio_posture = "Implementation has started, but checklist progress is not captured yet."
+            portfolio_posture = "Implementation has started, but progress evidence is not captured yet."
         else:
             portfolio_posture = "Most active lanes are still setting up the first implementation slice."
     if top_activity_labels:

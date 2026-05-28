@@ -190,6 +190,9 @@ def accepted_actor_label(value: str, *, project_focus: str = "") -> str:
         return head
     if explicit_body and _is_concrete_actor_head(head, lower_head=lower_head, role=role):
         return head
+    composite_label = _project_specific_composite_head(head, lower_head=lower_head, project_focus=project_focus)
+    if composite_label:
+        return composite_label
     needs_focus = _head_needs_focus(lower_head, role=role) or (
         marker_body_used and lower_head == role and role in _ROLE_WORDS
     )
@@ -271,6 +274,14 @@ def _preserve_standalone_label(head: str, *, lower_head: str, role: str) -> bool
     if not role or len(head.split()) > 6:
         return False
     return bool(re.match(r"^[A-Z][a-z]+(?:\s+[a-z][a-z-]+)+$", head))
+
+
+def _project_specific_composite_head(head: str, *, lower_head: str, project_focus: str) -> str:
+    for generic in sorted(_GENERIC_HEADS, key=len, reverse=True):
+        if lower_head.startswith((f"{generic} or ", f"{generic} and ")):
+            focus = _focus_from_text(project_focus, role="") or _focus_from_text(head, role="")
+            return _title_label(f"{focus} {head}" if focus else head)
+    return ""
 
 
 def _role_suffix(value: str) -> str:

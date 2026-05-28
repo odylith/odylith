@@ -403,19 +403,19 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                     "      order[\"Order ledger\"]\n"
                     "    end\n"
                     "    subgraph evidence_lane[\"Evidence lane\"]\n"
-                    "      evidence[\"Release<br/>evidence spine\"]\n"
+                    "      release_proof[\"Release<br/>evidence spine\"]\n"
                     "    end\n"
                     "    shopper --> storefront --> checkout\n"
                     "    checkout --> payment\n"
                     "    checkout --> order\n"
-                    "    order --> evidence\n"
+                    "    order --> release_proof\n"
                     "    payment -. failure recovery .-> checkout\n"
                     "    classDef actor fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;\n"
                     "    classDef service fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;\n"
                     "    classDef evidence fill:#F5F3FF,stroke:#DDD6FE,color:#17233A,stroke-width:1px;\n"
                     "    class shopper,storefront actor;\n"
                     "    class checkout,payment,order service;\n"
-                    "    class evidence evidence;\n"
+                    "    class release_proof evidence;\n"
                     "    style experience_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155\n"
                     "    style transaction_lane fill:#FBFDFF,stroke:#A7E9E3,stroke-width:1px,color:#334155\n"
                     "    style evidence_lane fill:#FBFDFF,stroke:#DDD6FE,stroke-width:1px,color:#334155\n"
@@ -1179,5 +1179,4 @@ def _host_reasoned_crispr_without_parent() -> dict[str, object]:
             }
         ],
     }
-
 

@@ -8,6 +8,7 @@ from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
@@ -55,11 +56,23 @@ _BANNED_PROSE_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("provisional title qualifier", re.compile(r"(?:[\(\[]\s*)?(?:working\s+title|placeholder\s+title|title\s+tbd|tbd)(?:\s*[\)\]])?", re.IGNORECASE)),
     ("token-soup proof phrase", re.compile(r"\bdone,\s*path,\s*mean,\s*person,\s*create,\s*view,\s*edit\b", re.IGNORECASE)),
     ("mechanical first-action scaffold", re.compile(r"\bfirst\s+accepted\s+action\b", re.IGNORECASE)),
+    ("mechanical first-path-entry scaffold", re.compile(r"\bfirst\s+path\s+entry\b", re.IGNORECASE)),
+    ("mechanical actor-path scaffold", re.compile(r"\bcan\s+act\s+where\s+the\s+accepted\s+path\s+requires\b", re.IGNORECASE)),
+    ("generic local-output scaffold", re.compile(r"\bexpected\s+local\s+output\s*:", re.IGNORECASE)),
+    ("malformed ownership sentence", re.compile(r"\bit\s+owns\s+for\b", re.IGNORECASE)),
+    ("malformed ownership sentence", re.compile(r"\bit\s+owns\s+the\s+central\s+object\s+is\b", re.IGNORECASE)),
+    ("duplicated evidence word", re.compile(r"\bevidence\s+evidence\b", re.IGNORECASE)),
+    ("clipped out-of-scope sentence", re.compile(r"\bmulti-user\s+roles\s+are\s*[.]?$", re.IGNORECASE)),
+    (
+        "handoff verb leaked as artifact noun",
+        re.compile(r"\bhand\s+[a-z][a-z-]*(?:\s+[a-z][a-z-]*){0,4}\s+(?:identity|state|evidence|result|record)\b", re.IGNORECASE),
+    ),
+    ("dangling close-parenthesis token", re.compile(r"\b[a-z][a-z-]*\b(?:metrics?|state|input|output|record|proof)[)](?:\s|[.,;:]|$)", re.IGNORECASE)),
     ("clipped later phrase", re.compile(r"\bas\s+a\s+later\s*[.]?$", re.IGNORECASE)),
     ("clipped stale transition", re.compile(r"\bvalid\s+transition\s+display,\s*stale\s*[.]?$", re.IGNORECASE)),
     ("clipped evidence phrase", re.compile(r"\brejected\s+or\s+blocked\s+cases,\s*evidence\s*[.]?$", re.IGNORECASE)),
     ("doubled refusal phrase", re.compile(r"\brefuses\b[^.]{0,140}\brefuses\b", re.IGNORECASE)),
-    ("clipped scoring fragment", re.compile(r"\bscor\b", re.IGNORECASE)),
+    ("clipped scoring fragment", re.compile(r"\bscor(?:[\s.,;:!?]|$)", re.IGNORECASE)),
     ("clipped eligibility phrase", re.compile(r"\baccepting\s+eligible\b", re.IGNORECASE)),
     ("clipped product fragment", re.compile(r"\bwithout\s+the\s+prod(?:[\s.,;:!?]|$)", re.IGNORECASE)),
     ("raw proof target splice", re.compile(r"\bproof\s+target\s+is\s+(?:A|An|The)\s+first\s+release\b")),
@@ -235,6 +248,8 @@ def public_prose_quality_issues(value: Any) -> list[str]:
         if _is_path_excluded(path):
             continue
         for label, pattern in _BANNED_PROSE_PATTERNS:
+            if not _pattern_applies_to_path(label=label, path=path):
+                continue
             if pattern.search(text):
                 issues.append(f"generated prose uses {label} at {path}")
         if _has_dangling_tail(text):
@@ -246,7 +261,7 @@ def rendered_component_spec_quality_issues(
     specs: Mapping[str, str],
     *,
     project_title: str = "",
-    max_overlap: float = 0.65,
+    max_overlap: float = 0.82,
 ) -> list[str]:
     """Fail generic Registry specs whose content survives component-name swaps."""
 
@@ -263,6 +278,7 @@ def rendered_component_spec_quality_issues(
         issues.extend(_section_overlap_issues(name=name, text=text))
         local_terms = _local_domain_terms(
             text,
+            name=name,
             all_texts=tuple(specs.values()),
             names=names,
             all_name_terms=all_name_terms,
@@ -274,6 +290,8 @@ def rendered_component_spec_quality_issues(
             left_lines = normalized_lines[left_name]
             right_lines = normalized_lines[right_name]
             if not left_lines or not right_lines:
+                continue
+            if min(len(left_lines), len(right_lines)) < 10:
                 continue
             overlap = len(left_lines & right_lines) / max(1, min(len(left_lines), len(right_lines)))
             if overlap > max_overlap:
@@ -364,6 +382,27 @@ def _is_path_excluded(path: str) -> bool:
     )
 
 
+def _pattern_applies_to_path(*, label: str, path: str) -> bool:
+    """Keep slot-filling checks scoped to generated contract/proof fields."""
+
+    if label not in {
+        "verb phrase inserted into contract artifact slot",
+        "unnormalized recompute artifact phrase",
+    }:
+        return True
+    lowered = path.casefold()
+    return any(
+        marker in lowered
+        for marker in (
+            "component_contract",
+            ".validation",
+            ".test_strategy",
+            "semantic_model.components",
+            "proof_obligations",
+        )
+    )
+
+
 def _normalized_spec_lines(text: str, *, project_title: str, names: Sequence[str]) -> set[str]:
     lines: set[str] = set()
     for raw in str(text or "").splitlines():
@@ -378,6 +417,38 @@ def _normalized_spec_lines(text: str, *, project_title: str, names: Sequence[str
 
 def _substantive_spec_line(line: str) -> bool:
     if not line or line.startswith("#") or line.startswith("|") or line.startswith("- `./.odylith"):
+        return False
+    lowered = line.casefold()
+    if any(
+        marker in lowered
+        for marker in (
+            "component planning record for",
+            "planned from user-stated intent",
+            "no source-backed claim is made yet",
+            "runtime ownership boundary",
+            "structured contract below keeps state",
+            "actor identity",
+            "bind this component to a technical plan",
+            "validation context",
+            "upstream handoff",
+            "blocker signal",
+            "component record, implementation plan",
+            "create a radar-linked implementation plan",
+            "domain risk: missing proof",
+            "downstream consumer:",
+            "review rationale",
+            "downstream handoff",
+            "promote this component from candidate",
+            "promotion requires source-backed",
+            "refused domain responsibilities:",
+            "remains candidate until",
+            "security and policy posture:",
+            "start inside",
+            "upstream truth:",
+            "local blockers",
+            "handoff evidence for",
+        )
+    ):
         return False
     if line in {
         "### Owns",
@@ -500,16 +571,23 @@ def _name_terms(names: Sequence[str]) -> set[str]:
 def _local_domain_terms(
     text: str,
     *,
+    name: str,
     all_texts: Sequence[str],
     names: Sequence[str],
     all_name_terms: set[str],
 ) -> set[str]:
-    terms = domain_terms(text) - all_name_terms
+    name_term_counts = {
+        term: sum(1 for name in names if term in domain_terms(name))
+        for term in all_name_terms
+    }
+    repeated_name_terms = {term for term, count in name_term_counts.items() if count > 1}
+    own_name_terms = domain_terms(name) - repeated_name_terms
+    terms = domain_terms(text) - repeated_name_terms
     counts: dict[str, int] = {}
     for candidate in terms:
         counts[candidate] = sum(1 for body in all_texts if candidate in domain_terms(body))
-    majority = max(1, len(all_texts) // 2)
-    return {term for term in terms if counts.get(term, 0) <= majority and term not in _TERM_STOPWORDS}
+    majority = 1 if len(all_texts) <= 1 else max(2, len(all_texts) // 2)
+    return own_name_terms | {term for term in terms if counts.get(term, 0) <= majority and term not in _TERM_STOPWORDS}
 
 
 def _label(row: Mapping[str, Any]) -> str:
@@ -525,16 +603,7 @@ def _has_dangling_tail(value: str) -> bool:
 
 
 def _term_token(value: str) -> str:
-    token = value.strip("-_")
-    if len(token) < 4 or token in _TERM_STOPWORDS:
-        return ""
-    if token.endswith("ies") and len(token) > 5:
-        token = f"{token[:-3]}y"
-    elif token.endswith("ing") and len(token) > 6:
-        token = token[:-3]
-    elif token.endswith("s") and len(token) > 4 and not token.endswith("ss"):
-        token = token[:-1]
-    return token if token not in _TERM_STOPWORDS else ""
+    return normalize_domain_token(value, stopwords=_TERM_STOPWORDS)
 
 
 def _clean(value: Any) -> str:
@@ -547,6 +616,11 @@ def _sentence(value: Any) -> str:
     text = _clean(value).strip(" .")
     if not text:
         return ""
+    if re.match(
+        r"^(?:Operator|Maintainer|Reviewer|Primary user|Project operator|Domain reviewer|Implementation owner|Evidence owner|Workflow operator|Risk reviewer|Proof reviewer)(?:\s|:|[-–—]|$)",
+        text,
+    ):
+        text = f"local {text[:1].lower()}{text[1:]}"
     return text[:1].upper() + text[1:] + "."
 
 

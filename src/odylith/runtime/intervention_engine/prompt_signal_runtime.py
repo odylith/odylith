@@ -218,7 +218,10 @@ ASSIST_VISIBILITY_COMPLAINT_PHRASES = (
     "assist in every prompt",
     "assist every prompt",
 )
-VISIBILITY_FEEDBACK_PHRASE = "visibility feedback noted; this line is deliberately shown in chat"
+VISIBILITY_FEEDBACK_PHRASE = (
+    "Visibility issue confirmed in chat; routine turns stay silent, and future Odylith notes require "
+    "a concrete Observation, Proposal, validation result, or visibility failure"
+)
 _WORD_RE = re.compile(r"[a-z0-9']+")
 
 

@@ -12,6 +12,7 @@ class GreenfieldApplyTransaction:
 
     _SNAPSHOT_PATHS = (
         "odylith/radar",
+        "odylith/technical-plans",
         "odylith/registry",
         "odylith/atlas",
         "odylith/compass",

@@ -33,6 +33,13 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract import re
 from odylith.runtime.domain_intelligence.greenfield_component_contract_differentiation import (
     operator_component_spec_issues,
 )
+from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
+from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import allocated_diagram_ids
+from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import component_dependency_lines
+from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import component_dependency_lookup_for
+from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import component_risk_lines
+from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import ensure_greenfield_create_baseline
+from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import first_release_component_rows
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_traceability
@@ -41,27 +48,25 @@ from odylith.runtime.domain_intelligence.greenfield_cli_output import print_appl
 from odylith.runtime.domain_intelligence.greenfield_backlog_impact import derive_greenfield_impacted_parts
 from odylith.runtime.domain_intelligence.greenfield_experience import proposal_posture_tuple
 from odylith.runtime.domain_intelligence.greenfield_experience import row_text_tuple
-from odylith.runtime.domain_intelligence.greenfield_text import join_sentence_text
-from odylith.runtime.domain_intelligence.greenfield_text import text_values
-from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
-from odylith.runtime.domain_intelligence.greenfield_project_intelligence import render_project_intelligence_section
-from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import render_domain_intelligence_section
+from odylith.runtime.domain_intelligence.greenfield_apply_semantic import ensure_apply_semantic_model
 from odylith.runtime.domain_intelligence.proposal_memory import record_greenfield_acceptance
 from odylith.runtime.domain_intelligence.proposal_normalization import normalize_host_reasoned_proposal
 from odylith.runtime.domain_intelligence.proposal_rendering import format_proposal_text
 from odylith.runtime.domain_intelligence.proposal_tribunal import raise_for_failed_greenfield_tribunal
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
-from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
+    assert_greenfield_completion_ready,
+    build_greenfield_package_report,
+    raise_for_failed_greenfield_completion,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
 from odylith.runtime.domain_intelligence.proposal_validation import validated_mermaid_source
 from odylith.runtime.common import display_text
-from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import component_authoring
 from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import release_planning_authoring
-from odylith.runtime.governance import release_planning_contract
 from odylith.runtime.project_intelligence.intent_confirmation import build_product_intent_confirmation
 from odylith.runtime.project_intelligence.intent_confirmation import format_product_intent_confirmation_text
 from odylith.runtime.surfaces import scaffold_mermaid_diagram
@@ -167,6 +172,8 @@ _TITLE_ACRONYMS = {
     "ux": "UX",
 }
 
+_MAX_PACKAGE_REPAIR_PASSES = 3
+
 
 def _title_token(token: str) -> str:
     parts = str(token).split("-")
@@ -240,9 +247,11 @@ def build_greenfield_proposal(
     proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
     proposal = complete_confirmed_proposal(proposal, release_selector=release_selector)
     proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
+    proposal = ensure_apply_semantic_model(proposal)
     validate_host_reasoned_proposal(proposal)
     selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
     raise_for_failed_greenfield_tribunal(run_greenfield_tribunal(proposal, release_selector=selector))
+    assert_greenfield_completion_ready(proposal, release_selector=selector)
     return proposal
 
 
@@ -273,71 +282,6 @@ def _load_confirmed_intent_args(args: argparse.Namespace, *, repo_root: Path) ->
     if path.suffix.lower() != ".json":
         write_structured_confirmed_intent_file(path, intent)
     return intent
-
-
-def _next_diagram_id(repo_root: Path) -> str:
-    catalog = repo_root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
-    max_id = 0
-    if catalog.is_file():
-        try:
-            payload = json.loads(catalog.read_text(encoding="utf-8"))
-        except json.JSONDecodeError:
-            payload = {}
-        for row in payload.get("diagrams", []) if isinstance(payload, Mapping) else []:
-            match = re.fullmatch(r"D-(\d{3,})", str(row.get("diagram_id", "")).strip())
-            if match:
-                max_id = max(max_id, int(match.group(1)))
-    return f"D-{max_id + 1:03d}"
-
-
-def _catalog_diagram_ids_by_slug(repo_root: Path) -> dict[str, str]:
-    catalog = repo_root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
-    if not catalog.is_file():
-        return {}
-    try:
-        payload = json.loads(catalog.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return {}
-    diagrams = payload.get("diagrams") if isinstance(payload, Mapping) else None
-    if not isinstance(diagrams, list):
-        return {}
-    result: dict[str, str] = {}
-    for row in diagrams:
-        if not isinstance(row, Mapping):
-            continue
-        slug = str(row.get("slug", "")).strip()
-        diagram_id = str(row.get("diagram_id", "")).strip()
-        if slug and re.fullmatch(r"D-\d{3,}", diagram_id):
-            result.setdefault(slug, diagram_id)
-    return result
-
-
-def _allocated_diagram_ids(
-    repo_root: Path,
-    count: int,
-    rows: Sequence[Mapping[str, Any]] | None = None,
-) -> list[str]:
-    slug_ids = _catalog_diagram_ids_by_slug(repo_root)
-    if rows is None:
-        rows = ()
-    first = int(_next_diagram_id(repo_root).split("-", 1)[1])
-    next_number = first
-    used = set(slug_ids.values())
-    allocated: list[str] = []
-    for index in range(max(0, count)):
-        row = rows[index] if index < len(rows) else {}
-        slug = str(row.get("slug", "")).strip() if isinstance(row, Mapping) else ""
-        existing = slug_ids.get(slug)
-        if existing:
-            allocated.append(existing)
-            continue
-        while f"D-{next_number:03d}" in used:
-            next_number += 1
-        diagram_id = f"D-{next_number:03d}"
-        used.add(diagram_id)
-        allocated.append(diagram_id)
-        next_number += 1
-    return allocated
 
 
 def _proposal_posture_text(proposal: Mapping[str, Any], *keys: str) -> str:
@@ -468,308 +412,49 @@ def _release_assignment_note(*, selector: str) -> str:
     return f"Target confirmed first-wave greenfield workstream(s) for release `{selector}`."
 
 
-def _component_risk_lines(row: Mapping[str, Any], _proposal: Mapping[str, Any]) -> tuple[str, ...]:
-    local = unique_text(
-        [
-            *_posture_lines(row, "risks", "domain_risk", "risk_posture"),
-            *_posture_lines(row, "security_posture", "security_compliance", "compliance_posture"),
-            *_posture_lines(row, "dependency_expectations"),
-        ]
-    )
-    label = str(row.get("label", "") or row.get("component_id", "") or "Component").strip()
-    values = list(local)
-    posture_text = _component_posture_text(row=row, risk_lines=values)
-    if not _has_component_posture(posture_text, _COMPONENT_RISK_TOKENS):
-        values.append(_component_operational_risk(row=row, label=label))
-    posture_text = _component_posture_text(row=row, risk_lines=values)
-    if not _has_component_posture(posture_text, _COMPONENT_SECURITY_TOKENS):
-        values.append(_component_security_posture(row=row, label=label))
-    posture_text = _component_posture_text(row=row, risk_lines=values)
-    if not _has_component_posture(posture_text, _COMPONENT_POLICY_TOKENS):
-        values.append(_component_policy_posture(row=row, label=label))
-    return unique_text(values)
-
-
-def _component_posture_text(*, row: Mapping[str, Any], risk_lines: Sequence[str]) -> str:
-    values = [
-        *risk_lines,
-        *row_text_tuple(row, "responsibility"),
-        *row_text_tuple(row, "boundary"),
-        *row_text_tuple(row, "dependencies", "depends_on"),
-        *row_text_tuple(row, "interfaces", "interface_changes"),
-        *row_text_tuple(row, "validation", "test_strategy"),
-    ]
-    return " ".join(values).casefold()
-
-
-def _has_component_posture(text: str, tokens: Sequence[str]) -> bool:
-    return any(token in text for token in tokens)
-
-
-def _component_operational_risk(*, row: Mapping[str, Any], label: str) -> str:
-    boundary = str(row.get("boundary", "") or row.get("responsibility", "")).strip()
-    boundary_hint = f" its stated boundary ({boundary})" if boundary else " its stated component boundary"
-    return f"Operational risk: {label} must not expand beyond{boundary_hint} without owner review and source-backed proof."
-
-
-def _component_security_posture(*, row: Mapping[str, Any], label: str) -> str:
-    kind = str(row.get("kind", "")).strip().casefold()
-    if kind in {"tooling", "test", "harness"}:
-        return (
-            f"Security posture: {label} uses secret-free fixtures, rejects production credentials, "
-            "and keeps live network access outside its proof boundary."
-        )
-    if kind in {"application", "ui", "frontend", "web"}:
-        return (
-            f"Security posture: {label} gates operator access and audit identity at its own visible action boundary."
-        )
-    return (
-        f"Security posture: {label} keeps authorization, data access, and ownership checks at its API or module boundary."
-    )
-
-
-def _component_policy_posture(*, row: Mapping[str, Any], label: str) -> str:
-    kind = str(row.get("kind", "")).strip().casefold()
-    if kind in {"tooling", "test", "harness"}:
-        return (
-            f"Compliance policy: {label} records deterministic audit evidence and rejects private production data in fixtures."
-        )
-    if kind in {"application", "ui", "frontend", "web"}:
-        return (
-            f"Policy posture: {label} preserves accessibility, privacy, audit, and safety semantics for the visible states it owns."
-        )
-    return (
-        f"Compliance policy: {label} keeps audit, privacy, retention, and safety assumptions explicit in its contract tests."
-    )
-
-
-def _component_dependency_lookup(rows: Sequence[Mapping[str, Any]]) -> dict[str, Mapping[str, Any]]:
-    lookup: dict[str, Mapping[str, Any]] = {}
-    for row in rows:
-        for value in (row.get("component_id"), row.get("id"), row.get("label"), row.get("name")):
-            key = slugify(str(value or ""))
-            if key:
-                lookup.setdefault(key, row)
-    return lookup
-
-
-def _component_dependency_lines(
-    values: Sequence[str],
+def _build_repaired_prewrite_package(
     *,
-    lookup: Mapping[str, Mapping[str, Any]],
-) -> tuple[str, ...]:
-    rows: list[str] = []
-    for value in values:
-        text = " ".join(str(value or "").split()).strip()
-        if not text:
-            continue
-        dependency = lookup.get(slugify(text))
-        if not dependency:
-            rows.append(text)
-            continue
-        label = str(dependency.get("label") or dependency.get("name") or text).strip()
-        responsibility = str(dependency.get("responsibility") or dependency.get("boundary") or "").strip()
-        if responsibility:
-            rows.append(f"Depends on {label} for {_dependency_responsibility_phrase(responsibility)}")
-        else:
-            rows.append(f"Depends on {label} for the state, behavior, or proof owned by that boundary")
-    return unique_text(rows)
-
-
-def _dependency_responsibility_phrase(value: str) -> str:
-    text = " ".join(str(value or "").split()).strip().rstrip(".")
-    if not text:
-        return "the state, behavior, or proof owned by that boundary"
-    parts = [
-        _dependency_clause_phrase(part)
-        for part in re.split(r"\s*;\s*", text)
-        if part.strip()
-    ]
-    parts = [part for part in parts if part]
-    if len(parts) == 1:
-        return parts[0]
-    if len(parts) == 2:
-        return f"{parts[0]} and {parts[1]}"
-    return f"{', '.join(parts[:-1])}, and {parts[-1]}"
-
-
-def _dependency_clause_phrase(value: str) -> str:
-    text = " ".join(str(value or "").split()).strip().rstrip(".")
-    if not text:
-        return ""
-    head, separator, tail = text.partition(" ")
-    verb = head.strip(",:;").casefold()
-    gerunds = {
-        "assemble": "assembling",
-        "assembles": "assembling",
-        "bind": "binding",
-        "binds": "binding",
-        "capture": "capturing",
-        "captures": "capturing",
-        "compute": "computing",
-        "computes": "computing",
-        "connect": "connecting",
-        "connects": "connecting",
-        "derive": "deriving",
-        "derives": "deriving",
-        "enforce": "enforcing",
-        "enforces": "enforcing",
-        "fetch": "fetching",
-        "fetches": "fetching",
-        "hold": "holding",
-        "holds": "holding",
-        "manage": "managing",
-        "manages": "managing",
-        "own": "owning",
-        "owns": "owning",
-        "produce": "producing",
-        "produces": "producing",
-        "provide": "providing",
-        "provides": "providing",
-        "record": "recording",
-        "records": "recording",
-        "render": "rendering",
-        "renders": "rendering",
-        "serve": "serving",
-        "serves": "serving",
-        "track": "tracking",
-        "tracks": "tracking",
-        "validate": "validating",
-        "validates": "validating",
-    }
-    if verb in gerunds and separator:
-        return f"{gerunds[verb]} {_gerund_joined_verbs(tail.strip(), gerunds)}"
-    return text[:1].lower() + text[1:]
-
-
-def _gerund_joined_verbs(value: str, gerunds: Mapping[str, str]) -> str:
-    pattern = re.compile(
-        r"\b(?P<join>and|or)\s+(?P<verb>"
-        + "|".join(re.escape(verb) for verb in sorted(gerunds, key=len, reverse=True))
-        + r")\b",
-        flags=re.IGNORECASE,
-    )
-
-    def replace(match: re.Match[str]) -> str:
-        joiner = match.group("join")
-        verb = match.group("verb").casefold()
-        return f"{joiner} {gerunds[verb]}"
-
-    return pattern.sub(replace, value)
-
-
-def _posture_lines(row: Mapping[str, Any], *keys: str) -> tuple[str, ...]:
-    lines: list[str] = []
-    for key in keys:
-        lines.extend(_posture_value_lines(row.get(key)))
-    return unique_text(lines)
-
-
-def _posture_value_lines(value: Any) -> tuple[str, ...]:
-    if isinstance(value, Mapping):
-        if "statement" not in value and "mitigation" not in value:
-            ignored = {"id", "evidence_tier", "kind"}
-            return unique_text(
-                line
-                for nested_key, nested_value in value.items()
-                if str(nested_key) not in ignored
-                for line in _posture_value_lines(nested_value)
-            )
-        statement = join_sentence_text(
-            value.get("statement")
-            or value.get("risk")
-            or value.get("detail")
-            or value.get("domain")
-            or value.get("security")
-            or value.get("policy")
-            or value.get("compliance")
+    root: Path,
+    proposal: Mapping[str, Any],
+    release_selector: str,
+) -> tuple[Mapping[str, Any], Any, greenfield_apply_prewrite.GreenfieldPrewriteBuild]:
+    last_report = None
+    for _pass in range(_MAX_PACKAGE_REPAIR_PASSES):
+        tribunal = run_greenfield_tribunal(proposal, release_selector=release_selector)
+        raise_for_failed_greenfield_tribunal(tribunal)
+        assert_greenfield_completion_ready(proposal, release_selector=release_selector)
+        prewrite_build = greenfield_apply_prewrite.build_prewrite_completion_package(
+            root=root,
+            proposal=proposal,
+            release_selector=release_selector,
+            backlog_args=_backlog_apply_args(proposal, release_selector=release_selector),
+            validation_gate=tribunal.to_dict(),
+            release_assignment_note=_release_assignment_note(selector=release_selector),
         )
-        mitigation = join_sentence_text(value.get("mitigation"))
-        if statement and mitigation:
-            return (f"{statement} Mitigation: {mitigation}",)
-        if statement:
-            return (statement,)
-        ignored = {"id", "evidence_tier", "kind"}
-        return unique_text(
-            line
-            for nested_key, nested_value in value.items()
-            if str(nested_key) not in ignored
-            for line in _posture_value_lines(nested_value)
-        )
-    if isinstance(value, (list, tuple, set)):
-        return unique_text(line for nested in value for line in _posture_value_lines(nested))
-    return text_values(value)
+        report = build_greenfield_package_report(prewrite_build.package)
+        if report.passed:
+            return proposal, tribunal, prewrite_build
+        last_report = report
+        proposal = _repair_confirmed_apply_payload(proposal, release_selector=release_selector)
+    if last_report is not None:
+        raise_for_failed_greenfield_completion(last_report)
+    raise RuntimeError("greenfield prewrite package could not be built")
 
 
-def _release_id_for_proposal(proposal: Mapping[str, Any], *, selector: str) -> str:
-    release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
-    release_id = str(release_plan.get("provisional_release_id", "")).strip()
-    if release_id:
-        return slugify(release_id)
-    if selector:
-        return slugify(f"release-{selector}")
-    intent = proposal.get("intent", {}) if isinstance(proposal.get("intent"), Mapping) else {}
-    project_slug = slugify(str(intent.get("project_slug", "")).strip() or str(intent.get("title", "")).strip())
-    return slugify(f"release-{project_slug}-first") if project_slug else "release-greenfield-first"
-
-
-def _ensure_release_target(*, repo_root: Path, proposal: Mapping[str, Any], selector: str) -> dict[str, Any]:
-    intent = proposal.get("intent", {}) if isinstance(proposal.get("intent"), Mapping) else {}
-    title = str(intent.get("title", "Greenfield Project")).strip() or "Greenfield Project"
-    release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
-    version, tag = greenfield_programs.semver_release_metadata(selector=selector, release_plan=release_plan)
-    registry_path = release_planning_contract.releases_registry_path(repo_root=repo_root)
-    registry_document, _errors = release_planning_contract.load_registry_document(path=registry_path)
-    aliases = dict(registry_document.get("aliases", {})) if isinstance(registry_document.get("aliases"), Mapping) else {}
-    release_aliases = [selector]
-    if release_planning_contract.canonical_alias_token("current") not in aliases:
-        release_aliases.append("current")
-    release_name = greenfield_programs.compact_release_target_label(version or selector)
-    return release_planning_authoring.ensure_release_selector(
-        repo_root=repo_root,
-        selector=selector,
-        release_id=_release_id_for_proposal(proposal, selector=selector),
-        status="planning",
-        version=version,
-        tag=tag,
-        name=release_name,
-        notes=f"Greenfield release plan for {title}; created only after proposal confirmation.",
-        aliases=tuple(release_aliases),
-        dry_run=False,
-    )
+def _repair_confirmed_apply_payload(
+    proposal: Mapping[str, Any],
+    *,
+    release_selector: str,
+) -> Mapping[str, Any]:
+    repaired = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
+    repaired = complete_confirmed_proposal(repaired, release_selector=release_selector)
+    repaired = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(repaired))
+    repaired = ensure_apply_semantic_model(repaired)
+    validate_host_reasoned_proposal(repaired)
+    return repaired
 
 
 _GREENFIELD_VISIBLE_SURFACES = ("radar", "registry", "atlas", "compass", "tooling_shell")
-_COMPONENT_RISK_TOKENS = ("risk", "failure", "fallback", "mitigation", "recovery", "degraded", "operational")
-_COMPONENT_SECURITY_TOKENS = (
-    "security",
-    "auth",
-    "authorization",
-    "credential",
-    "permission",
-    "session",
-    "secret",
-    "token",
-    "access",
-    "ownership",
-    "private",
-    "abuse",
-    "payment",
-    "pii",
-    "data risk",
-)
-_COMPONENT_POLICY_TOKENS = (
-    "compliance",
-    "policy",
-    "privacy",
-    "retention",
-    "audit",
-    "regulated",
-    "accessibility",
-    "public",
-    "private",
-    "safety",
-)
 
 
 def _refresh_greenfield_dashboard(*, repo_root: Path) -> dict[str, Any]:
@@ -799,23 +484,21 @@ def apply_greenfield_proposal(
     proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
     proposal = complete_confirmed_proposal(proposal, release_selector=release_selector)
     proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
+    proposal = ensure_apply_semantic_model(proposal)
     validate_host_reasoned_proposal(proposal)
     root = Path(repo_root).expanduser().resolve()
     backlog_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
     if not backlog_rows:
         raise ValueError("proposal has no backlog records")
     release_selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
-    tribunal = run_greenfield_tribunal(proposal, release_selector=release_selector)
-    raise_for_failed_greenfield_tribunal(tribunal)
+    proposal, tribunal, prewrite_build = _build_repaired_prewrite_package(
+        root=root,
+        proposal=proposal,
+        release_selector=release_selector,
+    )
+    backlog_result = prewrite_build.backlog_result
     with GreenfieldApplyTransaction(root) as transaction:
-        backlog_args = _backlog_apply_args(proposal, release_selector=release_selector)
-        backlog_result = backlog_authoring.create_queued_backlog_items(
-            repo_root=root,
-            backlog_index_path=root / "odylith/radar/source/INDEX.md",
-            ideas_root=root / "odylith/radar/source/ideas",
-            titles=[str(row.get("title", "")).strip() for row in backlog_rows if str(row.get("title", "")).strip()],
-            args=backlog_args,
-        )
+        ensure_greenfield_create_baseline(root)
         result = _write_greenfield_proposal(
             root=root,
             proposal=proposal,
@@ -1031,10 +714,22 @@ def _write_greenfield_proposal(
             path.unlink()
     _remove_stale_workstream_artifacts(root=root, stale_ids=backlog_result.get("stale_idea_ids", []))
     if release_selector:
-        release_bootstrap = _ensure_release_target(repo_root=root, proposal=proposal, selector=release_selector)
+        release_bootstrap = greenfield_apply_prewrite.ensure_release_target(
+            repo_root=root,
+            proposal=proposal,
+            selector=release_selector,
+        )
+    for raw_path, text in backlog_result.get("existing_idea_files", {}).items():
+        path = Path(raw_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(str(text), encoding="utf-8")
     for raw_path, text in backlog_result["idea_files"].items():
-        Path(raw_path).write_text(str(text), encoding="utf-8")
-    Path(backlog_result["backlog_index"]).write_text(str(backlog_result["backlog_index_text"]), encoding="utf-8")
+        path = Path(raw_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(str(text), encoding="utf-8")
+    backlog_index_path = Path(backlog_result["backlog_index"])
+    backlog_index_path.parent.mkdir(parents=True, exist_ok=True)
+    backlog_index_path.write_text(str(backlog_result["backlog_index_text"]), encoding="utf-8")
     program_result = greenfield_programs.create_greenfield_program(
         repo_root=root,
         proposal=proposal,
@@ -1060,7 +755,7 @@ def _write_greenfield_proposal(
     diagrams_created: list[str] = []
     atlas_scaffold_logs: list[str] = []
     diagram_rows = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
-    diagram_ids = _allocated_diagram_ids(root, len(diagram_rows), rows=diagram_rows)
+    diagram_ids = allocated_diagram_ids(root, len(diagram_rows), rows=diagram_rows)
     traceability_plan = greenfield_traceability.build_traceability_plan(
         proposal=proposal,
         created_backlog=backlog_result["created"],
@@ -1093,11 +788,8 @@ def _write_greenfield_proposal(
         diagram_ids=diagram_ids,
     )
 
-    raw_component_rows = [row for row in proposal.get("components", []) if isinstance(row, Mapping)]
-    component_rows = [row for row in raw_component_rows if _is_first_release_component(row)]
-    if not component_rows:
-        component_rows = [row for row in active_release_components(raw_component_rows)]
-    component_dependency_lookup = _component_dependency_lookup(component_rows)
+    component_rows = first_release_component_rows(proposal)
+    component_dependency_lookup = component_dependency_lookup_for(component_rows)
     components_created: list[dict[str, Any]] = []
     for row in component_rows:
         if not isinstance(row, Mapping):
@@ -1127,13 +819,13 @@ def _write_greenfield_proposal(
             ),
             responsibility=str(row.get("responsibility", "")).strip(),
             boundary=str(row.get("boundary", "")).strip(),
-            dependencies=_component_dependency_lines(
+            dependencies=component_dependency_lines(
                 row_text_tuple(row, "dependencies", "depends_on"),
                 lookup=component_dependency_lookup,
             ),
             interfaces=row_text_tuple(row, "interfaces", "interface_changes"),
             validation=row_text_tuple(row, "validation", "test_strategy"),
-            risks=_component_risk_lines(row, proposal),
+            risks=component_risk_lines(row, proposal),
             implementation_handoff=handoff,
             component_contract=row.get("component_contract") if isinstance(row.get("component_contract"), Mapping) else None,
             dry_run=False,
@@ -1204,10 +896,6 @@ def _raise_for_component_spec_quality(
     if issues:
         detail = "\n".join(f"- {issue}" for issue in operator_component_spec_issues(issues))
         raise ValueError(f"greenfield component spec quality gate failed with {len(issues)} issue(s):\n{detail}")
-
-
-def _is_first_release_component(row: Mapping[str, Any]) -> bool:
-    return str(row.get("release_scope", "")).strip().casefold() not in {"deferred", "out_of_scope", "external"}
 
 
 def _remove_stale_workstream_artifacts(*, root: Path, stale_ids: object) -> None:

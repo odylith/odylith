@@ -118,7 +118,8 @@ def test_confirmed_service_readiness_create_reaches_all_prewrite_gates(tmp_path)
     measurement = next(row for row in proposal["components"] if row["component_id"].startswith("measurement-capture"))
     privacy = next(row for row in proposal["components"] if row["component_id"].startswith("privacy-retention"))
     assert measurement["kind"] == "service"
-    assert "privacy preference" in privacy["component_contract"]["owned_state"].casefold()
+    assert "privacy" in privacy["component_contract"]["owned_state"].casefold()
+    assert "deletion controls" in privacy["component_contract"]["owned_state"].casefold()
     proof_row = proposal["backlog"][-1]
     assert "Privacy, Retention, Export, and Deletion Controls Proof Record" in proof_row["recommended_first_slice"]
     assert "Onboarding and Consent Flow Proof Record" not in proof_row["recommended_first_slice"]

@@ -7,10 +7,13 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import accepted_actor_label
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import material_first_path_action
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
@@ -162,9 +165,10 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
 
     if not _clean(intent.get("problem")):
         state_phrase = _state_label(state, title=title) if state else f"{focus} state"
-        path_head = _path_headline(first_path, fallback=f"the first {title.lower()} path")
+        path_capability = _path_capability(first_path, fallback=f"the first {title.lower()} path")
+        path_action = _capability_action_clause(path_capability)
         intent["problem"] = _sentence(
-            f"{focus} is not trustworthy when the first path entry ({path_head}) is detached from {state_phrase}, source evidence, visible blockers, and the systems that own the handoff."
+            f"{focus} is not trustworthy when users cannot {path_action} with {state_phrase}, source evidence, visible blockers, and the systems that own the handoff."
         )
     if not _clean(intent.get("customer")):
         actor_text = _join_actor_segments(actors[:5]) or f"{focus} operators and reviewers"
@@ -176,17 +180,17 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
             f"Turn the confirmed {title.lower()} intent into a narrow first release that proves one complete path before adding broader automation, integrations, or scale."
         )
     if not _clean(intent.get("product_view")) or _product_view_needs_repair(intent.get("product_view")):
-        state_phrase = _state_label(state, title=title) if state else "the accepted state object"
-        path_head = _path_headline(first_path, fallback=f"the first {title.lower()} action")
+        state_phrase = _state_label(state, title=title) if state else "the accepted state"
         intent["product_view"] = _sentence(
-            f"{title} is useful when users can complete the first path entry ({path_head}), inspect {state_phrase}, see blockers and evidence from {_join(systems[:3]) or 'the product-owned systems'}, and recover before an untrusted outcome is treated as ready."
+            f"{title} is useful when users can complete the accepted first path, inspect {state_phrase}, see blockers and evidence from {_join(systems[:3]) or 'the product-owned systems'}, and recover before an untrusted outcome is treated as ready."
         )
     metrics = _strings(intent.get("success_metrics"))
     if len(metrics) < 3 or any(_metric_needs_repair(metric) for metric in metrics):
         state_phrase = _state_label(state, title=title) if state else f"{focus} state"
-        path_head = _path_headline(first_path, fallback=f"the first {title.lower()} path")
+        path_capability = _path_capability(first_path, fallback=f"the first {title.lower()} path")
+        path_action = _capability_action_clause(path_capability)
         intent["success_metrics"] = [
-            f"The accepted path completes from the first path entry ({path_head}) to a visible outcome with actor, timestamp, {state_phrase}, and evidence context.",
+            f"The accepted path lets users {path_action} while preserving actor, timestamp, {state_phrase}, and evidence context.",
             f"A missing, stale, invalid, blocked, or degraded {state_phrase} path stays visible and cannot be mistaken for success.",
             _proof_boundary_metric(proof),
         ]
@@ -198,13 +202,13 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
         ]
     if not _strings(intent.get("ambiguities")):
         intent["ambiguities"] = [
-            f"Which {focus.lower()} actor owns the final release decision when evidence is incomplete or disputed?",
+            f"Which {focus.lower()} actor has final release authority when evidence is incomplete or disputed?",
             f"Which source, device, document, dataset, or external service is authoritative for the first {title.lower()} proof?",
             "Which privacy, safety, compliance, or access rule would change the first path if it is stricter than assumed?",
         ]
     if not _strings(intent.get("non_goals")):
         intent["non_goals"] = [
-            f"No claim that {title} handles every user, integration, dataset, edge case, or operational scale in release 0.0.1.",
+            f"Release 0.0.1 stays limited to the accepted {focus.lower()} path and does not cover broader users, integrations, datasets, edge cases, or operational scale.",
             "No irreversible automation, regulated decision, or live external dependency without a separately accepted proof boundary.",
         ]
     if not story:
@@ -297,7 +301,7 @@ def _actor_path_role(*, label: str, first_path: str, state: str) -> str:
     if not clause:
         return ""
     clause = re.sub(r"^(?:a|an|the)\s+", "", clause, flags=re.IGNORECASE)
-    return f"can act where the accepted path requires {clause[:1].lower() + clause[1:]}"
+    return f"handles the accepted-path step for {clause[:1].lower() + clause[1:]}"
 
 
 def _path_clauses(value: str) -> list[str]:
@@ -784,16 +788,10 @@ def _semantic_terms(text: str) -> set[str]:
     }
     terms: set[str] = set()
     for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", _clean(text).casefold()):
-        token = raw.strip("-_")
-        if len(token) < 3 or token in stop:
-            continue
-        if token.endswith("ies") and len(token) > 4:
-            token = f"{token[:-3]}y"
-        elif token.endswith("ing") and len(token) > 5:
+        token = normalize_domain_token(raw, minimum=3, stopwords=stop)
+        if token.endswith("ing") and len(token) > 5:
             token = token[:-3]
-        elif token.endswith("s") and len(token) > 3 and not token.endswith("ss"):
-            token = token[:-1]
-        if token not in stop:
+        if token:
             terms.add(token)
     return terms
 
@@ -841,6 +839,20 @@ def _path_headline(value: str, *, fallback: str, limit: int = 140) -> str:
     )
     text = re.split(rf",\s+(?=(?:and\s+)?(?:{action_pattern}))", text, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .:")
     return _short(text, fallback=fallback, limit=limit)
+
+
+def _path_capability(value: str, *, fallback: str, limit: int = 180) -> str:
+    return _short(first_path_capability_phrase(value, fallback=fallback, limit=limit), fallback=fallback, limit=limit)
+
+
+def _capability_action_clause(value: str) -> str:
+    text = clean_text(value).strip(" .")
+    if not text:
+        return "complete the accepted path"
+    converted = base_action_clause(text)
+    if converted and converted != text.casefold():
+        return converted
+    return text[:1].lower() + text[1:]
 
 
 def _sentence(value: str) -> str:

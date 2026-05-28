@@ -189,9 +189,10 @@
 - When prompt submit earns a teaser, Codex should carry that sentence in the
   hook `systemMessage` and also place an assistant-render fallback in
   `hookSpecificOutput.additionalContext`. When no teaser is earned for a
-  normal non-passthrough prompt, the shared prompt-visible Assist line is the
-  fallback instead of silence. Prompt-time context should feel like one gentle
-  interjection, not a visible dump of narrowing scaffolding.
+  normal non-passthrough prompt, Codex stays quiet; Assist is visible only for
+  concrete closeout proof, explicit visibility failure, or a replayed earned
+  live moment. Prompt-time context should feel like one useful interjection,
+  not a visible dump of narrowing scaffolding.
 - Plain `Odylith, show me what you can do` and `Odylith, help` prompts are
   first-match route locks, not requests for a Codex-authored capability
   summary. When Codex hooks are available, `codex prompt-context` must emit
@@ -237,6 +238,10 @@
   manual low-latency escape hatch for Codex Desktop or any Codex build that
   keeps hook output hidden. It prints the exact Markdown the assistant should
   show; do not rewrite the copy by hand.
+- The visible-intervention fallback is not a receipt lane. It must suppress
+  generic "Odylith activity" copy and render only premium, inspectable notes
+  tied to a concrete Observation, Proposal, validation result, or visibility
+  failure.
 - `./.odylith/bin/odylith codex intervention-status --repo-root .` is the
   cheap activation proof surface. It reports static hook readiness, the active
   UX lanes, recent delivery-ledger events, pending proposals, and the exact

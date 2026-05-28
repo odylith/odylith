@@ -496,7 +496,7 @@ def cheap_structured_reasoning_profile(
 
     This keeps lightweight structured update jobs fast and cheap across local
     providers. For local-host narration the ladder is fixed and medium-reasoning:
-    pick the cheapest supported local model first, then step to the next cheap
+    pick the lowest-cost supported local model first, then step to the next cheap
     rung only after a provider-budget or model-availability failure.
     """
 

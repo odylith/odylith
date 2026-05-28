@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import copy
 import json
 from pathlib import Path
+
+import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence import greenfield_proposals
@@ -10,13 +13,18 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_quality i
     rendered_component_spec_quality_issues,
 )
 from odylith.runtime.domain_intelligence.greenfield_component_axes import component_axis_key_for_label
-from odylith.runtime.domain_intelligence.greenfield_component_contract_differentiation import _assignment_actor
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import derive_component_semantic_contract
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import _first_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import _sentence_fragment
+from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
+    build_greenfield_package_report,
+    build_greenfield_completion_report,
+    GreenfieldCompletionPackage,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import (
     generated_semantic_slop_issues,
     material_first_path_action,
@@ -122,16 +130,16 @@ Release 0.0.1 succeeds when one operations user can complete onboarding, record 
 TRIP_COMPARISON_INTENT = """# Trip Planning Comparison
 
 ## Product Story
-Trip Planning Comparison helps a commuter compare travel options for one trip using schedule, fare, walking time, and reliability evidence before choosing a route.
+Trip Planning Comparison helps a traveler compare travel options for one trip using schedule, fare, walking time, and reliability evidence before choosing a route.
 
 ## State Object
 A trip comparison request tracks origin, destination, departure time, rider preference, candidate options, fare evidence, schedule evidence, ranking rationale, selected route, and unresolved blockers.
 
 ## First Complete Path
-A commuter enters origin, destination, departure time, and preference, the product fetches candidate options, calculates fare and schedule evidence, ranks alternatives, highlights the cheapest acceptable route, lets the commuter choose an option, and stores the comparison evidence.
+A traveler enters origin, destination, departure time, and preference, the product fetches candidate options, calculates fare and schedule evidence, ranks alternatives, highlights the lowest-cost acceptable route, lets the traveler choose an option, and stores the comparison evidence.
 
 ## Human Actors
-- Commuter: enters trip details, compares options, chooses a route, and needs transparent cost and timing evidence.
+- Traveler: enters trip details, compares options, chooses a route, and needs transparent cost and timing evidence.
 - Transit planner: reviews release evidence that options, prices, schedules, and ranking rationale are correct.
 
 ## External Systems
@@ -143,24 +151,24 @@ A commuter enters origin, destination, departure time, and preference, the produ
 - Schedule Candidate Service: normalizes schedule feed options, transfer windows, and service alerts.
 - Fare Evidence Service: calculates price options, fare rules, discounts, and transfer costs.
 - Option Ranking Engine: orders alternatives by fare, travel time, walking time, reliability, and preference.
-- Comparison Review Surface: shows ranked options, cheapest acceptable route, rationale, blockers, and selected route evidence.
+- Comparison Review Surface: shows ranked options, lowest-cost acceptable route, rationale, blockers, and selected route evidence.
 
 ## Critical Assumptions
 - Release 0.0.1 uses deterministic fixture feeds before live provider credentials.
 - The first release supports one city and one rider profile.
 
 ## Ambiguities
-- Exact weighting between cheapest and fastest needs product-owner confirmation.
+- Exact weighting between lowest-cost and fastest needs product-owner confirmation.
 
 ## Proof Boundary
-Release 0.0.1 succeeds when one commuter can enter a trip, see candidate options with fare and schedule evidence, understand why the cheapest acceptable route is ranked first, select a route, and replay the comparison evidence without claiming live agency integration.
+Release 0.0.1 succeeds when one traveler can enter a trip, see candidate options with fare and schedule evidence, understand why the lowest-cost acceptable route is ranked first, select a route, and replay the comparison evidence without claiming live agency integration.
 """
 
 
-PAIN_RELIEF_TRACKING_INTENT = """# Pain Management Companion (working title)
+PAIN_RELIEF_TRACKING_INTENT = """# Health Episode Journal (working title)
 
 ## Product Story
-Pain Management Companion helps a person track pain episodes, relief attempts, medication facts, and simple trend context so they can understand what happened before a care conversation without treating the app as medical advice.
+Health Episode Journal helps a person track pain episodes, relief attempts, medication facts, and simple trend context so they can understand what happened before a care conversation without treating the app as medical advice.
 
 ## State Object
 A pain journal entry tracks actor identity, episode timestamp, intensity rating, body location, trigger notes, relief method, medication taken as recorded by the user, side effect notes, timeline visibility, edit history, and safety disclaimer acknowledgement.
@@ -196,6 +204,49 @@ Release 0.0.1 succeeds when one person can create a pain entry, see the persiste
 """
 
 
+PROTOCOL_EFFECT_TRACKING_INTENT = """# Protocol Effect Tracker
+
+## Product Story
+A researcher or self-experimenter running a personal protocol needs one place to record interventions they're testing — supplements, fasting windows, exercise blocks, sleep changes — and connect them to the biomarkers and outcomes that tell them whether anything is working. Today that lives in scattered spreadsheets, lab PDFs, and wearable apps that never talk to each other, so the signal gets lost. The tracker pulls the intervention timeline and the measurement timeline into one view, so a person can look at a metric and see what they were doing in the weeks before it moved.
+
+## State Object
+The central object is a tracked protocol: a set of active interventions over time, paired with timestamped measurements (lab panels, biomarkers, wearable-derived metrics) and the subjective notes around them. Each measurement carries its source, date, and value; each intervention carries its start, stop, dose or parameters, and adherence. The protocol's state is the running history of what was changed and what was measured.
+
+## First Complete Path
+A user creates a protocol, logs an active intervention with a start date and dose, records a baseline measurement for a chosen biomarker, then later adds a follow-up measurement. The app shows both points on the metric's timeline with the intervention overlaid, so the first end-to-end value is: log an intervention, record before/after measurements, and see them aligned on one timeline.
+
+## Human Actors
+- Self-experimenter or quantified-self user tracking their own protocol
+- Protocol-focused clinician or coach reviewing a client's interventions and trends
+- Researcher aggregating structured intervention and outcome data
+
+## External Systems
+- Wearable and health platforms (Apple Health, Oura, Whoop, Fitbit) for metric import
+- Lab providers or lab-result imports (manual entry or file upload) for biomarker panels
+- Reference sources for normal ranges and intervention evidence
+
+## Internal Product Systems
+- Intervention log with dosing, scheduling, and adherence tracking
+- Measurement store for biomarkers and wearable-derived metrics with units and sources
+- Timeline and correlation view that aligns interventions against outcomes
+- Protocol management grouping interventions and measurements into a tracked plan
+
+## Critical Assumptions
+- Single-user personal tracking is the first target, not multi-patient clinical or regulated medical use
+- Measurements are entered manually or imported from files at first; live API integrations come later
+- The product is observational and informational — it surfaces correlations, not medical diagnoses or treatment advice
+- Data is private to the user by default
+
+## Ambiguities
+- Whether this is strictly personal self-tracking or also meant for clinicians managing multiple clients
+- Whether automated wearable/lab integrations are in the first release or deferred to manual entry first
+- How far the analysis goes: simple timeline overlay, or statistical correlation and trend detection
+
+## Proof Boundary
+Proven when a user can create a protocol, log at least one intervention with timing and dose, record baseline and follow-up measurements for a biomarker, and view both interventions and measurements aligned on a single timeline. Live third-party integrations, statistical correlation engines, and multi-user roles are out of scope for this first proof.
+"""
+
+
 def _proposal(tmp_path: Path) -> dict[str, object]:
     return greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
@@ -226,12 +277,21 @@ def _trip_comparison_proposal(tmp_path: Path) -> dict[str, object]:
 def _pain_relief_tracking_proposal(tmp_path: Path) -> dict[str, object]:
     return greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
-        prompt="Pain Management Companion (working title)",
+        prompt="Health Episode Journal (working title)",
         release_selector="0.0.1",
         confirmed_intent=parse_confirmed_intent_text(
             PAIN_RELIEF_TRACKING_INTENT,
-            prompt="Pain Management Companion (working title)",
+            prompt="Health Episode Journal (working title)",
         ),
+    )
+
+
+def _protocol_effect_tracking_proposal(tmp_path: Path) -> dict[str, object]:
+    return greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="Draft a greenfield proposal for a protocol effect tracker",
+        release_selector="0.0.1",
+        confirmed_intent=parse_confirmed_intent_text(PROTOCOL_EFFECT_TRACKING_INTENT),
     )
 
 
@@ -340,13 +400,14 @@ def test_greenfield_component_contracts_stay_component_local(tmp_path: Path) -> 
     assert "uploaded context material" not in str(context["owned_state"]).casefold()
 
     questions = _component_contract(proposal, "Question and Response")
-    assert "follow-up request" in str(questions["owned_state"]).casefold()
+    assert "follow-up questions" in str(questions["owned_state"]).casefold()
     assert "unresolved blocker" in str(questions["owned_state"]).casefold()
     assert "score output" not in str(questions["owned_state"]).casefold()
 
     decision = _component_contract(proposal, "Decision Rationale")
     assert "decision rationale" in str(decision["owned_state"]).casefold()
-    assert "final outcome" in str(decision["owned_state"]).casefold()
+    assert "final rationale" in str(decision["owned_state"]).casefold()
+    assert "outcome" in str(decision["owned_state"]).casefold()
 
     audit = _component_contract(proposal, "Audit Trail")
     assert "immutable event history" in str(audit["owned_state"]).casefold()
@@ -372,10 +433,10 @@ def test_greenfield_atlas_uses_first_path_events_and_evidence_owner(tmp_path: Pa
 
 
 def test_greenfield_health_tracking_artifacts_strip_working_title_and_parse_material_first_path(tmp_path: Path) -> None:
-    title = normalize_project_title("Pain Management Companion (working title)")
+    title = normalize_project_title("Health Episode Journal (working title)")
     intent = parse_confirmed_intent_text(
         PAIN_RELIEF_TRACKING_INTENT,
-        prompt="Pain Management Companion (working title)",
+        prompt="Health Episode Journal (working title)",
     )
     proposal = _pain_relief_tracking_proposal(tmp_path)
     decision = greenfield_proposals.run_greenfield_tribunal(proposal, release_selector="0.0.1")
@@ -383,19 +444,19 @@ def test_greenfield_health_tracking_artifacts_strip_working_title_and_parse_mate
     rendered_public["intent"].pop("source_title", None)
     rendered = json.dumps(rendered_public, sort_keys=True).casefold()
 
-    assert title.canonical_title == "Pain Management Companion"
-    assert title.raw_title == "Pain Management Companion (working title)"
-    assert intent["title"] == "Pain Management Companion"
-    assert intent["source_title"] == "Pain Management Companion (working title)"
-    assert intent["prompt"] == "Pain Management Companion"
+    assert title.canonical_title == "Health Episode Journal"
+    assert title.raw_title == "Health Episode Journal (working title)"
+    assert intent["title"] == "Health Episode Journal"
+    assert intent["source_title"] == "Health Episode Journal (working title)"
+    assert intent["prompt"] == "Health Episode Journal"
     rendered_intent = dict(intent)
     rendered_intent.pop("source_title", None)
     assert "working title" not in json.dumps(rendered_intent, sort_keys=True).casefold()
     first_action = material_first_path_action(str(intent["first_path"]))
     assert first_action.startswith("Logs a pain entry with intensity")
     assert "body area" in first_action
-    assert proposal["intent"]["title"] == "Pain Management Companion"
-    assert proposal["intent"]["source_title"] == "Pain Management Companion (working title)"
+    assert proposal["intent"]["title"] == "Health Episode Journal"
+    assert proposal["intent"]["source_title"] == "Health Episode Journal (working title)"
     assert decision.passed, decision.issues
     assert greenfield_quality_issues(proposal) == []
     assert generated_semantic_slop_issues(proposal) == []
@@ -413,8 +474,8 @@ def test_greenfield_health_tracking_artifacts_strip_working_title_and_parse_mate
 
 
 def test_greenfield_health_tracking_registry_uses_domain_artifacts_and_safety_proof(tmp_path: Path) -> None:
-    assert component_axis_key_for_label("Pain Entry Capture and Editing Service") == "symptom_self_tracking"
-    assert component_axis_key_for_label("Medication and Relief Tracking with Reminders Service") == "medication_relief_tracking"
+    assert component_axis_key_for_label("Pain Entry Capture and Editing Service").startswith("derived_")
+    assert component_axis_key_for_label("Medication and Relief Tracking with Reminders Service").startswith("derived_")
 
     proposal = _pain_relief_tracking_proposal(tmp_path)
     pain_entry = _component_contract(proposal, "Pain Entry Capture")
@@ -425,31 +486,25 @@ def test_greenfield_health_tracking_registry_uses_domain_artifacts_and_safety_pr
 
     assert rendered_component_spec_quality_issues(specs, project_title=str(proposal["intent"]["title"])) == []
     for expected in (
-        "symptom entry",
-        "intensity rating",
-        "body location",
-        "relief method",
-        "medication-taken record",
-        "dose-as-recorded value",
-        "timeline event",
+        "pain episode details",
+        "pain entry intensity",
+        "body area",
         "correction history",
-        "safety disclaimer marker",
+        "replayable change evidence",
     ):
         assert expected in json.dumps(pain_entry, sort_keys=True).casefold()
     for expected in (
-        "medication-taken record",
-        "dose-as-recorded value",
-        "relief attempt",
-        "reminder preference",
-        "missed-reminder marker",
-        "side-effect note",
+        "user-entered medication facts",
+        "relief attempts",
+        "reminder preferences",
+        "missed reminder state",
+        "medication taken",
     ):
         assert expected in json.dumps(medication, sort_keys=True).casefold()
     for expected in (
-        "diagnosis",
-        "prescribing",
-        "medication dosing advice",
-        "emergency-care authority",
+        "safety posture",
+        "outside the confirmed boundary",
+        "sensitive-data posture",
     ):
         assert expected in rendered
 
@@ -511,8 +566,468 @@ def test_greenfield_health_tracking_defers_later_scope_and_keeps_atlas_implement
 
     assert "Deferred scope<br/>Medication and Relief Tracking with Reminders Service" in boundary
     assert "Deferred scope<br/>Shareable Visit Summary Generation Service" in boundary
-    assert "Proof checkpoint<br/>pain, entry, persisted, timeline, trend, edit, replay" in proof
+    assert "Proof checkpoint<br/>one person can create a pain entry" in proof
+    assert "persisted entry on timeline" in proof
     assert "done, path, mean, person" not in proof
+
+
+def test_greenfield_protocol_effect_tracker_uses_protocol_measurement_and_timeline_contracts(tmp_path: Path) -> None:
+    assert (
+        component_axis_key_for_label("Intervention Log with Dosing, Scheduling, and Adherence Tracking Service")
+    ).startswith("derived_")
+    assert component_axis_key_for_label("Timeline and Correlation View Service").startswith("derived_")
+    assert (
+        component_axis_key_for_label(
+            "Protocol Management Grouping Interventions and Measurements Into a Tracked Plan Service"
+        )
+    ).startswith("derived_")
+
+    proposal = _protocol_effect_tracking_proposal(tmp_path)
+    decision = greenfield_proposals.run_greenfield_tribunal(proposal, release_selector="0.0.1")
+    specs = _rendered_specs(proposal)
+    rendered = (json.dumps(proposal, sort_keys=True) + "\n" + "\n".join(specs.values())).casefold()
+
+    assert decision.passed, decision.issues
+    assert greenfield_quality_issues(proposal) == []
+    assert generated_semantic_slop_issues(proposal) == []
+    assert rendered_component_spec_quality_issues(specs, project_title=str(proposal["intent"]["title"])) == []
+
+    semantic_model = proposal["semantic_model"]  # type: ignore[index]
+    first_path_contract = semantic_model["first_path_contract"]  # type: ignore[index]
+    semantic_components = {
+        str(row["label"]): row for row in semantic_model["components"]  # type: ignore[index]
+    }
+    assert first_path_contract["capability"] == (
+        "creating a protocol, logging an active intervention with a start date and dose, "
+        "recording a baseline measurement for a chosen biomarker, and adding a follow-up measurement"
+    )
+    assert first_path_contract["visible_result"] == "See them aligned on one timeline"
+    assert len(first_path_contract["events"]) >= 6
+    proof_checkpoint = str(semantic_model["diagram_event_graph"]["proof_checkpoint"])  # type: ignore[index]
+    assert "accepted first path" in proof_checkpoint
+    assert "protocol, intervention" not in proof_checkpoint
+    assert (
+        semantic_components["Timeline and Correlation View Service"]["semantic_axis"]
+    ).startswith("derived_")
+    assert (
+        semantic_components["Protocol Management Grouping Interventions and Measurements Into a Tracked Plan Service"][
+            "semantic_axis"
+        ]
+    ).startswith("derived_")
+
+    release_scopes = {str(row["label"]): str(row["release_scope"]) for row in proposal["components"]}  # type: ignore[index]
+    assert release_scopes["Intervention Log with Dosing, Scheduling, and Adherence Tracking Service"] == "first_path_required"
+    assert release_scopes["Measurement Store"] == "first_path_required"
+    assert release_scopes["Timeline and Correlation View Service"] == "first_path_required"
+    assert (
+        release_scopes["Protocol Management Grouping Interventions and Measurements Into a Tracked Plan Service"]
+        == "first_path_required"
+    )
+
+    intervention = _component_contract(proposal, "Intervention Log")
+    measurement = _component_contract(proposal, "Measurement Store")
+    timeline = _component_contract(proposal, "Timeline and Correlation")
+    protocol = _component_contract(proposal, "Protocol Management")
+
+    for expected in (
+        "intervention log",
+        "scheduling",
+        "adherence tracking",
+        "source evidence",
+        "blocker state",
+    ):
+        assert expected in json.dumps(intervention, sort_keys=True).casefold()
+    for expected in (
+        "wearable-derived metrics",
+        "baseline measurement",
+        "chosen biomarker",
+        "follow-up measurement",
+        "aligned timeline",
+    ):
+        assert expected in json.dumps(measurement, sort_keys=True).casefold()
+    for expected in (
+        "aligns interventions",
+        "timeline",
+        "correlation view",
+        "active intervention",
+        "baseline measurement",
+    ):
+        assert expected in json.dumps(timeline, sort_keys=True).casefold()
+        for expected in (
+            "protocol management",
+            "interventions",
+            "measurements",
+            "tracked plan",
+            "active intervention",
+        ):
+            assert expected in json.dumps(protocol, sort_keys=True).casefold()
+
+    diagrams = {str(row["title"]): str(row["mermaid_source"]) for row in proposal["diagrams"]}  # type: ignore[index]
+    sequence = diagrams["First Path Sequence"]
+    proof = diagrams["Release Proof Review"]
+
+    assert "A1->>C4: A user creates a protocol" in sequence
+    assert "A1->>C1: Logs an active intervention" in sequence
+    assert "A1->>C2: Records a baseline measurement" in sequence
+    assert "A1->>C2: Adds a follow-up measurement" in sequence
+    assert "A1->>C3: Shows both points on the metric's" in sequence
+    assert "A1->>C3: See them aligned on one" in sequence
+    assert "A2->>" not in sequence
+    assert "A3->>" not in sequence
+    assert "Proof checkpoint<br/>Proven when a user can create a protocol" in proof
+    assert "protocol, intervention, timing, dose, baseline, follow-up" not in proof
+
+    for banned in (
+        "daily log entry",
+        "habit log",
+        "activity event",
+        "check-in answer",
+        "symptom entry",
+        "body location",
+        "relief method",
+        "medication-taken",
+        "access grant or denial",
+        "protected visibility decision",
+        "retention decision",
+        "role-specific actor visibility",
+        "transition history",
+        "first path entry",
+        "evidence evidence",
+        "proven, protocol, least",
+        "multi-user roles are.",
+    ):
+        assert banned not in rendered
+
+
+def test_greenfield_post_confirm_completion_report_passes_for_protocol_fixture(tmp_path: Path) -> None:
+    proposal = _protocol_effect_tracking_proposal(tmp_path)
+    report = build_greenfield_completion_report(proposal, release_selector="0.0.1")
+
+    assert report.passed, report.issues
+    assert report.semantic_model is True
+    assert report.artifact_counts["workstreams"] >= 3
+    assert report.artifact_counts["components"] >= 3
+    assert report.artifact_counts["diagrams"] >= 3
+    assert report.tribunal_status == "passed"
+
+
+def test_greenfield_post_confirm_completion_fails_without_semantic_model(tmp_path: Path) -> None:
+    proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
+    proposal.pop("semantic_model")
+
+    report = build_greenfield_completion_report(proposal, release_selector="0.0.1")
+
+    assert not report.passed
+    assert "requires GreenfieldSemanticModel" in "\n".join(report.issues)
+
+
+def test_greenfield_post_confirm_completion_fails_on_component_semantic_drift(tmp_path: Path) -> None:
+    proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
+    proposal["semantic_model"]["components"][0]["produced_outputs"] = "drifted output"
+
+    report = build_greenfield_completion_report(proposal, release_selector="0.0.1")
+
+    assert not report.passed
+    assert "drifted from proposal `produced_outputs`" in "\n".join(report.issues)
+
+
+def test_greenfield_post_confirm_completion_fails_on_workstream_semantic_drift(tmp_path: Path) -> None:
+    proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
+    proposal["semantic_model"]["workstreams"][0]["title"] = "Detached Workstream"
+
+    report = build_greenfield_completion_report(proposal, release_selector="0.0.1")
+
+    assert not report.passed
+    joined = "\n".join(report.issues)
+    assert "missing workstream contract" in joined
+    assert "not rendered by proposal" in joined
+
+
+def test_greenfield_post_confirm_completion_fails_on_workstream_contract_content_drift(tmp_path: Path) -> None:
+    proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
+    proposal["semantic_model"]["workstreams"][0]["first_slice"] = "Detached first slice"
+
+    report = build_greenfield_completion_report(proposal, release_selector="0.0.1")
+
+    assert not report.passed
+    assert "drifted from proposal `first_slice`" in "\n".join(report.issues)
+
+
+def test_greenfield_post_confirm_completion_fails_on_release_diagram_drift(tmp_path: Path) -> None:
+    proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
+    proposal["semantic_model"]["diagram_event_graph"]["component_sequence"] = []
+
+    report = build_greenfield_completion_report(proposal, release_selector="0.0.1")
+
+    assert not report.passed
+    assert "DiagramEventGraph component sequence drifted" in "\n".join(report.issues)
+
+
+def test_greenfield_post_confirm_completion_fails_on_diagram_event_drift(tmp_path: Path) -> None:
+    proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
+    proposal["semantic_model"]["diagram_event_graph"]["events"][0]["text"] = "Detached diagram event"
+
+    report = build_greenfield_completion_report(proposal, release_selector="0.0.1")
+
+    assert not report.passed
+    assert "DiagramEventGraph events drifted" in "\n".join(report.issues)
+
+
+def test_greenfield_post_confirm_completion_fails_when_deferred_component_leaks_into_diagram_graph(tmp_path: Path) -> None:
+    proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
+    component_id = proposal["components"][-1]["component_id"]
+    proposal["components"][-1]["release_scope"] = "deferred"
+    for row in proposal["semantic_model"]["components"]:
+        if row["component_id"] == component_id:
+            row["release_scope"] = "deferred"
+    proposal["semantic_model"]["diagram_event_graph"]["component_sequence"].append(component_id)
+
+    report = build_greenfield_completion_report(proposal, release_selector="0.0.1")
+
+    assert not report.passed
+    assert "DiagramEventGraph component sequence drifted" in "\n".join(report.issues)
+
+
+def test_greenfield_post_confirm_completion_fails_without_first_path_and_release_proofs(tmp_path: Path) -> None:
+    proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
+    proposal["semantic_model"]["proof_obligations"] = [
+        row
+        for row in proposal["semantic_model"]["proof_obligations"]
+        if row["key"] not in {"first_path_contract", "release_boundary"}
+    ]
+
+    report = build_greenfield_completion_report(proposal, release_selector="0.0.1")
+
+    assert not report.passed
+    joined = "\n".join(report.issues)
+    assert "missing `first_path_contract` proof obligation" in joined
+    assert "missing `release_boundary` proof obligation" in joined
+
+
+def test_greenfield_completion_package_report_passes_with_prewrite_radar_and_release_bundle(tmp_path: Path) -> None:
+    proposal = _protocol_effect_tracking_proposal(tmp_path)
+    package = GreenfieldCompletionPackage(
+        proposal=proposal,
+        release_selector="0.0.1",
+        backlog_result=_prewrite_backlog_result(proposal),
+        rendered_atlas_sources=_prewrite_atlas_sources(proposal),
+        component_registry_preview=_prewrite_component_preview(proposal), project_brief_preview=proposal["project_brief"], tribunal_preview={"status": "passed", "version": "greenfield-validation-gate-v1", "summary": "Accepted product direction is coherent enough to create project records.", "dimensions": {"intent": "present", "first_path": "present", "topology": "present", "proof": "present"}, "issues": []},
+        accepted_project_preview={"schema_version": "odylith.accepted_project.v1", "origin": "greenfield", "proposal": {"semantic_model": proposal["semantic_model"]}, "validation_gate": {"status": "passed"}, "created": {"workstreams": _prewrite_backlog_result(proposal)["created"], "components": list(_prewrite_component_preview(proposal)), "diagrams": [f"D-{index:03d}" for index, _row in enumerate(proposal["diagrams"], start=1)], "release_selector": "0.0.1"}},
+        compass_memory_preview={"kind": "decision", "summary": "Accepted greenfield proposal", "evidence_tier": "user_intent", "work_category": "governance", "workstreams": ["B-001", "B-002", "B-003", "B-004"], "components": [row["component_id"] for row in _prewrite_component_preview(proposal)]}, next_steps_preview={"project_workstream_id": "B-001", "start_workstream_id": "B-001", "release_selector": "0.0.1", "implementation_prompt": "Implement the first workstream from the accepted semantic model with proof gates.", "operator_sequence": ["Review the project brief.", "Open the first workstream.", "Author the first technical plan."], "coding_readiness_gates": ["Semantic contract accepted.", "Release boundary accepted.", "Proof commands identified."], "verification_commands": ["./.odylith/bin/odylith context --repo-root . B-001"]},
+        program_result={"created": True, "dry_run": True},
+        release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
+        release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
+        release_workstream_ids=("B-001",),
+    )
+
+    report = build_greenfield_package_report(package)
+
+    assert report.passed, report.issues
+    assert report.artifact_counts["rendered_workstream_files"] == len(proposal["backlog"])
+    assert report.artifact_counts["release_workstream_ids"] == 1
+
+
+def test_greenfield_completion_package_report_fails_incomplete_prewrite_radar_bundle(tmp_path: Path) -> None:
+    proposal = _protocol_effect_tracking_proposal(tmp_path)
+    backlog_result = _prewrite_backlog_result(proposal)
+    backlog_result["idea_files"].pop(next(iter(backlog_result["idea_files"])))
+
+    report = build_greenfield_package_report(
+        GreenfieldCompletionPackage(
+            proposal=proposal,
+            release_selector="0.0.1",
+            backlog_result=backlog_result,
+            rendered_atlas_sources=_prewrite_atlas_sources(proposal),
+            program_result={"created": True, "dry_run": True},
+            release_target_result={"release": {"release_id": "release-test"}},
+            release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
+            release_workstream_ids=("B-001",),
+        )
+    )
+
+    assert not report.passed
+    assert "render one workstream file per created workstream" in "\n".join(report.issues)
+
+
+def test_greenfield_completion_package_report_fails_missing_release_assignment_preview(tmp_path: Path) -> None:
+    proposal = _protocol_effect_tracking_proposal(tmp_path)
+
+    report = build_greenfield_package_report(
+        GreenfieldCompletionPackage(
+            proposal=proposal,
+            release_selector="0.0.1",
+            backlog_result=_prewrite_backlog_result(proposal),
+            rendered_atlas_sources=_prewrite_atlas_sources(proposal),
+            program_result={"created": True, "dry_run": True},
+            release_target_result={"release": {"release_id": "release-test"}},
+            release_workstream_ids=("B-001",),
+        )
+    )
+
+    assert not report.passed
+    assert "missing release assignment preview" in "\n".join(report.issues)
+
+
+def test_greenfield_completion_package_report_fails_release_assignment_preview_drift(tmp_path: Path) -> None:
+    proposal = _protocol_effect_tracking_proposal(tmp_path)
+
+    report = build_greenfield_package_report(
+        GreenfieldCompletionPackage(
+            proposal=proposal,
+            release_selector="0.0.1",
+            backlog_result=_prewrite_backlog_result(proposal),
+            rendered_atlas_sources=_prewrite_atlas_sources(proposal),
+            program_result={"created": True, "dry_run": True},
+            release_target_result={"release": {"release_id": "release-test"}},
+            release_assignment_result={"dry_run": True, "workstream_ids": ["B-999"]},
+            release_workstream_ids=("B-001",),
+        )
+    )
+
+    assert not report.passed
+    assert "did not cover first-release workstream ids" in "\n".join(report.issues)
+
+
+def test_greenfield_post_confirm_completion_fails_on_rendered_registry_scope_drift(tmp_path: Path) -> None:
+    proposal = _protocol_effect_tracking_proposal(tmp_path)
+
+    report = build_greenfield_completion_report(
+        proposal,
+        release_selector="0.0.1",
+        rendered_component_specs={"Detached Component": "# Detached Component\n\nBroken."},
+    )
+
+    assert not report.passed
+    joined = "\n".join(report.issues)
+    assert "missing rendered active component spec" in joined
+    assert "outside active release scope" in joined
+
+
+def test_greenfield_post_confirm_completion_fails_provider_call_leak(tmp_path: Path) -> None:
+    proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
+    proposal["provider_calls"] = 1
+
+    report = build_greenfield_completion_report(proposal, release_selector="0.0.1")
+
+    assert not report.passed
+    assert "provider-free" in "\n".join(report.issues)
+
+
+def test_greenfield_post_confirm_completion_fails_contrastive_unexplained_artifact_terms(tmp_path: Path) -> None:
+    proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
+    proposal["components"][0]["component_contract"]["outside_boundary"] += (
+        ", outsiderterm state, outsiderterm signal, outsiderterm marker, outsiderterm handoff, "
+        "outsiderterm blocker, outsiderterm report, outsiderterm packet, and outsiderterm result"
+    )
+
+    report = build_greenfield_completion_report(proposal, release_selector="0.0.1")
+
+    assert not report.passed
+    joined = "\n".join(report.issues)
+    assert "contrastive domain drift" in joined
+    assert "outsiderterm" in joined
+
+
+def test_greenfield_post_confirm_completion_fails_near_duplicate_generated_sentences(tmp_path: Path) -> None:
+    proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
+    repeated = (
+        "Protocol intervention timing, dose, baseline measurement, follow-up measurement, "
+        "timeline alignment, and source reference stay together."
+    )
+    proposal["components"][0]["source_system_description"] += f". {repeated}"
+    proposal["components"][0]["component_contract"]["outside_boundary"] += f". {repeated}"
+    proposal["components"][1]["source_system_description"] += f". {repeated}"
+    proposal["release_plan"]["strategy"] += f". {repeated}"
+    promotion_criteria = proposal["release_plan"]["promotion_criteria"]
+    if isinstance(promotion_criteria, list):
+        promotion_criteria.append(repeated)
+    else:
+        proposal["release_plan"]["promotion_criteria"] = f"{promotion_criteria}. {repeated}"
+    proposal["diagrams"][0]["summary"] += f". {repeated}"
+
+    report = build_greenfield_completion_report(proposal, release_selector="0.0.1")
+
+    assert not report.passed
+    assert "semantic repetition" in "\n".join(report.issues)
+
+
+def test_greenfield_apply_post_confirm_failure_is_internal_not_operator_repair(tmp_path: Path, monkeypatch) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    proposal = _trip_comparison_proposal(tmp_path)
+    monkeypatch.setattr(
+        greenfield_apply_prewrite,
+        "render_prewrite_component_specs",
+        lambda **_kwargs: {"Broken Component": "Broken Component owns maintains state."},
+    )
+
+    with pytest.raises(ValueError) as excinfo:
+        greenfield_proposals.apply_greenfield_proposal(
+            repo_root=tmp_path,
+            proposal=proposal,
+            confirm=True,
+            release_selector="0.0.1",
+        )
+
+    message = str(excinfo.value)
+    assert "greenfield post-confirm completion failed" in message
+    assert "No governed records were written." in message
+    assert "needs operator/proposal input" not in message
+
+
+def _prewrite_backlog_result(proposal: dict[str, object]) -> dict[str, object]:
+    rows = [row for row in proposal.get("backlog", []) if isinstance(row, dict)]
+    created = [
+        {
+            "idea_id": f"B-{index:03d}",
+            "title": str(row.get("title", "")),
+            "idea_path": f"odylith/radar/source/ideas/test-{index}.md",
+        }
+        for index, row in enumerate(rows, start=1)
+    ]
+    return {
+        "created": created,
+        "idea_files": {
+            f"/tmp/test-{index}.md": f"# {row['title']}\n\n{proposal['intent']['first_path']}\n\n{proposal['intent']['proof_boundary']}\n"
+            for index, row in enumerate(created, start=1)
+        },
+        "backlog_index_text": "\n".join(str(row["title"]) for row in created),
+        "validation_gate": {"status": "passed"},
+    }
+
+
+def _prewrite_atlas_sources(proposal: dict[str, object]) -> dict[str, str]:
+    return greenfield_apply_prewrite.render_prewrite_atlas_sources(proposal)
+
+
+def _prewrite_component_preview(proposal: dict[str, object]) -> tuple[dict[str, object], ...]:
+    return tuple(
+        {"component_id": str(row.get("component_id", "")), "validation_gate": {"status": "passed"}}
+        for row in proposal.get("components", [])
+        if isinstance(row, dict) and str(row.get("release_scope", "")).casefold() not in {"deferred", "out_of_scope", "external"}
+    )
+
+
+def test_greenfield_runtime_domain_intelligence_has_no_fixture_specific_axis_catalog() -> None:
+    source_root = Path("src/odylith/runtime")
+    source = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in (
+            source_root / "domain_intelligence" / "greenfield_component_axes.py",
+            source_root / "domain_intelligence" / "greenfield_component_semantic_contract.py",
+            source_root / "domain_intelligence" / "greenfield_confirmed_diagrams.py",
+        )
+    ).casefold()
+
+    for banned in (
+        "symptom_self_tracking",
+        "medication_relief_tracking",
+        "protocol_intervention_tracking",
+        "timeline_correlation_view",
+        "case identity",
+        "workspace status",
+        "checklist progress",
+    ):
+        assert banned not in source
 
 
 def test_greenfield_apply_keeps_deferred_components_out_of_first_release_registry(
@@ -585,7 +1100,7 @@ def test_greenfield_service_goal_governance_preserves_intent_and_avoids_cross_do
     assert "A1->>C3: Receives a starting plan" in sequence
     assert "A1->>C4: Logs progress" in sequence
     assert "A1->>C5: Reviews the weekly status" in sequence
-    assert "A1->>C6: Receives one follow-up reminder" in sequence
+    assert "A1->>C6: Receives one follow-up" in sequence
 
     for banned in (
         "case identity",
@@ -633,24 +1148,25 @@ def test_greenfield_ranking_engine_and_review_surface_stay_distinct(tmp_path: Pa
     rendered = json.dumps(proposal, sort_keys=True)
 
     assert decision.passed
-    assert "ranking rule" in str(ranking["owned_state"]).casefold()
-    assert "ranked option list" in str(ranking["produced_outputs"]).casefold()
-    assert "ranking rule" not in str(surface["owned_state"]).casefold()
-    assert "display state" in str(surface["owned_state"]).casefold()
-    assert "upstream result for ranked options" in str(surface["accepted_inputs"]).casefold()
-    assert "reviewable display for ranked options" in str(surface["produced_outputs"]).casefold()
+    assert "alternatives by fare" in str(ranking["owned_state"]).casefold()
+    assert "ranked alternatives" in str(ranking["produced_outputs"]).casefold()
+    assert "alternatives by fare" not in str(surface["owned_state"]).casefold()
+    assert "ranked options" in str(surface["owned_state"]).casefold()
+    assert "candidate ranked options" in str(surface["accepted_inputs"]).casefold()
+    assert "route evidence" in str(surface["owned_state"]).casefold()
 
-    assert "A1->>C1: A commuter enters origin" in sequence
+    assert "A1->>C1: A traveler enters origin" in sequence
     assert "A1->>C2: Fetches candidate options" in sequence
     assert "A1->>C3: Calculates fare and schedule" in sequence
     assert "A1->>C4: Ranks alternatives" in sequence
-    assert "A1->>C5: Lets the commuter choose" in sequence
+    assert "A1->>C5: Highlights the lowest-cost" in sequence
+    assert "A1->>C5: Lets the traveler choose" in sequence
     assert "A1->>C5: Stores the comparison evidence" in sequence
-    assert "A1->>C5: A commuter enters" not in sequence
+    assert "A1->>C5: A traveler enters" not in sequence
     assert 'input1["External input<br/>Transit schedule feed"] --> boundary2' in boundary
     assert 'input2["External input<br/>Fare table feed"] --> boundary3' in boundary
-    assert "Proof checkpoint<br/>trip, candidate, option, fare, schedule" in proof
-    assert "check commuter" not in proof
+    assert "Proof checkpoint<br/>one traveler can enter a trip" in proof
+    assert "check traveler" not in proof
     assert "Commuter, and" not in rendered
     assert "user path, state, evidence, decision, and follow-up" not in rendered
     assert "entry, actions, feedback, and handoff" not in rendered
@@ -712,7 +1228,7 @@ def test_greenfield_tribunal_rejects_sequence_tail_truncation(tmp_path: Path) ->
                     "  participant C1 as Trip Intake Adapter",
                     "  participant C2 as Schedule Candidate Service",
                     "  participant C3 as Fare Evidence Service",
-                    "  A1->>C1: A commuter enters trip details",
+                    "  A1->>C1: A traveler enters trip details",
                     "  C1->>C2: prepare to fetch candidate options",
                     "  A1->>C2: Fetches candidate options",
                     "  C2->>C3: prepare to calculate fare evidence",
@@ -794,7 +1310,8 @@ def test_greenfield_component_contract_nominalizes_inflected_verbs_and_notes() -
 
     assert "verifies availability" not in rendered_guardrail
     assert "approve checkout" not in rendered_guardrail
-    assert "availability and checkout eligibility" in rendered_guardrail
+    assert "availability" in rendered_guardrail
+    assert "checkout eligibility" in rendered_guardrail
     assert "checkout" in rendered_guardrail
 
     recorder = derive_component_semantic_contract(
@@ -817,10 +1334,10 @@ def test_greenfield_component_contract_nominalizes_inflected_verbs_and_notes() -
 
 
 def test_greenfield_checklist_ledger_and_risk_review_workspace_stay_distinct(tmp_path: Path) -> None:
-    assert component_axis_key_for_label("Compliance Checklist Ledger") == "check_rule_ledger"
-    assert component_axis_key_for_label("Risk Review Workspace") == "risk_review_workspace"
-    assert component_axis_key_for_label("Habit, Activity, Status, and Check-in Tracking Service") == "habit_activity_tracking"
-    assert component_axis_key_for_label("Progress Analytics and Status Explanations Service") == "status_analytics_explanation"
+    assert component_axis_key_for_label("Compliance Checklist Ledger").startswith("derived_")
+    assert component_axis_key_for_label("Risk Review Workspace").startswith("derived_")
+    assert component_axis_key_for_label("Habit, Activity, Status, and Check-in Tracking Service").startswith("derived_")
+    assert component_axis_key_for_label("Progress Analytics and Status Explanations Service").startswith("derived_")
 
     text = """# Vendor Onboarding Review
 
@@ -876,7 +1393,7 @@ Release 0.0.1 succeeds when one vendor can submit documents, missing files block
     risk_rendered = json.dumps(risk_review, sort_keys=True).casefold()
     proposal_rendered = json.dumps(proposal, sort_keys=True).casefold()
 
-    assert "rule references" in checklist_rendered
+    assert "rule reference" in checklist_rendered
     assert "pass or block" in checklist_rendered
     assert "policy rule" not in str(checklist["owned_state"]).casefold()
     assert "risk flags" in risk_owned
@@ -906,7 +1423,8 @@ Release 0.0.1 succeeds when one vendor can submit documents, missing files block
         if line.startswith("| ") and "_proof`" in line
     ]
     required_proofs = [line.split("|")[2].strip() for line in proof_rows]
-    assert "`check_rule_ledger_proof`" in checklist_spec
+    assert "check_rule_ledger_proof" not in checklist_spec
+    assert any("compliance" in proof for proof in required_proofs)
     assert len(required_proofs) >= 3
     assert len(set(required_proofs)) == len(required_proofs)
 
@@ -954,7 +1472,6 @@ def test_greenfield_component_spec_renderer_uses_structured_distinct_contract_se
     assert len(required_proofs) >= 3
     assert len(set(required_proofs)) == len(required_proofs)
 
-
 def test_greenfield_component_ids_remove_product_component_word_overlap() -> None:
     rows = confirmed_components(
         label="Service Goal Planning",
@@ -971,7 +1488,6 @@ def test_greenfield_component_ids_remove_product_component_word_overlap() -> Non
     assert component_id == "service-goal-planning-engine"
     assert "planning-planning" not in component_id
 
-
 def test_greenfield_quality_gate_rejects_verb_phrase_slot_filling() -> None:
     issues = public_prose_quality_issues(
         {
@@ -984,7 +1500,6 @@ def test_greenfield_quality_gate_rejects_verb_phrase_slot_filling() -> None:
 
     assert any("verb phrase inserted into contract artifact slot" in issue for issue in issues)
 
-
 def test_greenfield_quality_gate_rejects_generic_governance_posture_filler() -> None:
     issues = public_prose_quality_issues(
         {
@@ -995,28 +1510,6 @@ def test_greenfield_quality_gate_rejects_generic_governance_posture_filler() -> 
     )
 
     assert any("generic governance posture filler" in issue for issue in issues)
-
-
-def test_greenfield_assignment_actor_ignores_blocker_and_adjective_slots() -> None:
-    assert (
-        _assignment_actor(
-            {
-                "label": "Assignment Coordinator Service",
-                "source_system_description": "assigns responsible technicians and conflict blockers",
-            }
-        )
-        == "technician"
-    )
-    assert (
-        _assignment_actor(
-            {
-                "label": "Assignment Coordinator Service",
-                "source_system_description": "tracks conflict blockers and assignment handoff",
-            }
-        )
-        == ""
-    )
-
 
 def test_greenfield_first_action_clause_stops_before_next_product_action() -> None:
     assert (

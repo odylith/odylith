@@ -87,8 +87,8 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             title="Create a Radar backlog item",
             summary="Start with a fully formed workstream brief so Odylith can create the backlog record without guessing the title, goal, dependencies, or success bar.",
             prompt=(
-                'Create a Radar backlog item titled "Payments boundary cleanup". '
-                "Make it about clarifying that checkout can call payments but does not own payment state. "
+                'Create a Radar backlog item titled "Component boundary cleanup". '
+                "Make it about clarifying that an upstream caller can invoke the component but does not own its state. "
                 "Include goals to update the Registry component boundary, refresh the Atlas diagram, and leave a Compass note once the change lands. "
                 "Add success criteria for one Registry update, one Atlas refresh, and one validation pass before closeout."
             ),
@@ -102,10 +102,10 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             title="Create a Registry component",
             summary="Use a concrete component contract so Odylith can capture purpose, ownership, dependencies, and boundaries in one pass.",
             prompt=(
-                'Create a Registry component named "payments". '
-                "Set its purpose to owning payment intent, provider routing, capture and refund state, and webhook reconciliation. "
-                "Call out that checkout and orders depend on it, but payment state lives here. "
-                "Include key interfaces for checkout requests, provider webhooks, and order-status updates."
+                'Create a Registry component named "example-component". '
+                "Set its purpose to owning command intake, state transition, provider handoff, and recovery evidence. "
+                "Call out that upstream callers depend on it, but component state lives here. "
+                "Include key interfaces for commands, provider callbacks, and downstream status updates."
             ),
             command="odylith/index.html?tab=registry",
             secondary_label="Shell route",
@@ -117,9 +117,9 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             title="Create an Atlas diagram",
             summary="Describe the architecture you want to see so Odylith can draft a useful diagram instead of a vague map stub.",
             prompt=(
-                'Create an Atlas diagram for the payments component. '
-                "Show checkout sending payment requests to payments, payments calling the external PSP, PSP webhooks returning into payments, and payments publishing status back to orders. "
-                "Mark the PSP as an external boundary and label webhooks as inbound traffic."
+                "Create an Atlas diagram for the example-component. "
+                "Show an upstream caller sending requests to example-component, example-component calling an external provider, provider callbacks returning into example-component, and example-component publishing status to downstream consumers. "
+                "Mark the provider as an external boundary and label callbacks as inbound traffic."
             ),
             command="odylith/index.html?tab=atlas",
             secondary_label="Shell route",
@@ -131,10 +131,10 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             title="Create a Casebook bug",
             summary="Give Odylith the failure signature, suspected area, and first checks so the bug record starts with actionable debugging context.",
             prompt=(
-                'Create a Casebook bug titled "Duplicate payment capture after webhook retry". '
-                "Record the symptom as two captures for one order after a delayed provider retry. "
-                "Mark the suspected area as webhook idempotency in payments. "
-                "Add first checks for provider event ids, retry logs, settlement records, and the exact order id that reproduced it."
+                'Create a Casebook bug titled "Duplicate state transition after provider retry". '
+                "Record the symptom as one command creating two state changes after a delayed provider retry. "
+                "Mark the suspected area as retry idempotency in example-component. "
+                "Add first checks for provider event ids, retry logs, state records, and the exact command id that reproduced it."
             ),
             command="odylith/index.html?tab=casebook",
             secondary_label="Shell route",
@@ -222,8 +222,8 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             category="Surfaces",
             title="Registry",
             summary="See component truth, ownership, and the contracts the repo is actually shipping.",
-            prompt="Open Registry for the payments component.",
-            command="odylith/index.html?tab=registry&component=payments",
+            prompt="Open Registry for the example-component.",
+            command="odylith/index.html?tab=registry&component=example-component",
             secondary_label="Shell route",
             tags=("registry", "components", "ownership"),
         ),
@@ -232,8 +232,8 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             category="Surfaces",
             title="Atlas",
             summary="See the architecture in one glance, jump to the right map, and catch stale diagrams before they mislead you.",
-            prompt="Open Atlas for the payments component.",
-            command="odylith/index.html?tab=atlas&component=payments",
+            prompt="Open Atlas for the example-component.",
+            command="odylith/index.html?tab=atlas&component=example-component",
             secondary_label="Shell route",
             tags=("atlas", "diagrams", "topology"),
         ),
@@ -252,7 +252,7 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             category="Start",
             title="Start from one real path",
             summary="Give Odylith one real path and it builds the right context around it before the work widens.",
-            prompt="Start Odylith and ground me in src/payments/service.py.",
+            prompt="Start Odylith and ground me in src/example_component/service.py.",
             command="odylith start --repo-root .",
             tags=("grounding", "bootstrap", "safe-first"),
         ),
@@ -260,9 +260,9 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             card_id="narrow-to-slice",
             category="Start",
             title="Open a known component or workstream",
-            summary="Use this when you already know the name, like the payments component or workstream B-025, and want the files, plans, bugs, and diagrams tied to it.",
-            prompt="Show me the files and records for the payments component.",
-            command="odylith context --repo-root . payments",
+            summary="Use this when you already know the name, like example-component or workstream B-025, and want the files, plans, bugs, and diagrams tied to it.",
+            prompt="Show me the files and records for example-component.",
+            command="odylith context --repo-root . example-component",
             tags=("context", "component", "workstream", "scope"),
         ),
         _card(
@@ -270,8 +270,8 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             category="Start",
             title="Search governed memory",
             summary="Search repo memory for the exact phrase, posture, or proof trail you want to recover fast.",
-            prompt="Search Odylith for payment webhook idempotency.",
-            command='odylith query --repo-root . "payment webhook idempotency"',
+            prompt="Search Odylith for provider retry idempotency.",
+            command='odylith query --repo-root . "provider retry idempotency"',
             tags=("query", "memory", "search"),
         ),
         _card(
@@ -344,7 +344,7 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             category="Edit",
             title="Edit a Registry component",
             summary="Tighten ownership, boundaries, or purpose when a component exists but the contract still feels soft.",
-            prompt='Update Registry component "payments".',
+            prompt='Update Registry component "example-component".',
             command="odylith/index.html?tab=registry",
             secondary_label="Shell route",
             tags=("registry", "edit", "update", "component"),
@@ -354,7 +354,7 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             category="Edit",
             title="Delete a Registry component",
             summary="Remove the wrong boundary when the component should live elsewhere or not exist at all.",
-            prompt='Delete Registry component "payments".',
+            prompt='Delete Registry component "example-component".',
             command="odylith/index.html?tab=registry",
             secondary_label="Shell route",
             tags=("registry", "delete", "drop", "component"),
@@ -364,7 +364,7 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             category="Atlas",
             title="Map a component or workstream in Atlas",
             summary="Ask Atlas for the fastest boundary map around a component, path, or workstream you are touching.",
-            prompt="Map the payments component in Atlas.",
+            prompt="Map the example-component in Atlas.",
             command="odylith/index.html?tab=atlas",
             secondary_label="Shell route",
             tags=("atlas", "boundary-map", "topology"),
@@ -443,7 +443,7 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             category="Compass",
             title="Log an implementation update to Compass",
             summary="Turn shipped work into visible execution proof the next session can trust.",
-            prompt='Log this implementation to Compass: "Updated payments component boundaries."',
+            prompt='Log this implementation to Compass: "Updated example-component boundaries."',
             command='odylith compass update --repo-root . --implementation "Implemented the shell cheatsheet drawer."',
             tags=("timeline", "implementation", "narrative"),
         ),
@@ -452,7 +452,7 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             category="Compass",
             title="Log a decision in the timeline audit",
             summary="Capture the architectural call that future audits and handoffs still need to see.",
-            prompt='Log this decision to Compass: "Clarified payments component boundaries."',
+            prompt='Log this decision to Compass: "Clarified example-component boundaries."',
             command='odylith compass log --repo-root . --kind decision --summary "Locked the shell to short-prompt cheatsheet cards."',
             tags=("decision", "audit", "history"),
         ),
@@ -461,7 +461,7 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             category="Compass",
             title="Carry current execution state forward",
             summary="Leave the next session a clean handoff instead of making it reconstruct your current component or workstream from scratch.",
-            prompt='Carry this state forward in Compass: "Working the payments component docs and Atlas map."',
+            prompt='Carry this state forward in Compass: "Working the example-component docs and Atlas map."',
             command='odylith compass update --repo-root . --statement "Working the shell cheatsheet UX and Atlas guidance."',
             tags=("handoff", "statement", "session"),
         ),
@@ -603,7 +603,7 @@ def build_agent_cheatsheet_state(payload: Mapping[str, Any]) -> AgentCheatsheetS
         title=str(raw_state.get("title", "")).strip() or "Odylith Dashboard Cheatsheet",
         note=(
             str(raw_state.get("note", "")).strip()
-            or "Release planning has two steps: create the target release, then assign workstreams to it. Program/wave planning picks execution order under one umbrella, like `B-021 -> W1, W2, W3`. A workstream can belong to a release and a program wave at the same time. Replace the names and ids; when a prompt names a component like payments or a workstream id like B-025, Odylith scopes to the tied files and governed records."
+            or "Release planning has two steps: create the target release, then assign workstreams to it. Program/wave planning picks execution order under one umbrella, like `B-021 -> W1, W2, W3`. A workstream can belong to a release and a program wave at the same time. Replace the names and ids; when a prompt names a component like example-component or a workstream id like B-025, Odylith scopes to the tied files and governed records."
         ),
         search_placeholder=(
             str(raw_state.get("search_placeholder", "")).strip()

@@ -371,7 +371,7 @@ def _sanitize_digest_summary(summary: str) -> str:
     token = compass_base._normalize_sentence(summary).rstrip(".")
     if not token:
         return ""
-    token = _CHECKLIST_RATIO_RE.sub("checklist progress updated", token)
+    token = _CHECKLIST_RATIO_RE.sub("implementation progress updated", token)
     token = re.sub(r"\b\d+\s*/\s*\d+\b", "", token)
     token = compass_base._normalize_sentence(token).rstrip(".")
     return token

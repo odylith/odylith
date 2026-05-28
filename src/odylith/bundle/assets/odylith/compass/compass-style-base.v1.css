@@ -114,7 +114,7 @@ h1 {
       flex: 1 1 auto;
       min-width: 0;
     }
-    .pill, .chip-link:not(.workstream-id-chip):not(.ws-covered-id-btn):not(.execution-wave-chip-link) {
+    .pill, .chip-link:not(.workstream-id-chip):not(.execution-wave-chip-link) {
   --chip-link-border: #b9c7db;
   --chip-link-bg: #f3f6fb;
   --chip-link-text: var(--chip-link-text);
@@ -139,19 +139,19 @@ h1 {
   transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
 }
 
-.pill:hover, .chip-link:not(.workstream-id-chip):not(.ws-covered-id-btn):not(.execution-wave-chip-link):hover,
-.pill:focus-visible, .chip-link:not(.workstream-id-chip):not(.ws-covered-id-btn):not(.execution-wave-chip-link):focus-visible {
+.pill:hover, .chip-link:not(.workstream-id-chip):not(.execution-wave-chip-link):hover,
+.pill:focus-visible, .chip-link:not(.workstream-id-chip):not(.execution-wave-chip-link):focus-visible {
   border-color: var(--chip-link-border-hover);
   background: var(--chip-link-bg-hover);
   color: var(--chip-link-text-hover);
 }
 
-.pill:focus-visible, .chip-link:not(.workstream-id-chip):not(.ws-covered-id-btn):not(.execution-wave-chip-link):focus-visible {
+.pill:focus-visible, .chip-link:not(.workstream-id-chip):not(.execution-wave-chip-link):focus-visible {
   outline: 2px solid #bfdbfe;
   outline-offset: 1px;
 }
 
-.pill, .chip-link:not(.workstream-id-chip):not(.ws-covered-id-btn):not(.execution-wave-chip-link) {
+.pill, .chip-link:not(.workstream-id-chip):not(.execution-wave-chip-link) {
   font-family: inherit;
   color: var(--chip-link-text);
   font-size: var(--surface-deep-link-button-font-size, 11px);
@@ -169,13 +169,13 @@ h1 {
       --chip-link-text-hover: #1d4ed8;
       gap: 6px;
     }
-    .ws-id-btn, .ws-covered-id-btn, .workstream-id-chip {
-  --chip-link-border: #93c5fd;
-  --chip-link-bg: #eff6ff;
-  --chip-link-text: #1e3a8a;
-  --chip-link-border-hover: #60a5fa;
-  --chip-link-bg-hover: #deebff;
-  --chip-link-text-hover: #1d4ed8;
+    .ws-id-btn, .workstream-id-chip {
+  --chip-link-border: #b9c7db;
+  --chip-link-bg: #f3f6fb;
+  --chip-link-text: var(--chip-link-text);
+  --chip-link-border-hover: #9aaec9;
+  --chip-link-bg-hover: #e8eef7;
+  --chip-link-text-hover: #1e293b;
   appearance: none;
   display: inline-flex;
   align-items: center;
@@ -194,19 +194,19 @@ h1 {
   transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
 }
 
-.ws-id-btn:hover, .ws-covered-id-btn:hover, .workstream-id-chip:hover,
-.ws-id-btn:focus-visible, .ws-covered-id-btn:focus-visible, .workstream-id-chip:focus-visible {
+.ws-id-btn:hover, .workstream-id-chip:hover,
+.ws-id-btn:focus-visible, .workstream-id-chip:focus-visible {
   border-color: var(--chip-link-border-hover);
   background: var(--chip-link-bg-hover);
   color: var(--chip-link-text-hover);
 }
 
-.ws-id-btn:focus-visible, .ws-covered-id-btn:focus-visible, .workstream-id-chip:focus-visible {
+.ws-id-btn:focus-visible, .workstream-id-chip:focus-visible {
   outline: 2px solid #bfdbfe;
   outline-offset: 1px;
 }
 
-.ws-id-btn, .ws-covered-id-btn, .workstream-id-chip {
+.ws-id-btn, .workstream-id-chip {
   font-family: inherit;
   color: var(--chip-link-text);
   font-size: var(--surface-workstream-button-font-size, 12px);
@@ -907,6 +907,14 @@ h1 {
     }
     .ws-row-meta td {
       padding-top: 0;
+    }
+    .ws-id-btn {
+      --chip-link-border: #93c5fd;
+      --chip-link-bg: #eff6ff;
+      --chip-link-text: #1e3a8a;
+      --chip-link-border-hover: #60a5fa;
+      --chip-link-bg-hover: #deebff;
+      --chip-link-text-hover: #1d4ed8;
     }
     .ws-id-stack {
       display: flex;

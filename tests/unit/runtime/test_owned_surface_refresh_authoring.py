@@ -298,7 +298,8 @@ def test_component_register_refreshes_registry_surface(tmp_path: Path, monkeypat
     assert entry["category"] == "governance_engine"
     assert entry["qualification"] == "candidate"
     assert entry["sources"] == ["manifest"]
-    assert "owns Registry refresh authoring proof" in entry["what_it_is"]
+    assert "Registry refresh authoring proof" in entry["what_it_is"]
+    assert "keeps local state, blocked behavior, recovery evidence, and release proof reviewable" in entry["what_it_is"]
     assert "Initial source boundary: src/odylith/runtime/governance." in entry["what_it_is"]
     assert "named ownership boundary" in entry["why_tracked"]
     spec_path = (

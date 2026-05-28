@@ -108,7 +108,6 @@ _LABEL_PATTERNS: list[tuple[set[str], str]] = [
     ({"cli", "command", "console"}, "CLI"),
     ({"common", "shared", "util", "helper", "lib"}, "Shared Utilities"),
     ({"notification", "email", "webhook", "alert", "sms", "push"}, "Notifications"),
-    ({"payment", "billing", "invoice", "checkout", "stripe"}, "Payments"),
     ({"storage", "upload", "file", "blob", "s3"}, "Storage"),
     ({"cache", "redis", "memcache"}, "Cache"),
     ({"log", "trace", "monitor", "observ"}, "Observability"),

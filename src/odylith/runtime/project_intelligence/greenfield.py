@@ -1868,11 +1868,8 @@ def _risk_meaning(value: object) -> str:
 def _risk_label(value: str, *, used: set[str]) -> str:
     lowered = value.casefold()
     checks = [
-        (("electricity", "unattended", "household", "environment"), "Operating environment"),
-        (("pump", "motor", "actuation", "autonomous", "automation", "unattended", "electricity"), "Physical operation safety"),
-        (("dose", "dosing", "concentration", "threshold", "limit", "volume", "capped", "bounded"), "Control limits"),
-        (("sensor", "signal", "reading", "calibration", "drift", "measurement", "sample"), "Measurement reliability"),
-        (("custody", "treasury", "funding", "payment", "repayment", "settlement", "ledger", "capital", "credit", "lender", "liquidity"), "Money movement"),
+        (("concentration", "threshold", "limit", "volume", "capped", "bounded"), "Control limits"),
+        (("signal", "reading", "calibration", "drift", "measurement", "sample"), "Measurement reliability"),
         (("compliance", "privacy", "security", "jurisdiction", "kyc", "kyb", "aml", "regulated", "legal"), "Compliance boundary"),
         (("integration", "external", "api", "provider", "dependency", "webhook", "connector"), "External dependency"),
         (("owner", "approval", "handoff", "review", "responsibility", "operator"), "Ownership clarity"),

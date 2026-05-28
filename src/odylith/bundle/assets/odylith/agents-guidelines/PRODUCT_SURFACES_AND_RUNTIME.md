@@ -145,10 +145,10 @@
   source; anchor context and assistant-render fallback stay in the separate
   `prompt-context` JSON `additionalContext` hook. On Codex, the earned teaser
   stays in hook `systemMessage` plus `hookSpecificOutput.additionalContext`,
-  with the same assistant-render fallback for chat visibility. For normal
-  non-passthrough prompts, both hosts also carry the shared prompt-visible
-  `Odylith Assist:` line; if no teaser is earned, Assist alone keeps Odylith
-  visible without inventing a stronger Observation.
+  with the same assistant-render fallback for chat visibility. Normal
+  non-passthrough prompts do not get `Odylith Assist:` by default; they stay
+  quiet unless a concrete Observation, Proposal, validation result, or
+  visibility failure earns a premium visible note.
 - Hook output generation is not chat visibility. The shipped contract is:
   hooks produce structured evidence and model/developer context; hosts may
   render hook `systemMessage` or stdout when they support it; if not, the
@@ -175,6 +175,10 @@
   visible-intervention` are the shared manual escape hatches when a host keeps
   hook output hidden. They render plain Markdown, not JSON, and agents should
   show that output directly instead of rewriting it.
+- Visible-intervention recovery must be useful on its face. Generic receipts
+  such as "Odylith has activity but no note reached chat" are blocked; the
+  rendered note must name the real blocker, preserve silence for routine
+  turns, and state the concrete condition that earned visibility.
 - `odylith codex intervention-status` and `odylith claude
   intervention-status` are the shared low-latency activation probes. They read
   static host wiring plus the Compass-derived delivery ledger so operators can

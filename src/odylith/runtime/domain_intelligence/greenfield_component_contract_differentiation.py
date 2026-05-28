@@ -8,9 +8,8 @@ from dataclasses import dataclass
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_component_axes import (
-    COMPONENT_AXES,
     ComponentAxis,
-    component_axis_key_for_label,
+    derive_component_axis,
 )
 from odylith.runtime.domain_intelligence.greenfield_component_contract import (
     boundary_from_contract,
@@ -63,6 +62,7 @@ _FALLBACK_NOISE_TERMS = {
 
 _GENERATED_CONTRACT_MARKERS = (
     "accepted first-path input",
+    "blocked-case evidence links",
     "command or event result",
     "component proof",
     "comparison display",
@@ -71,11 +71,8 @@ _GENERATED_CONTRACT_MARKERS = (
     "role-specific actor visibility",
     "status timeline",
     "representative input covering",
+    "required inputs",
 )
-
-_LOW_CONFIDENCE_PRIORITY_AXES = {
-    "external_handoff",
-}
 
 
 def differentiate_component_contracts(proposal: dict[str, Any], *, max_passes: int = 5) -> bool:
@@ -189,6 +186,7 @@ def _contract_needs_repair(contract: Mapping[str, Any]) -> bool:
     return any(
         marker in joined
         for marker in (
+            *_GENERATED_CONTRACT_MARKERS,
             "representative input covering",
             "component proof",
             "accepted first-path input and state object",
@@ -205,8 +203,17 @@ def _contract_misses_local_axis(*, row: Mapping[str, Any], contract: Mapping[str
     local_score = _axis_local_score(axis, label_text=label_text, description_text=description_text)
     if local_score < 24:
         return False
+    contract_text = " ".join(text_values(contract))
     expected_hits = min(4, max(2, _trigger_hits(axis.triggers, label_text)))
-    return _trigger_hits(axis.triggers, " ".join(text_values(contract))) < expected_hits
+    if _trigger_hits(axis.triggers, contract_text) < expected_hits:
+        return True
+    expected_terms = _axis_distinctive_terms(axis)
+    if expected_terms:
+        actual_terms = set(ordered_domain_terms(contract_text))
+        required_terms = min(5, max(3, len(expected_terms) // 4))
+        if len(expected_terms & actual_terms) < required_terms:
+            return True
+    return False
 
 
 def _starts_with_generic_actor(value: str) -> bool:
@@ -217,6 +224,50 @@ def _starts_with_generic_actor(value: str) -> bool:
             text,
         )
     )
+
+
+def _axis_distinctive_terms(axis: ComponentAxis) -> set[str]:
+    """Return ownership terms that must survive contract rendering for this axis."""
+
+    terms = set(
+        ordered_domain_terms(
+            " ".join(
+                [
+                    axis.owned_state,
+                    axis.accepted_inputs,
+                    axis.produced_outputs,
+                    axis.states_or_transitions,
+                    " ".join(axis.local_proof),
+                ]
+            )
+        )
+    )
+    return {
+        term
+        for term in terms
+        if term
+        not in {
+            "accepted",
+            "actor",
+            "blocker",
+            "boundary",
+            "context",
+            "downstream",
+            "handoff",
+            "input",
+            "local",
+            "marker",
+            "output",
+            "proof",
+            "record",
+            "reference",
+            "result",
+            "state",
+            "status",
+            "upstream",
+            "validation",
+        }
+    }
 
 
 def _render_component_specs(proposal: Mapping[str, Any]) -> dict[str, str]:
@@ -302,49 +353,24 @@ def _axis_for(*, row: Mapping[str, Any] | None, proposal: Mapping[str, Any]) -> 
         return _fallback_axis("sibling", _proposal_context(proposal))
     label_text = _component_label(row, 0)
     description_text = _clean(row.get("source_system_description"))
-    scored = [
-        (
-            _axis_local_score(axis, label_text=label_text, description_text=description_text),
-            _trigger_hits(axis.triggers, label_text),
-            _trigger_hits(axis.triggers, description_text),
-            axis,
-        )
-        for axis in COMPONENT_AXES
-    ]
-    if re.search(r"\b(claim|claims|citation|citations|lineage|traceability|source-backed)\b", f"{label_text} {description_text}", flags=re.IGNORECASE):
-        for score, _label_hits, _description_hits, axis in scored:
-            if axis.key == "source_claim_lineage" and score > 0:
-                return axis
-    if re.search(r"\b(rationale|vote|motion|abstain|abstention)\b", label_text, flags=re.IGNORECASE):
-        for score, _label_hits, _description_hits, axis in scored:
-            if axis.key == "decision_rationale_vote" and score > 0:
-                return axis
-    priority_axis = _priority_axis(label_text)
-    if priority_axis:
-        for score, _label_hits, _description_hits, axis in scored:
-            if axis.key == priority_axis and score > 0:
-                return axis
-    scored.sort(
-        key=lambda item: (
-            -item[0],
-            -item[1],
-            -item[2],
-            item[3].key,
-        )
+    axis = derive_component_axis(
+        label_text=label_text,
+        context_text=" ".join(
+            text
+            for text in (
+                description_text,
+                _proposal_context(proposal),
+            )
+            if text
+        ),
     )
-    if scored and scored[0][0] > 0:
-        return scored[0][3]
+    if axis is not None:
+        return axis
     return _fallback_axis(
         label_text,
         _fallback_context(row=row, proposal=proposal),
         focus=_focus_phrase(_scrub_generated_context(_clean(row.get("source_system_description")))),
     )
-
-
-def _priority_axis(label_text: str) -> str:
-    """Resolve labels where one broad trigger would otherwise steal ownership."""
-
-    return component_axis_key_for_label(label_text)
 
 
 def _fallback_axis(label: str, context: str, *, focus: str = "") -> ComponentAxis:
@@ -366,8 +392,8 @@ def _fallback_axis(label: str, context: str, *, focus: str = "") -> ComponentAxi
         key=f"fallback_{_slug(primary)}",
         triggers=(),
         owned_state=f"{primary} state, {secondary}, local blockers, and handoff evidence",
-        accepted_inputs=f"{primary} input, {input_focus} evidence, actor identity, validation context, and upstream handoff",
-        produced_outputs=f"{primary} result, {output_focus} update, blocker signal, and downstream handoff",
+        accepted_inputs=f"{primary} input, {input_focus} evidence, authorized actor, prior state, and validation notes",
+        produced_outputs=f"{primary} result, {output_focus} update, blocked-state evidence, and handoff record",
         states_or_transitions=states,
         outside_boundary="sibling product responsibilities, upstream source truth, presentation outside the accepted boundary, and release approval",
         local_proof=(
@@ -386,10 +412,7 @@ def _contract_payload(
     axis: ComponentAxis,
     local_score: int,
 ) -> Mapping[str, Any]:
-    if not axis.key.startswith("fallback_") and (
-        local_score >= 24 or (axis.key in _LOW_CONFIDENCE_PRIORITY_AXES and local_score >= 12)
-    ):
-        return axis_payload
+    _ = (axis, local_score)
     if not _semantic_contract_is_strong(semantic_contract):
         return axis_payload
     semantic_fields = dict(semantic_contract.fields)
@@ -416,89 +439,6 @@ def _axis_payload(
     produced_outputs = axis.produced_outputs
     local_proof = _local_proof(axis=axis, label=label, sibling_label=sibling_label)
     unique_failure = axis.unique_failure
-    if axis.key == "check_rule_ledger":
-        subject = _check_subject(row)
-        if subject:
-            owned_state = f"{subject}, reviewer comments, rule references, and pass or block outcomes, check evidence, and handoff state for {state_label}"
-            accepted_inputs = f"{subject} input, rule reference, reviewer comment, pass or block command, blocker signal, actor identity, and prior check state"
-            produced_outputs = f"recorded {subject}, rule-linked comment, pass or block outcome, blocker signal, and downstream decision handoff"
-            local_proof = [
-                f"The check ledger records {subject}, reviewer comments, rule references, and pass or block outcomes with handoff evidence.",
-                "Missing rule references or unresolved blockers prevent a pass outcome from appearing decision-ready.",
-                "Submission, revision, assignment, and final decision changes do not silently rewrite the check record.",
-            ]
-            unique_failure = f"{subject} can look passed without the rule reference, reviewer comment, blocker state, or source evidence needed to trust the check."
-            if sibling_label:
-                local_proof.append(f"{label} refuses {sibling_label} ownership while preserving its own local proof.")
-    if axis.key == "revision_lifecycle":
-        subject = _revision_subject(row)
-        if subject:
-            owned_state = f"{subject}, revision round, actor response, resubmission version, unresolved revision blocker, and handoff state for {state_label}"
-            accepted_inputs = f"{subject} input, prior decision, requested changes, actor identity, revised payload, response notes, and previous version reference"
-            produced_outputs = f"linked {subject}, resubmission snapshot, response package, round status, unresolved-change blocker, and downstream decision handoff"
-            local_proof = [
-                f"The revision record links {subject} before downstream decision review.",
-                "Incomplete responses or unresolved changes block the revision round before a downstream decision can treat it as ready.",
-                "Initial intake, check ledger, assignment, and audit records remain separate from revision-round state.",
-            ]
-            unique_failure = f"{subject} can detach from the source item it was meant to address or make an incomplete response look decision-ready."
-            if sibling_label:
-                local_proof.append(f"{label} refuses {sibling_label} ownership while preserving its own local proof.")
-    if axis.key == "review_presentation_surface":
-        subject = _presentation_subject(row)
-        if subject:
-            owned_state = (
-                f"{subject} display state, display context, explanation panel, blocker message, selected item marker, "
-                f"user action state, and presentation handoff state for {state_label}"
-            )
-            accepted_inputs = (
-                f"upstream result for {subject}, evidence reference, actor context, display request, visible blocker state, "
-                "selected item command, and prior visible state"
-            )
-            produced_outputs = (
-                f"reviewable display for {subject}, selected item acknowledgement, visible blocker message, correction request, "
-                "user action event, and downstream presentation handoff"
-            )
-            local_proof = [
-                f"Presentation proof shows {subject}, upstream evidence reference, visible explanation, blocker message, and actor action together.",
-                f"Missing upstream evidence, hidden blockers, or invalid actor actions keep the {subject} display blocked instead of producing trusted downstream state.",
-                f"Upstream calculation, source import, final decision, notification, and audit changes do not rewrite the visible action state for {subject}.",
-            ]
-            unique_failure = (
-                f"A user can act on a stale display for {subject}, miss a blocker, trust an unexplained result, "
-                "or select an item without evidence tied to the upstream result."
-            )
-            if sibling_label:
-                local_proof.append(f"{label} refuses {sibling_label} ownership while preserving its own local proof.")
-    if axis.key == "assignment_permission":
-        actor = _assignment_actor(row)
-        if actor:
-            actor_title = actor.replace("-", " ")
-            if actor_title == "reviewer":
-                actor_title = "assigned reviewer"
-            owned_state = (
-                f"{actor_title} eligibility, assignment routing, access grants, conflict constraints, "
-                f"permission state, and assignment state for {state_label}"
-            )
-            accepted_inputs = (
-                f"{actor_title} role, availability, conflict signal, permission request, source actor, "
-                "and assignment trigger"
-            )
-            produced_outputs = (
-                f"{actor_title} selection, permission decision, access grant or denial, conflict blocker, "
-                "and assignment handoff"
-            )
-            local_proof = [
-                f"The right {actor_title} is selected, permission limits are applied, and conflicts block assignment.",
-                f"An actor without permission cannot access or mutate the assigned {actor_title} work.",
-                "Missing eligibility creates an assignment blocker instead of a valid assignment.",
-            ]
-            unique_failure = (
-                f"The wrong {actor_title} can receive access, a conflict can be hidden, "
-                "or an unauthorized assignment can look valid."
-            )
-            if sibling_label:
-                local_proof.append(f"{label} refuses {sibling_label} ownership while preserving its own local proof.")
     return {
         "owned_state": owned_state,
         "accepted_inputs": accepted_inputs,
@@ -510,118 +450,6 @@ def _axis_payload(
         "downstream_consumers": downstream,
         "unique_failure": unique_failure,
     }
-
-
-def _check_subject(row: Mapping[str, Any]) -> str:
-    description = _scrub_generated_context(_clean(row.get("source_system_description"))).casefold()
-    for clause in re.split(r"[,.;]", description):
-        phrase = re.sub(
-            r"^(?:records?|checks?|validates?|evaluates?|owns?|tracks?|maintains?)\s+",
-            "",
-            _clean(clause),
-            flags=re.IGNORECASE,
-        )
-        match = re.search(r"\b([a-z][a-z0-9 -]{1,50}\s+checks?)\b", phrase, flags=re.IGNORECASE)
-        if match:
-            return _clean(match.group(1)).casefold()
-    label = _component_label(row, 0).casefold()
-    label = re.sub(r"\b(?:ledger|service|surface|adapter|component)\b", "", label, flags=re.IGNORECASE)
-    label = _clean(label)
-    if re.search(r"\bcheck\b", label):
-        return _clean(re.sub(r"\bcheck\b", "checks", label, flags=re.IGNORECASE)).casefold()
-    if re.search(r"\bchecks\b", label):
-        return label
-    return ""
-
-
-def _revision_subject(row: Mapping[str, Any]) -> str:
-    description = _scrub_generated_context(_clean(row.get("source_system_description"))).casefold()
-    for clause in re.split(r"[,.;]", description):
-        phrase = re.sub(
-            r"^(?:links?|tracks?|records?|maintains?|owns?)\s+",
-            "",
-            _clean(clause),
-            flags=re.IGNORECASE,
-        )
-        if re.search(r"\b(revision|revisions|resubmission|response)\b", phrase, flags=re.IGNORECASE):
-            phrase = _clean(phrase).strip(" .")
-            if 2 <= len(phrase.split()) <= 16:
-                return phrase.casefold()
-    label = _component_label(row, 0).casefold()
-    if re.search(r"\b(revision|resubmission|response)\b", label):
-        return _clean(re.sub(r"\b(?:service|surface|adapter|component)\b", "", label, flags=re.IGNORECASE)).casefold()
-    return ""
-
-
-def _presentation_subject(row: Mapping[str, Any]) -> str:
-    description = _scrub_generated_context(_clean(row.get("source_system_description"))).casefold()
-    candidates: list[str] = []
-    for clause in re.split(r"[,.;]", description):
-        cleaned_clause = re.sub(r"^(?:and|or)\s+", "", _clean(clause), flags=re.IGNORECASE)
-        phrase = re.sub(
-            r"^(?:shows?|displays?|renders?|presents?|views?|reviews?|owns?|tracks?|maintains?)\s+",
-            "",
-            cleaned_clause,
-            flags=re.IGNORECASE,
-        )
-        phrase = re.sub(r"^(?:and|or)\s+", "", phrase, flags=re.IGNORECASE)
-        phrase = re.sub(r"\b(?:to|for|with|from|into)\s+.+$", "", phrase, flags=re.IGNORECASE)
-        phrase = _clean(phrase).strip(" .")
-        if 2 <= len(phrase.split()) <= 12 and _content_terms(phrase):
-            candidates.append(phrase.casefold())
-    label = _component_label(row, 0).casefold()
-    label = re.sub(r"\b(?:review|surface|screen|view|dashboard|display|presentation|portal|ui|client|service|component)\b", "", label, flags=re.IGNORECASE)
-    label = _clean(label)
-    if label and _content_terms(label):
-        candidates.append(label.casefold())
-    terms = _unique_terms(candidates)
-    if not terms:
-        return ""
-    return _phrase(terms[:3])
-
-
-def _assignment_actor(row: Mapping[str, Any]) -> str:
-    text = _clean(
-        " ".join(
-            str(row.get(key, ""))
-            for key in ("label", "source_system_description", "responsibility", "boundary")
-        )
-    ).casefold()
-    ignored_roles = {
-        "access",
-        "and",
-        "blocker",
-        "blocked",
-        "conflict",
-        "handoff",
-        "or",
-        "permission",
-        "responsible",
-        "role",
-        "routing",
-        "source",
-        "work",
-    }
-    patterns = (
-        r"\b(?P<role>[a-z][a-z0-9-]{2,30})\s+assignment\b",
-        r"\bassigns?\s+(?:an?|the|two|one)?\s*(?:(?:responsible|assigned|available|eligible|primary|named)\s+)*(?P<role>[a-z][a-z0-9-]{2,30})\b",
-        r"\bassigned\s+(?P<role>[a-z][a-z0-9-]{2,30})\b",
-        r"\b(?P<role>[a-z][a-z0-9-]{2,30})\s+eligibility\b",
-    )
-    for pattern in patterns:
-        match = re.search(pattern, text, flags=re.IGNORECASE)
-        if not match:
-            continue
-        role = _clean(match.group("role")).casefold()
-        if role in {"review", "reviews"}:
-            return "reviewer"
-        if role.endswith("s") and len(role) > 4:
-            role = role[:-1]
-        if role in {"review", "reviews"}:
-            return "reviewer"
-        if role and role not in ignored_roles:
-            return role
-    return ""
 
 
 def _semantic_contract_is_strong(semantic_contract: Any) -> bool:

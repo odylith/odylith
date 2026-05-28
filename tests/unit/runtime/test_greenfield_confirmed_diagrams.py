@@ -85,12 +85,13 @@ def test_atlas_component_cards_explain_specific_boundary_without_path_boilerplat
         "product state changed after that action."
     )
     assert components["Assignment Planner"] == (
-        "Owns the product responsibility to assign jobs to available resources while respecting priority, capacity, "
+        "Owns product responsibility to assign jobs to available resources while respecting priority, capacity, "
         "and constraints. Reviewers need to see what this boundary receives, produces, records, and makes available next."
     )
     assert "accepted first release path" not in encoded
     assert "for the accepted first" not in encoded
     assert "Owns the responsibility to" not in encoded
+    assert "Owns the product responsibility" not in encoded
     assert "hands off" not in encoded
     assert "part of the path" not in encoded
     assert "Design pressure" not in encoded

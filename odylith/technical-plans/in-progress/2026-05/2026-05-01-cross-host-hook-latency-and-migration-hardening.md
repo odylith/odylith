@@ -15,6 +15,16 @@ dirty events and settles them at Stop, install reruns behave as upgrades, and
 Casebook/Radar/Atlas migration evidence stays captured when legacy records,
 generated surfaces, topology links, or launcher repair states break.
 
+B-142 Completion Goal: Confirmed greenfield creation must become semantic-model
+first, not prose-first. Odylith must derive typed `FirstPathContract`,
+`DomainOntology`, `ComponentContract`, `ReleaseScope`, `WorkstreamContract`,
+`DiagramEventGraph`, and `ProofObligation` structures from accepted intent
+before Radar, Registry, Atlas, project intelligence, release topology, or proof
+review render. Completion requires generic fail-closed gates and adversarial
+cross-domain fixtures proving no first-path drift, wrong-domain leakage,
+malformed grammar, clipped prose, proof-token soup, repeated proof walls,
+deferred-scope leakage, or topology mismatch reaches governed writes.
+
 Assumptions:
 - Claude and Codex have different native hook semantics, so performance wins
   must use host-supported primitives instead of one lowest-common-denominator

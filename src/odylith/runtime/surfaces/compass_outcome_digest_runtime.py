@@ -413,14 +413,14 @@ def _build_outcome_digest_global(
         base_update = "no active implementation lane is currently open for this scope"
     elif progressed_count <= 0:
         if active_untracked_count > 0:
-            base_update = "active lanes are in implementation, but checklist progress is not yet captured"
+            base_update = "active lanes are in implementation, but implementation progress is not yet captured"
         else:
             base_update = "active lanes are in planning setup and closure execution is starting"
     elif progressed_count >= active_count:
         base_update = "active lanes are translating plans into concrete implementation outcomes"
     else:
         if active_untracked_count > 0:
-            base_update = "planning and implementation are running in parallel, and some implementation lanes still lack captured checklist progress"
+            base_update = "planning and implementation are running in parallel, and some implementation lanes still lack captured progress evidence"
         else:
             base_update = "planning and implementation are running in parallel across active lanes"
 

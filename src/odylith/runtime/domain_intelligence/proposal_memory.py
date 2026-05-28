@@ -93,6 +93,86 @@ def _accepted_project_source_path(repo_root: Path) -> Path:
     return Path(repo_root).expanduser().resolve() / ACCEPTED_PROJECT_SOURCE_PATH
 
 
+def build_greenfield_acceptance_event_preview(
+    *,
+    proposal: Mapping[str, Any],
+    backlog_items: Sequence[Mapping[str, Any]],
+    component_items: Sequence[Mapping[str, Any]],
+    diagram_ids: Sequence[str],
+    release_selector: str,
+    release_id: str,
+    accepted_at: str = "prewrite",
+) -> dict[str, Any]:
+    """Build the Compass acceptance event shape without appending the stream."""
+
+    workstream_ids = [_clean(row.get("idea_id")).upper() for row in backlog_items if _clean(row.get("idea_id"))]
+    component_ids = [_clean(row.get("component_id")) for row in component_items if _clean(row.get("component_id"))]
+    artifacts = _first_nonempty(
+        [
+            *[str(row.get("idea_path", "")) for row in backlog_items if _clean(row.get("idea_path"))],
+            *[str(row.get("spec_path", "")) for row in component_items if _clean(row.get("spec_path"))],
+        ],
+        limit=12,
+    )
+    payload = {
+        "version": "v1",
+        "kind": "decision",
+        "summary": _event_summary(
+            proposal=proposal,
+            backlog_items=backlog_items,
+            component_items=component_items,
+            diagram_ids=diagram_ids,
+            release_selector=release_selector,
+            release_id=release_id,
+        ),
+        "ts_iso": _clean(accepted_at) or "prewrite",
+        "author": "odylith",
+        "source": "domain-intelligence",
+        "workstreams": workstream_ids,
+        "artifacts": artifacts,
+        "components": component_ids,
+        "context": _event_context(proposal),
+        "headline_hint": f"Greenfield proposal accepted for {_clean(_intent(proposal).get('title')) or 'Greenfield Project'}",
+        "evidence_tier": "user_intent",
+        "work_category": "governance",
+    }
+    return dict(display_text.strip_inline_markdown_emphasis_tree(payload))
+
+
+def build_accepted_project_source_payload(
+    *,
+    proposal: Mapping[str, Any],
+    backlog_items: Sequence[Mapping[str, Any]],
+    component_items: Sequence[Mapping[str, Any]],
+    diagram_ids: Sequence[str],
+    release_selector: str,
+    release_id: str,
+    validation_gate: Mapping[str, Any] | None,
+    accepted_at: str = "",
+) -> dict[str, Any]:
+    """Build accepted-project memory payload before any durable write."""
+
+    intent = _intent(proposal)
+    payload = {
+        "schema_version": "odylith.accepted_project.v1",
+        "origin": "greenfield",
+        "evidence_tier": "user_intent",
+        "accepted_at": _clean(accepted_at),
+        "title": _clean(intent.get("title")) or "Greenfield Project",
+        "source": "greenfield_apply",
+        "proposal": dict(proposal),
+        "created": {
+            "workstreams": [dict(row) for row in backlog_items],
+            "components": [dict(row) for row in component_items],
+            "diagrams": [str(item) for item in diagram_ids],
+            "release_selector": _clean(release_selector),
+            "release_id": _clean(release_id),
+        },
+        "validation_gate": dict(validation_gate or {}),
+    }
+    return dict(display_text.strip_inline_markdown_emphasis_tree(payload))
+
+
 def _write_accepted_project_source(
     *,
     repo_root: Path,
@@ -108,25 +188,16 @@ def _write_accepted_project_source(
     """Write the accepted project source record consumed by Project and context."""
 
     path = _accepted_project_source_path(repo_root)
-    intent = _intent(proposal)
-    payload = {
-        "schema_version": "odylith.accepted_project.v1",
-        "origin": "greenfield",
-        "evidence_tier": "user_intent",
-        "accepted_at": _clean(event.get("ts_iso")),
-        "title": _clean(intent.get("title")) or "Greenfield Project",
-        "source": "greenfield_apply",
-        "proposal": dict(proposal),
-        "created": {
-            "workstreams": [dict(row) for row in backlog_items],
-            "components": [dict(row) for row in component_items],
-            "diagrams": [str(item) for item in diagram_ids],
-            "release_selector": _clean(release_selector),
-            "release_id": _clean(release_id),
-        },
-        "validation_gate": dict(validation_gate or {}),
-    }
-    payload = display_text.strip_inline_markdown_emphasis_tree(payload)
+    payload = build_accepted_project_source_payload(
+        proposal=proposal,
+        backlog_items=backlog_items,
+        component_items=component_items,
+        diagram_ids=diagram_ids,
+        release_selector=release_selector,
+        release_id=release_id,
+        validation_gate=validation_gate,
+        accepted_at=_clean(event.get("ts_iso")),
+    )
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(f"{json.dumps(payload, indent=2, sort_keys=True)}\n", encoding="utf-8")
     return path
@@ -153,35 +224,27 @@ def record_greenfield_acceptance(
     """
 
     root = Path(repo_root).expanduser().resolve()
-    workstream_ids = [_clean(row.get("idea_id")).upper() for row in backlog_items if _clean(row.get("idea_id"))]
-    component_ids = [_clean(row.get("component_id")) for row in component_items if _clean(row.get("component_id"))]
-    artifacts = _first_nonempty(
-        [
-            *[str(row.get("idea_path", "")) for row in backlog_items if _clean(row.get("idea_path"))],
-            *[str(row.get("spec_path", "")) for row in component_items if _clean(row.get("spec_path"))],
-        ],
-        limit=12,
+    event_preview = build_greenfield_acceptance_event_preview(
+        proposal=proposal,
+        backlog_items=backlog_items,
+        component_items=component_items,
+        diagram_ids=diagram_ids,
+        release_selector=release_selector,
+        release_id=release_id,
     )
     stream_path = root / agent_runtime_contract.AGENT_STREAM_PATH
     payload = log_compass_timeline_event.append_event(
         repo_root=root,
         stream_path=stream_path,
         kind="decision",
-        summary=_event_summary(
-            proposal=proposal,
-            backlog_items=backlog_items,
-            component_items=component_items,
-            diagram_ids=diagram_ids,
-            release_selector=release_selector,
-            release_id=release_id,
-        ),
-        workstream_values=workstream_ids,
-        artifact_values=artifacts,
-        component_values=component_ids,
+        summary=str(event_preview.get("summary", "")),
+        workstream_values=[str(item) for item in event_preview.get("workstreams", [])],
+        artifact_values=[str(item) for item in event_preview.get("artifacts", [])],
+        component_values=[str(item) for item in event_preview.get("components", [])],
         author="odylith",
         source="domain-intelligence",
-        context=_event_context(proposal),
-        headline_hint=f"Greenfield proposal accepted for {_clean(_intent(proposal).get('title')) or 'Greenfield Project'}",
+        context=str(event_preview.get("context", "")),
+        headline_hint=str(event_preview.get("headline_hint", "")),
         evidence_tier="user_intent",
         work_category="governance",
     )

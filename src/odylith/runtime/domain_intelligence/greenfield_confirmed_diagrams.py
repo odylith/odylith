@@ -12,7 +12,8 @@ from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import finite_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
-from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_steps
+from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import best_component_node_for_text
+from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import sequence_mermaid
 
 
 def confirmed_diagrams(
@@ -30,6 +31,7 @@ def confirmed_diagrams(
     external_systems: list[str] | None = None,
     internal_systems: list[str] | None = None,
     non_goals: list[str] | None = None,
+    semantic_model: Mapping[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     all_components = [dict(row) for row in components]
     release_components = [dict(row) for row in active_release_components(all_components)] if all_components else []
@@ -101,7 +103,13 @@ def confirmed_diagrams(
             "related_components": [str(row["component_id"]) for row in release_components],
             "watch_paths": [],
             "evidence_tier": "user_intent",
-            "mermaid_source": _sequence_mermaid(label=label, actors=actors, components=release_components, first_path=first_path),
+            "mermaid_source": sequence_mermaid(
+                label=label,
+                actors=actors,
+                components=release_components,
+                first_path=first_path,
+                semantic_model=semantic_model,
+            ),
         },
         {
             "slug": diagram_slugs["state_evidence"],
@@ -210,17 +218,19 @@ def confirmed_diagrams(
                 proof_boundary=proof_boundary,
                 components=release_components,
                 non_goals=deferred_scope,
+                semantic_model=semantic_model,
             ),
         },
     ]
 
 
 def _component_description(row: Mapping[str, Any]) -> str:
+    source_description = str(row.get("source_system_description", "")).strip()
     responsibility = str(row.get("responsibility", "")).strip()
     boundary = str(row.get("boundary", "")).strip()
     label = str(row.get("label", "")).strip() or "Component"
     kind = _component_kind(row=row, label=label)
-    responsibility_text = _responsibility_fragment(label=label, value=responsibility)
+    responsibility_text = _responsibility_fragment(label=label, value=source_description or responsibility)
     boundary_text = _responsibility_fragment(label=label, value=boundary)
     subject = _component_subject(label=label, responsibility=responsibility_text, boundary=boundary_text)
     lead = _component_lead(label=label, subject=subject, kind=kind)
@@ -253,7 +263,7 @@ def _component_lead(*, label: str, subject: str, kind: str) -> str:
         clause = finite_action_clause(subject)
         if _component_clause_explains_boundary(clause):
             return clause
-        return f"Owns the product responsibility to {_base_initial_action_clause(clause)}"
+        return f"Owns product responsibility to {_base_initial_action_clause(clause)}"
     if re.match(
         r"^(?:maintains?|owns?|coordinates?|presents?|translates?|records?|tracks?|assembles?|computes?|"
         r"applies?|checks?|captures?|selects?|schedules?|summarizes?)\b",
@@ -272,7 +282,7 @@ def _component_lead(*, label: str, subject: str, kind: str) -> str:
     if _is_workflow_like(label, subject):
         return f"Coordinates {subject} so responsibility transfers, blocked states, and recovery paths stay visible"
     if _is_decision_like(label, subject):
-        return f"Owns the rules or calculations for {subject}"
+        return f"Owns rules or calculations for {subject}"
     return f"Owns {subject}"
 
 
@@ -534,7 +544,7 @@ def _context_mermaid(
         lines.append(f'  {product_node}["{_flow_label(label, limit=64)}<br/>product boundary"]')
     for index, actor in enumerate(actors[:5], start=1):
         node = _node_id("actor", index)
-        target = _best_component_node_for_text(actor, components=components) or (product_node if components else first_component)
+        target = best_component_node_for_text(actor, components=components) or (product_node if components else first_component)
         lines.append(f'  {node}["{_flow_label(actor, limit=96)}"] --> {target}')
     if not components:
         lines.append(f'  {first_component}["{_flow_label(label, limit=60)}<br/>product core"]')
@@ -547,7 +557,7 @@ def _context_mermaid(
             lines.append(f"  {_node_id('component', index - 1)} --> {node}")
     for index, external in enumerate(external_systems[:5], start=1):
         node = _node_id("external", index)
-        target_component = _best_component_node_for_text(external, components=components) or _adapter_node(components) or (product_node if components else first_component)
+        target_component = best_component_node_for_text(external, components=components) or _adapter_node(components) or (product_node if components else first_component)
         lines.append(f'  {node}["{_flow_label(external, limit=96)}"] --> {target_component}')
     lines.extend(
         [
@@ -564,405 +574,6 @@ def _context_mermaid(
     if external_systems:
         lines.append("  class " + ",".join(_node_id("external", index) for index in range(1, min(len(external_systems), 5) + 1)) + " external;")
     return "\n".join(lines) + "\n"
-
-
-def _sequence_mermaid(*, label: str, actors: list[str], components: list[dict[str, Any]], first_path: str) -> str:
-    selected = [dict(row) for row in active_release_components(components)] if components else []
-    selected = selected[:7] or [{"label": f"{label} product core"}]
-    actor_rows = actors[:5] or [f"{label} user"]
-    lines = [
-        "sequenceDiagram",
-        "  autonumber",
-    ]
-    for index, actor in enumerate(actor_rows, start=1):
-        lines.append(f"  participant A{index} as {_participant_label(actor)}")
-    for index, component in enumerate(selected, start=1):
-        lines.append(f"  participant C{index} as {_participant_label(str(component.get('label', 'Component')))}")
-    steps = _first_path_steps(first_path)
-    if not steps:
-        steps = ["Start the accepted first path", "Record product state and evidence", "Review the outcome and blockers"]
-    visible_steps = steps[: min(14, max(10, len(selected) + 6))]
-    for index, step in enumerate(visible_steps):
-        actor_node = _step_actor(step, actors=actor_rows, fallback_index=min(index, len(actor_rows) - 1))
-        component_node = _step_component(step, components=selected, fallback_index=min(index, len(selected) - 1))
-        lines.append(f"  {actor_node}->>{component_node}: {_step_message(step)}")
-        if index + 1 < len(visible_steps):
-            next_component_node = _step_component(
-                visible_steps[index + 1],
-                components=selected,
-                fallback_index=min(index + 1, len(selected) - 1),
-            )
-            if next_component_node != component_node:
-                lines.append(f"  {component_node}->>{next_component_node}: {_handoff_message(visible_steps[index + 1])}")
-    first_actor = "A1"
-    final_component = _step_component(visible_steps[-1], components=selected, fallback_index=min(len(selected) - 1, len(visible_steps) - 1))
-    lines.append(f"  {final_component}-->>{first_actor}: show outcome, evidence, and next action")
-    return "\n".join(lines) + "\n"
-
-
-def _best_component_node_for_text(value: str, *, components: list[dict[str, Any]]) -> str:
-    scored: list[tuple[int, int, int, str]] = []
-    terms = _domain_terms(value)
-    if not terms:
-        return ""
-    for index, component in enumerate(components[:7], start=1):
-        label_score = len(terms & _domain_terms(component.get("label", "")))
-        component_text = " ".join(
-            str(component.get(key, ""))
-            for key in ("label", "source_system_description", "responsibility", "boundary")
-        )
-        body_score = len(terms & _domain_terms(component_text))
-        score = label_score * 3 + body_score
-        if score:
-            scored.append((score, label_score, -index, _node_id("component", index)))
-    scored.sort(reverse=True)
-    return scored[0][3] if scored else ""
-
-
-def _first_path_steps(value: str) -> list[str]:
-    semantic_steps = list(first_path_steps(value))
-    if semantic_steps:
-        return semantic_steps
-    text = _compact_text(value)
-    if not text:
-        return []
-    action_pattern = (
-        r"attaches?|checks?|confirms?|verifies?|opens?|reviews?|reads?|compares?|saves?|records?|creates?|submits?|receives?|assigns?|"
-        r"captures?|collects?|completes?|enters?|logs?|gets?|resolves?|moves?|builds?|exports?|imports?|screens?|sees?|supplies?|provides?|routes?|validates?|"
-        r"calculates?|chooses?|fetches?|finds?|groups?|highlights?|lets?|links?|orders?|ranks?|selects?|shows?|stores|"
-        r"tracks?|decides?|votes?|approves?|rejects?|declines?|requests?|notifies?|publishes?|preserves?|hands?|sends?|schedules|explains?|closes?"
-    )
-    numbered = [part.strip(" .") for part in re.split(r"(?:^|\s)\d+[.)]\s*", text) if part.strip(" .")]
-    if len(numbered) > 1:
-        first = numbered[0]
-        if ":" in first:
-            first = first.rsplit(":", 1)[-1].strip(" .")
-        steps = [first, *numbered[1:]] if first else numbered[1:]
-        return [_sentence(step).rstrip(".") for step in steps if len(re.findall(r"[A-Za-z0-9]+", step)) >= 3]
-    steps = [part.strip(" .") for part in re.split(r"(?<=[.!?])\s+|;\s+", text) if part.strip(" .")]
-    expanded: list[str] = []
-    for step in steps:
-        expanded.extend(
-            part.strip(" .")
-            for part in re.split(r"\s+and\s+(?=(?:the\s+)?[A-Za-z]+\s+receives?\b)", step)
-            if part.strip(" .")
-        )
-    steps = expanded
-    split_steps: list[str] = []
-    for step in steps:
-        split_steps.extend(
-            part.strip(" .")
-            for part in re.split(
-                rf",\s+(?=(?:and\s+)?(?:(?:{action_pattern})\b|(?:(?:the|a|an)\s+)?[A-Za-z][A-Za-z0-9/-]*\s+(?:{action_pattern})\b))",
-                step,
-                flags=re.IGNORECASE,
-            )
-            if part.strip(" .")
-        )
-    steps = split_steps
-    expanded_steps: list[str] = []
-    for step in steps:
-        expanded_steps.extend(
-            part.strip(" .")
-            for part in re.split(
-                rf"\s+and\s+(?=(?:(?:{action_pattern})\b|(?:(?:the|a|an)\s+)?[A-Za-z][A-Za-z0-9/-]*\s+(?:{action_pattern})\b))",
-                step,
-                flags=re.IGNORECASE,
-            )
-            if part.strip(" .")
-        )
-    steps = expanded_steps
-    return [_sentence(step).rstrip(".") for step in steps if step]
-
-
-def _step_actor(step: str, *, actors: list[str], fallback_index: int) -> str:
-    if _starts_with_path_action(step):
-        return "A1"
-    axis_index = _step_axis_actor_index(step, rows=actors)
-    if axis_index is not None:
-        return f"A{axis_index + 1}"
-    target = _best_index_for_text(step, rows=actors, default=fallback_index)
-    return f"A{target + 1}"
-
-
-def _step_axis_actor_index(step: str, *, rows: list[str]) -> int | None:
-    text = _compact_text(step).casefold()
-    direct_subjects: tuple[tuple[tuple[str, ...], tuple[str, ...]], ...] = (
-        (("editor", "chair"), ("editor", "chair", "manager", "coordinator", "supervisor", "owner")),
-        (("record owner", "clerk"), ("record owner", "clerk", "publisher", "records")),
-        (("applicant", "submit", "request"), ("applicant", "submitter", "requester", "customer")),
-        (("reviewer", "reviewers"), ("reviewer", "evaluator", "analyst", "inspector", "approver")),
-        (("admin", "administrator"), ("admin", "administrator", "config", "maintainer", "support")),
-    )
-    for step_tokens, actor_tokens in direct_subjects:
-        if not any(token in text for token in step_tokens):
-            continue
-        for index, row in enumerate(rows):
-            row_text = row.casefold()
-            if any(token in row_text for token in actor_tokens):
-                return index
-    axes: tuple[tuple[tuple[str, ...], tuple[str, ...]], ...] = (
-        (("reviewer", "feedback", "score", "quality", "reproducibility"), ("reviewer", "evaluator", "analyst", "inspector", "approver")),
-        (("editor", "chair", "screen", "assign", "compare", "decision"), ("editor", "chair", "manager", "coordinator", "supervisor", "owner")),
-        (("applicant", "submit", "request", "receives"), ("applicant", "submitter", "requester", "customer")),
-        (("admin", "configure", "policy", "template", "deadline", "permission"), ("admin", "administrator", "config", "maintainer", "support")),
-    )
-    for step_tokens, actor_tokens in axes:
-        if not any(token in text for token in step_tokens):
-            continue
-        for index, row in enumerate(rows):
-            row_text = row.casefold()
-            if any(token in row_text for token in actor_tokens):
-                return index
-    return None
-
-
-def _step_component(step: str, *, components: list[dict[str, Any]], fallback_index: int) -> str:
-    label_rows = [str(component.get("label", "")) for component in components]
-    rows = [
-        " ".join(str(component.get(key, "")) for key in ("label", "source_system_description", "responsibility", "boundary"))
-        for component in components
-    ]
-    axis_index = _step_axis_component_index(step, rows=label_rows)
-    if axis_index is not None:
-        return f"C{axis_index + 1}"
-    target = _best_index_for_text(step, rows=rows, default=fallback_index)
-    return f"C{target + 1}"
-
-
-def _step_axis_component_index(step: str, *, rows: list[str]) -> int | None:
-    text = _compact_text(step).casefold()
-    entry_capture_action = bool(
-        re.search(r"\b(log|logs|enter|enters|capture|captures|edit|edits|correct|corrects)\b", text)
-        or re.search(r"\brecords?\b(?!\s+owner)", text)
-    )
-    if entry_capture_action and re.search(
-        r"\b(entry|form|intake|capture|record|episode|observation)\b",
-        text,
-    ):
-        for index, row in enumerate(rows):
-            row_text = row.casefold()
-            if re.search(r"\b(entry|intake|capture|form|record|episode|observation)\b", row_text):
-                return index
-    axes: tuple[tuple[tuple[str, ...], tuple[str, ...]], ...] = (
-        (("import", "imports", "open", "opens", "intake", "required materials", "signal", "report"), ("intake", "import", "adapter", "request", "signal", "triage", "material")),
-        (("verify", "verifies", "identity", "proof", "required materials", "current state"), ("intake", "import", "adapter", "request", "signal", "material", "baseline")),
-        (("eligibility", "rule", "policy", "coverage", "exclusion"), ("eligibility", "screening", "rules", "coverage", "decision", "policy")),
-        (("diagnostic", "diagnostics", "photo", "photos", "checklist", "finding", "findings"), ("evidence", "diagnostics", "checklist", "capture", "review")),
-        (("price", "pricing", "cost", "quote"), ("pricing", "quote", "cost", "evidence")),
-        (("receiving", "received", "variance", "variance explanation"), ("receiving", "variance", "review")),
-        (("estimate", "estimated", "budget", "quantity", "recommendation", "recommended"), ("estimate", "quote", "cost", "budget", "recommendation", "quantity")),
-        (("assign", "assigned", "assignment", "schedule", "schedules", "window", "conflict"), ("assignment", "schedule", "assignee", "conflict", "permission")),
-        (("screen", "screens", "conflict", "conflicts"), ("assignment", "conflict", "permission", "access", "role")),
-        (("handoff", "hands", "sends", "provider", "recipient", "approved payload", "external handoff"), ("handoff", "provider", "recipient", "order")),
-        (("approval", "approve", "approved", "reject", "rejection", "approver"), ("approval", "ledger", "approver", "rationale")),
-        (("notify", "notifies", "message", "communication", "terms", "response"), ("communication", "notification", "message", "log", "response")),
-        (("follow-up", "followup", "required action", "due date"), ("follow-up", "followup", "action", "planner")),
-        (("publish", "publishes", "public", "summary", "redacted", "publication"), ("publication", "public", "summary", "audit")),
-        (("compares reviews", "compare reviews", "editor compares", "editorial decision", "makes a decision", "request revisions", "requests revisions"), ("decision", "workflow", "editorial", "revision")),
-        (("close", "closes", "closure", "audit", "history", "replay"), ("closure", "audit", "record", "trail", "history", "retention")),
-        (("publish", "published", "audit", "history", "replay"), ("audit", "trail", "history", "retention", "source-backed")),
-        (("claim", "claims", "citation", "citations", "lineage", "traceability", "source-backed"), ("audit", "trail", "claim", "claims", "citation", "lineage", "source-backed")),
-        (("open", "opens", "packet", "intake"), ("intake", "packet", "submission", "version")),
-        (("onboarding", "onboard", "consent", "eligibility", "disclosure"), ("onboarding", "consent", "signup", "registration", "profile")),
-        (("log", "logs", "logging"), ("logging", "log", "daily", "activity", "tracking", "progress")),
-        (("reminder", "follow-up", "missed entry", "stale work", "safety", "guardrail"), ("reminder", "notification", "safety", "guardrail")),
-        (("trend", "weekly", "check-in", "checkin", "off track", "progress"), ("trend", "weekly", "check-in", "review", "analytics")),
-        (("baseline", "measurement", "metric", "initial value", "starting state"), ("baseline", "measurement", "capture", "metric")),
-        (("target", "plan", "computed", "recomputed", "recompute", "adjustment"), ("target", "plan", "generation", "recommendation")),
-        (("enter", "enters", "origin", "destination", "preference", "departure time"), ("intake", "capture", "adapter", "request", "entry")),
-        (("calculate", "calculated"), ("calculation", "pricing", "quote", "cost", "estimate", "recommendation", "engine")),
-        (("calculate", "price", "pricing", "cost", "quote"), ("quote", "pricing", "cost", "estimate")),
-        (("fetch", "candidate options", "schedule", "departure", "transfer", "service alert"), ("schedule", "candidate", "option", "service")),
-        (("rank", "ranks", "ranking", "highlight", "cheapest", "alternative", "alternatives"), ("ranking", "rank", "option", "engine")),
-        (("choose", "select", "selected", "stores", "comparison evidence", "visible result"), ("review", "surface", "comparison", "selected")),
-        (("context", "map", "source freshness", "freshness"), ("context", "location", "map", "viewer")),
-        (("question", "follow-up", "followup", "response", "answer", "unresolved"), ("question", "response", "tracker", "issue", "follow-up")),
-        (("compare", "comparison", "recommendation", "readiness"), ("comparison", "dashboard", "recommendation", "readiness")),
-        (("feedback", "comment", "theme", "group"), ("feedback", "comment", "theme", "grouping")),
-        (("feedback", "score", "scores", "rubric", "structured", "strength", "weakness", "reproducibility"), ("form", "scoring", "rubric", "assessment")),
-        (("submit", "submission", "upload", "file"), ("submission", "intake", "version", "file")),
-        (("screen", "assign", "conflict", "reviewer"), ("assignment", "conflict", "permission", "access", "role")),
-        (("receives", "received", "notified", "notification"), ("notification", "deadline", "status", "dashboard", "view")),
-        (("rationale", "vote", "motion", "final outcome", "outcome"), ("rationale", "vote", "outcome", "record")),
-        (("decision", "decide", "approval", "reject"), ("decision", "approval", "outcome", "rationale", "record")),
-        (("revision", "revise", "revisions", "resubmit"), ("revision", "round", "resubmission", "response")),
-        (("deadline", "reminder", "overdue"), ("notification", "deadline", "status", "dashboard", "view")),
-    )
-    if re.search(r"\b(preserve|preserves|audit|history|replay)\b", text):
-        for index, row in enumerate(rows):
-            if any(_has_word(row, token) for token in ("audit", "trail", "history", "retention", "closure", "publication")):
-                return index
-        if rows:
-            return len(rows) - 1
-    if re.search(r"\b(calculat\w*|comput\w*|deriv\w*|validat\w*)\b", text) and _has_word(text, "evidence"):
-        for index, row in enumerate(rows):
-            if any(_has_word(row, token) for token in ("evidence", "quote", "pricing", "calculation", "estimate")):
-                return index
-    for step_tokens, component_tokens in axes:
-        if not any(token in text for token in step_tokens):
-            continue
-        for index, row in enumerate(rows):
-            if any(_has_word(row, token) for token in component_tokens):
-                return index
-    return None
-
-
-def _has_word(value: str, token: str) -> bool:
-    return bool(re.search(rf"\b{re.escape(token.casefold())}(?:s|es|ing|ed)?\b", value.casefold()))
-
-
-def _best_index_for_text(value: str, *, rows: list[str], default: int) -> int:
-    terms = _domain_terms(value)
-    scored: list[tuple[int, int]] = []
-    for index, row in enumerate(rows):
-        score = len(terms & _domain_terms(row))
-        if score:
-            scored.append((score, -index))
-    if not scored:
-        return max(0, min(default, max(0, len(rows) - 1)))
-    scored.sort(reverse=True)
-    return -scored[0][1]
-
-
-def _starts_with_path_action(step: str) -> bool:
-    text = re.sub(r"^(?:and|then)\s+", "", _compact_text(step), flags=re.IGNORECASE)
-    text = re.sub(r"^(?:the\s+)?product\s+", "", text, flags=re.IGNORECASE)
-    return bool(
-        re.match(
-            r"^(?:attaches?|checks?|confirms?|verifies?|opens?|reviews?|reads?|compares?|saves?|records?|creates?|submits?|receives?|assigns?|captures?|collects?|completes?|enters?|logs?|gets?|resolves?|moves?|exports?|imports?|screens?|routes?|validates?|calculates?|chooses?|fetches?|finds?|groups?|highlights?|lets?|links?|orders?|ranks?|selects?|shows?|sees?|stores|tracks?|decides?|votes?|approves?|rejects?|declines?|requests?|notifies?|publishes?|preserves?|hands?|sends?|schedules|explains?|closes?)\b",
-            text,
-            flags=re.IGNORECASE,
-        )
-    )
-
-
-def _step_message(value: str) -> str:
-    text = re.sub(r"^(?:and|then)\s+", "", _strip_dangling_tail(_trim(value, 150)), flags=re.IGNORECASE)
-    text = re.sub(r"^(?:the\s+)?product\s+", "", text, flags=re.IGNORECASE)
-    if text:
-        text = text[:1].upper() + text[1:]
-    return _without_ellipsis(mermaid_text.wrap_mermaid_label(text, width=34, max_lines=4, limit=160)) or "advance accepted path"
-
-
-def _handoff_message(next_step: str) -> str:
-    focus = re.sub(r"^(?:and|then)\s+", "", _strip_dangling_tail(_trim(next_step, 90)), flags=re.IGNORECASE)
-    focus = re.sub(r"^(?:a|an|the)\s+", "", focus, flags=re.IGNORECASE).strip(" .")
-    focus = re.sub(r"^(?:the\s+)?product\s+", "", focus, flags=re.IGNORECASE).strip(" .")
-    if not focus:
-        focus = "next accepted action"
-    focus = _imperative_handoff_focus(focus)
-    if _starts_with_path_action(focus):
-        label = f"next step: {focus[:1].lower()}{focus[1:]}"
-    else:
-        label = f"handoff: {focus[:1].lower()}{focus[1:]}"
-    return _without_ellipsis(mermaid_text.wrap_mermaid_label(label, width=34, max_lines=4, limit=160))
-
-
-def _imperative_handoff_focus(value: str) -> str:
-    text = _compact_text(value).strip(" .")
-    replacements = {
-        "adds": "add",
-        "attaches": "attach",
-        "assigns": "assign",
-        "captures": "capture",
-        "calculates": "calculate",
-        "checks": "check",
-        "chooses": "choose",
-        "closes": "close",
-        "collects": "collect",
-        "compares": "compare",
-        "completes": "complete",
-        "confirms": "confirm",
-        "creates": "create",
-        "decides": "decide",
-        "enters": "enter",
-        "exports": "export",
-        "fetches": "fetch",
-        "finds": "find",
-        "gets": "get",
-        "groups": "group",
-        "highlights": "highlight",
-        "imports": "import",
-        "notifies": "notify",
-        "lets": "let",
-        "links": "link",
-        "logs": "log",
-        "opens": "open",
-        "orders": "order",
-        "publishes": "publish",
-        "ranks": "rank",
-        "reads": "read",
-        "receives": "receive",
-        "records": "record",
-        "requests": "request",
-        "resolves": "resolve",
-        "reviews": "review",
-        "routes": "route",
-        "saves": "save",
-        "sees": "see",
-        "selects": "select",
-        "shows": "show",
-        "screens": "screen",
-        "sends": "send",
-        "schedules": "schedule",
-        "stores": "store",
-        "submits": "submit",
-        "tracks": "track",
-        "validates": "validate",
-        "verifies": "verify",
-        "votes": "vote",
-        "explains": "explain",
-        "hands": "hand",
-        "preserves": "preserve",
-    }
-    first, sep, rest = text.partition(" ")
-    replacement = replacements.get(first.casefold())
-    if replacement:
-        text = f"{replacement}{sep}{rest}".strip()
-    for source, target in replacements.items():
-        text = re.sub(rf"([,;]\s+){re.escape(source)}\b", rf"\1{target}", text, flags=re.IGNORECASE)
-    return text
-
-
-def _domain_terms(value: object) -> set[str]:
-    stop = {
-        "accepted",
-        "actor",
-        "and",
-        "app",
-        "application",
-        "boundary",
-        "component",
-        "evidence",
-        "first",
-        "from",
-        "outcome",
-        "path",
-        "product",
-        "proof",
-        "record",
-        "release",
-        "result",
-        "state",
-        "system",
-        "that",
-        "the",
-        "through",
-        "with",
-    }
-    terms: set[str] = set()
-    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", _compact_text(str(value)).casefold()):
-        token = raw.strip("-_")
-        if token.endswith("ies") and len(token) > 5:
-            token = f"{token[:-3]}y"
-        elif token.endswith("ing") and len(token) > 6:
-            token = token[:-3]
-        elif token.endswith("s") and len(token) > 4 and not token.endswith("ss"):
-            token = token[:-1]
-        if len(token) >= 4 and token not in stop:
-            terms.add(token)
-    return terms
 
 
 def _ownership_mermaid(
@@ -1015,8 +626,8 @@ def _state_evidence_mermaid(
         f'  action["First action<br/>{actor_label}"] --> owner1["{_escape_label(first_owner)}"]',
         f'  owner1 --> state["State object<br/>{_escape_label(_trim(state_object, 62))}"]',
         f'  state --> owner2["{_escape_label(evidence_owner)}"]',
-        f'  owner2 --> evidence["Evidence record<br/>{_escape_label(_trim(evidence_record, 62))}"]',
-        f'  evidence --> owner3["{_escape_label(review_owner)}"]',
+        f'  owner2 --> evidence_record["Evidence record<br/>{_escape_label(_trim(evidence_record, 62))}"]',
+        f'  evidence_record --> owner3["{_escape_label(review_owner)}"]',
         f'  owner3 --> review["Proof check<br/>{_escape_label(_trim(proof_label, 62))}"]',
         '  review --> correction["Blocked or corrected<br/>path stays visible"]',
         "  classDef action fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;",
@@ -1027,14 +638,14 @@ def _state_evidence_mermaid(
         "  class action action;",
         "  class owner1,owner2,owner3 owner;",
         "  class state state;",
-        "  class evidence evidence;",
+        "  class evidence_record evidence;",
         "  class review,correction review;",
     ]
     return "\n".join(lines) + "\n"
 
 
 def _component_label_for_text(value: str, *, components: list[dict[str, Any]]) -> str:
-    node = _best_component_node_for_text(value, components=components)
+    node = best_component_node_for_text(value, components=components)
     if not node.startswith("component"):
         return ""
     try:
@@ -1101,25 +712,26 @@ def _proof_review_mermaid(
     proof_boundary: str,
     components: list[dict[str, Any]],
     non_goals: list[str],
+    semantic_model: Mapping[str, Any] | None = None,
 ) -> str:
     proof_text = _brief_proof_boundary(proof_boundary) or "accepted proof boundary"
-    proof_label = _proof_checkpoint_label(proof_text) or "first-path evidence, state replay, blocked-path proof"
+    proof_label = _semantic_proof_checkpoint(semantic_model) or _proof_checkpoint_label(proof_text) or "first-path evidence, state replay, blocked-path proof"
     evidence_label = _proof_evidence_label(components=components, fallback=evidence_record)
     lines = [
         "flowchart LR",
-        '  result["First-path<br/>outcome"] --> state',
-        f'  state["Domain state<br/>{_escape_label(_trim(state_object, 58))}"] --> evidence',
-        f'  evidence["Evidence record<br/>{_escape_label(_trim(evidence_label, 72))}"] --> validation',
+        '  outcome["First-path<br/>outcome"] --> state',
+        f'  state["Domain state<br/>{_escape_label(_trim(state_object, 58))}"] --> evidence_record',
+        f'  evidence_record["Evidence record<br/>{_escape_label(_trim(evidence_label, 72))}"] --> validation',
         f'  validation["Proof checkpoint<br/>{_escape_label(proof_label)}"] --> decision',
         '  decision["Release decision<br/>accept, revise, or block"] --> release',
         '  release["Release claim<br/>stays inside proof boundary"]',
-        "  classDef result fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;",
+        "  classDef outcomeClass fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;",
         "  classDef state fill:#F5F3FF,stroke:#C4B5FD,color:#17233A,stroke-width:1px;",
         "  classDef evidence fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1px;",
         "  classDef gate fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;",
-        "  class result result;",
+        "  class outcome outcomeClass;",
         "  class state state;",
-        "  class evidence evidence;",
+        "  class evidence_record evidence;",
         "  class validation,decision,release gate;",
     ]
     if non_goals:
@@ -1132,6 +744,18 @@ def _proof_review_mermaid(
             ]
         )
     return "\n".join(lines) + "\n"
+
+
+def _semantic_proof_checkpoint(semantic_model: Mapping[str, Any] | None) -> str:
+    if not isinstance(semantic_model, Mapping):
+        return ""
+    graph = semantic_model.get("diagram_event_graph")
+    if not isinstance(graph, Mapping):
+        return ""
+    value = _compact_text(str(graph.get("proof_checkpoint") or ""))
+    if not value or len(re.findall(r"[A-Za-z0-9]+", value)) < 3:
+        return ""
+    return _trim(value, 80)
 
 
 def _proof_evidence_label(*, components: list[dict[str, Any]], fallback: str) -> str:
@@ -1147,87 +771,23 @@ def _proof_evidence_label(*, components: list[dict[str, Any]], fallback: str) ->
 
 
 def _proof_checkpoint_label(value: str) -> str:
-    stop = {
-        "accepted",
-        "against",
-        "actor",
-        "action",
-        "adjusted",
-        "boundary",
-        "can",
-        "check",
-        "choose",
-        "complete",
-        "completed",
-        "completes",
-        "create",
-        "created",
-        "done",
-        "enriched",
-        "enter",
-        "enters",
-        "finalized",
-        "first",
-        "gets",
-        "imported",
-        "lets",
-        "losing",
-        "operation",
-        "operations",
-        "operator",
-        "path",
-        "person",
-        "published",
-        "receive",
-        "received",
-        "receives",
-        "release",
-        "representative",
-        "review",
-        "reviewed",
-        "reviewer",
-        "reviews",
-        "route",
-        "replayed",
-        "routed",
-        "select",
-        "selected",
-        "start",
-        "started",
-        "starting",
-        "succeeds",
-        "through",
-        "user",
-        "uses",
-        "view",
-        "views",
-        "when",
-        "with",
-        "without",
-    }
-    terms: list[str] = []
-    seen: set[str] = set()
-    raw_terms = re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", _compact_text(value).casefold())
-    action_subject_verbs = {"choose", "compare", "complete", "enter", "import", "open", "record", "review", "select", "submit"}
-    for position, raw in enumerate(raw_terms):
-        token = raw.strip("-_")
-        next_word = raw_terms[position + 1] if position + 1 < len(raw_terms) else ""
-        next_action = raw_terms[position + 2] if position + 2 < len(raw_terms) else ""
-        if next_word in {"can", "may", "must", "should", "will"} and next_action in action_subject_verbs:
-            continue
-        if token.endswith("ies") and len(token) > 5:
-            token = f"{token[:-3]}y"
-        elif token.endswith("s") and len(token) > 4 and not token.endswith("ss"):
-            token = token[:-1]
-        if len(token) < 4 or token in stop or token in seen:
-            continue
-        seen.add(token)
-        terms.append(token)
-        if len(terms) >= 7:
-            break
-    if len(terms) < 3:
+    text = _compact_text(value).strip(" .")
+    if not text:
         return ""
-    return ", ".join(terms)
+    text = re.sub(r"^release\s+[A-Za-z0-9_.-]+\s+succeeds\s+when\s+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^the\s+release\s+succeeds\s+when\s+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^the\s+first\s+proof\s+is\s+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^what\s+would\s+count\s+as\s+evidence[^:]*:\s*", "", text, flags=re.IGNORECASE)
+    text = re.split(r"\bwhat\s+must\s+not\s+be\s+claimed\s+yet\b", text, maxsplit=1, flags=re.IGNORECASE)[0]
+    clauses = [
+        clause.strip(" .")
+        for clause in re.split(r";\s+|(?<=[.!?])\s+|\s+\band\b\s+", text)
+        if clause.strip(" .")
+    ]
+    for clause in clauses:
+        if len(re.findall(r"[A-Za-z0-9]+", clause)) >= 4:
+            return _trim(clause, 82)
+    return ""
 
 
 def _boundary_node_for_text(
@@ -1236,7 +796,7 @@ def _boundary_node_for_text(
     selected_components: list[dict[str, Any]],
     fallback: str,
 ) -> str:
-    component_node = _best_component_node_for_text(value, components=selected_components)
+    component_node = best_component_node_for_text(value, components=selected_components)
     if component_node.startswith("component"):
         try:
             index = int(component_node.replace("component", "", 1))
@@ -1346,7 +906,7 @@ def _strip_dangling_tail(value: str) -> str:
     text = _compact_text(value).rstrip(" ,;:.")
     while True:
         cleaned = re.sub(
-            r"\b(?:a|an|and|as|at|because|by|can|for|from|if|in|into|lets|must|of|on|or|should|the|tied|to|when|while|with|without)$",
+            r"\b(?:a|an|and|as|at|because|by|can|for|from|if|in|into|lets|must|of|on|or|should|the|through|tied|to|when|while|with|without)$",
             "",
             text,
             flags=re.IGNORECASE,

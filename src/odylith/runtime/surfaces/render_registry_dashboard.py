@@ -1606,9 +1606,9 @@ def _render_html(*, payload: dict[str, Any]) -> str:
 
     function productLayerDescription(layer) {
       const token = String(layer || "").trim().toLowerCase();
-      if (token === "shell_host") return "Owns the top-level Odylith shell and host routing surface.";
+      if (token === "shell_host") return "Owns top-level Odylith shell and host routing surface.";
       if (token === "evidence_surface") return "Owns one of the operator-facing evidence and inspection surfaces.";
-      if (token === "memory_retrieval") return "Owns the derived local memory, sparse recall, packet compaction, and dense-context diagnostics substrate.";
+      if (token === "memory_retrieval") return "Owns derived local memory, sparse recall, packet compaction, and dense-context diagnostics substrate.";
       if (token === "intelligence") return "Owns case-building, reasoning, or remediation intelligence inside Odylith.";
       if (token === "agent_execution") return "Owns bounded agent routing, orchestration, or host-execution behavior.";
       if (token === "cli_bootstrap") return "Owns install, bootstrap, or operator command-entry boundaries for Odylith.";

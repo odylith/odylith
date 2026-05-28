@@ -7,8 +7,13 @@ from pathlib import Path
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import component_dependency_lines
+from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import component_dependency_lookup_for
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import PROJECT_INTELLIGENCE_LAYERS
+from odylith.runtime.domain_intelligence.greenfield_project_intelligence import render_project_intelligence_section
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
+from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import render_domain_intelligence_section
+from odylith.runtime.domain_intelligence.artifact_enrichment import tribunal_actor_projection
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import build_traceability_graph
 from odylith.runtime.governance import release_planning_view_model
@@ -116,9 +121,9 @@ def test_greenfield_workstreams_require_host_authored_intelligence(tmp_path) -> 
 
     workflow = next(row for row in proposal["backlog"] if row["title"] == "Define Storefront boundary")
     intelligence = workflow["domain_intelligence"]
-    rendered = greenfield_proposals.render_domain_intelligence_section(intelligence)
+    rendered = render_domain_intelligence_section(intelligence)
     project_intelligence = proposal["project_intelligence"]
-    project_rendered = greenfield_proposals.render_project_intelligence_section(project_intelligence)
+    project_rendered = render_project_intelligence_section(project_intelligence)
 
     assert "Host Authored Greenfield Project" not in project_rendered
     assert "Make Plant Sensor" in project_rendered
@@ -143,7 +148,7 @@ def test_greenfield_workstreams_require_host_authored_intelligence(tmp_path) -> 
     proposal_text = greenfield_proposals.format_proposal_text(proposal)
     assert "Product Story" not in proposal_text
     for row in proposal["backlog"]:
-        row_rendered = greenfield_proposals.render_domain_intelligence_section(row["domain_intelligence"])
+        row_rendered = render_domain_intelligence_section(row["domain_intelligence"])
         labels = _ontology_term_labels(row["domain_intelligence"]["ontology"])
         assert len(labels) == len(set(labels))
         assert "owns Own" not in row_rendered
@@ -169,6 +174,30 @@ def test_greenfield_tribunal_uses_domain_specific_visible_actors(tmp_path) -> No
     assert not any("Host Reasoned Project" in label for label in actor_labels)
     assert not any(label in {"Actor", "State object", "Evidence record", "Release gate"} for label in actor_labels)
     assert "stable judgment roles render as domain-specific actors" in decision.dimensions["validation_roles"]
+
+
+def test_greenfield_tribunal_projection_keeps_explicit_actor_roles_distinct() -> None:
+    projection = tribunal_actor_projection(
+        {
+            "project_intelligence": {"actors": ["Field technician", "Dispatch reviewer"]},
+            "backlog": [
+                {
+                    "customer": "Field technician; Dispatch reviewer",
+                    "domain_intelligence": {
+                        "actors": ["Field technician", "Dispatch reviewer"],
+                        "operators": ["Field technician"],
+                        "risks": ["Dispatch reviewer owns release risk"],
+                        "validation_obligations": ["Field technician proof"],
+                        "evidence_types": ["visit evidence"],
+                    },
+                }
+            ],
+        }
+    )
+    labels = [row["visible_actor"] for row in projection]
+
+    assert "Field Technician" in labels
+    assert len(labels) == len(set(label.casefold() for label in labels))
 
 
 def test_greenfield_artifacts_are_bound_to_project_intelligence_root(tmp_path) -> None:
@@ -456,7 +485,7 @@ def test_greenfield_normalization_preserves_host_authored_intelligence() -> None
     proposal = greenfield_proposals.normalize_host_reasoned_proposal(_host_reasoned_ecommerce_proposal())
     child = next(row for row in proposal["backlog"] if row["title"] == "Define Storefront boundary")
     intelligence = child["domain_intelligence"]
-    rendered = greenfield_proposals.render_domain_intelligence_section(intelligence)
+    rendered = render_domain_intelligence_section(intelligence)
     brief = proposal["project_brief"]
     project_intelligence = proposal["project_intelligence"]
 
@@ -843,7 +872,7 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert storefront["workstreams"] == ["B-002"]
     assert storefront["diagrams"] == []
     assert storefront["what_it_is"].startswith("Storefront is planned as an application boundary")
-    assert "It owns browse, cart entry, checkout entry, and user-facing errors" in storefront["what_it_is"]
+    assert "keeps local state, blocked behavior, recovery evidence, and release proof reviewable" in storefront["what_it_is"]
     assert "responsible for" not in storefront["what_it_is"]
     assert "It owns browse, cart entry, checkout entry, and user-facing errors" in storefront_spec
     assert "| Workstreams | `B-002` |" in storefront_spec
@@ -1027,7 +1056,7 @@ def test_greenfield_apply_writes_host_authored_component_specs(tmp_path, monkeyp
 
 
 def test_greenfield_component_dependency_lines_are_grammatical_from_component_rows() -> None:
-    lookup = greenfield_proposals._component_dependency_lookup(
+    lookup = component_dependency_lookup_for(
         [
             {
                 "component_id": "observation-ledger",
@@ -1047,7 +1076,7 @@ def test_greenfield_component_dependency_lines_are_grammatical_from_component_ro
         ]
     )
 
-    lines = greenfield_proposals._component_dependency_lines(
+    lines = component_dependency_lines(
         ["observation-ledger", "evidence-linker", "condition-deriver"],
         lookup=lookup,
     )

@@ -28,7 +28,9 @@ ASSISTANT_RENDER_REQUIRED_STATUS = visibility_contract.ASSISTANT_RENDER_REQUIRED
 ASSISTANT_RENDER_REQUIRED_CHANNEL = visibility_contract.ASSISTANT_RENDER_REQUIRED_CHANNEL
 LIVE_BOUNDARY_REQUIRED_KINDS = visibility_contract.LIVE_BOUNDARY_REQUIRED_KINDS
 _ASSIST_COMMON_MISSPELLING = "as" "sit"
-_VISIBILITY_FAILURE_FALLBACK_MARKER = "no Odylith note has reached this chat yet"
+_VISIBILITY_FAILURE_FALLBACK_MARKER = (
+    "this turn must render an Odylith note in chat before Odylith can claim the user saw it"
+)
 _HOST_LABELS = {
     "claude": "Claude",
     "codex": "Codex",
@@ -66,6 +68,14 @@ _VISIBLE_COPY_BLOCKERS: tuple[tuple[str, re.Pattern[str]], ...] = (
     (
         "product-theater visibility copy",
         re.compile(r"\b(?:brand promise|ready to speak|visible lane)\b", re.IGNORECASE),
+    ),
+    (
+        "generic activity receipt",
+        re.compile(
+            r"\b(?:has Odylith activity, but no Odylith note|"
+            r"Odylith is active, but no Odylith note)\b",
+            re.IGNORECASE,
+        ),
     ),
     (
         "repo-memory claim without local proof",
@@ -253,7 +263,7 @@ def _wrap_live_text(value: str) -> str:
 def _visibility_failure_observation(*, host_family: str) -> str:
     host_label = _HOST_LABELS.get(_normalize_token(host_family), "This assistant")
     return _wrap_live_text(
-        f"**Odylith Observation:** {host_label} has Odylith activity, but "
+        f"**Odylith Observation:** {host_label} intervention visibility is the blocker: "
         f"{_VISIBILITY_FAILURE_FALLBACK_MARKER}."
     )
 

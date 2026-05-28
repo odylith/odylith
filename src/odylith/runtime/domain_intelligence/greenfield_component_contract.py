@@ -289,14 +289,15 @@ def _generic_contract(
     upstream = previous_label or "accepted first-path input and state object"
     downstream = next_label or "the next product boundary and release proof review"
     interface_kind = "visible state" if kind.casefold() in {"client", "surface", "ui", "web"} else "command or event"
+    input_focus = _accepted_input_focus(focus, kind=kind)
     return {
         "owned_state": f"{focus}, local blockers, recovery state, evidence reference, and handoff history for {state_label}",
-        "accepted_inputs": f"{upstream}, actor identity, source evidence, validation context, and {focus}",
-        "produced_outputs": f"{subject} {interface_kind} result, state update, blocker or recovery signal, evidence reference, and downstream handoff",
+        "accepted_inputs": f"{upstream}, authorized actor, source evidence, prior state, and {input_focus}",
+        "produced_outputs": f"{subject} {interface_kind} result, state update, blocked or recovery marker, evidence reference, and handoff record",
         "states_or_transitions": ", ".join(states),
         "outside_boundary": _outside_boundary(kind=kind),
         "local_proof": [
-            f"{label} accepts representative input covering {focus} and produces the expected local output.",
+            f"{label} proves the happy path for {focus} with a visible result and persisted evidence.",
             f"{label} rejects or blocks invalid input covering {focus} without creating a trusted downstream state.",
             f"{label} exposes recovery evidence and handoff history for {focus}.",
         ],
@@ -309,6 +310,17 @@ def _generic_contract(
     }
 
 
+def _accepted_input_focus(focus: str, *, kind: str) -> str:
+    text = _clean(focus).strip(" .")
+    if kind.casefold() not in {"client", "surface", "ui", "web"}:
+        return text
+    if re.match(r"^(?:candidate|visible)\b", text, flags=re.IGNORECASE):
+        return text
+    if re.match(r"^(?:ranked|ordered|selected|eligible|comparable)\b", text, flags=re.IGNORECASE):
+        return f"candidate {text[:1].lower()}{text[1:]}"
+    return text
+
+
 def _profile(*, label: str, kind: str, context: str) -> str:
     focused = f"{label} {kind}".casefold()
     focused_words = _word_set(focused)
@@ -317,7 +329,12 @@ def _profile(*, label: str, kind: str, context: str) -> str:
         return "document_context"
     if focused_words & {"access", "permission", "rbac", "audit", "retention"}:
         return "generic"
-    if focused_words & {"status", "timeline", "history", "notification", "stale"} or "current owner" in focused:
+    analytic_timeline = focused_words & {"correlation", "metric", "measurement", "activity", "overlay", "trend"}
+    lifecycle_view = focused_words & {"status", "notification", "stale"} or "current owner" in focused
+    lifecycle_timeline = focused_words & {"timeline", "history"} and bool(
+        focused_words & {"status", "lifecycle", "notification", "audit", "owner", "readiness"}
+    )
+    if (lifecycle_view or lifecycle_timeline) and not analytic_timeline:
         return "status_view"
     if (
         "context" in focused_words
@@ -325,7 +342,11 @@ def _profile(*, label: str, kind: str, context: str) -> str:
         and any(token in text for token in ("document", "attachment", "packet", "upload", "file"))
     ):
         return "document_context"
-    if "view" in focused_words and any(token in text for token in ("status", "timeline", "current owner", "notification", "stale")):
+    if (
+        "view" in focused_words
+        and any(token in text for token in ("status", "current owner", "notification", "stale"))
+        and not analytic_timeline
+    ):
         return "status_view"
     return "generic"
 

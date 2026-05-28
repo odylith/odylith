@@ -298,10 +298,10 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "Create a Registry component" in html
     assert "Create an Atlas diagram" in html
     assert "Create a Casebook bug" in html
-    assert "Payments boundary cleanup" in html
+    assert "Component boundary cleanup" in html
     assert "Create a Registry component named" in html
-    assert "Create an Atlas diagram for the payments component." in html
-    assert "Duplicate payment capture after webhook retry" in html
+    assert "Create an Atlas diagram for the example-component." in html
+    assert "Duplicate state transition after provider retry" in html
     assert "Create a target release" in html
     assert "Assign a workstream to a release" in html
     assert "Create programs and waves" in html
@@ -324,14 +324,14 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "odylith compass watch-transactions --repo-root ." in html
     assert "Add a developer note" in html
     assert "Open Radar for workstream B-025." in html
-    assert "Open Registry for the payments component." in html
-    assert "Start Odylith and ground me in src/payments/service.py." in html
+    assert "Open Registry for the example-component." in html
+    assert "Start Odylith and ground me in src/example_component/service.py." in html
     assert "Map a component or workstream in Atlas" in html
-    assert "Map the payments component in Atlas." in html
+    assert "Map the example-component in Atlas." in html
     assert "Find the Atlas diagram for workstream B-025." in html
     assert "Open a known component or workstream" in html
-    assert "Show me the files and records for the payments component." in html
-    assert "component like payments or a workstream id like B-025" in html
+    assert "Show me the files and records for example-component." in html
+    assert "component like example-component or a workstream id like B-025" in html
     assert "Odylith scopes to the tied files and governed records." in html
     assert "Validate plan bindings before closing workstream B-025." in html
     assert "Show the critical risks for workstream B-025." in html
@@ -515,7 +515,7 @@ def test_render_tooling_dashboard_enables_passive_live_refresh_for_consumer_repo
     monkeypatch.setattr(
         renderer.agent_governance_intelligence,
         "collect_git_changed_paths",
-        lambda **kwargs: ["src/payments/service.py", "odylith/registry/registry-payload.v1.js"],
+        lambda **kwargs: ["src/example_component/service.py", "odylith/registry/registry-payload.v1.js"],
     )
 
     rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])

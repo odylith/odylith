@@ -37,7 +37,6 @@ _SECURITY_TOKENS = (
     "private",
     "abuse",
     "threat",
-    "payment",
     "pii",
     "data risk",
 )

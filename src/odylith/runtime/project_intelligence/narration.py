@@ -61,14 +61,10 @@ def _inferred_project_type(source: str) -> str:
         if any(token in source for token in ("govern", "admiss", "control", "tribunal", "execution")):
             return "coding-agent governance"
         return "coding-agent tooling"
-    if any(token in source for token in ("funding", "capital", "lending", "repayment", "treasury")):
-        return "capital product"
-    if any(token in source for token in ("experiment", "hypothesis", "assay", "perturbation", "reproducib")):
-        return "research workflow"
     if any(token in source for token in ("codebase", "migration", "pull request", "ci", "rollback")):
         return "developer tooling"
-    if any(token in source for token in ("order", "shipment", "asset", "fulfillment", "handoff")):
-        return "operations workflow"
+    if any(token in source for token in ("workflow", "handoff", "review", "evidence", "decision", "record")):
+        return "product workflow"
     return ""
 
 

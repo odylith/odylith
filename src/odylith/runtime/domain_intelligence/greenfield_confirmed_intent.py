@@ -10,6 +10,7 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 
 
 FIELD_MIN_WORDS = {
@@ -1153,16 +1154,10 @@ _TERM_STOPWORDS = {
 def _semantic_terms(text: str) -> set[str]:
     terms: set[str] = set()
     for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", _clean(text).casefold()):
-        token = raw.strip("-_")
-        if len(token) < 3 or token in _TERM_STOPWORDS:
-            continue
-        if token.endswith("ies") and len(token) > 4:
-            token = f"{token[:-3]}y"
-        elif token.endswith("ing") and len(token) > 5:
+        token = normalize_domain_token(raw, minimum=3, stopwords=_TERM_STOPWORDS)
+        if token.endswith("ing") and len(token) > 5:
             token = token[:-3]
-        elif token.endswith("s") and len(token) > 3 and not token.endswith("ss"):
-            token = token[:-1]
-        if token not in _TERM_STOPWORDS:
+        if token:
             terms.add(token)
     return terms
 

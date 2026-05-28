@@ -15,6 +15,7 @@ from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence.artifact_enrichment import tribunal_actor_projection
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_text import collect_text_values
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence.project_intelligence_binding import project_intelligence_binding_issues
@@ -83,7 +84,6 @@ _SECURITY_TOKENS = (
     "private",
     "abuse",
     "threat",
-    "payment",
     "pii",
     "data risk",
 )
@@ -375,7 +375,12 @@ def _check_confirmed_artifact_substance(
     project_terms = _project_terms(proposal)
     component_label_terms = _term_set(" ".join(str(row.get("label", "")) for row in components))
     required_terms = project_terms | component_label_terms
-    _check_confirmed_radar_substance(backlog=backlog, required_terms=required_terms, issues=issues)
+    _check_confirmed_radar_substance(
+        backlog=backlog,
+        required_terms=required_terms,
+        accepted_text=_accepted_public_text(proposal),
+        issues=issues,
+    )
     _check_confirmed_registry_substance(components=components, issues=issues)
     _check_confirmed_atlas_substance(
         proposal=proposal,
@@ -394,6 +399,7 @@ def _check_confirmed_radar_substance(
     *,
     backlog: Sequence[Mapping[str, Any]],
     required_terms: set[str],
+    accepted_text: str,
     issues: list[str],
 ) -> None:
     for index, row in enumerate(backlog, start=1):
@@ -415,7 +421,7 @@ def _check_confirmed_radar_substance(
             issues.append(f"confirmed Radar workstream `{title}` is too thin to guide implementation")
         if index > 1 and required_terms and len(local_terms & required_terms) < 4:
             issues.append(f"confirmed Radar workstream `{title}` is not anchored to enough project-specific nouns")
-        if _repeated_scaffold_count(body) >= 6:
+        if _repeated_scaffold_count(body, accepted_text=accepted_text) >= 6:
             issues.append(f"confirmed Radar workstream `{title}` repeats scaffold language instead of adding new product detail")
         metrics = [text for text in text_values(row.get("success_metrics")) if str(text).strip()]
         if index > 1 and len({_normalized_text(metric) for metric in metrics}) < min(2, len(metrics)):
@@ -474,8 +480,11 @@ def _check_confirmed_registry_substance(
             "unique_failure",
         ).casefold()
         label_and_contract = f"{label_text} {ownership_context}"
+        lifecycle_proof_terms = _proof_anchor_terms(contract_lower, proof_phrase="lifecycle proof")
+        if lifecycle_proof_terms and not (lifecycle_proof_terms & _term_set(label_and_contract)):
+            issues.append(f"confirmed Registry component `{label}` uses lifecycle proof outside its ownership boundary")
         if "privacy lifecycle proof" in contract_lower and not re.search(
-            r"\b(privacy|export|deletion|delete|erase|protected-data|protected data|consent)\b",
+            r"\b(privacy|consent|retention|deletion|delete|export|protected|access)\b",
             label_and_contract,
         ):
             issues.append(
@@ -634,6 +643,13 @@ def _check_visible_tribunal_actors(
             "Tribunal visible actors must be project-specific, not stable-role placeholders: "
             + ", ".join(generic)
         )
+    normalized = [label.casefold() for label in labels if label]
+    repeated = sorted({label for label in normalized if normalized.count(label) > 1})
+    if repeated:
+        issues.append(
+            "Tribunal visible actors must distinguish stable judgment roles instead of reusing one label: "
+            + ", ".join(repeated)
+        )
 
 
 def _mapping_rows(value: Any) -> list[Mapping[str, Any]]:
@@ -682,6 +698,14 @@ def _joined_fields(row: Mapping[str, Any], *keys: str) -> str:
     return " ".join(text for key in keys for text in text_values(row.get(key)) if str(text).strip())
 
 
+def _proof_anchor_terms(value: str, *, proof_phrase: str) -> set[str]:
+    index = value.find(proof_phrase)
+    if index < 0:
+        return set()
+    prefix = value[max(0, index - 80) : index]
+    return _term_set(prefix)
+
+
 def _term_set(value: str) -> set[str]:
     stop = {
         "accepted",
@@ -722,28 +746,45 @@ def _term_set(value: str) -> set[str]:
     }
     terms: set[str] = set()
     for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", str(value or "").casefold()):
-        token = raw.strip("-_")
-        if token.endswith("ies") and len(token) > 5:
-            token = f"{token[:-3]}y"
-        elif token.endswith("ing") and len(token) > 6:
+        token = normalize_domain_token(raw, stopwords=stop)
+        if token.endswith("ing") and len(token) > 6:
             token = token[:-3]
-        elif token.endswith("s") and len(token) > 4 and not token.endswith("ss"):
-            token = token[:-1]
-        if len(token) >= 4 and token not in stop:
+        if token:
             terms.add(token)
     return terms
 
 
-def _repeated_scaffold_count(text: str) -> int:
+def _accepted_public_text(proposal: Mapping[str, Any]) -> str:
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    return " ".join(
+        text_values(
+            [
+                intent.get("product_story"),
+                intent.get("state_object"),
+                intent.get("first_path"),
+                intent.get("proof_boundary"),
+                intent.get("human_actors"),
+                intent.get("internal_systems"),
+                intent.get("external_systems"),
+            ]
+        )
+    ).casefold()
+
+
+def _repeated_scaffold_count(text: str, *, accepted_text: str = "") -> int:
     lowered = str(text or "").casefold()
+    accepted_terms = set(re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", accepted_text.casefold()))
+    product_phrases = {"evidence record", "reviewer decision"}
     return sum(
         lowered.count(phrase)
         for phrase in (
             "state object",
             "evidence record",
             "reviewer decision",
-            "sibling responsibilities",
+            "adjacent responsibilities",
         )
+        if phrase not in accepted_text
+        and not (phrase in product_phrases and set(phrase.split()) <= accepted_terms)
     )
 
 

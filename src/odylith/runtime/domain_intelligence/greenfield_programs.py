@@ -86,6 +86,7 @@ def create_greenfield_program(
     repo_root: Path,
     proposal: Mapping[str, Any],
     backlog_result: Mapping[str, Any],
+    dry_run: bool = False,
 ) -> dict[str, Any]:
     created = [row for row in backlog_result.get("created", []) if isinstance(row, Mapping)]
     if len(created) < 2:
@@ -131,6 +132,23 @@ def create_greenfield_program(
         args=args,
     )
     authoring_execution_policy.enforce_governed_authoring_action(governance)
+    if dry_run:
+        return {
+            "created": True,
+            "umbrella_id": umbrella_id,
+            "program_path": str(
+                repo_root
+                / "odylith"
+                / "radar"
+                / "source"
+                / "programs"
+                / f"{umbrella_id}.execution-waves.v1.json"
+            ),
+            "waves": waves,
+            "program_count": 0,
+            "execution_engine": governance.to_dict(),
+            "dry_run": True,
+        }
     program_wave_authoring._update_idea_metadata(  # noqa: SLF001
         umbrella_spec.path,
         {"execution_model": execution_wave_contract.EXECUTION_MODEL_UMBRELLA_WAVES},

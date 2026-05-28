@@ -255,7 +255,7 @@ def _kind_profile(kind: str) -> dict[str, str]:
         "runway_heading": "First Runtime Slice",
         "role_noun": "runtime ownership boundary",
         "default_verb": "owns",
-        "contract_intro": "This component owns the state, invariants, and integration contract other slices depend on.",
+        "contract_intro": "This component owns state, invariants, and the integration contract other slices depend on.",
         "default_owns": "The first domain state model, commands, queries, invariants, and integration handoff.",
         "default_interface": "A command, query, schema, module, or event contract selected by the first technical plan.",
         "default_dependency": "Confirmed first-workflow semantics; external providers stay outside the boundary until planned.",
@@ -550,7 +550,7 @@ def _contract_summary(
     if responsibility:
         rows.append(f"Contract focus: {label} {_lower_first(responsibility)}")
     elif boundary:
-        rows.append(f"Contract focus: {label} owns the boundary described above")
+        rows.append(f"Contract focus: {label} owns boundary described above")
     if interfaces:
         rows.append(f"Primary interface: {interfaces[0]}")
     if dependencies:
@@ -561,7 +561,7 @@ def _contract_summary(
         return ". ".join(row for row in rows if sentence_fragment(row))
     if boundary:
         return (
-            f"{label} owns the boundary described above. "
+            f"{label} owns boundary described above. "
             "Its first technical plan must turn that boundary into concrete interfaces and proof."
         )
     return profile["contract_intro"]
@@ -604,6 +604,9 @@ def _lower_first(value: str) -> str:
     text = sentence_fragment(str(value))
     if not text:
         return ""
+    words = text.split()
+    if len(words) >= 2 and words[0][:1].isupper() and words[1][:1].isupper():
+        return text
     return text[:1].lower() + text[1:]
 
 
@@ -652,10 +655,18 @@ def _proof_table(
     contract: Mapping[str, Any],
 ) -> str:
     rows = ["| Claim | Required proof |", "| --- | --- |"]
+    used_handles: set[str] = set()
     for index, value in enumerate(values, start=1):
         claim = _sentence_case(_strip_proof_prefix(str(value)))
         if claim:
-            required = _proof_requirement(claim=claim, label=label, contract=contract, index=index, commands=commands)
+            required = _proof_requirement(
+                claim=claim,
+                label=label,
+                contract=contract,
+                index=index,
+                commands=commands,
+                used_handles=used_handles,
+            )
             rows.append(f"| {claim} | {required} |")
     return "\n".join(rows)
 
@@ -667,10 +678,18 @@ def _proof_requirement(
     contract: Mapping[str, Any],
     index: int,
     commands: Sequence[str],
+    used_handles: set[str] | None = None,
 ) -> str:
     claim_text = sentence_fragment(claim).casefold()
     text = " ".join([claim, label, *text_values(contract)]).casefold()
     handle = _proof_handle(label, claim, index=index)
+    if used_handles is not None:
+        base_handle = handle
+        suffix = 2
+        while handle in used_handles:
+            handle = f"{base_handle}_{suffix}"
+            suffix += 1
+        used_handles.add(handle)
     label_text = sentence_fragment(label).casefold()
     if re.search(r"\b(refus|boundary|sibling|outside|mutat|overwrite|rewrite)\b", claim_text):
         requirement = f"`{handle}` boundary test proving adjacent components cannot mutate this component's owned state"
@@ -694,7 +713,7 @@ def _proof_requirement(
             f"`{handle}` fixture with plan adjustment request, progress snapshot, status window, actor context, "
             "plan adjustment result, rationale, blocker signal, and downstream handoff"
         )
-    elif re.search(r"\b(blocker|blocked|reject|invalid|missing|stale|unauthorized|malformed|unresolved)\b", claim_text):
+    elif re.match(r"\s*(?:invalid|missing|blocked|stale|unauthorized|malformed)\b", claim_text):
         requirement = (
             f"`{handle}` fixture showing missing, stale, unauthorized, or malformed input blocks trusted output and downstream handoff"
         )
@@ -705,6 +724,10 @@ def _proof_requirement(
         )
     elif re.search(r"\b(provenance|replay|history|source|snapshot|audit)\b", claim_text):
         requirement = f"`{handle}` replay test linking persisted output to source evidence, validation context, and rationale"
+    elif re.search(r"\b(blocker|blocked|reject|invalid|missing|stale|unauthorized|malformed|unresolved)\b", claim_text):
+        requirement = (
+            f"`{handle}` fixture showing missing, stale, unauthorized, or malformed input blocks trusted output and downstream handoff"
+        )
     elif re.search(r"\b(target|recompute|computed|adjustment|plan|goal|recommendation)\b", f"{claim_text} {label_text}"):
         requirement = (
             f"`{handle}` fixture with plan adjustment request, progress snapshot, status window, actor context, "
@@ -933,58 +956,76 @@ def _strip_proof_prefix(value: str) -> str:
 
 
 def _proof_handle(label: str, proof: str, *, index: int) -> str:
-    proof_text = str(proof).casefold()
-    text = f"{proof_text} {label}".casefold()
-    if re.search(r"\b(boundary|refus|sibling|outside|mutat|overwrite|rewrite)\b", proof_text):
-        return "boundary_mutation_proof"
-    if re.search(r"\b(deletion|delete|blocked deletion|retention)\b", text) and re.search(r"\b(block|invalid|unauthorized|missing)\b", text):
-        return "deletion_block_proof"
-    if re.search(r"^\s*intake\s+proof\b", text):
-        return "intake_capture_proof"
-    if re.search(r"^\s*ranking\s+proof\b", text):
-        return "option_ranking_proof"
-    if re.search(r"^\s*quote\s+proof\b", text):
-        return "quote_calculation_proof"
-    if re.search(r"^\s*plan\s+adjustment\s+proof\b", text):
-        return "plan_adjustment_proof"
-    if re.search(r"\b(blocker|blocked|reject|invalid|missing|stale|unauthorized|malformed|unresolved)\b", text):
-        return "invalid_input_proof"
-    if re.search(r"\b(check ledger|required checks?|rule references?|pass or block|reviewer comment)\b", text):
-        return "check_rule_ledger_proof"
-    if re.search(r"\b(provenance|replay|history|source|snapshot|audit)\b", text):
-        return "provenance_replay_proof"
-    if re.search(r"\b(privacy|retention|export|deletion|delete|consent|protected)\b", text):
-        return "privacy_lifecycle_proof"
-    if re.search(r"\b(intake|submitted answers|required-input|accepted answer set)\b", text):
-        return "intake_capture_proof"
-    if re.search(r"\b(candidate option|comparison criteria|ranking|selected option|ordered alternatives)\b", text):
-        return "option_ranking_proof"
-    if re.search(r"\b(quote|pricing|cost rule|calculated amount|cost breakdown)\b", text):
-        return "quote_calculation_proof"
-    if re.search(r"\b(target|recompute|computed|adjustment|plan|goal|recommendation)\b", text):
-        return "plan_adjustment_proof"
-    terms = [
-        word.replace("-", "_")
-        for word in re.findall(r"[a-z0-9][a-z0-9_-]*", text)
-        if word
-        not in {
-            "and",
-            "boundary",
-            "component",
-            "contract",
-            "evidence",
-            "local",
-            "proof",
-            "release",
-            "service",
-            "state",
-            "the",
-            "with",
-        }
-    ]
+    proof_terms = _proof_handle_terms(proof)
+    label_terms = _proof_handle_terms(label)
+    terms = _unique_terms([*proof_terms, *label_terms])
     if terms:
-        return "_".join(terms[:3]) + "_proof"
-    return f"component_contract_proof_{index}"
+        return "_".join([*terms[:4], str(index), "proof"])
+    return f"component_contract_{index}_proof"
+
+
+def _proof_handle_terms(value: str) -> list[str]:
+    stopwords = {
+        "able",
+        "accepted",
+        "actor",
+        "and",
+        "are",
+        "before",
+        "boundary",
+        "can",
+        "component",
+        "contract",
+        "downstream",
+        "evidence",
+        "for",
+        "from",
+        "handoff",
+        "input",
+        "its",
+        "local",
+        "missing",
+        "must",
+        "not",
+        "output",
+        "owned",
+        "owns",
+        "path",
+        "proof",
+        "release",
+        "required",
+        "result",
+        "service",
+        "source",
+        "state",
+        "the",
+        "this",
+        "to",
+        "upstream",
+        "when",
+        "while",
+        "with",
+    }
+    terms: list[str] = []
+    for raw in re.findall(r"[a-z0-9][a-z0-9_-]*", str(value).casefold()):
+        word = raw.replace("-", "_").strip("_")
+        if len(word) < 3 or word in stopwords:
+            continue
+        if word.endswith("s") and len(word) > 4 and not word.endswith("ss"):
+            word = word[:-1]
+        terms.append(word)
+    return terms
+
+
+def _unique_terms(values: Sequence[str]) -> list[str]:
+    result: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        term = str(value or "").strip()
+        if term and term not in seen:
+            seen.add(term)
+            result.append(term)
+    return result
 
 
 def _command_lines(values: Sequence[str]) -> str:
