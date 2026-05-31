@@ -584,21 +584,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       gap: 10px;
       flex-wrap: wrap;
     }}
-    .panel-head-title {{
-      margin: 0;
-      color: var(--ink);
-      font-size: 12px;
-      line-height: 1.2;
-      letter-spacing: 0.06em;
-      font-weight: 800;
-      text-transform: uppercase;
-    }}
-    .panel-head-meta {{
-      color: var(--ink-muted);
-      font-size: 12px;
-      line-height: 1.35;
-      font-weight: 600;
-    }}
+    __CASEBOOK_PANEL_HEAD_TYPOGRAPHY__
     .list {{
       max-height: 640px;
       overflow: auto;
@@ -616,29 +602,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       display: grid;
       gap: 0;
       align-content: start;
-    }}
-    .bug-row {{
-      width: 100%;
-      text-align: left;
-      border: 1px solid #d6dce8;
-      border-radius: 12px;
-      background: #ffffff;
-      padding: 10px 10px 9px;
-      margin-bottom: 8px;
-      cursor: pointer;
-      color: inherit;
-      white-space: normal;
-      overflow-wrap: anywhere;
-      transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
-    }}
-    .bug-row:hover {{
-      border-color: #93c5fd;
-      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.09);
-      transform: translateY(-1px);
-    }}
-    .bug-row.active {{
-      border-color: #1d4ed8;
-      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.22);
     }}
     .bug-row-head {{
       display: flex;
@@ -1044,7 +1007,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       <aside class="list-panel" aria-label="Bug selector">
         <div class="panel-head">
           <p class="panel-head-title">Bug Cases</p>
-          <span id="listMeta" class="panel-head-meta">Visible: 0</span>
+          <span id="listMeta" class="panel-head-meta">0 visible</span>
         </div>
         <div class="list">
           <div id="bugList" class="bug-list"></div>
@@ -2177,7 +2140,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
             No Casebook entries match the current filters.
           </div>
         `;
-        listMeta.textContent = "Visible: 0";
+        listMeta.textContent = "0 visible";
         detailRenderToken += 1;
         detailPane.innerHTML = `
           <div class="empty-state" role="status">
@@ -2216,7 +2179,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           </button>
         `;
       }}).join("");
-      listMeta.textContent = `Visible: ${{rows.length}}`;
+      listMeta.textContent = `${{rows.length}} visible`;
       for (const button of bugList.querySelectorAll(".bug-row")) {{
         button.addEventListener("click", () => {{
           const bug = canonicalizeBugToken(button.getAttribute("data-bug") || "");

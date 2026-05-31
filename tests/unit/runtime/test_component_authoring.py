@@ -44,9 +44,11 @@ def test_component_spec_template_does_not_claim_source_for_user_intent() -> None
         workstreams=("B-200",),
     )
 
-    assert "| Status | `planned` |" in text
+    assert "## Component Brief" not in text
+    assert "## Boundary Narrative" not in text
+    assert "## First Release Proof" not in text
     assert "Planned from user-stated intent" in text
-    assert "No source-backed claim is made yet" in text
+    assert "Source boundary: src/solver" in text
     assert "[B-200](odylith/radar/radar.html?view=plan&workstream=B-200)" in text
 
 
@@ -78,26 +80,21 @@ def test_component_spec_template_uses_greenfield_responsibility_and_links() -> N
         },
     )
 
-    assert "Checkout owns payment handoff and order-draft recovery" in text
-    assert "| Workstreams | `B-200`, `B-201` |" in text
-    assert "| Diagrams | `D-200` |" in text
-    assert "## Component Role" in text
-    assert "## Runtime Boundary" in text
-    assert "## Runtime Contract" in text
+    assert "payment handoff" in text
+    assert "order draft" in text
+    assert "Trace links: workstreams B-200, B-201, diagrams D-200" in text
+    assert "## Component Brief" not in text
+    assert "## Boundary Narrative" not in text
+    assert "## First Release Proof" not in text
     assert "## Checkout Boundary Runtime Boundary" not in text
-    assert "### Collaborators And Dependencies" in text
-    assert "- Depends on Payment sandbox for state, behavior, evidence, or access this component does not own." in text
-    assert "- Checkout request contract." in text
-    assert "| Payment failure recovery proof |" in text
-    assert "- Provider-specific behavior may change the boundary." in text
+    assert "Checkout Boundary receives its trusted context from Payment sandbox and prepares work for Order ledger." in text
+    assert "Payment failure recovery proof." in text
+    assert "Provider-specific behavior may change the boundary." in text
     assert "[B-201](odylith/radar/radar.html?view=plan&workstream=B-201)" in text
-    assert "Use `B-201` (Checkout first slice) as the implementation-plan anchor" in text
-    assert "- Wave: Checkout spine (active)." in text
-    assert "- Release target: 0.0.1." in text
-    assert "- First coding slice: Implement browse-to-checkout with payment sandbox failure recovery." in text
-    assert "- Promotion requires source-backed `happy_path_checkout_smoke_1_proof`, `payment_failure_recovery_checkout_2_proof`; proposal text alone is not enough." in text
-    assert "- `./.odylith/bin/odylith context --repo-root . B-201`" in text
-    assert "- run npm test" in text
+    assert "Use B-201 (Checkout first slice) as the implementation anchor" in text
+    assert "Release wave: Checkout spine." in text
+    assert "Release target: 0.0.1." in text
+    assert "Implement browse-to-checkout with payment sandbox failure recovery." in text
 
 
 def test_component_spec_template_keeps_greenfield_contracts_concise() -> None:
@@ -146,9 +143,8 @@ def test_component_spec_template_keeps_greenfield_contracts_concise() -> None:
     assert "Release 0.0.1 contribution:" not in text
     assert "Product context:" not in text
     assert "Project outcome:" not in text
-    assert "Proof focus: accepted intake, rejected input, and reviewer-visible recovery state" in text
-    assert "Primary interface: Command, query, or event contract for recording field intake" in text
-    assert "Proof obligation: accepted intake, rejected input, and reviewer-visible recovery state" in text
-    assert "| Accepted intake, rejected input, and reviewer-visible recovery state |" in text
-    assert "- Intake must stay attributable" in text
+    assert "Accepted intent says this component records field intake with attribution, review state, and recovery outcome." in text
+    assert "field intake with attribution command" in text
+    assert "Contract proof covers accepted intake, rejected input, and reviewer-visible recovery state." in text
+    assert "Intake must stay attributable" in text
     assert "…" not in text

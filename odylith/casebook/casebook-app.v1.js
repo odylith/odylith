@@ -1164,7 +1164,7 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
             No Casebook entries match the current filters.
           </div>
         `;
-        listMeta.textContent = "Visible: 0";
+        listMeta.textContent = "0 visible";
         detailRenderToken += 1;
         detailPane.innerHTML = `
           <div class="empty-state" role="status">
@@ -1203,7 +1203,7 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
           </button>
         `;
       }).join("");
-      listMeta.textContent = `Visible: ${rows.length}`;
+      listMeta.textContent = `${rows.length} visible`;
       for (const button of bugList.querySelectorAll(".bug-row")) {
         button.addEventListener("click", () => {
           const bug = canonicalizeBugToken(button.getAttribute("data-bug") || "");

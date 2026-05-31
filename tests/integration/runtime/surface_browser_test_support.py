@@ -232,7 +232,7 @@ def _assert_casebook_counts(casebook, *, expected_open_total: int, expected_tota
     assert casebook.locator("#kpiOpenTotal").inner_text().strip() == str(expected_open_total)
     assert casebook.locator("#kpiTotalCases").inner_text().strip() == str(expected_total_cases)
     assert casebook.locator("button.bug-row").count() == expected_total_cases
-    assert casebook.locator("#listMeta").inner_text().strip() == f"Visible: {expected_total_cases}"
+    assert casebook.locator("#listMeta").inner_text().strip() == f"{expected_total_cases} visible"
 
 
 def _pane_hidden(page, frame_selector: str) -> bool:  # noqa: ANN001

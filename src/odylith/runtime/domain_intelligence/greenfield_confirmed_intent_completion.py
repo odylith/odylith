@@ -40,23 +40,14 @@ _GENERIC_TITLE_WORDS = {
 
 _ROLE_WORDS = {
     "admin",
-    "advocate",
     "analyst",
-    "applicant",
     "auditor",
-    "borrower",
-    "buyer",
     "chief",
-    "client",
     "coordinator",
-    "crew",
     "customer",
-    "decision",
     "director",
     "engineer",
     "expert",
-    "finder",
-    "helper",
     "inspector",
     "lead",
     "manager",
@@ -65,9 +56,6 @@ _ROLE_WORDS = {
     "owner",
     "planner",
     "reviewer",
-    "renter",
-    "resident",
-    "seller",
     "staff",
     "submitter",
     "supervisor",
@@ -99,11 +87,42 @@ def complete_confirmed_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
     if _title_needs_repair(title):
         result["title"] = _derived_title(result, fallback=title)
         title = _title(result)
+    _normalize_confirmed_core_language(result)
     result["human_actors"] = _completed_actor_rows(result, title=title)
     result["internal_systems"] = _completed_system_rows(result, title=title)
     _complete_core_fields(result, title=title)
+    _normalize_confirmed_core_language(result)
     _complete_product_posture(result, title=title)
+    _normalize_confirmed_core_language(result)
     return result
+
+
+def _normalize_confirmed_core_language(intent: dict[str, Any]) -> None:
+    """Keep accepted operator wording but remove known non-spec prefixes."""
+
+    for key in ("product_story", "state_object", "first_path", "problem", "product_view"):
+        text = _clean(intent.get(key))
+        if text:
+            intent[key] = _sentence(_strip_prompt_prefixes(text))
+    proof = _clean(intent.get("proof_boundary"))
+    if proof:
+        intent["proof_boundary"] = _sentence(_normalize_proof_boundary(proof))
+    metrics = _strings(intent.get("success_metrics"))
+    if metrics:
+        intent["success_metrics"] = [_sentence(_normalize_proof_boundary(row)) for row in metrics]
+
+
+def _strip_prompt_prefixes(value: str) -> str:
+    text = _clean(value)
+    text = re.sub(r"^(?:problem\s+to\s+solve|product\s+view|first\s+path|state\s+object)\s*:\s*", "", text, flags=re.I)
+    return text.strip()
+
+
+def _normalize_proof_boundary(value: str) -> str:
+    text = _strip_prompt_prefixes(value)
+    text = re.sub(r"^(?:done\s+means?|proven\s+when|proof\s+means?)\s*:\s*", "Release 0.0.1 succeeds when ", text, flags=re.I)
+    text = re.sub(r"^(?:done\s+means?|proven\s+when|proof\s+means?)\s+", "Release 0.0.1 succeeds when ", text, flags=re.I)
+    return text.strip()
 
 
 def _completion_seed_is_sufficient(intent: Mapping[str, Any]) -> bool:
@@ -166,7 +185,7 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
     if not _clean(intent.get("problem")):
         state_phrase = _state_label(state, title=title) if state else f"{focus} state"
         path_capability = _path_capability(first_path, fallback=f"the first {title.lower()} path")
-        path_action = _capability_action_clause(path_capability)
+        path_action = _capability_action_clause(material_first_path_action(first_path) or path_capability)
         intent["problem"] = _sentence(
             f"{focus} is not trustworthy when users cannot {path_action} with {state_phrase}, source evidence, visible blockers, and the systems that own the handoff."
         )
@@ -255,7 +274,7 @@ def _actor_description(*, label: str, index: int, title: str, first_path: str, s
     if re.search(r"\b(public\s+figure|public\s+person|tracked|being\s+tracked|subject|official|executive|creator)\b", label_text):
         body = "is represented by lawful source records, evidence, confidence, and privacy limits; the product must not imply private access, endorsement, or guaranteed outcome"
     elif re.search(r"\b(compliance|policy|privacy|legal|risk|safety)\b", label_text):
-        body = "reviews access, privacy, policy, risk, and evidence boundaries before the product treats the accepted path as release-ready"
+        body = "reviews access, privacy, policy, risk, and evidence boundaries"
     elif re.search(r"\b(user|researcher|investor|analyst|operator)\b", label_text):
         body = f"uses {title} to start the accepted path, inspect source-backed evidence, record a decision, and see blocked or risk states"
     elif re.search(r"\b(author|applicant|submitter|requester|customer|client|resident|buyer|seller)\b", label_text):
@@ -395,7 +414,7 @@ def _system_row(row: str, *, context: str, title: str, explicit: bool = False) -
         return ""
     if "—" in raw or ":" in raw:
         name, description = re.split(r"\s+—\s+|:\s*", raw, maxsplit=1)
-        if _word_count(description) >= 5:
+        if _system_description_is_enough(description):
             return f"{_title_case(name)} — {description.rstrip('.')}"
     name = _system_label(raw, title=title)
     if not name:
@@ -411,6 +430,22 @@ def _system_row(row: str, *, context: str, title: str, explicit: bool = False) -
             f"Context: {_short(clause, limit=180)}"
         )
     return f"{name} — owns input capture, state change, validation evidence, blocked states, and handoff for the accepted {title.lower()} path"
+
+
+def _system_description_is_enough(value: str) -> bool:
+    text = _clean(value)
+    if _word_count(text) >= 5:
+        return True
+    return bool(
+        _word_count(text) >= 3
+        and re.search(
+            r"\b(?:captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
+            r"produces?|producing|returns?|returning|routes?|routing|records?|recording|stores?|storing|"
+            r"configures?|configuring|owned\s+by|keeps?)\b",
+            text,
+            re.IGNORECASE,
+        )
+    )
 
 
 def _derived_system_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
@@ -517,8 +552,23 @@ def _actor_labels(intent: Mapping[str, Any]) -> list[str]:
 def _system_labels(intent: Mapping[str, Any]) -> list[str]:
     labels: list[str] = []
     for row in _strings(intent.get("internal_systems")):
-        labels.append(_clean(row.split("—", 1)[0].split(":", 1)[0]))
+        labels.append(_system_label_head(row))
     return [label for label in labels if label]
+
+
+def _system_label_head(value: str) -> str:
+    head = _clean(value.split("—", 1)[0].split(":", 1)[0])
+    split = re.search(
+        r"\s+(?=(?:owned\s+by|captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
+        r"produces?|producing|returns?|returning|routes?|routing|records?|recording|stores?|storing|"
+        r"shows?|showing|renders?|rendering|generates?|generating|calculates?|calculating|"
+        r"configures?|configuring|groups?|grouping|aligns?|aligning|tracks?|tracking|manages?|managing)\b)",
+        head,
+        flags=re.IGNORECASE,
+    )
+    if split:
+        head = head[: split.start()].strip(" .:-")
+    return head
 
 
 def _system_label(row: str, *, title: str) -> str:
@@ -849,10 +899,48 @@ def _capability_action_clause(value: str) -> str:
     text = clean_text(value).strip(" .")
     if not text:
         return "complete the accepted path"
+    actor_action = _actor_action_clause(text)
+    if actor_action:
+        return actor_action
     converted = base_action_clause(text)
     if converted and converted != text.casefold():
         return converted
     return text[:1].lower() + text[1:]
+
+
+def _actor_action_clause(value: str) -> str:
+    text = re.sub(r"^(?:a|an|the)\s+", "", clean_text(value).strip(" ."), flags=re.IGNORECASE)
+    words = text.split()
+    for index in range(1, min(len(words), 6)):
+        verb = words[index].strip(".,;:")
+        base = _base_action_verb(verb)
+        if base != verb.casefold():
+            tail = " ".join(words[index + 1 :]).strip(" .")
+            return " ".join(part for part in (base, tail) if part)
+    return ""
+
+
+def _base_action_verb(value: str) -> str:
+    token = str(value or "").casefold()
+    overrides = {
+        "chooses": "choose",
+        "does": "do",
+        "goes": "go",
+        "has": "have",
+        "is": "be",
+        "receives": "receive",
+        "sees": "see",
+        "uses": "use",
+    }
+    if token in overrides:
+        return overrides[token]
+    if len(token) > 4 and token.endswith("ies"):
+        return f"{token[:-3]}y"
+    if len(token) > 4 and token.endswith(("ches", "shes", "sses", "xes", "zes")):
+        return token[:-2]
+    if len(token) > 3 and token.endswith("s") and not token.endswith("ss"):
+        return token[:-1]
+    return token
 
 
 def _sentence(value: str) -> str:
@@ -871,10 +959,13 @@ def _lower_first(value: str) -> str:
 
 def _title_case(value: str) -> str:
     words: list[str] = []
-    for word in _clean(value).split():
+    connectors = {"a", "an", "and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"}
+    for index, word in enumerate(_clean(value).split()):
         lower = word.casefold()
         if lower in {"ai", "api", "crm", "gis", "iot", "llm", "ml", "ui", "ux"}:
             words.append(lower.upper())
+        elif index > 0 and lower in connectors:
+            words.append(lower)
         else:
             words.append(word[:1].upper() + word[1:])
     return " ".join(words)

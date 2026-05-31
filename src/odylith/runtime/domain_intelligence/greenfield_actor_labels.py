@@ -16,6 +16,7 @@ _DESCRIPTION_MARKERS = (
     " submitting ",
     " evaluating ",
     " configuring ",
+    " checking ",
     " managing ",
     " reviewing ",
     " handling ",
@@ -206,7 +207,7 @@ def accepted_actor_label(value: str, *, project_focus: str = "") -> str:
         if focus:
             return _title_label(focus)
         return ""
-    if original_head and marker_head and lower_head != role:
+    if original_head and marker_head and lower_head != role and not marker_body_used:
         return _title_label(original_head)
     return _title_label(head)
 

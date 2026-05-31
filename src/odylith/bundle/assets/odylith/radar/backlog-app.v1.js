@@ -3470,7 +3470,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
       const executionWaveSummary = executionWavePayload().summary || {};
       el.stats.innerHTML = summaryStatRows(filtered, executionWaveSummary).join("");
 
-      el.meta.textContent = `Showing ${filtered.length} of ${all.length} workstreams · Source: ${DATA.index_file}`;
+      el.meta.textContent = `Showing ${filtered.length} of ${all.length} workstreams`;
       void renderAnalytics(filtered);
       renderList(filtered, { preserveListScroll: Boolean(options.preserveListScroll) });
       void renderDetail(filtered);

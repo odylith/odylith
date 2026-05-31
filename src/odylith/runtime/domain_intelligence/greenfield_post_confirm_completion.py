@@ -76,11 +76,18 @@ def build_greenfield_completion_report(
     *,
     release_selector: str = "",
     rendered_component_specs: Mapping[str, str] | None = None,
+    tribunal_preview: Mapping[str, Any] | None = None,
 ) -> GreenfieldCompletionReport:
     """Evaluate the full post-confirm package before any governed write."""
 
     rendered_specs = dict(rendered_component_specs or {})
-    tribunal = run_greenfield_tribunal(proposal, release_selector=release_selector)
+    cached_tribunal = _cached_tribunal_result(tribunal_preview)
+    if cached_tribunal is None:
+        tribunal = run_greenfield_tribunal(proposal, release_selector=release_selector)
+        tribunal_status = str(tribunal.status)
+        tribunal_issues = [str(issue) for issue in tribunal.issues]
+    else:
+        tribunal_status, tribunal_issues = cached_tribunal
     issues: list[str] = []
     issues.extend(_post_confirm_contract_issues(proposal, rendered_specs=rendered_specs))
     issues.extend(greenfield_quality_issues(proposal))
@@ -90,7 +97,7 @@ def build_greenfield_completion_report(
         title = _project_title(proposal)
         spec_issues = rendered_component_spec_quality_issues(rendered_specs, project_title=title)
         issues.extend(operator_component_spec_issues(spec_issues))
-    issues.extend(str(issue) for issue in tribunal.issues)
+    issues.extend(tribunal_issues)
     issues = unique_text(issues)
     return GreenfieldCompletionReport(
         status="failed" if issues else "passed",
@@ -102,7 +109,7 @@ def build_greenfield_completion_report(
             "diagrams": _row_count(proposal.get("diagrams")),
             "rendered_component_specs": len(rendered_specs),
         },
-        tribunal_status=str(tribunal.status),
+        tribunal_status=tribunal_status,
         issues=tuple(issues),
     )
 
@@ -114,6 +121,7 @@ def build_greenfield_package_report(package: GreenfieldCompletionPackage) -> Gre
         package.proposal,
         release_selector=package.release_selector,
         rendered_component_specs=package.rendered_component_specs,
+        tribunal_preview=package.tribunal_preview,
     )
     package_issues = _package_artifact_issues(package)
     issues = unique_text([*report.issues, *package_issues])
@@ -171,6 +179,21 @@ def assert_greenfield_package_ready(package: GreenfieldCompletionPackage) -> Gre
     report = build_greenfield_package_report(package)
     raise_for_failed_greenfield_completion(report)
     return report
+
+
+def _cached_tribunal_result(preview: Mapping[str, Any] | None) -> tuple[str, list[str]] | None:
+    """Return a same-package Tribunal result when it was already computed."""
+
+    if not isinstance(preview, Mapping):
+        return None
+    if str(preview.get("version", "")).strip() != "greenfield-validation-gate-v1":
+        return None
+    status = str(preview.get("status", "")).strip()
+    raw_issues = preview.get("issues")
+    issues = [str(issue).strip() for issue in raw_issues if str(issue).strip()] if isinstance(raw_issues, list) else []
+    if status and status != "passed" and not issues:
+        issues.append(f"greenfield Tribunal returned {status}")
+    return status or "unknown", issues
 
 
 def _project_title(proposal: Mapping[str, Any]) -> str:

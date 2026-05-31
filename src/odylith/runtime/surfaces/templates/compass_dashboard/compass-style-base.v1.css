@@ -176,6 +176,17 @@ h1 {
       --chip-link-bg-hover: #ffedd5;
       --chip-link-text-hover: #7c2d12;
     }
+    .pill.ws-id-btn,
+    .pill.ws-covered-id-btn,
+    .pill.workstream-id-chip,
+    .chip.execution-wave-chip-link.ws-id-btn {
+      --chip-link-border: #93c5fd;
+      --chip-link-bg: #eff6ff;
+      --chip-link-text: #1e3a8a;
+      --chip-link-border-hover: #60a5fa;
+      --chip-link-bg-hover: #deebff;
+      --chip-link-text-hover: #1d4ed8;
+    }
     __ODYLITH_COMPASS_KPI_GRID_CONTRACT__
     __ODYLITH_COMPASS_KPI_CARD_CONTRACT__
     __ODYLITH_COMPASS_CARD_SURFACE_CONTRACT__

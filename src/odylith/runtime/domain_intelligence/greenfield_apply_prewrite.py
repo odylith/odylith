@@ -474,6 +474,7 @@ def component_authoring_prewrite_inputs(
         label = str(row.get("label", "") or row.get("component_id", "")).strip()
         if not label:
             continue
+        responsibility = component_authoring_responsibility(row)
         inputs.append(
             {
                 "component_id": str(row.get("component_id", "")).strip(),
@@ -492,7 +493,7 @@ def component_authoring_prewrite_inputs(
                     diagram_scope=component_diagram_scope,
                     fallback=traceability_plan.component_diagrams.get(key, ()),
                 ),
-                "responsibility": str(row.get("responsibility", "")).strip(),
+                "responsibility": responsibility,
                 "boundary": str(row.get("boundary", "")).strip(),
                 "dependencies": component_dependency_lines(
                     row_text_tuple(row, "dependencies", "depends_on"),
@@ -506,6 +507,33 @@ def component_authoring_prewrite_inputs(
             }
         )
     return tuple(inputs)
+
+
+def component_authoring_responsibility(row: Mapping[str, Any]) -> str:
+    """Prefer the accepted-intent sentence over normalized contract prose for greenfield specs."""
+
+    for key in ("source_system_description", "responsibility", "boundary"):
+        value = _readable_component_sentence(row.get(key))
+        if value:
+            return value
+    return ""
+
+
+def _readable_component_sentence(value: Any) -> str:
+    text = join_sentence_text(text_values(value, split_scalar=False, split_commas=False, strip_bullets=True))
+    text = re.sub(r"\s+", " ", text).strip(" .")
+    if len(text.split()) < 4:
+        return ""
+    lowered = text.casefold()
+    if re.search(
+        r"\b(?:component planning record|runtime ownership boundary|structured contract below|"
+        r"responsibility and keeps it tied|refused domain responsibilities|forbidden runtime authorities)\b",
+        lowered,
+    ):
+        return ""
+    if re.match(r"^(?:and|or|their|they|them|it|this|that|who|which|where)\b", lowered):
+        return ""
+    return text
 
 
 def render_prewrite_atlas_sources(proposal: Mapping[str, Any]) -> dict[str, str]:
@@ -987,6 +1015,7 @@ _COMPONENT_POLICY_TOKENS = (
 
 __all__ = [
     "allocated_diagram_ids",
+    "component_authoring_responsibility",
     "component_authoring_prewrite_inputs",
     "component_dependency_lines",
     "component_dependency_lookup_for",

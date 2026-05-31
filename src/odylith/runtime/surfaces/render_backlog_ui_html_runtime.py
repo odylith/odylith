@@ -774,15 +774,17 @@ def _render_html(*, payload: dict[str, object]) -> str:
 
     <div class="meta" id="meta"></div>
     <section class="workspace">
-      <aside class="list-panel">
+      <aside class="list-panel" aria-label="Workstreams">
         <div class="panel-head">
-          <span>Delivery Pipeline · Parked · Idea Stage · Finished</span>
+          <span class="panel-head-title">Workstreams</span>
         </div>
         <div class="list" id="list"></div>
       </aside>
 
-      <section class="detail-panel">
-        <div class="panel-head">Selected Workstream Detail</div>
+      <section class="detail-panel" aria-label="Selected workstream">
+        <div class="panel-head">
+          <span class="panel-head-title">Selected workstream</span>
+        </div>
         <div class="drawer-empty" id="detail-empty" hidden></div>
         <article class="detail" id="detail" hidden></article>
       </section>
@@ -3619,7 +3621,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
       const executionWaveSummary = executionWavePayload().summary || {};
       el.stats.innerHTML = summaryStatRows(filtered, executionWaveSummary).join("");
 
-      el.meta.textContent = `Showing ${filtered.length} of ${all.length} workstreams · Source: ${DATA.index_file}`;
+      el.meta.textContent = `Showing ${filtered.length} of ${all.length} workstreams`;
       void renderAnalytics(filtered);
       renderList(filtered, { preserveListScroll: Boolean(options.preserveListScroll) });
       void renderDetail(filtered);
@@ -4432,12 +4434,13 @@ def _render_html(*, payload: dict[str, object]) -> str:
                 line_height=1.2,
                 weight=600,
             ),
-            dashboard_ui_primitives.auxiliary_heading_css(
-                selector=".panel-head",
-                color="var(--ink-muted)",
-                size_px=12,
-                line_height=1.2,
-                letter_spacing_em=0.08,
+            dashboard_ui_primitives.card_title_typography_css(
+                selector=".panel-head-title",
+                color="var(--ink)",
+                size_px=15,
+                line_height=1.35,
+                letter_spacing_em=0.0,
+                weight=700,
                 margin="0",
             ),
             dashboard_ui_primitives.auxiliary_heading_css(

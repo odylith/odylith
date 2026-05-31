@@ -156,7 +156,7 @@ def build_workstream_domain_intelligence(
 ) -> dict[str, Any]:
     """Render the domain-intelligence packet from one shared workstream contract."""
 
-    actors = human_actors or [f"{label} product user: uses the accepted first path."]
+    actors = human_actors or [f"{label} product user: moves through the first product path."]
     internals = internal_systems or [f"{state_object}: owns domain state.", f"{evidence_record}: owns proof review."]
     internal_labels = join_system_labels(internals) or join_items(internals)
     externals = external_systems or ["No live external system is accepted for the first release."]
@@ -172,14 +172,14 @@ def build_workstream_domain_intelligence(
     return {
         "schema_version": "odylith.greenfield.workstream_intelligence.v1",
         "family": slugify(label).replace("-", "_") or "confirmed_product",
-        "summary": focus or f"{row_title} turns the accepted {label} slice into buildable product behavior.",
+        "summary": focus or f"{row_title} turns the accepted {label} slice into behavior the team can implement and verify.",
         "actors": actors,
         "intent": [
             focus or f"{row_title} advances {label} by building one concrete product slice.",
-            f"User problem: {risk}",
+            f"The product problem is {risk}",
         ],
         "scope": [
-            f"Build scope: {build_scope}",
+            f"This slice starts with {build_scope}",
             f"Out of scope for now: {non_goal_text}.",
         ],
         "ontology": [
@@ -193,7 +193,7 @@ def build_workstream_domain_intelligence(
             f"Owned state remains trustworthy only when {state_object} and {evidence_record} explain the visible outcome.",
         ],
         "operators": [
-            f"Build operations: {interface_summary or build_scope}.",
+            f"Runtime behavior to exercise: {interface_summary or build_scope}.",
             f"Internal systems involved here: {internal_labels}.",
             f"External source boundaries here: {join_items(externals)}.",
         ],
@@ -248,7 +248,7 @@ def build_workstream_domain_intelligence(
             f"Review ownership follows the accepted proof boundary and this row's local validation.",
         ],
         "execution_memory": [
-            f"Future work starts from the accepted first path and this row's local build outcome.",
+            f"Future work starts from the product path and this row's local outcome.",
             f"Product-owner correction or source-backed contradiction invalidates stale assumptions.",
         ],
         "metrics": [

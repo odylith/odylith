@@ -160,7 +160,7 @@ def test_confirmed_intent_completion_does_not_splice_proof_boundary_into_actor_r
     assert "can own a named responsibility" not in actor_text
     assert "Research User: uses People-Driven Activity Watchlist" in actor_text
     assert "Public Person Being Tracked Through Lawful Records: is represented by lawful source records" in actor_text
-    assert "Policy Reviewer For Privacy Boundaries: reviews access, privacy, policy, risk, and evidence boundaries" in actor_text
+    assert "Policy Reviewer for Privacy Boundaries: reviews access, privacy, policy, risk, and evidence boundaries" in actor_text
 
 
 def test_confirmed_json_intent_repairs_prompt_shaped_title() -> None:

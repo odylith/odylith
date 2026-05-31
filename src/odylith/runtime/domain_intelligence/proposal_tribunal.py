@@ -537,6 +537,42 @@ def _check_confirmed_atlas_substance(
                 source=source,
                 issues=issues,
             )
+        if title == "First Path Sequence" and source.lstrip().startswith("flowchart"):
+            _check_first_path_flowchart(
+                proposal=proposal,
+                title=title,
+                source=source,
+                issues=issues,
+            )
+
+
+def _check_first_path_flowchart(
+    *,
+    proposal: Mapping[str, Any],
+    title: str,
+    source: str,
+    issues: list[str],
+) -> None:
+    step_count = len(re.findall(r"\bS\d+\[\"", source))
+    if step_count < 3:
+        issues.append(f"confirmed Atlas flowchart `{title}` collapses the first path into too few events")
+    if "C4-" in source or re.search(r"\bparticipant\b", source, re.IGNORECASE):
+        issues.append(f"confirmed Atlas flowchart `{title}` contains sequence/parser debris")
+    if re.search(r"\bDone means\b|parser debris|accepted user action", source, re.IGNORECASE):
+        issues.append(f"confirmed Atlas flowchart `{title}` contains mechanical parser copy")
+    _check_atlas_source_preserves_first_path_tail(
+        proposal=proposal,
+        title=title,
+        source=source,
+        kind="flowchart",
+        issues=issues,
+    )
+    _check_flowchart_starts_at_first_boundary(
+        proposal=proposal,
+        title=title,
+        source=source,
+        issues=issues,
+    )
 
 
 def _check_sequence_preserves_first_path_tail(
@@ -544,6 +580,23 @@ def _check_sequence_preserves_first_path_tail(
     proposal: Mapping[str, Any],
     title: str,
     source: str,
+    issues: list[str],
+) -> None:
+    _check_atlas_source_preserves_first_path_tail(
+        proposal=proposal,
+        title=title,
+        source=source,
+        kind="sequence diagram",
+        issues=issues,
+    )
+
+
+def _check_atlas_source_preserves_first_path_tail(
+    *,
+    proposal: Mapping[str, Any],
+    title: str,
+    source: str,
+    kind: str,
     issues: list[str],
 ) -> None:
     intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
@@ -558,7 +611,7 @@ def _check_sequence_preserves_first_path_tail(
     source_terms = _term_set(source)
     required_tail_hits = min(2, len(tail_terms))
     if len(tail_terms & source_terms) < required_tail_hits:
-        issues.append(f"confirmed Atlas sequence diagram `{title}` omits the tail of the accepted first path")
+        issues.append(f"confirmed Atlas {kind} `{title}` omits the tail of the accepted first path")
 
 
 def _check_sequence_starts_at_first_boundary(
@@ -583,6 +636,30 @@ def _check_sequence_starts_at_first_boundary(
         message,
     ):
         issues.append(f"confirmed Atlas sequence diagram `{title}` routes the first material path action away from the first boundary")
+
+
+def _check_flowchart_starts_at_first_boundary(
+    *,
+    proposal: Mapping[str, Any],
+    title: str,
+    source: str,
+    issues: list[str],
+) -> None:
+    components = _mapping_rows(proposal.get("components"))
+    if not components:
+        return
+    first_component = str(components[0].get("label", "") or components[0].get("component_id", "")).casefold()
+    if not re.search(r"\b(intake|import|capture|request|signal|submission|adapter|entry|application)\b", first_component):
+        return
+    first_step = re.search(r'\bS1\["(?P<label>[^"]+)"\]\s*\n\s*S1\s+-->\s+C(?P<target>\d+)', source)
+    if not first_step:
+        return
+    label = first_step.group("label").replace("<br/>", " ").casefold()
+    if first_step.group("target") != "1" and re.search(
+        r"\b(open|import|enter|submit|request|capture|select|record|log)\b",
+        label,
+    ):
+        issues.append(f"confirmed Atlas flowchart `{title}` routes the first material path action away from the first boundary")
 
 
 def _check_domain_security_posture(*, proposal: Mapping[str, Any], issues: list[str]) -> None:

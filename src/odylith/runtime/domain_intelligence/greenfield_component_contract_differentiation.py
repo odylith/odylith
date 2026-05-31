@@ -28,6 +28,10 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_quality i
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import (
     derive_component_semantic_contract,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_terms import (
+    enrich_owned_state_from_io,
+    split_contract_clauses,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.governance.component_spec_rendering import build_component_spec
@@ -416,6 +420,11 @@ def _contract_payload(
     if not _semantic_contract_is_strong(semantic_contract):
         return axis_payload
     semantic_fields = dict(semantic_contract.fields)
+    semantic_fields["owned_state"] = enrich_owned_state_from_io(
+        semantic_fields.get("owned_state"),
+        semantic_fields,
+        noise_terms=_FALLBACK_NOISE_TERMS,
+    )
     semantic_fields["outside_boundary"] = _join_contract_clauses(
         axis_payload.get("outside_boundary"),
         semantic_fields.get("outside_boundary"),
@@ -461,10 +470,7 @@ def _semantic_contract_is_strong(semantic_contract: Any) -> bool:
 def _join_contract_clauses(*values: Any) -> str:
     clauses: list[str] = []
     for value in values:
-        for clause in re.split(r",\s*(?=(?:and\s+)?[a-z0-9])", _clean(value)):
-            cleaned = _clean(re.sub(r"^(?:and|or)\s+", "", clause, flags=re.IGNORECASE)).strip(" .")
-            if cleaned:
-                clauses.append(cleaned)
+        clauses.extend(split_contract_clauses(value))
     return _phrase(_unique_terms(clauses))
 
 
@@ -473,7 +479,7 @@ def _outside_boundary(*, axis: ComponentAxis, sibling_axis: ComponentAxis | None
     if sibling_axis:
         sibling_focus = sibling_axis.owned_state.split(" for ", 1)[0]
         sibling_name = f" owned by {sibling_label}" if sibling_label else ""
-        outside = f"{outside}; sibling-owned state: {sibling_focus}{sibling_name}"
+        outside = f"{outside}; {sibling_focus}{sibling_name}"
     return outside
 
 

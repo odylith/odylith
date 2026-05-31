@@ -111,14 +111,15 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
     assert "Mockrepo" not in surface_text
     assert "Accepted first-path scenario" not in surface_text
     assert "Checkout" in surface_text or "checkout" in surface_text
-    assert "Start implementation planning" in surface_text
+    assert "Start source creation" in surface_text
     assert "Human " + "takeaway" not in surface_text
-    assert "Prompts to use next" in surface_text
-    assert "Odylith, open the first implementation plan" in surface_text
-    assert "Odylith, implement the first coding slice" in surface_text
-    assert "Revise project direction" in surface_text
-    assert "Pause" in surface_text
-    assert "Use this now when the product story and first release boundary look right" in surface_text
+    assert "First source creation sequence" in surface_text
+    assert "Choose implementation language" in surface_text
+    assert "Create first implementation plan" in surface_text
+    assert "Build smallest runnable slice" in surface_text
+    assert "Add tests and proof" in surface_text
+    assert "Refresh governed records" in surface_text
+    assert "Do not edit source yet" in surface_text
     assert "Topology spine" not in surface_text
     assert "How the story becomes governance" not in surface_text
     assert "Status now" not in surface_text
@@ -188,8 +189,8 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
             };
         }"""
     )
-    assert handoff_layout["cardCount"] == 4
-    assert handoff_layout["stepCount"] == 4
+    assert handoff_layout["cardCount"] == 5
+    assert handoff_layout["stepCount"] == 5
     assert handoff_layout["codeFontSize"] == "14px"
     assert int(handoff_layout["scrollDelta"]) <= 4
     assert int(handoff_layout["maxCardOverflow"]) <= 4

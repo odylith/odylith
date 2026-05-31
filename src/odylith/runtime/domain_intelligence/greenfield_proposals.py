@@ -36,6 +36,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_different
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import allocated_diagram_ids
 from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import component_dependency_lines
+from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import component_authoring_responsibility
 from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import component_dependency_lookup_for
 from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import component_risk_lines
 from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import ensure_greenfield_create_baseline
@@ -417,12 +418,14 @@ def _build_repaired_prewrite_package(
     root: Path,
     proposal: Mapping[str, Any],
     release_selector: str,
+    proposal_ready: bool = False,
 ) -> tuple[Mapping[str, Any], Any, greenfield_apply_prewrite.GreenfieldPrewriteBuild]:
     last_report = None
     for _pass in range(_MAX_PACKAGE_REPAIR_PASSES):
         tribunal = run_greenfield_tribunal(proposal, release_selector=release_selector)
         raise_for_failed_greenfield_tribunal(tribunal)
-        assert_greenfield_completion_ready(proposal, release_selector=release_selector)
+        if not (proposal_ready and _pass == 0):
+            assert_greenfield_completion_ready(proposal, release_selector=release_selector)
         prewrite_build = greenfield_apply_prewrite.build_prewrite_completion_package(
             root=root,
             proposal=proposal,
@@ -436,6 +439,7 @@ def _build_repaired_prewrite_package(
             return proposal, tribunal, prewrite_build
         last_report = report
         proposal = _repair_confirmed_apply_payload(proposal, release_selector=release_selector)
+        proposal_ready = False
     if last_report is not None:
         raise_for_failed_greenfield_completion(last_report)
     raise RuntimeError("greenfield prewrite package could not be built")
@@ -459,7 +463,7 @@ _GREENFIELD_VISIBLE_SURFACES = ("radar", "registry", "atlas", "compass", "toolin
 
 def _refresh_greenfield_dashboard(*, repo_root: Path) -> dict[str, Any]:
     owned_surface_refresh.raise_for_failed_refreshes(
-        repo_root=repo_root,
+        repo_root=Path(repo_root).resolve(),
         surfaces=_GREENFIELD_VISIBLE_SURFACES,
         operation_label="Greenfield apply dashboard visibility",
     )
@@ -476,16 +480,18 @@ def apply_greenfield_proposal(
     proposal: Mapping[str, Any],
     confirm: bool,
     release_selector: str = "",
+    proposal_ready: bool = False,
 ) -> dict[str, Any]:
     """Apply a confirmed proposal using owned governance authoring paths."""
 
     if not confirm:
         raise ValueError("--confirm is required before greenfield apply writes accepted product records")
-    proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
-    proposal = complete_confirmed_proposal(proposal, release_selector=release_selector)
-    proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
-    proposal = ensure_apply_semantic_model(proposal)
-    validate_host_reasoned_proposal(proposal)
+    if not proposal_ready:
+        proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
+        proposal = complete_confirmed_proposal(proposal, release_selector=release_selector)
+        proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
+        proposal = ensure_apply_semantic_model(proposal)
+        validate_host_reasoned_proposal(proposal)
     root = Path(repo_root).expanduser().resolve()
     backlog_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
     if not backlog_rows:
@@ -495,6 +501,7 @@ def apply_greenfield_proposal(
         root=root,
         proposal=proposal,
         release_selector=release_selector,
+        proposal_ready=proposal_ready,
     )
     backlog_result = prewrite_build.backlog_result
     with GreenfieldApplyTransaction(root) as transaction:
@@ -817,7 +824,7 @@ def _write_greenfield_proposal(
                 diagram_scope=component_diagram_scope,
                 fallback=traceability_plan.component_diagrams.get(key, ()),
             ),
-            responsibility=str(row.get("responsibility", "")).strip(),
+            responsibility=component_authoring_responsibility(row),
             boundary=str(row.get("boundary", "")).strip(),
             dependencies=component_dependency_lines(
                 row_text_tuple(row, "dependencies", "depends_on"),
@@ -1107,6 +1114,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     proposal=proposal,
                     confirm=True,
                     release_selector=str(args.release),
+                    proposal_ready=True,
                 ),
             )
         except (ValueError, RuntimeError, json.JSONDecodeError) as exc:

@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract import (
     validation_from_contract,
 )
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
+from odylith.runtime.governance.component_spec_narrative import build_narrative_component_spec
 
 
 def sentence_fragment(value: str) -> str:
@@ -44,10 +45,34 @@ def build_component_spec(
     component_contract: Mapping[str, Any] | None = None,
 ) -> str:
     handoff = implementation_handoff or {}
+    normalized_sources = [str(item).strip() for item in sources if str(item).strip()]
     contract = component_contract or {}
     has_contract = bool(contract)
+    uses_user_intent = any(item.casefold() == "user_intent" for item in normalized_sources)
+    if has_contract or uses_user_intent:
+        narrative_contract = contract or _fallback_narrative_contract(
+            label=label,
+            responsibility=responsibility,
+            boundary=boundary,
+            dependencies=dependencies,
+            interfaces=interfaces,
+            validation=validation,
+            risks=risks,
+        )
+        return build_narrative_component_spec(
+            component_id=component_id,
+            label=label,
+            path=path,
+            kind=kind,
+            status=status,
+            sources=normalized_sources,
+            workstreams=workstreams,
+            diagrams=diagrams,
+            responsibility=responsibility,
+            implementation_handoff=handoff,
+            component_contract=narrative_contract,
+        )
     profile = _kind_profile(kind)
-    normalized_sources = [str(item).strip() for item in sources if str(item).strip()]
     workstream_ids = [str(item).strip().upper() for item in workstreams if str(item).strip()]
     diagram_ids = [str(item).strip().upper() for item in diagrams if str(item).strip()]
     first_workstream = _handoff_text(handoff, "workstream_id") or (workstream_ids[0] if workstream_ids else "")
@@ -111,7 +136,7 @@ def build_component_spec(
         [
             f"# {label}",
             "",
-            f"> Component planning record for `{component_id}`. {evidence_text}",
+            f"> Registry planning record for `{component_id}`. {evidence_text}",
             "",
             "## Component Snapshot",
             "",
@@ -307,7 +332,7 @@ def _component_contract_role_paragraphs(
     focus = f" for {_lower_first(owned)}" if owned else ""
     sentences = [f"{label} is a {role}{focus}"]
     if failure:
-        sentences.append(f"It exists to make this failure testable: {_lower_first(failure)}")
+        sentences.append(f"The visible risk is: {_lower_first(failure)}")
     if proof:
         sentences.append(f"Its proof obligation is `{_proof_handle(label, proof, index=1)}`")
     else:
@@ -1057,6 +1082,58 @@ def _handoff_list(handoff: Mapping[str, Any], key: str) -> tuple[str, ...]:
     if not isinstance(values, (list, tuple)):
         return ()
     return tuple(" ".join(str(item or "").split()).strip() for item in values if str(item or "").strip())
+
+
+def _fallback_narrative_contract(
+    *,
+    label: str,
+    responsibility: str,
+    boundary: str,
+    dependencies: Sequence[str],
+    interfaces: Sequence[str],
+    validation: Sequence[str],
+    risks: Sequence[str],
+) -> Mapping[str, Any]:
+    """Build a readable planned contract for older greenfield proposals without semantic contracts."""
+
+    responsibility_text = sentence_fragment(responsibility)
+    boundary_text = sentence_fragment(boundary)
+    dependency_text = _unique_lines(tuple(dependencies))
+    validation_text = _unique_lines(tuple(validation))
+    risk_text = _unique_lines(tuple(risks))
+    focus = responsibility_text or boundary_text or f"{label} planned state"
+    local_focus = _fallback_focus_phrase(focus, fallback=label)
+    return {
+        "owned_state": (local_focus, "blocker state", "handoff evidence"),
+        "accepted_inputs": (f"{local_focus} command", "source evidence", "validation context"),
+        "produced_outputs": (f"{local_focus} state", "blocked-state evidence", "handoff record"),
+        "states_or_transitions": ("draft", "validated", "blocked", "revised", "handed-off"),
+        "outside_boundary": dependency_text or ("adjacent component state", "upstream source truth", "release approval"),
+        "local_proof": validation_text
+        or (f"{label} proves one accepted path, one blocked path, and one replayable handoff before promotion.",),
+        "upstream_truth": dependency_text[:1],
+        "downstream_consumers": dependency_text[1:2] or ("release proof review",),
+        "unique_failure": risk_text[0] if risk_text else f"{label} can appear ready without local proof or handoff evidence.",
+    }
+
+
+def _fallback_focus_phrase(value: str, *, fallback: str) -> str:
+    text = sentence_fragment(value).casefold()
+    text = re.sub(r"^(?:owns?|records?|captures?|validates?|keeps?|maintains?|handles?|coordinates?\s+with)\s+", "", text)
+    text = re.sub(r"\b(?:until|before|after|while|because|unless|without)\b.+$", "", text)
+    text = re.sub(r"\b(?:includes?|including)\b.+$", "", text)
+    text = re.sub(r"\s+and\s+(?:recovery|review|handoff|validation)\s+behavior\b.*$", "", text)
+    text = re.sub(r"\s+", " ", text).strip(" .;:,")
+    candidates = [part.strip(" .") for part in re.split(r",\s+|\s+and\s+", text) if part.strip(" .")]
+    for candidate in candidates:
+        words = candidate.split()
+        if 2 <= len(words) <= 7:
+            return candidate
+    words = text.split()
+    if 2 <= len(words) <= 7:
+        return text
+    fallback_text = sentence_fragment(fallback).casefold()
+    return fallback_text or "local state"
 
 
 def _unique_lines(values: Sequence[str]) -> tuple[str, ...]:

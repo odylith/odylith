@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 import json
+import re
 from pathlib import Path
 
 from odylith.runtime.project_intelligence import assets, builder, deeplinks, focus, presenter, product_story
@@ -17,6 +18,17 @@ def _write_json(path: Path, payload: object) -> None:
 
 def _apply_ready_greenfield_fixture(repo_root: Path, prompt: str) -> dict[str, object]:
     return _host_greenfield_fixture(repo_root, prompt)
+
+
+def _assert_greenfield_story_cards(story: dict[str, object]) -> None:
+    labels = [row.get("label") for row in story["release_contract"]]
+    assert labels == ["User Problem", "First Path", "Product Boundary", "Owned Capabilities", "Proof"]
+    encoded = json.dumps(story["release_contract"], sort_keys=True)
+    assert all(len(str(row.get("body", "")).split()) >= 18 for row in story["release_contract"])
+    assert "accepted first path" not in encoded.casefold()
+    assert "additional accepted capabilities" not in encoded.casefold()
+    assert "proof boundary blocks" not in encoded.casefold()
+    assert "validation, replay, access, privacy, safety" not in encoded.casefold()
 
 
 def test_project_intelligence_blank_install_starts_with_minimal_project_state(tmp_path: Path) -> None:
@@ -685,11 +697,12 @@ def test_project_intelligence_accepted_greenfield_story_uses_product_narrative_b
     assert payload["open_label"] == "Open questions"
     assert "Forest Preservation Tracker focus" not in html
     assert "Open Forest Preservation Tracker questions" not in html
-    assert story["paragraphs"][0].startswith("The steward")
-    assert "keeps the work focused" in story["paragraphs"][0]
-    assert "forest parcel" in story["paragraphs"][0]
-    assert story["paragraphs"][1].startswith("Bottom line: release 0.0.1 succeeds")
-    assert "leaves enough evidence for review" in story["paragraphs"][1]
+    assert story["headline"] == "Forest Preservation Tracker"
+    assert story["paragraphs"][0].startswith("Forest Preservation Tracker is")
+    assert "forest parcel" in leading_story
+    assert not any("keeps the work focused" in row for row in story["paragraphs"])
+    assert not any("Bottom line: release" in row for row in story["paragraphs"])
+    _assert_greenfield_story_cards(story)
     assert not any("The first path is straightforward:" in row for row in story["paragraphs"])
     assert "Radar" not in leading_story
     assert "Registry" not in leading_story
@@ -718,8 +731,8 @@ def test_project_intelligence_accepted_greenfield_story_uses_product_narrative_b
     assert "What is the first release boundary?" not in html
     assert "Inside first release" not in html
     assert "Outside until resolved" not in html
-    assert payload["next_title"] == "Start implementation planning"
-    assert "Open the first implementation plan first" in html
+    assert payload["next_title"] == "Start source creation"
+    assert "Confirm language first, then create the implementation plan" in html
     assert "Human " + "takeaway" not in html
     assert "proof_title" not in payload
     assert "Planning facts" not in html
@@ -730,16 +743,25 @@ def test_project_intelligence_accepted_greenfield_story_uses_product_narrative_b
     assert not any("The first complete path" in row for row in payload["known"])
     assert "Product direction accepted for planning." in payload["known"]
     assert any(row.startswith("Planned shape:") for row in payload["known"])
-    assert payload["host_handoff_title"] == "Prompts to use next"
-    assert "Use the first prompt to open the implementation plan" in html
+    assert payload["host_handoff_title"] == "First source creation sequence"
+    assert "Use these prompts to turn Forest Preservation Tracker from accepted product direction" in html
     assert "Start the first implementation plan" not in html
     assert "Product decision owner and implementation owner" not in html
     assert "Expected output" not in html
     assert "Risk if delayed" not in html
-    assert "Start implementation plan" in html
-    assert "Implement first coding slice" in html
-    assert html.index("Start implementation plan") < html.index("Implement first coding slice")
-    assert "Revise project direction" in html
+    assert "Choose implementation language" in html
+    assert "Create first implementation plan" in html
+    assert "Build smallest runnable slice" in html
+    assert "Add tests and proof" in html
+    assert "Refresh governed records" in html
+    assert html.index("Choose implementation language") < html.index("Create first implementation plan")
+    assert "Produces:" in html
+    assert "Stops:" in html
+    assert "Do not edit source yet" in html
+    assert "forest parcel" in html.casefold()
+    assert "Forest Parcel Records Service is a `service`" not in html
+    assert "Odylith, open the first implementation plan" not in html
+    assert "Odylith, implement the first coding slice" not in html
     assert "Forest Parcel Records Service is a `service`" not in html
     assert "Who uses Forest Parcel Records Service" not in html
     assert "repository operators" not in html
@@ -785,7 +807,7 @@ def test_greenfield_product_story_does_not_repeat_hero_intro_or_numbered_first_p
         release="0.0.1",
         release_plan={"strategy": proof},
         validation=[proof],
-        accepted={},
+        accepted={"status": "accepted"},
         backlog=[],
         components=[
             {"label": "Audio Capture and Pre-processing Service"},
@@ -797,20 +819,66 @@ def test_greenfield_product_story_does_not_repeat_hero_intro_or_numbered_first_p
     )
     story_json = json.dumps(story, sort_keys=True)
 
-    assert story["headline"] == "Release 0.0.1 proves one usable first path"
+    assert story["headline"] == "LiveScore: Live Performance"
     assert story["paragraphs"][0].startswith("A musician or ensemble plays live")
     assert story_json.count("A musician or ensemble plays live") == 1
     assert "1. User" not in story_json
     assert "2. User" not in story_json
     assert not any("The first path is straightforward" in row for row in story["paragraphs"])
-    assert {row["label"] for row in story["release_contract"]} >= {
-        "User problem",
-        "First path",
-        "Product boundary",
-        "Owned capabilities",
-        "Proof",
-    }
-    assert "1. User" not in json.dumps(story["release_contract"])
+    assert "the user taps Record" in story["paragraphs"][1]
+    _assert_greenfield_story_cards(story)
+
+
+def test_greenfield_product_story_cards_explain_outcome_not_labels_or_fragments() -> None:
+    first_path = (
+        "A requester chooses a request type, enters need, timing, supporting details, and contact information. "
+        "They submit. The product checks completeness, shows an accepted or needs-information result with reasons, "
+        "and sends the request to a coordinator for follow-up."
+    )
+    story = product_story.build_greenfield_product_story(
+        title="Request Review Assistant",
+        intro=(
+            "A requester cannot tell whether a request is complete enough for review, and coordinators lose time "
+            "chasing missing context instead of responding to ready requests."
+        ),
+        project={
+            "intent": [
+                "Project objective: A requester cannot tell whether a request is complete enough for review, and coordinators lose time chasing missing context instead of responding to ready requests.",
+                "User or stakeholder outcome: The requester gets a clear accepted or needs-information result, and the coordinator receives a reviewable request with reasons attached.",
+                "Non-goals: automatic approval, payment collection, external account creation, and multi-office routing.",
+            ]
+        },
+        project_brief={},
+        first_path=first_path,
+        release="0.0.1",
+        release_plan={},
+        validation=[
+            "A requester can complete the review path, see the accepted or needs-information result, and a coordinator can review the routed request."
+        ],
+        accepted={"status": "accepted"},
+        backlog=[],
+        components=[
+            {"label": "Intake Service"},
+            {"label": "Completeness Rules Engine"},
+            {"label": "Coordinator Queue"},
+        ],
+        diagrams=[],
+        actors=[
+            ("", "Requester", "needs a clear result before follow-up."),
+            ("", "Coordinator", "reviews the request and follows up."),
+        ],
+    )
+    cards = {row["label"]: row["body"] for row in story["release_contract"]}
+    encoded = json.dumps(story["release_contract"], sort_keys=True)
+
+    _assert_greenfield_story_cards(story)
+    assert "They submit." not in cards["First Path"]
+    assert "checks completeness" in cards["First Path"]
+    assert "coordinator" in cards["First Path"].casefold()
+    assert "Intake Service" not in encoded
+    assert "Rules Engine" not in encoded
+    assert "automatic approval" in cards["Product Boundary"]
+    assert "accepted or needs-information result" in cards["Proof"]
 
 
 def test_greenfield_product_story_strips_markdown_prefaces_and_generic_proof_fallback() -> None:
@@ -834,7 +902,7 @@ def test_greenfield_product_story_strips_markdown_prefaces_and_generic_proof_fal
         release="0.0.1",
         release_plan={"strategy": "Proof must show the accepted first path passes end to end."},
         validation=["Proof must show the accepted first path passes end to end."],
-        accepted={},
+        accepted={"status": "accepted"},
         backlog=[],
         components=[{"label": "Activity Ingestion Service"}],
         diagrams=[],
@@ -842,12 +910,12 @@ def test_greenfield_product_story_strips_markdown_prefaces_and_generic_proof_fal
     )
     rendered = json.dumps(story, sort_keys=True)
 
-    assert story["headline"] == "Release 0.0.1 proves one usable first path"
+    assert story["headline"] == "Cleanup Assistant"
     assert "**" not in rendered
     assert "complete path to prove should be" not in rendered.casefold()
     assert "Reviewer can compare the scenario result" not in rendered
-    assert any(row["label"] == "First path" for row in story["release_contract"])
-    assert any("representative input" in row["body"] for row in story["release_contract"] if row["label"] == "Proof")
+    assert "the user imports activity history" in story["paragraphs"][1]
+    _assert_greenfield_story_cards(story)
 
 
 def test_greenfield_project_sections_do_not_reuse_first_path_as_page_filler(tmp_path: Path) -> None:
@@ -1046,15 +1114,156 @@ def test_greenfield_project_copy_does_not_splice_first_path_sentences_into_actor
     payload = builder.build_project_intelligence_payload(repo_root=tmp_path, shell_payload={"greenfield_proposal": proposal})
     rendered = json.dumps(payload, sort_keys=True)
     actor_bodies = [row[2] for row in payload["actors"]]
-    release_contract = json.dumps(payload["product_story"]["release_contract"], sort_keys=True)
+    product_story_json = json.dumps(payload["product_story"], sort_keys=True)
 
-    assert any("to complete the accepted first path" in body for body in actor_bodies)
+    assert any("coordinates exceptions" in body.casefold() or "reviews product outcomes" in body for body in actor_bodies)
+    assert not any("accepted first path" in body.casefold() for body in actor_bodies)
     assert "to complete A field team" not in rendered
     assert "when the path is." not in rendered
     assert "verifies that The" not in rendered
-    assert "plus 2 more" not in release_contract
+    assert "plus 2 more" not in product_story_json
     assert "plus 1 more" not in rendered
-    assert "with additional accepted capabilities tracked separately" in release_contract
+    assert "with additional accepted capabilities tracked separately" not in product_story_json
+
+
+def test_greenfield_project_participants_use_stable_role_names_not_workflow_fragments(tmp_path: Path) -> None:
+    proposal = {
+        "mode": "greenfield_apply_ready",
+        "intent": {
+            "title": "Request Decision Workspace",
+            "product_story": (
+                "A requester needs a clear way to submit a request, receive a decision, and know what should happen next."
+            ),
+            "first_path": (
+                "A requester opens the workspace, fills out intake details, submits the request, and reads the returned decision."
+            ),
+            "human_actors": [
+                "Requester Completing Intake And Reading Their Result",
+                "Coordinator Reviewing Eligible Requests And Following Up",
+                "Administrator Who Configures Eligibility Rules And Thresholds",
+            ],
+        },
+        "observed_source": {"source_posture": "docs_only"},
+        "project_brief": {
+            "purpose": "Requesters need a decision they can understand without chasing status across email.",
+            "operator_value": "The requester and coordinator can see the same request outcome and next action.",
+        },
+        "project_intelligence": {"intent": ["Project objective: produce clear request decisions."]},
+        "validation_strategy": ["first_slice_proof: one request produces a readable decision and follow-up path."],
+        "release_plan": {"label": "0.0.1"},
+        "backlog": [
+            {
+                "title": "Establish Request Decision Workspace Program",
+                "customer": (
+                    "Requester Completing Intake And Reading Their Result, "
+                    "Coordinator Reviewing Eligible Requests And Following Up"
+                ),
+                "recommended_first_slice": "A requester submits one request and sees the decision.",
+            }
+        ],
+        "components": [],
+        "diagrams": [],
+    }
+
+    payload = builder.build_project_intelligence_payload(repo_root=tmp_path, shell_payload={"greenfield_proposal": proposal})
+    titles = [row[1] for row in payload["actors"]]
+    bodies = [row[2] for row in payload["actors"]]
+    encoded = json.dumps(payload["actors"], sort_keys=True).casefold()
+
+    assert titles[:3] == ["Requester", "Coordinator", "Administrator"]
+    assert not any(
+        re.search(
+            r"\b(completing|filling|reading|reviewing|configuring|following up|submitting|receiving)\b",
+            title,
+            re.IGNORECASE,
+        )
+        for title in titles
+    )
+    assert any(
+        "provide information" in body.casefold() or "required information" in body.casefold()
+        for body in bodies
+    )
+    assert any("prioritizes follow-up" in body.casefold() for body in bodies)
+    assert any("operating criteria" in body.casefold() for body in bodies)
+    assert "handles the accepted-path step" not in encoded
+    assert "opens the workspace" not in encoded
+    assert "selects" not in encoded
+
+
+def test_greenfield_project_handoff_prompts_are_source_launch_protocol(tmp_path: Path) -> None:
+    proposal = {
+        "mode": "greenfield_apply_ready",
+        "_accepted_project": {"source_path": "odylith/runtime/source/accepted-project.v1.json"},
+        "intent": {
+            "title": "Request Decision Workspace",
+            "product_story": (
+                "A requester needs a clear way to submit a request, receive a decision, and understand what happens next."
+            ),
+            "first_path": (
+                "A requester chooses a request type, enters timing, supporting details, and contact information. "
+                "The product checks completeness, shows an accepted or needs-information result, and routes the request "
+                "to a coordinator."
+            ),
+            "human_actors": ["Requester", "Coordinator", "Administrator"],
+        },
+        "observed_source": {"source_posture": "docs_only"},
+        "project_brief": {
+            "purpose": "Requesters need decisions they can understand without chasing status manually.",
+            "operator_value": "Coordinators receive reviewable requests with reasons attached.",
+        },
+        "project_intelligence": {
+            "intent": [
+                "Project objective: Requesters need decisions they can understand without chasing status manually.",
+                "Non-goals: automatic approval, payment collection, and external account creation.",
+            ]
+        },
+        "validation_strategy": [
+            "A requester can submit a complete request, see the accepted or needs-information result, and a coordinator can review it."
+        ],
+        "release_plan": {"label": "0.0.1"},
+        "risks": [
+            {
+                "title": "Decision Clarity",
+                "statement": "Users may lose trust if the product cannot explain why a request is accepted or needs more information.",
+            }
+        ],
+        "components": [
+            {
+                "label": "Request Intake",
+                "responsibility": "Capture request type, timing, supporting details, and contact information.",
+            },
+            {
+                "label": "Decision Explanation",
+                "responsibility": "Return an accepted or needs-information result with clear reasons.",
+            },
+        ],
+        "backlog": [],
+        "diagrams": [],
+    }
+
+    payload = builder.build_project_intelligence_payload(repo_root=tmp_path, shell_payload={"greenfield_proposal": proposal})
+    prompts = payload["host_handoff_prompts"]
+    encoded = json.dumps(prompts, sort_keys=True)
+
+    assert payload["host_handoff_title"] == "First source creation sequence"
+    assert payload["next_title"] == "Start source creation"
+    assert [row["label"] for row in prompts] == [
+        "Choose implementation language",
+        "Create first implementation plan",
+        "Build smallest runnable slice",
+        "Add tests and proof",
+        "Refresh governed records",
+    ]
+    assert all(row.get("stop") for row in prompts)
+    assert "Request Decision Workspace" in encoded
+    assert "request type, timing, supporting details, and contact information" in encoded
+    assert "accepted or needs-information result" in encoded
+    assert "Coordinator" in encoded
+    assert "automatic approval" in encoded
+    assert "Do not edit source yet" in encoded
+    assert "Open the first implementation plan" not in encoded
+    assert "Implement first coding slice" not in encoded
+    assert "Refresh this dashboard" not in encoded
 
 
 def test_project_intelligence_presenter_renders_fallback_without_payload() -> None:
@@ -1294,13 +1503,11 @@ def test_project_intelligence_renders_greenfield_origin_from_proposal(tmp_path: 
     assert isinstance(story, dict)
     assert "the team can prove" not in story["headline"]
     assert "accept the" not in story["headline"].casefold()
-    assert story["headline"].startswith("Release 0.0.1 proves")
-    assert story["release_contract"]
-    assert {row["label"] for row in story["release_contract"]} >= {"User problem", "First path", "Product boundary", "Proof"}
-    assert not any(row["label"] in {"First accepted path", "User value", "Release boundary", "Operating rule"} for row in story["release_contract"])
+    assert story["headline"] == payload["title"]
+    assert story["release_contract"] == []
     assert len(story["paragraphs"]) >= 2
-    assert any("keeps the work focused" in row for row in story["paragraphs"])
-    assert any("Bottom line: release" in row for row in story["paragraphs"])
+    assert not any("keeps the work focused" in row for row in story["paragraphs"])
+    assert not any("Bottom line: release" in row for row in story["paragraphs"])
     assert not any("After the product path is clear" in row for row in story["paragraphs"])
     assert story["supporting_records"] == []
     assert all(term not in json.dumps(story) for term in ("Radar", "Registry", "Atlas", "Compass"))
@@ -1312,7 +1519,7 @@ def test_project_intelligence_renders_greenfield_origin_from_proposal(tmp_path: 
     assert 'class="project-panel project-answer-strip"' not in html
     assert "Who uses it?" not in html
     assert "the team can prove" not in html
-    assert "project-story-contract" in html
+    assert "project-story-contract" not in html
     assert payload["host_handoff_title"] == "How to continue in the host chat"
     assert "Odylith, apply this greenfield proposal" in html
     assert "Revise it" in html
@@ -1420,7 +1627,7 @@ def test_project_intelligence_greenfield_story_skips_meta_acceptance_path(tmp_pa
 
     assert "one article from upload" in payload["scenario"][4].casefold()
     assert "accept the answer-review path" not in payload["product_story"]["headline"].casefold()
-    assert payload["product_story"]["headline"] == "Release 0.0.1 proves one usable first path"
+    assert payload["product_story"]["headline"] == payload["title"]
     assert payload["governance_titles"]["B-002"] == "Prove article ingestion and answer review"
     assert 'class="project-job-title-link" target="_top" href="?tab=radar&amp;workstream=B-002"' in html
     assert 'data-tooltip="Prove article ingestion and answer review"' in html

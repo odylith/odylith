@@ -13,7 +13,7 @@ from odylith.runtime.common.prose_grammar import finite_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import best_component_node_for_text
-from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import sequence_mermaid
+from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import first_path_flowchart_mermaid
 
 
 def confirmed_diagrams(
@@ -79,7 +79,7 @@ def confirmed_diagrams(
         {
             "slug": diagram_slugs["sequence"],
             "title": "First Path Sequence",
-            "kind": "sequenceDiagram",
+            "kind": "flowchart",
             "summary": _sentence(
                 (
                     f"This sequence shows what the first release must prove from {actor_phrase} through {component_phrase} "
@@ -103,7 +103,7 @@ def confirmed_diagrams(
             "related_components": [str(row["component_id"]) for row in release_components],
             "watch_paths": [],
             "evidence_tier": "user_intent",
-            "mermaid_source": sequence_mermaid(
+            "mermaid_source": first_path_flowchart_mermaid(
                 label=label,
                 actors=actors,
                 components=release_components,
@@ -619,7 +619,7 @@ def _state_evidence_mermaid(
     first_owner = _component_label(components, 0, fallback="First path owner")
     evidence_owner = _component_label_for_text(evidence_record, components=components) or _component_label(components, min(2, max(0, len(components) - 1)), fallback="Evidence owner")
     review_owner = _component_label(components, len(components) - 1, fallback="Review owner")
-    actor_label = _short_label(_actor_phrase(actors, label=label))
+    actor_label = _short_label(actors[0] if actors else _actor_phrase(actors, label=label))
     proof_label = _proof_checkpoint_label(_brief_proof_boundary(proof_boundary)) or "source-backed release check"
     lines = [
         "flowchart LR",
@@ -755,6 +755,12 @@ def _semantic_proof_checkpoint(semantic_model: Mapping[str, Any] | None) -> str:
     value = _compact_text(str(graph.get("proof_checkpoint") or ""))
     if not value or len(re.findall(r"[A-Za-z0-9]+", value)) < 3:
         return ""
+    value = re.sub(
+        r"^accepted\s+first\s+path\s+proof\s*:\s*",
+        "Proven when ",
+        value,
+        flags=re.IGNORECASE,
+    )
     return _trim(value, 80)
 
 
@@ -774,6 +780,7 @@ def _proof_checkpoint_label(value: str) -> str:
     text = _compact_text(value).strip(" .")
     if not text:
         return ""
+    text = re.sub(r"^done\s+means\s*:?\s*", "", text, flags=re.IGNORECASE)
     text = re.sub(r"^release\s+[A-Za-z0-9_.-]+\s+succeeds\s+when\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"^the\s+release\s+succeeds\s+when\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"^the\s+first\s+proof\s+is\s+", "", text, flags=re.IGNORECASE)
@@ -781,7 +788,11 @@ def _proof_checkpoint_label(value: str) -> str:
     text = re.split(r"\bwhat\s+must\s+not\s+be\s+claimed\s+yet\b", text, maxsplit=1, flags=re.IGNORECASE)[0]
     clauses = [
         clause.strip(" .")
-        for clause in re.split(r";\s+|(?<=[.!?])\s+|\s+\band\b\s+", text)
+        for clause in re.split(
+            r";\s+|(?<=[.!?])\s+|\s+\band\b\s+|,\s+(?=(?:receive|receives|see|sees|show|shows|view|views|leave|leaves|record|records|review|reviews|return|returns)\b)",
+            text,
+            flags=re.IGNORECASE,
+        )
         if clause.strip(" .")
     ]
     for clause in clauses:
@@ -866,17 +877,17 @@ def _node_id(prefix: str, index: int) -> str:
 
 
 def _short_label(value: str) -> str:
-    text = str(value or "").split("—", 1)[0].split(":", 1)[0].strip() or "Actor"
+    text = _role_or_short_label(value) or "Actor"
     return _escape_label(_trim(text, 72))
 
 
 def _flow_label(value: str, *, limit: int) -> str:
-    text = str(value or "").split("—", 1)[0].split(":", 1)[0].strip() or "Item"
+    text = _role_or_short_label(value) or "Item"
     return _without_ellipsis(mermaid_text.wrap_mermaid_label(text, width=30, max_lines=4, limit=limit))
 
 
 def _participant_label(value: str) -> str:
-    text = str(value or "").split("—", 1)[0].split(":", 1)[0].strip()
+    text = _role_or_short_label(value)
     return _without_ellipsis(mermaid_text.wrap_mermaid_label(text, width=24, max_lines=5, limit=120) or "Participant")
 
 
@@ -899,7 +910,29 @@ def _trim(value: str, limit: int) -> str:
     clipped = text[: max(0, limit)].rstrip(" ,;:")
     if " " in clipped:
         clipped = clipped.rsplit(" ", 1)[0].rstrip(" ,;:")
-    return _strip_dangling_tail(clipped)
+    return _balance_label(_strip_dangling_tail(clipped))
+
+
+def _role_or_short_label(value: str) -> str:
+    text = str(value or "").split("—", 1)[0].split(":", 1)[0].strip()
+    text = text.replace("(", " ").replace(")", " ")
+    text = re.sub(r"\bprimary\b", "", text, flags=re.IGNORECASE)
+    text = re.split(
+        r"\b(?:who|that|where|when|while|with|filling|reading|reviewing|configuring|tracking|using|entering|submitting|following|managing|auditing|approving)\b",
+        text,
+        maxsplit=1,
+        flags=re.IGNORECASE,
+    )[0]
+    return re.sub(r"\s+", " ", text).strip(" ,.;:-")
+
+
+def _balance_label(value: str) -> str:
+    text = _compact_text(value).strip(" ,;:.")
+    if text.count("(") > text.count(")"):
+        text = text.rsplit("(", 1)[0].rstrip(" ,;:.")
+    if text.count("[") > text.count("]"):
+        text = text.rsplit("[", 1)[0].rstrip(" ,;:.")
+    return text
 
 
 def _strip_dangling_tail(value: str) -> str:

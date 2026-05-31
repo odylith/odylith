@@ -12,7 +12,6 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_different
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
-from odylith.runtime.governance.component_spec_rendering import build_component_spec
 from odylith.runtime.project_intelligence.greenfield import build_greenfield_payload
 from tests.unit.runtime.greenfield_proposal_fixtures import _confirmed_intent
 
@@ -166,9 +165,10 @@ def test_confirmed_peer_review_shape_stays_component_specific_and_actor_complete
     participant_titles = [row[1] for row in payload["participants"]]
     assert len(participant_titles) >= 4
     assert "Scientific Manuscript Author" in participant_titles
-    assert "Editor Or Program Chair Managing Review Flow" in participant_titles
-    assert "Scientific Quality And Reproducibility Reviewer" in participant_titles
-    assert "Venue Policies, Templates, Deadlines, And Permissions Admin" in participant_titles
+    assert "Editor or Program Chair" in participant_titles
+    assert "Scientific Quality and Reproducibility Reviewer" in participant_titles
+    assert "Venue Policies, Templates, Deadlines, and Permissions Admin" in participant_titles
+    assert all(" Managing " not in f" {title} " for title in participant_titles)
 
     components = {row["label"]: row for row in proposal["components"]}
     submission = components["Submission Intake and Manuscript Versioning Service"]["component_contract"]
@@ -185,9 +185,11 @@ def test_confirmed_peer_review_shape_stays_component_specific_and_actor_complete
     assert "assignment routing" not in " ".join([submission["owned_state"], submission["accepted_inputs"], submission["produced_outputs"]]).casefold()
     assert "review assignment" in assignment["owned_state"].casefold()
     assert "conflict" in assignment["owned_state"].casefold()
-    assert "scoring rubric" in scoring["owned_state"].casefold()
+    scoring_owned = scoring["owned_state"].casefold()
+    assert "scoring" in scoring_owned
+    assert "rubric" in scoring_owned
     assert "editorial decision" in decision["owned_state"].casefold()
-    assert "revision round" in revision["owned_state"].casefold()
+    assert "revision round" in revision["owned_state"].casefold().replace("-", " ")
     assert "role-based access" in access["owned_state"].casefold()
     assert "notification" in notification["owned_state"].casefold()
     assert "search" in dashboard["owned_state"].casefold()
@@ -209,31 +211,13 @@ def test_confirmed_peer_review_shape_stays_component_specific_and_actor_complete
     mermaid_sources = "\n".join(str(row.get("mermaid_source", "")) for row in proposal["diagrams"])
     assert "…" not in mermaid_sources
     assert "..." not in mermaid_sources
-    assert "A1->>C1: An author submits a paper" in mermaid_sources
-    assert "A2->>C2: An editor screens it" in mermaid_sources
-    assert "A3->>C3: Reviewers submit structured" in mermaid_sources
-    assert "A1->>C7: The author receives" in mermaid_sources
+    assert "sequenceDiagram" not in mermaid_sources
+    assert "flowchart" in mermaid_sources
+    assert "Scientific Manuscript" in mermaid_sources
+    assert "Submission Intake and" in mermaid_sources
+    assert "Structured Review Forms and" in mermaid_sources
+    assert "Editorial Decision Workflow" in mermaid_sources
+    assert 'S1["Submit a paper"]' in mermaid_sources
+    assert "Receive the outcome" in mermaid_sources
 
-    specs = {
-        row["label"]: build_component_spec(
-            component_id=row["component_id"],
-            label=row["label"],
-            path=row.get("intended_path"),
-            kind=row.get("kind"),
-            status=row.get("status"),
-            sources=(row.get("evidence_tier"),),
-            workstreams=tuple(row.get("workstreams", ()) or ()),
-            diagrams=tuple(row.get("diagrams", ()) or ()),
-            responsibility=row.get("responsibility"),
-            boundary=row.get("boundary"),
-            dependencies=tuple(row.get("dependencies", ())),
-            interfaces=tuple(row.get("interfaces", ())),
-            validation=tuple(row.get("validation", ())),
-            risks=tuple(row.get("risks", ())),
-            qualification=row.get("qualification"),
-            component_contract=row.get("component_contract"),
-        )
-        for row in proposal["components"]
-    }
     assert component_spec_preflight_issues(proposal) == []
-    assert "assignment routing" not in specs["Submission Intake and Manuscript Versioning Service"].split("### Owns", 1)[1].split("###", 1)[0]

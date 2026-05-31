@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Mapping, Sequence
+from functools import lru_cache
 from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
@@ -116,6 +117,25 @@ _BANNED_PROSE_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
         "unnormalized recompute artifact phrase",
         re.compile(r"\brecomputes\s+[^.]{0,100}\b(?:input|result|output|state)\b", re.IGNORECASE),
     ),
+    ("mechanical component planning note", re.compile(r"\bComponent planning record for\b", re.IGNORECASE)),
+    ("mechanical runtime-boundary role", re.compile(r"\bruntime ownership boundary\b", re.IGNORECASE)),
+    (
+        "mechanical structured-contract narration",
+        re.compile(r"\bstructured contract below keeps state, inputs, outputs, transitions, and refusals separate\b", re.IGNORECASE),
+    ),
+    ("mechanical failure-testability narration", re.compile(r"\bIt exists to make this failure testable\b", re.IGNORECASE)),
+    ("context-clause leak", re.compile(r"\bRelated path\s*:", re.IGNORECASE)),
+    ("malformed done-mean fragment", re.compile(r"\bDone\s+mean(?:s)?\b", re.IGNORECASE)),
+    ("malformed mean-subject fragment", re.compile(r"\bMean\s+[a-z][^.]{0,80}", re.IGNORECASE)),
+    ("malformed required-producing fragment", re.compile(r"\bRequired\s+producing\b", re.IGNORECASE)),
+    ("malformed validated-producing fragment", re.compile(r"\bValidated\s+producing\b", re.IGNORECASE)),
+    ("mechanical refusal bucket", re.compile(r"\bRefused domain responsibilities\s*:", re.IGNORECASE)),
+    ("mechanical authority bucket", re.compile(r"\bForbidden runtime authorities\s*:", re.IGNORECASE)),
+    ("mechanical component section heading", re.compile(r"^##\s+Component Brief\s*$", re.IGNORECASE | re.MULTILINE)),
+    ("mechanical component section heading", re.compile(r"^##\s+Boundary Narrative\s*$", re.IGNORECASE | re.MULTILINE)),
+    ("mechanical component section heading", re.compile(r"^##\s+First Release Proof\s*$", re.IGNORECASE | re.MULTILINE)),
+    ("mechanical component section heading", re.compile(r"^##\s+Implementation Starting Point\s*$", re.IGNORECASE | re.MULTILINE)),
+    ("mechanical component question heading", re.compile(r"^###\s+(?:Owns|Accepts|Produces|Refuses)\s*$", re.IGNORECASE | re.MULTILINE)),
 )
 
 _DANGLING_WORDS = {
@@ -267,21 +287,29 @@ def rendered_component_spec_quality_issues(
 
     issues: list[str] = []
     names = tuple(specs.keys())
-    all_name_terms = _name_terms(names)
+    name_term_lookup = {name: domain_terms(name) for name in names}
+    all_name_terms = {term for terms in name_term_lookup.values() for term in terms}
+    repeated_name_terms = {
+        term
+        for term in all_name_terms
+        if sum(1 for terms in name_term_lookup.values() if term in terms) > 1
+    }
+    spec_term_lookup = {name: domain_terms(text) for name, text in specs.items()}
+    all_spec_terms = tuple(spec_term_lookup.values())
     normalized_lines = {
         name: _normalized_spec_lines(text, project_title=project_title, names=names)
         for name, text in specs.items()
     }
+    heading_sequences = {name: _visible_spec_headings(text) for name, text in specs.items()}
     for name, text in specs.items():
         for issue in public_prose_quality_issues(text):
             issues.append(f"`{name}` {issue}")
         issues.extend(_section_overlap_issues(name=name, text=text))
         local_terms = _local_domain_terms(
-            text,
-            name=name,
-            all_texts=tuple(specs.values()),
-            names=names,
-            all_name_terms=all_name_terms,
+            text_terms=spec_term_lookup.get(name, set()),
+            name_terms=name_term_lookup.get(name, set()),
+            all_text_terms=all_spec_terms,
+            repeated_name_terms=repeated_name_terms,
         )
         if len(local_terms) < 4:
             issues.append(f"component spec `{name}` does not contain at least four component-local domain terms")
@@ -299,31 +327,47 @@ def rendered_component_spec_quality_issues(
                     f"component specs `{left_name}` and `{right_name}` are too interchangeable after masking names "
                     f"({overlap:.2f} line overlap)"
                 )
+            left_headings = heading_sequences[left_name]
+            right_headings = heading_sequences[right_name]
+            if left_headings and left_headings == right_headings and len(left_headings) >= 3:
+                issues.append(
+                    f"component specs `{left_name}` and `{right_name}` reuse the same visible section skeleton"
+                )
     return dedupe_text(issues)
 
 
 def ordered_domain_terms(text: str) -> list[str]:
     """Return stable, non-structural terms suitable for component-local prose."""
 
+    return list(_ordered_domain_terms_cached(_clean(text).casefold()))
+
+
+@lru_cache(maxsize=4096)
+def _ordered_domain_terms_cached(cleaned_text: str) -> tuple[str, ...]:
     result: list[str] = []
     seen: set[str] = set()
-    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", _clean(text).casefold()):
+    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", cleaned_text):
         token = _term_token(raw)
         if token and token not in seen:
             seen.add(token)
             result.append(token)
-    return result
+    return tuple(result)
 
 
 def domain_terms(text: str) -> set[str]:
     """Return normalized, non-structural terms from public component prose."""
 
+    return set(_domain_terms_cached(_clean(text).casefold()))
+
+
+@lru_cache(maxsize=4096)
+def _domain_terms_cached(cleaned_text: str) -> frozenset[str]:
     terms: set[str] = set()
-    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", _clean(text).casefold()):
+    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", cleaned_text):
         token = _term_token(raw)
         if token:
             terms.add(token)
-    return terms
+    return frozenset(terms)
 
 
 def dedupe_text(values: Sequence[str]) -> list[str]:
@@ -413,6 +457,19 @@ def _normalized_spec_lines(text: str, *, project_title: str, names: Sequence[str
         if masked:
             lines.add(masked)
     return lines
+
+
+def _visible_spec_headings(text: str) -> tuple[str, ...]:
+    headings: list[str] = []
+    for raw in str(text or "").splitlines():
+        line = _clean(raw)
+        if not line.startswith("##"):
+            continue
+        heading = line.lstrip("# ").strip().casefold()
+        if heading in {"feature history"}:
+            continue
+        headings.append(re.sub(r"\s+", " ", heading))
+    return tuple(headings)
 
 
 def _substantive_spec_line(line: str) -> bool:
@@ -561,32 +618,19 @@ def _name_variants(name: str) -> tuple[str, ...]:
     return tuple(unique_text([text, slug, slug.replace("-", " "), slug.replace("-", "_")]))
 
 
-def _name_terms(names: Sequence[str]) -> set[str]:
-    terms: set[str] = set()
-    for name in names:
-        terms.update(domain_terms(name))
-    return terms
-
-
 def _local_domain_terms(
-    text: str,
     *,
-    name: str,
-    all_texts: Sequence[str],
-    names: Sequence[str],
-    all_name_terms: set[str],
+    text_terms: set[str],
+    name_terms: set[str],
+    all_text_terms: Sequence[set[str]],
+    repeated_name_terms: set[str],
 ) -> set[str]:
-    name_term_counts = {
-        term: sum(1 for name in names if term in domain_terms(name))
-        for term in all_name_terms
-    }
-    repeated_name_terms = {term for term, count in name_term_counts.items() if count > 1}
-    own_name_terms = domain_terms(name) - repeated_name_terms
-    terms = domain_terms(text) - repeated_name_terms
+    own_name_terms = name_terms - repeated_name_terms
+    terms = text_terms - repeated_name_terms
     counts: dict[str, int] = {}
     for candidate in terms:
-        counts[candidate] = sum(1 for body in all_texts if candidate in domain_terms(body))
-    majority = 1 if len(all_texts) <= 1 else max(2, len(all_texts) // 2)
+        counts[candidate] = sum(1 for body_terms in all_text_terms if candidate in body_terms)
+    majority = 1 if len(all_text_terms) <= 1 else max(2, len(all_text_terms) // 2)
     return own_name_terms | {term for term in terms if counts.get(term, 0) <= majority and term not in _TERM_STOPWORDS}
 
 
@@ -602,6 +646,7 @@ def _has_dangling_tail(value: str) -> bool:
     return tail in _DANGLING_WORDS
 
 
+@lru_cache(maxsize=4096)
 def _term_token(value: str) -> str:
     return normalize_domain_token(value, stopwords=_TERM_STOPWORDS)
 

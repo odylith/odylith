@@ -45,6 +45,10 @@ _TRIVIAL_START_RE = re.compile(
     r"(?:the\s+)?(?:app|application|product|tool|site|website|screen|page|dashboard)\b\s*$",
     re.IGNORECASE,
 )
+_TRIVIAL_NAMED_PRODUCT_START_RE = re.compile(
+    r"^(?:a|an|the)?\s*[^,.;]{0,40}?\b(?:open|opens|launch|launches|start|starts)\s+"
+    r"[A-Z][A-Za-z0-9_-]{2,40}\b\s*$"
+)
 
 _MATERIAL_ACTION_RE = re.compile(
     r"\b(?:"
@@ -199,7 +203,7 @@ def first_path_capability_phrase(value: Any, *, fallback: str = "accepted first 
     """Return a compact action-chain phrase for Radar and project-story prose."""
 
     model = first_path_model(value)
-    steps = [step for step in model.steps if step and not _TRIVIAL_START_RE.match(step)]
+    steps = [step for step in model.steps if step and not _is_trivial_start(step)]
     selected: list[str] = []
     if model.material_action:
         selected.append(model.material_action)
@@ -375,7 +379,7 @@ def _first_path_steps(value: str) -> list[str]:
                 re.IGNORECASE,
             ):
                 normalized.append(cleaned)
-    if len(normalized) > 1 and _TRIVIAL_START_RE.match(normalized[0]):
+    if len(normalized) > 1 and _is_trivial_start(normalized[0]):
         normalized = normalized[1:]
     return _unique(normalized)
 
@@ -384,7 +388,7 @@ def _material_action(steps: Sequence[str]) -> str:
     if not steps:
         return ""
     for step in steps:
-        if _TRIVIAL_START_RE.match(step):
+        if _is_trivial_start(step):
             continue
         match = _OPEN_PLUS_MATERIAL_RE.match(step)
         if match and _MATERIAL_ACTION_RE.search(match.group("material")):
@@ -492,6 +496,11 @@ def _valid_step(value: str) -> bool:
     if re.fullmatch(r"(?:capture|view|edit|create|done|path|mean|person)(?:\s*,\s*(?:capture|view|edit|create|done|path|mean|person))*", text, re.IGNORECASE):
         return False
     return True
+
+
+def _is_trivial_start(value: str) -> bool:
+    text = _clean(value).strip(" .")
+    return bool(_TRIVIAL_START_RE.match(text) or _TRIVIAL_NAMED_PRODUCT_START_RE.match(text))
 
 
 def _scope_context_matches(text: str, terms: set[str], *, markers: Sequence[str]) -> bool:
@@ -631,6 +640,8 @@ def _sentence_case(value: str) -> str:
 def _gerund_action_fragment(value: str) -> str:
     text = _clean(value).strip(" .")
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s+and,\s+if\b.+$", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s+if\b.+$", "", text, flags=re.IGNORECASE)
     verb_map = {
         "add": "adding",
         "adds": "adding",
@@ -680,6 +691,8 @@ def _gerund_action_fragment(value: str) -> str:
         "saves": "saving",
         "see": "seeing",
         "sees": "seeing",
+        "select": "selecting",
+        "selects": "selecting",
         "show": "showing",
         "shows": "showing",
         "store": "storing",

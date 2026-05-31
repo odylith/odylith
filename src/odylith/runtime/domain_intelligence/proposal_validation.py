@@ -6,6 +6,8 @@ import re
 from collections.abc import Mapping
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_product_risks import risk_text_has_framework_leak
+
 from odylith.runtime.domain_intelligence.greenfield_project_brief import project_brief_issues
 from odylith.runtime.domain_intelligence.greenfield_component_contract import component_contract_issues
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import project_intelligence_issues
@@ -161,6 +163,10 @@ def _risk_quality_issues(risks: list[Any]) -> list[str]:
         if any(phrase in text for phrase in boilerplate):
             issues.append(
                 f"proposal risks[{index}] uses generic greenfield boilerplate instead of project-specific risk"
+            )
+        if risk_text_has_framework_leak(row):
+            issues.append(
+                f"proposal risks[{index}] describes Odylith process instead of real product, user, operator, business, or compliance risk"
             )
     return issues
 

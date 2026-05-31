@@ -139,12 +139,24 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     assert "font-size: var(--surface-identifier-font-size, 14px);" in html
     assert "font-weight: var(--surface-identifier-font-weight, 500);" in html
     assert "white-space: normal;" in html
+    assert ".bug-row:hover {" in html
+    assert "box-shadow: 0 8px 18px rgba(15, 23, 42, 0.09);" in html
+    assert "transform: translateY(-1px);" in html
+    assert ".bug-row.active {" in html
+    assert "background: linear-gradient(180deg, #ffffff, #f8fbff);" in html
+    assert "box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.22);" in html
     assert ".bug-row-meta .list-chip," in html
     assert ".detail-meta .meta-chip {" in html
     assert "overflow-wrap: anywhere;" in html
     assert ".bug-row-kicker {" in html
     assert ".bug-row-kicker, .detail-kicker {" not in html
     assert "text-transform: uppercase;" in html
+    assert ".panel-head-title {\n  margin: 0;\n  color: var(--ink);\n  font-size: 15px;" in html
+    assert "  line-height: 1.35;\n  letter-spacing: 0em;\n  font-weight: 700;\n  text-transform: none;\n}" in html
+    assert ".panel-head-meta {\n  color: var(--ink-muted);\n  font-size: 13px;" in html
+    assert "  line-height: 1.35;\n  font-weight: 600;\n  letter-spacing: 0em;\n}" in html
+    assert "Visible: 0" not in html
+    assert "0 visible" in html
     assert ".action-chip {" in html
     assert "padding: var(--surface-deep-link-button-padding, 4px 12px);" in html
     assert "font-size: var(--surface-deep-link-button-font-size, 11px);" in html

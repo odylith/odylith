@@ -131,16 +131,34 @@ def state_detail_summary(value: str, *, state_label: str, limit: int = 280) -> s
 def join_system_labels(items: list[str] | None, *, limit: int = 4) -> str:
     values: list[str] = []
     for item in items or []:
-        text = compact_text(item)
-        if not text:
+        label = _system_label(item)
+        if not label:
             continue
-        values.append(domain_object_label(text, fallback=text.split("—", 1)[0].split(":", 1)[0].strip()))
+        values.append(label)
     values = [value for value in values if value]
     if not values:
         return ""
     selected = values[:limit]
     suffix = "" if len(values) <= limit else ", and other accepted systems"
     return ", ".join(selected) + suffix
+
+
+def _system_label(value: str) -> str:
+    text = compact_text(value)
+    if not text:
+        return ""
+    head = re.split(r"\s+[—-]\s+|:\s+", text, maxsplit=1)[0].strip(" .:-")
+    split = re.search(
+        r"\s+(?=(?:owned\s+by|captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
+        r"produces?|producing|returns?|returning|routes?|routing|records?|recording|stores?|storing|"
+        r"shows?|showing|renders?|rendering|generates?|generating|calculates?|calculating|"
+        r"configures?|configuring|groups?|grouping|aligns?|aligning|tracks?|tracking|manages?|managing)\b)",
+        head,
+        flags=re.IGNORECASE,
+    )
+    if split:
+        head = head[: split.start()].strip(" .:-")
+    return domain_object_label(head, fallback=head)
 
 
 def title_label(value: str) -> str:

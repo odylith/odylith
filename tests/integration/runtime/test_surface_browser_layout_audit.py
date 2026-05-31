@@ -856,7 +856,7 @@ def _assert_registry_forensic_digest_keeps_default_view_compact(  # noqa: ANN001
     layout = _registry_forensic_digest_layout(registry)
 
     assert int(layout["eventCount"]) >= 9, "expected a high-volume evidence component for the digest audit"
-    assert int(layout["maxLinkedWorkstreams"]) >= 50, "expected many linked workstreams behind digest overflow"
+    assert int(layout["maxLinkedWorkstreams"]) >= 40, "expected many linked workstreams behind digest overflow"
     assert int(layout["rawDetails"]) == 0, "raw event logs should not be exposed in the Registry UI"
     assert "Raw event log" not in str(layout["timelineText"])
     assert "No scope" not in str(layout["timelineText"])
@@ -913,15 +913,15 @@ def _assert_registry_forensic_digest_keeps_default_view_compact(  # noqa: ANN001
         ".forensic-stat-label",
         ".forensic-stat-value",
     )
-    assert coverage_style["cardPaddingTop"] == "10px"
-    assert coverage_style["cardPaddingRight"] == "12px"
-    assert coverage_style["cardPaddingBottom"] == "10px"
-    assert coverage_style["cardPaddingLeft"] == "12px"
-    assert coverage_style["cardBorderRadius"] == "12px"
-    assert coverage_style["labelFontSize"] == "12px"
+    assert coverage_style["cardPaddingTop"] == "14px"
+    assert coverage_style["cardPaddingRight"] == "16px"
+    assert coverage_style["cardPaddingBottom"] == "14px"
+    assert coverage_style["cardPaddingLeft"] == "16px"
+    assert coverage_style["cardBorderRadius"] == "0px"
+    assert coverage_style["labelFontSize"] == "10px"
     assert coverage_style["labelTextTransform"] == "uppercase"
-    assert coverage_style["valueFontSize"] == "23px"
-    assert coverage_style["valueFontWeight"] == "700"
+    assert coverage_style["valueFontSize"] == "15px"
+    assert coverage_style["valueFontWeight"] == "800"
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 

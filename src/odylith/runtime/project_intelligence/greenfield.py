@@ -10,12 +10,19 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence.artifact_enrichment import domain_graph_from_workstream
 from odylith.runtime.domain_intelligence.artifact_enrichment import tribunal_actor_projection
+from odylith.runtime.domain_intelligence.greenfield_product_risks import build_product_risks_from_proposal
+from odylith.runtime.domain_intelligence.greenfield_product_risks import risk_text_has_framework_leak
 from odylith.runtime.project_intelligence.product_story import (
     build_greenfield_product_story,
     project_intent_line,
     summarize_first_path,
     summarize_proof,
 )
+from odylith.runtime.project_intelligence.participants import participant_body
+from odylith.runtime.project_intelligence.participants import participant_key
+from odylith.runtime.project_intelligence.participants import participant_title
+from odylith.runtime.project_intelligence.participants import participant_title_and_body
+from odylith.runtime.project_intelligence.source_launch import build_source_launch_handoff
 from odylith.runtime.project_intelligence.utils import dict_value, display_text, list_value, sanitize_actor_body, sentence, short, strings
 
 
@@ -49,10 +56,12 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
     backlog = [dict(row) for row in list_value(proposal.get("backlog")) if isinstance(row, Mapping)]
     components = [dict(row) for row in list_value(proposal.get("components")) if isinstance(row, Mapping)]
     diagrams = [dict(row) for row in list_value(proposal.get("diagrams")) if isinstance(row, Mapping)]
+    release = sentence(release_plan.get("label") or release_plan.get("selector"), "first proposed release")
+    risk_source = _dashboard_risk_source(proposal, release=release)
     assumptions = _text_rows(proposal.get("assumptions"), keys=("statement", "assumption"))
     questions = _text_rows(proposal.get("open_questions"), keys=("question", "statement"))
-    risks = _text_rows(proposal.get("risks"), keys=("statement", "risk", "title", "description", "trigger"))
-    risk_labels = _text_rows(proposal.get("risks"), keys=("title", "risk", "statement", "description", "trigger"))
+    risks = _text_rows(risk_source, keys=("statement", "risk", "title", "description", "trigger"))
+    risk_labels = _text_rows(risk_source, keys=("title", "risk", "statement", "description", "trigger"))
     raw_validation = _text_rows(proposal.get("validation_strategy"))
     validation = [_clean_labeled_text(row) for row in raw_validation]
     non_goals = _non_goal_rows(project)
@@ -60,8 +69,12 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
     accepted_project = bool(accepted)
     raw_title = sentence(intent.get("title"), "Greenfield project")
     lens = _lens(proposal=proposal, backlog=backlog, components=components)
-    release = sentence(release_plan.get("label") or release_plan.get("selector"), "first proposed release")
-    first_path = _first_path(program=program, release_plan=release_plan, backlog=backlog, validation=raw_validation)
+    first_path = sentence(intent.get("first_path")) or _first_path(
+        program=program,
+        release_plan=release_plan,
+        backlog=backlog,
+        validation=raw_validation,
+    )
     first_path_summary = summarize_first_path(first_path) or sentence(first_path)
     intro = _project_intro(title=raw_title, intent=intent, project=project)
     title = _display_title(raw_title=raw_title, intro=intro)
@@ -98,6 +111,7 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
     product_story = build_greenfield_product_story(
         title=title,
         intro=intro,
+        intent=intent,
         project=project,
         project_brief=project_brief,
         first_path=first_path,
@@ -110,7 +124,21 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
         diagrams=diagrams,
         actors=actors,
     )
-    risk_classes = _risk_classes(risks)
+    risk_classes = _risk_items(risk_source) or _risk_classes(risks)
+    source_launch = (
+        build_source_launch_handoff(
+            repo_root=repo_root,
+            title=title,
+            first_path=first_path,
+            actors=actors,
+            components=components,
+            risks=risk_source,
+            validation=validation,
+            non_goals=non_goals,
+        )
+        if accepted_project
+        else {}
+    )
     sections = ["product_story"]
     if actors:
         sections.append("participants")
@@ -132,7 +160,7 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
         "product_story": product_story,
         "answers": [],
         "risk_title": "Risks",
-        "risk_note": "Risks that must stay visible before implementation proof exists.",
+        "risk_note": "Real-world failure modes that could make this product untrusted, harmful, expensive, or hard to operate.",
         "risk_items": risk_classes,
         "scenario": [
             "Proposed first path",
@@ -174,9 +202,13 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
             ("B", "Revise assumptions", "Update open questions, proof bar, owner, or first path before any write."),
             ("C", "Stop proposal", "Do not create project records until the intent is clearer."),
         ],
-        "host_handoff_title": "Prompts to use next" if accepted_project else "How to continue in the host chat",
+        "host_handoff_title": (
+            sentence(source_launch.get("title"))
+            if accepted_project
+            else "How to continue in the host chat"
+        ),
         "host_handoff_note": (
-            "Use the first prompt to open the implementation plan. Use the coding prompt only after that plan looks right."
+            sentence(source_launch.get("note"))
             if accepted_project
             else (
                 "Use one of these prompts in the same host chat. The confirmed product story, first path, component ownership, "
@@ -184,12 +216,7 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
             )
         ),
         "host_handoff_steps": (
-            [
-                "Review the Product Story, first release boundary, and proof gate.",
-                "Ask Odylith to open the first implementation plan.",
-                "Accept that plan, then ask for the first coding slice.",
-                "Refresh this dashboard after records or source change.",
-            ]
+            list_value(source_launch.get("steps"))
             if accepted_project
             else [
                 "Review the Product Story, first path, open questions, and risks on this page.",
@@ -198,7 +225,11 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
                 "Refresh the dashboard after the command finishes to see the accepted or revised project state.",
             ]
         ),
-        "host_handoff_prompts": _host_handoff_prompts(title=title, accepted=accepted_project),
+        "host_handoff_prompts": (
+            list_value(source_launch.get("prompts"))
+            if accepted_project
+            else _host_handoff_prompts(title=title, accepted=accepted_project)
+        ),
         "projection": {
             "refreshed_at": "proposal time",
             "origin": "accepted greenfield project" if accepted_project else "greenfield proposal",
@@ -229,12 +260,12 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
         "current_state_label": "Current state",
         "desired_state_label": "Desired state",
         "next_title": (
-            "Start implementation planning"
+            sentence(source_launch.get("next_title"), "Start source creation")
             if accepted_project
             else "What should move next?"
         ),
         "next_note": (
-            "Open the first implementation plan first; start source edits only after that plan names the slice, proof gates, and validation."
+            sentence(source_launch.get("next_note"))
             if accepted_project
             else "No implementation should start until the proposed path is accepted or revised."
         ),
@@ -1140,12 +1171,23 @@ def _project_actor_rows(
 ) -> list[tuple[str, str, str]]:
     """Return Project-facing actors before internal Tribunal role projections."""
 
+    direct_rows: list[tuple[str, str, str]] = []
+    direct_rows.extend(_intent_actor_rows(proposal=proposal))
+    direct_rows.extend(_domain_actor_rows(proposal=proposal))
+    if direct_rows:
+        return _dedupe_actor_rows(direct_rows)
+
     rows: list[tuple[str, str, str]] = []
     rows.extend(_customer_actor_rows(proposal=proposal))
     for value in [*strings(project.get("owners")), *strings(project.get("operators"))]:
         title, body = _actor_title_and_body(value)
         if _is_project_actor_label(title):
             rows.append(("", title, short(body, limit=145)))
+    return _dedupe_actor_rows(rows)
+
+
+def _domain_actor_rows(*, proposal: Mapping[str, Any]) -> list[tuple[str, str, str]]:
+    rows: list[tuple[str, str, str]] = []
     for item in list_value(proposal.get("backlog")):
         if not isinstance(item, Mapping):
             continue
@@ -1155,6 +1197,17 @@ def _project_actor_rows(
             if _is_project_actor_label(title):
                 rows.append(("", title, short(body, limit=145)))
     return _dedupe_actor_rows(rows)
+
+
+def _intent_actor_rows(*, proposal: Mapping[str, Any]) -> list[tuple[str, str, str]]:
+    rows: list[tuple[str, str, str]] = []
+    intent = dict_value(proposal.get("intent"))
+    context = sentence(intent.get("product_story") or intent.get("summary"))
+    for value in strings(intent.get("human_actors")):
+        title, body = participant_title_and_body(value, context=context)
+        if title and _is_project_actor_label(title):
+            rows.append(("", title, body))
+    return rows
 
 
 def _customer_actor_rows(*, proposal: Mapping[str, Any]) -> list[tuple[str, str, str]]:
@@ -1213,16 +1266,26 @@ def _customer_actor_title(value: str) -> str:
     text = re.sub(r"^(?:the|a|an)\s+", "", text, flags=re.IGNORECASE)
     role, _body = _role_description_parts(text)
     if role:
-        return short(_capitalize_first(role), limit=70)
+        return short(participant_title(role) or _capitalize_first(role), limit=70)
     for marker in (
         " asking ",
         " auditing ",
         " authorizing ",
+        " completing ",
+        " configuring ",
+        " entering ",
         " filing ",
+        " filling ",
+        " following up",
         " integrating ",
+        " opening ",
         " producing ",
         " reading ",
+        " receiving ",
         " registering ",
+        " reviewing ",
+        " selecting ",
+        " submitting ",
         " running ",
         " using ",
         " who ",
@@ -1232,7 +1295,7 @@ def _customer_actor_title(value: str) -> str:
         if sep and head.strip():
             text = head.strip(" .")
             break
-    return short(_capitalize_first(text), limit=70)
+    return short(participant_title(_capitalize_first(text)) or _capitalize_first(text), limit=70)
 
 
 def _customer_actor_body(*, segment: str, context: str) -> str:
@@ -1244,8 +1307,8 @@ def _customer_actor_body(*, segment: str, context: str) -> str:
         if title and text.casefold().startswith(title.casefold()):
             detail = text[len(title) :].strip(" .")
     if detail:
-        return short(_capitalize_first(detail), limit=145)
-    return short(context or _default_actor_body(title), limit=145)
+        return participant_body(title=title, body=_capitalize_first(detail), context=context)
+    return participant_body(title=title, context=context or _default_actor_body(title))
 
 
 def _actor_title_and_body(value: object) -> tuple[str, str]:
@@ -1254,14 +1317,15 @@ def _actor_title_and_body(value: object) -> tuple[str, str]:
         return "", ""
     role, role_body = _role_description_parts(text)
     if role:
-        return role, _capitalize_first(role_body or _default_actor_body(role))
+        title = participant_title(role) or role
+        return title, participant_body(title=title, body=role_body, context=_default_actor_body(title))
     head, sep, body = text.partition(":")
-    title = sentence(head)
+    title = participant_title(head) or sentence(head)
     detail = sentence(body if sep else text)
     if not detail or detail.casefold() == title.casefold():
-        detail = _default_actor_body(title)
+        detail = participant_body(title=title, context=_default_actor_body(title))
     elif detail:
-        detail = detail[:1].upper() + detail[1:]
+        detail = participant_body(title=title, body=detail[:1].upper() + detail[1:])
     return title, detail
 
 
@@ -1280,16 +1344,16 @@ def _role_description_parts(value: str) -> tuple[str, str]:
 def _default_actor_body(title: str) -> str:
     lowered = title.casefold()
     if any(token in lowered for token in ("owner", "advocate", "user", "customer", "client")):
-        return "Receives the value of the first project path and decides whether it is acceptable."
+        return "Uses the product outcome to decide what should happen next."
     if any(token in lowered for token in ("operator", "coordinator", "caretaker", "maintainer")):
-        return "Moves the first path through day-to-day operation and handles exceptions."
+        return "Coordinates exceptions and keeps the right people aligned around the product outcome."
     if any(token in lowered for token in ("risk", "safety", "compliance", "privacy")):
-        return "Owns the harm, policy, or operational exposure that can block the first release."
+        return "Owns the harm, policy, or operational exposure that can block adoption."
     if any(token in lowered for token in ("proof", "evidence", "quality", "validation", "reviewer")):
-        return "Decides whether the evidence is strong enough to trust the first path."
+        return "Decides whether the outcome is clear, explainable, and trustworthy enough to use."
     if any(token in lowered for token in ("build", "implementation", "engineer", "developer")):
         return "Owns the implementation path after the project direction is accepted."
-    return "Participates in the first project path and keeps domain responsibility explicit."
+    return "Has a distinct stake in the product outcome and needs enough context to act responsibly."
 
 
 def _is_project_actor_label(value: str) -> bool:
@@ -1427,24 +1491,21 @@ def _looks_generated_actor_context(value: str) -> bool:
 
 
 def _actor_display_parts(*, title: object, body: object) -> tuple[str, str]:
-    clean_title = display_text(title)
-    clean_body = sanitize_actor_body(body)
+    clean_title = participant_title(title) or display_text(title)
+    clean_body = participant_body(title=clean_title, body=sanitize_actor_body(body))
     role, role_body = _role_description_parts(clean_title)
     if role:
-        clean_title = role
+        clean_title = participant_title(role) or role
         if role_body and (not clean_body or clean_body.casefold() == role.casefold()):
-            clean_body = _capitalize_first(role_body)
+            clean_body = participant_body(title=clean_title, body=_capitalize_first(role_body))
     if not clean_body:
         clean_body = _default_actor_body(clean_title)
     return clean_title, clean_body
 
 
 def _actor_dedupe_key(value: str) -> str:
-    title, _body = _actor_display_parts(title=value, body="")
-    text = title.casefold().strip()
-    text = text.split(":", 1)[0]
-    text = re.sub(r"\s+", " ", text)
-    return text.strip(" .")
+    key = participant_key(value)
+    return key or sentence(value).casefold().strip(" .")
 
 
 def _dedupe_text(values: Sequence[str]) -> list[str]:
@@ -1847,6 +1908,42 @@ def _accepted_validation_gate(accepted: Mapping[str, Any]) -> Mapping[str, Any]:
     return dict_value(accepted.get("tribunal"))
 
 
+def _dashboard_risk_source(proposal: Mapping[str, Any], *, release: str) -> Sequence[Any]:
+    risks = list_value(proposal.get("risks"))
+    if risks and not any(risk_text_has_framework_leak(row) for row in risks):
+        return risks
+    return build_product_risks_from_proposal(proposal, release=release)
+
+
+def _risk_items(value: object) -> list[dict[str, str]]:
+    rows: list[dict[str, str]] = []
+    used: set[str] = set()
+    for item in list_value(value)[:4]:
+        if not isinstance(item, Mapping):
+            continue
+        meaning = _risk_meaning(
+            item.get("statement")
+            or item.get("description")
+            or item.get("risk")
+            or item.get("trigger")
+        )
+        if not meaning:
+            continue
+        title = _dashboard_risk_title(sentence(item.get("title")), meaning=meaning, used=used)
+        used.add(title.casefold())
+        rows.append({"risk": title, "meaning": meaning})
+    return rows
+
+
+def _dashboard_risk_title(value: str, *, meaning: str, used: set[str]) -> str:
+    title = _clean_display_title(value)
+    if not title or risk_text_has_framework_leak({"title": title}):
+        title = _risk_label(meaning, used=used)
+    else:
+        title = _title_case(short(title, limit=48))
+    return _dedupe_label(title, used=used)
+
+
 def _risk_classes(risks: Sequence[str]) -> list[dict[str, str]]:
     rows = []
     used: set[str] = set()
@@ -1862,7 +1959,11 @@ def _risk_meaning(value: object) -> str:
     text = _risk_without_embedded_path(value)
     if text and not text.endswith((".", "!", "?")):
         text += "."
-    return short(text, limit=190, fallback="The proposal has a risk that needs an owner and proof gate.")
+    if len(text) > 220:
+        first_sentence = re.split(r"(?<=[.!?])\s+", text, maxsplit=1)[0].strip()
+        if len(first_sentence) >= 42:
+            return first_sentence
+    return short(text, limit=240, fallback="The product has a real-world risk that needs an owner and validation.")
 
 
 def _risk_label(value: str, *, used: set[str]) -> str:

@@ -112,9 +112,9 @@ def derive_component_axis(*, label_text: str, context_text: str = "") -> Compone
         produced_outputs=f"{primary} result, {output_focus} update, blocked-state evidence, and handoff record",
         states_or_transitions=", ".join(states[:9]),
         outside_boundary=(
-            "refused domain responsibilities: responsibilities not named by this component boundary; "
-            "sibling-owned state: adjacent component state and handoff evidence owned elsewhere; "
-            "forbidden runtime authorities: mutation of upstream source truth, silent overwrite of downstream handoff state, and release approval"
+            "responsibilities not named by this component boundary; "
+            "adjacent component state and handoff evidence owned elsewhere; "
+            "mutation of upstream source truth, silent overwrite of downstream handoff state, and release approval"
         ),
         local_proof=(
             f"{primary} proof covers required inputs, owned state, produced outputs, and handoff evidence.",

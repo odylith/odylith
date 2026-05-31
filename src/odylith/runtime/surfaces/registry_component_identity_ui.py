@@ -115,6 +115,18 @@ function componentIdPreview(componentId, limit = 54) {
   return clipText(String(componentId || "").trim(), limit);
 }
 
+function componentComparableIdentity(value) {
+  return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").replace(/\\s+/g, " ").trim();
+}
+
+function componentDisplayIdLine(row, displayName) {
+  const componentId = String(row && row.component_id || "").trim();
+  if (!componentId) return "";
+  const displayed = String(displayName || componentRawName(row) || "").trim();
+  if (componentComparableIdentity(componentId) === componentComparableIdentity(displayed)) return "";
+  return `<p class="component-full-name component-id-line">${escapeHtml(componentId)}</p>`;
+}
+
 function compactPathLabel(path, fallback = "Artifact") {
   const raw = String(path || "").trim();
   if (!raw) return fallback;

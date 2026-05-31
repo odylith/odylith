@@ -67,11 +67,18 @@ def test_confirmed_greenfield_diagrams_use_compact_atlas_narration() -> None:
 
     assert len(rows) == 6
     assert "Walk the accepted first path" not in copy
-    assert "participant C1 as Audio Capture and<br/>Pre-processing Service" in sequence["mermaid_source"]
-    assert "handoff: plays a roughly 30-second<br/>monophonic line" in sequence["mermaid_source"]
-    assert "show outcome, evidence, and next action" in sequence["mermaid_source"]
-    assert "A1->>C1: User opens LiveScore and taps<br/>Record" in sequence["mermaid_source"]
-    assert "A1->>C3: 2" not in sequence["mermaid_source"]
+    assert sequence["kind"] == "flowchart"
+    assert sequence["mermaid_source"].startswith("flowchart LR")
+    assert 'actor["User action<br/>Solo performer"]' in sequence["mermaid_source"]
+    assert 'C1["Audio Capture and<br/>Pre-processing Service"]' in sequence["mermaid_source"]
+    assert 'S1["Open LiveScore"]' in sequence["mermaid_source"]
+    assert 'S2["Taps Record"]' in sequence["mermaid_source"]
+    assert "roughly 30-second<br/>monophonic line" in sequence["mermaid_source"]
+    assert "downloadable PDF and<br/>MusicXML" in sequence["mermaid_source"]
+    assert "state, evidence, and next action stay visible" in sequence["mermaid_source"]
+    assert "sequenceDiagram" not in sequence["mermaid_source"]
+    assert "participant C" not in sequence["mermaid_source"]
+    assert "C4-" not in sequence["mermaid_source"]
     assert "<br/>" in sequence["mermaid_source"]
     assert "**" not in sequence["mermaid_source"]
     assert "The first complete path" not in sequence["mermaid_source"]
@@ -106,11 +113,11 @@ def test_confirmed_greenfield_diagrams_use_compact_atlas_narration() -> None:
             "produces, records, and makes available next."
         ),
         (
-            "Owns the product responsibility to perform frame-level pitch tracking. Reviewers need to see the inputs, rule version, result, "
+            "Owns product responsibility to perform frame-level pitch tracking. Reviewers need to see the inputs, rule version, result, "
             "and downstream decision that depended on it."
         ),
         (
-            "Owns the product responsibility to engrave the score model to PDF and MusicXML. Reviewers need to see the inputs, rule version, result, "
+            "Owns product responsibility to engrave the score model to PDF and MusicXML. Reviewers need to see the inputs, rule version, result, "
             "and downstream decision that depended on it."
         ),
     ]
@@ -190,27 +197,27 @@ Product story
 A community group needs one reliable place to track shared equipment, who has it, when it is due back, and whether it is safe to lend again. The product helps coordinators avoid lost items, double bookings, and unclear responsibility by turning checkout requests, item condition checks, and returns into one auditable record.
 
 State object that changes through the first journey
-An Equipment Item moves from available to reserved to checked out to returned pending inspection to available again, with a condition note and responsible borrower attached to each transition.
+An Equipment Item moves from available to reserved to checked out to returned pending inspection to available again, with a condition note and responsible requester attached to each transition.
 
 First complete path Odylith should prove before broader scope
-A coordinator registers one item, a borrower requests it for a date range, the coordinator approves checkout, the borrower returns it, and the coordinator records a return condition so the item can be made available again.
+A coordinator registers one item, a requester requests it for a date range, the coordinator approves checkout, the requester returns it, and the coordinator records a return condition so the item can be made available again.
 
 Human actors
 - Coordinator — owns the inventory, approves checkouts, and records return condition.
-- Borrower — requests equipment, receives checkout approval, and returns the item.
+- Requester — requests equipment, receives checkout approval, and returns the item.
 - Reviewer — checks whether the record explains who had the item, when it changed hands, and what condition it returned in.
 
 External systems
-- Identity provider for coordinator and borrower sign-in.
+- Identity provider for coordinator and requester sign-in.
 - Email or SMS notification channel for checkout reminders, later wave only.
 
 Internal product systems
 - Item registry — records equipment identity, ownership, availability status, and condition baseline.
-- Checkout request log — captures borrower, requested date range, purpose, and approval status.
+- Checkout request log — captures requester, requested date range, purpose, and approval status.
 - Approval workflow — records coordinator approval or rejection before an item leaves inventory.
-- Availability view — shows which items can be borrowed now and why unavailable items are blocked.
+- Availability view — shows which items can be requested now and why unavailable items are blocked.
 - Return inspection record — captures returned condition, damage notes, and whether the item can be lent again.
-- Reviewer dashboard and export — shows a reviewer the item state, borrower, approval, return condition, and audit trail in one readable package.
+- Reviewer dashboard and export — shows a reviewer the item state, requester, approval, return condition, and audit trail in one readable package.
 - Audit trail — records state changes, actor, timestamp, and source for reviewer traceability.
 
 Critical assumptions
@@ -219,7 +226,7 @@ Critical assumptions
 - The first proof uses seeded data and does not claim live integrations.
 
 Ambiguities that would change the first path
-- Whether borrowers can self-serve approvals or every checkout needs coordinator review.
+- Whether requesters can self-serve approvals or every checkout needs coordinator review.
 - Whether item condition needs photos in the first release.
 - Whether overdue notifications are required before the first release.
 
@@ -244,7 +251,7 @@ Release 0.0.1 succeeds when a reviewer can follow one item through registration,
     assert not greenfield_quality_issues(proposal)
     assert "owns captures" not in encoded
     assert "owns shows" not in encoded
-    assert "Shows which items can be borrowed now" in encoded
+    assert "Shows which items can be requested now" in encoded
     context = next(row for row in proposal["diagrams"] if row["title"] == "System Context View")
     assert "<br/>" in context["mermaid_source"]
     for row in proposal["diagrams"]:

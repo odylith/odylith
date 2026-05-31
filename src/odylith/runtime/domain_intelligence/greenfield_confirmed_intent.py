@@ -8,6 +8,7 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
@@ -293,15 +294,70 @@ def confirmed_intent_list(intent: Mapping[str, Any] | None, key: str) -> list[st
 
 
 def confirmed_system_name(value: str) -> str:
-    raw = re.split(r"\s+[—-]\s+|\s*:\s*", _clean(value), maxsplit=1)[0].strip()
+    cleaned = _clean(value)
+    raw = re.split(r"\s+[—-]\s+|\s*:\s*", cleaned, maxsplit=1)[0].strip()
+    raw, _description = _split_system_action_clause(raw)
     return _clean(raw) or "Product System"
 
 
 def confirmed_system_description(value: str) -> str:
-    parts = re.split(r"\s+[—-]\s+|\s*:\s*", _clean(value), maxsplit=1)
+    cleaned = _clean(value)
+    parts = re.split(r"\s+[—-]\s+|\s*:\s*", cleaned, maxsplit=1)
     if len(parts) > 1:
-        return _clean(parts[1])
-    return _clean(value)
+        head = _clean(parts[0])
+        _name, head_description = _split_system_action_clause(head)
+        body = _clean(parts[1])
+        if head_description and _looks_generated_system_description(body):
+            return _clean(head_description)
+        return body
+    _name, description = _split_system_action_clause(cleaned)
+    return _clean(description or cleaned)
+
+
+def _looks_generated_system_description(value: str) -> bool:
+    text = _clean(value).casefold()
+    return bool(
+        not text
+        or "required inputs" in text
+        or "blocked-case evidence links" in text
+        or "handoff boundaries for the confirmed first path" in text
+        or re.search(r"\bkeeps? .+ state, validation result, blocker state, and handoff evidence together\b", text)
+    )
+
+
+def _split_system_action_clause(value: str) -> tuple[str, str]:
+    """Split compact system rows like "Rules engine computing ratios" generically."""
+
+    text = _clean(value)
+    if not text:
+        return "", ""
+    split_pattern = re.compile(
+        r"\s+(?=(?:owned\s+by|"
+        r"captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
+        r"produces?|producing|returns?|returning|routes?|routing|records?|recording|stores?|storing|"
+        r"shows?|showing|renders?|rendering|generates?|generating|calculates?|calculating|"
+        r"configures?|configuring|groups?|grouping|aligns?|aligning|tracks?|tracking|manages?|managing)\b)",
+        re.IGNORECASE,
+    )
+    for match in split_pattern.finditer(text):
+        head = text[: match.start()].strip(" .")
+        tail = text[match.start() :].strip(" .")
+        if _system_name_head_is_plausible(head) and _word_count(tail) >= 2:
+            return head, tail
+    return text, ""
+
+
+def _system_name_head_is_plausible(value: str) -> bool:
+    head = _clean(value)
+    if not head or _word_count(head) > 8:
+        return False
+    return bool(
+        re.search(
+            r"\b(adapter|application|dashboard|engine|flow|ledger|log|portal|queue|registry|service|store|surface|tracker|trail|view|workspace)\b",
+            head,
+            flags=re.IGNORECASE,
+        )
+    )
 
 
 def _sections(text: str) -> dict[str, list[str]]:
@@ -871,6 +927,9 @@ def _concise_system_row(value: str, *, context_text: str = "") -> str:
         return ""
     if re.search(r"\b(?:because|therefore|should|must|needs?|proves?|proof|release)\b", name, re.IGNORECASE):
         return ""
+    system_name, description = _split_system_action_clause(name)
+    if description:
+        return _format_system_row(system_name, description, context_text="")
     return _format_system_row(name, _concise_system_description(name, context_text=context_text), context_text="")
 
 
@@ -887,14 +946,52 @@ def _format_system_row(name: str, body: str, *, context_text: str = "") -> str:
 
 
 def _contextualized_system_body(*, name: str, body: str, context_text: str) -> str:
-    description = _clean(body).strip(" .")
-    if _word_count(description) >= 6:
+    description = _repair_system_description(name=name, description=_clean(body).strip(" ."))
+    if _usable_system_description(description) and _word_count(description) >= 4:
         return description
-    clause = _best_context_clause(f"{name} {description}", context_text) or _best_context_clause(description, context_text)
-    if clause and _has_semantic_overlap(description, clause, minimum=2):
-        clause = _brief_clause(clause, limit=120)
-        return f"{description}. Related path: {clause}"
-    return f"{description} while preserving traceable state, evidence, and handoff"
+    if _usable_system_description(description):
+        return f"{description} while keeping blocker state and handoff evidence visible"
+    topic = _system_topic_from_name(name)
+    return f"keeps {topic} state, validation result, blocker state, and handoff evidence together"
+
+
+def _repair_system_description(*, name: str, description: str) -> str:
+    text = _clean(description).strip(" .;:")
+    text = re.sub(r"^(?:and|or)\s+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bRelated path\s*:\s*[^.;]+[.;]?", "", text, flags=re.IGNORECASE).strip(" .;:")
+    text = re.sub(r"^for\s+", "covers ", text, flags=re.IGNORECASE)
+    text = re.sub(r"^with\s+", "keeps ", text, flags=re.IGNORECASE)
+    if re.match(r"^owned\s+by\s+", text, flags=re.IGNORECASE):
+        return f"keeps {_system_topic_from_name(name)} state under the named owner with validation and change evidence"
+    if re.search(r"\b(?:runs?|evaluates?|checks?)\s+it\s+against\b", text, flags=re.IGNORECASE):
+        return ""
+    if re.match(r"^(?:their|they|them|it|this|that|who|which|where)\b", text, flags=re.IGNORECASE):
+        return ""
+    return text
+
+
+def _usable_system_description(value: str) -> bool:
+    text = _clean(value)
+    if not text:
+        return False
+    if re.search(r"\bRelated path\s*:", text, flags=re.IGNORECASE):
+        return False
+    if re.match(r"^(?:and|or|their|they|them|it|this|that|who|which|where)\b", text, flags=re.IGNORECASE):
+        return False
+    return _word_count(text) >= 3
+
+
+def _system_topic_from_name(name: str) -> str:
+    text = _clean(name).casefold()
+    text = re.sub(
+        r"\b(?:service|services|system|systems|engine|engines|store|stores|surface|surfaces|"
+        r"adapter|adapters|queue|queues|view|views|flow|flows|tracker|trackers|ledger|ledgers|"
+        r"module|modules|dashboard|dashboards|record|records|manager|managers)\b",
+        "",
+        text,
+    )
+    text = _clean(text)
+    return text or _clean(name).casefold() or "component"
 
 
 def _leading_title_phrase(text: str) -> str:
@@ -927,6 +1024,19 @@ def _system_name_prefix(text: str) -> tuple[str, str] | None:
     max_name_words = min(9, len(tokens) - 3)
     for index in range(2, max_name_words + 1):
         candidate = _clean(" ".join(tokens[:index]).strip(" ,:;.-"))
+        if not _looks_like_system_name(candidate):
+            continue
+        body = _clean(" ".join(tokens[index:]).strip(" ,:;.-"))
+        if body and looks_like_finite_action(body):
+            return candidate, body
+    for index in range(max_name_words, 1, -1):
+        candidate = _clean(" ".join(tokens[:index]).strip(" ,:;.-"))
+        qualifier = re.search(r"\b(for|with)\b", candidate, flags=re.IGNORECASE)
+        if qualifier:
+            prefix = _clean(candidate[: qualifier.start()].strip(" ,:;.-"))
+            tail = _clean(" ".join([candidate[qualifier.start() :], *tokens[index:]]).strip(" ,:;.-"))
+            if _looks_like_system_name(prefix) and _word_count(tail) >= 4:
+                return prefix, tail
         if not _looks_like_system_name(candidate):
             continue
         body = _clean(" ".join(tokens[index:]).strip(" ,:;.-"))
@@ -976,9 +1086,12 @@ def _internal_system_rationale(paragraph: str) -> str:
 
 def _title_case_phrase(value: str) -> str:
     words = []
-    for word in _clean(value).split():
+    connectors = {"a", "an", "and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"}
+    for index, word in enumerate(_clean(value).split()):
         if word.isupper():
             words.append(word)
+        elif index > 0 and word.casefold() in connectors:
+            words.append(word.casefold())
         else:
             words.append(word[:1].upper() + word[1:])
     return " ".join(words)
@@ -1045,7 +1158,18 @@ def _has_meaningful_system_description(row: str) -> bool:
     description = confirmed_system_description(row)
     if not name or name == description:
         return False
-    return _word_count(description) >= SYSTEM_ROW_MIN_WORDS
+    if _word_count(description) >= SYSTEM_ROW_MIN_WORDS:
+        return True
+    return bool(
+        _word_count(description) >= 3
+        and re.search(
+            r"\b(?:captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
+            r"produces?|producing|returns?|returning|routes?|routing|records?|recording|stores?|storing|"
+            r"configures?|configuring|owned\s+by)\b",
+            description,
+            re.IGNORECASE,
+        )
+    )
 
 
 def _contains_meta_narration(intent: Mapping[str, Any]) -> bool:

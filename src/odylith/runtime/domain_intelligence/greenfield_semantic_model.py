@@ -320,8 +320,9 @@ def _proof_checkpoint(value: str, *, state_label: str, actor_terms: Sequence[str
     ]
     for clause in clauses:
         if len(re.findall(r"[A-Za-z0-9]+", clause)) >= 4:
-            return _clip_clause(clause, 88)
-    return f"{state_label} validation, replay evidence, blockers, and release decision"
+            clipped = _clip_clause(clause, 88)
+            return f"accepted first path proof: {clipped}" if clipped else "accepted first path proof"
+    return f"accepted first path proof: {state_label} validation, replay evidence, blockers, and release decision"
 
 
 def _clip_clause(value: str, limit: int) -> str:

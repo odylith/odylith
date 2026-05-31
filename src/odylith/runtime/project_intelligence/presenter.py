@@ -257,14 +257,18 @@ def _host_handoff(project: Mapping[str, Any]) -> str:
         when = row.get("when")
         prompt = row.get("prompt")
         result = row.get("result")
+        stop = row.get("stop") or row.get("stop_condition")
         if not str(prompt or "").strip():
             continue
+        result_html = f"<span><strong>Produces:</strong> {_d(result)}</span>" if str(result or "").strip() else ""
+        stop_html = f"<span><strong>Stops:</strong> {_d(stop)}</span>" if str(stop or "").strip() else ""
         cards.append(
             '<article class="project-host-prompt">'
             f"<h4>{_d(label)}</h4>"
             f"<p>{_d(when)}</p>"
             f"<code>{_e(prompt)}</code>"
-            f"<span>{_d(result)}</span>"
+            f"{result_html}"
+            f"{stop_html}"
             "</article>"
         )
     if not cards:

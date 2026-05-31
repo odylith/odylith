@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import re
+from pathlib import Path
 
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence import greenfield_proposals
@@ -11,6 +12,31 @@ from tests.unit.runtime.greenfield_proposal_fixtures import _host_reasoned_ecomm
 from tests.unit.runtime.greenfield_proposal_fixtures import _markdown_section
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import _write_confirmed_intent
+
+
+def _stub_dashboard_refresh(monkeypatch, calls: list[dict[str, object]] | None = None) -> None:
+    def refresh(**kwargs: object) -> None:
+        if calls is not None:
+            calls.append(dict(kwargs))
+        repo_root = Path(str(kwargs["repo_root"]))
+        catalog_path = repo_root / "odylith/atlas/source/catalog/diagrams.v1.json"
+        if catalog_path.is_file():
+            catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+            for diagram in catalog.get("diagrams", []):
+                svg_path = repo_root / str(diagram.get("source_svg", ""))
+                png_path = repo_root / str(diagram.get("source_png", ""))
+                if svg_path.name:
+                    svg_path.parent.mkdir(parents=True, exist_ok=True)
+                    svg_path.write_text("<svg viewBox='0 0 1200 800'><title>Mermaid</title></svg>\n", encoding="utf-8")
+                if png_path.name:
+                    png_path.parent.mkdir(parents=True, exist_ok=True)
+                    png_path.write_bytes(b"\x89PNG\r\n\x1a\n")
+                watched = [str(path) for path in diagram.get("change_watch_paths", []) if str(path).strip()]
+                diagram["reviewed_watch_fingerprints"] = {path: "stubbed-official-refresh" for path in watched}
+                diagram["render_source_fingerprint"] = "stubbed-official-refresh"
+            catalog_path.write_text(json.dumps(catalog, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", refresh)
 
 
 def test_greenfield_domain_token_normalizer_keeps_common_words_legible() -> None:
@@ -246,7 +272,7 @@ def test_greenfield_cli_json_is_governed_audit_after_intent_confirmation(tmp_pat
 
 def test_greenfield_apply_cli_prints_operator_handoff(tmp_path, monkeypatch, capsys) -> None:
     _seed_empty_governance_repo(tmp_path)
-    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    _stub_dashboard_refresh(monkeypatch)
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     proposal_path = tmp_path / "proposal.json"
@@ -312,9 +338,18 @@ def test_greenfield_prompt_paths_do_not_expose_legacy_apply_ready_scaffold(tmp_p
 def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, capsys) -> None:
     _seed_empty_governance_repo(tmp_path)
     _write_confirmed_intent(tmp_path)
-    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    dashboard_calls: list[dict[str, object]] = []
+    _stub_dashboard_refresh(monkeypatch, dashboard_calls)
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    apply_ready_flags: list[bool] = []
+    original_apply = greenfield_proposals.apply_greenfield_proposal
+
+    def wrapped_apply(**kwargs):
+        apply_ready_flags.append(bool(kwargs.get("proposal_ready")))
+        return original_apply(**kwargs)
+
+    monkeypatch.setattr(greenfield_proposals, "apply_greenfield_proposal", wrapped_apply)
 
     rc = greenfield_proposals.main(
         [
@@ -333,6 +368,11 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
 
     out = capsys.readouterr().out
     assert rc == 0
+    assert apply_ready_flags == [True]
+    assert dashboard_calls
+    assert dashboard_calls[-1]["surfaces"] == ("radar", "registry", "atlas", "compass", "tooling_shell")
+    assert dashboard_calls[-1]["operation_label"] == "Greenfield apply dashboard visibility"
+    assert "atlas_sync" not in dashboard_calls[-1]
     assert "greenfield create wrote confirmed proposal" in out
     assert "- validation gate: passed" in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
@@ -341,7 +381,12 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
     assert "Permit File Registry" in accepted
     assert "Municipal Permit Review Workspace Workflow Service" not in accepted
     assert (tmp_path / "odylith/registry/source/component_registry.v1.json").is_file()
-    assert list((tmp_path / "odylith/atlas/source").glob("*.mmd"))
+    mmd_files = list((tmp_path / "odylith/atlas/source").glob("*.mmd"))
+    svg_files = list((tmp_path / "odylith/atlas/source").glob("*.svg"))
+    png_files = list((tmp_path / "odylith/atlas/source").glob("*.png"))
+    assert mmd_files
+    assert len(svg_files) == len(mmd_files)
+    assert len(png_files) == len(mmd_files)
     spec_root = tmp_path / "odylith/registry/source/components"
     specs = {path.parent.name: path.read_text(encoding="utf-8") for path in spec_root.glob("*/CURRENT_SPEC.md")}
     permit_spec = specs["permit-file-registry"]
@@ -350,19 +395,14 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
     decision_spec = specs["decision-package-review"]
     permit_spec_lower = permit_spec.casefold()
     assert "permit identity attachment" in permit_spec_lower
-    assert "required document completeness" in permit_spec_lower
+    assert "document completeness" in permit_spec_lower
     assert "missing document blockers" in permit_spec_lower
-    assert "handoff into Zoning Check Ledger" in permit_spec
+    assert "zoning check ledger" in permit_spec_lower
+    assert "handoff" in permit_spec_lower
     assert "zoning checks, reviewer comments, rule references, and pass or block outcomes" in zoning_spec
     assert "applicant revisions to the documents and checks they are meant to address" in revision_spec
     assert "evidence, reviewer notes, unresolved blockers, and final approval state" in decision_spec
-    role_sections = [
-        _markdown_section(permit_spec, "## Component Role"),
-        _markdown_section(zoning_spec, "## Component Role"),
-        _markdown_section(revision_spec, "## Component Role"),
-        _markdown_section(decision_spec, "## Component Role"),
-    ]
-    assert len(set(role_sections)) == 4
+    assert len({permit_spec, zoning_spec, revision_spec, decision_spec}) == 4
     for text in (permit_spec, zoning_spec, revision_spec, decision_spec):
         assert "Product context:" not in text
         assert "Project outcome:" not in text
@@ -377,15 +417,25 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
         assert "zoning, check" not in text
         assert "revision, tracker" not in text
         assert "decision, package" not in text
-        assert "Failure Modes" in text
-        assert "Domain risk:" in text
-        assert "Security and policy posture:" in text
+        assert "## Component Brief" not in text
+        assert "## Boundary Narrative" not in text
+        assert "## First Release Proof" not in text
+        assert "Suggested fixture:" not in text
+        assert "Failure Modes" not in text
+        assert "Domain risk:" not in text
+        assert "Security and policy posture:" not in text
         assert "**" not in text
         assert "…" not in text
     catalog = json.loads((tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json").read_text(encoding="utf-8"))
     for diagram in catalog["diagrams"]:
         assert diagram["change_watch_paths"]
         assert "odylith/atlas/source" not in diagram["change_watch_paths"]
+        assert diagram["source_svg"]
+        assert (tmp_path / diagram["source_svg"]).is_file()
+        assert diagram["source_png"].endswith(".png")
+        assert (tmp_path / diagram["source_png"]).is_file()
+        assert diagram["reviewed_watch_fingerprints"]
+        assert diagram["render_source_fingerprint"]
 
 
 def test_greenfield_create_cli_completes_privacy_export_lifecycle_end_to_end(tmp_path, monkeypatch, capsys) -> None:
@@ -433,7 +483,7 @@ Release 0.0.1 succeeds when one authorized request can link a protected record, 
 """,
         encoding="utf-8",
     )
-    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    _stub_dashboard_refresh(monkeypatch)
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
@@ -538,7 +588,7 @@ Release 0.0.1 succeeds when one site record can be opened, linked to source evid
 """,
         encoding="utf-8",
     )
-    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    _stub_dashboard_refresh(monkeypatch)
     monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 

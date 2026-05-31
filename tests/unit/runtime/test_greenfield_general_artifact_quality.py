@@ -421,12 +421,20 @@ def test_greenfield_atlas_uses_first_path_events_and_evidence_owner(tmp_path: Pa
     proof = diagrams["Release Proof Review"]
     boundary = diagrams["Component Boundary View"]
 
-    assert "A1->>C1: A decision reviewer opens" in sequence
-    assert "A1->>C2: Checks the context evidence" in sequence
-    assert "A1->>C5: Compares recommendation with" in sequence
-    assert "A1->>C4: Saves follow-up questions" in sequence
-    assert "A1->>C6: Records rationale after the final" in sequence
-    assert "A3->>C7: The record owner publishes" in sequence
+    assert sequence.startswith("flowchart LR")
+    assert 'S1["Open a packet"]' in sequence
+    assert "S1 --> C1" in sequence
+    assert 'S2["Check the context evidence"]' in sequence
+    assert "S2 --> C2" in sequence
+    assert "Compare recommendation with<br/>feedback" in sequence
+    assert "S4 --> C5" in sequence
+    assert "Save follow-up questions for<br/>preparers" in sequence
+    assert "S5 --> C4" in sequence
+    assert "Record rationale after the<br/>final outcome" in sequence
+    assert "S7 --> C6" in sequence
+    assert "Publish a decision packet with<br/>attachments and audit history" in sequence
+    assert "sequenceDiagram" not in sequence
+    assert "C4-" not in sequence
     assert "Source-backed Audit Trail Adapter" in boundary
     assert "Source-backed Audit Trail Adapter proof record" in proof
     assert "Release 0.0.1 succeeds when a representative" not in proof
@@ -554,10 +562,15 @@ def test_greenfield_health_tracking_defers_later_scope_and_keeps_atlas_implement
     assert "Medication and Relief Tracking with Reminders Service" not in active_labels
     assert "Shareable Visit Summary Generation Service" not in active_labels
 
-    assert "A1->>C1: Logs a pain entry with" in sequence
-    assert "A1->>C1: Persists the entry" in sequence
-    assert "A1->>C2: Shows it on a timeline" in sequence
-    assert "A1->>C1: Lets the person edit the entry" in sequence
+    assert sequence.startswith("flowchart LR")
+    assert "Log a pain entry with" in sequence
+    assert "S1 --> C1" in sequence
+    assert "Persists the entry" in sequence
+    assert "Show it on a timeline" in sequence
+    assert "S3 --> C2" in sequence
+    assert "Trend view" in sequence
+    assert "Let the person edit the entry" in sequence
+    assert "S5 --> C1" in sequence
     assert "A person opens the app" not in sequence
     assert "Medication and Relief" not in sequence
     assert "Shareable Visit" not in sequence
@@ -566,8 +579,8 @@ def test_greenfield_health_tracking_defers_later_scope_and_keeps_atlas_implement
 
     assert "Deferred scope<br/>Medication and Relief Tracking with Reminders Service" in boundary
     assert "Deferred scope<br/>Shareable Visit Summary Generation Service" in boundary
-    assert "Proof checkpoint<br/>one person can create a pain entry" in proof
-    assert "persisted entry on timeline" in proof
+    assert "Proof checkpoint<br/>Proven when one person can create a pain entry" in proof
+    assert "see the persisted entry" in proof
     assert "done, path, mean, person" not in proof
 
 
@@ -666,12 +679,17 @@ def test_greenfield_protocol_effect_tracker_uses_protocol_measurement_and_timeli
     sequence = diagrams["First Path Sequence"]
     proof = diagrams["Release Proof Review"]
 
-    assert "A1->>C4: A user creates a protocol" in sequence
-    assert "A1->>C1: Logs an active intervention" in sequence
-    assert "A1->>C2: Records a baseline measurement" in sequence
-    assert "A1->>C2: Adds a follow-up measurement" in sequence
-    assert "A1->>C3: Shows both points on the metric's" in sequence
-    assert "A1->>C3: See them aligned on one" in sequence
+    assert sequence.startswith("flowchart LR")
+    assert "Create a protocol" in sequence
+    assert "S1 --> C4" in sequence
+    assert "Log an active intervention" in sequence
+    assert "S2 --> C1" in sequence
+    assert "Record a baseline measurement" in sequence
+    assert "S3 --> C2" in sequence
+    assert "Add a follow-up measurement" in sequence
+    assert "Show both points on the<br/>metric's timeline" in sequence
+    assert "S5 --> C3" in sequence
+    assert "See them aligned on one<br/>timeline" in sequence
     assert "A2->>" not in sequence
     assert "A3->>" not in sequence
     assert "Proof checkpoint<br/>Proven when a user can create a protocol" in proof
@@ -1095,12 +1113,17 @@ def test_greenfield_service_goal_governance_preserves_intent_and_avoids_cross_do
 
     diagrams = {str(row["title"]): str(row["mermaid_source"]) for row in proposal["diagrams"]}  # type: ignore[index]
     sequence = diagrams["First Path Sequence"]
-    assert "A1->>C1: A user completes onboarding" in sequence
-    assert "A1->>C2: Enters baseline capacity" in sequence
-    assert "A1->>C3: Receives a starting plan" in sequence
-    assert "A1->>C4: Logs progress" in sequence
-    assert "A1->>C5: Reviews the weekly status" in sequence
-    assert "A1->>C6: Receives one follow-up" in sequence
+    assert sequence.startswith("flowchart LR")
+    assert "Complete onboarding and<br/>acknowledgement" in sequence
+    assert "S1 --> C1" in sequence
+    assert "Enter baseline capacity" in sequence
+    assert "S2 --> C2" in sequence
+    assert "Receive a starting plan target" in sequence
+    assert "Log progress for seven days" in sequence
+    assert "S4 --> C4" in sequence
+    assert "Review the weekly status" in sequence
+    assert "S5 --> C5" in sequence
+    assert "Receive one follow-up reminder" in sequence
 
     for banned in (
         "case identity",
@@ -1155,17 +1178,23 @@ def test_greenfield_ranking_engine_and_review_surface_stay_distinct(tmp_path: Pa
     assert "candidate ranked options" in str(surface["accepted_inputs"]).casefold()
     assert "route evidence" in str(surface["owned_state"]).casefold()
 
-    assert "A1->>C1: A traveler enters origin" in sequence
-    assert "A1->>C2: Fetches candidate options" in sequence
-    assert "A1->>C3: Calculates fare and schedule" in sequence
-    assert "A1->>C4: Ranks alternatives" in sequence
-    assert "A1->>C5: Highlights the lowest-cost" in sequence
-    assert "A1->>C5: Lets the traveler choose" in sequence
-    assert "A1->>C5: Stores the comparison evidence" in sequence
-    assert "A1->>C5: A traveler enters" not in sequence
+    assert sequence.startswith("flowchart LR")
+    assert "Enter origin, destination" in sequence
+    assert "S1 --> C1" in sequence
+    assert "Fetch candidate options" in sequence
+    assert "S2 --> C2" in sequence
+    assert "Calculate fare and schedule<br/>evidence" in sequence
+    assert "S3 --> C3" in sequence
+    assert "Rank alternatives" in sequence
+    assert "S4 --> C4" in sequence
+    assert "Highlight the lowest-cost<br/>acceptable route" in sequence
+    assert "S5 --> C5" in sequence
+    assert "Let the traveler choose an<br/>option" in sequence
+    assert "Store the comparison evidence" in sequence
+    assert "A1->>" not in sequence
     assert 'input1["External input<br/>Transit schedule feed"] --> boundary2' in boundary
     assert 'input2["External input<br/>Fare table feed"] --> boundary3' in boundary
-    assert "Proof checkpoint<br/>one traveler can enter a trip" in proof
+    assert "Proof checkpoint<br/>Proven when one traveler can enter a trip" in proof
     assert "check traveler" not in proof
     assert "Commuter, and" not in rendered
     assert "user path, state, evidence, decision, and follow-up" not in rendered
@@ -1194,7 +1223,7 @@ def test_greenfield_tribunal_rejects_shallow_confirmed_artifact_substance(tmp_pa
     issues = "\n".join(decision.issues)
 
     assert not decision.passed
-    assert "confirmed Radar workstream `Build Trip Intake Adapter First Path` is too thin" in issues
+    assert "confirmed Radar workstream `Let Traveler Enter Origin, Destination, Departure Time, and Preference` is too thin" in issues
     assert "presentation boundary but owns computation or source-truth state" in issues
     assert "collapses the first path into too few events" in issues
 
@@ -1417,19 +1446,14 @@ Release 0.0.1 succeeds when one vendor can submit documents, missing files block
         workstreams=("B-003",),
         component_contract=checklist,
     )
-    proof_rows = [
-        line
-        for line in checklist_spec.splitlines()
-        if line.startswith("| ") and "_proof`" in line
-    ]
-    required_proofs = [line.split("|")[2].strip() for line in proof_rows]
     assert "check_rule_ledger_proof" not in checklist_spec
-    assert any("compliance" in proof for proof in required_proofs)
-    assert len(required_proofs) >= 3
-    assert len(set(required_proofs)) == len(required_proofs)
+    assert "Suggested fixture:" not in checklist_spec
+    assert "compliance" in checklist_spec.casefold()
+    assert "Invalid or missing" in checklist_spec
+    assert "replay proof" in checklist_spec
 
 
-def test_greenfield_component_spec_renderer_uses_structured_distinct_contract_sections() -> None:
+def test_greenfield_component_spec_renderer_uses_narrative_distinct_contract_sections() -> None:
     contract = derive_component_semantic_contract(
         {
             "label": "Planning Engine",
@@ -1454,23 +1478,94 @@ def test_greenfield_component_spec_renderer_uses_structured_distinct_contract_se
     )
 
     assert rendered_component_spec_quality_issues({"Planning Engine": spec}, project_title="Generic Planning") == []
-    assert "### Accepts" in spec
-    assert "### Produces" in spec
-    assert "### Refuses" in spec
-    assert "Refused domain responsibilities:" in spec
-    assert "Sibling-owned state:" in spec
-    assert "Forbidden runtime authorities:" in spec
+    assert "## Component Brief" not in spec
+    assert "## Boundary Narrative" not in spec
+    assert "## First Release Proof" not in spec
+    assert "## Implementation Starting Point" not in spec
+    assert "Planning Engine carries the product logic" in spec
+    assert "Component Snapshot" not in spec
+    assert "runtime ownership boundary" not in spec
+    assert "structured contract below" not in spec
+    assert "Refused domain responsibilities:" not in spec
+    assert "Forbidden runtime authorities:" not in spec
     assert "Source-backed proof named by the first implementation plan" not in spec
     assert "computes plan targets input" not in spec.casefold()
 
-    proof_rows = [
-        line
-        for line in spec.splitlines()
-        if line.startswith("| ") and "_proof`" in line
-    ]
-    required_proofs = [line.split("|")[2].strip() for line in proof_rows]
-    assert len(required_proofs) >= 3
-    assert len(set(required_proofs)) == len(required_proofs)
+    assert "Suggested fixture:" not in spec
+    assert "Planning Engine proof ties" in spec
+    assert "Invalid or missing" in spec
+
+
+def test_greenfield_component_spec_renderer_rejects_mechanical_contract_dump() -> None:
+    contract = {
+        "owned_state": (
+            "Decision and reason-code service state, producing the explainable result, "
+            "Related path: review flow captures declared facts, "
+            "runs them against configurable review checks, decision reason-code, local blockers, "
+            "handoff evidence for application review state"
+        ),
+        "accepted_inputs": (
+            "Required producing the explainable result, decision reason-code command, required fields, "
+            "prior state, source evidence, authorized actor, validation notes"
+        ),
+        "produced_outputs": (
+            "Validated producing the explainable result, decision reason-code state, correction marker, "
+            "replayable change evidence, blocked-state evidence, reviewer explanation, handoff record"
+        ),
+        "states_or_transitions": "open, requested, qualified, returned, visible, received, captured, validated, blocked, revised, handed-off",
+        "outside_boundary": (
+            "Refused domain responsibilities: responsibilities not named by this component boundary; "
+            "sibling-owned state: reviewer queue state, case routing; "
+            "forbidden runtime authorities: mutation of upstream source truth, silent overwrite of downstream handoff state, release approval"
+        ),
+        "local_proof": [
+            "Decision and Reason-code Service proof ties producing the explainable result, required inputs, produced outputs, blocker behavior, and downstream handoff together",
+            "Invalid or missing producing the explainable result blocks trusted downstream state instead of producing Decision and Reason-code Service output",
+            "Decision and Reason-code Service replay proof preserves actor, source, validation status, blocker state, and handoff evidence",
+        ],
+        "upstream_truth": "Qualification Rules Engine",
+        "downstream_consumers": "Reviewer Queue Service",
+        "unique_failure": (
+            "Decision and Reason-code Service can look complete while producing the explainable result is missing, "
+            "stale, assigned to the wrong boundary, or released without source evidence, blocker state, or downstream handoff evidence."
+        ),
+    }
+
+    spec = build_component_spec(
+        component_id="decision-and-reason-code-service",
+        label="Decision and Reason-code Service",
+        path="src/application_review/decision_and_reason_code_service",
+        kind="service",
+        status="planned",
+        sources=("user_intent",),
+        workstreams=("B-004",),
+        diagrams=("D-002",),
+        component_contract=contract,
+    )
+
+    assert rendered_component_spec_quality_issues({"Decision and Reason-code Service": spec}, project_title="Application Review") == []
+    assert "explainable result" in spec
+    assert "decision reason-code" in spec
+    assert "Qualification Rules Engine" in spec
+    assert "Reviewer Queue Service" in spec
+    for forbidden in (
+        "Component Snapshot",
+        "Component planning record for",
+        "runtime ownership boundary",
+        "structured contract below",
+        "It exists to make this failure testable",
+        "Related path:",
+        "Required producing",
+        "Validated producing",
+        "Suggested fixture:",
+        "Refused domain responsibilities:",
+        "Forbidden runtime authorities:",
+        "Operator Verification",
+        "Related path:",
+        "runs them against",
+    ):
+        assert forbidden not in spec
+
 
 def test_greenfield_component_ids_remove_product_component_word_overlap() -> None:
     rows = confirmed_components(

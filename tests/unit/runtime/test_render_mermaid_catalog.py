@@ -218,6 +218,8 @@ def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_lis
     assert "Read this as a first-path rehearsal" in html
     assert "Read this as a boundary map" in html
     assert "component cards to decode" not in html
+
+
     assert ".summary {" in html
     assert ".read-guide-body {" in html
     assert "Boxes In This Diagram" in html
@@ -252,6 +254,54 @@ def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_lis
     assert html.index('<article class="section diagram-explanation-section">') < html.index(
         '<article class="section linked-context-section">'
     )
+
+
+def test_load_catalog_requires_png_for_catalog_diagrams(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
+    mmd_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "sample.mmd"
+    svg_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "sample.svg"
+    catalog_path = repo_root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    for path in (mmd_path, svg_path, catalog_path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    mmd_path.write_text("flowchart TD\n  A-->B\n", encoding="utf-8")
+    svg_path.write_text("<svg viewBox='0 0 1200 800'></svg>\n", encoding="utf-8")
+    catalog_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "diagrams": [
+                    {
+                        "diagram_id": "D-404",
+                        "slug": "missing-png",
+                        "title": "Missing PNG",
+                        "kind": "flowchart",
+                        "status": "draft",
+                        "owner": "freedom-research",
+                        "summary": "Catalog record should fail when PNG is missing.",
+                        "source_mmd": "odylith/atlas/source/diagrams/sample.mmd",
+                        "source_svg": "odylith/atlas/source/diagrams/sample.svg",
+                        "source_png": "odylith/atlas/source/diagrams/sample.png",
+                        "last_reviewed_utc": dt.date.today().isoformat(),
+                        "change_watch_paths": ["odylith/atlas/source/diagrams/sample.mmd"],
+                        "components": [{"name": "atlas", "description": "Atlas rendered diagram contract."}],
+                    }
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    _diagrams, errors, _stats = renderer._load_catalog(  # noqa: SLF001
+        repo_root=repo_root,
+        catalog_path=catalog_path,
+        output_path=repo_root / "odylith" / "atlas" / "atlas.html",
+        max_review_age_days=21,
+        component_index={},
+    )
+
+    assert any("source_png does not exist" in error for error in errors)
 
 
 def test_render_mermaid_catalog_sizes_image_box_from_diagram_dimensions() -> None:

@@ -31,6 +31,8 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_text as _sentence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import set_sentence_list as _set_list
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import set_sentence_text as _set_text
+from odylith.runtime.domain_intelligence.greenfield_product_risks import build_product_risks_from_proposal
+from odylith.runtime.domain_intelligence.greenfield_product_risks import risk_text_has_framework_leak
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -108,27 +110,16 @@ def _is_confirmed_greenfield(proposal: Mapping[str, Any]) -> bool:
 def _complete_project_posture(proposal: dict[str, Any]) -> bool:
     changed = False
     risks = proposal.get("risks")
-    if not isinstance(risks, list) or not risks or _sequence_has_text_repair(risks):
-        proposal["risks"] = [
-            _risk_row(
-                "RISK-001",
-                _title(proposal, "first-path proof can be too weak"),
-                (
-                    f"If the accepted first path is not proven with visible evidence, {_project_title(proposal)} "
-                    f"can produce records that look ready while the product outcome remains untrusted: {_first_path(proposal)}"
-                ),
-                f"Keep release proof tied to the accepted first path, {_state_object(proposal)}, validation output, and release decision.",
-            ),
-            _risk_row(
-                "RISK-002",
-                _title(proposal, "safety, privacy, or policy posture can be under-modeled"),
-                (
-                    f"If access, private data handling, audit, retention, accessibility, safety, and abuse controls "
-                    f"are not explicit, {_project_title(proposal)} can cross its accepted proof boundary: {_proof_boundary(proposal)}"
-                ),
-                "Make domain risk, security posture, and compliance policy visible before any governed record writes.",
-            ),
-        ]
+    if (
+        not isinstance(risks, list)
+        or not risks
+        or _sequence_has_text_repair(risks)
+        or any(risk_text_has_framework_leak(row) for row in risks)
+    ):
+        proposal["risks"] = build_product_risks_from_proposal(
+            proposal,
+            release=greenfield_programs.proposal_release_selector(proposal, ""),
+        )
         changed = True
     posture = proposal.get("security_compliance")
     if not isinstance(posture, Mapping) or not text_values(posture) or _sequence_has_text_repair(posture):
@@ -313,7 +304,8 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
                 else ""
             )
             row["product_view"] = (
-                f"{label} owns local {focus} boundary for {state_object}. It keeps accepted input, "
+                f"{label} owns local {focus} boundary for {state_object}. It keeps the accepted path step "
+                f"reviewable: {first_path}. It keeps accepted input, "
                 f"blocker state, recovery evidence, and downstream handoff reviewable without absorbing sibling responsibilities.{proof_tail}"
             )
             changed = True
@@ -1058,16 +1050,6 @@ def _mapping_rows(value: Any) -> list[Mapping[str, Any]]:
     if not isinstance(value, list):
         return []
     return [row for row in value if isinstance(row, Mapping)]
-
-
-def _risk_row(identifier: str, title: str, statement: str, mitigation: str) -> dict[str, str]:
-    return {
-        "id": identifier,
-        "title": title,
-        "statement": statement,
-        "severity": "high",
-        "mitigation": mitigation,
-    }
 
 
 def _component_label(row: Mapping[str, Any], index: int) -> str:

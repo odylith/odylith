@@ -751,6 +751,27 @@ def test_render_backlog_ui_matches_compass_shell_width_and_favors_detail_workspa
     assert "grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);" in html
 
 
+def test_render_backlog_ui_panel_headers_use_quiet_title_case() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert '<aside class="list-panel" aria-label="Workstreams">' in html
+    assert '<span class="panel-head-title">Workstreams</span>' in html
+    assert '<section class="detail-panel" aria-label="Selected workstream">' in html
+    assert '<span class="panel-head-title">Selected workstream</span>' in html
+    assert "Delivery Pipeline · Parked · Idea Stage · Finished" not in html
+    assert "Selected Workstream Detail" not in html
+    assert ".panel-head-title {\n  margin: 0;\n  color: var(--ink);\n  font-size: 15px;" in html
+    assert "  line-height: 1.35;\n  letter-spacing: 0em;\n  font-weight: 700;\n  text-transform: none;\n}" in html
+
+
+def test_render_backlog_ui_hides_internal_index_source_path_from_meta_bar() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert 'el.meta.textContent = `Showing ${filtered.length} of ${all.length} workstreams`;' in html
+    assert "Showing ${filtered.length} of ${all.length} workstreams · Source:" not in html
+    assert "DATA.index_file" not in html
+
+
 def test_render_backlog_ui_sorts_default_sections_by_scope_signal_rank() -> None:
     html = render_backlog_ui._render_html(payload={"entries": []})
 

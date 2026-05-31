@@ -40,6 +40,16 @@ def _markdown_section(text: str, heading: str) -> str:
     return text[start:] if end == -1 else text[start:end]
 
 
+def _assert_project_story_cards(story: dict[str, object]) -> None:
+    labels = [row.get("label") for row in story["release_contract"]]
+    assert labels == ["User Problem", "First Path", "Product Boundary", "Owned Capabilities", "Proof"]
+    encoded = json.dumps(story["release_contract"], sort_keys=True).casefold()
+    assert all(len(str(row.get("body", "")).split()) >= 18 for row in story["release_contract"])
+    assert "accepted first path" not in encoded
+    assert "additional accepted capabilities" not in encoded
+    assert "proof boundary blocks" not in encoded
+
+
 def test_greenfield_prompt_returns_governed_confirmed_proposal(tmp_path) -> None:
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
@@ -83,6 +93,13 @@ def test_greenfield_prompt_returns_governed_confirmed_proposal(tmp_path) -> None
     assert "active-proposal.v1.json" not in encoded
     assert "Make product-owned systems explicit:" not in encoded
     assert "releaseable" not in encoded
+    risk_text = json.dumps(proposal["risks"], sort_keys=True).casefold()
+    assert "accepted first path" not in risk_text
+    assert "proof boundary" not in risk_text
+    assert "release records" not in risk_text
+    assert "governance records" not in risk_text
+    assert "permit" in risk_text
+    assert any("decision" in row["statement"].casefold() or "zoning" in row["statement"].casefold() for row in proposal["risks"])
     for row in proposal["backlog"]:
         for line in row.get("rationale_bullets", []):
             assert len(line) <= 260
@@ -113,6 +130,43 @@ def test_greenfield_validation_rejects_old_generic_risk_boilerplate(tmp_path) ->
 
     with pytest.raises(ValueError, match="generic greenfield boilerplate"):
         greenfield_proposals.validate_host_reasoned_proposal(proposal)
+
+
+def test_greenfield_validation_rejects_framework_risks(tmp_path) -> None:
+    proposal = _host_reasoned_ecommerce_proposal()
+    proposal["risks"][0] = {
+        "title": "Ownership clarity",
+        "statement": "If the accepted proof boundary is not visible in the release records, reviewers cannot trust release 0.0.1.",
+    }
+
+    with pytest.raises(ValueError, match="describes Odylith process"):
+        greenfield_proposals.validate_host_reasoned_proposal(proposal)
+
+
+def test_project_dashboard_renders_product_risks_not_framework_risks(tmp_path) -> None:
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="Draft a greenfield proposal for a municipal permit review workspace",
+        confirmed_intent=_confirmed_intent(),
+    )
+    proposal["risks"] = [
+        {
+            "title": "Ownership clarity",
+            "statement": "If the accepted proof boundary is not visible in the release records, reviewers cannot trust release 0.0.1.",
+        }
+    ]
+
+    payload = project_intelligence_greenfield.build_greenfield_payload(proposal=proposal, repo_root=tmp_path)
+    risk_text = json.dumps(payload["risk_items"], sort_keys=True).casefold()
+
+    assert payload["risk_note"].startswith("Real-world failure modes")
+    assert "proposal risk" not in risk_text
+    assert "ownership clarity" not in risk_text
+    assert "accepted first path" not in risk_text
+    assert "proof boundary" not in risk_text
+    assert "release records" not in risk_text
+    assert "permit" in risk_text
+    assert any(row["risk"] in {"Decision Accuracy", "Policy Drift", "External Dependency", "User Trust"} for row in payload["risk_items"])
 
 
 def test_greenfield_workstreams_require_host_authored_intelligence(tmp_path) -> None:
@@ -366,24 +420,22 @@ def test_greenfield_apply_feeds_project_tab_from_accepted_project_and_tribunal(t
     assert "created as a new queued workstream" not in backlog_index
     assert "deeper scope decomposition waits" not in backlog_index
     assert "Define Storefront boundary" in backlog_index
-    assert "checkout orchestrator" in text
     assert "an-ecommerce-site-with-checkout-recovery" not in text
     assert payload["title"] == "Ecommerce Site with Checkout Recovery"
     assert payload["projection"]["origin"] == "accepted greenfield project"
     assert "accepted greenfield project" in payload["chips"]
     story = payload["product_story"]
-    assert story["headline"] == "Release 0.0.1 proves one usable first path"
+    assert story["headline"] == "Ecommerce Site with Checkout Recovery"
     assert "Make Build" not in " ".join(story["paragraphs"])
     assert len(story["paragraphs"]) >= 2
-    assert any("keeps the work focused" in paragraph for paragraph in story["paragraphs"])
+    assert not any("keeps the work focused" in paragraph for paragraph in story["paragraphs"])
     assert not any("The first path defines" in paragraph for paragraph in story["paragraphs"])
     assert not any("Together, those records keep release" in paragraph for paragraph in story["paragraphs"])
     assert story["supporting_records"] == []
+    _assert_project_story_cards(story)
     assert all(term not in json.dumps(story) for term in ("Radar", "Registry", "Atlas", "Compass"))
     assert "Product Story" in html
     assert "Storefront" in html
-    assert "Checkout Orchestrator" in html
-    assert "Catalog Boundary" in html
     assert "How the story becomes governance" not in html
     assert "Topology spine" not in html
     assert "Story root" not in html
@@ -446,7 +498,7 @@ def test_greenfield_project_tab_participants_prefer_project_actors_over_internal
     assert payload["participants_title"] == "Who participates?"
     assert "claim_evidence_title" not in payload
     assert payload["state_title"] == "Where does this stand?"
-    assert payload["next_title"] in {"What should move next?", "Start implementation planning"}
+    assert payload["next_title"] in {"What should move next?", "Start source creation"}
     assert proposal["intent"]["title"] not in payload["participants_title"]
 
 
@@ -874,9 +926,14 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert storefront["what_it_is"].startswith("Storefront is planned as an application boundary")
     assert "keeps local state, blocked behavior, recovery evidence, and release proof reviewable" in storefront["what_it_is"]
     assert "responsible for" not in storefront["what_it_is"]
-    assert "It owns browse, cart entry, checkout entry, and user-facing errors" in storefront_spec
-    assert "| Workstreams | `B-002` |" in storefront_spec
-    assert "| Diagrams | none yet |" in storefront_spec
+    assert "browse" in storefront_spec
+    assert "cart entry" in storefront_spec
+    assert "checkout entry" in storefront_spec
+    assert "user-facing errors" in storefront_spec
+    assert "It owns browse, cart entry, checkout entry, and user-facing errors" not in storefront_spec
+    assert "Trace links: workstreams B-002" in storefront_spec
+    assert "| Workstreams | `B-002` |" not in storefront_spec
+    assert "| Diagrams | none yet |" not in storefront_spec
     assert "Browser smoke proof for browse-to-cart and failed-checkout messaging" in storefront_spec
     assert result["memory"]["recorded"] is True
     assert result["memory"]["event"]["source"] == "domain-intelligence"
@@ -997,39 +1054,36 @@ def test_greenfield_apply_writes_host_authored_component_specs(tmp_path, monkeyp
         "Checkout Orchestrator",
         "Catalog Boundary",
     ]
-    assert "It owns browse, cart entry, checkout entry, and user-facing errors" in storefront_spec
-    assert "It owns payment handoff, order draft, idempotency, and recovery boundaries" in checkout_spec
-    assert "It owns product facts, price snapshots, inventory visibility, and merchandising review" in catalog_spec
-    assert "| Workstreams | `B-002` |" in storefront_spec
-    assert "| Workstreams | `B-002` |" in checkout_spec
-    assert "| Workstreams | `B-003` |" in catalog_spec
-    assert "Use `B-002` (Define Storefront boundary) as the implementation-plan anchor" in storefront_spec
-    assert "Use `B-003` (Define Catalog boundary) as the implementation-plan anchor" in catalog_spec
-    assert "Use `B-002` (Define Storefront boundary) as the implementation-plan anchor" not in catalog_spec
-    assert "## Component Role" in storefront_spec
-    assert "## Interaction Boundary" in storefront_spec
-    assert "## Runtime Boundary" in checkout_spec
-    assert "## Runtime Boundary" in catalog_spec
+    assert "browse, cart entry, checkout entry, and user-facing errors" in storefront_spec
+    assert "payment handoff, order draft, idempotency, and recovery boundaries" in checkout_spec
+    assert "product facts, price snapshots, inventory visibility, and merchandising review" in catalog_spec
+    assert "Trace links: workstreams B-002" in storefront_spec
+    assert "Trace links: workstreams B-002" in checkout_spec
+    assert "Trace links: workstreams B-003" in catalog_spec
+    assert "Use B-002 (Define Storefront boundary) as the implementation anchor" in storefront_spec
+    assert "Use B-003 (Define Catalog boundary) as the implementation anchor" in catalog_spec
+    assert "Use B-002 (Define Storefront boundary) as the implementation anchor" not in catalog_spec
+    assert "## Component Brief" not in storefront_spec
+    assert "## Boundary Narrative" not in storefront_spec
+    assert "## First Release Proof" not in checkout_spec
+    assert "## First Release Proof" not in catalog_spec
     assert "## Storefront Interaction Boundary" not in storefront_spec
     assert "## Checkout Orchestrator Runtime Boundary" not in checkout_spec
     assert "## Catalog Boundary Runtime Boundary" not in catalog_spec
-    role_sections = [
-        _markdown_section(storefront_spec, "## Component Role"),
-        _markdown_section(checkout_spec, "## Component Role"),
-        _markdown_section(catalog_spec, "## Component Role"),
-    ]
-    assert len(set(role_sections)) == 3
-    assert "browse, cart entry, checkout entry" in role_sections[0]
-    assert "payment handoff, order draft" in role_sections[1]
-    assert "price snapshots" in role_sections[2]
+    assert len({storefront_spec, checkout_spec, catalog_spec}) == 3
+    assert "browse, cart entry, checkout entry" in storefront_spec
+    assert "payment handoff, order draft" in checkout_spec
+    assert "price snapshots" in catalog_spec
     for text in (storefront_spec, checkout_spec, catalog_spec):
-        assert "Contract focus:" in text
-        assert "Primary interface:" in text
-        assert "Proof obligation:" in text
+        assert "Accepted intent" in text
+        assert "Suggested fixture:" not in text
         assert "Product context:" not in text
         assert "Project outcome:" not in text
         assert "Release 0.0.1 contribution:" not in text
         assert "Required proof:" not in text
+        assert "Contract focus:" not in text
+        assert "Primary interface:" not in text
+        assert "Proof obligation:" not in text
         assert "accepted first release path" not in text
         assert "**" not in text
         assert "…" not in text

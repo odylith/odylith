@@ -115,6 +115,59 @@ Release 0.0.1 succeeds when a reviewer can see the imported items, the stale-ite
     assert "Support reviewer: checks ambiguous follow-up attempts" in encoded
 
 
+def test_confirmed_intent_internal_systems_do_not_splice_related_path_fragments() -> None:
+    intent = parse_confirmed_intent_text(
+        """# Application Review
+
+## Product Story
+Application Review gives people a short guided review flow that captures the facts needed for a preliminary eligibility decision, evaluates them against configurable review rules, and returns an explainable result without pretending to be a final approval.
+
+## State Object
+An application review record tracks applicant identity, selected request type, declared facts, requested amount or scope, supporting details, rule evaluation results, decision reason-code, local blockers, and reviewer handoff evidence.
+
+## First Complete Path
+An applicant opens the product, selects a request type, enters declared facts, requested amount or scope, and basic identity details. They submit the application, the rules engine calculates review checks, and the product returns a plain-language result: likely eligible, conditionally eligible, or not yet eligible, with reason codes and next steps.
+
+## Human Actors
+- Applicant filling out intake and reading their decision.
+- Reviewer reading eligible or conditional applications and following up.
+- Administrator configuring review rules and thresholds.
+
+## External Systems
+- Identity verification provider.
+- External verification provider is deferred from the first release.
+
+## Internal Product Systems
+- Intake and Application: captures request type, declared facts, amount or scope, identity details, validation blockers, and submission state.
+- Qualification Rules Engine: calculates review checks, applies thresholds, records rule version, and blocks stale or missing inputs.
+- Decision and Reason-code Service: produces the explainable result, reason codes, next steps, and handoff evidence.
+- Reviewer Queue Service: shows submitted applications, decision status, blockers, and follow-up context.
+- Rule/Threshold Store: owned by the administrator for policy rules, threshold versions, and change evidence.
+
+## Critical Assumptions
+- Release 0.0.1 is preliminary eligibility only, not final approval.
+- External verification integrations are deferred until the manual review loop works.
+
+## Ambiguities
+- Exact eligibility thresholds need administrator configuration.
+
+## Proof Boundary
+Release 0.0.1 succeeds when one applicant can enter the required details, submit the application, receive an explainable preliminary eligibility result with reason codes, and leave a reviewable handoff for a reviewer without claiming final approval.
+""",
+        prompt="Create an application review product.",
+    )
+
+    joined = json.dumps(intent)
+    assert "Related path:" not in joined
+    assert "Runs it against" not in joined
+    assert "declared facts" in joined
+    systems = "\n".join(intent["internal_systems"])
+    assert "Decision and Reason-code Service" in systems
+    assert "produces the explainable result" in systems
+    assert "Rule/Threshold Store" in systems
+    assert "keeps rule/threshold state under the named owner" in systems
+
+
 def test_confirmed_intent_parser_accepts_current_sectioned_confirmation_contract() -> None:
     intent = parse_confirmed_intent_text(
         """Product Intent Confirmation
@@ -449,10 +502,11 @@ Release 0.0.1 succeeds when a request packet can be created with subject identit
         "missing document blocking",
         "request context provenance",
         "sensitive access control",
-        "handoff into Request Lifecycle Tracking Service",
+        "request lifecycle tracking",
         "Unauthorized users cannot view or mutate request context",
     ):
         assert phrase.casefold() in document_spec_lower
+    assert "handoff into request lifecycle tracking" in document_spec_lower or "hands context into request lifecycle tracking" in document_spec_lower
 
     status_spec = next(text for label, text in specs.items() if "Request Status" in label)
     status_spec_lower = status_spec.casefold()
@@ -578,10 +632,12 @@ Release 0.0.1 succeeds when reviewer assignment respects eligibility and permiss
         "permission state",
     ):
         assert phrase.casefold() in assignment_spec.casefold()
-    assert "refused domain responsibilities:" in assignment_spec.casefold()
+    assert "outside this boundary" in assignment_spec.casefold()
+    assert "refused domain responsibilities:" not in assignment_spec.casefold()
     for phrase in ("review fields", "scoring rubric", "score output"):
         assert phrase.casefold() in form_spec.casefold()
-    assert "refused domain responsibilities:" in form_spec.casefold()
+    assert "outside this boundary" in form_spec.casefold()
+    assert "refused domain responsibilities:" not in form_spec.casefold()
     for phrase in (
         "current decision summary",
         "comparison display",
@@ -590,7 +646,8 @@ Release 0.0.1 succeeds when reviewer assignment respects eligibility and permiss
         "user-facing decision state",
     ):
         assert phrase.casefold() in dashboard_spec.casefold()
-    assert "refused domain responsibilities:" in dashboard_spec.casefold()
+    assert "outside this boundary" in dashboard_spec.casefold()
+    assert "refused domain responsibilities:" not in dashboard_spec.casefold()
     for phrase in (
         "immutable event history",
         "version chain",
@@ -600,7 +657,8 @@ Release 0.0.1 succeeds when reviewer assignment respects eligibility and permiss
         "replay evidence",
     ):
         assert phrase.casefold() in audit_spec.casefold()
-    assert "refused domain responsibilities:" in audit_spec.casefold()
+    assert "outside this boundary" in audit_spec.casefold()
+    assert "refused domain responsibilities:" not in audit_spec.casefold()
 
 
 def test_confirmed_create_preserves_title_actors_and_domain_local_artifacts(tmp_path: Path, monkeypatch) -> None:
@@ -852,10 +910,12 @@ Success means the exported package explains which records were included or exclu
     assignment_spec = spec_for("Review Assignment and Conflict Resolution")
     assert "eligibility criteria" in criteria_spec.casefold()
     assert "protocol version" in criteria_spec.casefold()
-    assert "refused domain responsibilities:" in criteria_spec.casefold()
+    assert "outside this boundary" in criteria_spec.casefold()
+    assert "refused domain responsibilities:" not in criteria_spec.casefold()
     assert "eligible reviewers" in assignment_spec.casefold()
     assert "appropriate access" in assignment_spec.casefold()
-    assert "refused domain responsibilities:" in assignment_spec.casefold()
+    assert "outside this boundary" in assignment_spec.casefold()
+    assert "refused domain responsibilities:" not in assignment_spec.casefold()
     assert "conflict" in assignment_spec.casefold()
 
     source_text = "\n".join(
@@ -1139,7 +1199,7 @@ Release proof must show one supported device path from pairing through live read
 
     systems = intent["internal_systems"]
     assert len(systems) == 5
-    assert systems[0].startswith("Device Pairing And Sync — owns device pairing and sync state")
+    assert systems[0].startswith("Device Pairing and Sync — owns device pairing and sync state")
     assert "responsibility and keeps it tied" not in systems[0]
     assert all("—" in row for row in systems)
     assert all("missing or too thin" not in row for row in systems)
@@ -1260,17 +1320,18 @@ Release 0.0.1 succeeds when one decision record can be inspected from source obs
     assert "Decision Ledger" in encoded
     titles = [str(row["title"]) for row in accepted["proposal"]["backlog"]]
     assert titles == [
-        "Ship Decision Review Workspace First Release",
-        "Build Case Intake First Path",
-        "Implement Quality Review State Handoffs",
-        "Build Decision Ledger Proof Review",
+        "Make Decision Review Workspace Useful for One Complete Outcome",
+        "Let Coordinator Import One Observation",
+        "Keep Decision Record Clear After Quality Review Changes It",
+        "Show Why Decision Record Can Be Trusted",
     ]
+    assert not any(title.startswith(("Build ", "Implement ", "Ship ")) for title in titles)
     rows_by_title = {str(row["title"]): row for row in accepted["proposal"]["backlog"]}
-    first_path_row = rows_by_title["Build Case Intake First Path"]
-    state_row = rows_by_title["Implement Quality Review State Handoffs"]
-    proof_row = rows_by_title["Build Decision Ledger Proof Review"]
+    first_path_row = rows_by_title["Let Coordinator Import One Observation"]
+    state_row = rows_by_title["Keep Decision Record Clear After Quality Review Changes It"]
+    proof_row = rows_by_title["Show Why Decision Record Can Be Trusted"]
 
-    assert "coordinator imports one observation" in first_path_row["problem"]
+    assert "import one observation" in first_path_row["problem"]
     assert "quality evidence" in first_path_row["product_view"]
     assert "Decision Record" in state_row["product_view"]
     assert "actor, source, status" in " ".join(state_row["success_metrics"])

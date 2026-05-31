@@ -13,7 +13,40 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
-from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import ordered_domain_terms
+from odylith.runtime.domain_intelligence.greenfield_component_terms import ACTION_VERBS as _ACTION_VERBS
+from odylith.runtime.domain_intelligence.greenfield_component_terms import (
+    ARTIFACT_CARRIER_TERMS as _ARTIFACT_CARRIER_TERMS,
+)
+from odylith.runtime.domain_intelligence.greenfield_component_terms import GENERIC_TERMS as _GENERIC_TERMS
+from odylith.runtime.domain_intelligence.greenfield_component_terms import (
+    action_forms_pattern as _action_forms_pattern,
+)
+from odylith.runtime.domain_intelligence.greenfield_component_terms import (
+    action_object_artifact_phrases as _action_object_artifact_phrases,
+)
+from odylith.runtime.domain_intelligence.greenfield_component_terms import (
+    clean_artifact_phrase as _clean_artifact_phrase,
+)
+from odylith.runtime.domain_intelligence.greenfield_component_terms import (
+    clean_artifact_phrases as _clean_artifact_phrases,
+)
+from odylith.runtime.domain_intelligence.greenfield_component_terms import content_terms as _content_terms
+from odylith.runtime.domain_intelligence.greenfield_component_terms import (
+    descriptor_anchor_phrases as _descriptor_anchor_phrases,
+)
+from odylith.runtime.domain_intelligence.greenfield_component_terms import local_terms as _local_terms
+from odylith.runtime.domain_intelligence.greenfield_component_terms import looks_action_term as _looks_action_term
+from odylith.runtime.domain_intelligence.greenfield_component_terms import (
+    object_clause_focus as _object_clause_focus,
+)
+from odylith.runtime.domain_intelligence.greenfield_component_terms import (
+    phrase_identity_terms as _component_phrase_identity_terms,
+)
+from odylith.runtime.domain_intelligence.greenfield_component_terms import strip_action as _strip_action
+from odylith.runtime.domain_intelligence.greenfield_component_terms import trim_phrase as _trim_phrase
+from odylith.runtime.domain_intelligence.greenfield_component_terms import (
+    verb_forms_pattern as _verb_forms_pattern,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -26,154 +59,6 @@ class SemanticComponentContract:
     fields: Mapping[str, Any]
     confidence: int
     local_terms: tuple[str, ...]
-
-
-_ACTION_VERBS = (
-    "accept",
-    "adjust",
-    "approve",
-    "assemble",
-    "assign",
-    "block",
-    "build",
-    "calculate",
-    "capture",
-    "choose",
-    "compare",
-    "complete",
-    "compute",
-    "connect",
-    "create",
-    "delete",
-    "derive",
-    "edit",
-    "explain",
-    "export",
-    "grant",
-    "group",
-    "handoff",
-    "handle",
-    "highlight",
-    "import",
-    "link",
-    "leave",
-    "log",
-    "make",
-    "maintain",
-    "manage",
-    "notify",
-    "open",
-    "order",
-    "pair",
-    "persist",
-    "present",
-    "publish",
-    "rank",
-    "read",
-    "receive",
-    "record",
-    "render",
-    "request",
-    "resolve",
-    "route",
-    "save",
-    "schedule",
-    "score",
-    "see",
-    "select",
-    "send",
-    "show",
-    "store",
-    "submit",
-    "summarize",
-    "sync",
-    "track",
-    "validate",
-    "verify",
-    "view",
-)
-
-_GENERIC_TERMS = {
-    "accepted",
-    "actor",
-    "application",
-    "boundary",
-    "both",
-    "candidate",
-    "component",
-    "contract",
-    "domain",
-    "evidence",
-    "first",
-    "greenfield",
-    "hand",
-    "handoff",
-    "help",
-    "input",
-    "later",
-    "least",
-    "local",
-    "only",
-    "off",
-    "output",
-    "planned",
-    "product",
-    "project",
-    "proof",
-    "record",
-    "release",
-    "review",
-    "reviewer",
-    "service",
-    "single",
-    "source",
-    "state",
-    "system",
-    "validation",
-    "made",
-    "mistake",
-    "person",
-    "proven",
-    "succeed",
-    "success",
-    "their",
-    "they",
-    "today",
-    "with",
-    "what",
-    "whether",
-    "working",
-    "from",
-    "into",
-    "then",
-}
-
-_ARTIFACT_CARRIER_TERMS = {
-    "answer",
-    "answers",
-    "decision",
-    "evidence",
-    "field",
-    "fields",
-    "history",
-    "input",
-    "measurement",
-    "output",
-    "package",
-    "packet",
-    "record",
-    "request",
-    "result",
-    "rule",
-    "score",
-    "signal",
-    "state",
-    "status",
-    "summary",
-    "timeline",
-    "version",
-    "view",
-}
 
 
 def derive_component_semantic_contract(
@@ -193,11 +78,12 @@ def derive_component_semantic_contract(
     local_text = " ".join(text for text in (label, description, proposal_context) if text)
     clauses = _clauses(description or label)
     action_terms = _actions(" ".join(text for text in (label, description) if text)) or _actions(local_text)
-    description_phrases = unique_text(
+    description_phrases = _clean_artifact_phrases(
         [
             *_relation_phrases(description),
-            *_full_list_phrases(description),
             *_object_phrases(clauses, fallback=label),
+            *_action_object_artifact_phrases(description),
+            *_descriptor_anchor_phrases(label, description),
         ]
     )
     label_terms = _content_terms(label)
@@ -225,8 +111,8 @@ def derive_component_semantic_contract(
         description_phrases=description_phrases,
         context_required_phrases=context_required_phrases,
     )
-    context_backfill = [*context_phrases[:8], *context_compound_phrases[:4]] if needs_context_backfill else []
-    object_phrases = unique_text([*local_phrases, *context_backfill])
+    context_backfill = [*context_phrases[:5], *context_compound_phrases[:3]] if needs_context_backfill else []
+    object_phrases = _clean_artifact_phrases([*local_phrases, *context_backfill])
     object_phrases = _dedupe_phrase_subsets(object_phrases)
     object_phrases = _prioritize_object_phrases(
         object_phrases,
@@ -235,9 +121,10 @@ def derive_component_semantic_contract(
     )
     if description:
         required_seed = [
-            *description_phrases[:6],
-            *([] if not needs_context_backfill else context_phrases[:5]),
-            *([] if not needs_context_backfill else context_required_phrases[:5]),
+            *description_phrases[:10],
+            *context_phrases[:4],
+            *context_required_phrases[:8],
+            *([] if not needs_context_backfill else context_phrases[:3]),
             *label_phrases[:2],
             *bridge_phrases[:2],
             *lifecycle_phrases,
@@ -248,13 +135,13 @@ def derive_component_semantic_contract(
             *label_phrases[:2],
             *bridge_phrases[:2],
             *lifecycle_phrases,
-            *context_required_phrases[:5],
-            *context_compound_phrases[:4],
+            *context_required_phrases[:3],
+            *context_compound_phrases[:3],
         ]
     summary_phrases = _summary_object_phrases(
         object_phrases,
         required_phrases=unique_text(required_seed),
-        limit=9,
+        limit=10,
     )
     local_terms = _local_terms(label, description, proposal_context, object_phrases)
     object_list = _phrase(summary_phrases) or _phrase(local_terms[:10]) or _clean(label).casefold()
@@ -292,8 +179,14 @@ def derive_component_semantic_contract(
         sibling_focus=sibling_focus,
     )
     fields = {
-        "owned_state": f"{_clean(label).casefold()} state, {object_list}, local blockers, and handoff evidence for {state_label}",
-        "accepted_inputs": f"{input_focus}, authorized actor, source evidence, prior state, and validation notes",
+        "owned_state": _contract_list_text(
+            f"{_clean(label).casefold()} state",
+            *label_phrases[:1],
+            *summary_phrases[:7],
+            "blocker state",
+            "handoff evidence",
+        ),
+        "accepted_inputs": _accepted_inputs_text(input_focus),
         "produced_outputs": _produced_outputs_text(output_focus),
         "states_or_transitions": states,
         "outside_boundary": _outside_boundary(sibling_focus=sibling_focus),
@@ -372,6 +265,26 @@ def _clauses(value: str) -> list[str]:
 def _object_phrases(clauses: Sequence[str], *, fallback: str) -> list[str]:
     rows: list[str] = []
     for clause in clauses:
+        align_match = re.search(
+            r"\b(?P<action>aligns?|aligned|aligning)\s+(?P<body>[A-Za-z0-9][A-Za-z0-9 /&(),'-]{2,90}?)"
+            r"(?:\s+against\s+(?P<target>[A-Za-z0-9][A-Za-z0-9 /&(),'-]{2,60}?))?(?:\s+[—-]\s+|[.;,]|$)",
+            clause,
+            flags=re.IGNORECASE,
+        )
+        if align_match:
+            phrase = _trim_phrase(
+                " ".join(
+                    part
+                    for part in (
+                        align_match.group("action"),
+                        align_match.group("body"),
+                        f"against {align_match.group('target')}" if align_match.group("target") else "",
+                    )
+                    if part
+                )
+            )
+            if 2 <= len(phrase.split()) <= 10:
+                rows.append(phrase.casefold())
         phrase = _strip_action(_object_clause_focus(clause))
         if not _content_terms(phrase):
             phrase = clause
@@ -479,8 +392,6 @@ def _context_object_phrases(
             rows.append(" ".join(terms[:4]))
             if len(terms) > 4:
                 rows.append(" ".join(terms[2:6]))
-            if len(terms) > 7:
-                rows.append(" ".join(terms[5:9]))
             continue
         if carry_base:
             detail_terms = [term for term in terms[:3] if term not in carry_base]
@@ -531,6 +442,8 @@ def _needs_context_backfill(
 
     if not _clean(description):
         return True
+    if any(set(_content_terms(phrase)) & _ARTIFACT_CARRIER_TERMS for phrase in description_phrases):
+        return False
     broad_detail = re.compile(
         r"\b(?:central\s+object|details?|facts?|context|data|payload|information)\b",
         flags=re.IGNORECASE,
@@ -665,9 +578,12 @@ def _contract_focus(
         support = _supporting_artifacts(focus, exclude_terms=set(_content_terms(adjustment)))
         if role == "input":
             return f"{adjustment} request, {support}, prior state, and source evidence"
-        rationale = "adjustment rationale" if "rationale" in _content_terms(focus) else "review rationale"
+        rationale_terms = set(_content_terms(focus)) | set(contract_terms)
+        rationale = "adjustment rationale" if "rationale" in rationale_terms else "review rationale"
         return f"{adjustment} result, {rationale}, blocked-state evidence, and handoff record"
     if role == "input":
+        if any(action in action_terms for action in ("calculate", "compute", "derive", "evaluate", "score")):
+            return f"{focus} inputs, rule context, prior result, and validation command"
         if any(action in action_terms for action in ("capture", "create", "edit", "log", "record", "save", "store", "submit")):
             return f"required {focus} command, required fields, prior state, and source evidence"
         if any(action in action_terms for action in ("compare", "order", "rank")):
@@ -679,6 +595,8 @@ def _contract_focus(
         return f"required {focus} input, source evidence, prior state, and validation command"
     if any(action in action_terms for action in ("capture", "create", "edit", "log", "record", "save", "store", "submit")):
         return f"validated {focus} state, correction marker, and replayable change evidence"
+    if any(action in action_terms for action in ("calculate", "compute", "derive", "evaluate", "score")):
+        return f"{focus} result, rule explanation, and review evidence"
     if any(action in action_terms for action in ("compare", "order", "rank")):
         return f"ranked {focus} result, comparison explanation, and selection rationale"
     if any(action in action_terms for action in ("select", "choose")):
@@ -719,6 +637,25 @@ def _produced_outputs_text(output_focus: str) -> str:
     else:
         suffix_text = f"{', '.join(suffixes[:-1])}, and {suffixes[-1]}"
     return f"{text}, {suffix_text}"
+
+
+def _accepted_inputs_text(input_focus: str) -> str:
+    rows = _contract_text_items(input_focus)
+    required = ("authorized actor", "validation context")
+    return _contract_list_text(*rows, *required)
+
+
+def _contract_list_text(*values: str) -> str:
+    return ", ".join(_contract_text_items(", ".join(value for value in values if _clean(value))))
+
+
+def _contract_text_items(value: str) -> list[str]:
+    rows: list[str] = []
+    for raw in re.split(r",\s+|\s+and\s+", _clean(value), flags=re.IGNORECASE):
+        phrase = _clean_artifact_phrase(raw)
+        if phrase and phrase not in rows:
+            rows.append(phrase)
+    return rows
 
 
 def _adjustment_artifact(value: str) -> str:
@@ -835,10 +772,14 @@ def _past_tense(value: str) -> str:
         return ""
     if verb == "build":
         return "built"
+    if verb == "choose":
+        return "chosen"
     if verb == "log":
         return "logged"
     if verb == "make":
         return "made"
+    if verb == "submit":
+        return "submitted"
     if verb.endswith("e"):
         return f"{verb}d"
     if verb.endswith("y") and len(verb) > 1 and verb[-2] not in {"a", "e", "i", "o", "u"}:
@@ -848,12 +789,12 @@ def _past_tense(value: str) -> str:
 
 def _outside_boundary(*, sibling_focus: str) -> str:
     rows = [
-        "refused domain responsibilities: responsibilities not named by this component boundary",
-        "sibling-owned state: adjacent component state and proof evidence owned elsewhere",
-        "forbidden runtime authorities: mutation of upstream source truth, silent overwrite of downstream handoff state, and release approval",
+        "responsibilities not named by this component boundary",
+        "adjacent component state and proof evidence owned elsewhere",
+        "mutation of upstream source truth, silent overwrite of downstream handoff state, and release approval",
     ]
     if sibling_focus:
-        rows[1] = f"sibling-owned state: {sibling_focus}"
+        rows[1] = sibling_focus
     return "; ".join(rows)
 
 
@@ -980,13 +921,7 @@ def _dedupe_phrase_subsets(values: Sequence[str]) -> list[str]:
 def _phrase_identity_terms(value: str) -> set[str]:
     """Return phrase identity terms while keeping artifact-carrier nouns."""
 
-    terms: set[str] = set()
-    stopwords = _GENERIC_TERMS - _ARTIFACT_CARRIER_TERMS
-    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", _clean(value).casefold()):
-        token = normalize_domain_token(raw, stopwords=stopwords)
-        if token:
-            terms.add(token)
-    return terms
+    return _component_phrase_identity_terms(value)
 
 
 def _prioritize_object_phrases(
@@ -1051,47 +986,6 @@ def _summary_object_phrases(values: Sequence[str], *, required_phrases: Sequence
     return result[:limit]
 
 
-def _strip_action(value: str) -> str:
-    return _clean(re.sub(rf"^(?:{_action_forms_pattern()})\s+", "", value, flags=re.IGNORECASE))
-
-
-def _object_clause_focus(value: str) -> str:
-    """Return a clause focused on the action object, not the actor or handoff verb.
-
-    Confirmed first paths often arrive as natural prose: "A technician opens a
-    record" or "hands off one result". Rendering those clauses directly turns
-    actor subjects and phrasal verbs into bogus artifact nouns. This keeps the
-    extraction generic by using the local action inventory rather than domain
-    role dictionaries.
-    """
-
-    text = _clean(value)
-    if not text:
-        return ""
-    text = re.sub(
-        r"\bhand(?:s|ed|ing)?\s+off\b",
-        "handoff",
-        text,
-        flags=re.IGNORECASE,
-    )
-    action_pattern = _action_forms_pattern()
-    article_subject = re.match(
-        rf"^(?:a|an|the|one)\s+(?:[a-z][a-z0-9_-]*\s+){{1,5}}?(?:(?:can|must|should|will|may)\s+)?(?P<action>{action_pattern})\b(?P<tail>.*)$",
-        text,
-        flags=re.IGNORECASE,
-    )
-    if article_subject:
-        return f"{article_subject.group('action')}{article_subject.group('tail')}"
-    bare_subject = re.match(
-        rf"^(?:[a-z][a-z0-9_-]*\s+){{1,4}}(?:(?:can|must|should|will|may)\s+)?(?P<action>{action_pattern})\b(?P<tail>.*)$",
-        text,
-        flags=re.IGNORECASE,
-    )
-    if bare_subject and len(_content_terms(text[: bare_subject.start("action")])) <= 3:
-        return f"{bare_subject.group('action')}{bare_subject.group('tail')}"
-    return text
-
-
 def _drop_actor_action_lead(terms: Sequence[str]) -> list[str]:
     """Remove actor/action prefixes that are not artifact nouns."""
 
@@ -1108,63 +1002,8 @@ def _looks_actor_term(value: str) -> bool:
     return bool(re.search(r"(?:er|or|ist|ian|ant|ee)$", token))
 
 
-def _looks_action_term(value: str) -> bool:
-    token = str(value or "").casefold()
-    if token in _ACTION_VERBS:
-        return True
-    return token in {_past_tense(verb) for verb in _ACTION_VERBS}
-
-
-def _action_forms_pattern() -> str:
-    forms: list[str] = []
-    for verb in _ACTION_VERBS:
-        forms.extend(_verb_forms(verb))
-    return "|".join(re.escape(form) for form in sorted(set(forms), key=lambda value: (-len(value), value)))
-
-
-def _verb_forms_pattern(verb: str) -> str:
-    return "|".join(re.escape(form) for form in sorted(_verb_forms(verb), key=lambda value: (-len(value), value)))
-
-
-def _verb_forms(verb: str) -> set[str]:
-    forms = {verb, f"{verb}s", f"{verb}es", f"{verb}ed", f"{verb}ing"}
-    if verb.endswith("y") and len(verb) > 1 and verb[-2] not in {"a", "e", "i", "o", "u"}:
-        stem = verb[:-1]
-        forms.update({f"{stem}ies", f"{stem}ied"})
-    if verb.endswith("e") and len(verb) > 1:
-        stem = verb[:-1]
-        forms.update({f"{verb}d", f"{stem}ing"})
-    return forms
-
-
-def _local_terms(label: str, description: str, proposal_context: str, object_phrases: Sequence[str]) -> list[str]:
-    return unique_text(
-        term
-        for term in ordered_domain_terms(" ".join([label, description, proposal_context, *object_phrases]))
-        if term not in _GENERIC_TERMS and not term.isdigit()
-    )
-
-
-def _content_terms(value: str) -> list[str]:
-    return unique_text(
-        term
-        for term in ordered_domain_terms(value)
-        if term not in _GENERIC_TERMS and not term.isdigit()
-    )
-
-
 def _phrase(values: Sequence[str]) -> str:
     return ", ".join(_clean(value) for value in values if _clean(value))
-
-
-def _trim_phrase(value: str) -> str:
-    text = _clean(value).strip(" .,;:")
-    text = re.sub(r"\b(?:so|because|before|after|while)\b.+$", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^(?:a|an|the|one)\s+", "", text, flags=re.IGNORECASE)
-    words = text.split()
-    while words and words[-1].casefold() in {"a", "an", "and", "for", "from", "of", "or", "the", "to", "with"}:
-        words.pop()
-    return " ".join(words)
 
 
 def _clean(value: Any) -> str:

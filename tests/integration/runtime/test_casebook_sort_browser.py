@@ -161,7 +161,7 @@ def test_casebook_discards_unknown_status_filter_and_humanizes_compact_status(br
         """nodes => nodes.map((node) => (node.textContent || "").trim())"""
     )
     assert status_options == ["All statuses", "Open", "Fixed pending release", "Closed"]
-    assert casebook.locator("#listMeta").inner_text().strip() != "Visible: 0"
+    assert casebook.locator("#listMeta").inner_text().strip() != "0 visible"
     facts = casebook.locator("#detailPane .summary-fact").evaluate_all(
         """nodes => Object.fromEntries(nodes.map((node) => [
           (node.querySelector(".summary-fact-label")?.textContent || "").trim(),
@@ -190,7 +190,7 @@ def test_casebook_empty_search_state_is_visible_and_honest(browser_context) -> N
     casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
     casebook.locator("button.bug-row").first.wait_for(timeout=15000)
     casebook.locator("#searchInput").fill("no-such-casebook-record-for-empty-state-proof")
-    casebook.locator("#listMeta", has_text="Visible: 0").wait_for(timeout=15000)
+    casebook.locator("#listMeta", has_text="0 visible").wait_for(timeout=15000)
 
     assert casebook.locator("#bugList .empty-state").inner_text().strip() == (
         "No Casebook entries match the current filters."

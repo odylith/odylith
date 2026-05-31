@@ -175,7 +175,7 @@ def test_dirty_consumer_upgrade_normalizes_casebook_and_browser_stale_url_state(
         casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
         casebook.locator('button.bug-row.active[data-bug="CB-998"]').wait_for(timeout=15000)
         assert casebook.locator("#statusFilter").input_value() == ""
-        assert casebook.locator("#listMeta").inner_text().strip() != "Visible: 0"
+        assert casebook.locator("#listMeta").inner_text().strip() != "0 visible"
         facts = casebook.locator("#detailPane .summary-fact").evaluate_all(
             """nodes => Object.fromEntries(nodes.map((node) => [
               (node.querySelector(".summary-fact-label")?.textContent || "").trim(),

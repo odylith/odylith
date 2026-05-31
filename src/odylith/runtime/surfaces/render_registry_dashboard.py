@@ -17,8 +17,10 @@ from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import generated_surface_refresh_guards
+from odylith.runtime.surfaces import governance_surface_theme
 from odylith.runtime.surfaces import registry_component_identity_ui
 from odylith.runtime.surfaces import registry_forensic_evidence_ui
+from odylith.runtime.surfaces import registry_typography_ui
 from odylith.runtime.surfaces import source_bundle_mirror
 from odylith.runtime.surfaces import surface_path_helpers
 from odylith.runtime.governance import delivery_intelligence_engine
@@ -611,10 +613,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       min-height: 38px;
       line-height: 1;
     }
-    .select {
-      font-weight: 700;
-      color: #20456b;
-    }
     __ODYLITH_REGISTRY_CONTROL_LABEL__
     .component-list {
       margin: 0;
@@ -634,27 +632,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     .group-head {
       padding: 0 2px;
     }
-    .component-btn {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: var(--panel-soft);
-      text-align: left;
-      padding: 10px 11px;
-      cursor: pointer;
-      display: grid;
-      gap: 6px;
-    }
-    .component-btn:hover {
-      border-color: #8fb2e6;
-    }
-    .component-btn.active {
-      border-color: var(--line-strong);
-      background: #eaf3ff;
-    }
-    .component-card-title {
-      color: #22496f;
-    }
+    __ODYLITH_REGISTRY_COMPONENT_CARD_SURFACE__
     __ODYLITH_REGISTRY_DETAIL_IDENTITY_TYPOGRAPHY__
     .component-meta {
       margin: 0;
@@ -673,14 +651,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       gap: 12px;
       border-bottom: 1px solid var(--line);
     }
-    .summary-strip {
-      border: 1px solid #d6e3f7;
-      border-radius: 10px;
-      background: linear-gradient(180deg, #f8fbff, #ffffff);
-      padding: 9px 11px;
-      display: grid;
-      gap: 7px;
-    }
+    __ODYLITH_REGISTRY_SUMMARY_STACK_SURFACE__
     .summary-row {
       margin: 0;
     }
@@ -715,11 +686,9 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       list-style: square;
       display: grid;
       gap: 4px;
-      color: #2b4667;
     }
     .trigger-list li {
       margin: 0;
-      line-height: 1.4;
     }
     .spec-expand {
       border: 1px solid #d6e3f7;
@@ -782,18 +751,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     }
     .spec-doc p {
       margin: 0;
-      font-size: 13px;
-      line-height: 1.4;
-      color: #2d496a;
     }
     .spec-doc ul {
       margin: 0;
       padding-left: 18px;
       display: block;
       list-style: disc;
-      color: #2d496a;
-      font-size: 13px;
-      line-height: 1.35;
     }
     .spec-doc li {
       margin: 0 0 4px;
@@ -825,9 +788,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       width: 100%;
       min-width: 640px;
       border-collapse: collapse;
-      font-size: 12px;
-      line-height: 1.35;
-      color: #2d496a;
       background: #ffffff;
     }
     .spec-table th,
@@ -844,8 +804,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     }
     .spec-table thead th {
       background: #f1f6ff;
-      color: #1f3b5b;
-      font-weight: 700;
       white-space: nowrap;
     }
     .spec-table tbody tr:last-child td {
@@ -917,7 +875,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     }
     .context-count {
       text-align: right;
-      line-height: 1;
       padding-top: 2px;
     }
     .context-values {
@@ -2629,9 +2586,10 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       const whatItIsParts = splitInitialSourceBoundary(compactRegistryNarrative(row.what_it_is || "", row));
       const whyTracked = compactRegistryNarrative(row.why_tracked || "Not documented.", row);
       const fullNameSubtitle = rawDisplayName && rawDisplayName !== displayName ? `<p class="component-full-name">${escapeHtml(rawDisplayName)}</p>` : "";
+      const idSubtitle = componentDisplayIdLine(row, displayName || fallbackToken);
 
       detailEl.innerHTML = `
-        <div class="component-identity"><h2 class="component-name" title="${escapeHtml(fullIdentity)}">${escapeHtml(displayName || fallbackToken)}</h2>${fullNameSubtitle}<p class="component-full-name component-id-line">${escapeHtml(fallbackToken)}</p></div>
+        <div class="component-identity"><h2 class="component-name" title="${escapeHtml(fullIdentity)}">${escapeHtml(displayName || fallbackToken)}</h2>${fullNameSubtitle}${idSubtitle}</div>
         <div class="summary-strip">
           ${summaryTextRow("What it is", whatItIsParts.body || row.what_it_is || "Not documented.")}
           ${summaryArtifactRow("Source boundary", whatItIsParts.source, "Source boundary")}
@@ -2796,30 +2754,9 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     control_label_css = dashboard_ui_primitives.control_label_css(
         selector=".control-title",
     )
-    brief_section_label_css = dashboard_ui_primitives.control_label_css(
-        selector=".answers-head",
-        color="#1f4868",
-        size_px=12,
-        letter_spacing_em=0.06,
-        line_height=1.2,
-    )
-    content_copy_css = dashboard_ui_primitives.content_copy_css(
-        selectors=(
-            ".trigger-list",
-            ".trigger-list li",
-            ".spec-doc p",
-            ".spec-doc ul",
-            ".spec-doc li",
-        ),
-    )
-    detail_identity_css = dashboard_ui_primitives.detail_identity_typography_css(
-        title_selector=".component-name",
-        subtitle_selector=".component-full-name",
-        title_size_px=24,
-        title_letter_spacing_em=0.0,
-        medium_title_size_px=22,
-        small_title_size_px=19,
-    )
+    brief_section_label_css = registry_typography_ui.brief_section_label_css()
+    content_copy_css = registry_typography_ui.content_copy_css()
+    detail_identity_css = registry_typography_ui.detail_identity_css()
     kpi_grid_css = dashboard_ui_primitives.kpi_grid_layout_css(
         container_selector=".kpis",
         gap_px=8,
@@ -2835,6 +2772,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     )
     workspace_layout_css = dashboard_ui_primitives.split_detail_workspace_css(
         selector=".workspace",
+    )
+    component_card_surface_css = governance_surface_theme.selection_card_surface_css(
+        selector=".component-btn",
+    )
+    summary_stack_surface_css = governance_surface_theme.narrative_stack_surface_css(
+        selector=".summary-strip",
     )
     label_surface_css = dashboard_ui_primitives.label_surface_css(
         selector=".label",
@@ -2856,14 +2799,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         background="#f8efe2",
         border_color="#ead3b6",
         color="#8a6137",
-    )
-    summary_row_typography_css = dashboard_ui_primitives.inline_label_value_copy_css(
-        row_selectors=(".summary-row",),
-        label_selectors=(".summary-row strong",),
-        size_px=15,
-        line_height=1.55,
-        color="#27445e",
-        label_color="#22496f",
     )
     action_chip_css = dashboard_ui_primitives.detail_action_chip_css(
         selector=".action-chip",
@@ -2918,164 +2853,11 @@ def _render_html(*, payload: dict[str, Any]) -> str:
             ),
         )
     )
-    registry_secondary_typography_css = "\n\n".join(
-        (
-            dashboard_ui_primitives.section_heading_css(
-                selector=".pane-head",
-                color="#2a5078",
-                size_px=13,
-                line_height=1.2,
-                letter_spacing_em=0.045,
-                margin="0",
-            ),
-            dashboard_ui_primitives.auxiliary_heading_css(
-                selector=".group-head",
-                color="#547196",
-                size_px=11,
-                line_height=1.2,
-                letter_spacing_em=0.07,
-                margin="0",
-            ),
-            dashboard_ui_primitives.card_title_typography_css(
-                selector=".component-card-title",
-                color="#28496d",
-                size_px=14,
-                line_height=1.2,
-                letter_spacing_em=0.0,
-                margin="0",
-            ),
-            dashboard_ui_primitives.detail_disclosure_title_css(
-                selector=".detail-disclosure-title",
-                color="#22496f",
-                size_px=15,
-                line_height=1.55,
-                weight=700,
-                letter_spacing_em=0.0,
-                margin="0",
-            ),
-            dashboard_ui_primitives.caption_typography_css(
-                selector=".component-meta",
-                color="var(--muted)",
-                size_px=12,
-                line_height=1.25,
-            ),
-            dashboard_ui_primitives.card_title_typography_css(
-                selector=".context-count",
-                color="#2f4563",
-                size_px=13,
-                line_height=1.0,
-                letter_spacing_em=0.0,
-                weight=800,
-                margin="0",
-            ),
-            summary_row_typography_css,
-            dashboard_ui_primitives.card_title_typography_css(
-                selector=".spec-doc h3",
-                color="#21466d",
-                size_px=15,
-                line_height=1.15,
-                letter_spacing_em=0.0,
-                margin="0",
-            ),
-            dashboard_ui_primitives.card_title_typography_css(
-                selector=".spec-doc h4",
-                color="#21466d",
-                size_px=14,
-                line_height=1.15,
-                letter_spacing_em=0.0,
-                margin="0",
-            ),
-            dashboard_ui_primitives.card_title_typography_css(
-                selector=".spec-doc h5",
-                color="#21466d",
-                size_px=13,
-                line_height=1.15,
-                letter_spacing_em=0.0,
-                margin="0",
-            ),
-        )
-    )
-    registry_code_typography_css = dashboard_ui_primitives.code_typography_css(
-        selector=".spec-doc code",
-        color="inherit",
-        size_px=12,
-        line_height=1.2,
-        font_family='ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-    )
-    context_heading_css = "\n\n".join(
-        (
-            dashboard_ui_primitives.section_heading_css(
-                selector=".context-title",
-                color="#4b6283",
-                size_px=11,
-                line_height=1.2,
-                letter_spacing_em=0.06,
-                margin="0",
-            ),
-            dashboard_ui_primitives.auxiliary_heading_css(
-                selector=".timeline-head",
-                color="#34597f",
-                size_px=11,
-                line_height=1.0,
-                letter_spacing_em=0.07,
-                margin="0",
-            ),
-        )
-    )
-    auxiliary_button_css = "\n\n".join(
-        (
-            dashboard_ui_primitives.details_disclosure_caret_css(
-                details_selector=".trigger-expand",
-                label_selector=".trigger-summary-title",
-                color="#64748b",
-                size_px=11,
-                gap_px=6,
-            ),
-            dashboard_ui_primitives.details_disclosure_caret_css(
-                details_selector=".spec-expand",
-                label_selector=".spec-summary-title",
-                color="#64748b",
-                size_px=11,
-                gap_px=6,
-            ),
-            dashboard_ui_primitives.details_disclosure_caret_css(
-                details_selector=".context-section",
-                label_selector=".context-toggle-label",
-                color="#64748b",
-                size_px=11,
-                gap_px=6,
-            ),
-            dashboard_ui_primitives.button_typography_css(
-                selector=".diagnostics > summary",
-                color="#8a4b00",
-                size_px=12,
-                line_height=1.35,
-                letter_spacing_em=0.01,
-            ),
-        )
-    )
-    auxiliary_copy_css = "\n\n".join(
-        (
-            dashboard_ui_primitives.content_copy_css(
-                selectors=(".desc",),
-                size_px=13,
-                line_height=1.45,
-                color="#2b4667",
-            ),
-            dashboard_ui_primitives.supporting_copy_typography_css(
-                selector=".empty",
-                color="var(--muted)",
-                size_px=13,
-                line_height=1.4,
-            ),
-            dashboard_ui_primitives.supporting_copy_typography_css(
-                selector=".diag-item",
-                color="#7a4100",
-                size_px=12,
-                line_height=1.35,
-            ),
-        )
-    )
+    registry_secondary_typography_css = registry_typography_ui.detail_panel_typography_css()
+    registry_code_typography_css = registry_typography_ui.code_typography_css()
+    context_heading_css = registry_typography_ui.context_heading_css()
+    auxiliary_button_css = registry_typography_ui.auxiliary_button_typography_css()
+    auxiliary_copy_css = registry_typography_ui.auxiliary_copy_css()
     tooltip_surface_css, tooltip_runtime_js = dashboard_ui_runtime_primitives.quick_tooltip_bundle(
         excluded_closest_selectors=(".component-btn",),
     )
@@ -3090,6 +2872,8 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         .replace("__ODYLITH_REGISTRY_CONTROL_LABEL__", control_label_css)
         .replace("__ODYLITH_REGISTRY_BRIEF_LABELS__", brief_section_label_css)
         .replace("__ODYLITH_REGISTRY_WORKSPACE_LAYOUT__", workspace_layout_css)
+        .replace("__ODYLITH_REGISTRY_COMPONENT_CARD_SURFACE__", component_card_surface_css)
+        .replace("__ODYLITH_REGISTRY_SUMMARY_STACK_SURFACE__", summary_stack_surface_css)
         .replace("__ODYLITH_REGISTRY_DETAIL_IDENTITY_TYPOGRAPHY__", detail_identity_css)
         .replace("__ODYLITH_REGISTRY_KPI_GRID__", kpi_grid_css)
         .replace("__ODYLITH_REGISTRY_KPI_CARD_SURFACE__", kpi_card_surface_css)

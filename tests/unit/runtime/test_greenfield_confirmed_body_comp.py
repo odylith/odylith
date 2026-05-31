@@ -87,12 +87,16 @@ def test_confirmed_service_readiness_intent_repairs_actor_and_system_labels() ->
     assert "Relevant evidence" not in encoded
     assert "and downstream, and keeps" not in encoded
     assert "Evidence for this slice" not in encoded
-    assert "Readiness And Capacity Visibility Coordinator" in encoded
+    assert "readiness and capacity visibility coordinator" in encoded.casefold()
+    assert "Supervisor or Reviewer Checking Progress" not in encoded
     assert "Content Privacy Operator" in encoded
     assert "Measurement Capture For Capacity, Availability, Attachments, And —" not in encoded
     assert "Policy Guardrails For Approval Limits, Escalation, Restricted Actions, —" not in encoded
-    assert "Measurement Capture For Capacity, Availability, Attachments, And Readiness Estimates" in encoded
-    assert "Policy Guardrails For Approval Limits, Escalation, Restricted Actions, Evidence Gaps, And High-risk Cases" in encoded
+    assert "measurement capture for capacity, availability, attachments, and readiness estimates" in encoded.casefold()
+    assert (
+        "policy guardrails for approval limits, escalation, restricted actions, evidence gaps, and high-risk cases"
+        in encoded.casefold()
+    )
     assert "without." not in encoded
 
 

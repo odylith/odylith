@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
+from odylith.runtime.surfaces import governance_surface_theme
 
 
 def casebook_dashboard_style_bundle() -> dict[str, str]:
@@ -58,7 +59,12 @@ def casebook_dashboard_style_bundle() -> dict[str, str]:
         left_max_px=430,
     )
     panel_surface_css = ""
-    row_surface_css = ""
+    row_surface_css = "\n\n".join(
+        (
+            governance_surface_theme.selection_card_surface_css(selector=".bug-row"),
+            ".bug-row {\n  margin-bottom: 8px;\n}",
+        )
+    )
     narrative_section_surface_css = dashboard_ui_primitives.panel_surface_css(
         selector=".empty-state",
         padding="12px 13px",
@@ -146,6 +152,27 @@ def casebook_dashboard_style_bundle() -> dict[str, str]:
                 weight=700,
                 letter_spacing_em=0.0,
                 margin="0",
+            ),
+        )
+    )
+    panel_head_typography_css = "\n\n".join(
+        (
+            dashboard_ui_primitives.card_title_typography_css(
+                selector=".panel-head-title",
+                color="var(--ink)",
+                size_px=15,
+                line_height=1.35,
+                letter_spacing_em=0.0,
+                weight=700,
+                margin="0",
+            ),
+            dashboard_ui_primitives.supporting_copy_typography_css(
+                selector=".panel-head-meta",
+                color="var(--ink-muted)",
+                size_px=13,
+                line_height=1.35,
+                weight=600,
+                letter_spacing_em=0.0,
             ),
         )
     )
@@ -266,6 +293,7 @@ def casebook_dashboard_style_bundle() -> dict[str, str]:
         "label_tone_css": label_tone_css,
         "detail_action_chip_css": detail_action_chip_css,
         "section_heading_css": section_heading_css,
+        "panel_head_typography_css": panel_head_typography_css,
         "secondary_heading_css": secondary_heading_css,
         "compact_fact_css": compact_fact_css,
         "inline_row_css": inline_row_css,
@@ -300,6 +328,7 @@ def apply_casebook_dashboard_style_placeholders(html: str, styles: dict[str, str
         "__CASEBOOK_LABEL_TONES__": styles["label_tone_css"],
         "__CASEBOOK_ACTION_CHIP__": styles["detail_action_chip_css"],
         "__CASEBOOK_SECTION_HEADING__": styles["section_heading_css"],
+        "__CASEBOOK_PANEL_HEAD_TYPOGRAPHY__": styles["panel_head_typography_css"],
         "__CASEBOOK_SECONDARY_HEADINGS__": styles["secondary_heading_css"],
         "__CASEBOOK_COMPACT_FACT_TYPOGRAPHY__": styles["compact_fact_css"],
         "__CASEBOOK_INLINE_ROW_TYPOGRAPHY__": styles["inline_row_css"],
