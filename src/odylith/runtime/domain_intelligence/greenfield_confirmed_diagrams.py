@@ -92,8 +92,8 @@ def confirmed_diagrams(
                 )
             ),
             "read_guide": (
-                f"Start with the user action. Follow {actor_phrase} through each product responsibility. The release proof must still match: "
-                f"{proof_brief or 'the accepted proof boundary'}."
+                f"Start with the user action. Follow {actor_phrase} through each product responsibility. The release must still prove: "
+                f"{proof_brief or 'the promised user-visible result'}."
             ),
             "owner": "repo",
             "status": "draft",
@@ -172,7 +172,7 @@ def confirmed_diagrams(
             "title": "Ownership and Proof View",
             "kind": "flowchart",
             "summary": _sentence(
-                f"Trace release ownership for {label} from product-owned components to the accepted proof boundary for {state_label} and {evidence_label}"
+                f"Trace release ownership for {label} from product-owned components to the product result supported by {state_label} and {evidence_label}"
             ),
             "read_guide": (
                 f"Read from each state or evidence owner toward the proof boundary. A box matters when it owns {label.lower()} data, "
@@ -315,7 +315,9 @@ def _component_review_sentence(*, label: str, subject: str, kind: str) -> str:
     if _is_workflow_like(label, subject):
         return "Reviewers need to see each responsibility transfer, failure state, recovery action, and final outcome"
     if _is_record_like(label, subject):
-        return "Reviewers need to see the versioned state, source evidence, and decisions that depended on this record"
+        if re.search(r"\b(?:audit|evidence|provenance|source|trail|version|versioned)\b", f"{label} {subject}", re.IGNORECASE):
+            return "Reviewers need to see the versioned state, source evidence, and decisions that depended on this record"
+        return "Reviewers need to see the saved state, important inputs, status changes, and decisions that depended on this record"
     if _is_decision_like(label, subject):
         return "Reviewers need to see the inputs, rule version, result, and downstream decision that depended on it"
     return "Reviewers need to see what this boundary receives, produces, records, and makes available next"
@@ -453,6 +455,8 @@ def _brief_proof_boundary(value: str) -> str:
     if not text:
         return ""
     text = re.sub(r"^what would count as evidence[^:]*:\s*", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^(?:the\s+)?first\s+version\s+is\s+proven\s+when\s+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^(?:release\s+[A-Za-z0-9_.-]+\s+)?(?:is\s+)?proven\s+when\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"^release\s+[A-Za-z0-9_.-]+\s+succeeds\s+when\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"^the release succeeds\s+when\s+", "", text, flags=re.IGNORECASE)
     text = re.split(r"\bwhat must not be claimed yet\b", text, maxsplit=1, flags=re.IGNORECASE)[0]
@@ -593,7 +597,8 @@ def _ownership_mermaid(
         if index > 1:
             lines.append(f"  {_node_id('owner', index - 1)} --> {node}")
     proof_node = _node_id("proof", 1)
-    lines.append(f'  {proof_node}["Proof boundary<br/>{_escape_label(_trim(proof_boundary, 52))}"]')
+    proof_label = _brief_proof_boundary(proof_boundary) or "promised outcome"
+    lines.append(f'  {proof_node}["Release proof<br/>{_escape_label(_trim(proof_label, 52))}"]')
     if components:
         lines.append(f"  {_node_id('owner', min(len(components), 7))} --> {proof_node}")
     lines.extend(
@@ -714,7 +719,7 @@ def _proof_review_mermaid(
     non_goals: list[str],
     semantic_model: Mapping[str, Any] | None = None,
 ) -> str:
-    proof_text = _brief_proof_boundary(proof_boundary) or "accepted proof boundary"
+    proof_text = _brief_proof_boundary(proof_boundary) or "promised user-visible result"
     proof_label = _semantic_proof_checkpoint(semantic_model) or _proof_checkpoint_label(proof_text) or "first-path evidence, state replay, blocked-path proof"
     evidence_label = _proof_evidence_label(components=components, fallback=evidence_record)
     lines = [
@@ -724,7 +729,7 @@ def _proof_review_mermaid(
         f'  evidence_record["Evidence record<br/>{_escape_label(_trim(evidence_label, 72))}"] --> validation',
         f'  validation["Proof checkpoint<br/>{_escape_label(proof_label)}"] --> decision',
         '  decision["Release decision<br/>accept, revise, or block"] --> release',
-        '  release["Release claim<br/>stays inside proof boundary"]',
+        '  release["Release claim<br/>matches the promised outcome"]',
         "  classDef outcomeClass fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;",
         "  classDef state fill:#F5F3FF,stroke:#C4B5FD,color:#17233A,stroke-width:1px;",
         "  classDef evidence fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1px;",
@@ -750,18 +755,22 @@ def _semantic_proof_checkpoint(semantic_model: Mapping[str, Any] | None) -> str:
     if not isinstance(semantic_model, Mapping):
         return ""
     graph = semantic_model.get("diagram_event_graph")
-    if not isinstance(graph, Mapping):
-        return ""
-    value = _compact_text(str(graph.get("proof_checkpoint") or ""))
-    if not value or len(re.findall(r"[A-Za-z0-9]+", value)) < 3:
-        return ""
-    value = re.sub(
-        r"^accepted\s+first\s+path\s+proof\s*:\s*",
-        "Proven when ",
-        value,
-        flags=re.IGNORECASE,
-    )
-    return _trim(value, 80)
+    if isinstance(graph, Mapping):
+        value = _compact_text(str(graph.get("proof_checkpoint") or ""))
+        value = re.sub(r"^accepted\s+first\s+path\s+proof\s*:\s*", "", value, flags=re.IGNORECASE)
+        value = re.sub(r"^(?:first\s+version\s+is\s+)?proven\s+when\s+", "", value, flags=re.IGNORECASE)
+        value = re.sub(r"^done\s+means\s*:?\s*", "", value, flags=re.IGNORECASE)
+        value = _strip_dangling_tail(value)
+        if len(re.findall(r"[A-Za-z0-9]+", value)) >= 4:
+            return _trim(f"Proven when {value[:1].lower()}{value[1:]}", 80)
+    contract = semantic_model.get("first_path_contract")
+    if isinstance(contract, Mapping):
+        visible = _compact_text(str(contract.get("visible_result") or ""))
+        visible = re.sub(r"\breadout\s+plus\b", "readout and", visible, flags=re.IGNORECASE)
+        visible = re.sub(r"\balongside\b", "with", visible, flags=re.IGNORECASE)
+        if len(re.findall(r"[A-Za-z0-9]+", visible)) >= 3:
+            return _trim(_strip_dangling_tail(visible), 80)
+    return ""
 
 
 def _proof_evidence_label(*, components: list[dict[str, Any]], fallback: str) -> str:
@@ -781,6 +790,8 @@ def _proof_checkpoint_label(value: str) -> str:
     if not text:
         return ""
     text = re.sub(r"^done\s+means\s*:?\s*", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^(?:the\s+)?first\s+version\s+is\s+proven\s+when\s+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^(?:release\s+[A-Za-z0-9_.-]+\s+)?(?:is\s+)?proven\s+when\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"^release\s+[A-Za-z0-9_.-]+\s+succeeds\s+when\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"^the\s+release\s+succeeds\s+when\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"^the\s+first\s+proof\s+is\s+", "", text, flags=re.IGNORECASE)
@@ -939,7 +950,7 @@ def _strip_dangling_tail(value: str) -> str:
     text = _compact_text(value).rstrip(" ,;:.")
     while True:
         cleaned = re.sub(
-            r"\b(?:a|an|and|as|at|because|by|can|for|from|if|in|into|lets|must|of|on|or|should|the|through|tied|to|when|while|with|without)$",
+            r"\b(?:a|an|and|as|at|because|by|can|for|from|if|in|into|its|lets|must|of|on|or|should|that|the|their|this|through|tied|to|when|while|with|without)$",
             "",
             text,
             flags=re.IGNORECASE,

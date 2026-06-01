@@ -132,7 +132,7 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             summary="Give Odylith the failure signature, suspected area, and first checks so the bug record starts with actionable debugging context.",
             prompt=(
                 'Create a Casebook bug titled "Duplicate state transition after provider retry". '
-                "Record the symptom as one command creating two state changes after a delayed provider retry. "
+                "Record the failure as one command creating two state changes after a delayed provider retry. "
                 "Mark the suspected area as retry idempotency in example-component. "
                 "Add first checks for provider event ids, retry logs, state records, and the exact command id that reproduced it."
             ),

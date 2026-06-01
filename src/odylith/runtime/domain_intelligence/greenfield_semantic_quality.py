@@ -6,6 +6,7 @@ import re
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -52,12 +53,12 @@ _TRIVIAL_NAMED_PRODUCT_START_RE = re.compile(
 
 _MATERIAL_ACTION_RE = re.compile(
     r"\b(?:"
-    r"add|adds|adjust|adjusts|approve|approves|assign|assigns|attach|attaches|calculate|calculates|capture|captures|"
+    r"accept|accepts|add|adds|adjust|adjusts|approve|approves|assign|assigns|attach|attaches|calculate|calculates|capture|captures|"
     r"check|checks|choose|chooses|compare|compares|complete|completes|confirm|confirms|correct|corrects|"
-    r"create|creates|delete|deletes|edit|edits|enter|enters|export|exports|fetch|fetches|finalize|finalizes|"
-    r"highlight|highlights|import|imports|inspect|inspects|let|lets|log|logs|mark|marks|notify|notifies|persist|persists|play|plays|"
-    r"preserve|preserves|publish|publishes|rank|ranks|read|reads|receive|receives|record|records|request|requests|review|reviews|"
-    r"route|routes|run|runs|save|saves|schedule|schedules|screen|screens|see|sees|select|selects|send|sends|share|shares|"
+    r"click|clicks|create|creates|delete|deletes|dismiss|dismisses|edit|edits|enter|enters|export|exports|fetch|fetches|finalize|finalizes|"
+    r"display|displays|highlight|highlights|import|imports|inspect|inspects|let|lets|log|logs|mark|marks|notify|notifies|persist|persists|play|plays|"
+    r"preserve|preserves|produce|produces|publish|publishes|rank|ranks|read|reads|receive|receives|record|records|render|renders|request|requests|review|reviews|"
+    r"return|returns|route|routes|run|runs|save|saves|schedule|schedules|screen|screens|see|sees|select|selects|send|sends|share|shares|"
     r"show|shows|stop|stops|store|stores|submit|submits|sync|syncs|tap|taps|track|tracks|update|updates|"
     r"validate|validates|view|views"
     r")\b",
@@ -199,29 +200,39 @@ def first_path_steps(value: Any) -> tuple[str, ...]:
     return first_path_model(value).steps
 
 
-def first_path_capability_phrase(value: Any, *, fallback: str = "accepted first path", limit: int = 180) -> str:
+def first_path_capability_phrase(
+    value: Any,
+    *,
+    fallback: str = "accepted first path",
+    limit: int = 180,
+    gerund: bool = False,
+    max_fragments: int = 4,
+) -> str:
     """Return a compact action-chain phrase for Radar and project-story prose."""
 
     model = first_path_model(value)
     steps = [step for step in model.steps if step and not _is_trivial_start(step)]
     selected: list[str] = []
-    if model.material_action:
+    if model.material_action and not _is_system_generated_action(model.material_action):
         selected.append(model.material_action)
     for step in steps:
-        if len(selected) >= 4:
+        if len(selected) >= max(1, max_fragments):
             break
         if model.material_action and _clean(step).casefold() == _clean(model.material_action).casefold():
             continue
+        if _is_system_generated_action(step):
+            continue
         if _MATERIAL_ACTION_RE.search(step) or re.search(
-            r"\b(?:see|sees|show|shows|view|views|review|reviews|receive|receives)\b",
+            r"\b(?:display|displays|produce|produces|render|renders|return|returns|see|sees|show|shows|view|views|review|reviews|receive|receives)\b",
             step,
             re.IGNORECASE,
         ):
             selected.append(step)
     if model.visible_outcome:
         selected.append(model.visible_outcome)
-    fragments = _unique([_gerund_action_fragment(step) for step in selected])
-    text = _join_series(fragments[:4]) or _clean(fallback)
+    fragmenter = _gerund_action_fragment if gerund else _action_chain_fragment
+    fragments = _unique([fragmenter(step) for step in selected])
+    text = _join_series(fragments[: max(1, max_fragments)]) or _clean(fallback)
     return _clip_phrase(text, limit=limit) or _clean(fallback)
 
 
@@ -309,6 +320,20 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
             issues.append(f"mechanical first-action scaffold leaked at {location}")
         if re.search(r"\bfirst\s+path\s+entry\b", lowered):
             issues.append(f"mechanical first-path-entry scaffold leaked at {location}")
+        if re.search(r"\bis\s+not\s+trustworthy\s+when\b", lowered):
+            issues.append(f"mechanical trust scaffold leaked at {location}")
+        if re.search(r"\bneed\s+[A-Z]?[A-Za-z0-9][^.;]{0,120}\s+to\s+turn\b", text):
+            issues.append(f"mechanical need-to-turn problem scaffold leaked at {location}")
+        if re.search(r"\bfirst\s+release\s+can\s+collect\s+activity\b", lowered):
+            issues.append(f"mechanical activity-without-result scaffold leaked at {location}")
+        if re.search(r"\baccepted\s+path\s+lets\s+users\b", lowered):
+            issues.append(f"mechanical success-metric scaffold leaked at {location}")
+        if re.search(r"\bsource\s+evidence,\s+visible\s+blockers,\s+and\s+the\s+systems?\s+that\s+own\b", lowered):
+            issues.append(f"governance-scaffold problem language leaked at {location}")
+        if re.search(r"\bkeeps?\s+the\s+accepted\s+path\s+step\s+reviewable\b", lowered):
+            issues.append(f"mechanical path-review scaffold leaked at {location}")
+        if re.search(r"\bproves\s+one\s+successful\s+local\s+state\s+transition\b", lowered):
+            issues.append(f"mechanical local-transition metric leaked at {location}")
         if re.search(r"\bcan\s+act\s+where\s+the\s+accepted\s+path\s+requires\b", lowered):
             issues.append(f"mechanical actor-path scaffold leaked at {location}")
         if re.search(r"\bexpected\s+local\s+output\s*:", lowered):
@@ -399,10 +424,69 @@ def _material_action(steps: Sequence[str]) -> str:
 
 
 def _visible_outcome(steps: Sequence[str]) -> str:
+    preferred: list[str] = []
+    fallback: list[str] = []
     for step in reversed(steps):
-        if re.search(r"\b(?:see|sees|show|shows|view|views|review|reviews|receive|receives|export|exports|publish|publishes)\b", step, re.IGNORECASE):
-            return _sentence_case(step)
+        if _is_meta_visible_result_summary(step):
+            continue
+        if _looks_like_visible_result(step):
+            cleaned = _clean_visible_result_phrase(step) or step
+            if re.search(r"\b(?:see|sees|show|shows|view|views|receive|receives|render|renders|return|returns|display|displays|produce|produces)\b", cleaned, flags=re.IGNORECASE) and not re.search(
+                r"\b(?:accept|accepts|click|clicks|choose|chooses|dismiss|dismisses)\b",
+                cleaned,
+                flags=re.IGNORECASE,
+            ):
+                preferred.append(cleaned)
+            else:
+                fallback.append(cleaned)
+    if preferred:
+        return _sentence_case(preferred[0])
+    if fallback:
+        return _sentence_case(fallback[0])
     return _sentence_case(steps[-1]) if steps else ""
+
+
+def _is_meta_visible_result_summary(value: str) -> bool:
+    """Return whether a step only names the parser's visible-result marker."""
+
+    text = _clean(value)
+    if not text:
+        return False
+    lowered = text.casefold()
+    if "visible-result event" in lowered:
+        return True
+    return bool(re.match(r"^(?:this|the)\s+.+\bis\s+the\s+visible\s+result\b", text, flags=re.IGNORECASE))
+
+
+def _is_system_generated_action(value: str) -> bool:
+    """Return whether a first-path clause describes internal processing, not a user capability."""
+
+    text = _clean(value)
+    if not text:
+        return False
+    system_verb = (
+        r"calculates?|computes?|derives?|evaluates?|generates?|renders?|returns?|runs?|"
+        r"scores?|updates?|validates?"
+    )
+    if re.match(rf"^(?:the\s+)?(?:product|system|app|application|service|platform|tool)\s+{system_verb}\b", text, flags=re.IGNORECASE):
+        return True
+    return bool(re.match(rf"^[A-Z][A-Za-z0-9_-]{{2,}}\s+{system_verb}\b", text))
+
+
+def _looks_like_visible_result(value: str) -> bool:
+    text = _clean(value)
+    return bool(
+        re.search(
+            r"\b(?:display|displays|export|exports|present|presents|produce|produces|publish|publishes|render|renders|return|returns|see|sees|show|shows|view|views|review|reviews|receive|receives)\b",
+            text,
+            re.IGNORECASE,
+        )
+        or re.search(
+            r"\b(?:card|dashboard|indicator|readout|recommendation|result|summary|timeline|trend|view)\b",
+            text,
+            re.IGNORECASE,
+        )
+    )
 
 
 def _recovery_action(steps: Sequence[str]) -> str:
@@ -417,7 +501,74 @@ def _clean_step(value: str) -> str:
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"^\d+[.)]\s*", "", text)
     text = re.sub(r"\bthat single loop\b\s*[–—-]?\s*", "", text, flags=re.IGNORECASE)
+    if _is_meta_visible_result_summary(text):
+        return ""
+    text = _clean_visible_result_phrase(text) or text
+    text = _normalize_subjectless_action_step(text)
     return _sentence_case(text)
+
+
+def _normalize_subjectless_action_step(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text or _leading_subject_prefix(text):
+        return text
+    if _MATERIAL_ACTION_RE.match(text):
+        text = base_action_clause(text)
+    else:
+        adverbial = re.match(
+            r"^(?P<prefix>[A-Za-z]+ly\s+)(?P<verb>[A-Za-z]+s)\b(?P<tail>.*)$",
+            text,
+            flags=re.IGNORECASE,
+        )
+        if adverbial and _MATERIAL_ACTION_RE.match(adverbial.group("verb")):
+            text = f"{adverbial.group('prefix')}{base_action_clause(adverbial.group('verb'))}{adverbial.group('tail')}"
+    text = _base_following_action_verbs(text)
+    text = re.sub(r",\s+and\s+", " and ", text, flags=re.IGNORECASE)
+    return text.strip(" .")
+
+
+def _clean_visible_result_phrase(value: str) -> str:
+    """Remove parser metadata from a visible-result phrase without losing the product outcome."""
+
+    text = _clean(value).strip(" .")
+    if not text:
+        return ""
+    text = re.sub(r"^on\s+save,\s*", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bvisible[- ]result\s+event\b", "visible result", text, flags=re.IGNORECASE)
+    match = re.match(
+        r"^(?:this|the)\s+(?P<head>.+?)\s+[–—-]\s+(?P<detail>.+?)\s+[–—-]\s+is\s+the\s+visible\s+result\b.*$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if match:
+        text = f"{match.group('head')} with {match.group('detail')}"
+    text = re.sub(r"\s+is\s+the\s+visible\s+result\b.*$", "", text, flags=re.IGNORECASE).strip(" .")
+    text = re.sub(
+        r"\s+and\s+the\s+(?:dashboard|screen|view)\s+renders?\s+the\s+visible\s+result\s*:\s*(?:the\s+)?",
+        " and the ",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(
+        r"\b(?:dashboard|screen|view)\s+renders?\s+the\s+visible\s+result\s*:\s*(?:the\s+)?",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+    visible_tail = re.match(
+        r"^.+\s+and\s+(?P<tail>(?:the\s+)?[A-Za-z0-9][A-Za-z0-9 '-]{1,60}\s+"
+        r"(?:sees?|views?|receives?|gets?|reads?)\s+.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if visible_tail:
+        text = visible_tail.group("tail")
+    text = re.sub(r"\breadout\s+plus\b", "readout and", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bon\s+screen,\s+alongside\b", "on screen with", text, flags=re.IGNORECASE)
+    text = re.sub(r"\balongside\b", "with", text, flags=re.IGNORECASE)
+    text = re.sub(r"\b(?:this|the)\s+rendered\b", "rendered", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s+", " ", text).strip(" .")
+    return text
 
 
 def _split_action_pieces(value: str) -> list[str]:
@@ -469,11 +620,11 @@ def _starts_new_action_clause(value: str) -> bool:
         r"^(?:a|an|the|one|this|that|each|another|product|system|user|person|actor|app|application)\s+"
         r"(?:[A-Za-z0-9'-]+\s+){0,5}?"
         r"(?:"
-        r"add|adds|adjust|adjusts|approve|approves|assign|assigns|attach|attaches|calculate|calculates|capture|captures|"
+        r"accept|accepts|add|adds|adjust|adjusts|approve|approves|assign|assigns|attach|attaches|calculate|calculates|capture|captures|"
         r"check|checks|choose|chooses|compare|compares|complete|completes|confirm|confirms|correct|corrects|"
-        r"create|creates|delete|deletes|edit|edits|enter|enters|export|exports|fetch|fetches|finalize|finalizes|"
-        r"import|imports|inspect|inspects|log|logs|mark|marks|notify|notifies|persist|persists|preserve|preserves|"
-        r"publish|publishes|rank|ranks|read|reads|receive|receives|record|records|request|requests|review|reviews|route|routes|"
+        r"click|clicks|create|creates|delete|deletes|dismiss|dismisses|edit|edits|enter|enters|export|exports|fetch|fetches|finalize|finalizes|"
+        r"display|displays|import|imports|inspect|inspects|log|logs|mark|marks|notify|notifies|persist|persists|preserve|preserves|"
+        r"produce|produces|publish|publishes|rank|ranks|read|reads|receive|receives|record|records|render|renders|request|requests|review|reviews|return|returns|route|routes|"
         r"run|runs|save|saves|schedule|schedules|screen|screens|see|sees|select|selects|send|sends|share|shares|show|shows|"
         r"store|stores|submit|submits|sync|syncs|tap|taps|track|tracks|update|updates|validate|validates|view|views"
         r")\b",
@@ -637,6 +788,86 @@ def _sentence_case(value: str) -> str:
     return text[:1].upper() + text[1:]
 
 
+def _action_chain_fragment(value: str) -> str:
+    text = _clean_visible_result_phrase(value) or _clean(value).strip(" .")
+    text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s+and,\s+if\b.+$", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s+if\b.+$", "", text, flags=re.IGNORECASE)
+    outcome = _visible_result_object(text)
+    if outcome and not re.search(r"\b(?:receives?|gets?)\b", text, flags=re.IGNORECASE):
+        return f"review {outcome}".strip(" .")
+    click = re.search(r"\bclicks?\s+(?P<object>.+?)(?:\s+and\s+.+)?$", text, flags=re.IGNORECASE)
+    if click:
+        clicked = _clean(click.group("object"))
+        clicked = re.sub(r"\bon\s+that\b", "on the", clicked, flags=re.IGNORECASE)
+        return _clip_phrase(f"choose {clicked.casefold()}", limit=120)
+    text = _strip_action_subject(text)
+    text = base_action_clause(text)
+    text = _base_following_action_verbs(text)
+    text = re.sub(r",\s+and\s+", " and ", text)
+    text = re.sub(r"\s+", " ", text).strip(" ,.")
+    return text[:1].casefold() + text[1:] if text else ""
+
+
+def _visible_result_object(value: str) -> str:
+    text = _clean_visible_result_phrase(value) or _clean(value)
+    patterns = (
+        r":\s*(?:the\s+)?(?:user|owner|person|participant|actor|operator|applicant|customer)\s+"
+        r"(?:sees?|views?|receives?|gets?|reads?)\s+(?P<object>.+)$",
+        r"\b(?:sees?|views?|receives?|gets?|reads?)\s+(?P<object>.+)$",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        if match:
+            result = match.group("object")
+            result = re.sub(r"\s+is\s+the\s+visible\s+result\b.*$", "", result, flags=re.IGNORECASE)
+            return _clip_phrase(result, limit=150)
+    if not _MATERIAL_ACTION_RE.search(text) and _looks_like_visible_result(text):
+        return _clip_phrase(re.sub(r"^(?:this|the)\s+", "", text, flags=re.IGNORECASE), limit=150)
+    return ""
+
+
+def _strip_action_subject(value: str) -> str:
+    text = _clean(value)
+    text = re.sub(r"^on\s+save,\s*", "save, ", text, flags=re.IGNORECASE)
+    match = _MATERIAL_ACTION_RE.search(text)
+    if match and match.start() > 0:
+        prefix = text[: match.start()].strip(" ,")
+        prefix_words = re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", prefix)
+        if len(prefix_words) <= 6:
+            text = text[match.start() :]
+    return text
+
+
+def _base_following_action_verbs(value: str) -> str:
+    text = _clean(value)
+    verb_pairs = {
+        "adds": "add",
+        "calculates": "calculate",
+        "clicks": "click",
+        "displays": "display",
+        "enters": "enter",
+        "logs": "log",
+        "produces": "produce",
+        "records": "record",
+        "renders": "render",
+        "returns": "return",
+        "saves": "save",
+        "sees": "see",
+        "shows": "show",
+        "submits": "submit",
+        "updates": "update",
+    }
+    for finite, base in verb_pairs.items():
+        text = re.sub(
+            rf"\b(and|or)\s+((?:[a-z]+ly\s+)?)({finite})\b",
+            rf"\1 \2{base}",
+            text,
+            flags=re.IGNORECASE,
+        )
+    return text
+
+
 def _gerund_action_fragment(value: str) -> str:
     text = _clean(value).strip(" .")
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", text, flags=re.IGNORECASE)
@@ -714,8 +945,52 @@ def _gerund_action_fragment(value: str) -> str:
             flags=re.IGNORECASE,
         ):
             continue
-        return f"{verb_map[verb]}{tail}".strip(" ,.")
+        return _gerund_following_action_verbs(f"{verb_map[verb]}{tail}").strip(" ,.")
     return text[:1].casefold() + text[1:] if text else ""
+
+
+def _gerund_following_action_verbs(value: str) -> str:
+    text = _clean(value)
+    verb_pairs = {
+        "add": "adding",
+        "adds": "adding",
+        "calculate": "calculating",
+        "calculates": "calculating",
+        "click": "clicking",
+        "clicks": "clicking",
+        "display": "displaying",
+        "displays": "displaying",
+        "enter": "entering",
+        "enters": "entering",
+        "log": "logging",
+        "logs": "logging",
+        "produce": "producing",
+        "produces": "producing",
+        "record": "recording",
+        "records": "recording",
+        "render": "rendering",
+        "renders": "rendering",
+        "return": "returning",
+        "returns": "returning",
+        "save": "saving",
+        "saves": "saving",
+        "see": "seeing",
+        "sees": "seeing",
+        "show": "showing",
+        "shows": "showing",
+        "submit": "submitting",
+        "submits": "submitting",
+        "update": "updating",
+        "updates": "updating",
+    }
+    for finite, gerund in verb_pairs.items():
+        text = re.sub(
+            rf"\b(and|or)\s+((?:[a-z]+ly\s+)?)({finite})\b",
+            rf"\1 \2{gerund}",
+            text,
+            flags=re.IGNORECASE,
+        )
+    return re.sub(r",\s+and\s+", " and ", text, flags=re.IGNORECASE)
 
 
 def _join_series(values: Sequence[str]) -> str:
@@ -738,7 +1013,7 @@ def _clip_phrase(value: str, *, limit: int) -> str:
         clipped = clipped.rsplit(" ", 1)[0].rstrip(" ,;:")
     while True:
         cleaned = re.sub(
-            r"\b(?:a|an|and|as|at|because|by|for|from|if|in|into|of|on|or|required|the|to|when|while|with)$",
+            r"\b(?:a|an|and|as|at|because|by|for|from|if|in|into|of|on|or|required|that|the|this|to|when|while|with|alongside)$",
             "",
             clipped,
             flags=re.IGNORECASE,

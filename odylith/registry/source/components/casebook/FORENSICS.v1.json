@@ -32,12 +32,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 80,
+    "explicit_event_count": 81,
     "mapped_workstream_evidence_count": 71,
     "recent_path_match_count": 0,
     "spec_history_event_count": 5,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 80
+    "timeline_event_count": 81
   },
   "name": "Casebook",
   "path_prefixes": [
@@ -47,6 +47,21 @@
   ],
   "spec_ref": "odylith/registry/source/components/casebook/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 481,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: A local Casebook record is linked to this path: CB-122. Why it matters: Hidden host messages do not count as delivered to the user.",
+      "ts_iso": "2026-05-26T21:17:03Z",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "low",

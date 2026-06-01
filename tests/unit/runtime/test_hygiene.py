@@ -978,7 +978,7 @@ def test_claude_show_me_route_lock_guidance_stays_in_contract_and_bundle() -> No
             "and follow-up questions"
         ) in normalized
         assert "sample application files in response to show-me" in normalized
-        assert "return stdout only, or report the shortest actionable Odylith blocker" in normalized
+        assert "return stdout only, then stop the turn without additional Bash probes" in normalized
         assert "Bash(./.odylith/bin/odylith show:*)" in normalized
         assert "Bash(./.odylith/bin/odylith --help:*)" in normalized
         assert "`odylith capabilities`" in normalized
@@ -1002,7 +1002,7 @@ def test_codex_show_me_route_lock_guidance_stays_in_contract_and_bundle() -> Non
         assert "install-posture narration, dirty-path analysis, context-packet summaries" in normalized
         assert "module-count scans, tmp-clone warnings, spawn-policy notes" in normalized
         assert "sample application files in response to show-me" in normalized
-        assert "return stdout only, or report the shortest actionable Odylith blocker" in normalized
+        assert "return stdout only, then stop the turn without additional shell probes" in normalized
 
 
 def test_capability_inventory_guidance_uses_product_owned_host_agnostic_command() -> None:

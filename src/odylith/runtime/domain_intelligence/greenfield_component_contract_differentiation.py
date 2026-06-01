@@ -388,22 +388,22 @@ def _fallback_axis(label: str, context: str, *, focus: str = "") -> ComponentAxi
         ]
     )
     primary = " ".join(label_terms[:4]) or _clean(label).casefold() or "component"
-    secondary = focus or _phrase(extra_terms[:4]) or _phrase(context_terms[:4]) or "local evidence and handoff"
+    secondary = focus or _phrase(extra_terms[:4]) or _phrase(context_terms[:4]) or "local result context"
     input_focus = _phrase(extra_terms[4:7]) or secondary
     output_focus = _phrase(extra_terms[7:10]) or secondary
     states = ", ".join(_unique_terms([*extra_terms[:5], "blocked", "validated", "handed-off"])[:7])
     return ComponentAxis(
         key=f"fallback_{_slug(primary)}",
         triggers=(),
-        owned_state=f"{primary} state, {secondary}, local blockers, and handoff evidence",
-        accepted_inputs=f"{primary} input, {input_focus} evidence, authorized actor, prior state, and validation notes",
-        produced_outputs=f"{primary} result, {output_focus} update, blocked-state evidence, and handoff record",
+        owned_state=f"{primary} state, {secondary}, local blockers, and recovery context",
+        accepted_inputs=f"{primary} input, {input_focus} context, authorized actor, prior state, and validation notes",
+        produced_outputs=f"{primary} result, {output_focus} update, blocked-state explanation, and next-step context",
         states_or_transitions=states,
         outside_boundary="sibling product responsibilities, upstream source truth, presentation outside the accepted boundary, and release approval",
         local_proof=(
-            f"{primary} input proves {secondary} before downstream handoff.",
-            f"Invalid {input_focus} evidence blocks the {primary} result.",
-            f"{primary} recovery evidence stays visible when {output_focus} changes.",
+            f"{primary} input proves {secondary} before another step depends on it.",
+            f"Invalid {input_focus} context blocks the {primary} result.",
+            f"{primary} recovery context stays visible when {output_focus} changes.",
         ),
         unique_failure=f"{primary} can look complete while required {secondary} is missing, stale, or assigned to the wrong boundary.",
     )
@@ -579,7 +579,18 @@ def _project_title(proposal: Mapping[str, Any]) -> str:
 def _proposal_context(proposal: Mapping[str, Any]) -> str:
     return " ".join(
         _proposal_text(proposal, key)
-        for key in ("title", "intent.title", "state_object", "intent.state_object", "first_path", "intent.first_path", "proof_boundary", "intent.proof_boundary")
+        for key in (
+            "title",
+            "intent.title",
+            "state_object",
+            "intent.state_object",
+            "first_path",
+            "intent.first_path",
+            "proof_boundary",
+            "intent.proof_boundary",
+            "external_systems",
+            "intent.external_systems",
+        )
     )
 
 
@@ -714,6 +725,7 @@ def _weak_text(value: Any) -> bool:
             "accepted first path",
             "required inputs, rejected or blocked cases",
             "handoff boundaries for the confirmed first path",
+            "valid transition, invalid input rejection",
             "responsibility and keeps it tied",
             "component proof",
         )

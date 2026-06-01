@@ -122,8 +122,8 @@ def derive_component_semantic_contract(
     if description:
         required_seed = [
             *description_phrases[:10],
-            *context_phrases[:4],
-            *context_required_phrases[:8],
+            *([] if not needs_context_backfill else context_phrases[:4]),
+            *([] if not needs_context_backfill else context_required_phrases[:8]),
             *([] if not needs_context_backfill else context_phrases[:3]),
             *label_phrases[:2],
             *bridge_phrases[:2],
@@ -178,28 +178,54 @@ def derive_component_semantic_contract(
         sibling_label=sibling_label,
         sibling_focus=sibling_focus,
     )
+    evidence_phrases = ("source evidence",) if _needs_source_evidence(
+        label=label,
+        description=description,
+        proposal_context=proposal_context,
+        action_terms=action_terms,
+    ) else ()
     fields = {
         "owned_state": _contract_list_text(
             f"{_clean(label).casefold()} state",
             *label_phrases[:1],
             *summary_phrases[:7],
+            *evidence_phrases,
             "blocker state",
-            "handoff evidence",
+            "next-step context",
         ),
         "accepted_inputs": _accepted_inputs_text(input_focus),
         "produced_outputs": _produced_outputs_text(output_focus),
         "states_or_transitions": states,
         "outside_boundary": _outside_boundary(sibling_focus=sibling_focus),
         "local_proof": proof,
-        "upstream_truth": previous_label or "accepted upstream state",
-        "downstream_consumers": next_label or "release proof review",
+        "upstream_truth": previous_label or "accepted input context",
+        "downstream_consumers": next_label or "release review",
         "unique_failure": (
-            f"{label} can look complete while {critical} is missing, stale, assigned to the wrong boundary, "
-            f"or released without source evidence, blocker state, or downstream handoff evidence"
+            f"{label} can mislead users if {critical} is missing, stale, calculated from the wrong inputs, "
+            "or shown without enough explanation to recover"
         ),
     }
     confidence = len(object_phrases) * 3 + len(action_terms) * 2 + min(len(local_terms), 8)
     return SemanticComponentContract(fields=fields, confidence=confidence, local_terms=tuple(local_terms))
+
+
+def _needs_source_evidence(
+    *,
+    label: str,
+    description: str,
+    proposal_context: str,
+    action_terms: Sequence[str],
+) -> bool:
+    """Return whether the local record must retain source/evidence context."""
+
+    local_context = " ".join([label, description, proposal_context])
+    if not re.search(r"\b(?:source|evidence|provenance|attachment|audit)\b", _clean(local_context), re.IGNORECASE):
+        return False
+    if re.search(r"\b(?:source|evidence|provenance|attachment|audit)\b", _clean(description), re.IGNORECASE):
+        return True
+    local_terms = set(_content_terms(" ".join([label, description])))
+    record_actions = {"capture", "create", "edit", "import", "log", "record", "save", "store", "submit", "track"}
+    return bool(record_actions & set(action_terms) or local_terms & {"entry", "history", "ledger", "log", "record", "store"})
 
 
 def _label(row: Mapping[str, Any] | None) -> str:
@@ -240,11 +266,18 @@ def _looks_generated_scaffold(value: str) -> bool:
 
 def _proposal_context(proposal: Mapping[str, Any]) -> str:
     intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    project_brief = proposal.get("project_brief") if isinstance(proposal.get("project_brief"), Mapping) else {}
+    semantic_model = proposal.get("semantic_model") if isinstance(proposal.get("semantic_model"), Mapping) else {}
+    ontology = semantic_model.get("domain_ontology") if isinstance(semantic_model.get("domain_ontology"), Mapping) else {}
     values = [
         intent.get("first_path"),
         intent.get("proof_boundary"),
         intent.get("state_object"),
         intent.get("product_story"),
+        intent.get("external_systems"),
+        proposal.get("external_systems"),
+        *project_brief.values(),
+        *ontology.values(),
     ]
     return " ".join(_clean(value) for value in values if _clean(value))
 
@@ -442,18 +475,23 @@ def _needs_context_backfill(
 
     if not _clean(description):
         return True
-    if any(set(_content_terms(phrase)) & _ARTIFACT_CARRIER_TERMS for phrase in description_phrases):
-        return False
     broad_detail = re.compile(
         r"\b(?:central\s+object|details?|facts?|context|data|payload|information)\b",
         flags=re.IGNORECASE,
     )
-    return bool(
-        broad_detail.search(_clean(description))
-        or
-        any(broad_detail.search(_clean(phrase)) for phrase in description_phrases)
-        or (len(description_phrases) <= 3 and bool(context_required_phrases))
-    )
+    if broad_detail.search(_clean(description)) or any(broad_detail.search(_clean(phrase)) for phrase in description_phrases):
+        return True
+    local_terms = set(_content_terms(description))
+    context_text = " ".join(context_required_phrases)
+    if local_terms & {"measurement", "metric", "metrics", "value", "unit"} and re.search(
+        r"\b(?:baseline|follow-up|followup|measurement|metric|value|unit|source)\b",
+        context_text,
+        flags=re.IGNORECASE,
+    ):
+        return True
+    if any(set(_content_terms(phrase)) & _ARTIFACT_CARRIER_TERMS for phrase in description_phrases):
+        return False
+    return bool(len(description_phrases) <= 3 and context_required_phrases)
 
 
 def _context_anchor_compounds(value: str, *, anchor_terms: Sequence[str], limit: int = 8) -> list[str]:
@@ -577,22 +615,22 @@ def _contract_focus(
     if adjustment and any(action in action_terms for action in ("adjust", "calculate", "compute", "derive")):
         support = _supporting_artifacts(focus, exclude_terms=set(_content_terms(adjustment)))
         if role == "input":
-            return f"{adjustment} request, {support}, prior state, and source evidence"
+            return f"{adjustment} request, {support}, prior state, and explanation context"
         rationale_terms = set(_content_terms(focus)) | set(contract_terms)
         rationale = "adjustment rationale" if "rationale" in rationale_terms else "review rationale"
-        return f"{adjustment} result, {rationale}, blocked-state evidence, and handoff record"
+        return f"{adjustment} result, {rationale}, blocked-state detail, and next-step context"
     if role == "input":
         if any(action in action_terms for action in ("calculate", "compute", "derive", "evaluate", "score")):
             return f"{focus} inputs, rule context, prior result, and validation command"
         if any(action in action_terms for action in ("capture", "create", "edit", "log", "record", "save", "store", "submit")):
-            return f"required {focus} command, required fields, prior state, and source evidence"
+            return f"required {focus} command, required fields, prior state, and explanation context"
         if any(action in action_terms for action in ("compare", "order", "rank")):
             return f"candidate {focus} set, comparison criteria, tie-break rule, and prior selection state"
         if any(action in action_terms for action in ("select", "choose")):
             return f"candidate {focus} set, selection criteria, tie-break rule, and prior selection state"
         if any(action in action_terms for action in ("export", "delete", "request")):
             return f"authorized {focus} request, actor authority, protected-state reference, and policy context"
-        return f"required {focus} input, source evidence, prior state, and validation command"
+        return f"required {focus} input, prior state, explanation context, and validation command"
     if any(action in action_terms for action in ("capture", "create", "edit", "log", "record", "save", "store", "submit")):
         return f"validated {focus} state, correction marker, and replayable change evidence"
     if any(action in action_terms for action in ("calculate", "compute", "derive", "evaluate", "score")):
@@ -603,7 +641,7 @@ def _contract_focus(
         return f"selected {focus} result, selection explanation, and selection rationale"
     if any(action in action_terms for action in ("export", "delete", "request")):
         return f"{focus} decision, allowed or blocked marker, and lifecycle evidence"
-    return f"{focus} result, state update, and proof evidence"
+    return f"{focus} result, state update, and review detail"
 
 
 def _safe_artifact_focus(value: str) -> str:
@@ -625,11 +663,13 @@ def _produced_outputs_text(output_focus: str) -> str:
     lowered = text.casefold()
     suffixes = []
     if "blocked-state" not in lowered and "blocker" not in lowered:
-        suffixes.append("blocked-state evidence")
+        suffixes.append("blocked-state detail")
     if "rationale" not in lowered and "explanation" not in lowered:
         suffixes.append("reviewer explanation")
-    if "handoff record" not in lowered and "handoff evidence" not in lowered:
-        suffixes.append("handoff record")
+    if "next-step context" not in lowered:
+        suffixes.append("next-step context")
+    if "handoff" not in lowered:
+        suffixes.append("handoff context")
     if not suffixes:
         return text
     if len(suffixes) == 1:
@@ -688,14 +728,14 @@ def _supporting_artifacts(value: str, *, exclude_terms: set[str]) -> str:
         phrases.append(phrase)
         if len(phrases) >= 3:
             break
-    return _phrase(phrases) or "accepted input evidence"
+    return _phrase(phrases) or "accepted input detail"
 
 
 def _evidence_phrase(value: str) -> str:
     text = _clean(value).rstrip(" .")
     if re.search(r"\bevidence$", text, flags=re.IGNORECASE):
         return text
-    return f"{text} evidence" if text else "proof evidence"
+    return f"{text} detail" if text else "review detail"
 
 
 def _states_for(
@@ -716,7 +756,7 @@ def _states_for(
             "validated",
             "blocked",
             "revised",
-            "handed-off",
+            "ready-for-next-step",
         ]
     )
     return ", ".join(states[:18])
@@ -790,8 +830,8 @@ def _past_tense(value: str) -> str:
 def _outside_boundary(*, sibling_focus: str) -> str:
     rows = [
         "responsibilities not named by this component boundary",
-        "adjacent component state and proof evidence owned elsewhere",
-        "mutation of upstream source truth, silent overwrite of downstream handoff state, and release approval",
+        "adjacent component state and review evidence owned elsewhere",
+        "mutation of upstream facts, silent overwrite of another component result, and release approval",
     ]
     if sibling_focus:
         rows[1] = sibling_focus
@@ -809,13 +849,13 @@ def _proof_rows(
     sibling_focus: str,
 ) -> list[str]:
     rows = [
-        f"{label} proof ties {critical}, required inputs, produced outputs, blocker behavior, and downstream handoff together.",
-        f"Invalid or missing {critical} blocks trusted downstream state instead of producing {label} output.",
-        f"{label} replay proof preserves actor, source, validation status, blocker state, and handoff evidence.",
+        f"Run one {label} example where {critical} reaches the visible result with a clear explanation.",
+        f"Run one blocked {label} example where missing or malformed input explains what must change before the result can be trusted.",
+        f"Replay one {label} result and confirm the actor, input facts, status, and explanation still agree.",
     ]
     if sibling_label:
         rows.append(
-            f"Boundary proof keeps {sibling_label} from mutating {label} state"
+            f"{sibling_label} can consume the result but cannot rewrite {label}'s local state"
             + (f" while {sibling_focus} remains sibling-owned." if sibling_focus else ".")
         )
     return rows

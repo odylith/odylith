@@ -147,11 +147,13 @@ def _narrative_role(
     label_text = label.casefold()
     if re.search(r"\b(audit|evidence|file|ledger|provenance|registry|trail)\b", label_text):
         return "evidence"
-    if re.search(r"\b(config|configuration|admin|administrator|policy|setting|store)\b", label_text):
+    if re.search(r"\b(config|configuration|admin|administrator|policy|setting)\b", label_text):
         return "configuration"
+    if re.search(r"\b(store|repository|record|records|profile|history|log)\b", label_text):
+        return "state_store"
     if re.search(r"\b(decision|outcome|reason|approve|approval|decline|explain|rationale|recommendation)\b", label_text):
         return "decision"
-    if re.search(r"\b(compute|calculation|calculator|engine|score|rank|compare|threshold|ratio|rule|eligibility|pricing|fare)\b", label_text):
+    if re.search(r"\b(compute|calculation|calculator|engine|score|rank|compare|threshold|ratio|rule|eligibility|pricing)\b", label_text):
         return "calculation"
     if re.search(r"\b(queue|route|routing|handoff|follow-up|notification|assignment|case)\b", label_text):
         return "handoff"
@@ -161,8 +163,9 @@ def _narrative_role(
         return "entry"
     role_patterns = (
         ("decision", r"\b(decision|outcome|reason|approve|approval|decline|qualified|eligible|explain|rationale|recommendation)\b"),
-        ("calculation", r"\b(compute|calculate|evaluate|score|rank|compare|threshold|ratio|rule|eligibility|pricing|fare)\b"),
+        ("calculation", r"\b(compute|calculate|evaluate|score|rank|compare|threshold|ratio|rule|eligibility|pricing)\b"),
         ("configuration", r"\b(config|configuration|admin|administrator|policy|rule|threshold|template|setting)\b"),
+        ("state_store", r"\b(store|repository|record|records|profile|history|log|persist|saved|stored)\b"),
         ("handoff", r"\b(queue|route|routing|handoff|follow-up|notification|assignment|case)\b"),
         ("read_model", r"\b(view|timeline|dashboard|summary|report|export|surface|display|history|trend)\b"),
         ("evidence", r"\b(audit|evidence|provenance|source|replay|retention|version|history|attachment)\b"),
@@ -195,10 +198,16 @@ def _opening_narrative(
         body = f"The spec should stay focused on {output_focus}, because downstream work needs to know not only what happened but why it happened."
     elif role == "calculation":
         lead = f"{label} carries the product logic that interprets accepted inputs before anyone treats the result as true."
-        body = f"It should make {input_focus} traceable to {output_focus}, with the rule or calculation context visible enough to review."
+        if _phrases_too_similar(input_focus, output_focus):
+            body = f"It should explain how {focus} is calculated, which facts were used, and why the result is safe to show."
+        else:
+            body = f"It should make {input_focus} traceable to {output_focus}, with the rule or calculation context visible enough to review."
     elif role == "configuration":
         lead = f"{label} exists so product rules can change intentionally instead of being hidden in implementation code."
         body = f"It protects {focus} and makes those settings available to the runtime path without turning configuration into a release-review shortcut."
+    elif role == "state_store":
+        lead = f"{label} keeps the product record together after a participant provides or changes information."
+        body = f"It should preserve {focus}, keep the explanation for that state close by, and make the result available without becoming responsible for downstream interpretation."
     elif role == "handoff":
         lead = f"{label} owns the moment work leaves one responsibility and becomes actionable for another actor or component."
         body = f"It keeps {output_focus} connected to the context that produced it, instead of receiving raw upstream details it should not own."
@@ -255,16 +264,22 @@ def _state_narrative(
         first = f"The local state starts with {owned}." if owned else f"{label} needs the first implementation plan to name its local state."
         second = f"The component can take in {accepted}, but it should only move forward after required values, corrections, or blockers are explicit." if accepted else ""
     elif role in {"decision", "calculation"}:
-        first = f"The useful state is the relationship between {accepted} and {produced}." if accepted and produced else f"{label} must keep its input facts and result together."
+        if accepted and produced and not _phrases_too_similar(accepted, produced):
+            first = f"The useful state is the relationship between {accepted} and {produced}."
+        else:
+            first = f"{label} must keep its input facts, calculation context, and visible result together."
         second = f"That relationship is what makes the outcome reviewable instead of a black-box claim."
     elif role == "configuration":
         first = f"The owned state is {owned}, and changes to it should read like intentional product policy."
         second = f"The runtime can consume those settings, but configuration itself should not mutate downstream results."
+    elif role == "state_store":
+        first = f"The owned state is {owned}, and it should stay close to the inputs and corrections that created it."
+        second = f"It accepts {accepted} and returns {produced} only after required information is complete enough to trust."
     elif role == "handoff":
-        first = f"The handoff state is useful only if {produced} travels with enough context from {accepted}."
-        second = f"Raw upstream fields should remain with their source owner; this component should carry the reviewable handoff."
+        first = f"The next-step state is useful only if {produced} travels with enough context from {accepted}."
+        second = "Raw input fields should remain with their owner; this component should carry the context another participant needs."
     elif role == "read_model":
-        first = f"The visible state should explain {owned} without pretending to own every upstream source record."
+        first = f"The visible state should explain {owned} without pretending to own every source record."
         second = f"It can render {produced}, while stale, empty, or blocked states remain visible."
     else:
         first = f"The local contract centers on {owned}."
@@ -288,19 +303,24 @@ def _boundary_narrative(
     ]
     outside_text = _human_join(kept[:4])
     if upstream and downstream:
-        relation = f"{label} receives its trusted context from {upstream} and prepares work for {downstream}."
+        relation = (
+            f"{label} receives its trusted context from {upstream} and prepares work for {downstream}. "
+            f"That handoff is explicit so ownership does not blur between the two boundaries."
+        )
     elif upstream:
-        relation = f"{label} starts from {upstream} and keeps that source relationship visible."
+        relation = f"{label} starts from {upstream} and keeps that input relationship visible."
     elif downstream:
-        relation = f"{label} prepares state for {downstream} and should not hide blockers from that handoff."
+        relation = f"{label} prepares state for {downstream} and should not hide blockers from the next step."
     else:
         relation = f"{label} must keep its state, validation result, blocker state, and evidence together."
     if not kept:
-        boundary = "Unrelated source truth, release approval, and adjacent component state stay outside this component."
+        boundary = "Unrelated input truth, release approval, and adjacent component state stay outside this component."
     elif role == "configuration":
         boundary = f"Keep {outside_text} outside this boundary so administrative policy does not become hidden runtime authority."
+    elif role == "state_store":
+        boundary = f"Keep {outside_text} outside this boundary so this component stores the product record without taking over adjacent decisions."
     elif role == "read_model":
-        boundary = f"Keep {outside_text} outside this boundary so display logic does not rewrite source truth."
+        boundary = f"Keep {outside_text} outside this boundary so display logic does not rewrite original input facts."
     else:
         boundary = f"Keep {outside_text} outside this boundary unless a later release explicitly assigns it here."
     return _sentences(relation, boundary)
@@ -338,6 +358,8 @@ def _implementation_narrative(
 ) -> str:
     if role == "configuration":
         opening = f"Start with the smallest source boundary that can hold {label}'s policy state: {source_boundary}."
+    elif role == "state_store":
+        opening = f"Start with the smallest source boundary that can persist and validate {label}'s product record: {source_boundary}."
     elif role == "read_model":
         opening = f"Start where {label} can render trusted state without duplicating upstream ownership: {source_boundary}."
     else:
@@ -392,6 +414,11 @@ def _clean_fragment(value: Any, *, proof: bool = False) -> str:
     text = re.sub(r"\bRelated path\s*:\s*[^.;]+[.;]?", "", text, flags=re.I)
     text = re.sub(r"\b(?:Done|DoD)\s+mean(?:s)?\b", "", text, flags=re.I)
     text = re.sub(r"\bMean\s+[a-z][^.;,]*", "", text, flags=re.I)
+    text = re.sub(r"\breadout\s+plus\b", "readout and", text, flags=re.I)
+    text = re.sub(r"\bon\s+screen,\s+alongside\b", "on screen with", text, flags=re.I)
+    text = re.sub(r"\balongside\b", "with", text, flags=re.I)
+    text = re.sub(r"\bdashboard\s+visibly\s+update\s+suggestion\b", "dashboard suggestion state", text, flags=re.I)
+    text = re.sub(r"\bmutation\s+of\s+upstream\s+source\s+truth\b", "mutation of original input facts", text, flags=re.I)
     leading_modifiers = "validated|candidate|selected|ranked|authorized"
     if "completeness" not in text.casefold():
         leading_modifiers = f"required|{leading_modifiers}"
@@ -458,6 +485,14 @@ def _human_join(values: Sequence[str]) -> str:
     if len(rows) == 2:
         return f"{rows[0]} and {rows[1]}"
     return f"{', '.join(rows[:-1])}, and {rows[-1]}"
+
+
+def _phrases_too_similar(left: str, right: str) -> bool:
+    left_terms = set(re.findall(r"[a-z0-9][a-z0-9-]+", clean_text(left).casefold()))
+    right_terms = set(re.findall(r"[a-z0-9][a-z0-9-]+", clean_text(right).casefold()))
+    if not left_terms or not right_terms:
+        return False
+    return len(left_terms & right_terms) / max(1, min(len(left_terms), len(right_terms))) >= 0.72
 
 
 def _string_rows(values: Sequence[str]) -> tuple[str, ...]:

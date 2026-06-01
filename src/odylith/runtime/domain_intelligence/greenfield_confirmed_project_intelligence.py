@@ -37,7 +37,7 @@ def complete_project_intelligence(
             "purpose",
             (
                 f"{project_title} translates the accepted product intent into release {release} records "
-                "that keep state, proof, actors, evidence, and risks connected."
+                "that keep the user outcome, product state, participants, and risks connected."
             ),
         )
     if not clean_generated_text(intelligence.get("coding_posture")) or text_needs_repair(intelligence.get("coding_posture")):
@@ -46,7 +46,7 @@ def complete_project_intelligence(
             "coding_posture",
             (
                 f"Implementation should start with the smallest proofable slice for {first_path}, "
-                "then expand only when validation and release evidence stay clear."
+                "then expand only when validation shows the product outcome is still clear."
             ),
         )
     changed |= _repair_rows(
@@ -116,11 +116,11 @@ def _control_rows(
     proof_boundary: str,
 ) -> tuple[str, ...]:
     return (
-        f"{project_title} must keep the accepted first path visible to users: {first_path}",
+        f"{project_title} must keep the first user path visible and understandable: {first_path}",
         f"{project_title} must show which product state changed and why: {state_object}",
-        f"{project_title} must keep evidence, blockers, and decisions understandable before release readiness.",
+        f"{project_title} must keep blockers, explanations, and decisions understandable before release readiness.",
         f"{project_title} must keep access, privacy, audit, retention, recovery, and safety responsibilities explicit.",
-        f"{project_title} must block promotion when proof does not satisfy the accepted boundary: {proof_boundary}",
+        f"{project_title} must block promotion when the product cannot satisfy the accepted outcome: {proof_boundary}",
     )
 
 
@@ -128,7 +128,7 @@ def _flow_rows(*, project_title: str, first_path: str, state_object: str) -> tup
     return (
         f"Capture the accepted user intent for {project_title} before writing governed records.",
         f"Create the smallest release slice that exercises the first path: {first_path}",
-        f"Record {state_object} with source evidence, current status, owner, and recovery path.",
+        f"Record {state_object} with current status, owner, result, and recovery path.",
         "Refresh Radar, Registry, Atlas, release, and view surfaces only after proposal gates pass.",
     )
 
@@ -143,21 +143,21 @@ def _layer_defaults(
 ) -> dict[str, tuple[str, ...]]:
     return {
         "intent": (
-            f"{project_title} exists to make the accepted first path usable and reviewable: {first_path}",
+            f"{project_title} exists to make the first user path usable and understandable: {first_path}",
             f"Release {release} stays focused on {state_object}",
-            "Deferred variants remain outside scope until their own evidence and proof are explicit.",
+            "Deferred variants remain outside scope until their own outcome and validation are explicit.",
         ),
         "scope": (
-            f"Release {release} includes the first path, its state changes, and release-review evidence.",
+            f"Release {release} includes the first path, its state changes, and the user-visible result.",
             "Broader workflows, optional variants, and unproved automations stay outside the first release.",
         ),
         "ontology": (
             f"State object: {state_object}",
             "Actor records identify who initiated, reviewed, changed, blocked, or recovered product state.",
-            "Evidence records identify the source, timestamp, status, outcome, and proof reference.",
+            "Review records identify the input, timestamp, status, outcome, and result explanation.",
         ),
         "state": (
-            f"{state_object} must expose current status, source evidence, owner, and recovery path.",
+            f"{state_object} must expose current status, owner, result, and recovery path.",
             "Blocked, invalid, missing, stale, or disputed states must be visible before release readiness.",
         ),
         "operators": (
@@ -166,21 +166,21 @@ def _layer_defaults(
             "Administrators or maintainers manage access, recovery, audit, and operational boundaries.",
         ),
         "constraints": (
-            f"The first release cannot exceed the accepted proof boundary: {proof_boundary}",
+            f"The first release cannot exceed the accepted product promise: {proof_boundary}",
             "Generated records must stay grammatical, specific, non-duplicative, and tied to accepted intent.",
         ),
         "source_of_truth_map": (
             "Accepted intent is the product truth for scope, first path, actors, risks, and proof.",
-            "Component records own local implementation truth for state, inputs, outputs, and handoffs.",
+            "Component records own local implementation truth for state, inputs, outputs, and recovery behavior.",
             "Release evidence owns proof truth for validation output, blocked paths, and promotion decisions.",
         ),
         "evidence": (
             "Success evidence shows the accepted path running from input to visible outcome.",
-            "Replay evidence reconstructs state with actor, source, timestamp, status, and outcome.",
+            "Replay evidence reconstructs state with actor, timestamp, status, and outcome.",
             "Blocked-path evidence proves missing input, invalid state, access failure, or absent proof stops readiness.",
         ),
         "decisions": (
-            f"Release {release} can promote only when validation satisfies the accepted proof boundary.",
+            f"Release {release} can promote only when validation satisfies the accepted product promise.",
             "Deferred scope, unresolved risk, and failed proof must remain visible in governed records.",
         ),
         "assumptions": (
@@ -197,13 +197,13 @@ def _layer_defaults(
             "Every component keeps its owned state separate from adjacent ownership boundaries.",
         ),
         "risks": (
-            f"{project_title} can mislead users if state changes without clear evidence and recovery behavior.",
+            f"{project_title} can mislead users if state changes without clear explanation and recovery behavior.",
             "Governed records become unsafe when generated prose is vague, repetitive, clipped, or malformed.",
         ),
         "validation_obligations": (
             f"Validate success for the accepted first path: {first_path}",
             "Validate blocked paths for missing input, invalid state, access failure, privacy risk, and absent evidence.",
-            f"Validate release proof against the accepted boundary: {proof_boundary}",
+            f"Validate release proof against the accepted product promise: {proof_boundary}",
         ),
         "artifacts": (
             "Radar records state the work to build and why it matters to users.",

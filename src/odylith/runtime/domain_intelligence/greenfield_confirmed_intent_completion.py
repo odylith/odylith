@@ -10,6 +10,7 @@ from typing import Any
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import accepted_actor_label
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import material_first_path_action
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
@@ -103,13 +104,13 @@ def _normalize_confirmed_core_language(intent: dict[str, Any]) -> None:
     for key in ("product_story", "state_object", "first_path", "problem", "product_view"):
         text = _clean(intent.get(key))
         if text:
-            intent[key] = _sentence(_strip_prompt_prefixes(text))
+            intent[key] = _sentence(_normalize_visible_result_language(_strip_prompt_prefixes(text)))
     proof = _clean(intent.get("proof_boundary"))
     if proof:
-        intent["proof_boundary"] = _sentence(_normalize_proof_boundary(proof))
+        intent["proof_boundary"] = _sentence(_normalize_visible_result_language(_normalize_proof_boundary(proof)))
     metrics = _strings(intent.get("success_metrics"))
     if metrics:
-        intent["success_metrics"] = [_sentence(_normalize_proof_boundary(row)) for row in metrics]
+        intent["success_metrics"] = [_sentence(_normalize_visible_result_language(_normalize_proof_boundary(row))) for row in metrics]
 
 
 def _strip_prompt_prefixes(value: str) -> str:
@@ -123,6 +124,19 @@ def _normalize_proof_boundary(value: str) -> str:
     text = re.sub(r"^(?:done\s+means?|proven\s+when|proof\s+means?)\s*:\s*", "Release 0.0.1 succeeds when ", text, flags=re.I)
     text = re.sub(r"^(?:done\s+means?|proven\s+when|proof\s+means?)\s+", "Release 0.0.1 succeeds when ", text, flags=re.I)
     return text.strip()
+
+
+def _normalize_visible_result_language(value: str) -> str:
+    text = _clean(value)
+    text = re.sub(
+        r"(?:^|(?<=[.!?])\s+)[^.?!]*\bvisible[- ]result\s+event\b[^.?!]*[.?!]?",
+        " ",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(r"\bvisible[- ]result\s+event\b", "visible result", text, flags=re.IGNORECASE)
+    text = re.sub(r"\breadout\s+plus\b", "readout and", text, flags=re.IGNORECASE)
+    return _clean(text)
 
 
 def _completion_seed_is_sufficient(intent: Mapping[str, Any]) -> bool:
@@ -181,37 +195,40 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
     first_path = _clean(intent.get("first_path"))
     proof = _clean(intent.get("proof_boundary"))
     focus = _focus_label(title)
+    customer_text = _customer_summary(actors, title=title)
+    outcome_text = _visible_outcome_phrase(first_path, proof=proof)
+    state_phrase = _state_focus_phrase(state, title=title)
+    path_capability = _path_capability(first_path, fallback=f"the first {title.lower()} path")
 
     if not _clean(intent.get("problem")):
-        state_phrase = _state_label(state, title=title) if state else f"{focus} state"
-        path_capability = _path_capability(first_path, fallback=f"the first {title.lower()} path")
-        path_action = _capability_action_clause(material_first_path_action(first_path) or path_capability)
         intent["problem"] = _sentence(
-            f"{focus} is not trustworthy when users cannot {path_action} with {state_phrase}, source evidence, visible blockers, and the systems that own the handoff."
+            _story_problem_sentence(story)
+            or (
+                f"{customer_text} need a dependable way to understand {state_phrase} and decide what to do from {outcome_text}; "
+                "without it, the work stays scattered, hard to interpret, and easy to act on too late or for the wrong reason."
+            )
         )
-    if not _clean(intent.get("customer")):
-        actor_text = _join_actor_segments(actors[:5]) or f"{focus} operators and reviewers"
-        intent["customer"] = _sentence(
-            f"{actor_text} need the accepted outcome to be understandable before broader scope is built."
+    elif _problem_needs_repair(intent.get("problem")):
+        intent["problem"] = _sentence(
+            f"{customer_text} need a dependable way to understand {state_phrase} and decide what to do from {outcome_text}; "
+            "without it, the work stays scattered, hard to interpret, and easy to act on too late or for the wrong reason."
         )
+    if not _clean(intent.get("customer")) or _customer_needs_repair(intent.get("customer")):
+        intent["customer"] = _sentence(_customer_sentence(actors, title=title, first_path=first_path))
     if not _clean(intent.get("opportunity")):
         intent["opportunity"] = _sentence(
-            f"Turn the confirmed {title.lower()} intent into a narrow first release that proves one complete path before adding broader automation, integrations, or scale."
+            f"Make the first version valuable by proving the smallest complete outcome: {path_capability}, ending in {outcome_text}."
         )
     if not _clean(intent.get("product_view")) or _product_view_needs_repair(intent.get("product_view")):
-        state_phrase = _state_label(state, title=title) if state else "the accepted state"
         intent["product_view"] = _sentence(
-            f"{title} is useful when users can complete the accepted first path, inspect {state_phrase}, see blockers and evidence from {_join(systems[:3]) or 'the product-owned systems'}, and recover before an untrusted outcome is treated as ready."
+            f"{title} is useful when {customer_text} can {path_capability} and confidently use {outcome_text} to decide the next action."
         )
     metrics = _strings(intent.get("success_metrics"))
     if len(metrics) < 3 or any(_metric_needs_repair(metric) for metric in metrics):
-        state_phrase = _state_label(state, title=title) if state else f"{focus} state"
-        path_capability = _path_capability(first_path, fallback=f"the first {title.lower()} path")
-        path_action = _capability_action_clause(path_capability)
         intent["success_metrics"] = [
-            f"The accepted path lets users {path_action} while preserving actor, timestamp, {state_phrase}, and evidence context.",
-            f"A missing, stale, invalid, blocked, or degraded {state_phrase} path stays visible and cannot be mistaken for success.",
-            _proof_boundary_metric(proof),
+            f"The first release proves the first path when {customer_text} can {path_capability} and reach {outcome_text} without manual interpretation outside the product.",
+            f"The product handles missing or incorrect input by explaining what must be fixed before {outcome_text} is treated as real.",
+            _proof_boundary_metric(proof, outcome=outcome_text),
         ]
     if not _strings(intent.get("assumptions")):
         intent["assumptions"] = [
@@ -225,10 +242,12 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
             f"Which source, device, document, dataset, or external service is authoritative for the first {title.lower()} proof?",
             "Which privacy, safety, compliance, or access rule would change the first path if it is stricter than assumed?",
         ]
-    if not _strings(intent.get("non_goals")):
-        intent["non_goals"] = [
-            f"Release 0.0.1 stays limited to the accepted {focus.lower()} path and does not cover broader users, integrations, datasets, edge cases, or operational scale.",
-            "No irreversible automation, regulated decision, or live external dependency without a separately accepted proof boundary.",
+    current_non_goals = _strings(intent.get("non_goals"))
+    if not current_non_goals or _sequence_has_generic_non_goals(current_non_goals):
+        extracted_non_goals = _non_goal_rows(intent, title=title)
+        intent["non_goals"] = extracted_non_goals or [
+            f"Do not expand beyond {path_capability} until the first outcome works for a representative user.",
+            f"Do not claim adjacent automation, live dependency behavior, or broader operational scale until those outcomes are described and proven separately.",
         ]
     if not story:
         intent["product_story"] = _sentence(
@@ -269,6 +288,16 @@ def _actor_row_is_meta(value: str) -> bool:
     )
 
 
+def _story_problem_sentence(value: str) -> str:
+    """Use accepted story language when it already states the user need."""
+
+    text = _clean(value).strip(" .")
+    if not text or not re.search(r"\bneeds?\b", text, flags=re.IGNORECASE):
+        return ""
+    first = re.split(r"(?<=[.!?])\s+", text, maxsplit=1)[0].strip(" .")
+    return first if _word_count(first) >= 10 else ""
+
+
 def _actor_description(*, label: str, index: int, title: str, first_path: str, state: str) -> str:
     label_text = label.casefold()
     if re.search(r"\b(public\s+figure|public\s+person|tracked|being\s+tracked|subject|official|executive|creator)\b", label_text):
@@ -276,19 +305,19 @@ def _actor_description(*, label: str, index: int, title: str, first_path: str, s
     elif re.search(r"\b(compliance|policy|privacy|legal|risk|safety)\b", label_text):
         body = "reviews access, privacy, policy, risk, and evidence boundaries"
     elif re.search(r"\b(user|researcher|investor|analyst|operator)\b", label_text):
-        body = f"uses {title} to start the accepted path, inspect source-backed evidence, record a decision, and see blocked or risk states"
+        body = f"uses {title} to reach a clear outcome, compare it with their goal, and decide what to do next"
     elif re.search(r"\b(author|applicant|submitter|requester|customer|client|resident|buyer|seller)\b", label_text):
-        body = f"starts the accepted path in {title}, supplies required input, sees feedback or blockers, and receives the visible outcome"
+        body = "provides the information the product needs and expects a clear result, explanation, and next step"
     elif re.search(r"\b(editor|manager|chair|coordinator|operator|supervisor|lead|owner|director)\b", label_text):
-        body = "moves the work through screening, assignment, review, decision, exception handling, and recovery without losing state ownership"
+        body = "keeps the product outcome aligned with the real operational goal and decides when exceptions need human judgment"
     elif re.search(r"\b(reviewer|inspector|evaluator|analyst|auditor|expert|approver|compliance)\b", label_text):
-        body = "reviews assigned work, submits structured evidence or decisions, and can challenge incomplete, disputed, or unsafe outcomes"
+        body = "uses the product output to review quality, challenge weak results, and decide whether follow-up is needed"
     elif re.search(r"\b(coach|trainer|advisor|consultant|specialist)\b", label_text):
         body = "reviews progress, guidance quality, evidence, and escalation signals where the accepted path needs human support"
     elif re.search(r"\b(participant|observer|applicant)\b", label_text):
         body = "supplies input, context, or objections that must remain traceable to the first-path decision"
     elif re.search(r"\b(admin|administrator|config|maintainer|support|scheduler)\b", label_text):
-        body = "configures policy, templates, access, deadlines, notifications, recovery, and operational readiness for the accepted path"
+        body = "owns the policies, settings, and operating limits that keep the product outcome reliable"
     else:
         path_role = _actor_path_role(label=label, first_path=first_path, state=state)
         if path_role:
@@ -320,7 +349,7 @@ def _actor_path_role(*, label: str, first_path: str, state: str) -> str:
     if not clause:
         return ""
     clause = re.sub(r"^(?:a|an|the)\s+", "", clause, flags=re.IGNORECASE)
-    return f"handles the accepted-path step for {clause[:1].lower() + clause[1:]}"
+    return f"cares about {clause[:1].lower() + clause[1:]}"
 
 
 def _path_clauses(value: str) -> list[str]:
@@ -369,8 +398,37 @@ def _product_view_needs_repair(value: Any) -> bool:
         return False
     return bool(
         re.search(r"\binspect\s+(?:the\s+)?(?:core\s+)?state\s+is\b", text, re.IGNORECASE)
+        or re.search(r"\baccepted\s+first\s+path\b", text, re.IGNORECASE)
+        or re.search(r"\bsource\s+evidence|visible\s+blockers|systems?\s+that\s+own\b", text, re.IGNORECASE)
         or re.search(r"\bto\s+complete\s+(?:A|The)\b", text)
         or re.search(r"\.\s*,", text)
+    )
+
+
+def _problem_needs_repair(value: Any) -> bool:
+    text = _clean(value)
+    if not text:
+        return True
+    return bool(
+        re.search(r"\bis\s+not\s+trustworthy\s+when\b", text, re.I)
+        or re.search(r"\bsource\s+evidence|visible\s+blockers|systems?\s+that\s+own\s+the\s+handoff\b", text, re.I)
+        or re.search(r"\bfirst\s+path\s+entry\b", text, re.I)
+    )
+
+
+def _customer_needs_repair(value: Any) -> bool:
+    text = _clean(value)
+    if not text:
+        return True
+    return bool(re.search(r"\bneed\s+the\s+accepted\s+outcome\b|\baccepted\s+path\b", text, re.I))
+
+
+def _sequence_has_generic_non_goals(values: Sequence[str]) -> bool:
+    text = " ".join(_clean(value) for value in values)
+    return bool(
+        re.search(r"\bstays\s+limited\s+to\s+the\s+accepted\b", text, re.I)
+        or re.search(r"\bbroader\s+users,\s+integrations,\s+datasets,\s+edge\s+cases\b", text, re.I)
+        or re.search(r"\bseparately\s+accepted\s+proof\s+boundary\b", text, re.I)
     )
 
 
@@ -380,22 +438,96 @@ def _metric_needs_repair(value: Any) -> bool:
         return True
     if re.search(r"[,:]\.$", text):
         return True
+    if re.search(r"\baccepted\s+path\s+lets\s+users\b|\bproof\s+boundary\b|\bevidence\s+context\b", text, re.I):
+        return True
     if text.rstrip().endswith(","):
         return True
     tail = text.rstrip(".;:, ").split()[-1].casefold() if text.split() else ""
     return tail in {"and", "or", "to", "with", "for", "from", "of", "the", "a", "an", "required"}
 
 
-def _proof_boundary_metric(proof_boundary: str) -> str:
+def _customer_summary(actors: Sequence[str], *, title: str) -> str:
+    labels = [_clean(value).split("—", 1)[0].split(":", 1)[0].strip(" .") for value in actors]
+    labels = [label for label in labels if label]
+    if not labels:
+        return f"{_focus_label(title)} users"
+    if len(labels) == 1:
+        return labels[0]
+    return _join(labels[:2])
+
+
+def _customer_sentence(actors: Sequence[str], *, title: str, first_path: str) -> str:
+    rows = []
+    for value in actors[:4]:
+        label = _clean(value).split(":", 1)[0].split("—", 1)[0].strip(" .")
+        description = _actor_row_description(value)
+        if label and description:
+            rows.append(f"{label} {description}")
+        elif label:
+            rows.append(f"{label} participates in the product outcome")
+    if rows:
+        return "; ".join(rows)
+    return f"{_focus_label(title)} users need to {first_path_capability_phrase(first_path)} and understand the outcome."
+
+
+def _state_focus_phrase(state: str, *, title: str) -> str:
+    text = _clean(state)
+    if not text:
+        return f"{_focus_label(title).lower()} state"
+    text = re.sub(r"^(?:the\s+)?(?:core|main|primary)\s+state\s+(?:is|object\s+is)\s+", "", text, flags=re.I)
+    text = re.sub(r"^a\s+", "the ", text, flags=re.I)
+    first_clause = re.split(r";|(?<=[.!?])\s+", text, maxsplit=1)[0].strip(" .")
+    first_clause = re.split(r":\s*", first_clause, maxsplit=1)[-1].strip(" .")
+    return _short(first_clause, fallback=f"{_focus_label(title).lower()} state", limit=160).rstrip(".")
+
+
+def _visible_outcome_phrase(first_path: str, *, proof: str = "") -> str:
+    model = first_path_model(first_path)
+    text = _clean(model.visible_outcome) or _clean(proof) or _clean(first_path)
+    text = re.sub(r"^this\s+", "the ", text, flags=re.I)
+    text = re.sub(r"\bvisible-result\s+event\b", "visible result", text, flags=re.I)
+    text = re.sub(r"\s+[—-]\s*", ": ", text, count=1)
+    text = _short(text, fallback="a visible, useful result", limit=190).rstrip(".")
+    text = re.sub(
+        r"^(?:the\s+)?(?:user|owner|person|participant|actor|operator|applicant|customer)\s+"
+        r"(?:sees?|views?|receives?|reads?|gets?)\s+",
+        "",
+        text,
+        flags=re.I,
+    )
+    if not re.search(r"\b(?:result|readout|summary|decision|answer|recommendation|card|view|report|status|outcome)\b", text, re.I):
+        text = f"a visible outcome from {text}"
+    return text
+
+
+def _non_goal_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
+    candidates: list[str] = []
+    for value in text_values(
+        [
+            intent.get("proof_boundary"),
+            intent.get("assumptions"),
+            intent.get("ambiguities"),
+        ]
+    ):
+        for sentence in re.split(r"(?<=[.!?])\s+|;\s+", _clean(value)):
+            if re.search(r"\b(?:out\s+of\s+scope|defer(?:red)?|later|future|not\s+claim|not\s+cover|without\s+claiming|beyond\s+the\s+first)\b", sentence, re.I):
+                candidates.append(_sentence(sentence))
+    rows = [row for row in unique_text(candidates) if _word_count(row) >= 5]
+    return rows[:4]
+
+
+def _proof_boundary_metric(proof_boundary: str, *, outcome: str = "") -> str:
     """Summarize proof scope without clipping confirmed proof prose mid-claim."""
 
     proof = _clean(proof_boundary)
     if not proof:
-        return "Release readiness stays inside the confirmed proof boundary and preserves explicit non-goals."
+        target = outcome or "the promised user outcome"
+        return f"Release readiness requires evidence that {target} is correct, visible, and limited to the first release."
     non_goal_hint = ""
     if re.search(r"\b(?:must not|without claiming|does not claim|no claim|non-goals?)\b", proof, re.IGNORECASE):
         non_goal_hint = " and keeps deferred or forbidden claims outside release readiness"
-    return f"Release readiness stays inside the confirmed proof boundary{non_goal_hint}."
+    target = outcome or "the promised user outcome"
+    return f"Release readiness requires evidence that {target} is correct, visible, and reproducible{non_goal_hint}."
 
 
 def _completed_system_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
@@ -457,7 +589,7 @@ def _derived_system_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
     descriptions = [
         f"owns identity, current status, version history, and traceable changes for {state}",
         f"guides the first path, captures allowed commands, exposes blocked states, and keeps the next action clear: {first_path}",
-        f"records source evidence, validation output, release decision, failure reason, and release-readiness proof: {proof}",
+        f"records the result, validation status, release decision, failure reason, and reviewable proof: {proof}",
         "keeps authorization, shared access, privacy, safety, retention, accessibility, reminders, and recovery behavior explicit before wider rollout",
     ]
     return [f"{_title_case(name)} — {description.rstrip('.')}" for name, description in zip(names, descriptions)]

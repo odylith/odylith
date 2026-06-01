@@ -461,7 +461,7 @@ def test_greenfield_health_tracking_artifacts_strip_working_title_and_parse_mate
     rendered_intent.pop("source_title", None)
     assert "working title" not in json.dumps(rendered_intent, sort_keys=True).casefold()
     first_action = material_first_path_action(str(intent["first_path"]))
-    assert first_action.startswith("Logs a pain entry with intensity")
+    assert first_action.startswith("Log a pain entry with intensity")
     assert "body area" in first_action
     assert proposal["intent"]["title"] == "Health Episode Journal"
     assert proposal["intent"]["source_title"] == "Health Episode Journal (working title)"
@@ -1098,10 +1098,10 @@ def test_greenfield_service_goal_governance_preserves_intent_and_avoids_cross_do
     parent = dict(proposal["backlog"][0])  # type: ignore[index]
     first_slice = str(parent["recommended_first_slice"])
     for expected in (
-        "completes onboarding and acknowledgement",
-        "logs progress for seven days",
-        "receives an adjusted plan target",
-        "receives one follow-up reminder",
+        "complete onboarding and acknowledgement",
+        "log progress for seven days",
+        "receive an adjusted plan target",
+        "receive one follow-up reminder",
     ):
         assert expected in first_slice
 
@@ -1449,8 +1449,8 @@ Release 0.0.1 succeeds when one vendor can submit documents, missing files block
     assert "check_rule_ledger_proof" not in checklist_spec
     assert "Suggested fixture:" not in checklist_spec
     assert "compliance" in checklist_spec.casefold()
-    assert "Invalid or missing" in checklist_spec
-    assert "replay proof" in checklist_spec
+    assert "missing or malformed input explains what must change" in checklist_spec
+    assert "Replay one Compliance Checklist Ledger result" in checklist_spec
 
 
 def test_greenfield_component_spec_renderer_uses_narrative_distinct_contract_sections() -> None:
@@ -1492,8 +1492,8 @@ def test_greenfield_component_spec_renderer_uses_narrative_distinct_contract_sec
     assert "computes plan targets input" not in spec.casefold()
 
     assert "Suggested fixture:" not in spec
-    assert "Planning Engine proof ties" in spec
-    assert "Invalid or missing" in spec
+    assert "Run one Planning Engine example" in spec
+    assert "missing or malformed input explains what must change" in spec
 
 
 def test_greenfield_component_spec_renderer_rejects_mechanical_contract_dump() -> None:

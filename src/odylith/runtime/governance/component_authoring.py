@@ -119,7 +119,7 @@ def _registry_focus_phrase(*, label: str, responsibility: str) -> str:
     first_clause = re.split(r"\s*;\s*", text, maxsplit=1)[0] if text else ""
     first_clause = re.split(r"\b(?:accepts?|produces?|prevents?|blocks?)\b", first_clause, maxsplit=1, flags=re.IGNORECASE)[0]
     first_clause = re.sub(
-        r"^(?:owns?|maintains?|coordinates?|records?|captures?|stores?|tracks?|presents?|shows?|displays?|attaches?|assembles?|computes?|applies?|checks?)\s+",
+        r"^(?:owns?|maintains?|coordinates?|records?|captures?|stores?|holds?|tracks?|presents?|shows?|displays?|attaches?|assembles?|computes?|applies?|checks?)\s+",
         "",
         first_clause,
         flags=re.IGNORECASE,

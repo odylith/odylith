@@ -497,10 +497,17 @@ def _atlas_preview_semantic_issues(package: GreenfieldCompletionPackage, atlas_s
         issues.append("prewrite Atlas package missing semantic coverage for FirstPathContract")
     if "proof checkpoint" not in text.casefold():
         issues.append("prewrite Atlas package missing proof checkpoint diagram label")
-    checkpoint = clean_text(graph.get("proof_checkpoint"))
+    checkpoint = _atlas_checkpoint_search_text(clean_text(graph.get("proof_checkpoint")))
     if checkpoint and _semantic_overlap_ratio(checkpoint, text) < 0.12:
         issues.append("prewrite Atlas package missing semantic coverage for DiagramEventGraph proof checkpoint")
     return issues
+
+
+def _atlas_checkpoint_search_text(value: str) -> str:
+    text = clean_text(value)
+    text = re.sub(r"^accepted\s+first\s+path\s+proof\s*:\s*", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^proven\s+when\s+", "", text, flags=re.IGNORECASE)
+    return text
 
 
 def _accepted_project_preview_issues(
@@ -1000,6 +1007,9 @@ _CONTRASTIVE_GENERIC_TERMS = {
     "build",
     "built",
     "candidate",
+    "calculate",
+    "calculated",
+    "calculation",
     "central",
     "changed",
     "classification",
@@ -1087,6 +1097,7 @@ _CONTRASTIVE_GENERIC_TERMS = {
     "rendered",
     "replay",
     "request",
+    "representative",
     "result",
     "review",
     "reviewable",

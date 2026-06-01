@@ -200,21 +200,29 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
 
     story_layout = page.locator(".project-story-narrative").evaluate(
         """(node) => {
-            const paragraph = node.querySelector("p");
+            const narrativeParagraphs = Array.from(node.querySelectorAll(":scope > p"));
             const list = node.querySelector(".project-story-records");
-            const contract = node.querySelector(".project-story-contract dd");
+            const contract = node.querySelector(".project-story-contract-card p");
+            const rows = Array.from(node.querySelectorAll(".project-story-contract-card"));
             return {
-              paragraphFontSize: paragraph ? window.getComputedStyle(paragraph).fontSize : "",
-              paragraphLineHeight: paragraph ? window.getComputedStyle(paragraph).lineHeight : "",
+              narrativeParagraphCount: narrativeParagraphs.length,
               listFontSize: list ? window.getComputedStyle(list).fontSize : "",
               contractFontSize: contract ? window.getComputedStyle(contract).fontSize : "",
+              rowCount: rows.length,
+              rowLefts: rows.map((row) => Math.round(row.getBoundingClientRect().left)),
+              rowTops: rows.map((row) => Math.round(row.getBoundingClientRect().top)),
+              firstRowColumns: rows[0] ? window.getComputedStyle(rows[0]).gridTemplateColumns : "",
               scrollDelta: node.scrollWidth - node.clientWidth,
             };
         }"""
     )
-    assert story_layout["paragraphFontSize"] == "14px"
-    assert story_layout["listFontSize"] in {"", "14px"}
+    assert story_layout["narrativeParagraphCount"] == 0
+    assert story_layout["listFontSize"] == ""
     assert story_layout["contractFontSize"] == "14px"
+    assert story_layout["rowCount"] == 5
+    assert len(set(story_layout["rowLefts"])) == 1
+    assert story_layout["rowTops"] == sorted(story_layout["rowTops"])
+    assert story_layout["firstRowColumns"] != ""
     assert int(story_layout["scrollDelta"]) <= 4
 
 

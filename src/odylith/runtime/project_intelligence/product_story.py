@@ -6,6 +6,7 @@ from collections.abc import Mapping, Sequence
 import re
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.project_intelligence.focus import backlog_rows_by_id
 from odylith.runtime.project_intelligence.narration import evidence_boundary_phrase
 from odylith.runtime.project_intelligence.product_story_cards import build_greenfield_story_cards
@@ -622,6 +623,21 @@ def _first_path_concrete_story(value: str) -> str:
     text = _strip_first_path_preface(sentence(value).strip())
     if not text:
         return ""
+    model = first_path_model(text)
+    if model.steps:
+        rows: list[str] = []
+        for step in model.steps:
+            clean = sentence(step).strip(" .")
+            if not clean:
+                continue
+            clean = _clean_opening_launcher_step(clean)
+            if not clean:
+                continue
+            rows.append(_subjectify_path_step(clean))
+            if len(rows) >= 4:
+                break
+        if rows:
+            return _story_excerpt(". ".join(rows), limit=640).rstrip(".")
     if re.search(r"\b1[.)]\s+[A-Z]", text):
         numbered = _numbered_path_story(text)
         if numbered:
@@ -637,6 +653,54 @@ def _first_path_concrete_story(value: str) -> str:
     chosen = " ".join(concrete[:4]).strip() or _first_path_summary(text)
     chosen = _strip_numbered_steps(chosen)
     return _story_excerpt(chosen, limit=640).rstrip(".") if chosen else ""
+
+
+def _subjectify_path_step(value: str) -> str:
+    text = sentence(value).strip(" .")
+    if not text:
+        return ""
+    text = _normalize_embedded_action_verbs(text)
+    if re.match(
+        r"^(?:add|adds|log|logs|manually\s+log|manually\s+logs|enter|enters|select|selects|submit|submits|save|saves|choose|chooses|click|clicks|accept|accepts|dismiss|dismisses|record|records|capture|captures|tap|taps)\b",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        return f"the user {_lower_first(text)}"
+    return text
+
+
+def _clean_opening_launcher_step(value: str) -> str:
+    text = sentence(value).strip(" .")
+    actor_open_then = re.sub(
+        r"^((?:the\s+)?(?:user|person|customer|actor|operator|participant|owner|requester|applicant|performer))\s+opens\s+[^,.;]+?\s+and\s+(.+)$",
+        r"\1 \2",
+        text,
+        count=1,
+        flags=re.IGNORECASE,
+    )
+    if actor_open_then != text:
+        text = actor_open_then
+    else:
+        text = re.sub(
+            r"^((?:the\s+)?(?:user|person|customer|actor|operator|participant|owner|requester|applicant|performer))\s+opens\s+[^,.;]+$",
+            "",
+            text,
+            count=1,
+            flags=re.IGNORECASE,
+        )
+    text = re.sub(r"^((?:the\s+)?product|(?:the\s+)?system|(?:the\s+)?app)\s+opens\s+[^,.;]+(?:\s+and\s+)?", "", text, count=1, flags=re.IGNORECASE)
+    if re.match(r"^user\s+", text, flags=re.IGNORECASE):
+        text = f"the {text[:1].lower()}{text[1:]}"
+    return sentence(text).strip(" .")
+
+
+def _normalize_embedded_action_verbs(value: str) -> str:
+    return re.sub(
+        r",\s+and\s+(manually\s+)?(logs?|enters?|selects?|submits?|saves?|chooses?|clicks?|accepts?|dismisses?|records?|captures?|reviews?|taps?)\b",
+        r" and \1\2",
+        value,
+        flags=re.IGNORECASE,
+    )
 
 
 def _numbered_path_story(value: str) -> str:
@@ -869,6 +933,9 @@ def _story_sentences(value: str) -> list[str]:
 
 def _proof_claim(value: str, *, first_path: str) -> str:
     text = _strip_numbered_steps(value).rstrip(".")
+    text = re.sub(r"\bvisible[- ]result\s+event\b", "visible result", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s+is\s+the\s+visible\s+result\b.*$", "", text, flags=re.IGNORECASE).strip(" .")
+    text = re.sub(r"\breadout\s+plus\b", "readout and", text, flags=re.IGNORECASE)
     head, sep, tail = text.partition(":")
     if sep and len(head) >= 36:
         tail_text = sentence(tail)

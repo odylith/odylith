@@ -605,10 +605,10 @@ def _check_atlas_source_preserves_first_path_tail(
         return
     final_clause = re.split(r",\s+and\s+|;\s+and\s+|[.!?]\s+", first_path.strip(" ."))[-1]
     tail = final_clause if len(_term_set(final_clause)) >= 2 else " ".join(first_path.split()[max(0, len(first_path.split()) - 18) :])
-    tail_terms = _term_set(tail)
+    tail_terms = _atlas_tail_term_set(tail)
     if not tail_terms:
         return
-    source_terms = _term_set(source)
+    source_terms = _atlas_tail_term_set(source)
     required_tail_hits = min(2, len(tail_terms))
     if len(tail_terms & source_terms) < required_tail_hits:
         issues.append(f"confirmed Atlas {kind} `{title}` omits the tail of the accepted first path")
@@ -827,6 +827,41 @@ def _term_set(value: str) -> set[str]:
         if token.endswith("ing") and len(token) > 6:
             token = token[:-3]
         if token:
+            terms.add(token)
+    return terms
+
+
+def _atlas_tail_term_set(value: str) -> set[str]:
+    terms = set(_term_set(value))
+    action_aliases = {
+        "adds": "add",
+        "approves": "approve",
+        "blocks": "block",
+        "checks": "check",
+        "compares": "compare",
+        "creates": "create",
+        "displays": "display",
+        "enters": "enter",
+        "exports": "export",
+        "imports": "import",
+        "logs": "log",
+        "opens": "open",
+        "publishes": "publish",
+        "reads": "read",
+        "records": "record",
+        "reviews": "review",
+        "saves": "save",
+        "sees": "see",
+        "shows": "show",
+        "submits": "submit",
+        "traces": "trace",
+        "views": "view",
+    }
+    action_roots = set(action_aliases.values())
+    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", str(value or "").casefold()):
+        token = raw[:-3] if raw.endswith("ing") and len(raw) > 6 else raw
+        token = action_aliases.get(token, token)
+        if token in action_roots:
             terms.add(token)
     return terms
 

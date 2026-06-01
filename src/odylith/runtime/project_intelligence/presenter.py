@@ -551,6 +551,13 @@ def _product_story_narrative(
     release_contract: Sequence[Mapping[str, Any]],
     supporting_records: Sequence[str],
 ) -> str:
+    contract_html = _product_story_contract(release_contract)
+    if contract_html:
+        return (
+            '<article class="project-story-narrative project-story-card-stack">'
+            f"{contract_html}"
+            "</article>"
+        )
     clean_headline = _display_title(headline)
     headline_html = f"<h3>{_d(clean_headline)}</h3>" if clean_headline else ""
     paragraph_rows = [paragraph for paragraph in paragraphs if str(paragraph or "").strip()]
@@ -558,7 +565,6 @@ def _product_story_narrative(
     remaining_paragraphs = paragraph_rows[1:]
     first_html = "".join(f"<p>{_d(paragraph)}</p>" for paragraph in first_paragraph)
     remaining_html = "".join(f"<p>{_d(paragraph)}</p>" for paragraph in remaining_paragraphs)
-    contract_html = _product_story_contract(release_contract)
     records_html = (
         '<ul class="project-story-records">'
         + "".join(f"<li>{_d(row)}</li>" for row in supporting_records if str(row or "").strip())
@@ -581,8 +587,14 @@ def _product_story_contract(rows: Sequence[Mapping[str, Any]]) -> str:
     ]
     if not items:
         return ""
-    cells = "".join(f"<div><dt>{_d(label)}</dt><dd>{_d(body)}</dd></div>" for label, body in items)
-    return f'<dl class="project-story-contract">{cells}</dl>'
+    cells = "".join(
+        '<article class="project-story-contract-card" role="listitem">'
+        f"<h3>{_d(label)}</h3>"
+        f"<p>{_d(body)}</p>"
+        "</article>"
+        for label, body in items
+    )
+    return f'<div class="project-story-contract" role="list">{cells}</div>'
 
 
 def _render_blank_actions(items: object) -> str:

@@ -4,6 +4,7 @@ import io
 import json
 
 from odylith.runtime.surfaces import claude_host_bash_guard
+from odylith.runtime.surfaces import host_prompt_route_locks
 
 
 def test_evaluate_bash_command_blocks_destructive_forms() -> None:
@@ -62,6 +63,32 @@ def test_evaluate_bash_command_allows_non_destructive_commands() -> None:
     blocked, reason = claude_host_bash_guard.evaluate_bash_command("pytest -q")
     assert blocked is False
     assert reason == ""
+
+
+def test_show_me_route_lock_allows_only_show_command_until_turn_stops(tmp_path) -> None:
+    host_prompt_route_locks.record_active_route_lock(
+        repo_root=tmp_path,
+        host_family="claude",
+        prompt="Odylith, show me what you can do.",
+        session_id="session-1",
+    )
+
+    allowed, allowed_reason = claude_host_bash_guard.evaluate_bash_command(
+        "./.odylith/bin/odylith show --repo-root . 2>/dev/null || odylith show --repo-root .",
+        repo_root=str(tmp_path),
+        session_id="session-1",
+    )
+    blocked, reason = claude_host_bash_guard.evaluate_bash_command(
+        'pwd; echo "==="; /bin/ls -la',
+        repo_root=str(tmp_path),
+        session_id="session-1",
+    )
+
+    assert allowed is False
+    assert allowed_reason == ""
+    assert blocked is True
+    assert "show route lock is active" in reason
+    assert "extra Bash probes are blocked" in reason
 
 
 def test_evaluate_bash_command_blocks_claude_backlog_complexity_mistranslation() -> None:

@@ -12,6 +12,9 @@ from odylith.runtime.domain_intelligence.artifact_enrichment import domain_graph
 from odylith.runtime.domain_intelligence.artifact_enrichment import tribunal_actor_projection
 from odylith.runtime.domain_intelligence.greenfield_product_risks import build_product_risks_from_proposal
 from odylith.runtime.domain_intelligence.greenfield_product_risks import risk_text_has_framework_leak
+from odylith.runtime.project_intelligence.job_cards import job_card_summary
+from odylith.runtime.project_intelligence.job_cards import job_status_label
+from odylith.runtime.project_intelligence.job_cards import low_information_job_body
 from odylith.runtime.project_intelligence.product_story import (
     build_greenfield_product_story,
     project_intent_line,
@@ -24,6 +27,7 @@ from odylith.runtime.project_intelligence.participants import participant_title
 from odylith.runtime.project_intelligence.participants import participant_title_and_body
 from odylith.runtime.project_intelligence.source_launch import build_source_launch_handoff
 from odylith.runtime.project_intelligence.utils import dict_value, display_text, list_value, sanitize_actor_body, sentence, short, strings
+from odylith.runtime.project_intelligence.utils import tidy_fragment
 
 
 def proposal_from_sources(*, repo_root: Path, shell_payload: Mapping[str, Any]) -> dict[str, Any]:
@@ -165,7 +169,7 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
         "scenario": [
             "Proposed first path",
             title,
-            short(first_path_summary, limit=78, fallback="First proposed path"),
+            short(first_path_summary, limit=150, fallback="First proposed path"),
             "Evidence is user-stated or inferred; source validation has not happened yet.",
             _scenario_body(project=project, first_path=first_path, validation=validation),
         ],
@@ -934,7 +938,7 @@ def _compact_desired_text(value: object) -> str:
     text = text.replace("The first complete path the product must prove is ", "The accepted scenario is ")
     text = text.replace("The accepted first path passes end to end:", "")
     text = _dashboard_excerpt(text, limit=150)
-    return _tidy_boundary_fragment(text)
+    return tidy_fragment(text)
 
 
 def _looks_proof_or_scope_line(value: object) -> bool:
@@ -1578,7 +1582,7 @@ def _jobs(
         if _looks_path_echo(body, first_path=first_path) or _repeat_key(body) in seen_body_keys:
             body = _job_fallback_body(title)
         seen_body_keys.add(_repeat_key(body))
-        status = _job_status_label(item.get("evidence_tier"))
+        status = job_status_label(item.get("evidence_tier"))
         rows.append(
             (
                 short(_project_job_heading(title=title, project_title=project_title), limit=78),
@@ -1648,14 +1652,14 @@ def _job_body_text(
     first_path: str,
     component_summaries: Mapping[str, str],
 ) -> str:
-    component_body = _matched_component_summary(title=title, component_summaries=component_summaries)
-    if component_body:
-        return component_body
     if _is_program_workstream(title):
-        return "Sets the accepted product story, actors, state object, release boundary, and proof bar for the first release."
+        return "Keeps the first release centered on one complete user outcome, with explicit limits and proof before source work starts."
     for value in (item.get("product_view"), item.get("problem"), item.get("recommended_first_slice")):
         text = sentence(value)
         if not text or _looks_path_echo(text, first_path=first_path):
+            continue
+        text = job_card_summary(text)
+        if low_information_job_body(text):
             continue
         if re.search(r"\b\d+[.)]\s+[A-Z]", text):
             compact = summarize_first_path(text)
@@ -1664,6 +1668,10 @@ def _job_body_text(
         text = re.sub(r"\bShow how The\b", "Show how the", text)
         text = re.sub(r"\bmaps the first path, The\b", "maps the first path, the", text)
         return text
+    component_body = _matched_component_summary(title=title, component_summaries=component_summaries)
+    component_body = job_card_summary(component_body)
+    if component_body and not low_information_job_body(component_body):
+        return component_body
     if title.casefold().startswith("prove "):
         return _job_fallback_body(title)
     if " boundary" in title.casefold():
@@ -1681,31 +1689,14 @@ def _job_fallback_body(title: str) -> str:
         subject = clean_title
     lowered = clean_title.casefold()
     if _is_program_workstream(clean_title):
-        return "Sets the accepted product story, actors, state object, release boundary, and proof bar for the first release."
+        return "Keeps the first release centered on one complete user outcome, with explicit limits and proof before source work starts."
     if " proof" in lowered:
         return f"Packages reviewer-visible proof for {subject} before the release can move forward."
     if " boundary" in lowered:
         return f"Defines what {subject} owns, receives, produces, and must prove for the first release."
     if lowered.startswith("prove "):
         return f"Turns {subject} into a specific release capability with reviewer-visible evidence."
-    return f"Keeps {subject} tied to a clear product responsibility and proof obligation."
-
-
-def _job_status_label(value: object) -> str:
-    text = sentence(value, "proposal").replace("_", " ").strip().casefold()
-    labels = {
-        "user intent": "User intent",
-        "odylith assumption": "Inferred",
-        "assumption": "Inferred",
-        "inferred": "Inferred",
-        "proposal": "Proposed",
-        "proposed": "Proposed",
-        "source backed": "Source-backed",
-        "source-backed": "Source-backed",
-        "accepted": "Accepted",
-        "accepted greenfield project": "Accepted",
-    }
-    return labels.get(text, _capitalize_first(text))
+    return f"Turns {subject} into a concrete product slice with a visible result, a blocked path, and a reviewable explanation."
 
 
 def _polish_heading(value: str) -> str:
@@ -1799,7 +1790,7 @@ def _unknown(
         rows.append(f"Assumptions to confirm: {_join_boundary_values([_boundary_summary_item(row) for row in assumptions[:2]], total=len(assumptions))}.")
     if risks:
         rows.append(f"Build risks to control: {_join_boundary_values(_boundary_risk_labels(risks[:3]), total=len(risks))}.")
-    return [_tidy_boundary_fragment(short(row, limit=155)) for row in rows if row][:6] or ["No explicit unresolved proposal item found."]
+    return [tidy_fragment(short(row, limit=155)) for row in rows if row][:6] or ["No explicit unresolved proposal item found."]
 
 
 def _planned_shape_summary(*, components: Sequence[Mapping[str, Any]], diagrams: Sequence[Mapping[str, Any]]) -> str:
@@ -1841,7 +1832,7 @@ def _boundary_summary_item(value: object) -> str:
             break
     text = _dashboard_excerpt(text, limit=62)
     text = text.strip(" .")
-    return _tidy_boundary_fragment(text) or "unresolved item"
+    return tidy_fragment(text) or "unresolved item"
 
 
 def _boundary_risk_labels(risks: Sequence[str]) -> list[str]:
@@ -1852,17 +1843,6 @@ def _boundary_risk_labels(risks: Sequence[str]) -> list[str]:
         used.add(label.casefold())
         labels.append(label)
     return labels
-
-
-def _tidy_boundary_fragment(value: str) -> str:
-    text = sentence(value).strip(" .")
-    text = re.sub(
-        r"\b(?:and|or|for|with|which|that|the|a|an|before|after|until)$",
-        "",
-        text,
-        flags=re.IGNORECASE,
-    ).strip(" ,;:.")
-    return text
 
 
 def _claim_evidence(

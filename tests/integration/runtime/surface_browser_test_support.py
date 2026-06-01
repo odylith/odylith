@@ -36,7 +36,7 @@ _LOCAL_DETAIL_SHARD_JS_RE = re.compile(
 _EXTERNAL_MERMAID_CDN_REQUEST_RE = re.compile(
     r"^GET https://cdn\.jsdelivr\.net/npm/mermaid@11/dist/mermaid\.min\.js(?:\s+.*)?$"
 )
-_SHELL_QUERY_PARAM_TIMEOUT_MS = 30000
+_SHELL_QUERY_PARAM_TIMEOUT_MS = 60000
 
 
 @contextlib.contextmanager

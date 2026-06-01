@@ -17,8 +17,8 @@ _ACTION_VERB_PATTERN = (
     r"adds?|adjusts?|approves?|assigns?|attaches?|calculates?|captures?|checks?|chooses?|closes?|collects?|"
     r"compares?|completes?|computes?|confirms?|corrects?|creates?|decides?|declines?|deletes?|derives?|edits?|"
     r"enters?|evaluates?|exports?|fetches?|finds?|gets?|groups?|hands?|highlights?|imports?|lets?|links?|logs?|"
-    r"moves?|notifies?|opens?|orders?|persists?|preserves?|publishes?|ranks?|reads?|receives?|records?|rejects?|"
-    r"requests?|resolves?|returns?|reviews?|routes?|runs?|saves?|schedules?|screens?|sees?|selects?|sends?|"
+    r"displays?|moves?|notifies?|opens?|orders?|persists?|preserves?|produces?|publishes?|ranks?|reads?|receives?|records?|rejects?|"
+    r"renders?|requests?|resolves?|returns?|reviews?|routes?|runs?|saves?|schedules?|screens?|sees?|selects?|sends?|"
     r"shows?|stores?|submits?|supplies?|tracks?|validates?|verifies?|views?|votes?"
 )
 _SPLIT_ACTION_VERB_PATTERN = _ACTION_VERB_PATTERN.replace("schedules?", "schedules").replace("views?", "views")
@@ -45,7 +45,7 @@ def sequence_mermaid(
         lines.append(f"  participant A{index} as {_participant_label(actor)}")
     for index, component in enumerate(selected, start=1):
         lines.append(f"  participant C{index} as {_participant_label(str(component.get('label', 'Component')))}")
-    steps = _semantic_event_steps(semantic_model) or _first_path_steps(first_path)
+    steps = _drop_launcher_only_steps(_semantic_event_steps(semantic_model) or _first_path_steps(first_path))
     if not steps:
         steps = ["Start the accepted first path", "Record product state and evidence", "Review the outcome and blockers"]
     visible_steps = steps[: min(14, max(10, len(selected) + 6))]
@@ -79,7 +79,7 @@ def first_path_flowchart_mermaid(
 
     selected = [dict(row) for row in active_release_components(components)] if components else []
     selected = selected[:7] or [{"label": f"{label} product core"}]
-    steps = _semantic_event_steps(semantic_model) or _first_path_steps(first_path)
+    steps = _drop_launcher_only_steps(_semantic_event_steps(semantic_model) or _first_path_steps(first_path))
     if not steps:
         steps = ["Start the accepted path", "Record product state and evidence", "Review the outcome and blockers"]
     visible_steps = _dedupe_steps(steps)[:9]
@@ -155,8 +155,47 @@ def _semantic_event_steps(semantic_model: Mapping[str, Any] | None) -> list[str]
             continue
         text = _compact_text(str(row.get("text") or row.get("mutation") or ""))
         if text:
+            text = _normalize_event_step(text)
             steps.append(text)
     return _dedupe_steps(_expand_compound_steps(steps))
+
+
+def _drop_launcher_only_steps(values: list[str]) -> list[str]:
+    rows: list[str] = []
+    for value in values:
+        if not rows and _launcher_only_step(value):
+            continue
+        rows.append(value)
+    return rows
+
+
+def _launcher_only_step(value: str) -> bool:
+    text = _compact_text(value).strip(" .")
+    return bool(
+        len(re.findall(r"[A-Za-z0-9]+", text)) <= 6
+        and re.search(r"\bopens?\s+(?:the\s+)?(?:app|web app|application|site|website|product)\b", text, flags=re.IGNORECASE)
+    )
+
+
+def _normalize_event_step(value: str) -> str:
+    text = _compact_text(value).strip(" .")
+    if re.search(r"\bvisible-result\s+event\b", text, re.IGNORECASE):
+        text = re.sub(r"\s+is\s+the\s+visible-result\s+event\b.*$", "", text, flags=re.IGNORECASE).strip(" .")
+        text = re.sub(r"^\s*this\s+", "Show the ", text, flags=re.IGNORECASE)
+        text = re.sub(r"\s+[—-]\s*", ": ", text, count=1)
+    if re.search(r"\brenders?\s+the\s+visible\s+result\s*:", text, re.IGNORECASE):
+        text = re.sub(
+            r"^.*?\brenders?\s+the\s+visible\s+result\s*:\s*"
+            r"(?:the\s+)?(?:user|owner|person|participant|actor|operator|applicant|customer)\s+"
+            r"(?:sees?|views?|receives?|gets?|reads?)\s+",
+            "Show ",
+            text,
+            flags=re.IGNORECASE,
+        )
+    text = re.sub(r"\bon\s+screen,\s+alongside\b", "on screen with", text, flags=re.IGNORECASE)
+    text = re.sub(r"\balongside\b", "with", text, flags=re.IGNORECASE)
+    text = re.sub(r"\breadout\s+plus\b", "readout and", text, flags=re.IGNORECASE)
+    return text
 
 
 def _first_path_steps(value: str) -> list[str]:
@@ -286,19 +325,32 @@ def _step_component(step: str, *, components: list[dict[str, Any]], fallback_ind
         " ".join(str(component.get(key, "")) for key in ("label", "source_system_description", "responsibility", "boundary"))
         for component in components
     ]
-    axis_index = _step_axis_component_index(step, rows=label_rows)
+    axis_index = _step_axis_component_index(step, rows=label_rows, fallback_index=fallback_index)
     if axis_index is not None:
         return f"C{axis_index + 1}"
     target = _best_index_for_text(step, rows=rows, default=fallback_index)
     return f"C{target + 1}"
 
 
-def _step_axis_component_index(step: str, *, rows: list[str]) -> int | None:
+def _step_axis_component_index(step: str, *, rows: list[str], fallback_index: int = 0) -> int | None:
     text = _compact_text(step).casefold()
     step_terms = _domain_terms(text)
     if not step_terms:
         return None
-    scored: list[tuple[int, int]] = []
+    if re.search(r"\b(?:highlight|highlights|choose|chooses|display|show|shows|review|compare|compares)\b", text):
+        for index, row in enumerate(rows):
+            row_terms = _domain_terms(row)
+            if row_terms & {"comparison", "display", "presentation", "review", "selected", "selection", "surface", "view"}:
+                return index
+    if re.search(r"\b(?:calculate|calculates|compute|computes|derive|derives)\b", text) and re.search(
+        r"\b(?:price|pricing|cost|discount|quote|quoted)\b",
+        text,
+    ):
+        for index, row in enumerate(rows):
+            row_terms = _domain_terms(row)
+            if row_terms & {"price", "pricing", "cost", "discount", "quote", "quoted"}:
+                return index
+    scored: list[tuple[int, int, int]] = []
     for index, row in enumerate(rows):
         row_text = row.casefold()
         row_terms = _domain_terms(row)
@@ -306,9 +358,57 @@ def _step_axis_component_index(step: str, *, rows: list[str]) -> int | None:
         fuzzy = sum(1 for step_term in step_terms for row_term in row_terms if _term_related(step_term, row_term))
         score = exact * 3 + fuzzy
         if re.search(r"\b(?:show|shows|see|sees|view|views|display|renders?)\b", text) and (
-            row_terms & {"view", "display", "surface", "timeline", "summary", "result", "presentation"}
+            row_terms & {"dashboard", "display", "interface", "owner", "presentation", "result", "summary", "surface", "timeline", "view"}
         ):
-            score += 6
+            score += 12
+        if re.search(r"\b(?:align|aligned|correlat|correlation|overlay|overlaid|timeline|trend|chart|visuali[sz]e)\b", text) and (
+            row_terms & {"alignment", "correlation", "dashboard", "display", "overlay", "timeline", "trend", "view", "visualization"}
+        ):
+            score += 42
+        if re.search(r"\b(?:add|adds|enter|enters|entry|log|logs|manual|record|records|save|saves|trip|upload)\b", text) and (
+            row_terms & {"capture", "entry", "form", "history", "intake", "log", "profile", "record", "store", "vehicle"}
+        ):
+            score += 14
+        if re.search(r"\b(?:intervention|dose|dosing|adherence)\b", text) and (
+            row_terms & {"intervention", "dose", "dosing", "adherence", "schedule", "scheduling", "log"}
+        ):
+            score += 30
+        if re.search(r"\b(?:calculate|calculates|compute|computes|derive|derives|metric|metrics|trend|update|updates)\b", text) and (
+            row_terms & {"calculation", "engine", "metric", "metrics", "trend"}
+        ):
+            score += 12
+        if re.search(r"\b(?:calculate|calculates|compute|computes|derive|derives|evaluate|evaluates)\b", text) and (
+            row_terms & {"comparison", "option", "rank", "ranking", "score", "scoring", "selection"}
+        ):
+            score += 26
+        if re.search(r"\b(?:plan|target|recommendation|adjusted|adjustment|off\s+track)\b", text) and (
+            row_terms & {"plan", "target", "recommendation", "adjustment"}
+        ):
+            score += 18
+        if re.search(r"\b(?:log|logs|progress|daily)\b", text) and (
+            row_terms & {"daily", "progress", "log", "logging"}
+        ):
+            score += 18
+        if re.search(r"\b(?:reminder|reminders|follow-up|followup|updates?\s+stop|unsafe|guardrail)\b", text) and (
+            row_terms & {"reminder", "notification", "guardrail", "follow-up", "followup"}
+        ):
+            score += 18
+        if re.search(r"\b(?:price|pricing|cost|discount|schedule|transfer)\b", text) and (
+            row_terms & {"price", "pricing", "cost", "discount", "schedule", "transfer", "evidence"}
+        ):
+            score += 16
+        if re.search(r"\b(?:price|pricing|cost|discount)\b", text) and (
+            row_terms & {"price", "pricing", "cost", "discount", "quote", "quoted"}
+        ):
+            score += 20
+        if re.search(r"\b(?:schedule|schedules|timetable|departure|arrival|transfer)\b", text) and (
+            row_terms & {"schedule", "timetable", "departure", "arrival", "transfer"}
+        ):
+            score += 10
+        if re.search(r"\b(?:accept|dismiss|recommendation|suggestion|card|rank|ranks)\b", text) and (
+            row_terms & {"advice", "card", "recommendation", "suggestion"}
+        ):
+            score += 12
         if re.search(r"\b(?:attach|attaches|create|creates|draft|drafts|enter|enters|import|imports|open|opens|receive|receives|select|selects|submit|submits|upload|uploads|validate|validates)\b", text) and (
             row_terms & {"application", "capture", "entry", "intake", "packet", "submission"}
         ):
@@ -329,6 +429,14 @@ def _step_axis_component_index(step: str, *, rows: list[str]) -> int | None:
             row_terms & {"form", "scoring", "score", "rubric", "assessment", "evaluation"}
         ):
             score += 8
+        if re.search(r"\b(?:question|questions|response|responses|follow-up|followup|preparer|preparers|resolved|unresolved)\b", text) and (
+            row_terms & {"question", "response", "issue", "tracker", "follow-up", "followup", "preparer", "resolved", "unresolved"}
+        ):
+            score += 18
+        if re.search(r"\b(?:rationale|final|finalize|finalized|outcome|condition|decision|record)\b", text) and (
+            row_terms & {"decision", "rationale", "outcome", "condition", "vote", "signoff"}
+        ):
+            score += 18
         if re.search(r"\b(?:compare|compares|comparison)\b", text) and (
             row_terms & {"comparison", "recommendation", "readiness", "dashboard"}
         ):
@@ -350,19 +458,25 @@ def _step_axis_component_index(step: str, *, rows: list[str]) -> int | None:
             row_terms & {"reminder", "notification", "follow-up", "followup"}
         ):
             score += 8
-        if re.search(r"\b(?:highlight|highlights|choose|chooses|store|stores|display|show|shows)\b", text) and (
+        if re.search(r"\b(?:highlight|highlights|choose|chooses|display|show|shows)\b", text) and (
+            row_terms & {"surface", "review", "display", "selected", "selection", "comparison"}
+        ):
+            score += 18
+        if re.search(r"\b(?:store|stores)\b", text) and (
             row_terms & {"surface", "review", "display", "selected", "selection", "route", "comparison"}
         ):
             score += 9
         if re.search(r"\b(?:publish|publishes|attachment|attachments|audit|history|replay)\b", text) and (
             row_terms & {"audit", "trail", "history", "provenance", "source-backed", "attachment"}
         ):
-            score += 10
+            score += 24
+        if index == fallback_index and exact:
+            score += 30
         if score:
-            scored.append((score, -index))
+            scored.append((score, -abs(index - fallback_index), -index))
     if scored:
         scored.sort(reverse=True)
-        return -scored[0][1]
+        return -scored[0][2]
     return None
 
 
@@ -467,6 +581,7 @@ def _strip_primary_actor_subject(value: str) -> str:
 def _imperative_handoff_focus(value: str) -> str:
     text = _compact_text(value).strip(" .")
     replacements = {
+        "accepts": "accept",
         "adds": "add",
         "attaches": "attach",
         "assigns": "assign",
@@ -482,6 +597,7 @@ def _imperative_handoff_focus(value: str) -> str:
         "confirms": "confirm",
         "creates": "create",
         "decides": "decide",
+        "dismisses": "dismiss",
         "enters": "enter",
         "evaluates": "evaluate",
         "exports": "export",
@@ -495,17 +611,19 @@ def _imperative_handoff_focus(value: str) -> str:
         "lets": "let",
         "links": "link",
         "logs": "log",
+        "displays": "display",
         "opens": "open",
         "orders": "order",
+        "produces": "produce",
         "publishes": "publish",
         "ranks": "rank",
         "reads": "read",
         "receives": "receive",
+        "renders": "render",
         "returns": "return",
         "records": "record",
         "requests": "request",
         "resolves": "resolve",
-        "returns": "return",
         "reviews": "review",
         "routes": "route",
         "saves": "save",
@@ -529,8 +647,28 @@ def _imperative_handoff_focus(value: str) -> str:
     replacement = replacements.get(first.casefold())
     if replacement:
         text = f"{replacement}{sep}{rest}".strip()
+    text = re.sub(
+        r"^(manually\s+)(logs|enters|selects|submits|saves|chooses|clicks|accepts|dismisses|records|captures|reviews)\b",
+        lambda match: match.group(1)
+        + {
+            "logs": "log",
+            "enters": "enter",
+            "selects": "select",
+            "submits": "submit",
+            "saves": "save",
+            "chooses": "choose",
+            "clicks": "click",
+            "accepts": "accept",
+            "dismisses": "dismiss",
+            "records": "record",
+            "captures": "capture",
+            "reviews": "review",
+        }[match.group(2).casefold()],
+        text,
+        flags=re.IGNORECASE,
+    )
     for source, target in replacements.items():
-        text = re.sub(rf"([,;]\s+){re.escape(source)}\b", rf"\1{target}", text, flags=re.IGNORECASE)
+        text = re.sub(rf"((?:[,;]|\band\b|\bor\b)\s+){re.escape(source)}\b", rf"\1{target}", text, flags=re.IGNORECASE)
     return text
 
 
@@ -642,7 +780,7 @@ def _strip_dangling_tail(value: str) -> str:
     text = _compact_text(value).rstrip(" ,;:.")
     while True:
         cleaned = re.sub(
-            r"\b(?:a|an|and|as|at|because|by|can|for|from|if|in|into|lets|must|of|on|or|should|the|through|tied|to|when|while|with|without)$",
+            r"\b(?:a|an|and|as|at|because|by|can|for|from|if|in|into|lets|must|of|on|or|should|that|the|through|tied|to|when|while|with|without|alongside)$",
             "",
             text,
             flags=re.IGNORECASE,

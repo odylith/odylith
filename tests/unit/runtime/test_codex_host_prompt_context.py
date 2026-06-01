@@ -280,6 +280,8 @@ def test_main_emits_show_me_route_lock_without_running_prompt_observation(
     assert "`./.odylith/bin/odylith show --repo-root .`" in additional_context
     assert "`odylith show --repo-root .`" in additional_context
     assert "Return that stdout directly" in additional_context
+    assert "end the turn immediately" in additional_context
+    assert "Do not run any other Bash command before or after it" in additional_context
     assert payload["systemMessage"] == additional_context
 
 

@@ -2201,3 +2201,25 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   receive regenerated read-only dashboard surfaces and managed bundle assets
   through the normal install, upgrade, doctor, dashboard, or runtime refresh
   paths.
+- The source-local greenfield narration, component-spec readability, host-command,
+  and browser-surface settlement is covered by
+  `migration-observer:0.1.15:guidance-and-skills:e6b032e7a2d7`,
+  `migration-observer:0.1.15:operator-cli-contracts:ce2f2b5cefd2`,
+  `migration-observer:0.1.15:browser-surfaces:2c21987e5617`, and
+  `migration-observer:0.1.15:install-managed-assets:889a822b3627`. The pass binds
+  generic host guidance, component-spec narrative generation, Project-tab and
+  Registry/Radar styling surfaces, Compass selector mirrors, and bundled
+  managed-asset mirrors after the anti-slop and migration-gate checks settled.
+  Existing consumer-owned governance truth remains unchanged; upgraded installs
+  receive only stricter future generator behavior, corrected managed guidance,
+  regenerated read-only browser surfaces, and refreshed managed assets through
+  the normal install, upgrade, doctor, dashboard, or runtime refresh paths.
+- The final governed-sync settlement for the same source-local pass is covered
+  by `migration-observer:0.1.15:browser-surfaces:ece5db3ed1de` and
+  `migration-observer:0.1.15:install-managed-assets:4fcb780543cc`. The pass binds
+  the regenerated Atlas, Casebook, Compass, Radar, Registry, forensic-evidence,
+  traceability, and bundled browser surfaces after selective sync refreshed stale
+  derived records. Existing consumer-owned governance truth remains unchanged;
+  upgraded installs receive only regenerated read-only surfaces and managed bundle
+  assets through the normal install, upgrade, doctor, dashboard, or runtime
+  refresh paths.

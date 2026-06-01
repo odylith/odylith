@@ -32,7 +32,11 @@ placeholder products in response to a show-me request.
    work.
 4. Print the full stdout directly in your response as-is. Do not summarize,
    diagnose, reformat, or wrap it in a code block. Do not add bullets before
-   or after it. The scenario-aware output is already written as a trust-first action report with a short mental-model line and should be shown verbatim so the operator sees exactly what Odylith said.
+   or after it. Do not run `pwd`, `ls`, `rg`, `git status`, `echo`, or any
+   other Bash command after the show command succeeds. End the turn immediately
+   after the stdout is visible. The scenario-aware output is already written as
+   a trust-first action report with a short mental-model line and should be
+   shown verbatim so the operator sees exactly what Odylith said.
 5. If the operator names a new project, architecture, research goal, or
    feature after an empty/thin show result, do not refuse because source is
    absent. Run the project-first proposal path instead:

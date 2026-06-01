@@ -130,13 +130,17 @@ def collect_host_reasoned_proposal_issues(proposal: Mapping[str, Any]) -> list[s
 def format_proposal_issue_report(label: str, issues: list[str] | tuple[str, ...]) -> str:
     rows = _dedupe_issues(issues)
     bullets = "\n".join(f"- {issue}" for issue in rows)
+    if str(label).casefold() == "validation":
+        remediation = "- needs operator/proposal input: provide the missing or underspecified product facts before governed writes."
+    else:
+        remediation = "- internal repair required: fix the post-confirm semantic model, renderers, or quality gate before governed writes."
     return (
         f"greenfield proposal {label} failed with {len(rows)} issue(s):\n"
         f"{bullets}\n"
         "Remediation:\n"
         "- auto-enrichment: Odylith already normalized aliases, list-shaped fields, safe dependency/interface defaults, "
         "and default release fields before this check.\n"
-        "- needs operator/proposal input: every issue above still needs richer project-specific content before governed writes."
+        f"{remediation}"
     )
 
 

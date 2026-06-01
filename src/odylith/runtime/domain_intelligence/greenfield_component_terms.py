@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import clean_text, norm
 ACTION_VERBS = (
     "accept",
     "adjust",
+    "apply",
     "approve",
     "assemble",
     "assign",
@@ -189,6 +190,7 @@ def clean_artifact_phrase(value: str) -> str:
     text = trim_phrase(value).casefold()
     if not text:
         return ""
+    text = _clean_visible_phrase_debris(text)
     text = re.sub(r"\b(?:related path|failure avoided|relevant behavior)\s*:\s*.+$", "", text, flags=re.I)
     text = re.sub(r"\busing\s+(?:mocked|stubbed|simulated)\b.*$", "", text, flags=re.I)
     text = re.sub(r"\b(?:before|after|while|because|unless|without)\b.+$", "", text, flags=re.I)
@@ -202,6 +204,13 @@ def clean_artifact_phrase(value: str) -> str:
     )
     if not preserve_modifier:
         text = strip_action(text)
+    text = re.sub(r"^(?:hold|holds|holding)\s+", "", text, flags=re.I)
+    text = re.sub(
+        r"\bhold\s+(?=(?:profile|record|state|history|log|entry|session|trip|event|timeline|measurement|metric|reading)\b)",
+        "",
+        text,
+        flags=re.I,
+    )
     text = re.sub(r"^(?:them|it|their|they|this|that)\s+(?:against|with|to|from|for|into)\s+", "", text, flags=re.I)
     text = re.sub(r"^(?:against|with|to|from|for|into)\s+", "", text, flags=re.I)
     text = re.sub(r"\b(?:them|it|their|they|this|that)\b", "", text, flags=re.I)
@@ -243,6 +252,31 @@ def clean_artifact_phrase(value: str) -> str:
     if action_hits and not (set(words) & ARTIFACT_CARRIER_TERMS):
         return ""
     return text
+
+
+def _clean_visible_phrase_debris(value: str) -> str:
+    text = clean_text(value).casefold()
+    text = re.sub(r"^on\s+save,\s*", "", text, flags=re.I)
+    text = re.sub(r"\breadout\s+plus\b", "readout and", text, flags=re.I)
+    text = re.sub(r"\bon\s+screen,\s+alongside\b", "on screen with", text, flags=re.I)
+    text = re.sub(r"\balongside\b", "with", text, flags=re.I)
+    text = re.sub(r"\bvisible[- ]result\s+event\b", "visible result", text, flags=re.I)
+    text = re.sub(r"\s+is\s+the\s+visible\s+result\b.*$", "", text, flags=re.I)
+    text = re.sub(
+        r"\s+and\s+the\s+(?:dashboard|screen|view)\s+renders?\s+the\s+visible\s+result\s*:\s*(?:the\s+)?",
+        " and the ",
+        text,
+        flags=re.I,
+    )
+    text = re.sub(r"\b(?:dashboard|screen|view)\s+renders?\s+the\s+visible\s+result\s*:\s*(?:the\s+)?", "", text, flags=re.I)
+    text = re.sub(
+        r"\bdashboard\s+visibly\s+updates?\s+(?P<object>[a-z0-9][a-z0-9 '-]{1,50})\b",
+        r"\g<object> state",
+        text,
+        flags=re.I,
+    )
+    text = re.sub(r"\b(?P<object>[a-z0-9][a-z0-9 '-]{1,50})\s+visible\s+result\b", r"\g<object>", text, flags=re.I)
+    return re.sub(r"\s+", " ", text).strip(" .,;:")
 
 
 def descriptor_anchor_phrases(label: str, description: str) -> list[str]:

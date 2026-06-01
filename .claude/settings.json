@@ -41,43 +41,6 @@
         "hooks": [
           {
             "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude bash-guard --repo-root \"$CLAUDE_PROJECT_DIR\"",
-            "if": "Bash(rm *)",
-            "timeout": 10,
-            "type": "command"
-          },
-          {
-            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude bash-guard --repo-root \"$CLAUDE_PROJECT_DIR\"",
-            "if": "Bash(git reset --hard*)",
-            "timeout": 10,
-            "type": "command"
-          },
-          {
-            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude bash-guard --repo-root \"$CLAUDE_PROJECT_DIR\"",
-            "if": "Bash(git checkout --*)",
-            "timeout": 10,
-            "type": "command"
-          },
-          {
-            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude bash-guard --repo-root \"$CLAUDE_PROJECT_DIR\"",
-            "if": "Bash(git push --force*)",
-            "timeout": 10,
-            "type": "command"
-          },
-          {
-            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude bash-guard --repo-root \"$CLAUDE_PROJECT_DIR\"",
-            "if": "Bash(git clean -fdx*)",
-            "timeout": 10,
-            "type": "command"
-          },
-          {
-            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude bash-guard --repo-root \"$CLAUDE_PROJECT_DIR\"",
-            "if": "Bash(*shutil.rmtree*)",
-            "timeout": 10,
-            "type": "command"
-          },
-          {
-            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude bash-guard --repo-root \"$CLAUDE_PROJECT_DIR\"",
-            "if": "Bash(*odylith backlog create*)",
             "timeout": 10,
             "type": "command"
           }

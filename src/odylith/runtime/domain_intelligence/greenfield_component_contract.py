@@ -122,7 +122,7 @@ def responsibility_from_contract(label: str, contract: Mapping[str, Any]) -> str
     primary = _first_contract_item(owned)
     if _is_document_context(label, owned):
         return _sentence(
-            f"Assembles context packets, accepts {inputs}, validates required evidence, protects sensitive context, and hands complete context to downstream tracking"
+            f"Assembles context packets, accepts {inputs}, validates required evidence, protects sensitive context, and passes complete context to the next product step"
         )
     if _is_status_view(label, owned):
         return _sentence(
@@ -133,7 +133,7 @@ def responsibility_from_contract(label: str, contract: Mapping[str, Any]) -> str
         return _sentence(f"Maintains {_lower_clause(primary)}. Failure avoided: {_lower_clause(failure)}")
     if owned:
         return _sentence(f"Maintains {_lower_clause(primary or owned)} for {subject}")
-    return _sentence(f"Maintains the {subject} state, handoff, and local proof boundary")
+    return _sentence(f"Maintains the {subject} state, recovery context, and local proof boundary")
 
 
 def boundary_from_contract(label: str, contract: Mapping[str, Any]) -> str:
@@ -168,7 +168,7 @@ def risks_from_contract(label: str, contract: Mapping[str, Any]) -> list[str]:
     outside = _first_contract_item(_clause(contract.get("outside_boundary"))) or "adjacent product authority"
     return [
         _sentence(
-            f"Domain risk: missing proof for {owned} can let blockers, recovery evidence, or handoff rules promote without behavior"
+            f"Domain risk: missing proof for {owned} can let blockers, recovery evidence, or next-step rules promote without behavior"
         ),
         _sentence(
             f"Security and policy posture: {label} must enforce access control, privacy, retention, and safety handling for {owned}, preserve recovery evidence, and prevent {outside} from silently changing local state"
@@ -209,18 +209,18 @@ def _document_context_contract(
     return {
         "owned_state": (
             f"{packet} creation, {identity} attachment, {reason} capture, {required_docs} completeness, uploaded {upload_docs} "
-            f"validation, {missing} states, {context_label} provenance, sensitive access control, and lifecycle handoff history"
+            f"validation, {missing} states, {context_label} provenance, sensitive access control, and lifecycle history"
         ),
         "accepted_inputs": (
             f"{identity}, source actor, {reason}, urgency, {required_docs} selections, uploaded files, provenance notes, "
             f"and access actor from {previous_label or 'the intake workspace'}"
         ),
         "produced_outputs": (
-            f"validated {packet}, {missing} blockers, uploaded-context metadata, access decisions, and handoff into {downstream}"
+            f"validated {packet}, {missing} blockers, uploaded-context metadata, access decisions, and handoff context for {downstream}"
         ),
         "states_or_transitions": (
             f"no-context, incomplete, missing-required-{_state_token(docs)}, {missing} blocking, uploaded, validation-failed, access-restricted, ready-for-review, "
-            f"and handed off to {downstream}"
+            f"and made available to {downstream}"
         ),
         "outside_boundary": outside,
         "local_proof": local_proof,
@@ -290,22 +290,23 @@ def _generic_contract(
     downstream = next_label or "the next product boundary and release proof review"
     interface_kind = "visible state" if kind.casefold() in {"client", "surface", "ui", "web"} else "command or event"
     input_focus = _accepted_input_focus(focus, kind=kind)
+    evidence_reference = "source evidence reference" if re.search(r"\b(?:source|evidence|provenance|attachment|audit)\b", context, re.IGNORECASE) else "evidence reference"
     return {
-        "owned_state": f"{focus}, local blockers, recovery state, evidence reference, and handoff history for {state_label}",
-        "accepted_inputs": f"{upstream}, authorized actor, source evidence, prior state, and {input_focus}",
-        "produced_outputs": f"{subject} {interface_kind} result, state update, blocked or recovery marker, evidence reference, and handoff record",
+        "owned_state": f"{focus}, local blockers, recovery state, {evidence_reference}, and next-step history for {state_label}",
+        "accepted_inputs": f"{upstream}, authorized actor, prior state, and {input_focus}",
+        "produced_outputs": f"{subject} {interface_kind} result, state update, blocked or recovery marker, explanation, and next-step context",
         "states_or_transitions": ", ".join(states),
         "outside_boundary": _outside_boundary(kind=kind),
         "local_proof": [
-            f"{label} proves the happy path for {focus} with a visible result and persisted evidence.",
-            f"{label} rejects or blocks invalid input covering {focus} without creating a trusted downstream state.",
-            f"{label} exposes recovery evidence and handoff history for {focus}.",
+            f"{label} proves the happy path for {focus} with a visible result and persisted explanation.",
+            f"{label} rejects or blocks invalid input covering {focus} before it creates a misleading result.",
+            f"{label} exposes recovery context and next-step history for {focus}.",
         ],
         "upstream_truth": upstream,
         "downstream_consumers": downstream,
         "unique_failure": (
             f"{label} can make the product unsafe or misleading if input covering {focus} is incomplete, output is untraceable, "
-            "or a blocker is hidden as a successful handoff."
+            "or a blocker is hidden as a successful next step."
         ),
     }
 
@@ -554,7 +555,7 @@ def _document_outside_boundary(context: str) -> str:
         "sibling product responsibilities",
         "downstream decision ownership",
         "status or lifecycle state",
-        "upstream source truth",
+        "original input facts",
         "release approval",
     ]
     if "scheduling" in lowered or "scheduled" in lowered:
@@ -802,10 +803,10 @@ def _label_semantic_terms(label: str) -> tuple[str, ...]:
 
 def _outside_boundary(*, kind: str) -> str:
     if kind.casefold() in {"client", "surface", "ui", "web"}:
-        return "domain derivation, persistence, upstream source truth, and release approval unless a later plan assigns them here"
+        return "domain derivation, persistence, original input facts, and release approval unless a later plan assigns them here"
     if kind.casefold() == "adapter":
-        return "upstream source truth, product decisions, presentation, and release approval"
-    return "presentation, upstream source truth, adjacent product decisions, and release approval unless explicitly assigned"
+        return "original input facts, product decisions, presentation, and release approval"
+    return "presentation, original input facts, adjacent product decisions, and release approval unless explicitly assigned"
 
 
 def _component_subject(label: str) -> str:

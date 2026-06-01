@@ -202,7 +202,7 @@ def _first_path_contract(
         visible_result=_clean(model.visible_outcome) or "The user can inspect the first-path result.",
         recovery_path=_clean(model.recovery_action) or "Blocked or corrected path state stays visible.",
         deferred_scope=tuple(_clean(row) for row in non_goals if _clean(row)),
-        capability=first_path_capability_phrase(first_path),
+        capability=first_path_capability_phrase(first_path, gerund=True),
         raw_path=_clean(first_path),
         events=tuple(_first_path_events(model.steps, actor=actor, state_object=state_object)),
     )
@@ -367,7 +367,12 @@ def _event_target(step: str, *, state_object: str) -> str:
 def _is_visible_result(value: str) -> bool:
     return bool(
         re.search(
-            r"\b(?:available|choose|chooses|highlight|highlights|inspect|inspects|ready|see|sees|select|selects|show|shows|view|views|review|reviews|receive|receives|publish|publishes|restored)\b",
+            r"\b(?:available|choose|chooses|display|displays|highlight|highlights|inspect|inspects|present|presents|produce|produces|ready|render|renders|return|returns|see|sees|select|selects|show|shows|view|views|review|reviews|receive|receives|publish|publishes|restored)\b",
+            value,
+            re.IGNORECASE,
+        )
+        or re.search(
+            r"\b(?:card|dashboard|indicator|readout|result|summary|timeline|trend|view)\b",
             value,
             re.IGNORECASE,
         )
@@ -380,7 +385,7 @@ def _is_recovery_path(value: str) -> bool:
 
 def _action_label(value: str) -> str:
     match = re.search(
-        r"\b(adds?|adjusts?|approves?|captures?|checks?|chooses?|compares?|completes?|creates?|edits?|enters?|exports?|imports?|logs?|publishes?|ranks?|records?|reviews?|saves?|sees?|shows?|stores?|submits?|tracks?|updates?|views?)\b",
+        r"\b(adds?|adjusts?|approves?|captures?|checks?|chooses?|compares?|completes?|creates?|displays?|edits?|enters?|exports?|imports?|logs?|produces?|publishes?|ranks?|records?|renders?|returns?|reviews?|saves?|sees?|shows?|stores?|submits?|tracks?|updates?|views?)\b",
         _clean(value),
         re.IGNORECASE,
     )

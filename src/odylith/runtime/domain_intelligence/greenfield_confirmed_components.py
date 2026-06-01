@@ -96,6 +96,7 @@ def confirmed_components(
     first_path: str = "",
     state_object: str = "",
     proof_boundary: str = "",
+    external_systems: list[str] | None = None,
     non_goals: list[str] | None = None,
 ) -> list[dict[str, Any]]:
     if not internal_systems:
@@ -110,6 +111,7 @@ def confirmed_components(
         first_path=first_path,
         state_object=state_object,
         proof_boundary=proof_boundary,
+        external_systems=external_systems or [],
         non_goals=non_goals or [],
     )
 
@@ -155,8 +157,8 @@ def confirmed_project_brief(
         "schema_version": "odylith.greenfield.project_brief.v1",
         "purpose": _purpose_text(story=story, problem=problem, first=first),
         "operating_principle": (
-            f"Every release {release} claim must stay attached to the user capability, domain state, source evidence, "
-            "and proof boundary accepted in the product direction."
+            f"Every release {release} claim must stay attached to the user capability, domain state, result explanation, "
+            "and review conditions accepted in the product direction."
         ),
         "project_outcome": proof,
         "blueprint_sections": [
@@ -196,7 +198,7 @@ def confirmed_project_brief(
         "customization_prompts": [
             f"Revise the {label_lower} story if the first user, first path, or state object is wrong.",
             "Decide whether the first release needs a live external source, a simulated source, or an explicitly deferred integration.",
-            f"Tighten the {label_lower} proof bar so release readiness depends on the accepted proof boundary.",
+            f"Tighten the {label_lower} proof bar so release readiness depends on the promised user-visible result.",
         ],
         "pre_coding_checkpoints": [
             _checkpoint("Product story accepted", f"Does the {label_lower} story name the user, problem, first path, and non-goals?"),
@@ -253,6 +255,7 @@ def _confirmed_system_components(
     first_path: str = "",
     state_object: str = "",
     proof_boundary: str = "",
+    external_systems: list[str] | None = None,
     non_goals: list[str] | None = None,
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
@@ -295,6 +298,7 @@ def _confirmed_system_components(
             "title": label,
             "first_path": first_path,
             "proof_boundary": proof_boundary,
+            "external_systems": external_systems or [],
         },
         "state_object": state_object,
     }
@@ -511,6 +515,7 @@ def _generated_sequence(value: Any) -> bool:
         "assigned state, command, evidence",
         "first implementation plan must name",
         "command, query, or event contract",
+        "valid transition, invalid input rejection",
         "normal path, blocked path",
         "accepted input, produced state",
         "state, behavior, evidence, or access",

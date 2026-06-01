@@ -100,25 +100,25 @@ def derive_component_axis(*, label_text: str, context_text: str = "") -> Compone
     if not terms:
         return None
     primary = _phrase(label_terms[:4]) or _phrase(terms[:4]) or "component"
-    detail = _phrase([term for term in terms if term not in label_terms][:5]) or "accepted product evidence"
+    detail = _phrase([term for term in terms if term not in label_terms][:5]) or "accepted product context"
     input_focus = _phrase(terms[4:8]) or detail
     output_focus = _phrase(terms[8:12]) or detail
     states = _unique([*terms[:5], "requested", "validated", "blocked", "handed-off"])
     return ComponentAxis(
         key=component_axis_key_for_label(label_text) or f"derived_{slugify(primary)}",
         triggers=tuple(terms),
-        owned_state=f"{primary} state, {detail}, local blockers, and handoff evidence",
-        accepted_inputs=f"{primary} command, {input_focus} evidence, authorized actor, prior state, and validation notes",
-        produced_outputs=f"{primary} result, {output_focus} update, blocked-state evidence, and handoff record",
+        owned_state=f"{primary} state, {detail}, local blockers, and recovery context",
+        accepted_inputs=f"{primary} command, {input_focus} context, authorized actor, prior state, and validation notes",
+        produced_outputs=f"{primary} result, {output_focus} update, blocked-state explanation, and next-step context",
         states_or_transitions=", ".join(states[:9]),
         outside_boundary=(
             "responsibilities not named by this component boundary; "
-            "adjacent component state and handoff evidence owned elsewhere; "
-            "mutation of upstream source truth, silent overwrite of downstream handoff state, and release approval"
+            "adjacent component state and recovery context owned elsewhere; "
+            "mutation of original input facts, silent overwrite of another component result state, and release approval"
         ),
         local_proof=(
-            f"{primary} proof covers required inputs, owned state, produced outputs, and handoff evidence.",
-            f"Missing, stale, or invalid {input_focus} evidence blocks the {primary} result.",
+            f"{primary} proof covers required inputs, owned state, produced outputs, and recovery context.",
+            f"Missing, stale, or invalid {input_focus} context blocks the {primary} result.",
             f"{primary} keeps sibling-owned state separate while preserving its own proof trail.",
         ),
         unique_failure=(

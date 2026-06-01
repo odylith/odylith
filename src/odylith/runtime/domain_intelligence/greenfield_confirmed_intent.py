@@ -308,10 +308,18 @@ def confirmed_system_description(value: str) -> str:
         _name, head_description = _split_system_action_clause(head)
         body = _clean(parts[1])
         if head_description and _looks_generated_system_description(body):
-            return _clean(head_description)
-        return body
+            return _normalize_system_description(head_description)
+        return _normalize_system_description(body)
     _name, description = _split_system_action_clause(cleaned)
-    return _clean(description or cleaned)
+    return _normalize_system_description(description or cleaned)
+
+
+def _normalize_system_description(value: str) -> str:
+    text = _clean(value)
+    text = re.sub(r"\bvisible[- ]result\s+event\b", "visible result", text, flags=re.IGNORECASE)
+    text = re.sub(r"\breadout\s+plus\b", "readout and", text, flags=re.IGNORECASE)
+    text = re.sub(r"^(?:hold|holds|holding)\s+", "maintains ", text, flags=re.IGNORECASE)
+    return _clean(text)
 
 
 def _looks_generated_system_description(value: str) -> bool:

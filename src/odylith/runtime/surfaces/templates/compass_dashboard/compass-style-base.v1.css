@@ -179,7 +179,7 @@ h1 {
     .pill.ws-id-btn,
     .pill.ws-covered-id-btn,
     .pill.workstream-id-chip,
-    .chip.execution-wave-chip-link.ws-id-btn {
+    .ws-id-btn.execution-wave-chip-link.chip {
       --chip-link-border: #93c5fd;
       --chip-link-bg: #eff6ff;
       --chip-link-text: #1e3a8a;

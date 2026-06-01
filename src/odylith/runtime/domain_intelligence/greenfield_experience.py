@@ -355,8 +355,8 @@ def _component_local_first_slice(row: Mapping[str, Any], *, fallback: str) -> st
     proof = _short_contract_text(_first_contract_text(contract.get("local_proof")) if isinstance(contract, Mapping) else "")
     if label and proof:
         return (
-            f"Implement {label} local proof: {proof}. Block missing or invalid inputs and keep upstream and downstream "
-            "handoff evidence reviewable."
+            f"Implement {label} local proof: {proof}. Block missing or invalid inputs and keep the result, explanation, "
+            "and recovery path reviewable."
         )
     if label and inputs and outputs:
         return f"Implement {label} local contract: accept {inputs}, produce {outputs}, and block invalid or missing state."

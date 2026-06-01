@@ -345,6 +345,8 @@ def test_prompt_bundle_routes_show_me_what_you_got_without_replay(tmp_path: Path
 
     context = payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith show-me first-match route lock" in context
+    assert "end the turn immediately" in context
+    assert "Do not run any other Bash command before or after it" in context
     assert "stale replay" not in context
     assert "systemMessage" not in payload
 

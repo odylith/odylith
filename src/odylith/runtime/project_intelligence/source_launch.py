@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.project_intelligence.utils import display_text, list_value, sentence, short, strings
 
 
@@ -167,7 +168,7 @@ def _plan_prompt(
         f"Odylith, expand the accepted {product} direction into an implementation plan using {language_name}. Keep this first "
         f"path as the only implementation scope: {path}. Before editing source, propose the first source boundary "
         f"around {boundary}, the files or modules to create, domain objects for {actor}, interactions involving "
-        f"{participant}, service interfaces for {capabilities}, validation points, test commands, proof gates for {proof}, "
+        f"{participant}, product responsibilities to cover: {capabilities}; validation points, test commands, proof gates for {proof}, "
         f"and excluded scope: {excluded}."
     )
     return {
@@ -191,7 +192,7 @@ def _implementation_prompt(
     prompt = (
         f"Odylith, implement the smallest runnable {product} product slice from the accepted plan. Restate the target files "
         f"before editing. Build only this path: {path}. Create the minimal domain model, source boundary around {boundary}, "
-        f"service behavior for {capabilities}, input validation, structured result, and user-visible explanation. Protect "
+        f"product behavior for these responsibilities: {capabilities}; input validation, structured result, and user-visible explanation. Protect "
         f"against this product risk while coding: {risk}. Keep outside the slice: {excluded}. If one excluded capability is "
         "actually required, explain why and stop before editing."
     )
@@ -225,7 +226,7 @@ def _refresh_prompt(*, product: str, path: str, capabilities: str) -> dict[str, 
         f"Odylith, refresh governed records from the implemented {product} source slice. Align the Project dashboard, Radar "
         f"workstreams, Registry components, Atlas diagrams when architecture exists, Compass evidence, and Casebook only if "
         f"bugs were created. Ensure the product story, first path, participants, risks, owned capabilities, and proof records "
-        f"match the implemented behavior: {path}. Keep capability records centered on {capabilities}."
+        f"match the implemented behavior: {path}. Keep capability records centered on these responsibilities: {capabilities}."
     )
     return {
         "label": "Refresh governed records",
@@ -335,7 +336,44 @@ def _source_boundary_hint(product: str) -> str:
 
 def _first_path_phrase(value: str) -> str:
     text = _clean_fragment(value)
+    model = first_path_model(text)
+    if model.steps:
+        rows: list[str] = []
+        for step in model.steps:
+            clean = _clean_fragment(step)
+            if not clean:
+                continue
+            if not rows and re.search(r"\bopens?\s+(?:the\s+)?(?:app|web app|application|site|website)\b", clean, flags=re.I):
+                continue
+            rows.append(_subjectify_path_step(clean))
+            if len(rows) >= 3:
+                break
+        if rows:
+            return short(". ".join(row.rstrip(".") for row in rows), limit=360)
     return short(text, limit=360) if text else "the accepted first product path"
+
+
+def _subjectify_path_step(value: str) -> str:
+    text = _clean_fragment(value)
+    if not text:
+        return ""
+    text = _normalize_embedded_action_verbs(text)
+    if re.match(
+        r"^(?:add|adds|log|logs|manually\s+log|manually\s+logs|enter|enters|select|selects|submit|submits|save|saves|choose|chooses|click|clicks|accept|accepts|dismiss|dismisses|record|records|capture|captures)\b",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        return f"the user {text}"
+    return text
+
+
+def _normalize_embedded_action_verbs(value: str) -> str:
+    return re.sub(
+        r",\s+and\s+(manually\s+)?(logs?|enters?|selects?|submits?|saves?|chooses?|clicks?|accepts?|dismisses?|records?|captures?|reviews?)\b",
+        r" and \1\2",
+        value,
+        flags=re.IGNORECASE,
+    )
 
 
 def _clean_title(value: str) -> str:
@@ -345,8 +383,37 @@ def _clean_title(value: str) -> str:
 def _clean_fragment(value: object) -> str:
     text = display_text(value)
     text = re.sub(r"\b(?:first_slice_proof|validation_strategy)\s*:\s*", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bvisible[- ]result\s+event\b", "visible result", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s+is\s+the\s+visible\s+result\b.*$", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\breadout\s+plus\b", "readout and", text, flags=re.IGNORECASE)
+    text = _normalize_leading_capability_verb(text)
     text = text.strip(" .")
     return text[:1].lower() + text[1:] if text else ""
+
+
+def _normalize_leading_capability_verb(value: str) -> str:
+    replacements = {
+        "calculates": "calculate",
+        "captures": "capture",
+        "derives": "derive",
+        "displays": "display",
+        "flags": "flag",
+        "holds": "maintain",
+        "manages": "manage",
+        "records": "record",
+        "renders": "render",
+        "returns": "return",
+        "routes": "route",
+        "shows": "show",
+        "stores": "store",
+        "tracks": "track",
+        "validates": "validate",
+    }
+    first, sep, rest = sentence(value).partition(" ")
+    replacement = replacements.get(first.casefold().strip(".,;:"))
+    if replacement:
+        return f"{replacement}{sep}{rest}".strip()
+    return value
 
 
 def _join(values: Sequence[str]) -> str:

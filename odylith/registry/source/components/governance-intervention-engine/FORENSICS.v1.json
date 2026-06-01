@@ -45,19 +45,20 @@
   "timeline": [
     {
       "artifacts": [
-        "src/odylith/runtime/intervention_engine/delivery_ledger.py",
-        "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py"
+        "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md",
+        "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+        "src/odylith/runtime/common/claude_cli_capabilities.py"
       ],
       "confidence": "high",
-      "event_index": 483,
+      "event_index": 494,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "governance-intervention-engine"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/intervention_engine/delivery_ledger.py, src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
-      "ts_iso": "2026-05-25T12:50:55-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md, odylith/agents-guidelines/CODEX_HOST_CONTRACT.md +1 more",
+      "ts_iso": "2026-05-31T10:43:18-07:00",
       "workstreams": []
     },
     {

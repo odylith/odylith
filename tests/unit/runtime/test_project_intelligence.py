@@ -125,6 +125,44 @@ def test_project_answer_summary_renders_as_full_table_without_markdown_noise() -
     assert "title=" not in html
 
 
+def test_greenfield_product_story_renders_release_cards_without_surrounding_narrative() -> None:
+    html = presenter.render_project_html(
+        {
+            "project_intelligence": {
+                "mode": "greenfield",
+                "title": "Example Project",
+                "eyebrow": "Project type: example",
+                "intro": "A small project summary.",
+                "chips": [],
+                "product_story_title": "Product Story",
+                "product_story": {
+                    "headline": "Do not render this inner headline",
+                    "paragraphs": [
+                        "Do not render this first narrative paragraph.",
+                        "Do not render this second narrative paragraph.",
+                    ],
+                    "supporting_records": ["Do not render this supporting record."],
+                    "release_contract": [
+                        {"label": "User Problem", "body": "The user needs a clearer result from the product."},
+                        {"label": "First Path", "body": "The user completes the first useful path."},
+                    ],
+                },
+                "sections": ["product_story"],
+            }
+        }
+    )
+
+    assert 'class="project-story-narrative project-story-card-stack"' in html
+    assert 'class="project-story-contract"' in html
+    assert 'class="project-story-contract-card"' in html
+    assert "<dl" not in html
+    assert "User Problem" in html
+    assert "The user needs a clearer result from the product." in html
+    assert "Do not render this inner headline" not in html
+    assert "Do not render this first narrative paragraph" not in html
+    assert "Do not render this supporting record" not in html
+
+
 def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path: Path) -> None:
     _write_json(
         tmp_path / "odylith" / "registry" / "source" / "component_registry.v1.json",
@@ -998,7 +1036,7 @@ def test_greenfield_project_sections_do_not_reuse_first_path_as_page_filler(tmp_
     assert payload["scenario_details"][0] == ("First path", first_path_summary)
     assert payload["jobs"][0][0] == "Establish Program"
     assert "Establish Practice Score Assistant Program" not in html
-    assert payload["jobs"][0][1].startswith("Sets the accepted product story")
+    assert payload["jobs"][0][1].startswith("Keeps the first release centered on one complete user outcome")
     assert payload["answers"] == []
     assert 'class="project-panel project-answer-strip"' not in html
     assert payload["jobs"][1][1] == "Owns microphone input and take buffering."
@@ -1261,9 +1299,54 @@ def test_greenfield_project_handoff_prompts_are_source_launch_protocol(tmp_path:
     assert "Coordinator" in encoded
     assert "automatic approval" in encoded
     assert "Do not edit source yet" in encoded
+    assert "product responsibilities to cover" in encoded
+    assert "service interfaces for" not in encoded
+    assert "service behavior for" not in encoded
     assert "Open the first implementation plan" not in encoded
     assert "Implement first coding slice" not in encoded
     assert "Refresh this dashboard" not in encoded
+
+
+def test_greenfield_project_handoff_and_scenario_copy_remove_parser_fragments(tmp_path: Path) -> None:
+    proposal = {
+        "mode": "greenfield_apply_ready",
+        "_accepted_project": {"source_path": "odylith/runtime/source/accepted-project.v1.json"},
+        "intent": {
+            "title": "Device Care Companion",
+            "product_story": "An owner wants plain-language guidance from routine device records.",
+            "first_path": (
+                "The owner opens the web app, adds their device, and manually logs a few operating sessions and usage records. "
+                "On save, the dashboard renders the visible result: the owner sees a current readout with one recommended next action."
+            ),
+            "human_actors": ["Owner", "Helper"],
+        },
+        "observed_source": {"source_posture": "docs_only"},
+        "project_brief": {"purpose": "Owners need a clear readout they can act on without interpreting raw records."},
+        "project_intelligence": {"intent": ["Non-goals: live import, multi-device support, and external APIs."]},
+        "validation_strategy": [
+            "This rendered dashboard view is the visible-result event that completes the first path."
+        ],
+        "release_plan": {"label": "0.0.1"},
+        "components": [
+            {"label": "Device History", "responsibility": "Holds the device profile, operating sessions, and usage records."},
+            {"label": "Guidance View", "responsibility": "Shows the current readout and recommended next action."},
+        ],
+        "risks": [{"title": "Result Trust", "statement": "The owner may receive guidance that is hard to trust."}],
+        "backlog": [],
+        "diagrams": [],
+    }
+
+    payload = builder.build_project_intelligence_payload(repo_root=tmp_path, shell_payload={"greenfield_proposal": proposal})
+    encoded = json.dumps(payload, sort_keys=True).casefold()
+    handoff = json.dumps(payload["host_handoff_prompts"], sort_keys=True).casefold()
+
+    assert "manually logs a few." not in encoded
+    assert "visible-result event" not in encoded
+    assert "visible result event" not in encoded
+    assert "service behavior for" not in handoff
+    assert "service interfaces for" not in handoff
+    assert "holds the device profile" not in handoff
+    assert "maintain the device profile" in handoff
 
 
 def test_project_intelligence_presenter_renders_fallback_without_payload() -> None:
@@ -1737,7 +1820,9 @@ def test_project_intelligence_css_uses_shared_surface_typography() -> None:
     assert ".project-chips span:nth-child" not in css
     assert ".project-job-workstream .project-deeplink" not in css
     assert "-webkit-line-clamp" not in css
-    assert "repeat(auto-fit, minmax(190px, 1fr))" in css
+    assert ".project-story-contract-card" in css
+    assert "grid-template-columns: minmax(150px, 220px) minmax(0, 1fr);" in css
+    assert "repeat(auto-fit, minmax(190px, 1fr))" not in css
     assert "grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(240px, 0.58fr);" in css
     assert ".project-proof-grid article > p" in css
     assert ".project-proof-grid li" in css

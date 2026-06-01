@@ -68,6 +68,32 @@ def short(value: object, *, limit: int = 180, fallback: str = "") -> str:
     return f"{trimmed}."
 
 
+def tidy_fragment(value: object) -> str:
+    """Return a compact fragment without dangling grammar."""
+
+    text = sentence(value).strip(" .")
+    text = re.sub(
+        r"\b(?:accepted|proposed)\s+first\s+path\b",
+        "first path",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(
+        r"\b(?:user-stated|source-backed|reviewable|visible)\s+evidence\b",
+        "evidence",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(
+        r"\b(?:and|or|for|with|which|that|the|a|an|before|after|until)$",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    ).strip(" ,;:.")
+    text = _remove_dangling_tail(text).strip(" .")
+    return text[:1].upper() + text[1:] if text else ""
+
+
 def _remove_dangling_tail(value: str) -> str:
     text = sentence(value).rstrip(" ,;:")
     text = re.sub(

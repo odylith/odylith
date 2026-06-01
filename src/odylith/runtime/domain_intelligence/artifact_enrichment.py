@@ -785,8 +785,25 @@ def _labelled_rows(label: str, values: Sequence[str]) -> list[str]:
 
 
 def _bullets(values: Sequence[str]) -> str:
-    rows = [clean_text(value) for value in values if clean_text(value)]
+    rows: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        text = clean_text(value)
+        if not text:
+            continue
+        key = _bullet_dedupe_key(text)
+        if key in seen:
+            continue
+        seen.add(key)
+        rows.append(text)
     return "\n".join(f"- {row}" for row in rows)
+
+
+def _bullet_dedupe_key(value: str) -> str:
+    text = clean_text(value).casefold()
+    text = re.sub(r"^(?:proof|gate|risk|control|owner|boundary|first path|state object):\s*", "", text)
+    text = re.sub(r"\b(?:proof|gate|risk|control|owner|boundary)\b", "", text)
+    return re.sub(r"[^a-z0-9]+", " ", text).strip()
 
 
 def _tuple_limit(values: Sequence[str], limit: int) -> tuple[str, ...]:

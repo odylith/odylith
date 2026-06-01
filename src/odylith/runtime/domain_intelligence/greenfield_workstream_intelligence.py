@@ -157,7 +157,7 @@ def build_workstream_domain_intelligence(
     """Render the domain-intelligence packet from one shared workstream contract."""
 
     actors = human_actors or [f"{label} product user: moves through the first product path."]
-    internals = internal_systems or [f"{state_object}: owns domain state.", f"{evidence_record}: owns proof review."]
+    internals = internal_systems or [f"{state_object}: owns domain state.", f"{evidence_record}: owns release review."]
     internal_labels = join_system_labels(internals) or join_items(internals)
     externals = external_systems or ["No live external system is accepted for the first release."]
     non_goal_text = join_items(non_goals) or "unconfirmed broader platform behavior"
@@ -185,8 +185,8 @@ def build_workstream_domain_intelligence(
         "ontology": [
             f"Actors include {actor_summary}.",
             f"State object: {state_object}.",
-            f"Evidence record: {evidence_record}.",
-            f"Proof boundary: {proof_boundary}.",
+            f"Review record: {evidence_record}.",
+            f"Accepted product promise: {proof_boundary}.",
         ],
         "state": [
             f"State focus: {build_scope}",
@@ -203,14 +203,14 @@ def build_workstream_domain_intelligence(
         ],
         "source_of_truth_map": [
             f"{state_object} is the source of truth for current first-path state.",
-            f"{evidence_record} is the source of truth for proof readiness and release confidence.",
+            f"{evidence_record} is the source of truth for review readiness and release confidence.",
         ],
         "evidence_model": [
-            f"Proof evidence: {validation_summary or proof_boundary}.",
-            f"{evidence_record} must show source input, state reference, validation result, release decision, and visible outcome.",
+            f"Review check: {validation_summary or proof_boundary}.",
+            f"{evidence_record} must show the accepted input, changed state, validation result, decision, and visible outcome.",
         ],
         "decisions": [
-            f"Decide whether {row_title} delivers a visible success, blocked-input signal, recovery path, and reviewable proof.",
+            f"Decide whether {row_title} delivers the visible result, blocked-input signal, recovery path, and reviewable explanation.",
             f"Decide whether dependencies are ready: {dependency_summary or internal_labels}.",
         ],
         "assumptions": [
@@ -222,18 +222,18 @@ def build_workstream_domain_intelligence(
             f"External systems: {join_items(externals)}.",
         ],
         "invariants": [
-            f"Every state change touched by {row_title} names actor, source, status, and evidence expectation.",
+            f"Every state change touched by {row_title} names actor, status, owner, and expected result.",
             f"Every readiness assertion for {row_title} maps to {state_object}, {evidence_record}, validation output, and non-goals.",
         ],
         "risks": [
             risk,
-            f"Trust fails if {row_title} hides missing state, source evidence, access limits, or deferred scope.",
+            f"Trust fails if {row_title} hides missing state, access limits, recovery details, or deferred scope.",
         ],
         "validation_obligations": [
             *(validation or []),
             f"Validate that {row_title} preserves {state_object} and {evidence_record} in domain terms.",
-            f"Validate that {row_title} proves success, blocked input, recovery, and handoff evidence without restating the full component contract.",
-            f"Validate that {row_title} handles a blocked or recovery path without hiding missing evidence.",
+            f"Validate that {row_title} proves success, blocked input, recovery, and next-step context without restating the full component contract.",
+            f"Validate that {row_title} handles a blocked or recovery path without hiding missing information.",
         ],
         "artifacts": [
             f"{state_object} history captures the local states needed by {row_title}.",
@@ -241,11 +241,11 @@ def build_workstream_domain_intelligence(
         ],
         "authority": [
             f"Only accepted actors or systems can move first-path state: {actor_summary}.",
-            f"{row_title} can block the first release when validation, replay, access, or evidence is incomplete.",
+            f"{row_title} can block the first release when validation, replay, access, or explanation is incomplete.",
         ],
         "owners": [
             f"Internal product systems own this slice: {internal_labels}.",
-            f"Review ownership follows the accepted proof boundary and this row's local validation.",
+            f"Review ownership follows the accepted product promise and this row's local validation.",
         ],
         "execution_memory": [
             f"Future work starts from the product path and this row's local outcome.",
@@ -253,7 +253,7 @@ def build_workstream_domain_intelligence(
         ],
         "metrics": [
             metric_summary or f"{row_title} has a user-visible success, blocked, and recovery signal.",
-            f"Every readiness assertion for {row_title} has state, evidence, validation, release-review, and non-goal references.",
+            f"Every readiness assertion for {row_title} has state, explanation, validation, release-review, and non-goal references.",
         ],
         "change_model": [
             f"Changing the state object invalidates {row_title} validation and handoff assumptions.",
@@ -261,7 +261,7 @@ def build_workstream_domain_intelligence(
         ],
         "invalidation_rules": [
             f"If {row_title} cannot run or be reviewed in product terms, release readiness stays blocked.",
-            f"If evidence cannot explain {state_object}, {evidence_record}, or non-goals, this slice is incomplete.",
+            f"If the review record cannot explain {state_object}, {evidence_record}, or non-goals, this slice is incomplete.",
         ],
         "conflict_model": [
             f"Confirmed product intent beats generic builder fallback for {row_title}.",
@@ -269,7 +269,7 @@ def build_workstream_domain_intelligence(
         ],
         "transfer_priors": [
             f"Keep {row_title} small enough for concrete behavior proof.",
-            "Use confirmed actors, state, systems, evidence, and failure terms in this slice.",
+            "Use confirmed actors, state, systems, outcomes, and failure terms in this slice.",
         ],
     }
 

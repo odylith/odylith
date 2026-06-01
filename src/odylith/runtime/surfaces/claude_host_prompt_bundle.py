@@ -132,7 +132,21 @@ def main(argv: list[str] | None = None) -> int:
     payload = claude_host_shared.load_payload(raw)
     prompt = str(payload.get("prompt", "")).strip()
     session_id = claude_host_shared.hook_session_id(payload)
-    if not host_prompt_route_locks.route_lock_context(host_family="claude", prompt=prompt):
+    route_context = host_prompt_route_locks.route_lock_context(host_family="claude", prompt=prompt)
+    if route_context:
+        host_prompt_route_locks.record_active_route_lock(
+            repo_root=repo_root,
+            host_family="claude",
+            prompt=prompt,
+            session_id=session_id,
+        )
+        confirmed_events = []
+    else:
+        host_prompt_route_locks.clear_active_route_lock(
+            repo_root=repo_root,
+            host_family="claude",
+            session_id=session_id,
+        )
         confirmed_events = host_intervention_support.confirm_last_assistant_message(
             repo_root=repo_root,
             host_family="claude",
@@ -140,8 +154,6 @@ def main(argv: list[str] | None = None) -> int:
             payload=payload,
             render_surface="claude_user_prompt_submit",
         )
-    else:
-        confirmed_events = []
     payload_out = render_prompt_bundle_payload(
         repo_root=repo_root,
         prompt=prompt,

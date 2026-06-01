@@ -586,6 +586,8 @@ def test_show_me_skill_blocks_host_status_detours() -> None:
             assert "Never create, scaffold, edit, or test example application files" in normalized_text
             assert "Odylith is not installed in this folder" in normalized_text
             assert "Do not add bullets before or after it" in normalized_text
+            assert "Do not run `pwd`, `ls`, `rg`, `git status`, `echo`" in normalized_text
+            assert "End the turn immediately after the stdout is visible" in normalized_text
 
 
 def test_claude_show_me_guard_is_shipped_in_project_assets() -> None:
@@ -617,6 +619,8 @@ def test_claude_show_me_guard_is_shipped_in_project_assets() -> None:
         assert "`./.odylith/bin/odylith show --repo-root .`" in text
         assert "`odylith show --repo-root .`" in text
         assert "`intervention-status`, `visible-intervention`" in text
+        assert "end the turn immediately" in text
+        assert "Do not run any other Bash command before or after it" in text
 
 
 def test_managed_guidance_exempts_show_me_from_intervention_proof() -> None:

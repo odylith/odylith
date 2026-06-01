@@ -454,6 +454,15 @@
   padding: 18px 20px;
 }
 
+.project-story-card-stack {
+  gap: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: hidden;
+}
+
 .project-story-narrative h3 {
   max-width: 960px;
   margin: 0 0 2px;
@@ -474,26 +483,28 @@
 
 .project-story-contract {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 8px;
-  margin: 6px 0 2px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  margin: 0;
   border: 0;
   background: transparent;
-  overflow: visible;
 }
 
-.project-story-contract div {
+.project-story-contract-card {
   display: grid;
-  align-content: start;
-  gap: 5px;
+  grid-template-columns: minmax(150px, 220px) minmax(0, 1fr);
+  align-items: start;
+  gap: 18px;
   min-width: 0;
-  border: 1px solid #dbeafe;
-  border-radius: 8px;
-  background: linear-gradient(180deg, rgba(248, 251, 255, 0.94), rgba(255, 255, 255, 0.98));
-  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(248, 251, 255, 0.98), rgba(255, 255, 255, 0.98)),
+    var(--panel);
+  padding: 15px 17px;
 }
 
-.project-story-contract dt {
+.project-story-contract-card h3 {
   margin: 0;
   color: var(--muted);
   font-size: 12px;
@@ -503,12 +514,12 @@
   text-transform: uppercase;
 }
 
-.project-story-contract dd {
+.project-story-contract-card p {
   margin: 0;
   color: var(--ink);
-  font-size: 14px;
+  font-size: var(--project-type-content-size);
   font-weight: 400;
-  line-height: 1.38;
+  line-height: 1.45;
   overflow-wrap: anywhere;
 }
 
@@ -1182,6 +1193,11 @@
   }
   .project-answer-table td {
     padding: 0 14px 12px;
+  }
+  .project-story-contract-card {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 13px 14px;
   }
   .project-host-prompt,
   .project-host-prompt h4,

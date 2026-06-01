@@ -35,6 +35,8 @@ from odylith.runtime.domain_intelligence.greenfield_product_risks import build_p
 from odylith.runtime.domain_intelligence.greenfield_product_risks import risk_text_has_framework_leak
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
@@ -124,10 +126,10 @@ def _complete_project_posture(proposal: dict[str, Any]) -> bool:
     posture = proposal.get("security_compliance")
     if not isinstance(posture, Mapping) or not text_values(posture) or _sequence_has_text_repair(posture):
         label = _project_title(proposal)
+        outcome = _outcome_phrase(proposal)
         proposal["security_compliance"] = {
             "domain": (
-                f"{label} carries domain risk around {_state_object(proposal)}, the accepted first path, proof boundary, "
-                "failure handling, and user decisions made from incomplete evidence."
+                f"{label} carries domain risk when people rely on {outcome} while required information is incomplete, stale, or misunderstood."
             ),
             "security": (
                 f"Security posture for {label} covers authorization, ownership checks, access control, private data handling, "
@@ -141,13 +143,15 @@ def _complete_project_posture(proposal: dict[str, Any]) -> bool:
         changed = True
     validation = proposal.get("validation_strategy")
     if not isinstance(validation, list) or _validation_strategy_needs_repair(proposal):
+        action = _action_phrase(proposal)
+        outcome = _outcome_phrase(proposal)
         proposal["validation_strategy"] = list(
             unique_text(
                 [
                     *(validation if isinstance(validation, list) else []),
-                    f"The accepted first path passes end to end: {_first_path(proposal)}",
-                    f"{_state_object(proposal)} can be reconstructed with actor, source, timestamp, and evidence references.",
-                    f"The proof boundary blocks release readiness when validation, replay, access, privacy, safety, or review evidence is missing: {_proof_boundary(proposal)}",
+                    f"A representative user completes the first path by {action}; the product reaches {outcome}.",
+                    f"{_state_object(proposal)} can be reconstructed with actor, timestamp, status, and result.",
+                    f"Readiness fails when required information, access, privacy, safety, or result explanation is missing.",
                 ]
             )
         )
@@ -160,53 +164,45 @@ def _complete_backlog(proposal: dict[str, Any]) -> bool:
     if not isinstance(rows, list):
         return False
     changed = False
+    capability = _capability_phrase(proposal)
+    action = _action_phrase(proposal)
+    outcome = _outcome_phrase(proposal)
+    state = _state_object(proposal)
+    actors = _actor_summary(proposal)
     for index, row in enumerate(rows, start=1):
         if not isinstance(row, dict):
             continue
         title = _clean(row.get("title")) or f"{_project_title(proposal)} Workstream {index}"
+        label = _workstream_subject(row, fallback=title)
         if not _clean(row.get("problem")) or _text_needs_repair(row.get("problem")):
-            row["problem"] = (
-                f"{title} is required because the accepted product cannot be trusted unless the first path, "
-                f"{_state_object(proposal)}, evidence, and proof boundary stay connected: {_first_path(proposal)}"
-            )
+            row["problem"] = _workstream_problem(label=label, action=action, outcome=outcome, state=state)
             changed = True
         if not _clean(row.get("customer")) or _text_needs_repair(row.get("customer")):
-            row["customer"] = _actor_summary(proposal)
+            row["customer"] = actors
             changed = True
         if not _clean(row.get("opportunity")) or _text_needs_repair(row.get("opportunity")):
-            row["opportunity"] = (
-                f"Build the smallest useful product slice for {title}: {_first_path(proposal)}"
-            )
+            row["opportunity"] = _workstream_opportunity(label=label, action=action, outcome=outcome)
             changed = True
         if not _clean(row.get("product_view")) or _text_needs_repair(row.get("product_view")):
-            row["product_view"] = (
-                f"{title} is useful when the user can complete the first path and inspect the resulting state, blockers, and evidence."
-            )
+            row["product_view"] = _workstream_product_view(label=label, action=action, outcome=outcome)
             changed = True
         metrics = list(text_values(row.get("success_metrics")))
         if len(metrics) < 3 or _sequence_has_text_repair(row.get("success_metrics")):
             row["success_metrics"] = list(
                 unique_text(
                     [
-                        *metrics,
-                        f"The accepted first path can be exercised end to end: {_first_path(proposal)}",
-                        f"{_state_object(proposal)} records success, blocked, stale, and review-needed outcomes.",
-                        f"Proof evidence blocks promotion unless it matches the accepted boundary: {_proof_boundary(proposal)}",
+                        f"A representative user completes the first path by {action}; the product reaches {outcome}.",
+                        f"Missing or incorrect input produces a clear correction path instead of a misleading result.",
+                        f"The result can be explained from the recorded {state} without relying on memory or hidden assumptions.",
                     ]
                 )
             )
             changed = True
         if not _clean(row.get("domain_risk")) or _text_needs_repair(row.get("domain_risk")):
-            row["domain_risk"] = (
-                f"Domain risk: {title} can mislead operators if it loses the accepted product context, "
-                f"{_state_object(proposal)}, review evidence, or release proof: {_proof_boundary(proposal)}"
-            )
+            row["domain_risk"] = _workstream_risk(label=label, outcome=outcome, state=state)
             changed = True
         if not _clean(row.get("security_posture")) or _text_needs_repair(row.get("security_posture")):
-            row["security_posture"] = (
-                f"Security posture: {title} keeps authorization, ownership, access control, private data handling, "
-                "audit, privacy, retention, accessibility, and safety obligations explicit before promotion."
-            )
+            row["security_posture"] = f"Security posture: {label} protects user-entered facts, result history, and recovery details."
             changed = True
         if not text_values(row.get("risks")) or _sequence_has_text_repair(row.get("risks")):
             row["risks"] = [
@@ -282,6 +278,13 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
     if len(rows) < 2 or not components:
         return False
     by_id = {_clean(component.get("component_id")): component for component in components if _clean(component.get("component_id"))}
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    non_goal_rows = [row for row in text_values(proposal.get("non_goals") or intent.get("non_goals")) if _clean(row)]
+    if not non_goal_rows:
+        proof = _proof_boundary(proposal)
+        match = re.search(r"\bwithout\s+claiming\s+(?P<scope>[^.;]+)", proof, flags=re.IGNORECASE)
+        if match:
+            non_goal_rows = [f"No {match.group('scope').strip()}"]
     changed = False
     for row in rows[1:]:
         component = _primary_component_for_backlog(row, components=components, by_id=by_id)
@@ -292,53 +295,218 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
             continue
         title = _clean(row.get("title")) or _component_label(component, 0)
         label = _component_label(component, 0)
-        proof = _first_text(contract.get("local_proof")) or f"{label} proves its local inputs, outputs, blockers, and handoff."
         state_object = _state_object(proposal)
         focus = _component_focus_phrase(label=label, contract=contract, fallback=state_object)
-        first_path = _fragment(row.get("first_path") or _first_path(proposal), fallback="the accepted first path", limit=260)
+        action = _action_phrase(proposal)
+        outcome = _outcome_phrase(proposal)
+        outcome_sentence = _lower_first(outcome)
         drifted = _row_drifted_from_component(row, component)
         if _text_needs_repair(row.get("product_view")) or drifted:
-            proof_tail = (
-                " It keeps the release decision, proof boundary, deferred scope, and recovery evidence visible."
-                if _row_is_release_proof(row)
-                else ""
-            )
             row["product_view"] = (
-                f"{label} owns local {focus} boundary for {state_object}. It keeps the accepted path step "
-                f"reviewable: {first_path}. It keeps accepted input, "
-                f"blocker state, recovery evidence, and downstream handoff reviewable without absorbing sibling responsibilities.{proof_tail}"
+                f"{label} should support the concrete user action: {action}. It should then show {outcome_sentence}. "
+                f"If something is missing, it should explain the problem before it presents a result."
             )
             changed = True
         if _text_needs_repair(row.get("recommended_first_slice")) or drifted:
             row["recommended_first_slice"] = (
-                f"Implement {label} for the accepted path step: {first_path}. Prove success, missing input, "
-                "blocker visibility, recovery, and downstream handoff before the next wave starts."
+                f"Build the smallest behavior in {label} that supports this path: {action}. It should show {outcome_sentence} "
+                "and explain missing or invalid information before presenting a result."
             )
             changed = True
         if _sequence_needs_repair(row.get("success_metrics"), required_tokens=("success", "block", "evidence"), min_items=3) or drifted:
             metrics = [
-                f"{label} proves one successful local state transition for {state_object}.",
-                f"{label} blocks readiness when required input, access, state, validation, or evidence is missing.",
-                f"{label} leaves reviewable proof for actor, source, blocker, recovery, and handoff evidence.",
+                f"{label} proves one complete user path that reaches {outcome_sentence}.",
+                f"{label} explains blocked, missing, or invalid information before the product shows a result.",
+                f"{label} keeps actor, source, status, evidence, result, and explanation clear enough to understand how {state_object} changed.",
             ]
             if _row_is_release_proof(row):
+                if non_goal_rows:
+                    metrics.append(f"{label} keeps this deferred outcome outside the release claim: {_clean(non_goal_rows[0]).rstrip('.')}.")
                 metrics.append(
-                    f"{label} keeps the accepted release proof boundary visible: {_fragment(_proof_boundary(proposal), fallback='the accepted release proof boundary', limit=260)}."
+                    f"{label} stays inside the first-release outcome described by the accepted product direction."
                 )
             row["success_metrics"] = metrics
             changed = True
         if _sequence_needs_repair(row.get("interfaces"), required_tokens=("input", "output"), min_items=1) or drifted:
             row["interfaces"] = [
-                f"{label} input contract: minimum first-path command, actor, source, validation context, and prior state.",
-                f"{label} output contract: local state update, blocker or recovery marker, proof evidence, and downstream handoff.",
+                f"{label} accepts the facts needed for {focus} and rejects incomplete entries before they look usable.",
+                f"{label} returns the result, correction state, or explanation needed for the next product step.",
             ]
             changed = True
         if _sequence_needs_repair(row.get("validation"), required_tokens=("success", "block"), min_items=1) or drifted:
             row["validation"] = [
-                f"Validate {label} success, blocked, invalid-input, access, replay, and handoff behavior against its local proof.",
+                f"Validate one successful {label} path, one missing-input path, and one corrected path against the visible product outcome.",
             ]
             changed = True
     return changed
+
+
+def _capability_phrase(proposal: Mapping[str, Any]) -> str:
+    return first_path_capability_phrase(_first_path(proposal), fallback="complete the first product path", limit=220)
+
+
+def _action_phrase(proposal: Mapping[str, Any]) -> str:
+    """Return the material user-side action without folding in the final result."""
+
+    model = first_path_model(_first_path(proposal))
+    rows: list[str] = []
+    reached_visible_result = False
+    for step in model.steps:
+        clean = _clean_action_step(step)
+        if not clean:
+            continue
+        if not rows and _is_opening_step(clean):
+            continue
+        if _is_result_step(clean):
+            reached_visible_result = True
+            continue
+        if reached_visible_result and rows:
+            break
+        rows.append(clean)
+        if len(rows) >= 3:
+            break
+    if rows:
+        return _fragment(_join_action_steps(rows), fallback="complete the first product action", limit=220)
+    capability = _capability_phrase(proposal)
+    outcome = _outcome_phrase(proposal)
+    if outcome and outcome.casefold() in capability.casefold():
+        capability = re.sub(r",?\s+(?:and\s+)?(?:see|sees|view|views|review|reviews|receive|receives|get|gets)\s+.+$", "", capability, flags=re.I)
+    return _fragment(capability, fallback="complete the first product action", limit=220)
+
+
+def _clean_action_step(value: Any) -> str:
+    text = _clean(value).strip(" .")
+    text = re.sub(r"\bvisible[- ]result\s+event\b", "visible result", text, flags=re.I)
+    text = re.sub(r"\s+is\s+the\s+visible\s+result\b.*$", "", text, flags=re.I)
+    text = re.sub(
+        r"^(?:a|an|the)\s+(?:user|owner|person|actor|customer|applicant|participant|operator)\s+",
+        "",
+        text,
+        flags=re.I,
+    )
+    replacements = {
+        "adds": "add",
+        "logs": "log",
+        "enters": "enter",
+        "selects": "select",
+        "submits": "submit",
+        "saves": "save",
+        "chooses": "choose",
+        "clicks": "click",
+        "accepts": "accept",
+        "dismisses": "dismiss",
+        "records": "record",
+        "captures": "capture",
+        "reviews": "review",
+    }
+    first, sep, tail = text.partition(" ")
+    replacement = replacements.get(first.casefold().strip(".,;:"))
+    if replacement:
+        text = f"{replacement}{sep}{tail}".strip()
+    for inflected, base in replacements.items():
+        text = re.sub(rf"\b(and|then)\s+{re.escape(inflected)}\b", rf"\1 {base}", text, flags=re.I)
+        text = re.sub(rf"\b(and|then)\s+manually\s+{re.escape(inflected)}\b", rf"\1 manually {base}", text, flags=re.I)
+    text = re.sub(
+        r",\s+and\s+(manually\s+)?(log|enter|select|submit|save|choose|click|accept|dismiss|record|capture|review)\b",
+        r" and \1\2",
+        text,
+        flags=re.I,
+    )
+    text = re.sub(r"\s+", " ", text).strip(" .")
+    if text[:2].isupper():
+        return text
+    text = text[:1].lower() + text[1:] if text else ""
+    return text
+
+
+def _is_opening_step(value: str) -> bool:
+    return bool(re.search(r"\bopens?\s+(?:the\s+)?(?:app|web app|application|site|website|product)\b", value, flags=re.I))
+
+
+def _is_result_step(value: str) -> bool:
+    text = value.casefold()
+    if re.search(r"\b(?:sees?|views?|receives?|reads?|gets?|shows?|displays?|returns?|produces?|calculates?|computes?|renders?)\b", text):
+        return True
+    if re.search(r"^(?:the\s+)?(?:product|system|app|application|service|platform|dashboard)\s+", text):
+        return True
+    return False
+
+
+def _join_action_steps(values: Sequence[str]) -> str:
+    rows = [_clean(value).strip(" .") for value in values if _clean(value)]
+    if not rows:
+        return ""
+    if len(rows) == 1:
+        return rows[0]
+    if len(rows) == 2:
+        return f"{rows[0]} and {rows[1]}"
+    return f"{', '.join(rows[:-1])}, and {rows[-1]}"
+
+
+def _outcome_phrase(proposal: Mapping[str, Any]) -> str:
+    model = first_path_model(_first_path(proposal))
+    text = _clean(model.visible_outcome) or _clean(_proof_boundary(proposal)) or "the promised user-visible result"
+    text = re.sub(r"\bvisible-result\s+event\b", "visible result", text, flags=re.I)
+    text = _fragment(text, fallback="the promised user-visible result", limit=220)
+    text = re.sub(
+        r"^(?:the\s+)?(?:user|owner|person|participant|actor|operator|applicant|customer)\s+"
+        r"(?:sees?|views?|receives?|reads?|gets?)\s+",
+        "",
+        text,
+        flags=re.I,
+    )
+    return text.rstrip(".") or "the promised user-visible result"
+
+
+def _workstream_subject(row: Mapping[str, Any], *, fallback: str) -> str:
+    component = _clean(next(iter(text_values(row.get("component_focus"))), ""))
+    title = _clean(row.get("title")) or fallback
+    if component:
+        return _human_label(component)
+    return re.sub(r"^(?:make|build|show|keep|let)\s+", "", title, flags=re.I).strip(" .") or title
+
+
+def _human_label(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return ""
+    if "-" in text or "_" in text:
+        words = [word for word in re.split(r"[-_\s]+", text) if word]
+        dropped_prefix: list[str] = []
+        while words and len(words) > 4 and words[0].casefold() not in {"owner", "user", "admin", "reviewer", "operator"}:
+            dropped_prefix.append(words.pop(0))
+            if len(dropped_prefix) >= 3:
+                break
+        text = " ".join(words or dropped_prefix)
+    return " ".join(word[:1].upper() + word[1:] if not word.isupper() else word for word in text.split())
+
+
+def _workstream_problem(*, label: str, action: str, outcome: str, state: str) -> str:
+    return _sentence(
+        f"{label} matters because users do not get value from {action} until it produces {outcome} and leaves {state} understandable when something is missing or corrected.",
+        limit=520,
+    )
+
+
+def _workstream_opportunity(*, label: str, action: str, outcome: str) -> str:
+    return _sentence(
+        f"Build the narrow behavior in {label} that lets one representative user {action} and reach {outcome}.",
+        limit=420,
+    )
+
+
+def _workstream_product_view(*, label: str, action: str, outcome: str) -> str:
+    return _sentence(
+        f"{label} is complete when the user can {action}, understand {outcome}, and recover cleanly from a bad or incomplete attempt.",
+        limit=520,
+    )
+
+
+def _workstream_risk(*, label: str, outcome: str, state: str) -> str:
+    return _sentence(
+        f"Risk: {label} can create false confidence if {outcome} is shown while {state} is incomplete, stale, or hard to explain.",
+        limit=420,
+    )
 
 
 def _component_focus_phrase(*, label: str, contract: Mapping[str, Any], fallback: str) -> str:
@@ -592,12 +760,13 @@ def _repair_preflight_issues(
 def _repair_release_success_language(proposal: dict[str, Any], *, release_selector: str) -> bool:
     release = greenfield_programs.proposal_release_selector(proposal, release_selector)
     label = _project_title(proposal)
-    first_path = _first_path(proposal)
     state_object = _state_object(proposal)
     proof_boundary = _proof_boundary(proposal)
+    capability = _capability_phrase(proposal)
+    action = _action_phrase(proposal)
+    outcome = _outcome_phrase(proposal)
     proof_success = _sentence(
-        f"Release {release} succeeds only when {label} completes the accepted first path, records {state_object}, "
-        f"shows release-review evidence, and blocks readiness when the accepted proof boundary is missing: {proof_boundary}",
+        f"Release {release} succeeds only when a representative user can {action}, the product shows {outcome}, and {state_object} remains understandable when information is missing or corrected.",
         limit=520,
     )
     changed = False
@@ -613,10 +782,10 @@ def _repair_release_success_language(proposal: dict[str, Any], *, release_select
     release_plan = proposal.get("release_plan")
     if isinstance(release_plan, dict):
         criteria = [
-            _sentence(f"{label} success proof exercises the accepted first path end to end: {first_path}", limit=520),
-            _sentence(f"{label} replay proof reconstructs {state_object} with actor, source, timestamp, status, and evidence references.", limit=520),
-            _sentence(f"{label} blocked-path proof prevents release readiness when required input, validation, access, privacy, or evidence is missing.", limit=520),
-            _sentence(f"{label} release proof matches the accepted proof boundary and keeps deferred scope visible: {proof_boundary}", limit=520),
+            _sentence(f"{label} success proof shows a representative user can {action} and reach {outcome}.", limit=520),
+            _sentence(f"{label} replay proof reconstructs {state_object} with actor, timestamp, status, result, and explanation.", limit=520),
+            _sentence(f"{label} blocked-path proof keeps missing input, failed validation, access limits, or privacy issues visible before a result is trusted.", limit=520),
+            _sentence(f"{label} release proof stays within the accepted product promise: {proof_boundary}", limit=520),
         ]
         changed |= _set_list(release_plan, "promotion_criteria", criteria)
         stages = release_plan.get("release_stages")
@@ -628,16 +797,17 @@ def _repair_release_success_language(proposal: dict[str, Any], *, release_select
 def _repair_validation_strategy(proposal: dict[str, Any], *, release_selector: str) -> bool:
     release = greenfield_programs.proposal_release_selector(proposal, release_selector)
     label = _project_title(proposal)
-    first_path = _first_path(proposal)
     state_object = _state_object(proposal)
-    proof_boundary = _proof_boundary(proposal)
+    capability = _capability_phrase(proposal)
+    action = _action_phrase(proposal)
+    outcome = _outcome_phrase(proposal)
     rows = [
-        _sentence(f"Success proof: release {release} completes the accepted first path and produces a release-review result: {first_path}", limit=700),
-        _sentence(f"Blocked-path proof: missing input, invalid state, failed validation, absent evidence, or unresolved review blocks readiness for {state_object}.", limit=520),
-        _sentence(f"Replay proof: {state_object} can be reconstructed with actor, source, timestamp, prior state, current state, evidence reference, and outcome.", limit=520),
+        _sentence(f"Success proof: release {release} proves the first path by letting a representative user {action}; the product reaches {outcome}.", limit=700),
+        _sentence(f"Blocked-path proof: missing input, invalid state, failed validation, absent explanation, or unresolved review blocks readiness for {state_object}.", limit=520),
+        _sentence(f"Replay proof: {state_object} can be reconstructed with actor, timestamp, prior state, current state, result, and explanation.", limit=520),
         _sentence(f"Access and privacy proof: only authorized actors can view or mutate protected state, and audit, retention, privacy, accessibility, and safety obligations stay visible.", limit=520),
-        _sentence(f"Component proof: every generated component proves its own inputs, outputs, transitions, sibling refusals, unique failure, upstream truth, and downstream handoff.", limit=520),
-        _sentence(f"Release proof: {label} cannot promote unless validation output satisfies the accepted proof boundary: {proof_boundary}", limit=520),
+        _sentence(f"Component proof: every generated component proves the local behavior it owns and explains what happens when required information is missing.", limit=520),
+        _sentence(f"Release proof: {label} cannot promote unless validation output proves the visible product outcome and stays inside the first-release promise.", limit=520),
     ]
     return _set_list(proposal, "validation_strategy", rows)
 
@@ -645,23 +815,24 @@ def _repair_validation_strategy(proposal: dict[str, Any], *, release_selector: s
 def _repair_backlog_success_language(proposal: dict[str, Any], *, release_selector: str) -> bool:
     release = greenfield_programs.proposal_release_selector(proposal, release_selector)
     label = _project_title(proposal)
-    first_path = _first_path(proposal)
     state_object = _state_object(proposal)
-    proof_boundary = _proof_boundary(proposal)
+    capability = _capability_phrase(proposal)
+    action = _action_phrase(proposal)
+    outcome = _outcome_phrase(proposal)
     changed = False
     for row in _dict_rows(proposal.get("backlog")):
         title = _clean(row.get("title")) or label
         metrics = [
-            _sentence(f"{title} proves the accepted success path for release {release}: {first_path}", limit=900),
-            _sentence(f"{title} blocks readiness when required input, state, access, privacy, validation, or evidence is missing.", limit=500),
-            _sentence(f"{title} keeps {state_object} replayable with actor, source, timestamp, status, and evidence references.", limit=500),
-            _sentence(f"{title} release evidence matches the accepted proof boundary: {proof_boundary}", limit=500),
+            _sentence(f"{title} proves the first path in release {release}: a representative user can {action}, and the product reaches {outcome}.", limit=700),
+            _sentence(f"{title} explains missing or invalid information before the product shows a result.", limit=500),
+            _sentence(f"{title} keeps {state_object} replayable with actor, source, status, evidence, result, and explanation.", limit=500),
+            _sentence(f"{title} stays inside the first-release promise and keeps deferred outcomes out of the success claim.", limit=500),
         ]
         if _sequence_needs_repair(row.get("success_metrics"), required_tokens=("success", "block", "replay", "evidence")):
             changed |= _set_list(row, "success_metrics", metrics, limit=1000)
         validation = [
             _sentence(f"Validate success, blocked, replay, access, privacy, and evidence paths for {title}.", limit=360),
-            _sentence(f"Reject release readiness when {title} cannot explain its state change, source evidence, release decision, or recovery path.", limit=420),
+            _sentence(f"Reject release readiness when {title} cannot explain its result, changed state, access posture, or recovery path.", limit=420),
         ]
         if _sequence_needs_repair(row.get("validation"), required_tokens=("success", "block", "replay")):
             changed |= _set_list(row, "validation", validation)
@@ -675,13 +846,15 @@ def _repair_project_intelligence_validation(proposal: dict[str, Any], *, release
     release = greenfield_programs.proposal_release_selector(proposal, release_selector)
     label = _project_title(proposal)
     state_object = _state_object(proposal)
-    proof_boundary = _proof_boundary(proposal)
+    capability = _capability_phrase(proposal)
+    action = _action_phrase(proposal)
+    outcome = _outcome_phrase(proposal)
     rows = [
-        _sentence(f"Validate the {label} success path from first input to release-review outcome.", limit=360),
-        _sentence(f"Validate a blocked path where missing input, invalid state, failed validation, or missing evidence prevents release readiness.", limit=420),
-        _sentence(f"Validate replay for {state_object} with actor, source, timestamp, status, evidence reference, and outcome.", limit=420),
+        _sentence(f"Validate that a representative user can {action} and reach {outcome}.", limit=420),
+        _sentence(f"Validate a blocked path where missing input, invalid state, failed validation, or missing explanation prevents readiness.", limit=420),
+        _sentence(f"Validate replay for {state_object} with actor, timestamp, status, result, and explanation.", limit=420),
         _sentence(f"Validate role-appropriate access, privacy, audit, retention, accessibility, safety, and recovery behavior before release {release}.", limit=420),
-        _sentence(f"Validate that release proof satisfies the accepted proof boundary: {proof_boundary}", limit=500),
+        _sentence("Validate that release proof stays inside the accepted product promise without borrowing deferred outcomes.", limit=500),
     ]
     return _set_list(intelligence, "validation_obligations", rows)
 
@@ -689,9 +862,10 @@ def _repair_project_intelligence_validation(proposal: dict[str, Any], *, release
 def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_selector: str) -> bool:
     changed = False
     release = greenfield_programs.proposal_release_selector(proposal, release_selector)
-    first_path = _first_path(proposal)
     state_object = _state_object(proposal)
-    proof_boundary = _proof_boundary(proposal)
+    capability = _capability_phrase(proposal)
+    action = _action_phrase(proposal)
+    outcome = _outcome_phrase(proposal)
     if _validation_strategy_needs_repair(proposal):
         changed |= _repair_validation_strategy(proposal, release_selector=release_selector)
     for row in _dict_rows(proposal.get("backlog")):
@@ -699,23 +873,23 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
         changed |= _repair_bad_scalar(
             row,
             "problem",
-            fallback=f"{title} keeps the accepted product state, user action, and proof evidence connected for the first path: {first_path}",
+            fallback=f"{title} matters because users need {outcome} to be correct, understandable, and recoverable when information is missing.",
         )
         changed |= _repair_bad_scalar(row, "customer", fallback=_actor_summary(proposal))
         changed |= _repair_bad_scalar(
             row,
             "opportunity",
-            fallback=f"{title} gives the team a small release slice that proves the accepted path before broader variants are added: {first_path}",
+            fallback=f"{title} gives the team a small release slice where a representative user can {action} before broader variants are added.",
         )
         changed |= _repair_bad_scalar(
             row,
             "product_view",
-            fallback=f"{title} is useful when users can complete the first path and see the resulting state, blockers, and evidence.",
+            fallback=f"{title} is useful when users can {action}, see {outcome}, and recover from bad or incomplete input.",
         )
         changed |= _repair_bad_scalar(
             row,
             "domain_risk",
-            fallback=f"Domain risk: {title} can mislead users if {state_object} changes without clear source evidence, release decision, and recovery path.",
+            fallback=f"Domain risk: {title} can mislead users if {state_object} changes without a clear result explanation and recovery path.",
         )
         changed |= _repair_bad_scalar(
             row,
@@ -727,10 +901,10 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
                 row,
                 "success_metrics",
                 [
-                    f"{title} proves the accepted success path for release {release}: {first_path}",
-                    f"{title} blocks readiness when required input, state, access, privacy, validation, or evidence is missing.",
-                    f"{title} keeps {state_object} replayable with actor, source, timestamp, status, and evidence references.",
-                    f"{title} release evidence matches the accepted proof boundary: {proof_boundary}",
+                    f"{title} proves the first path in release {release}: a representative user can {action}, and the product reaches {outcome}.",
+                    f"{title} explains missing or invalid information before the product shows a result.",
+                    f"{title} keeps {state_object} replayable with actor, source, status, evidence, result, and explanation.",
+                    f"{title} stays inside the first-release promise without borrowing deferred outcomes.",
                 ],
             )
         if _sequence_has_text_repair(row.get("validation")):
@@ -739,7 +913,7 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
                 "validation",
                 [
                     f"Validate success, blocked, replay, access, privacy, and evidence paths for {title}.",
-                    f"Reject release readiness when {title} cannot explain its state change, source evidence, decision, or recovery path.",
+                    f"Reject release readiness when {title} cannot explain its result, changed state, access posture, or recovery path.",
                 ],
             )
         if _sequence_has_text_repair(row.get("rationale_lines")):
@@ -747,11 +921,11 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
                 row,
                 "rationale_lines",
                 [
-                    f"- why now: {title} belongs in release {release} because it proves part of the accepted first path.",
-                    f"- expected outcome: {title} produces visible state, evidence, blockers, and recovery information for review.",
-                    f"- tradeoff: {title} keeps the first slice narrow while deferring broader variants until their proof exists.",
-                    f"- deferred for now: {title} does not expand into adjacent workflows that are outside the accepted proof boundary.",
-                    f"- ranking basis: {title} ranks ahead of optional work because it protects state ownership, risk clarity, and release evidence.",
+                    f"- why now: {title} belongs in release {release} because it helps produce the first user-visible outcome.",
+                    f"- expected outcome: {title} produces a visible result with blocked and recovery paths.",
+                    f"- tradeoff: {title} keeps the first slice narrow while deferring broader variants until their own outcome is proven.",
+                    f"- deferred for now: {title} does not expand into adjacent workflows outside the first-release promise.",
+                    f"- ranking basis: {title} ranks ahead of optional work because it protects the result, recovery path, and user trust.",
                 ],
             )
     for row in _dict_rows(proposal.get("components")):
@@ -810,6 +984,14 @@ def _text_needs_repair(value: Any) -> bool:
     if _sentence_needs_repair(text):
         return True
     lowered = text.casefold()
+    if re.search(
+        r"\b(?:accepts?|produces?|blocks?|proves?|coverage\s+for)\s+"
+        r"(?:recomputes|computes?|calculates?|generates?|derives?|exports?|deletes?|records?|tracks?|validates?)\s+"
+        r"[^.]{0,120}\b(?:input|result|output|state)\b",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        return True
     return any(
         marker in lowered
         for marker in (
@@ -818,6 +1000,25 @@ def _text_needs_repair(value: Any) -> bool:
             "expected local output:",
             "responsibility and keeps it tied",
             "with clear ownership, protected access, required",
+            "accepted path lets users",
+            "accepted first path can be exercised",
+            "accepted proof boundary",
+            "keeps the accepted path step reviewable",
+            "proves one successful local state transition",
+            "leaves reviewable proof for actor",
+            "visible-result event",
+            "rendered dashboard",
+            "dashboard renders the visible result",
+            "readout plus",
+            "on save,",
+            "source evidence, visible blockers",
+            "source evidence, release decision",
+            "systems that own the handoff",
+            "is not trustworthy when",
+            "first release can collect activity",
+            "from the product view,",
+            " is useful when ",
+            " is done when ",
         )
     )
 
@@ -836,6 +1037,8 @@ def _sentence_needs_repair(value: Any) -> bool:
         flags=re.IGNORECASE,
     ):
         return True
+    if re.search(r"\bneed\s+[A-Z]?[A-Za-z0-9][^.;]{0,120}\s+to\s+turn\b", text):
+        return True
     if re.search(r"\bcomplete\s+(?:selects?|records?|saves?|creates?|opens?|logs?|fetches?|calculates?)\b", text, flags=re.IGNORECASE):
         return True
     if re.search(r"\baccepts\s+required\s+[^.]{0,180}\bcommand\b", text, flags=re.IGNORECASE):
@@ -853,8 +1056,15 @@ def _proof_boundary_is_weak(value: str) -> bool:
     text = _clean(value).casefold()
     if len(text.split()) < 14:
         return True
-    return not ("success" in text or "succeeds" in text or "proof" in text) or not (
-        "evidence" in text or "trace" in text or "review" in text
+    return not ("success" in text or "succeeds" in text or "proof" in text or "proven" in text) or not (
+        "evidence" in text
+        or "trace" in text
+        or "review" in text
+        or "visible" in text
+        or "receive" in text
+        or "result" in text
+        or "readout" in text
+        or "actionable" in text
     )
 
 
@@ -916,12 +1126,11 @@ def _component_risks(
     contract: Mapping[str, Any],
 ) -> list[str]:
     values = risks_from_contract(label, contract)
-    proof = _proof_boundary(proposal)
     first_path = _first_path(proposal)
     state_object = _state_object(proposal)
     context = _best_context_line(row=row, proposal=proposal)
     values.append(
-        f"Operational mitigation: {label} must expose local blockers and recovery evidence before release readiness can trust {state_object}: {first_path}"
+        f"Operational mitigation: {label} must show blocked and recovery behavior before people rely on {state_object}: {first_path}"
     )
     if context:
         values.append(f"Accepted-intent constraint: {label} must preserve this risk or policy condition: {context}")
@@ -1018,6 +1227,7 @@ def _component_sequence_is_weak(value: Any) -> bool:
         "normal path, blocked path",
         "accepted input, produced state",
         "first implementation plan must name",
+        "valid transition, invalid input rejection",
         "release proof checks this component",
     )
     return any(marker in text for marker in generic_markers)
@@ -1096,7 +1306,7 @@ def _first_path(proposal: Mapping[str, Any]) -> str:
 
 def _proof_boundary(proposal: Mapping[str, Any]) -> str:
     intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
-    return _sentence(intent.get("proof_boundary") if isinstance(intent, Mapping) else "", fallback="the accepted proof boundary")
+    return _sentence(intent.get("proof_boundary") if isinstance(intent, Mapping) else "", fallback="the promised user-visible result")
 
 
 def _state_object(proposal: Mapping[str, Any]) -> str:
@@ -1122,6 +1332,15 @@ def _actor_summary(proposal: Mapping[str, Any]) -> str:
 
 def _fragment(value: Any, *, fallback: str, limit: int = 180) -> str:
     return _sentence(value, fallback=fallback, limit=limit).rstrip(".")
+
+
+def _lower_first(value: str) -> str:
+    text = _clean(value).strip()
+    if not text:
+        return ""
+    if text[:2].isupper():
+        return text
+    return text[:1].lower() + text[1:]
 
 
 __all__ = ["complete_confirmed_proposal", "greenfield_repair_until_clean"]

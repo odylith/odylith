@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compac
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
 
@@ -220,7 +221,7 @@ def _policy_or_input_quality(ctx: _RiskContext) -> dict[str, str]:
     return {
         "title": "Input quality",
         "statement": (
-            f"The product can receive missing, inconsistent, or hard-to-interpret information during {ctx.input_focus}. "
+            f"The product can receive missing, inconsistent, or hard-to-interpret information while {_input_activity(ctx)}. "
             f"When that happens, {ctx.outcome} may look complete while hiding uncertainty that should change the user decision."
         ),
         "severity": "medium",
@@ -364,7 +365,21 @@ def _input_focus(first_path: str, *, fallback: str) -> str:
     return _lower_first(label)
 
 
+def _input_activity(ctx: _RiskContext) -> str:
+    focus = compact_text(ctx.input_focus).strip(" .")
+    if not focus:
+        return f"{_lower_first(ctx.primary_actor)} provides the required information"
+    if re.match(r"^(?:a|an|the|one)\s+", focus, flags=re.IGNORECASE):
+        return focus
+    if re.match(r"^(?:adds?|answers?|captures?|chooses?|completes?|enters?|fills?|imports?|logs?|records?|selects?|submits?|uploads?)\b", focus, flags=re.IGNORECASE):
+        return f"{_lower_first(ctx.primary_actor)} {focus}"
+    return focus
+
+
 def _outcome_focus(*, story: str, first_path: str, proof_boundary: str, state_object: str) -> str:
+    model = first_path_model(first_path)
+    if model.visible_outcome:
+        return _outcome_clause_as_noun(model.visible_outcome)
     for source in (first_path, story, proof_boundary):
         outcome = _last_outcome_clause(source)
         if outcome:
@@ -375,6 +390,9 @@ def _outcome_focus(*, story: str, first_path: str, proof_boundary: str, state_ob
 
 def _outcome_clause_as_noun(value: str) -> str:
     text = compact_text(value).strip(" .")
+    text = re.sub(r"\bvisible[- ]result\s+event\b", "visible result", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s+is\s+the\s+visible\s+result\b.*$", "", text, flags=re.IGNORECASE).strip(" .")
+    text = re.sub(r"\breadout\s+plus\b", "readout and", text, flags=re.IGNORECASE)
     text = re.sub(r"^(?:and|then|finally)\s+", "", text, flags=re.IGNORECASE)
     subject_verb = re.match(
         r"^(?:a|an|the)\s+[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?\s+"
