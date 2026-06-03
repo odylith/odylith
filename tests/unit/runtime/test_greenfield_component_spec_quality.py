@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import (
     public_prose_quality_issues,
     rendered_component_spec_quality_issues,
@@ -10,6 +12,18 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import _fi
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import _sentence_fragment
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.governance.component_spec_rendering import build_component_spec
+
+
+ROOT = Path(__file__).resolve().parents[3]
+CONFIRMED_COMPONENTS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py"
+
+
+def test_confirmed_components_helper_shape_stays_below_soft_limit() -> None:
+    source = CONFIRMED_COMPONENTS_PATH.read_text(encoding="utf-8")
+
+    assert len(source.splitlines()) < 800
+    assert source.count("def _title_phrase") == 1
+    assert "def _can_clause" not in source
 
 
 def test_greenfield_component_spec_renderer_uses_narrative_distinct_contract_sections() -> None:

@@ -812,6 +812,19 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   in 310.95s`); and `PYTHONPATH=src .venv/bin/python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 10.08s`).
+- 2026-06-03 confirmed-component helper cleanup removed the duplicate
+  `_title_phrase` definition and unused `_can_clause` helper from
+  `greenfield_confirmed_components.py`. The component owner now stays below the
+  800-line soft limit (`808` to `792` lines), and
+  `test_greenfield_component_spec_quality.py` pins the single title helper,
+  absence of the dead clause helper, and soft-limit ceiling. Proof:
+  `.venv/bin/python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py
+  tests/unit/runtime/test_greenfield_component_spec_quality.py` passed; focused
+  component proof passed with `.venv/bin/python -m pytest -q
+  tests/unit/runtime/test_greenfield_component_spec_quality.py
+  tests/unit/runtime/test_greenfield_confirmed_surfaces.py::test_confirmed_greenfield_noun_phrase_responsibilities_stay_grammatical`
+  (`9 passed in 0.34s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

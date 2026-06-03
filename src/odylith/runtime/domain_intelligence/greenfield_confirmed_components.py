@@ -388,14 +388,6 @@ def _greenfield_component_label_text(value: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
-def _title_phrase(value: str) -> str:
-    words = []
-    raw_words = str(value or "").split()
-    for index, word in enumerate(raw_words):
-        words.append(_title_word(word, first=index == 0, previous=raw_words[index - 1] if index else ""))
-    return " ".join(words)
-
-
 def _responsibility(*, name: str, description: str) -> str:
     action, _rationale = _system_action(description)
     if action:
@@ -619,14 +611,6 @@ def _does_clause(action: str, fallback: str) -> str:
         return action[:1].lower() + action[1:]
     fallback = str(fallback or "").strip(" .")
     return f"handles {fallback[:1].lower() + fallback[1:]}" if fallback else "handles its assigned responsibility"
-
-
-def _can_clause(action: str, fallback: str) -> str:
-    action = str(action or "").strip(" .")
-    if looks_like_finite_action(action):
-        return base_action_clause(action)
-    fallback = str(fallback or "").strip(" .")
-    return f"complete {fallback[:1].lower() + fallback[1:]}" if fallback else "complete its assigned responsibility"
 
 
 def _dependency_focus(*, action: str, fallback: str) -> str:
