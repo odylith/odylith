@@ -19,6 +19,9 @@ from tests.unit.runtime.greenfield_proposal_fixtures import _confirmed_intent
 
 ROOT = Path(__file__).resolve().parents[3]
 CONFIRMED_COMPLETION_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py"
+CONFIRMED_COMPONENT_COMPLETION_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_component_completion.py"
+)
 CONFIRMED_PREWRITE_GATE_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_prewrite_gate.py"
 CONFIRMED_COMPLETION_QUALITY_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_quality.py"
@@ -31,10 +34,12 @@ CONFIRMED_COMPLETION_TEXT_MODEL_PATH = (
 def test_confirmed_completion_prewrite_gate_stays_in_dedicated_owner() -> None:
     parent_source = CONFIRMED_COMPLETION_PATH.read_text(encoding="utf-8")
     gate_source = CONFIRMED_PREWRITE_GATE_PATH.read_text(encoding="utf-8")
+    component_source = CONFIRMED_COMPONENT_COMPLETION_PATH.read_text(encoding="utf-8")
     quality_source = CONFIRMED_COMPLETION_QUALITY_PATH.read_text(encoding="utf-8")
     text_model_source = CONFIRMED_COMPLETION_TEXT_MODEL_PATH.read_text(encoding="utf-8")
 
     assert len(parent_source.splitlines()) < 800
+    assert len(component_source.splitlines()) < 800
     assert "def _artifact_issues" not in parent_source
     assert "run_greenfield_tribunal" not in parent_source
     assert "def _text_needs_repair" not in parent_source
@@ -44,9 +49,20 @@ def test_confirmed_completion_prewrite_gate_stays_in_dedicated_owner() -> None:
     assert "def _component_label" not in parent_source
     assert "def _keywords" not in parent_source
     assert "def _component_interfaces" not in parent_source
+    assert "def _complete_components" not in parent_source
+    assert "def _component_risks" not in parent_source
+    assert "def _component_sequence_is_weak" not in parent_source
+    assert "def _component_field_is_weak" not in parent_source
+    assert "responsibility_from_contract" not in parent_source
+    assert "complete_component_rows" in parent_source
+    assert "repair_component_sentence_lists" in parent_source
     assert "greenfield_confirmed_completion_text_model as completion_text" in parent_source
     assert "preflight_issues as _preflight_issues" in parent_source
     assert "text_needs_repair as _text_needs_repair" in parent_source
+    assert "def complete_component_rows" in component_source
+    assert "def repair_component_sentence_lists" in component_source
+    assert "def _component_risks" in component_source
+    assert "responsibility_from_contract" in component_source
     assert "def preflight_issues" in gate_source
     assert "artifact_tribunal.run_governed_artifact_tribunal" in gate_source
     assert "def text_needs_repair" in quality_source

@@ -1072,6 +1072,21 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   proof passed (`12 passed in 0.23s`); standard greenfield artifact-quality
   proof passed (`145 passed in 243.87s`); and confirmed-create performance
   proof passed (`1 passed in 11.93s`).
+- 2026-06-03 confirmed component-completion decomposition moved Registry
+  component row completion, contract normalization, component field weakness
+  checks, component risk enrichment, and component sentence repair into
+  `greenfield_confirmed_component_completion.py`. The confirmed completion
+  parent now owns the repair loop, project/backlog/diagram completion, prewrite
+  issue repair, and release-validation language only (`793` to `592` lines),
+  while the component-completion owner is `248` lines.
+  `test_greenfield_confirmed_repair.py::test_confirmed_completion_prewrite_gate_stays_in_dedicated_owner`
+  now pins the component owner boundary and keeps contract-derived component
+  copy out of the parent. Proof: syntax proof passed for the touched confirmed
+  completion modules; focused confirmed-repair proof passed (`3 passed in
+  10.34s`); focused component-risk/watch-path proof passed (`1 passed in
+  3.92s`); standard greenfield artifact-quality proof passed (`145 passed in
+  234.45s`); and confirmed-create performance proof passed (`1 passed in
+  11.48s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component
