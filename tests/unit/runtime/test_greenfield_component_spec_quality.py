@@ -16,6 +16,8 @@ from odylith.runtime.governance.component_spec_rendering import build_component_
 
 ROOT = Path(__file__).resolve().parents[3]
 CONFIRMED_COMPONENTS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py"
+COMPONENT_CONTRACT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py"
+COMPONENT_CONTRACT_PROFILES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_contract_profiles.py"
 
 
 def test_confirmed_components_helper_shape_stays_below_soft_limit() -> None:
@@ -24,6 +26,22 @@ def test_confirmed_components_helper_shape_stays_below_soft_limit() -> None:
     assert len(source.splitlines()) < 800
     assert source.count("def _title_phrase") == 1
     assert "def _can_clause" not in source
+
+
+def test_component_contract_profiles_stay_in_dedicated_owner() -> None:
+    contract_source = COMPONENT_CONTRACT_PATH.read_text(encoding="utf-8")
+    profile_source = COMPONENT_CONTRACT_PROFILES_PATH.read_text(encoding="utf-8")
+
+    assert len(contract_source.splitlines()) < 800
+    assert "greenfield_component_contract_profiles as contract_profiles" in contract_source
+    assert "def _document_context_contract" not in contract_source
+    assert "def _status_view_contract" not in contract_source
+    assert "def _document_local_proof" not in contract_source
+    assert "def _status_local_proof" not in contract_source
+    assert "def document_context_contract" in profile_source
+    assert "def status_view_contract" in profile_source
+    assert "def _document_local_proof" in profile_source
+    assert "def _status_local_proof" in profile_source
 
 
 def test_greenfield_component_spec_renderer_uses_narrative_distinct_contract_sections() -> None:

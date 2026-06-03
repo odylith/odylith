@@ -863,6 +863,23 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `PYTHONPATH=src .venv/bin/python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 14.50s`).
+- 2026-06-03 component contract profile decomposition moved the document-context
+  and status-view contract builders, profile-specific phrase extraction,
+  transition selection, outside-boundary wording, and local proof row generation
+  into `greenfield_component_contract_profiles.py`. The component contract
+  parent now selects the profile and owns the generic fallback contract without
+  carrying specialized profile grammar (`greenfield_component_contract.py`: 952
+  to 603 lines), while `test_greenfield_component_spec_quality.py` pins the
+  profile owner and parent soft-limit ceiling. Proof: `.venv/bin/python -m
+  py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_component_contract.py
+  src/odylith/runtime/domain_intelligence/greenfield_component_contract_profiles.py
+  tests/unit/runtime/test_greenfield_component_spec_quality.py` passed; focused
+  component spec and semantic contract proof passed (`10 passed in 0.40s`); the
+  broader greenfield artifact-quality bundle passed (`127 passed in 403.37s`);
+  and `PYTHONPATH=src .venv/bin/python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 13.49s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component
