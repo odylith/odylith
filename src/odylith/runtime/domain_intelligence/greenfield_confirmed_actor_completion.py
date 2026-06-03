@@ -8,12 +8,12 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import accepted_actor_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_confirmed_text as _clean
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import focus_label as _focus_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms as _semantic_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_confirmed_text as _short
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text as _title_case
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
-from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
@@ -52,7 +52,7 @@ _ROLE_WORDS = {
 
 
 def completed_actor_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
-    rows = [row for row in _strings(intent.get("human_actors")) if not _actor_row_is_meta(row)]
+    rows = [row for row in confirmed_text_values(intent.get("human_actors")) if not _actor_row_is_meta(row)]
     labels = [_actor_label(row, title=title) for row in rows]
     labels = [label for label in labels if label and not _actor_label_has_clause_lead(label)]
     if not labels:
@@ -74,7 +74,7 @@ def completed_actor_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
 
 def actor_labels(intent: Mapping[str, Any]) -> list[str]:
     labels: list[str] = []
-    for row in _strings(intent.get("human_actors")):
+    for row in confirmed_text_values(intent.get("human_actors")):
         labels.append(_clean(row.split("—", 1)[0].split(":", 1)[0]))
     return [label for label in labels if label]
 
@@ -437,13 +437,9 @@ def _actor_context(intent: Mapping[str, Any]) -> str:
         _clean(intent.get("product_view")),
         _clean(intent.get("state_object")),
         _clean(intent.get("first_path")),
-        " ".join(_strings(intent.get("human_actors"))),
+        " ".join(confirmed_text_values(intent.get("human_actors"))),
     ]
     return ". ".join(part.strip(" .") for part in parts if part)
-
-
-def _strings(value: object) -> list[str]:
-    return list(text_values(value))
 
 
 __all__ = ["actor_labels", "actor_row_description", "completed_actor_rows"]

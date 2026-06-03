@@ -1139,6 +1139,24 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   in 1.15s`); broad confirmed-greenfield proof passed (`160 passed in
   239.60s`); and confirmed-create performance proof passed (`1 passed in
   11.51s`).
+- 2026-06-03 confirmed-intent text-list follow-through moved duplicate
+  `_strings` helpers from the parser, completion, actor completion, system
+  completion, and validation modules into `greenfield_confirmed_text.py` as
+  `confirmed_text_values`. Confirmed list fields now share one strict
+  str-or-sequence cleaner for Markdown marker removal while preserving the
+  no-mapping-flattening contract of accepted intent records. The moved callers
+  stay below the source soft limit (`greenfield_confirmed_text.py`: 356 lines;
+  `greenfield_confirmed_intent.py`: 666 lines;
+  `greenfield_confirmed_intent_completion.py`: 643 lines;
+  `greenfield_confirmed_actor_completion.py`: 445 lines;
+  `greenfield_confirmed_system_completion.py`: 226 lines;
+  `greenfield_confirmed_intent_validation.py`: 249 lines), and the new
+  enforcement test lives in a focused 32-line test file instead of growing the
+  oversized confirmed-intent fixture suite. Proof: syntax proof passed for all
+  touched modules; focused confirmed-text/intent proof passed (`29 passed in
+  39.80s`); broad confirmed-greenfield proof passed (`160 passed in
+  240.87s`); and confirmed-create performance proof passed (`1 passed in
+  11.52s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

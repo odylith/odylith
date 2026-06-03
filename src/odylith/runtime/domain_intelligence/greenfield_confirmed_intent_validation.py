@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import (
@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import
     has_meaningful_system_description,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_confirmed_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 
@@ -97,12 +98,12 @@ def validate_confirmed_intent(intent: Mapping[str, Any]) -> None:
             continue
         if word_count(clean_confirmed_text(intent.get(key))) < minimum:
             missing.append(key)
-    actor_rows = _strings(intent.get("human_actors"))
+    actor_rows = confirmed_text_values(intent.get("human_actors"))
     if not actor_rows:
         missing.append("human_actors")
     elif any(word_count(row) < LIST_ROW_MIN_WORDS for row in actor_rows):
         missing.append("human_actors")
-    system_rows = _strings(intent.get("internal_systems"))
+    system_rows = confirmed_text_values(intent.get("internal_systems"))
     if len(system_rows) < 2:
         missing.append("internal_systems")
     elif any(not has_meaningful_system_description(row, minimum_words=SYSTEM_ROW_MIN_WORDS) for row in system_rows):
@@ -127,8 +128,8 @@ def contains_meta_narration(intent: Mapping[str, Any]) -> bool:
             clean_confirmed_text(intent.get("product_story")),
             clean_confirmed_text(intent.get("first_path")),
             clean_confirmed_text(intent.get("proof_boundary")),
-            " ".join(_strings(intent.get("human_actors"))),
-            " ".join(_strings(intent.get("internal_systems"))),
+            " ".join(confirmed_text_values(intent.get("human_actors"))),
+            " ".join(confirmed_text_values(intent.get("internal_systems"))),
         ]
     )
     return any(pattern.search(text) for pattern in _META_NARRATION_PATTERNS)
@@ -143,8 +144,8 @@ def _product_story_is_clear_enough(intent: Mapping[str, Any]) -> bool:
     context = " ".join(
         part
         for part in (
-            " ".join(_strings(intent.get("human_actors"))),
-            " ".join(_strings(intent.get("internal_systems"))),
+            " ".join(confirmed_text_values(intent.get("human_actors"))),
+            " ".join(confirmed_text_values(intent.get("internal_systems"))),
             clean_confirmed_text(intent.get("state_object")),
             clean_confirmed_text(intent.get("first_path")),
         )
@@ -159,8 +160,8 @@ def _qualitative_intent_gaps(intent: Mapping[str, Any]) -> list[str]:
     state = clean_confirmed_text(intent.get("state_object"))
     path = clean_confirmed_text(intent.get("first_path"))
     proof = clean_confirmed_text(intent.get("proof_boundary"))
-    actors = " ".join(_strings(intent.get("human_actors")))
-    systems = " ".join(_strings(intent.get("internal_systems")))
+    actors = " ".join(confirmed_text_values(intent.get("human_actors")))
+    systems = " ".join(confirmed_text_values(intent.get("internal_systems")))
     context = " ".join(part for part in (story, state, actors, systems, proof) if part)
 
     if story and not (
@@ -245,12 +246,3 @@ def _semantic_terms(text: str) -> set[str]:
         if token:
             terms.add(token)
     return terms
-
-
-def _strings(value: object) -> list[str]:
-    if isinstance(value, str):
-        cleaned = clean_confirmed_text(value)
-        return [cleaned] if cleaned else []
-    if not isinstance(value, Sequence) or isinstance(value, (bytes, bytearray)):
-        return []
-    return [clean_confirmed_text(item) for item in value if clean_confirmed_text(item)]

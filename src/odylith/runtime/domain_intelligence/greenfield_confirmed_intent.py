@@ -31,6 +31,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import intent_context_text as _intent_context_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import preferred_internal_rows as _preferred_internal_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import role_or_system_rows as _role_or_system_rows
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 
@@ -82,16 +83,16 @@ def normalize_confirmed_intent(value: object, *, prompt: str = "", fallback_titl
         "customer": _clean(payload.get("customer")),
         "opportunity": _clean(payload.get("opportunity")),
         "product_view": _clean(payload.get("product_view")),
-        "success_metrics": _strings(payload.get("success_metrics") or payload.get("proof_metrics")),
+        "success_metrics": confirmed_text_values(payload.get("success_metrics") or payload.get("proof_metrics")),
         "component_responsibilities": component_rows,
         "human_actors": _role_or_system_rows(payload.get("human_actors") or payload.get("actors")),
-        "external_systems": _strings(payload.get("external_systems")),
+        "external_systems": confirmed_text_values(payload.get("external_systems")),
         "internal_systems": [],
-        "assumptions": _strings(payload.get("assumptions") or payload.get("critical_assumptions")),
-        "ambiguities": _strings(
+        "assumptions": confirmed_text_values(payload.get("assumptions") or payload.get("critical_assumptions")),
+        "ambiguities": confirmed_text_values(
             payload.get("ambiguities") or payload.get("material_ambiguities") or payload.get("open_questions")
         ),
-        "non_goals": _strings(payload.get("non_goals")),
+        "non_goals": confirmed_text_values(payload.get("non_goals")),
     }
     if title_normalization.changed:
         result["source_title"] = title_normalization.raw_title
@@ -100,7 +101,7 @@ def normalize_confirmed_intent(value: object, *, prompt: str = "", fallback_titl
             _role_or_system_rows(payload.get("internal_systems") or payload.get("internal_product_systems")),
             component_rows,
         ),
-        context_text=_intent_context_text(result, strings=_strings),
+        context_text=_intent_context_text(result, strings=confirmed_text_values),
     )
     result = _complete_confirmed_intent_before_validation(result)
     _validate_confirmed_intent(result)
@@ -153,7 +154,7 @@ def _complete_confirmed_intent_before_validation(intent: Mapping[str, Any]) -> d
     result = dict(intent)
     if _contains_meta_narration(result):
         return result
-    if _contains_generic_system_scaffold(_strings(result.get("internal_systems"))):
+    if _contains_generic_system_scaffold(confirmed_text_values(result.get("internal_systems"))):
         return result
     return complete_confirmed_intent(result)
 
@@ -203,7 +204,7 @@ def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: 
         sections,
         section_list=_section_list,
         section_text=_section_text,
-        context_text=_intent_context_text(result, strings=_strings),
+        context_text=_intent_context_text(result, strings=confirmed_text_values),
     )
     result = _complete_confirmed_intent_before_validation(result)
     _validate_confirmed_intent(result)
@@ -250,7 +251,7 @@ def confirmed_intent_summary(intent: Mapping[str, Any] | None, key: str, fallbac
 def confirmed_intent_list(intent: Mapping[str, Any] | None, key: str) -> list[str]:
     if not isinstance(intent, Mapping):
         return []
-    return _strings(intent.get(key))
+    return confirmed_text_values(intent.get(key))
 
 
 def _sections(text: str) -> dict[str, list[str]]:
@@ -639,15 +640,6 @@ def _section_list(sections: Mapping[str, list[str]], key: str) -> list[str]:
         return values
     paragraph = _section_text(sections, key)
     return [paragraph] if paragraph else []
-
-
-def _strings(value: object) -> list[str]:
-    if isinstance(value, str):
-        cleaned = _clean(value)
-        return [cleaned] if cleaned else []
-    if not isinstance(value, Sequence) or isinstance(value, (bytes, bytearray)):
-        return []
-    return [_clean(item) for item in value if _clean(item)]
 
 
 def _word_count(value: str) -> int:

@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_system_completion 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_completion import system_labels as _system_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import GENERIC_TITLE_WORDS as _GENERIC_TITLE_WORDS
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_confirmed_text as _clean
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import focus_label as _focus_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_confirmed_items as _join
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_overlap as _semantic_overlap
@@ -76,7 +77,7 @@ def _normalize_confirmed_core_language(intent: dict[str, Any]) -> None:
     proof = _clean(intent.get("proof_boundary"))
     if proof:
         intent["proof_boundary"] = _sentence(_normalize_visible_result_language(_normalize_proof_boundary(proof)))
-    metrics = _strings(intent.get("success_metrics"))
+    metrics = confirmed_text_values(intent.get("success_metrics"))
     if metrics:
         intent["success_metrics"] = [_sentence(_normalize_visible_result_language(_normalize_proof_boundary(row))) for row in metrics]
 
@@ -216,26 +217,26 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
         intent["product_view"] = _sentence(
             f"{title} is useful when {customer_text} can {path_capability} and confidently use {outcome_text} to decide the next action."
         )
-    metrics = _strings(intent.get("success_metrics"))
+    metrics = confirmed_text_values(intent.get("success_metrics"))
     if len(metrics) < 3 or any(_metric_needs_repair(metric) for metric in metrics):
         intent["success_metrics"] = [
             f"The first release proves the first path when {customer_text} can {path_capability} and reach {outcome_text} without manual interpretation outside the product.",
             f"The product handles missing or incorrect input by explaining what must be fixed before {outcome_text} is treated as real.",
             _proof_boundary_metric(proof, outcome=outcome_text),
         ]
-    if not _strings(intent.get("assumptions")):
+    if not confirmed_text_values(intent.get("assumptions")):
         intent["assumptions"] = [
             f"The first release proves one concrete {title.lower()} path before broader scope or automation.",
             "External integrations can start as deterministic fixtures unless the accepted path cannot be proven without a live source.",
             f"Security, privacy, accessibility, safety, audit, and retention obligations scale with the {focus.lower()} data and decisions involved.",
         ]
-    if not _strings(intent.get("ambiguities")):
+    if not confirmed_text_values(intent.get("ambiguities")):
         intent["ambiguities"] = [
             f"Which {focus.lower()} actor has final release authority when evidence is incomplete or disputed?",
             f"Which source, device, document, dataset, or external service is authoritative for the first {title.lower()} proof?",
             "Which privacy, safety, compliance, or access rule would change the first path if it is stricter than assumed?",
         ]
-    current_non_goals = _strings(intent.get("non_goals"))
+    current_non_goals = confirmed_text_values(intent.get("non_goals"))
     if not current_non_goals or _sequence_has_generic_non_goals(current_non_goals):
         extracted_non_goals = _non_goal_rows(intent, title=title)
         intent["non_goals"] = extracted_non_goals or [
@@ -457,7 +458,7 @@ def _title_context(intent: Mapping[str, Any]) -> str:
         _clean(intent.get("state_object")),
         _clean(intent.get("first_path")),
         _clean(intent.get("proof_boundary")),
-        " ".join(_strings(intent.get("internal_systems"))),
+        " ".join(confirmed_text_values(intent.get("internal_systems"))),
     ]
     return ". ".join(part.strip(" .") for part in parts if part)
 
@@ -561,10 +562,6 @@ def _usable_title_phrase(value: str, *, noun: str) -> bool:
     if any(word in _GENERIC_TITLE_WORDS for word in lowered.split()):
         return False
     return _word_count(text) <= 4
-
-
-def _strings(value: object) -> list[str]:
-    return list(text_values(value))
 
 
 def _path_headline(value: str, *, fallback: str, limit: int = 140) -> str:

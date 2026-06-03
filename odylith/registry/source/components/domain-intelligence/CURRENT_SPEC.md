@@ -97,6 +97,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-03: Split confirmed component completion into `greenfield_confirmed_component_completion.py`. Component contract normalization, contract-derived responsibility/boundary/interface/dependency/validation/risk repair, component risk enrichment, and component sentence repair now sit outside `greenfield_confirmed_completion.py`, which stays below the 800-line soft limit as the confirmed-create repair orchestrator. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Consolidated generated list-row coercion in `greenfield_rows.py`. Confirmed prewrite gating, the deterministic Tribunal, confirmed title repair, apply-prewrite remapping, confirmed completion, and post-confirm semantic/package checks now import `mapping_rows` or `dict_rows` from the shared owner instead of carrying private `_mapping_rows`/`_dict_rows` clones or a post-confirm-specific wrapper. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Extended shared row coercion to remaining component, backlog, handoff, created-row, proposal-row, and wave-row readers, and hardened semantic context cleanup for confirmed Registry contract text. `greenfield_backlog_impact.py`, `greenfield_experience.py`, `greenfield_confirmed_component_completion.py`, and `greenfield_component_contract_differentiation.py` now reuse `mapping_rows` or `dict_rows`, while `greenfield_component_semantic_context.py` strips metadata-led actor/action phrases and `greenfield_confirmed_project_brief.py` rewrites awkward show-actor-artifact copy before project posture text is rendered. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-03: Consolidated confirmed-intent list text coercion in `greenfield_confirmed_text.py`. The parser, completion, actor-completion, system-completion, and validation owners now call `confirmed_text_values` instead of carrying local `_strings` helpers, so Markdown cleanup and strict accepted-intent list semantics stay in one shared confirmed-text owner. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -186,6 +187,11 @@ This section captures synchronized requirement and contract signals derived from
   `resident create repair request`. Project-brief copy must also normalize
   awkward `shows the <actor> a <result>` phrasing before it is written into
   human-visible project posture.
+- Confirmed-intent list text coercion must stay in
+  `greenfield_confirmed_text.py`. Parser, completion, actor-completion,
+  system-completion, and validation modules may call `confirmed_text_values`,
+  but they must not reintroduce local `_strings` helpers or silently flatten
+  mapping-shaped values into accepted intent list rows.
 - Confirmed-intent actor completion must stay in
   `greenfield_confirmed_actor_completion.py`. The parent completion module may
   call `completed_actor_rows`, `actor_labels`, and `actor_row_description`, but

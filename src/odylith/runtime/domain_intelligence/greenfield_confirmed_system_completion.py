@@ -7,12 +7,12 @@ from collections.abc import Mapping
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_confirmed_text as _clean
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import focus_label as _focus_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms as _semantic_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_confirmed_text as _short
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text as _title_case
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
-from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
@@ -27,7 +27,9 @@ _SYSTEM_SUFFIXES = (
 def completed_system_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
     """Return reviewable internal-system rows completed from accepted intent context."""
 
-    rows = _strings(intent.get("internal_systems")) or _strings(intent.get("component_responsibilities"))
+    rows = confirmed_text_values(intent.get("internal_systems")) or confirmed_text_values(
+        intent.get("component_responsibilities")
+    )
     context = _context(intent)
     completed = [_system_row(row, context=context, title=title, explicit=bool(rows)) for row in rows]
     completed = [row for row in completed if row]
@@ -38,7 +40,7 @@ def completed_system_rows(intent: Mapping[str, Any], *, title: str) -> list[str]
 
 def system_labels(intent: Mapping[str, Any]) -> list[str]:
     labels: list[str] = []
-    for row in _strings(intent.get("internal_systems")):
+    for row in confirmed_text_values(intent.get("internal_systems")):
         labels.append(_system_label_head(row))
     return [label for label in labels if label]
 
@@ -199,10 +201,10 @@ def _context(intent: Mapping[str, Any]) -> str:
         _clean(intent.get("state_object")),
         _clean(intent.get("first_path")),
         _clean(intent.get("proof_boundary")),
-        " ".join(_strings(intent.get("human_actors"))),
-        " ".join(_strings(intent.get("external_systems"))),
-        " ".join(_strings(intent.get("assumptions"))),
-        " ".join(_strings(intent.get("ambiguities"))),
+        " ".join(confirmed_text_values(intent.get("human_actors"))),
+        " ".join(confirmed_text_values(intent.get("external_systems"))),
+        " ".join(confirmed_text_values(intent.get("assumptions"))),
+        " ".join(confirmed_text_values(intent.get("ambiguities"))),
     ]
     return ". ".join(part.strip(" .") for part in parts if part)
 
@@ -219,10 +221,6 @@ def _best_context_clause(name: str, context: str) -> str:
             scored.append((overlap, -index, clause))
     scored.sort(reverse=True)
     return scored[0][2] if scored else ""
-
-
-def _strings(value: object) -> list[str]:
-    return list(text_values(value))
 
 
 __all__ = ["completed_system_rows", "state_label", "system_labels"]

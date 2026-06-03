@@ -40,6 +40,17 @@ def clean_confirmed_text(value: Any) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+def confirmed_text_values(value: object) -> list[str]:
+    """Return cleaned scalar rows from confirmed-intent list fields."""
+
+    if isinstance(value, str):
+        cleaned = clean_confirmed_text(value)
+        return [cleaned] if cleaned else []
+    if not isinstance(value, Sequence) or isinstance(value, (bytes, bytearray)):
+        return []
+    return [cleaned for item in value if (cleaned := clean_confirmed_text(item))]
+
+
 def sentence_confirmed_text(value: str) -> str:
     text = clean_confirmed_text(value).strip()
     if text and text[-1] not in ".!?":
