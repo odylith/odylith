@@ -22,6 +22,15 @@ from tests.unit.runtime.greenfield_proposal_fixtures import _confirmed_intent
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 
 
+ROOT = Path(__file__).resolve().parents[3]
+CONFIRMED_INTENT_COMPLETION_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py"
+)
+CONFIRMED_ACTOR_COMPLETION_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py"
+)
+
+
 def _max_word_overlap(values: list[str]) -> float:
     word_sets = [
         {
@@ -37,6 +46,18 @@ def _max_word_overlap(values: list[str]) -> float:
             if left and right:
                 scores.append(len(left & right) / min(len(left), len(right)))
     return max(scores or [0.0])
+
+
+def test_confirmed_intent_actor_completion_stays_in_dedicated_owner() -> None:
+    parent_source = CONFIRMED_INTENT_COMPLETION_PATH.read_text(encoding="utf-8")
+    actor_source = CONFIRMED_ACTOR_COMPLETION_PATH.read_text(encoding="utf-8")
+
+    assert len(parent_source.splitlines()) < 1200
+    assert "def _completed_actor_rows" not in parent_source
+    assert "def _derived_actor_labels" not in parent_source
+    assert "completed_actor_rows as _completed_actor_rows" in parent_source
+    assert "def completed_actor_rows" in actor_source
+    assert "accepted_actor_label" in actor_source
 
 
 def test_confirmed_intent_parser_keeps_ambiguities_out_of_first_path() -> None:
@@ -1321,18 +1342,20 @@ Release 0.0.1 succeeds when one decision record can be inspected from source obs
     titles = [str(row["title"]) for row in accepted["proposal"]["backlog"]]
     assert titles == [
         "Make Decision Review Workspace Useful for One Complete Outcome",
-        "Let Coordinator Import One Observation",
+        "Let Coordinator Reach the Final Status with Source Evidence",
         "Keep Decision Record Clear After Quality Review Changes It",
         "Show Why Decision Record Can Be Trusted",
     ]
     assert not any(title.startswith(("Build ", "Implement ", "Ship ")) for title in titles)
     rows_by_title = {str(row["title"]): row for row in accepted["proposal"]["backlog"]}
-    first_path_row = rows_by_title["Let Coordinator Import One Observation"]
+    first_path_row = rows_by_title["Let Coordinator Reach the Final Status with Source Evidence"]
     state_row = rows_by_title["Keep Decision Record Clear After Quality Review Changes It"]
     proof_row = rows_by_title["Show Why Decision Record Can Be Trusted"]
 
-    assert "import one observation" in first_path_row["problem"]
-    assert "quality evidence" in first_path_row["product_view"]
+    assert "final status with source evidence" in first_path_row["problem"]
+    assert "import one observation" in first_path_row["product_view"]
+    assert "show the final status with source evidence" in first_path_row["product_view"]
+    assert "quality evidence" in encoded
     assert "Decision Record" in state_row["product_view"]
     assert "actor, source, status" in " ".join(state_row["success_metrics"])
     assert "reviewer decision" in proof_row["product_view"]

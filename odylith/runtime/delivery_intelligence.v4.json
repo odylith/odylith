@@ -81,8 +81,8 @@
         "scope_type": "workstream",
         "severity": "watch"
       },
-      "selection_reason": "Selected as the highest-ranked unsafe closeout workstream so the queue covers a distinct case class before same-scenario priority fill. Live rationale: Implementation workstream is still live. It sits in a 2-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 2,
+      "selection_reason": "Selected as the highest-ranked unsafe closeout workstream so the queue covers a distinct case class before same-scenario priority fill. Live rationale: Implementation workstream is still live. It sits in a 3-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 3,
       "selection_slot": "scenario_coverage",
       "systemic_theme_tags": [
         "authority",
@@ -168,8 +168,95 @@
         "scope_type": "workstream",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Implementation workstream is still live. It sits in a 2-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 2,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Implementation workstream is still live. It sits in a 3-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 3,
+      "selection_slot": "visible_overflow",
+      "systemic_theme_tags": [
+        "authority",
+        "ownership_gap",
+        "cross_surface"
+      ]
+    },
+    {
+      "action_label": "Review proposed fix",
+      "brief": "Decompose greenfield project intelligence surface looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if CURRENT_SPEC.md already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind CURRENT_SPEC.md before treating Decompose greenfield project intelligence surface as authoritative across Registry, Radar, Compass, and Atlas.",
+      "claim_guard": {},
+      "confidence": 0.68,
+      "confidence_factors": {
+        "contradiction_strength": 0.52,
+        "evidence_completeness": 0.75,
+        "ownership_clarity": 0.2,
+        "proof_route_quality": 1.0,
+        "provider_validation": 0.55
+      },
+      "decision_at_stake": "Does Decompose greenfield project intelligence surface actually own the cross-surface state Odylith is aggregating, or is shared-surface churn being mistaken for authority?",
+      "deterministic_reason": "provider unavailable",
+      "deterministic_reason_detail": "No AI reasoning provider is configured or available for this Odylith refresh.",
+      "headline": "Cross-surface ownership is not proven yet",
+      "id": "case-workstream-B-143",
+      "packet_mode": "hybrid",
+      "proof_refs": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-143"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-143"
+        }
+      ],
+      "proof_reopen": {},
+      "proof_routes": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-143"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-143"
+        }
+      ],
+      "proof_state": {},
+      "proof_state_resolution": {
+        "lane_ids": [],
+        "state": "none"
+      },
+      "provider_focus": false,
+      "provider_used": false,
+      "provider_validated": false,
+      "rank": 3,
+      "reasoning_state": "deterministic-only",
+      "scope_id": "B-143",
+      "scope_key": "workstream:B-143",
+      "scope_label": "Decompose greenfield project intelligence surface",
+      "scope_type": "workstream",
+      "selection_metrics": {
+        "blast_radius_severity": 58,
+        "decision_debt": 16,
+        "governance_lag": 64,
+        "live_reason": "Implementation workstream is still live.",
+        "scenario": "unsafe_closeout",
+        "scope_type": "workstream",
+        "severity": "watch"
+      },
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Implementation workstream is still live. It sits in a 3-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 3,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "authority",
@@ -240,7 +327,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 3,
+      "rank": 4,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-021",
       "scope_key": "workstream:B-021",
@@ -327,7 +414,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 4,
+      "rank": 5,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-022",
       "scope_key": "workstream:B-022",
@@ -414,7 +501,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 5,
+      "rank": 6,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-025",
       "scope_key": "workstream:B-025",
@@ -440,7 +527,7 @@
     },
     {
       "action_label": "Review proposed fix",
-      "brief": "v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if auto_update_mermaid_diagrams.py already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind auto_update_mermaid_diagrams.py before treating v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline as authoritative across Registry, Radar, Compass, and Atlas.",
+      "brief": "v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if greenfield_component_semantic_contract.py already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind greenfield_component_semantic_contract.py before treating v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline as authoritative across Registry, Radar, Compass, and Atlas.",
       "claim_guard": {},
       "confidence": 0.68,
       "confidence_factors": {
@@ -501,7 +588,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 6,
+      "rank": 7,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-033",
       "scope_key": "workstream:B-033",
@@ -631,7 +718,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 7,
+      "rank": 8,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-038",
       "scope_key": "workstream:B-038",
@@ -718,7 +805,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 8,
+      "rank": 9,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-040",
       "scope_key": "workstream:B-040",
@@ -805,7 +892,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 9,
+      "rank": 10,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-045",
       "scope_key": "workstream:B-045",
@@ -892,7 +979,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 10,
+      "rank": 11,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-048",
       "scope_key": "workstream:B-048",
@@ -979,7 +1066,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 11,
+      "rank": 12,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-060",
       "scope_key": "workstream:B-060",
@@ -1066,7 +1153,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 12,
+      "rank": 13,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-064",
       "scope_key": "workstream:B-064",
@@ -1092,7 +1179,7 @@
     },
     {
       "action_label": "Review proposed fix",
-      "brief": "Scope Signal Ladder, Cross-Surface Focus Gating, and Low-Signal Suppression looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if auto_update_mermaid_diagrams.py already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind auto_update_mermaid_diagrams.py before treating Scope Signal Ladder, Cross-Surface Focus Gating, and Low-Signal Suppression as authoritative across Registry, Radar, Compass, and Atlas.",
+      "brief": "Scope Signal Ladder, Cross-Surface Focus Gating, and Low-Signal Suppression looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if greenfield_component_semantic_contract.py already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind greenfield_component_semantic_contract.py before treating Scope Signal Ladder, Cross-Surface Focus Gating, and Low-Signal Suppression as authoritative across Registry, Radar, Compass, and Atlas.",
       "claim_guard": {},
       "confidence": 0.68,
       "confidence_factors": {
@@ -1153,7 +1240,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 13,
+      "rank": 14,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-071",
       "scope_key": "workstream:B-071",
@@ -1240,7 +1327,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 14,
+      "rank": 15,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-083",
       "scope_key": "workstream:B-083",
@@ -1338,7 +1425,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -1367,7 +1454,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 15,
+      "rank": 16,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-084",
       "scope_key": "workstream:B-084",
@@ -1454,7 +1541,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 16,
+      "rank": 17,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-085",
       "scope_key": "workstream:B-085",
@@ -1540,7 +1627,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 17,
+      "rank": 18,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-086",
       "scope_key": "workstream:B-086",
@@ -1627,7 +1714,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 18,
+      "rank": 19,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-087",
       "scope_key": "workstream:B-087",
@@ -1714,7 +1801,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 19,
+      "rank": 20,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-088",
       "scope_key": "workstream:B-088",
@@ -1801,7 +1888,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 20,
+      "rank": 21,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-089",
       "scope_key": "workstream:B-089",
@@ -1888,7 +1975,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 21,
+      "rank": 22,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-090",
       "scope_key": "workstream:B-090",
@@ -1914,7 +2001,7 @@
     },
     {
       "action_label": "Review proposed fix",
-      "brief": "Sub-Second Governed Sync via Shared Read Models, Incremental Derivation, and Content-Addressed Surface Writes looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if auto_update_mermaid_diagrams.py already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind auto_update_mermaid_diagrams.py before treating Sub-Second Governed Sync via Shared Read Models, Incremental Derivation, and Content-Addressed Surface Writes as authoritative across Registry, Radar, Compass, and Atlas.",
+      "brief": "Sub-Second Governed Sync via Shared Read Models, Incremental Derivation, and Content-Addressed Surface Writes looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if greenfield_component_semantic_contract.py already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind greenfield_component_semantic_contract.py before treating Sub-Second Governed Sync via Shared Read Models, Incremental Derivation, and Content-Addressed Surface Writes as authoritative across Registry, Radar, Compass, and Atlas.",
       "claim_guard": {},
       "confidence": 0.68,
       "confidence_factors": {
@@ -1975,7 +2062,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 22,
+      "rank": 23,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-091",
       "scope_key": "workstream:B-091",
@@ -2062,7 +2149,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 23,
+      "rank": 24,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-092",
       "scope_key": "workstream:B-092",
@@ -2183,7 +2270,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 24,
+      "rank": 25,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-093",
       "scope_key": "workstream:B-093",
@@ -2270,7 +2357,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 25,
+      "rank": 26,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-097",
       "scope_key": "workstream:B-097",
@@ -2357,7 +2444,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 26,
+      "rank": 27,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-126",
       "scope_key": "workstream:B-126",
@@ -2448,7 +2535,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 27,
+      "rank": 28,
       "reasoning_state": "deterministic-only",
       "scope_id": "governance-intervention-engine",
       "scope_key": "component:governance-intervention-engine",
@@ -2538,7 +2625,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 28,
+      "rank": 29,
       "reasoning_state": "deterministic-only",
       "scope_id": "odylith-memory-backend",
       "scope_key": "component:odylith-memory-backend",
@@ -2627,7 +2714,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 29,
+      "rank": 30,
       "reasoning_state": "deterministic-only",
       "scope_id": "odylith-memory-contracts",
       "scope_key": "component:odylith-memory-contracts",
@@ -2713,7 +2800,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 30,
+      "rank": 31,
       "reasoning_state": "deterministic-only",
       "scope_id": "odylith-projection-bundle",
       "scope_key": "component:odylith-projection-bundle",
@@ -2799,7 +2886,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 31,
+      "rank": 32,
       "reasoning_state": "deterministic-only",
       "scope_id": "odylith-projection-snapshot",
       "scope_key": "component:odylith-projection-snapshot",
@@ -2885,7 +2972,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 32,
+      "rank": 33,
       "reasoning_state": "deterministic-only",
       "scope_id": "odylith-remote-retrieval",
       "scope_key": "component:odylith-remote-retrieval",
@@ -2974,7 +3061,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 33,
+      "rank": 34,
       "reasoning_state": "deterministic-only",
       "scope_id": "registry",
       "scope_key": "component:registry",
@@ -3060,7 +3147,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 34,
+      "rank": 35,
       "reasoning_state": "deterministic-only",
       "scope_id": "release",
       "scope_key": "component:release",
@@ -3152,7 +3239,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 35,
+      "rank": 36,
       "reasoning_state": "deterministic-only",
       "scope_id": "subagent-orchestrator",
       "scope_key": "component:subagent-orchestrator",
@@ -3244,7 +3331,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 36,
+      "rank": 37,
       "reasoning_state": "deterministic-only",
       "scope_id": "subagent-router",
       "scope_key": "component:subagent-router",
@@ -3333,7 +3420,7 @@
       "provider_focus": true,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 37,
+      "rank": 38,
       "reasoning_state": "deterministic-only",
       "scope_id": "domain-intelligence",
       "scope_key": "component:domain-intelligence",
@@ -3343,12 +3430,12 @@
         "blast_radius_severity": 58,
         "decision_debt": 86,
         "governance_lag": 64,
-        "live_reason": "Linked to live workstream B-141 and B-142.",
+        "live_reason": "Linked to live workstream B-141, B-142, and +1 more.",
         "scenario": "cross_surface_conflict",
         "scope_type": "component",
         "severity": "blocker"
       },
-      "selection_reason": "Selected as the highest-ranked cross surface conflict component so the queue covers a distinct case class before same-scenario priority fill. Live rationale: Linked to live workstream B-141 and B-142.",
+      "selection_reason": "Selected as the highest-ranked cross surface conflict component so the queue covers a distinct case class before same-scenario priority fill. Live rationale: Linked to live workstream B-141, B-142, and +1 more.",
       "selection_score_band_size": 1,
       "selection_slot": "scenario_coverage",
       "systemic_theme_tags": [
@@ -3422,7 +3509,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 38,
+      "rank": 39,
       "reasoning_state": "deterministic-only",
       "scope_id": "migration-runtime",
       "scope_key": "component:migration-runtime",
@@ -3508,7 +3595,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 39,
+      "rank": 40,
       "reasoning_state": "deterministic-only",
       "scope_id": "remediator",
       "scope_key": "component:remediator",
@@ -3594,7 +3681,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 40,
+      "rank": 41,
       "reasoning_state": "deterministic-only",
       "scope_id": "security",
       "scope_key": "component:security",
@@ -3680,7 +3767,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 41,
+      "rank": 42,
       "reasoning_state": "deterministic-only",
       "scope_id": "governed-harness",
       "scope_key": "component:governed-harness",
@@ -3766,7 +3853,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 42,
+      "rank": 43,
       "reasoning_state": "deterministic-only",
       "scope_id": "briefs-voice-contract",
       "scope_key": "component:briefs-voice-contract",
@@ -3855,7 +3942,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 43,
+      "rank": 44,
       "reasoning_state": "deterministic-only",
       "scope_id": "atlas",
       "scope_key": "component:atlas",
@@ -3948,7 +4035,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 44,
+      "rank": 45,
       "reasoning_state": "deterministic-only",
       "scope_id": "benchmark",
       "scope_key": "component:benchmark",
@@ -4043,7 +4130,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4068,7 +4155,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 45,
+      "rank": 46,
       "reasoning_state": "deterministic-only",
       "scope_id": "casebook",
       "scope_key": "component:casebook",
@@ -4163,7 +4250,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4188,7 +4275,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 46,
+      "rank": 47,
       "reasoning_state": "deterministic-only",
       "scope_id": "compass",
       "scope_key": "component:compass",
@@ -4283,7 +4370,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4308,7 +4395,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 47,
+      "rank": 48,
       "reasoning_state": "deterministic-only",
       "scope_id": "dashboard",
       "scope_key": "component:dashboard",
@@ -4318,12 +4405,12 @@
         "blast_radius_severity": 58,
         "decision_debt": 16,
         "governance_lag": 18,
-        "live_reason": "Linked to live workstream B-022, B-021, and +11 more.",
+        "live_reason": "Linked to live workstream B-022, B-021, and +12 more.",
         "scenario": "cross_surface_conflict",
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-022, B-021, and +11 more. It sits in a 13-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-022, B-021, and +12 more. It sits in a 13-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
       "selection_score_band_size": 13,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
@@ -4403,7 +4490,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4428,7 +4515,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 48,
+      "rank": 49,
       "reasoning_state": "deterministic-only",
       "scope_id": "delivery-intelligence",
       "scope_key": "component:delivery-intelligence",
@@ -4519,7 +4606,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 49,
+      "rank": 50,
       "reasoning_state": "deterministic-only",
       "scope_id": "execution-engine",
       "scope_key": "component:execution-engine",
@@ -4614,7 +4701,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4639,7 +4726,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 50,
+      "rank": 51,
       "reasoning_state": "deterministic-only",
       "scope_id": "odylith",
       "scope_key": "component:odylith",
@@ -4649,12 +4736,12 @@
         "blast_radius_severity": 58,
         "decision_debt": 16,
         "governance_lag": 18,
-        "live_reason": "Linked to live workstream B-021, B-033, and +16 more.",
+        "live_reason": "Linked to live workstream B-021, B-033, and +17 more.",
         "scenario": "cross_surface_conflict",
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-021, B-033, and +16 more. It sits in a 13-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-021, B-033, and +17 more. It sits in a 13-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
       "selection_score_band_size": 13,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
@@ -4734,7 +4821,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4759,7 +4846,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 51,
+      "rank": 52,
       "reasoning_state": "deterministic-only",
       "scope_id": "odylith-chatter",
       "scope_key": "component:odylith-chatter",
@@ -4854,7 +4941,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4879,7 +4966,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 52,
+      "rank": 53,
       "reasoning_state": "deterministic-only",
       "scope_id": "odylith-context-engine",
       "scope_key": "component:odylith-context-engine",
@@ -4974,7 +5061,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4999,7 +5086,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 53,
+      "rank": 54,
       "reasoning_state": "deterministic-only",
       "scope_id": "proof-state",
       "scope_key": "component:proof-state",
@@ -5090,7 +5177,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 54,
+      "rank": 55,
       "reasoning_state": "deterministic-only",
       "scope_id": "radar",
       "scope_key": "component:radar",
@@ -5185,7 +5272,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -5210,7 +5297,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 55,
+      "rank": 56,
       "reasoning_state": "deterministic-only",
       "scope_id": "tribunal",
       "scope_key": "component:tribunal",
@@ -5306,7 +5393,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 56,
+      "rank": 57,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-043",
       "scope_key": "diagram:D-043",
@@ -5392,7 +5479,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 57,
+      "rank": 58,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-001",
       "scope_key": "diagram:D-001",
@@ -5479,7 +5566,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 58,
+      "rank": 59,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-022",
       "scope_key": "diagram:D-022",
@@ -5608,7 +5695,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 59,
+      "rank": 60,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-024",
       "scope_key": "diagram:D-024",
@@ -5695,7 +5782,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 60,
+      "rank": 61,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-002",
       "scope_key": "diagram:D-002",
@@ -5782,7 +5869,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 61,
+      "rank": 62,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-003",
       "scope_key": "diagram:D-003",
@@ -5869,7 +5956,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 62,
+      "rank": 63,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-004",
       "scope_key": "diagram:D-004",
@@ -5956,7 +6043,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 63,
+      "rank": 64,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-005",
       "scope_key": "diagram:D-005",
@@ -6053,7 +6140,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 64,
+      "rank": 65,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-036",
       "scope_key": "diagram:D-036",
@@ -6149,7 +6236,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 65,
+      "rank": 66,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-037",
       "scope_key": "diagram:D-037",
@@ -6245,7 +6332,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 66,
+      "rank": 67,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-038",
       "scope_key": "diagram:D-038",
@@ -6341,7 +6428,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 67,
+      "rank": 68,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-039",
       "scope_key": "diagram:D-039",
@@ -6437,7 +6524,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 68,
+      "rank": 69,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-041",
       "scope_key": "diagram:D-041",
@@ -6523,7 +6610,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 69,
+      "rank": 70,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-032",
       "scope_key": "diagram:D-032",
@@ -6609,7 +6696,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 70,
+      "rank": 71,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-033",
       "scope_key": "diagram:D-033",
@@ -6695,7 +6782,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 71,
+      "rank": 72,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-034",
       "scope_key": "diagram:D-034",
@@ -6781,7 +6868,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 72,
+      "rank": 73,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-035",
       "scope_key": "diagram:D-035",
@@ -6861,7 +6948,7 @@
       "provider_focus": true,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 73,
+      "rank": 74,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-042",
       "scope_key": "diagram:D-042",
@@ -6973,7 +7060,7 @@
       "provider_focus": true,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 74,
+      "rank": 75,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-040",
       "scope_key": "diagram:D-040",
@@ -7085,7 +7172,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 75,
+      "rank": 76,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-044",
       "scope_key": "diagram:D-044",
@@ -7171,7 +7258,7 @@
       "provider_focus": true,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 76,
+      "rank": 77,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-028",
       "scope_key": "diagram:D-028",
@@ -7257,7 +7344,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 77,
+      "rank": 78,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-029",
       "scope_key": "diagram:D-029",
@@ -7281,7 +7368,7 @@
       ]
     }
   ],
-  "generated_utc": "2026-06-03 02:43:03Z",
+  "generated_utc": "2026-06-03 03:19:59Z",
   "indexes": {
     "cases": {
       "case-component-atlas": "component:atlas",
@@ -7360,7 +7447,8 @@
       "case-workstream-B-097": "workstream:B-097",
       "case-workstream-B-126": "workstream:B-126",
       "case-workstream-B-141": "workstream:B-141",
-      "case-workstream-B-142": "workstream:B-142"
+      "case-workstream-B-142": "workstream:B-142",
+      "case-workstream-B-143": "workstream:B-143"
     },
     "components": {
       "atlas": "component:atlas",
@@ -7592,7 +7680,8 @@
       "B-139": "workstream:B-139",
       "B-140": "workstream:B-140",
       "B-141": "workstream:B-141",
-      "B-142": "workstream:B-142"
+      "B-142": "workstream:B-142",
+      "B-143": "workstream:B-143"
     }
   },
   "scopes": [
@@ -7602,12 +7691,12 @@
         "build_ci": 4,
         "cli": 0,
         "contract": 18,
-        "doc": 2975,
+        "doc": 2995,
         "policy": 0,
-        "renderer": 3773,
+        "renderer": 3809,
         "runbook": 0,
-        "runtime": 50483,
-        "spec": 48982
+        "runtime": 50686,
+        "spec": 49330
       },
       "claim_guard": {
         "blocked_terms": [],
@@ -7891,6 +7980,7 @@
           "B-086",
           "B-090",
           "B-098",
+          "B-143",
           "B-075",
           "B-073",
           "B-074",
@@ -8088,7 +8178,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -8598,7 +8688,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -8707,12 +8797,12 @@
         "build_ci": 0,
         "cli": 0,
         "contract": 0,
-        "doc": 1420,
+        "doc": 1430,
         "policy": 0,
-        "renderer": 1818,
+        "renderer": 1836,
         "runbook": 0,
-        "runtime": 24288,
-        "spec": 23859
+        "runtime": 24398,
+        "spec": 24033
       },
       "claim_guard": {
         "blocked_terms": [],
@@ -8867,13 +8957,14 @@
           "workstream:B-139",
           "workstream:B-140",
           "workstream:B-141",
-          "workstream:B-142"
+          "workstream:B-142",
+          "workstream:B-143"
         ],
-        "decision_count": 142,
-        "explicit_count": 142,
-        "implementation_count": 142,
+        "decision_count": 143,
+        "explicit_count": 143,
+        "implementation_count": 143,
         "live_actionable": true,
-        "live_reason": "Aggregates 26 live child scope(s).",
+        "live_reason": "Aggregates 27 live child scope(s).",
         "reasoning_confidence": 0.0,
         "reasoning_state": "",
         "status": "implementation",
@@ -9192,7 +9283,8 @@
           "B-139",
           "B-140",
           "B-141",
-          "B-142"
+          "B-142",
+          "B-143"
         ],
         "strongest_convergence_scope": "workstream:B-021",
         "top_risk_scope": "workstream:B-001"
@@ -9332,7 +9424,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -9367,16 +9459,16 @@
           "blast_radius_class": "cross-surface",
           "broad_fanout": true,
           "cross_surface_conflict": false,
-          "decision_count": 142,
+          "decision_count": 143,
           "decision_evidence": true,
-          "explicit_count": 142,
+          "explicit_count": 143,
           "frontier_phase": "status synthesis",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 142,
+          "implementation_count": 143,
           "implementation_evidence": true,
-          "linked_child_count": 142,
+          "linked_child_count": 143,
           "linked_surface_count": 5,
           "meaningful_change_count": 0,
           "meaningful_scope_activity": true,
@@ -9441,12 +9533,12 @@
         "build_ci": 0,
         "cli": 0,
         "contract": 0,
-        "doc": 1420,
+        "doc": 1430,
         "policy": 0,
-        "renderer": 1818,
+        "renderer": 1836,
         "runbook": 0,
-        "runtime": 24288,
-        "spec": 23859
+        "runtime": 24398,
+        "spec": 24033
       },
       "claim_guard": {
         "blocked_terms": [],
@@ -9601,13 +9693,14 @@
           "workstream:B-139",
           "workstream:B-140",
           "workstream:B-141",
-          "workstream:B-142"
+          "workstream:B-142",
+          "workstream:B-143"
         ],
-        "decision_count": 142,
-        "explicit_count": 142,
-        "implementation_count": 142,
+        "decision_count": 143,
+        "explicit_count": 143,
+        "implementation_count": 143,
         "live_actionable": true,
-        "live_reason": "Aggregates 26 live child scope(s).",
+        "live_reason": "Aggregates 27 live child scope(s).",
         "reasoning_confidence": 0.0,
         "reasoning_state": "",
         "status": "implementation",
@@ -9926,7 +10019,8 @@
           "B-139",
           "B-140",
           "B-141",
-          "B-142"
+          "B-142",
+          "B-143"
         ],
         "strongest_convergence_scope": "workstream:B-021",
         "top_risk_scope": "workstream:B-001"
@@ -10066,7 +10160,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -10101,16 +10195,16 @@
           "blast_radius_class": "cross-surface",
           "broad_fanout": true,
           "cross_surface_conflict": false,
-          "decision_count": 142,
+          "decision_count": 143,
           "decision_evidence": true,
-          "explicit_count": 142,
+          "explicit_count": 143,
           "frontier_phase": "status synthesis",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 142,
+          "implementation_count": 143,
           "implementation_evidence": true,
-          "linked_child_count": 142,
+          "linked_child_count": 143,
           "linked_surface_count": 5,
           "meaningful_change_count": 0,
           "meaningful_scope_activity": true,
@@ -10179,7 +10273,7 @@
         "policy": 0,
         "renderer": 29,
         "runbook": 0,
-        "runtime": 1194,
+        "runtime": 1177,
         "spec": 646
       },
       "claim_guard": {
@@ -10489,6 +10583,7 @@
           "B-086",
           "B-090",
           "B-098",
+          "B-143",
           "B-075",
           "B-073",
           "B-074",
@@ -10686,7 +10781,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -11117,10 +11212,10 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 190,
+        "runtime": 189,
         "spec": 181
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
@@ -11140,14 +11235,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 96,
+        "shared_component_event_count": 95,
         "status": "finished",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -11162,7 +11256,8 @@
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
-          "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -11227,10 +11322,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -11544,7 +11638,7 @@
       ],
       "explanation_facts": [
         "Status is finished.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: atlas, benchmark, casebook, compass, and +19 more.",
         "Lineage successors: none.",
         "Linked diagrams: D-001, D-002, D-003, D-004, and +16 more.",
@@ -11607,14 +11701,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 183,
+          "meaningful_change_count": 182,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -11674,10 +11768,10 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 190,
+        "runtime": 189,
         "spec": 181
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
@@ -11697,14 +11791,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 96,
+        "shared_component_event_count": 95,
         "status": "queued",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -11719,7 +11812,8 @@
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
-          "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -11784,10 +11878,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -12073,7 +12166,7 @@
       ],
       "explanation_facts": [
         "Status is queued.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: atlas, casebook, compass, dashboard, and +6 more.",
         "Lineage successors: none.",
         "Linked diagrams: D-001, D-002, D-018, D-019, and +1 more.",
@@ -12134,14 +12227,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 183,
+          "meaningful_change_count": 182,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -13720,10 +13813,10 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 176,
+        "runtime": 175,
         "spec": 181
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
@@ -13743,14 +13836,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 94,
+        "shared_component_event_count": 93,
         "status": "queued",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -13765,7 +13857,8 @@
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
-          "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -13830,10 +13923,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -14149,7 +14241,7 @@
       ],
       "explanation_facts": [
         "Status is queued.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: atlas, casebook, compass, dashboard, and +3 more.",
         "Lineage successors: none.",
         "Linked diagrams: D-001, D-002, D-003, D-018, and +40 more.",
@@ -14212,14 +14304,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 177,
+          "meaningful_change_count": 176,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -15116,6 +15208,7 @@
           "D-030",
           "D-031",
           "D-039",
+          "D-043",
           "D-041",
           "D-027",
           "D-033",
@@ -15124,8 +15217,7 @@
           "D-044",
           "D-042",
           "D-037",
-          "D-038",
-          "D-043"
+          "D-038"
         ],
         "linked_surfaces": [
           "Registry",
@@ -16656,6 +16748,7 @@
           "D-030",
           "D-031",
           "D-039",
+          "D-043",
           "D-041",
           "D-027",
           "D-033",
@@ -16664,8 +16757,7 @@
           "D-044",
           "D-042",
           "D-037",
-          "D-038",
-          "D-043"
+          "D-038"
         ],
         "linked_surfaces": [
           "Registry",
@@ -17398,10 +17490,10 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 186,
+        "runtime": 185,
         "spec": 181
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
@@ -17421,14 +17513,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 89,
+        "shared_component_event_count": 88,
         "status": "finished",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -17443,7 +17534,8 @@
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
-          "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -17508,10 +17600,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -17834,7 +17925,7 @@
       ],
       "explanation_facts": [
         "Status is finished.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: atlas, casebook, compass, dashboard, and +5 more.",
         "Lineage successors: none.",
         "Linked diagrams: D-001, D-002, D-003, D-018, and +40 more.",
@@ -17897,14 +17988,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 182,
+          "meaningful_change_count": 181,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -19538,10 +19629,10 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 172,
+        "runtime": 171,
         "spec": 181
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
@@ -19561,14 +19652,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 87,
+        "shared_component_event_count": 86,
         "status": "finished",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -19583,7 +19673,8 @@
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
-          "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -19648,10 +19739,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -19962,7 +20052,7 @@
       ],
       "explanation_facts": [
         "Status is finished.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: atlas, casebook, compass, dashboard, and +2 more.",
         "Lineage successors: none.",
         "Linked diagrams: D-001, D-002, D-003, D-018, and +37 more.",
@@ -20025,14 +20115,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 176,
+          "meaningful_change_count": 175,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -20092,10 +20182,10 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 172,
+        "runtime": 171,
         "spec": 181
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
@@ -20115,14 +20205,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 87,
+        "shared_component_event_count": 86,
         "status": "finished",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -20137,7 +20226,8 @@
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
-          "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -20202,10 +20292,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -20516,7 +20605,7 @@
       ],
       "explanation_facts": [
         "Status is finished.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: atlas, casebook, compass, dashboard, and +2 more.",
         "Lineage successors: none.",
         "Linked diagrams: D-001, D-002, D-003, D-018, and +37 more.",
@@ -20579,14 +20668,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 176,
+          "meaningful_change_count": 175,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -22623,10 +22712,10 @@
         "policy": 0,
         "renderer": 18,
         "runbook": 0,
-        "runtime": 171,
+        "runtime": 170,
         "spec": 163
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
@@ -22646,14 +22735,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 67,
+        "shared_component_event_count": 66,
         "status": "finished",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -22668,7 +22756,8 @@
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
-          "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -22733,10 +22822,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -23014,7 +23102,7 @@
       ],
       "explanation_facts": [
         "Status is finished.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: atlas and dashboard.",
         "Lineage successors: none.",
         "Linked diagrams: D-001, D-002, D-003, D-018, and +34 more.",
@@ -23077,14 +23165,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 170,
+          "meaningful_change_count": 169,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -23144,10 +23232,10 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 190,
+        "runtime": 189,
         "spec": 181
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
@@ -23167,14 +23255,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 95,
+        "shared_component_event_count": 94,
         "status": "finished",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -23189,7 +23276,8 @@
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
-          "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -23254,10 +23342,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -23580,7 +23667,7 @@
       ],
       "explanation_facts": [
         "Status is finished.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: atlas, casebook, compass, odylith, and +4 more.",
         "Lineage successors: none.",
         "Linked diagrams: D-001, D-002, D-003, D-018, and +40 more.",
@@ -23643,14 +23730,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 183,
+          "meaningful_change_count": 182,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -25479,6 +25566,7 @@
           "D-030",
           "D-031",
           "D-039",
+          "D-043",
           "D-041",
           "D-027",
           "D-033",
@@ -25487,8 +25575,7 @@
           "D-044",
           "D-042",
           "D-037",
-          "D-038",
-          "D-043"
+          "D-038"
         ],
         "linked_surfaces": [
           "Registry",
@@ -26187,10 +26274,10 @@
         "policy": 0,
         "renderer": 18,
         "runbook": 0,
-        "runtime": 175,
+        "runtime": 174,
         "spec": 179
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
@@ -26210,14 +26297,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 80,
+        "shared_component_event_count": 79,
         "status": "finished",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -26232,7 +26318,8 @@
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
-          "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -26297,10 +26384,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -26600,7 +26686,7 @@
       ],
       "explanation_facts": [
         "Status is finished.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: atlas, dashboard, odylith, and release.",
         "Lineage successors: none.",
         "Linked diagrams: D-001, D-002, D-003, D-018, and +40 more.",
@@ -26663,14 +26749,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 174,
+          "meaningful_change_count": 173,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -27253,10 +27339,10 @@
         "policy": 0,
         "renderer": 18,
         "runbook": 0,
-        "runtime": 189,
+        "runtime": 188,
         "spec": 179
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
@@ -27276,14 +27362,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 82,
+        "shared_component_event_count": 81,
         "status": "finished",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -27298,7 +27383,8 @@
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
-          "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -27363,10 +27449,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -27678,7 +27763,7 @@
       ],
       "explanation_facts": [
         "Status is finished.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: atlas, dashboard, odylith, odylith-context-engine, and +1 more.",
         "Lineage successors: none.",
         "Linked diagrams: D-001, D-002, D-003, D-018, and +40 more.",
@@ -27741,14 +27826,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 180,
+          "meaningful_change_count": 179,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -27810,10 +27895,10 @@
         "policy": 0,
         "renderer": 18,
         "runbook": 0,
-        "runtime": 176,
+        "runtime": 175,
         "spec": 180
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
@@ -27833,14 +27918,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 92,
+        "shared_component_event_count": 91,
         "status": "implementation",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -27855,7 +27939,8 @@
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
-          "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -27920,10 +28005,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -28242,7 +28326,7 @@
       ],
       "explanation_facts": [
         "Status is implementation.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: atlas, benchmark, compass, dashboard, and +3 more.",
         "Lineage successors: B-040, B-048, and B-067.",
         "Linked diagrams: D-001, D-002, D-003, D-018, and +40 more.",
@@ -28303,14 +28387,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 176,
+          "meaningful_change_count": 175,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -28913,10 +28997,10 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 175,
+        "runtime": 174,
         "spec": 180
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
@@ -28936,14 +29020,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 81,
+        "shared_component_event_count": 80,
         "status": "queued",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -28958,7 +29041,8 @@
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
-          "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -29023,10 +29107,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -29327,7 +29410,7 @@
       ],
       "explanation_facts": [
         "Status is queued.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: atlas, dashboard, odylith, and registry.",
         "Lineage successors: none.",
         "Linked diagrams: D-001, D-002, D-003, D-018, and +40 more.",
@@ -29390,14 +29473,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 175,
+          "meaningful_change_count": 174,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -30335,8 +30418,8 @@
           "D-028",
           "D-029",
           "D-031",
-          "D-027",
-          "D-043"
+          "D-043",
+          "D-027"
         ],
         "linked_surfaces": [
           "Registry",
@@ -31874,6 +31957,7 @@
           "D-030",
           "D-031",
           "D-039",
+          "D-043",
           "D-041",
           "D-027",
           "D-033",
@@ -31882,8 +31966,7 @@
           "D-044",
           "D-042",
           "D-037",
-          "D-038",
-          "D-043"
+          "D-038"
         ],
         "linked_surfaces": [
           "Registry",
@@ -33033,10 +33116,10 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 185,
+        "runtime": 184,
         "spec": 180
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
@@ -33056,14 +33139,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 76,
+        "shared_component_event_count": 75,
         "status": "queued",
         "successor_event_count": 1,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -33078,7 +33160,8 @@
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
-          "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -33143,10 +33226,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -33402,7 +33484,7 @@
       ],
       "explanation_facts": [
         "Status is queued.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: atlas, benchmark, odylith-context-engine, radar, and +1 more.",
         "Lineage successors: B-022.",
         "Linked diagrams: D-024.",
@@ -33463,14 +33545,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 180,
+          "meaningful_change_count": 179,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -40664,10 +40746,10 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 190,
+        "runtime": 189,
         "spec": 181
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
@@ -40687,14 +40769,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 95,
+        "shared_component_event_count": 94,
         "status": "finished",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -40709,7 +40790,8 @@
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
-          "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -40774,10 +40856,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -41072,7 +41153,7 @@
       ],
       "explanation_facts": [
         "Status is finished.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: atlas, benchmark, compass, delivery-intelligence, and +16 more.",
         "Lineage successors: none.",
         "Linked diagrams: D-002, D-018, D-020, and D-025.",
@@ -41135,14 +41216,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 183,
+          "meaningful_change_count": 182,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -42710,7 +42791,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -42821,10 +42902,10 @@
         "policy": 0,
         "renderer": 18,
         "runbook": 0,
-        "runtime": 190,
+        "runtime": 189,
         "spec": 180
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
@@ -42844,14 +42925,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 95,
+        "shared_component_event_count": 94,
         "status": "finished",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -42866,7 +42946,8 @@
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
-          "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -42931,10 +43012,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -43198,7 +43278,7 @@
       ],
       "explanation_facts": [
         "Status is finished.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: atlas, compass, odylith, odylith-context-engine, and +2 more.",
         "Lineage successors: B-065.",
         "Linked diagrams: D-027.",
@@ -43261,14 +43341,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 182,
+          "meaningful_change_count": 181,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -46801,10 +46881,10 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 172,
+        "runtime": 171,
         "spec": 181
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
@@ -46824,14 +46904,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 87,
+        "shared_component_event_count": 86,
         "status": "implementation",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -46846,7 +46925,8 @@
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
-          "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -46911,10 +46991,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -47186,7 +47265,7 @@
       ],
       "explanation_facts": [
         "Status is implementation.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: atlas, briefs-voice-contract, compass, dashboard, and +4 more.",
         "Lineage successors: B-025.",
         "Linked diagrams: D-028, D-029, and D-032.",
@@ -47247,14 +47326,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 176,
+          "meaningful_change_count": 175,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -50992,10 +51071,10 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 185,
+        "runtime": 184,
         "spec": 174
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
@@ -51015,14 +51094,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 74,
+        "shared_component_event_count": 73,
         "status": "finished",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -51037,7 +51115,8 @@
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
-          "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -51102,10 +51181,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -51372,7 +51450,7 @@
       ],
       "explanation_facts": [
         "Status is finished.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: atlas, dashboard, delivery-intelligence, odylith-context-engine, and +1 more.",
         "Lineage successors: B-025 and B-081.",
         "Linked diagrams: D-002, D-020, and D-025.",
@@ -51435,14 +51513,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 178,
+          "meaningful_change_count": 177,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -51502,10 +51580,10 @@
         "policy": 0,
         "renderer": 18,
         "runbook": 0,
-        "runtime": 185,
+        "runtime": 184,
         "spec": 169
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
@@ -51525,14 +51603,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 71,
+        "shared_component_event_count": 70,
         "status": "queued",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -51547,7 +51624,8 @@
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
-          "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -51607,10 +51685,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -51856,7 +51933,7 @@
       ],
       "explanation_facts": [
         "Status is queued.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: atlas, dashboard, and odylith-context-engine.",
         "Lineage successors: B-025.",
         "Linked diagrams: D-001 and D-030.",
@@ -51917,14 +51994,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 176,
+          "meaningful_change_count": 175,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -53380,7 +53457,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -54266,6 +54343,7 @@
           "D-030",
           "D-031",
           "D-039",
+          "D-043",
           "D-041",
           "D-027",
           "D-033",
@@ -54274,8 +54352,7 @@
           "D-044",
           "D-042",
           "D-037",
-          "D-038",
-          "D-043"
+          "D-038"
         ],
         "linked_surfaces": [
           "Registry",
@@ -55841,6 +55918,7 @@
           "D-030",
           "D-031",
           "D-039",
+          "D-043",
           "D-041",
           "D-027",
           "D-033",
@@ -55849,8 +55927,7 @@
           "D-044",
           "D-042",
           "D-037",
-          "D-038",
-          "D-043"
+          "D-038"
         ],
         "linked_surfaces": [
           "Registry",
@@ -56372,6 +56449,7 @@
           "D-030",
           "D-031",
           "D-039",
+          "D-043",
           "D-041",
           "D-027",
           "D-033",
@@ -56380,8 +56458,7 @@
           "D-044",
           "D-042",
           "D-037",
-          "D-038",
-          "D-043"
+          "D-038"
         ],
         "linked_surfaces": [
           "Registry",
@@ -56573,10 +56650,10 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 175,
+        "runtime": 174,
         "spec": 180
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
@@ -56596,14 +56673,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 82,
+        "shared_component_event_count": 81,
         "status": "implementation",
         "successor_event_count": 0,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -56618,7 +56694,8 @@
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
-          "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -56683,10 +56760,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -56955,7 +57031,7 @@
       ],
       "explanation_facts": [
         "Status is implementation.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: atlas, dashboard, delivery-intelligence, odylith, and +2 more.",
         "Lineage successors: B-025.",
         "Linked diagrams: D-005, D-009, and D-036.",
@@ -57016,14 +57092,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 175,
+          "meaningful_change_count": 174,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -60389,6 +60465,7 @@
           "D-030",
           "D-031",
           "D-039",
+          "D-043",
           "D-041",
           "D-027",
           "D-033",
@@ -60397,8 +60474,7 @@
           "D-044",
           "D-042",
           "D-037",
-          "D-038",
-          "D-043"
+          "D-038"
         ],
         "linked_surfaces": [
           "Registry",
@@ -63590,10 +63666,10 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 172,
+        "runtime": 171,
         "spec": 181
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
@@ -63613,14 +63689,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 87,
+        "shared_component_event_count": 86,
         "status": "finished",
         "successor_event_count": 5,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -63635,7 +63710,8 @@
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
-          "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -63700,10 +63776,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -63961,7 +64036,7 @@
       ],
       "explanation_facts": [
         "Status is finished.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: atlas, casebook, compass, governance-intervention-engine, and +2 more.",
         "Lineage successors: B-096.",
         "Linked diagrams: D-038.",
@@ -64024,14 +64099,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 176,
+          "meaningful_change_count": 175,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -65513,10 +65588,10 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 186,
+        "runtime": 185,
         "spec": 181
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
@@ -65536,14 +65611,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 90,
+        "shared_component_event_count": 89,
         "status": "finished",
         "successor_event_count": 5,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -65558,7 +65632,8 @@
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
-          "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -65623,10 +65698,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -65901,7 +65975,7 @@
       ],
       "explanation_facts": [
         "Status is finished.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: atlas, benchmark, casebook, compass, and +7 more.",
         "Lineage successors: B-096.",
         "Linked diagrams: D-002 and D-038.",
@@ -65964,14 +66038,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 182,
+          "meaningful_change_count": 181,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -66031,10 +66105,10 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 190,
+        "runtime": 189,
         "spec": 181
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
@@ -66054,14 +66128,13 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 96,
+        "shared_component_event_count": 95,
         "status": "finished",
         "successor_event_count": 3,
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -66076,7 +66149,8 @@
           "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
           "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
-          "src/odylith/runtime/domain_intelligence/proposal_contract.py"
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -66141,10 +66215,9 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -66433,7 +66506,7 @@
       ],
       "explanation_facts": [
         "Status is finished.",
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Linked components: atlas, benchmark, casebook, compass, and +14 more.",
         "Lineage successors: B-111, B-112, B-113, B-114, and +3 more.",
         "Linked diagrams: D-039 and D-040.",
@@ -66499,14 +66572,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 183,
+          "meaningful_change_count": 182,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -67007,7 +67080,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -67561,7 +67634,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -68115,7 +68188,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -68669,7 +68742,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -69669,7 +69742,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -81360,7 +81433,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -81472,7 +81545,7 @@
         "policy": 0,
         "renderer": 18,
         "runbook": 0,
-        "runtime": 211,
+        "runtime": 192,
         "spec": 181
       },
       "confidence": "Medium",
@@ -81503,21 +81576,21 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_axes.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_contract_quality.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_terms.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagrams.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
           "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_proposal.py",
           "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_product_risks.py"
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
+          "tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py",
+          "odylith/install.json",
+          "odylith/runtime/source/product-version.v1.json",
+          "github/workflows/release.yml",
+          "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
+          "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
+          "src/odylith/runtime/domain_intelligence/robot_swarm_profile.py",
+          "tests/unit/runtime/test_greenfield_proposals.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_transaction.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -81586,28 +81659,12 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_axes.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_contract_quality.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_terms.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagrams.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
           "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_proposal.py",
           "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_product_risks.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_workstream_intelligence.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py",
           "tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -81790,7 +81847,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-05-03T10:46:04-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-06-02T19:42:32-07:00",
+        "latest_event_ts_iso": "2026-06-02T20:19:36-07:00",
         "latest_explicit_ts_iso": "2026-06-02T18:33:07-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -81957,7 +82014,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 200,
+          "meaningful_change_count": 184,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -82025,7 +82082,7 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 198,
+        "runtime": 178,
         "spec": 182
       },
       "confidence": "Medium",
@@ -82048,29 +82105,29 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 94,
+        "shared_component_event_count": 93,
         "status": "implementation",
         "successor_event_count": 0,
-        "synthetic_count": 2
+        "synthetic_count": 1
       },
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_axes.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_contract_quality.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_terms.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagrams.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
           "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_proposal.py",
           "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_product_risks.py"
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
+          "tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py",
+          "odylith/install.json",
+          "odylith/runtime/source/product-version.v1.json",
+          "github/workflows/release.yml",
+          "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
+          "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
+          "src/odylith/runtime/domain_intelligence/robot_swarm_profile.py",
+          "tests/unit/runtime/test_greenfield_proposals.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_transaction.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -82139,29 +82196,12 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_axes.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_contract_quality.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_terms.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagrams.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
           "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_proposal.py",
           "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_product_risks.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_workstream_intelligence.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py",
-          "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
           "tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py",
           "odylith/install.json",
           "odylith/runtime/source/product-version.v1.json",
@@ -82339,7 +82379,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-06-02T11:59:19-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-06-02T19:42:32-07:00",
+        "latest_event_ts_iso": "2026-06-02T20:19:36-07:00",
         "latest_explicit_ts_iso": "2026-06-02T19:32:56-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -82476,14 +82516,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 196,
+          "meaningful_change_count": 179,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -82534,6 +82574,475 @@
     },
     {
       "case_refs": [
+        "case-workstream-B-143"
+      ],
+      "change_vector": {
+        "build_ci": 0,
+        "cli": 0,
+        "contract": 0,
+        "doc": 10,
+        "policy": 0,
+        "renderer": 18,
+        "runbook": 0,
+        "runtime": 171,
+        "spec": 174
+      },
+      "confidence": "Medium",
+      "diagnostics": {
+        "blast_radius_class": "cross-surface",
+        "closeout_signal": "suppressed_shared_component_only",
+        "decision_count": 17,
+        "developer_doc_count": 0,
+        "direct_event_count": 0,
+        "explicit_count": 154,
+        "fresh_diagrams": true,
+        "idea_file": "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md",
+        "implementation_count": 83,
+        "latest_event_attribution": "shared_component_only",
+        "live_actionable": true,
+        "live_reason": "Implementation workstream is still live.",
+        "other_workstream_event_count": 82,
+        "plan_path": "",
+        "reasoning_confidence": 0.0,
+        "reasoning_state": "",
+        "render_drift": false,
+        "runbook_count": 0,
+        "shared_component_event_count": 73,
+        "status": "implementation",
+        "successor_event_count": 0,
+        "synthetic_count": 1
+      },
+      "evidence_bundle": {
+        "changed_artifacts": [
+          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
+          "tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py",
+          "odylith/install.json",
+          "odylith/runtime/source/product-version.v1.json",
+          "github/workflows/release.yml",
+          "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
+          "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
+          "src/odylith/runtime/domain_intelligence/robot_swarm_profile.py",
+          "tests/unit/runtime/test_greenfield_proposals.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_transaction.py"
+        ],
+        "code_references": [],
+        "evidence_refs": [
+          {
+            "kind": "workstream",
+            "label": "B-143",
+            "value": "B-143"
+          },
+          {
+            "kind": "component",
+            "label": "dashboard",
+            "value": "dashboard"
+          },
+          {
+            "kind": "component",
+            "label": "domain-intelligence",
+            "value": "domain-intelligence"
+          },
+          {
+            "kind": "component",
+            "label": "odylith",
+            "value": "odylith"
+          },
+          {
+            "kind": "diagram",
+            "label": "D-043",
+            "value": "D-043"
+          },
+          {
+            "kind": "path",
+            "label": "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md",
+            "value": "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md"
+          }
+        ],
+        "proof_routes": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-143"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-143"
+          }
+        ]
+      },
+      "evidence_context": {
+        "basis": "mixed",
+        "blast_radius_class": "cross-surface",
+        "changed_artifacts": [
+          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
+          "tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py",
+          "odylith/install.json",
+          "odylith/runtime/source/product-version.v1.json",
+          "github/workflows/release.yml",
+          "odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md",
+          "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
+          "src/odylith/runtime/domain_intelligence/robot_swarm_profile.py",
+          "tests/unit/runtime/test_greenfield_proposals.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
+          "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
+          "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+          "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
+          "src/odylith/cli.py",
+          "src/odylith/install/manager.py",
+          "src/odylith/install/runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+          "src/odylith/runtime/domain_intelligence/proposal_validation.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
+          "src/odylith/runtime/domain_intelligence/archetypes.py",
+          "src/odylith/runtime/domain_intelligence/proposal_planning.py",
+          "src/odylith/runtime/domain_intelligence/proposal_rendering.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
+          "src/odylith/runtime/intervention_engine/prompt_signal_runtime.py",
+          "odylith/AGENTS.md",
+          "src/odylith/bundle/assets/odylith/AGENTS.md",
+          "src/odylith/install/bootstrap_assets.py",
+          "AGENTS.md",
+          "agents/skills/odylith-start/SKILL.md",
+          "claude/commands/odylith-start.md",
+          "src/odylith/install/casebook_metadata_migration.py",
+          "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md",
+          "tests/integration/runtime/test_governance_sync_performance.py",
+          "odylith/casebook/bugs/2026-05-01-casebook-renders-prose-status-and-type-chips.md",
+          "src/odylith/install/migration_runtime.py",
+          "tests/integration/install/test_lifecycle_simulator.py",
+          "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
+          "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
+          "tests/integration/runtime/test_casebook_list_layout_browser.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+          "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
+          "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js",
+          "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
+          "odylith/casebook/bugs/2026-05-01-bootstrap-doctor-repair-still-surfaces-trusted-root-warning-noise.md",
+          "odylith/casebook/bugs/2026-05-01-claude-hooks-spam-unhealthy-launcher-repair-errors-during-bootstrap-repair.md",
+          "odylith/radar/source/releases/releases.v1.json",
+          "src/odylith/runtime/governance/compass_dashboard_refresh_inputs.py",
+          "src/odylith/runtime/surfaces/compass_standup_brief_runtime_patch.py",
+          "agents/bin/odylith-host-launcher.py",
+          "src/odylith/runtime/surfaces/claude_host_prompt_bundle.py",
+          "src/odylith/runtime/surfaces/claude_host_prompt_context.py",
+          "src/odylith/runtime/surfaces/claude_host_session_brief.py",
+          "src/odylith/runtime/surfaces/codex_host_prompt_context.py",
+          "src/odylith/runtime/surfaces/codex_host_session_brief.py",
+          "src/odylith/runtime/surfaces/host_intervention_support.py",
+          "odylith/radar/source/ideas/2026-05/2026-05-01-claude-hook-latency-budget-and-fast-path-startup.md",
+          "src/odylith/runtime/governance/surface_refresh_fingerprint_dag.py",
+          "src/odylith/runtime/surfaces/backlog_traceability_paths.py",
+          "tests/unit/runtime/test_backlog_traceability_paths.py",
+          "tests/unit/runtime/test_surface_refresh_fingerprint_dag.py",
+          "src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py",
+          "odylith/casebook/bugs/2026-04-06-repair-and-reinstall-do-not-converge-after-partial-runtime-failure.md",
+          "odylith/technical-plans/done/2026-04/2026-04-27-repair-reinstall-partial-runtime-convergence.md",
+          "src/odylith/install/runtime_tree_policy.py",
+          "tests/integration/install/test_manager.py",
+          "tests/unit/install/test_runtime.py",
+          "odylith/casebook/bugs/2026-04-27-upgrade-reviewability-still-needs-generated-change-manifest-and-lock-compaction.md",
+          "src/odylith/install/upgrade_reporting.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-27-migration-runtime-release-gate.md",
+          "odylith/technical-plans/done/2026-04/2026-04-27-migration-runtime-release-gate.md",
+          "odylith/casebook/bugs/2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md",
+          "tests/unit/install/test_migration_runtime.py",
+          "odylith/technical-plans/in-progress/2026-04/2026-04-27-migration-runtime-release-gate.md",
+          "odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md",
+          "src/odylith/install/lock_hygiene.py",
+          "src/odylith/install/release_assets.py",
+          "src/odylith/runtime/governance/workstream_inference.py",
+          "docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md",
+          "docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md",
+          "docs/benchmarks/latest-summary.v1.json",
+          "odylith/casebook/bugs/2026-04-24-benchmark-disposable-worktrees-resolve-validators-against-a-non-benchmark-ready-.md",
+          "odylith/runtime/odylith-benchmarks/latest-diagnostic.v1.json",
+          "odylith/runtime/odylith-benchmarks/latest-proof.v1.json",
+          "odylith/atlas/source/odylith-anti-slop-governance-and-host-parity.mmd",
+          "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-surfaces-and-release-proof.md",
+          "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-tooling-and-host-parity.md",
+          "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+          "src/odylith/runtime/surfaces/compass_standup_brief_batch.py",
+          "tests/integration/runtime/test_surface_browser_deep.py",
+          "tests/unit/runtime/test_compass_standup_brief_batch.py",
+          "odylith/runtime/source/discipline-evaluation-corpus.v1.json",
+          "src/odylith/runtime/discipline/benchmark.py",
+          "src/odylith/runtime/discipline/signals.py",
+          "src/odylith/runtime/discipline/support.py",
+          "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+          "src/odylith/runtime/discipline/laws.py",
+          "src/odylith/runtime/discipline/memory.py",
+          "src/odylith/runtime/discipline/pressure.py",
+          "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+          "src/odylith/runtime/governance/validate_discipline.py",
+          "tests/unit/runtime/test_discipline.py",
+          "tests/unit/runtime/test_sync_cli_compat.py",
+          "tests/unit/runtime/test_validate_discipline.py",
+          "src/odylith/runtime/discipline/proof.py",
+          "src/odylith/runtime/discipline/voice.py",
+          "odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md",
+          "src/odylith/runtime/governance/backlog_authoring.py",
+          "src/odylith/runtime/governance/release_planning_authoring.py",
+          "tests/unit/runtime/test_backlog_authoring.py",
+          "tests/unit/test_cli.py",
+          "odylith/radar/source/ideas/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md",
+          "odylith/radar/source/releases/release-assignment-events.v1.jsonl",
+          "odylith/atlas/source/odylith-adaptive-discipline-loop.mmd",
+          "src/odylith/runtime/discipline/contract.py",
+          "src/odylith/runtime/intervention_engine/visibility_broker.py",
+          "tests/integration/runtime/test_intervention_visibility_browser.py",
+          "tests/unit/runtime/test_intervention_visibility_broker.py",
+          "tests/integration/runtime/test_context_execution_alignment_browser.py",
+          "tests/unit/runtime/test_component_registry_candidate_policy.py",
+          "src/odylith/runtime/context_engine/execution_engine_handshake.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py",
+          "src/odylith/runtime/orchestration/subagent_router_execution_engine_runtime.py",
+          "src/odylith/runtime/reasoning/remediator.py",
+          "tests/unit/runtime/test_execution_engine_handshake.py",
+          "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
+          "odylith/radar/source/programs/B-099.execution-waves.v1.json",
+          "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
+          "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+          "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md",
+          "odylith/casebook/bugs/2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md",
+          "src/odylith/runtime/intervention_engine/host_surface_runtime.py",
+          "src/odylith/runtime/surfaces/host_visible_intervention.py",
+          "odylith/radar/source/INDEX.md",
+          "odylith/radar/source/ideas/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+          "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+          "odylith/radar/source/ideas/2026-04/2026-04-12-execution-governance-benchmark-family-and-honest-ablation-proof.md",
+          "odylith/technical-plans/in-progress/2026-04/2026-04-12-odylith-execution-governance-benchmark-family-and-honest-ablation-proof.md",
+          "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
+          "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
+          "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+          "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+          "odylith/casebook/bugs/2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md",
+          "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+          "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+          "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py",
+          "src/odylith/runtime/orchestration/odylith_chatter_runtime.py",
+          "README.md",
+          "docs/benchmarks/README.md",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
+          "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md",
+          "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md",
+          "odylith/technical-plans/in-progress/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md",
+          "odylith/technical-plans/INDEX.md",
+          "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+          "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+          "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+          "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
+          "odylith/registry/source/components/casebook/CURRENT_SPEC.md",
+          "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+          "odylith/compass/compass.html",
+          "odylith/index.html",
+          "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
+          "src/odylith/runtime/surfaces/render_backlog_ui.py",
+          "src/odylith/runtime/surfaces/render_compass_dashboard.py",
+          "src/odylith/runtime/surfaces/render_registry_dashboard.py",
+          "odylith/atlas/source/catalog/diagrams.v1.json"
+        ],
+        "code_references": [],
+        "freshness": "current",
+        "latest_direct_event_ts_iso": "",
+        "latest_event_attribution": "shared_component_only",
+        "latest_event_ts_iso": "2026-06-02T20:19:36-07:00",
+        "latest_explicit_ts_iso": "2026-06-02T11:59:19-07:00",
+        "latest_signal_kind": "workspace_activity",
+        "linked_components": [
+          "dashboard",
+          "domain-intelligence",
+          "odylith"
+        ],
+        "linked_diagrams": [
+          "D-043"
+        ],
+        "linked_surfaces": [
+          "Registry",
+          "Radar",
+          "Compass",
+          "Atlas",
+          "Shell"
+        ],
+        "linked_workstreams": [
+          "B-143"
+        ],
+        "successor_workstreams": []
+      },
+      "evidence_refs": [
+        {
+          "kind": "workstream",
+          "label": "B-143",
+          "value": "B-143"
+        },
+        {
+          "kind": "component",
+          "label": "dashboard",
+          "value": "dashboard"
+        },
+        {
+          "kind": "component",
+          "label": "domain-intelligence",
+          "value": "domain-intelligence"
+        },
+        {
+          "kind": "component",
+          "label": "odylith",
+          "value": "odylith"
+        },
+        {
+          "kind": "diagram",
+          "label": "D-043",
+          "value": "D-043"
+        },
+        {
+          "kind": "path",
+          "label": "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md",
+          "value": "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md"
+        }
+      ],
+      "explanation_facts": [
+        "Status is implementation.",
+        "Evidence quality is mixed.",
+        "Linked components: dashboard, domain-intelligence, and odylith.",
+        "Lineage successors: none.",
+        "Linked diagrams: D-043.",
+        "Traceability coverage includes 0 runbook(s), 0 developer doc(s), and 0 code reference(s)."
+      ],
+      "operator_readout": {
+        "action": "Capture the final reviewed checkpoint for B-143 and clear linked surfaces before closeout.",
+        "action_kind": "clear_closeout",
+        "issue": "Closeout confidence is ahead of the last trustworthy proof for Decompose greenfield project intelligence surface.",
+        "primary_scenario": "unsafe_closeout",
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-143"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-143"
+          }
+        ],
+        "requires_approval": true,
+        "secondary_scenarios": [],
+        "severity": "watch",
+        "source": "deterministic",
+        "why_hidden": "The scope can look complete in linked tools while the final checkpoint, clearance pass, or refresh is still behind the apparent finish line."
+      },
+      "posture_mode": "closure_hardening",
+      "proof_state_resolution": {
+        "lane_ids": [],
+        "state": "none"
+      },
+      "scope_id": "B-143",
+      "scope_key": "workstream:B-143",
+      "scope_label": "Decompose greenfield project intelligence surface",
+      "scope_signal": {
+        "budget_class": "fast_simple",
+        "caps": [],
+        "feature_vector": {
+          "blast_radius_class": "cross-surface",
+          "broad_fanout": false,
+          "cross_surface_conflict": false,
+          "decision_count": 17,
+          "decision_evidence": true,
+          "explicit_count": 154,
+          "frontier_phase": "",
+          "generated_only_churn": false,
+          "governance_only_local_change": false,
+          "has_any_signal": true,
+          "implementation_count": 83,
+          "implementation_evidence": true,
+          "linked_child_count": 0,
+          "linked_surface_count": 5,
+          "meaningful_change_count": 175,
+          "meaningful_scope_activity": true,
+          "narrow_verified_signal": true,
+          "open_warning": false,
+          "proof_blocker": false,
+          "proof_status": "",
+          "stale_authority": false,
+          "synthetic_count": 1,
+          "unsafe_closeout": false,
+          "verified_completion": false
+        },
+        "label": "Active scope",
+        "promoted_default": true,
+        "rank": 3,
+        "reasons": [
+          "A narrow verified scoped signal was recorded.",
+          "Explicit decision evidence is present.",
+          "Explicit implementation evidence is present.",
+          "Meaningful scope-local implementation evidence is present."
+        ],
+        "rung": "R3",
+        "token": "active_scope"
+      },
+      "scope_type": "workstream",
+      "scores": {
+        "blast_radius_severity": 58,
+        "closure_readiness": 90,
+        "cross_surface_convergence": 100,
+        "decision_debt": 16,
+        "governance_lag": 64,
+        "workstream_concentration": 32
+      },
+      "surface_contributions": [
+        {
+          "scope_key": "workstream:B-143",
+          "surface": "Registry"
+        },
+        {
+          "scope_key": "workstream:B-143",
+          "surface": "Radar"
+        },
+        {
+          "scope_key": "workstream:B-143",
+          "surface": "Compass"
+        },
+        {
+          "scope_key": "workstream:B-143",
+          "surface": "Atlas"
+        },
+        {
+          "scope_key": "workstream:B-143",
+          "surface": "Shell"
+        }
+      ],
+      "trajectory": "hardening"
+    },
+    {
+      "case_refs": [
         "case-component-atlas"
       ],
       "change_vector": {
@@ -82544,10 +83053,10 @@
         "policy": 0,
         "renderer": 4,
         "runbook": 0,
-        "runtime": 50,
+        "runtime": 49,
         "spec": 21
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "decision_count": 7,
@@ -82561,7 +83070,7 @@
         "reasoning_state": "",
         "runbook_count": 0,
         "status": "active",
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [],
@@ -82628,7 +83137,7 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
         "latest_event_ts_iso": "2026-06-02T19:32:56-07:00",
@@ -82757,7 +83266,7 @@
         }
       ],
       "explanation_facts": [
-        "Evidence quality is mixed.",
+        "Evidence quality is explicit.",
         "Blast radius class is cross-surface.",
         "Linked surfaces: Registry, Radar, Compass, Atlas, and +1 more.",
         "Linked workstreams: B-001, B-059, B-063, B-006, and +19 more.",
@@ -82830,7 +83339,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -83800,7 +84309,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -84235,7 +84744,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -84370,7 +84879,7 @@
         "fresh_diagrams": false,
         "implementation_count": 24,
         "live_actionable": true,
-        "live_reason": "Linked to live workstream B-022, B-021, and +11 more.",
+        "live_reason": "Linked to live workstream B-022, B-021, and +12 more.",
         "reasoning_confidence": 0.0,
         "reasoning_state": "",
         "runbook_count": 0,
@@ -84501,7 +85010,8 @@
           "D-029",
           "D-030",
           "D-031",
-          "D-039"
+          "D-039",
+          "D-043"
         ],
         "linked_surfaces": [
           "Registry",
@@ -84556,7 +85066,8 @@
           "B-090",
           "B-091",
           "B-098",
-          "B-110"
+          "B-110",
+          "B-143"
         ]
       },
       "evidence_refs": [
@@ -84615,7 +85126,7 @@
         "Evidence quality is explicit.",
         "Blast radius class is cross-surface.",
         "Linked surfaces: Registry, Radar, Compass, Atlas, and +1 more.",
-        "Linked workstreams: B-001, B-058, B-006, B-002, and +42 more.",
+        "Linked workstreams: B-001, B-058, B-006, B-002, and +43 more.",
         "Traceability coverage includes 0 runbook(s) and 0 developer doc(s)."
       ],
       "operator_readout": {
@@ -84674,7 +85185,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -84718,7 +85229,7 @@
           "has_any_signal": true,
           "implementation_count": 24,
           "implementation_evidence": true,
-          "linked_child_count": 46,
+          "linked_child_count": 47,
           "linked_surface_count": 5,
           "meaningful_change_count": 0,
           "meaningful_scope_activity": true,
@@ -85061,7 +85572,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -85176,7 +85687,7 @@
         "policy": 0,
         "renderer": 0,
         "runbook": 0,
-        "runtime": 54,
+        "runtime": 38,
         "spec": 16
       },
       "confidence": "Medium",
@@ -85188,7 +85699,7 @@
         "fresh_diagrams": true,
         "implementation_count": 28,
         "live_actionable": true,
-        "live_reason": "Linked to live workstream B-141 and B-142.",
+        "live_reason": "Linked to live workstream B-141, B-142, and +1 more.",
         "reasoning_confidence": 0.0,
         "reasoning_state": "",
         "runbook_count": 0,
@@ -85208,6 +85719,11 @@
             "kind": "workstream",
             "label": "B-142",
             "value": "B-142"
+          },
+          {
+            "kind": "workstream",
+            "label": "B-143",
+            "value": "B-143"
           },
           {
             "kind": "component",
@@ -85248,7 +85764,7 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-06-02T19:42:32-07:00",
+        "latest_event_ts_iso": "2026-06-02T20:19:36-07:00",
         "latest_explicit_ts_iso": "2026-06-02T11:59:19-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -85266,7 +85782,8 @@
         ],
         "linked_workstreams": [
           "B-141",
-          "B-142"
+          "B-142",
+          "B-143"
         ]
       },
       "evidence_refs": [
@@ -85279,6 +85796,11 @@
           "kind": "workstream",
           "label": "B-142",
           "value": "B-142"
+        },
+        {
+          "kind": "workstream",
+          "label": "B-143",
+          "value": "B-143"
         },
         {
           "kind": "component",
@@ -85300,7 +85822,7 @@
         "Evidence quality is mixed.",
         "Blast radius class is cross-surface.",
         "Linked surfaces: Registry, Radar, Compass, Atlas, and +1 more.",
-        "Linked workstreams: B-141 and B-142.",
+        "Linked workstreams: B-141, B-142, and B-143.",
         "Traceability coverage includes 0 runbook(s) and 0 developer doc(s)."
       ],
       "operator_readout": {
@@ -85361,7 +85883,7 @@
           "has_any_signal": true,
           "implementation_count": 28,
           "implementation_evidence": true,
-          "linked_child_count": 2,
+          "linked_child_count": 3,
           "linked_surface_count": 5,
           "meaningful_change_count": 0,
           "meaningful_scope_activity": true,
@@ -86890,7 +87412,7 @@
         "fresh_diagrams": false,
         "implementation_count": 72,
         "live_actionable": true,
-        "live_reason": "Linked to live workstream B-021, B-033, and +16 more.",
+        "live_reason": "Linked to live workstream B-021, B-033, and +17 more.",
         "reasoning_confidence": 0.0,
         "reasoning_state": "",
         "runbook_count": 0,
@@ -87138,7 +87660,8 @@
           "B-135",
           "B-131",
           "B-141",
-          "B-142"
+          "B-142",
+          "B-143"
         ]
       },
       "evidence_refs": [
@@ -87197,7 +87720,7 @@
         "Evidence quality is explicit.",
         "Blast radius class is cross-surface.",
         "Linked surfaces: Registry, Radar, Compass, Atlas, and +1 more.",
-        "Linked workstreams: B-001, B-004, B-005, B-031, and +97 more.",
+        "Linked workstreams: B-001, B-004, B-005, B-031, and +98 more.",
         "Traceability coverage includes 0 runbook(s) and 0 developer doc(s)."
       ],
       "operator_readout": {
@@ -87256,7 +87779,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -87300,7 +87823,7 @@
           "has_any_signal": true,
           "implementation_count": 72,
           "implementation_evidence": true,
-          "linked_child_count": 101,
+          "linked_child_count": 102,
           "linked_surface_count": 5,
           "meaningful_change_count": 0,
           "meaningful_scope_activity": true,
@@ -87639,7 +88162,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -88090,7 +88613,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -90006,7 +90529,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -92685,7 +93208,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -92803,7 +93326,7 @@
         "runtime": 2,
         "spec": 11
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "contract-level",
         "decision_count": 22,
@@ -92816,7 +93339,7 @@
         "reasoning_state": "",
         "stale_diagram": false,
         "status": "active",
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [],
@@ -92883,7 +93406,7 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "contract-level",
         "freshness": "fresh",
         "latest_event_ts_iso": "2026-06-02T19:32:56-07:00",
@@ -92988,7 +93511,7 @@
         "Atlas freshness is fresh.",
         "Linked components: odylith, dashboard, radar, atlas, and +3 more.",
         "Linked workstreams: B-001.",
-        "Evidence quality is mixed."
+        "Evidence quality is explicit."
       ],
       "operator_readout": {
         "action": "Capture the final reviewed checkpoint for B-001 and clear linked surfaces before closeout.",
@@ -93052,7 +93575,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -93753,7 +94276,7 @@
         "runtime": 20,
         "spec": 19
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "decision_count": 22,
@@ -93766,7 +94289,7 @@
         "reasoning_state": "",
         "stale_diagram": false,
         "status": "active",
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [],
@@ -93833,7 +94356,7 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "fresh",
         "latest_event_ts_iso": "2026-06-02T19:32:56-07:00",
@@ -93938,7 +94461,7 @@
         "Atlas freshness is fresh.",
         "Linked components: odylith, registry, casebook, compass, and +3 more.",
         "Linked workstreams: B-001.",
-        "Evidence quality is mixed."
+        "Evidence quality is explicit."
       ],
       "operator_readout": {
         "action": "Capture the final reviewed checkpoint for B-001 and clear linked surfaces before closeout.",
@@ -94002,7 +94525,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -100145,7 +100668,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "46377e36741c9a4f8f63ce10d3c7ac951bbc9275",
+          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -103891,7 +104414,7 @@
         "runtime": 6,
         "spec": 5
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "local",
         "decision_count": 22,
@@ -103904,7 +104427,7 @@
         "reasoning_state": "",
         "stale_diagram": true,
         "status": "active",
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [],
@@ -103979,7 +104502,7 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "local",
         "freshness": "stale",
         "latest_event_ts_iso": "2026-06-02T19:32:56-07:00",
@@ -104062,7 +104585,7 @@
         "Atlas freshness is stale.",
         "Linked components: odylith, atlas, dashboard, and compass.",
         "Linked workstreams: none.",
-        "Evidence quality is mixed."
+        "Evidence quality is explicit."
       ],
       "operator_readout": {
         "action": "Refresh the governing authority for Discipline Surface DAGs And Release Proof and confirm that linked proofs now point at the current source of truth.",
@@ -104146,7 +104669,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": true,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -104203,7 +104726,7 @@
         "runtime": 10,
         "spec": 4
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "local",
         "decision_count": 19,
@@ -104216,7 +104739,7 @@
         "reasoning_state": "",
         "stale_diagram": false,
         "status": "active",
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [],
@@ -104283,7 +104806,7 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "local",
         "freshness": "fresh",
         "latest_event_ts_iso": "2026-06-02T19:32:56-07:00",
@@ -104360,7 +104883,7 @@
         "Atlas freshness is fresh.",
         "Linked components: odylith, atlas, and benchmark.",
         "Linked workstreams: none.",
-        "Evidence quality is mixed."
+        "Evidence quality is explicit."
       ],
       "operator_readout": {
         "action": "Capture the final reviewed checkpoint for Anti-Slop Governance And Host Parity and clear linked surfaces before closeout.",
@@ -104434,7 +104957,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -104743,7 +105266,7 @@
         "reasoning_state": "",
         "stale_diagram": false,
         "status": "active",
-        "synthetic_count": 2
+        "synthetic_count": 1
       },
       "evidence_bundle": {
         "changed_artifacts": [],
@@ -104813,7 +105336,7 @@
         "basis": "mixed",
         "blast_radius_class": "local",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-06-02T19:42:32-07:00",
+        "latest_event_ts_iso": "2026-06-02T20:19:36-07:00",
         "latest_explicit_ts_iso": "2026-03-01T21:38:40-08:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -104968,7 +105491,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -105024,7 +105547,7 @@
         "runtime": 3,
         "spec": 3
       },
-      "confidence": "Medium",
+      "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "local",
         "decision_count": 19,
@@ -105037,7 +105560,7 @@
         "reasoning_state": "",
         "stale_diagram": true,
         "status": "active",
-        "synthetic_count": 1
+        "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [],
@@ -105112,7 +105635,7 @@
         ]
       },
       "evidence_context": {
-        "basis": "mixed",
+        "basis": "explicit",
         "blast_radius_class": "local",
         "freshness": "stale",
         "latest_event_ts_iso": "2026-06-02T19:32:56-07:00",
@@ -105208,7 +105731,7 @@
         "Atlas freshness is stale.",
         "Linked components: governed-harness, odylith-context-engine, execution-engine, proof-state, and +3 more.",
         "Linked workstreams: none.",
-        "Evidence quality is mixed."
+        "Evidence quality is explicit."
       ],
       "operator_readout": {
         "action": "Refresh the governing authority for Governed Harness Turn Gate Topology and confirm that linked proofs now point at the current source of truth.",
@@ -105292,7 +105815,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": true,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -105356,7 +105879,7 @@
       "scope_signal_token": "actionable_priority",
       "severity": "watch"
     },
-    "queue_size": 77,
+    "queue_size": 78,
     "top_queue_item": {
       "action_label": "Review proposed fix",
       "brief": "Cross-host hook latency budget and fast-path startup looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if CURRENT_SPEC.md already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind CURRENT_SPEC.md before treating Cross-host hook latency budget and fast-path startup as authoritative across Registry, Radar, Compass, and Atlas.",
@@ -105438,8 +105961,8 @@
         "scope_type": "workstream",
         "severity": "watch"
       },
-      "selection_reason": "Selected as the highest-ranked unsafe closeout workstream so the queue covers a distinct case class before same-scenario priority fill. Live rationale: Implementation workstream is still live. It sits in a 2-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 2,
+      "selection_reason": "Selected as the highest-ranked unsafe closeout workstream so the queue covers a distinct case class before same-scenario priority fill. Live rationale: Implementation workstream is still live. It sits in a 3-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 3,
       "selection_slot": "scenario_coverage",
       "systemic_theme_tags": [
         "authority",

@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-06-02
+Last updated: 2026-06-03
 
 
 ## Overview
@@ -71,6 +71,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-19: Tightened the confirmed-intent internal-systems gate so fail-closed create still rejects the exact generic fallback trio while accepting domain-specific systems that own evidence review, such as a race gearbox run evidence review surface. The recurrence is captured under `CB-202`, and the regression tests prove both acceptance and rejection paths. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-05-20: Added the confirmed-completion gate for `greenfield create --confirm`. Confirmed proposals now fill deterministic omissions before writes: project posture, backlog risk/security fields, component interfaces/dependencies/validation/risks, and non-self-invalidating Atlas watch paths. The gate reruns proposal and governed-artifact Tribunals before create applies source truth, so a rich accepted intent produces a full Radar/Registry/Atlas/release/Compass project set instead of stopping on missing derivable fields. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-02: Hardened the post-confirm semantic render path so first-path clauses, component contracts, Atlas labels, runtime JSON, public dashboard prose, Radar workstreams, and Registry component specs reject parser debris, activity-shaped actor names, framework proof scaffolds, bare outcome nouns, coordinated action-verb drift, and component-boundary boilerplate before any confirmed greenfield writes. First-path parsing now lives in `greenfield_first_path_semantics.py`, separate from title normalization, release classification, and slop scanning. The pass keeps the fix provider-free and domain-agnostic, with regression coverage in `test_greenfield_post_confirm_slop_regressions.py`, an 11.67-second confirmed-create E2E run with no slop hits, and rendered browser proof for Radar and Registry behavior. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-03: Decomposed confirmed-intent completion so `greenfield_confirmed_actor_completion.py` owns actor row completion, actor label derivation, generated meta-row rejection, and actor description repair, while `greenfield_confirmed_intent_completion.py` keeps orchestration, core-field completion, system completion, title repair, and product posture. Shared confirmed text helpers now live in `greenfield_confirmed_text.py`, the former parent dropped below the source-size ceiling, and `test_greenfield_confirmed_intent.py` pins the actor phase outside the parent. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -115,6 +116,11 @@ This section captures synchronized requirement and contract signals derived from
   runtime JSON text still contains parser debris, role/action splices, bare
   outcome nouns, generic proof scaffolds, component-boundary boilerplate, or
   unclear human-visible copy.
+- Confirmed-intent actor completion must stay in
+  `greenfield_confirmed_actor_completion.py`. The parent completion module may
+  call `completed_actor_rows`, `actor_labels`, and `actor_row_description`, but
+  it must not reintroduce local actor label derivation, generated meta-row
+  filtering, or actor description repair.
 - Installed greenfield guidance must not ask Codex or Claude hosts to hand-author
   or reconstruct proposal JSON. Proposal review uses the canonical object from
   `greenfield propose`; confirmation uses `greenfield create --confirm` unless an
@@ -250,6 +256,7 @@ confirmation gates, topology requirements, apply schema, and durable memory.
 ## Test Coverage
 
 - `tests/unit/runtime/test_greenfield_proposals.py`
+- `tests/unit/runtime/test_greenfield_confirmed_intent.py`
 - `tests/unit/runtime/test_greenfield_host_routing.py`
 - `tests/unit/runtime/test_greenfield_intelligence_schema.py`
 - `tests/unit/runtime/test_greenfield_atlas_contract.py`

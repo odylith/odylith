@@ -6,8 +6,24 @@ import re
 from collections.abc import Sequence
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
+
+
+GENERIC_TITLE_WORDS = {
+    "app",
+    "application",
+    "helper",
+    "platform",
+    "product",
+    "service",
+    "system",
+    "tool",
+    "tracker",
+    "workspace",
+}
 
 
 def compact_text(value: str) -> str:
@@ -15,6 +31,101 @@ def compact_text(value: str) -> str:
     text = text.replace("**", "").replace("__", "").replace("`", "")
     text = re.sub(r"\s+([,.;:?!])", r"\1", text)
     return " ".join(text.split())
+
+
+def clean_confirmed_text(value: Any) -> str:
+    text = clean_text(value)
+    text = text.replace("**", "").replace("__", "").replace("`", "")
+    text = re.sub(r"\s+([,.;:?!])", r"\1", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def sentence_confirmed_text(value: str) -> str:
+    text = clean_confirmed_text(value).strip()
+    if text and text[-1] not in ".!?":
+        text += "."
+    return text
+
+
+def short_confirmed_text(value: str, *, fallback: str = "", limit: int = 220) -> str:
+    text = clean_confirmed_text(value) or fallback
+    if len(text) <= limit:
+        return text.rstrip(".")
+    clipped = text[:limit].rsplit(" ", 1)[0].rstrip(" ,;:")
+    words = clipped.split()
+    dangling = {"and", "or", "to", "with", "without", "for", "from", "of", "the", "a", "an", "required"}
+    while words and words[-1].casefold().strip(".,;:") in dangling:
+        words.pop()
+    return " ".join(words).rstrip(" ,;:.")
+
+
+def join_confirmed_items(values: Sequence[str]) -> str:
+    cleaned = [clean_confirmed_text(value).rstrip(".") for value in values if clean_confirmed_text(value)]
+    if len(cleaned) <= 1:
+        return cleaned[0] if cleaned else ""
+    if len(cleaned) == 2:
+        return f"{cleaned[0]} and {cleaned[1]}"
+    return ", ".join(cleaned[:-1]) + f", and {cleaned[-1]}"
+
+
+def semantic_terms(text: str) -> set[str]:
+    stop = {
+        "and",
+        "are",
+        "before",
+        "can",
+        "for",
+        "from",
+        "has",
+        "have",
+        "into",
+        "that",
+        "the",
+        "this",
+        "with",
+        "without",
+    }
+    terms: set[str] = set()
+    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", clean_confirmed_text(text).casefold()):
+        token = normalize_domain_token(raw, minimum=3, stopwords=stop)
+        if token.endswith("ing") and len(token) > 5:
+            token = token[:-3]
+        if token:
+            terms.add(token)
+    return terms
+
+
+def semantic_overlap(left: str, right: str) -> int:
+    return len(semantic_terms(left) & semantic_terms(right))
+
+
+def title_case_text(value: str) -> str:
+    words: list[str] = []
+    connectors = {"a", "an", "and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"}
+    for index, word in enumerate(clean_confirmed_text(value).split()):
+        lower = word.casefold()
+        if lower in {"ai", "api", "crm", "gis", "iot", "llm", "ml", "ui", "ux"}:
+            words.append(lower.upper())
+        elif index > 0 and lower in connectors:
+            words.append(lower)
+        else:
+            words.append(word[:1].upper() + word[1:])
+    return " ".join(words)
+
+
+def word_count(value: str) -> int:
+    return len(re.findall(r"[A-Za-z0-9]+", clean_confirmed_text(value)))
+
+
+def focus_label(title: str) -> str:
+    words = [
+        word
+        for word in re.findall(r"[A-Za-z0-9]+", title)
+        if word.casefold() not in GENERIC_TITLE_WORDS
+    ]
+    if not words:
+        words = re.findall(r"[A-Za-z0-9]+", title)[:3]
+    return title_case_text(" ".join(words[:4]) or "Project")
 
 
 def domain_object_label(value: str, *, fallback: str) -> str:

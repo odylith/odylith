@@ -431,6 +431,26 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   and
   `tests/unit/test_cli.py::test_greenfield_propose_confirm_intent_json_is_provider_free`
   (`3 passed`).
+- 2026-06-03 confirmed-intent completion decomposition moved actor row
+  completion, actor label derivation, meta-row rejection, and actor description
+  repair into `greenfield_confirmed_actor_completion.py`; the parent
+  `greenfield_confirmed_intent_completion.py` now imports that contract and
+  reuses shared confirmed-text helpers from `greenfield_confirmed_text.py`
+  instead of keeping local utility forks. The parent dropped from 1,374 to 846
+  lines, the new actor owner is 449 lines, and a source-level regression test
+  pins the actor phase outside the parent. Proof:
+  `.venv/bin/python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py`;
+  `.venv/bin/python -m pytest -q
+  tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py
+  tests/unit/runtime/test_greenfield_confirmed_repair.py
+  tests/unit/runtime/test_greenfield_artifact_language_quality.py` (`21
+  passed`); `.venv/bin/python -m pytest -q
+  tests/unit/runtime/test_greenfield_confirmed_intent.py` (`26 passed`); and
+  the widened greenfield artifact bundle with confirmed-intent coverage (`93
+  passed`).
 
 ## Rollout
 - Ship in v0.1.14 with B-141 because the user-facing failure is inseparable from consumer-lane host UX hardening: low latency is not enough if empty-repo greenfield prompts dead-end or if accepted proposals fail to show programs, waves, release targets, Registry topology, and Atlas traceability.
