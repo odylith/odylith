@@ -756,6 +756,24 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `PYTHONPATH=src .venv/bin/python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 11.96s`).
+- 2026-06-03 confirmed-intent validation decomposition moved field-threshold
+  checks, meta-narration rejection, qualitative intent gap detection,
+  progression/outcome scoring, and semantic-overlap term extraction into
+  `greenfield_confirmed_intent_validation.py`. The confirmed-intent parser now
+  stays focused on file loading, JSON/Markdown normalization, section parsing,
+  and preamble derivation (`greenfield_confirmed_intent.py`: 880 to 671
+  lines), while `test_greenfield_confirmed_intent.py` pins validation ownership
+  and the parser soft-limit ceiling. Proof: `.venv/bin/python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_validation.py
+  tests/unit/runtime/test_greenfield_confirmed_intent.py` passed;
+  `.venv/bin/python -m pytest -q
+  tests/unit/runtime/test_greenfield_confirmed_intent.py` passed (`27 passed in
+  41.27s`); the broader greenfield artifact-quality bundle passed (`118 passed
+  in 349.90s`); and the escalated Chromium-capable run of `PYTHONPATH=src
+  .venv/bin/python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 11.79s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

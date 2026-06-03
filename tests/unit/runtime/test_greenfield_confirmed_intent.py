@@ -30,6 +30,9 @@ CONFIRMED_ACTOR_COMPLETION_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py"
 )
 CONFIRMED_SYSTEM_ROWS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_rows.py"
+CONFIRMED_INTENT_VALIDATION_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_validation.py"
+)
 
 
 def _max_word_overlap(values: list[str]) -> float:
@@ -65,15 +68,24 @@ def test_confirmed_intent_system_rows_stay_in_dedicated_owner() -> None:
     parser_path = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py"
     parser_source = parser_path.read_text(encoding="utf-8")
     system_source = CONFIRMED_SYSTEM_ROWS_PATH.read_text(encoding="utf-8")
+    validation_source = CONFIRMED_INTENT_VALIDATION_PATH.read_text(encoding="utf-8")
 
-    assert len(parser_source.splitlines()) < 1200
+    assert len(parser_source.splitlines()) < 800
     assert "def _role_or_system_rows" not in parser_source
     assert "def _system_sentence_row" not in parser_source
+    assert "def _validate_confirmed_intent" not in parser_source
+    assert "def _qualitative_intent_gaps" not in parser_source
+    assert "def _semantic_terms" not in parser_source
     assert "role_or_system_rows as _role_or_system_rows" in parser_source
     assert "contains_generic_system_scaffold as _contains_generic_system_scaffold" in parser_source
+    assert "validate_confirmed_intent as _validate_confirmed_intent" in parser_source
     assert "def role_or_system_rows" in system_source
     assert "def internal_system_rows" in system_source
     assert "looks_like_finite_action" in system_source
+    assert "def validate_confirmed_intent" in validation_source
+    assert "def _qualitative_intent_gaps" in validation_source
+    assert "def _semantic_terms" in validation_source
+    assert "def has_progression_or_outcome" in validation_source
 
 
 def test_confirmed_intent_parser_keeps_ambiguities_out_of_first_path() -> None:
