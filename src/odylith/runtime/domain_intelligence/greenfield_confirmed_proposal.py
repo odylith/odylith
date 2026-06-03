@@ -18,10 +18,10 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_claim_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import (
     confirmed_components,
-    confirmed_project_brief,
     domain_label,
-    shell_quote,
 )
+from odylith.runtime.domain_intelligence.greenfield_command_text import shell_quote
+from odylith.runtime.domain_intelligence.greenfield_confirmed_project_brief import confirmed_project_brief
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_text as _compact_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label as _domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_items as _join_items

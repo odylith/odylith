@@ -5,13 +5,10 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from odylith.runtime.domain_intelligence import greenfield_programs
+from odylith.runtime.domain_intelligence.greenfield_command_text import shell_quote
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import render_project_intelligence_section
 
 DEFAULT_GREENFIELD_RELEASE_SELECTOR = greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR
-
-
-def shell_quote(value: str) -> str:
-    return "'" + str(value).replace("'", "'\"'\"'") + "'"
 
 
 def _release_selector(release_plan: Mapping[str, Any]) -> str:

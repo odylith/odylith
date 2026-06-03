@@ -1043,6 +1043,19 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   projection proof passed (`13 passed, 74 deselected in 13.48s`); standard
   greenfield artifact-quality proof passed (`143 passed in 235.82s`); and
   confirmed-create performance proof passed (`1 passed in 11.44s`).
+- 2026-06-03 confirmed project-brief decomposition moved project-brief
+  generation and host-independent command handoff text into
+  `greenfield_confirmed_project_brief.py`, and consolidated greenfield command
+  quoting in `greenfield_command_text.py`. `greenfield_confirmed_components.py`
+  now owns Registry component generation only (`792` to `581` lines), while
+  the project-brief owner is `249` lines and the command-text owner is `10`
+  lines. `test_greenfield_component_spec_quality.py::test_confirmed_project_brief_stays_in_dedicated_owner`
+  pins the owner boundary and single shell-quote owner. Proof: syntax proof
+  passed for touched component, project-brief, proposal, rendering, and review
+  card modules; focused component/proposal proof passed (`60 passed in
+  21.26s`); standard greenfield artifact-quality proof passed (`144 passed in
+  238.94s`); and confirmed-create performance proof passed (`1 passed in
+  11.48s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

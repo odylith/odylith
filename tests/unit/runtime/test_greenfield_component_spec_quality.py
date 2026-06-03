@@ -20,6 +20,9 @@ from odylith.runtime.governance.component_spec_rendering import build_component_
 
 ROOT = Path(__file__).resolve().parents[3]
 CONFIRMED_COMPONENTS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py"
+CONFIRMED_PROJECT_BRIEF_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py"
+CONFIRMED_PROPOSAL_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_proposal.py"
+GREENFIELD_COMMAND_TEXT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_command_text.py"
 COMPONENT_CONTRACT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py"
 COMPONENT_CONTRACT_PROFILES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_contract_profiles.py"
 COMPONENT_CONTRACT_DIFFERENTIATION_PATH = (
@@ -34,6 +37,24 @@ def test_confirmed_components_helper_shape_stays_below_soft_limit() -> None:
     assert len(source.splitlines()) < 800
     assert source.count("def _title_phrase") == 1
     assert "def _can_clause" not in source
+
+
+def test_confirmed_project_brief_stays_in_dedicated_owner() -> None:
+    component_source = CONFIRMED_COMPONENTS_PATH.read_text(encoding="utf-8")
+    brief_source = CONFIRMED_PROJECT_BRIEF_PATH.read_text(encoding="utf-8")
+    proposal_source = CONFIRMED_PROPOSAL_PATH.read_text(encoding="utf-8")
+    command_source = GREENFIELD_COMMAND_TEXT_PATH.read_text(encoding="utf-8")
+
+    assert len(component_source.splitlines()) < 800
+    assert len(brief_source.splitlines()) < 800
+    assert "from odylith.runtime.domain_intelligence.greenfield_confirmed_project_brief import" in proposal_source
+    assert "from odylith.runtime.domain_intelligence.greenfield_command_text import shell_quote" in proposal_source
+    for moved in ("def confirmed_project_brief", "def _brief_option", "def _checkpoint", "def _brief_clause"):
+        assert moved not in component_source
+        assert moved in brief_source
+    assert "def shell_quote" not in component_source
+    assert "def shell_quote" not in brief_source
+    assert command_source.count("def shell_quote") == 1
 
 
 def test_component_contract_profiles_stay_in_dedicated_owner() -> None:

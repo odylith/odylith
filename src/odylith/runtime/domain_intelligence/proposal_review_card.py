@@ -5,12 +5,9 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from odylith.runtime.domain_intelligence import greenfield_programs
+from odylith.runtime.domain_intelligence.greenfield_command_text import shell_quote
 
 DEFAULT_GREENFIELD_RELEASE_SELECTOR = greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR
-
-
-def shell_quote(value: str) -> str:
-    return "'" + str(value).replace("'", "'\"'\"'") + "'"
 
 
 def format_visible_proposal_card_text(

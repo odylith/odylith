@@ -92,6 +92,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-03: Split confirmed-intent internal-system completion into `greenfield_confirmed_system_completion.py`. The owner now completes internal system rows, fallback systems, system labels, state labels, and context-clause matching while `greenfield_confirmed_intent_completion.py` stays focused on orchestration, core fields, product posture, title repair, and first-path/proof wording. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split Atlas first-path event-step derivation into `greenfield_sequence_steps.py`. The step owner now handles semantic events, launcher-only filtering, first-path fallback parsing, compound-step expansion, and dedupe while `greenfield_sequence_diagram.py` stays below the 800-line soft limit as the participant/component routing and Mermaid rendering owner. The pass also preserves final `act later` decision tails and short role-qualified component artifacts such as `person follow list` in confirmed create output. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split Domain Intelligence artifact enrichment so `artifact_graph.py` owns graph normalization and `artifact_tribunal_actors.py` owns visible Tribunal actor projection. `artifact_enrichment.py` now stays below the 800-line soft limit as the artifact projection owner, and project-intelligence callers import graph and actor helpers from their dedicated owners. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-03: Split confirmed project-brief rendering into `greenfield_confirmed_project_brief.py` and consolidated greenfield command quoting into `greenfield_command_text.py`. `greenfield_confirmed_components.py` now stays below the 800-line soft limit as the confirmed Registry component generator instead of also owning project-readiness copy and host handoff commands. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -210,6 +211,12 @@ This section captures synchronized requirement and contract signals derived from
   `artifact_tribunal_actors.tribunal_actor_projection`, but it must not re-own
   `DomainIntelligenceGraph`, state-object/actor/approval row selection, domain
   actor naming, proposal actor candidate selection, or visible actor dedupe.
+- Confirmed project-brief generation and greenfield command quoting must stay
+  outside the confirmed component generator. `greenfield_confirmed_components.py`
+  may build Registry component rows and component labels, but it must not
+  re-own `confirmed_project_brief`, project-readiness gates, host-independent
+  path text, or a local `shell_quote` helper. Command quoting belongs in
+  `greenfield_command_text.py`.
 - Apply-ready proposal output must include observed source posture, user intent,
   Odylith assumptions, backlog candidates, program formation, program waves,
   release plan, planned Registry components, proposal draft Atlas Mermaid sources,
