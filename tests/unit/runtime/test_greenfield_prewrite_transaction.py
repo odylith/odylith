@@ -5,6 +5,8 @@ from pathlib import Path
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
+from odylith.runtime.domain_intelligence import greenfield_apply_components
+from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
@@ -13,6 +15,43 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion impo
 )
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
+
+
+ROOT = Path(__file__).resolve().parents[3]
+APPLY_PREWRITE_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_apply_prewrite.py"
+APPLY_COMPONENTS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_apply_components.py"
+APPLY_DIAGRAMS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_apply_diagrams.py"
+
+
+def test_greenfield_apply_prewrite_component_and_diagram_phases_stay_dedicated() -> None:
+    parent_source = APPLY_PREWRITE_PATH.read_text(encoding="utf-8")
+    component_source = APPLY_COMPONENTS_PATH.read_text(encoding="utf-8")
+    diagram_source = APPLY_DIAGRAMS_PATH.read_text(encoding="utf-8")
+
+    assert len(parent_source.splitlines()) < 800
+    assert "greenfield_apply_components.render_prewrite_component_specs" in parent_source
+    assert "greenfield_apply_components.preview_prewrite_components" in parent_source
+    assert "greenfield_apply_diagrams.render_prewrite_atlas_sources" in parent_source
+    assert "greenfield_apply_diagrams.allocated_diagram_ids" in parent_source
+    for moved in (
+        "def render_prewrite_component_specs",
+        "def preview_prewrite_components",
+        "def component_authoring_prewrite_inputs",
+        "def component_dependency_lines",
+        "def component_risk_lines",
+        "def allocated_diagram_ids",
+        "def render_prewrite_atlas_sources",
+        "def _dependency_clause_phrase",
+        "_COMPONENT_RISK_TOKENS",
+    ):
+        assert moved not in parent_source
+    assert "def render_prewrite_component_specs" in component_source
+    assert "def preview_prewrite_components" in component_source
+    assert "def component_authoring_prewrite_inputs" in component_source
+    assert "def component_dependency_lines" in component_source
+    assert "def component_risk_lines" in component_source
+    assert "def allocated_diagram_ids" in diagram_source
+    assert "def render_prewrite_atlas_sources" in diagram_source
 
 
 def _proposal(tmp_path: Path) -> dict[str, object]:
@@ -43,7 +82,7 @@ def _disable_refreshes(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def _force_bad_rendered_specs(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        greenfield_apply_prewrite,
+        greenfield_apply_components,
         "render_prewrite_component_specs",
         lambda **_kwargs: {"Broken Component": "Broken Component owns maintains state."},
     )
@@ -190,7 +229,7 @@ def test_greenfield_package_gate_requires_component_authoring_preview(tmp_path: 
             proposal=proposal,
             release_selector="0.0.1",
             rendered_component_specs={"Detached": "# Detached\n"},
-            rendered_atlas_sources=greenfield_apply_prewrite.render_prewrite_atlas_sources(proposal),
+            rendered_atlas_sources=greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal),
             backlog_result=_prewrite_backlog_result(proposal),
             program_result={"created": True, "dry_run": True},
             release_target_result={"release": {"release_id": "release-test"}},
@@ -210,7 +249,7 @@ def test_greenfield_package_gate_requires_accepted_project_memory_preview(tmp_pa
         GreenfieldCompletionPackage(
             proposal=proposal,
             release_selector="0.0.1",
-            rendered_atlas_sources=greenfield_apply_prewrite.render_prewrite_atlas_sources(proposal),
+            rendered_atlas_sources=greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal),
             component_registry_preview=_prewrite_component_preview(proposal),
             backlog_result=_prewrite_backlog_result(proposal),
             program_result={"created": True, "dry_run": True},
@@ -231,7 +270,7 @@ def test_greenfield_package_gate_requires_compass_memory_preview(tmp_path: Path)
         GreenfieldCompletionPackage(
             proposal=proposal,
             release_selector="0.0.1",
-            rendered_atlas_sources=greenfield_apply_prewrite.render_prewrite_atlas_sources(proposal),
+            rendered_atlas_sources=greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal),
             component_registry_preview=_prewrite_component_preview(proposal),
             accepted_project_preview=_accepted_preview(proposal),
             backlog_result=_prewrite_backlog_result(proposal),
@@ -253,7 +292,7 @@ def test_greenfield_package_gate_requires_project_brief_preview(tmp_path: Path) 
         GreenfieldCompletionPackage(
             proposal=proposal,
             release_selector="0.0.1",
-            rendered_atlas_sources=greenfield_apply_prewrite.render_prewrite_atlas_sources(proposal),
+            rendered_atlas_sources=greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal),
             component_registry_preview=_prewrite_component_preview(proposal),
             tribunal_preview=_tribunal_preview(),
             accepted_project_preview=_accepted_preview(proposal),
@@ -278,7 +317,7 @@ def test_greenfield_package_gate_requires_tribunal_evidence_preview(tmp_path: Pa
         GreenfieldCompletionPackage(
             proposal=proposal,
             release_selector="0.0.1",
-            rendered_atlas_sources=greenfield_apply_prewrite.render_prewrite_atlas_sources(proposal),
+            rendered_atlas_sources=greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal),
             component_registry_preview=_prewrite_component_preview(proposal),
             project_brief_preview=proposal["project_brief"],
             accepted_project_preview=_accepted_preview(proposal),
@@ -303,7 +342,7 @@ def test_greenfield_package_gate_requires_operator_next_steps_preview(tmp_path: 
         GreenfieldCompletionPackage(
             proposal=proposal,
             release_selector="0.0.1",
-            rendered_atlas_sources=greenfield_apply_prewrite.render_prewrite_atlas_sources(proposal),
+            rendered_atlas_sources=greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal),
             component_registry_preview=_prewrite_component_preview(proposal),
             project_brief_preview=proposal["project_brief"],
             tribunal_preview=_tribunal_preview(),
@@ -333,7 +372,7 @@ def test_greenfield_package_gate_rejects_mechanical_operator_next_steps(tmp_path
         GreenfieldCompletionPackage(
             proposal=proposal,
             release_selector="0.0.1",
-            rendered_atlas_sources=greenfield_apply_prewrite.render_prewrite_atlas_sources(proposal),
+            rendered_atlas_sources=greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal),
             component_registry_preview=_prewrite_component_preview(proposal),
             project_brief_preview=proposal["project_brief"],
             tribunal_preview=_tribunal_preview(),
@@ -367,7 +406,7 @@ def test_greenfield_package_gate_rejects_mechanical_radar_gate_copy(tmp_path: Pa
         GreenfieldCompletionPackage(
             proposal=proposal,
             release_selector="0.0.1",
-            rendered_atlas_sources=greenfield_apply_prewrite.render_prewrite_atlas_sources(proposal),
+            rendered_atlas_sources=greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal),
             component_registry_preview=_prewrite_component_preview(proposal),
             project_brief_preview=proposal["project_brief"],
             tribunal_preview=_tribunal_preview(),
@@ -398,7 +437,7 @@ def test_greenfield_package_gate_rejects_mechanical_registry_preview_copy(tmp_pa
         GreenfieldCompletionPackage(
             proposal=proposal,
             release_selector="0.0.1",
-            rendered_atlas_sources=greenfield_apply_prewrite.render_prewrite_atlas_sources(proposal),
+            rendered_atlas_sources=greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal),
             component_registry_preview=tuple(component_preview),
             project_brief_preview=proposal["project_brief"],
             tribunal_preview=_tribunal_preview(),
@@ -428,7 +467,7 @@ def test_greenfield_package_gate_rejects_mechanical_accepted_project_copy(tmp_pa
         GreenfieldCompletionPackage(
             proposal=proposal,
             release_selector="0.0.1",
-            rendered_atlas_sources=greenfield_apply_prewrite.render_prewrite_atlas_sources(proposal),
+            rendered_atlas_sources=greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal),
             component_registry_preview=_prewrite_component_preview(proposal),
             project_brief_preview=proposal["project_brief"],
             tribunal_preview=_tribunal_preview(),
@@ -457,7 +496,7 @@ def test_greenfield_package_gate_rejects_staged_paths_in_accepted_project_previe
         GreenfieldCompletionPackage(
             proposal=proposal,
             release_selector="0.0.1",
-            rendered_atlas_sources=greenfield_apply_prewrite.render_prewrite_atlas_sources(proposal),
+            rendered_atlas_sources=greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal),
             component_registry_preview=component_preview,
             project_brief_preview=proposal["project_brief"],
             tribunal_preview=_tribunal_preview(),
@@ -488,7 +527,7 @@ def test_greenfield_package_gate_rejects_staged_paths_in_compass_preview(tmp_pat
         GreenfieldCompletionPackage(
             proposal=proposal,
             release_selector="0.0.1",
-            rendered_atlas_sources=greenfield_apply_prewrite.render_prewrite_atlas_sources(proposal),
+            rendered_atlas_sources=greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal),
             component_registry_preview=component_preview,
             project_brief_preview=proposal["project_brief"],
             tribunal_preview=_tribunal_preview(),
@@ -541,7 +580,7 @@ def test_greenfield_package_gate_rejects_workstream_preview_without_semantic_pro
         GreenfieldCompletionPackage(
             proposal=proposal,
             release_selector="0.0.1",
-            rendered_atlas_sources=greenfield_apply_prewrite.render_prewrite_atlas_sources(proposal),
+            rendered_atlas_sources=greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal),
             component_registry_preview=_prewrite_component_preview(proposal),
             accepted_project_preview=_accepted_preview(proposal),
             compass_memory_preview=_compass_preview(proposal),
@@ -561,7 +600,7 @@ def test_greenfield_package_gate_rejects_atlas_preview_without_proof_checkpoint(
     proposal = _proposal(tmp_path)
     atlas_sources = {
         path: "flowchart LR\n  A[Detached placeholder]\n"
-        for path in greenfield_apply_prewrite.render_prewrite_atlas_sources(proposal)
+        for path in greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal)
     }
 
     report = build_greenfield_package_report(
@@ -608,7 +647,7 @@ def test_greenfield_apply_rerenders_prewrite_package_after_repairable_package_fa
 ) -> None:
     proposal = _proposal(tmp_path)
     _disable_refreshes(monkeypatch)
-    original = greenfield_apply_prewrite.render_prewrite_component_specs
+    original = greenfield_apply_components.render_prewrite_component_specs
     calls = 0
 
     def flaky_render(**kwargs):
@@ -618,7 +657,7 @@ def test_greenfield_apply_rerenders_prewrite_package_after_repairable_package_fa
             return {"Broken Component": "Broken Component owns maintains state."}
         return original(**kwargs)
 
-    monkeypatch.setattr(greenfield_apply_prewrite, "render_prewrite_component_specs", flaky_render)
+    monkeypatch.setattr(greenfield_apply_components, "render_prewrite_component_specs", flaky_render)
 
     result = greenfield_proposals.apply_greenfield_proposal(
         repo_root=tmp_path,

@@ -917,6 +917,29 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `PYTHONPATH=src .venv/bin/python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 11.39s`).
+- 2026-06-03 apply-prewrite Registry/Atlas decomposition moved first-release
+  component input shaping, dry-run Registry component preview, in-memory
+  Registry spec rendering, component dependency/risk/responsibility copy, Atlas
+  prewrite Mermaid preview, and diagram ID allocation into
+  `greenfield_apply_components.py` and `greenfield_apply_diagrams.py`. The
+  apply-prewrite parent now owns staged package assembly, release preview,
+  accepted-project/Compass preview, and path remapping without carrying
+  Registry/Atlas rendering policy (`greenfield_apply_prewrite.py`: 1034 to 459
+  lines), while `test_greenfield_prewrite_transaction.py` pins the component
+  and diagram owners outside the parent. Proof: `.venv/bin/python -m
+  py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_apply_prewrite.py
+  src/odylith/runtime/domain_intelligence/greenfield_apply_components.py
+  src/odylith/runtime/domain_intelligence/greenfield_apply_diagrams.py
+  src/odylith/runtime/domain_intelligence/greenfield_proposals.py
+  tests/unit/runtime/test_greenfield_prewrite_transaction.py
+  tests/unit/runtime/test_greenfield_general_artifact_quality.py
+  tests/unit/runtime/test_greenfield_proposals.py` passed; focused prewrite
+  proof passed (`25 passed in 124.26s`); the broader greenfield
+  artifact-quality bundle passed (`130 passed in 333.90s`); and
+  `PYTHONPATH=src .venv/bin/python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 10.93s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

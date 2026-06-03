@@ -8,11 +8,12 @@ import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence import greenfield_apply_components
+from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import rendered_component_spec_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_component_axes import component_axis_key_for_label
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import derive_component_semantic_contract
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
-from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
     GreenfieldCompletionPackage,
@@ -1023,7 +1024,7 @@ def test_greenfield_apply_post_confirm_failure_is_internal_not_operator_repair(t
     _seed_empty_governance_repo(tmp_path)
     proposal = _trip_comparison_proposal(tmp_path)
     monkeypatch.setattr(
-        greenfield_apply_prewrite,
+        greenfield_apply_components,
         "render_prewrite_component_specs",
         lambda **_kwargs: {"Broken Component": "Broken Component owns maintains state."},
     )
@@ -1064,7 +1065,7 @@ def _prewrite_backlog_result(proposal: dict[str, object]) -> dict[str, object]:
 
 
 def _prewrite_atlas_sources(proposal: dict[str, object]) -> dict[str, str]:
-    return greenfield_apply_prewrite.render_prewrite_atlas_sources(proposal)
+    return greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal)
 
 
 def _prewrite_component_preview(proposal: dict[str, object]) -> tuple[dict[str, object], ...]:
