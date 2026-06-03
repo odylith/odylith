@@ -72,6 +72,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-20: Added the confirmed-completion gate for `greenfield create --confirm`. Confirmed proposals now fill deterministic omissions before writes: project posture, backlog risk/security fields, component interfaces/dependencies/validation/risks, and non-self-invalidating Atlas watch paths. The gate reruns proposal and governed-artifact Tribunals before create applies source truth, so a rich accepted intent produces a full Radar/Registry/Atlas/release/Compass project set instead of stopping on missing derivable fields. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-02: Hardened the post-confirm semantic render path so first-path clauses, component contracts, Atlas labels, runtime JSON, public dashboard prose, Radar workstreams, and Registry component specs reject parser debris, activity-shaped actor names, framework proof scaffolds, bare outcome nouns, coordinated action-verb drift, and component-boundary boilerplate before any confirmed greenfield writes. First-path parsing now lives in `greenfield_first_path_semantics.py`, separate from title normalization, release classification, and slop scanning. The pass keeps the fix provider-free and domain-agnostic, with regression coverage in `test_greenfield_post_confirm_slop_regressions.py`, an 11.67-second confirmed-create E2E run with no slop hits, and rendered browser proof for Radar and Registry behavior. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Decomposed confirmed-intent completion so `greenfield_confirmed_actor_completion.py` owns actor row completion, actor label derivation, generated meta-row rejection, and actor description repair, while `greenfield_confirmed_intent_completion.py` keeps orchestration, core-field completion, system completion, title repair, and product posture. Shared confirmed text helpers now live in `greenfield_confirmed_text.py`, the former parent dropped below the source-size ceiling, and `test_greenfield_confirmed_intent.py` pins the actor phase outside the parent. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-03: Split confirmed-create prewrite gating so `greenfield_confirmed_prewrite_gate.py` owns semantic model completion, proposal/component/spec preflight issue aggregation, the deterministic greenfield Tribunal call, and governed-artifact Tribunal issue collection. `greenfield_confirmed_completion.py` now stays under the 1200-line hard threshold while delegating the quality gate through a focused owner pinned by `test_greenfield_confirmed_repair.py`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -121,6 +122,11 @@ This section captures synchronized requirement and contract signals derived from
   call `completed_actor_rows`, `actor_labels`, and `actor_row_description`, but
   it must not reintroduce local actor label derivation, generated meta-row
   filtering, or actor description repair.
+- Confirmed-create prewrite gating must stay in
+  `greenfield_confirmed_prewrite_gate.py`. The completion orchestrator may call
+  `complete_semantic_model` and `preflight_issues`, but it must not re-own the
+  greenfield Tribunal call, governed-artifact Tribunal aggregation, or local
+  proposal/component/spec issue collector loop.
 - Installed greenfield guidance must not ask Codex or Claude hosts to hand-author
   or reconstruct proposal JSON. Proposal review uses the canonical object from
   `greenfield propose`; confirmation uses `greenfield create --confirm` unless an
@@ -257,6 +263,7 @@ confirmation gates, topology requirements, apply schema, and durable memory.
 
 - `tests/unit/runtime/test_greenfield_proposals.py`
 - `tests/unit/runtime/test_greenfield_confirmed_intent.py`
+- `tests/unit/runtime/test_greenfield_confirmed_repair.py`
 - `tests/unit/runtime/test_greenfield_host_routing.py`
 - `tests/unit/runtime/test_greenfield_intelligence_schema.py`
 - `tests/unit/runtime/test_greenfield_atlas_contract.py`

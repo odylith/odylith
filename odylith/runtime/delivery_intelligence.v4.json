@@ -81,8 +81,8 @@
         "scope_type": "workstream",
         "severity": "watch"
       },
-      "selection_reason": "Selected as the highest-ranked unsafe closeout workstream so the queue covers a distinct case class before same-scenario priority fill. Live rationale: Implementation workstream is still live. It sits in a 3-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 3,
+      "selection_reason": "Selected as the highest-ranked unsafe closeout workstream so the queue covers a distinct case class before same-scenario priority fill. Live rationale: Implementation workstream is still live. It sits in a 2-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 2,
       "selection_slot": "scenario_coverage",
       "systemic_theme_tags": [
         "authority",
@@ -168,95 +168,8 @@
         "scope_type": "workstream",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Implementation workstream is still live. It sits in a 3-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 3,
-      "selection_slot": "visible_overflow",
-      "systemic_theme_tags": [
-        "authority",
-        "ownership_gap",
-        "cross_surface"
-      ]
-    },
-    {
-      "action_label": "Review proposed fix",
-      "brief": "Decompose greenfield project intelligence surface looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if CURRENT_SPEC.md already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind CURRENT_SPEC.md before treating Decompose greenfield project intelligence surface as authoritative across Registry, Radar, Compass, and Atlas.",
-      "claim_guard": {},
-      "confidence": 0.68,
-      "confidence_factors": {
-        "contradiction_strength": 0.52,
-        "evidence_completeness": 0.75,
-        "ownership_clarity": 0.2,
-        "proof_route_quality": 1.0,
-        "provider_validation": 0.55
-      },
-      "decision_at_stake": "Does Decompose greenfield project intelligence surface actually own the cross-surface state Odylith is aggregating, or is shared-surface churn being mistaken for authority?",
-      "deterministic_reason": "provider unavailable",
-      "deterministic_reason_detail": "No AI reasoning provider is configured or available for this Odylith refresh.",
-      "headline": "Cross-surface ownership is not proven yet",
-      "id": "case-workstream-B-143",
-      "packet_mode": "hybrid",
-      "proof_refs": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-143"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-143"
-        }
-      ],
-      "proof_reopen": {},
-      "proof_routes": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-143"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-143"
-        }
-      ],
-      "proof_state": {},
-      "proof_state_resolution": {
-        "lane_ids": [],
-        "state": "none"
-      },
-      "provider_focus": false,
-      "provider_used": false,
-      "provider_validated": false,
-      "rank": 3,
-      "reasoning_state": "deterministic-only",
-      "scope_id": "B-143",
-      "scope_key": "workstream:B-143",
-      "scope_label": "Decompose greenfield project intelligence surface",
-      "scope_type": "workstream",
-      "selection_metrics": {
-        "blast_radius_severity": 58,
-        "decision_debt": 16,
-        "governance_lag": 64,
-        "live_reason": "Implementation workstream is still live.",
-        "scenario": "unsafe_closeout",
-        "scope_type": "workstream",
-        "severity": "watch"
-      },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Implementation workstream is still live. It sits in a 3-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 3,
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Implementation workstream is still live. It sits in a 2-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 2,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
         "authority",
@@ -327,7 +240,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 4,
+      "rank": 3,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-021",
       "scope_key": "workstream:B-021",
@@ -414,7 +327,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 5,
+      "rank": 4,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-022",
       "scope_key": "workstream:B-022",
@@ -501,7 +414,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 6,
+      "rank": 5,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-025",
       "scope_key": "workstream:B-025",
@@ -588,7 +501,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 7,
+      "rank": 6,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-033",
       "scope_key": "workstream:B-033",
@@ -718,7 +631,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 8,
+      "rank": 7,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-038",
       "scope_key": "workstream:B-038",
@@ -805,7 +718,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 9,
+      "rank": 8,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-040",
       "scope_key": "workstream:B-040",
@@ -892,7 +805,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 10,
+      "rank": 9,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-045",
       "scope_key": "workstream:B-045",
@@ -979,7 +892,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 11,
+      "rank": 10,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-048",
       "scope_key": "workstream:B-048",
@@ -1066,7 +979,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 12,
+      "rank": 11,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-060",
       "scope_key": "workstream:B-060",
@@ -1153,7 +1066,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 13,
+      "rank": 12,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-064",
       "scope_key": "workstream:B-064",
@@ -1240,7 +1153,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 14,
+      "rank": 13,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-071",
       "scope_key": "workstream:B-071",
@@ -1327,7 +1240,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 15,
+      "rank": 14,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-083",
       "scope_key": "workstream:B-083",
@@ -1425,7 +1338,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -1454,7 +1367,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 16,
+      "rank": 15,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-084",
       "scope_key": "workstream:B-084",
@@ -1541,7 +1454,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 17,
+      "rank": 16,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-085",
       "scope_key": "workstream:B-085",
@@ -1627,7 +1540,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 18,
+      "rank": 17,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-086",
       "scope_key": "workstream:B-086",
@@ -1714,7 +1627,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 19,
+      "rank": 18,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-087",
       "scope_key": "workstream:B-087",
@@ -1801,7 +1714,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 20,
+      "rank": 19,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-088",
       "scope_key": "workstream:B-088",
@@ -1888,7 +1801,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 21,
+      "rank": 20,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-089",
       "scope_key": "workstream:B-089",
@@ -1975,7 +1888,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 22,
+      "rank": 21,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-090",
       "scope_key": "workstream:B-090",
@@ -2062,7 +1975,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 23,
+      "rank": 22,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-091",
       "scope_key": "workstream:B-091",
@@ -2149,7 +2062,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 24,
+      "rank": 23,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-092",
       "scope_key": "workstream:B-092",
@@ -2270,7 +2183,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 25,
+      "rank": 24,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-093",
       "scope_key": "workstream:B-093",
@@ -2357,7 +2270,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 26,
+      "rank": 25,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-097",
       "scope_key": "workstream:B-097",
@@ -2444,7 +2357,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 27,
+      "rank": 26,
       "reasoning_state": "deterministic-only",
       "scope_id": "B-126",
       "scope_key": "workstream:B-126",
@@ -2535,7 +2448,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 28,
+      "rank": 27,
       "reasoning_state": "deterministic-only",
       "scope_id": "governance-intervention-engine",
       "scope_key": "component:governance-intervention-engine",
@@ -2625,7 +2538,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 29,
+      "rank": 28,
       "reasoning_state": "deterministic-only",
       "scope_id": "odylith-memory-backend",
       "scope_key": "component:odylith-memory-backend",
@@ -2714,7 +2627,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 30,
+      "rank": 29,
       "reasoning_state": "deterministic-only",
       "scope_id": "odylith-memory-contracts",
       "scope_key": "component:odylith-memory-contracts",
@@ -2800,7 +2713,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 31,
+      "rank": 30,
       "reasoning_state": "deterministic-only",
       "scope_id": "odylith-projection-bundle",
       "scope_key": "component:odylith-projection-bundle",
@@ -2886,7 +2799,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 32,
+      "rank": 31,
       "reasoning_state": "deterministic-only",
       "scope_id": "odylith-projection-snapshot",
       "scope_key": "component:odylith-projection-snapshot",
@@ -2972,7 +2885,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 33,
+      "rank": 32,
       "reasoning_state": "deterministic-only",
       "scope_id": "odylith-remote-retrieval",
       "scope_key": "component:odylith-remote-retrieval",
@@ -3061,7 +2974,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 34,
+      "rank": 33,
       "reasoning_state": "deterministic-only",
       "scope_id": "registry",
       "scope_key": "component:registry",
@@ -3147,7 +3060,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 35,
+      "rank": 34,
       "reasoning_state": "deterministic-only",
       "scope_id": "release",
       "scope_key": "component:release",
@@ -3239,7 +3152,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 36,
+      "rank": 35,
       "reasoning_state": "deterministic-only",
       "scope_id": "subagent-orchestrator",
       "scope_key": "component:subagent-orchestrator",
@@ -3331,7 +3244,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 37,
+      "rank": 36,
       "reasoning_state": "deterministic-only",
       "scope_id": "subagent-router",
       "scope_key": "component:subagent-router",
@@ -3420,7 +3333,7 @@
       "provider_focus": true,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 38,
+      "rank": 37,
       "reasoning_state": "deterministic-only",
       "scope_id": "domain-intelligence",
       "scope_key": "component:domain-intelligence",
@@ -3430,12 +3343,12 @@
         "blast_radius_severity": 58,
         "decision_debt": 86,
         "governance_lag": 64,
-        "live_reason": "Linked to live workstream B-141, B-142, and +1 more.",
+        "live_reason": "Linked to live workstream B-141 and B-142.",
         "scenario": "cross_surface_conflict",
         "scope_type": "component",
         "severity": "blocker"
       },
-      "selection_reason": "Selected as the highest-ranked cross surface conflict component so the queue covers a distinct case class before same-scenario priority fill. Live rationale: Linked to live workstream B-141, B-142, and +1 more.",
+      "selection_reason": "Selected as the highest-ranked cross surface conflict component so the queue covers a distinct case class before same-scenario priority fill. Live rationale: Linked to live workstream B-141 and B-142.",
       "selection_score_band_size": 1,
       "selection_slot": "scenario_coverage",
       "systemic_theme_tags": [
@@ -3509,7 +3422,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 39,
+      "rank": 38,
       "reasoning_state": "deterministic-only",
       "scope_id": "migration-runtime",
       "scope_key": "component:migration-runtime",
@@ -3595,7 +3508,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 40,
+      "rank": 39,
       "reasoning_state": "deterministic-only",
       "scope_id": "remediator",
       "scope_key": "component:remediator",
@@ -3681,7 +3594,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 41,
+      "rank": 40,
       "reasoning_state": "deterministic-only",
       "scope_id": "security",
       "scope_key": "component:security",
@@ -3767,7 +3680,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 42,
+      "rank": 41,
       "reasoning_state": "deterministic-only",
       "scope_id": "governed-harness",
       "scope_key": "component:governed-harness",
@@ -3853,7 +3766,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 43,
+      "rank": 42,
       "reasoning_state": "deterministic-only",
       "scope_id": "briefs-voice-contract",
       "scope_key": "component:briefs-voice-contract",
@@ -3942,7 +3855,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 44,
+      "rank": 43,
       "reasoning_state": "deterministic-only",
       "scope_id": "atlas",
       "scope_key": "component:atlas",
@@ -4035,7 +3948,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 45,
+      "rank": 44,
       "reasoning_state": "deterministic-only",
       "scope_id": "benchmark",
       "scope_key": "component:benchmark",
@@ -4130,7 +4043,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4155,7 +4068,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 46,
+      "rank": 45,
       "reasoning_state": "deterministic-only",
       "scope_id": "casebook",
       "scope_key": "component:casebook",
@@ -4250,7 +4163,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4275,7 +4188,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 47,
+      "rank": 46,
       "reasoning_state": "deterministic-only",
       "scope_id": "compass",
       "scope_key": "component:compass",
@@ -4370,7 +4283,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4395,7 +4308,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 48,
+      "rank": 47,
       "reasoning_state": "deterministic-only",
       "scope_id": "dashboard",
       "scope_key": "component:dashboard",
@@ -4405,12 +4318,12 @@
         "blast_radius_severity": 58,
         "decision_debt": 16,
         "governance_lag": 18,
-        "live_reason": "Linked to live workstream B-022, B-021, and +12 more.",
+        "live_reason": "Linked to live workstream B-022, B-021, and +11 more.",
         "scenario": "cross_surface_conflict",
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-022, B-021, and +12 more. It sits in a 13-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-022, B-021, and +11 more. It sits in a 13-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
       "selection_score_band_size": 13,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
@@ -4490,7 +4403,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4515,7 +4428,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 49,
+      "rank": 48,
       "reasoning_state": "deterministic-only",
       "scope_id": "delivery-intelligence",
       "scope_key": "component:delivery-intelligence",
@@ -4606,7 +4519,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 50,
+      "rank": 49,
       "reasoning_state": "deterministic-only",
       "scope_id": "execution-engine",
       "scope_key": "component:execution-engine",
@@ -4701,7 +4614,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4726,7 +4639,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 51,
+      "rank": 50,
       "reasoning_state": "deterministic-only",
       "scope_id": "odylith",
       "scope_key": "component:odylith",
@@ -4736,12 +4649,12 @@
         "blast_radius_severity": 58,
         "decision_debt": 16,
         "governance_lag": 18,
-        "live_reason": "Linked to live workstream B-021, B-033, and +17 more.",
+        "live_reason": "Linked to live workstream B-021, B-033, and +16 more.",
         "scenario": "cross_surface_conflict",
         "scope_type": "component",
         "severity": "watch"
       },
-      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-021, B-033, and +17 more. It sits in a 13-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_reason": "Still eligible, but hidden by Odylith's default focused inbox because AI effort is currently limited to a smaller top-ranked focus set. Live rationale: Linked to live workstream B-021, B-033, and +16 more. It sits in a 13-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
       "selection_score_band_size": 13,
       "selection_slot": "visible_overflow",
       "systemic_theme_tags": [
@@ -4821,7 +4734,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4846,7 +4759,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 52,
+      "rank": 51,
       "reasoning_state": "deterministic-only",
       "scope_id": "odylith-chatter",
       "scope_key": "component:odylith-chatter",
@@ -4941,7 +4854,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4966,7 +4879,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 53,
+      "rank": 52,
       "reasoning_state": "deterministic-only",
       "scope_id": "odylith-context-engine",
       "scope_key": "component:odylith-context-engine",
@@ -5061,7 +4974,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -5086,7 +4999,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 54,
+      "rank": 53,
       "reasoning_state": "deterministic-only",
       "scope_id": "proof-state",
       "scope_key": "component:proof-state",
@@ -5177,7 +5090,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 55,
+      "rank": 54,
       "reasoning_state": "deterministic-only",
       "scope_id": "radar",
       "scope_key": "component:radar",
@@ -5272,7 +5185,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -5297,7 +5210,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 56,
+      "rank": 55,
       "reasoning_state": "deterministic-only",
       "scope_id": "tribunal",
       "scope_key": "component:tribunal",
@@ -5393,7 +5306,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 57,
+      "rank": 56,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-043",
       "scope_key": "diagram:D-043",
@@ -5479,7 +5392,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 58,
+      "rank": 57,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-001",
       "scope_key": "diagram:D-001",
@@ -5566,7 +5479,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 59,
+      "rank": 58,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-022",
       "scope_key": "diagram:D-022",
@@ -5695,7 +5608,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 60,
+      "rank": 59,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-024",
       "scope_key": "diagram:D-024",
@@ -5782,7 +5695,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 61,
+      "rank": 60,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-002",
       "scope_key": "diagram:D-002",
@@ -5869,7 +5782,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 62,
+      "rank": 61,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-003",
       "scope_key": "diagram:D-003",
@@ -5956,7 +5869,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 63,
+      "rank": 62,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-004",
       "scope_key": "diagram:D-004",
@@ -6043,7 +5956,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 64,
+      "rank": 63,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-005",
       "scope_key": "diagram:D-005",
@@ -6140,7 +6053,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 65,
+      "rank": 64,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-036",
       "scope_key": "diagram:D-036",
@@ -6236,7 +6149,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 66,
+      "rank": 65,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-037",
       "scope_key": "diagram:D-037",
@@ -6332,7 +6245,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 67,
+      "rank": 66,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-038",
       "scope_key": "diagram:D-038",
@@ -6428,7 +6341,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 68,
+      "rank": 67,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-039",
       "scope_key": "diagram:D-039",
@@ -6524,7 +6437,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 69,
+      "rank": 68,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-041",
       "scope_key": "diagram:D-041",
@@ -6610,7 +6523,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 70,
+      "rank": 69,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-032",
       "scope_key": "diagram:D-032",
@@ -6696,7 +6609,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 71,
+      "rank": 70,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-033",
       "scope_key": "diagram:D-033",
@@ -6782,7 +6695,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 72,
+      "rank": 71,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-034",
       "scope_key": "diagram:D-034",
@@ -6868,7 +6781,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 73,
+      "rank": 72,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-035",
       "scope_key": "diagram:D-035",
@@ -6948,7 +6861,7 @@
       "provider_focus": true,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 74,
+      "rank": 73,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-042",
       "scope_key": "diagram:D-042",
@@ -7060,7 +6973,7 @@
       "provider_focus": true,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 75,
+      "rank": 74,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-040",
       "scope_key": "diagram:D-040",
@@ -7172,7 +7085,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 76,
+      "rank": 75,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-044",
       "scope_key": "diagram:D-044",
@@ -7258,7 +7171,7 @@
       "provider_focus": true,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 77,
+      "rank": 76,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-028",
       "scope_key": "diagram:D-028",
@@ -7344,7 +7257,7 @@
       "provider_focus": false,
       "provider_used": false,
       "provider_validated": false,
-      "rank": 78,
+      "rank": 77,
       "reasoning_state": "deterministic-only",
       "scope_id": "D-029",
       "scope_key": "diagram:D-029",
@@ -7368,7 +7281,7 @@
       ]
     }
   ],
-  "generated_utc": "2026-06-03 03:19:59Z",
+  "generated_utc": "2026-06-03 03:34:59Z",
   "indexes": {
     "cases": {
       "case-component-atlas": "component:atlas",
@@ -7447,8 +7360,7 @@
       "case-workstream-B-097": "workstream:B-097",
       "case-workstream-B-126": "workstream:B-126",
       "case-workstream-B-141": "workstream:B-141",
-      "case-workstream-B-142": "workstream:B-142",
-      "case-workstream-B-143": "workstream:B-143"
+      "case-workstream-B-142": "workstream:B-142"
     },
     "components": {
       "atlas": "component:atlas",
@@ -7695,7 +7607,7 @@
         "policy": 0,
         "renderer": 3809,
         "runbook": 0,
-        "runtime": 50686,
+        "runtime": 50679,
         "spec": 49330
       },
       "claim_guard": {
@@ -8178,7 +8090,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -8688,7 +8600,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -8801,7 +8713,7 @@
         "policy": 0,
         "renderer": 1836,
         "runbook": 0,
-        "runtime": 24398,
+        "runtime": 24395,
         "spec": 24033
       },
       "claim_guard": {
@@ -8964,7 +8876,7 @@
         "explicit_count": 143,
         "implementation_count": 143,
         "live_actionable": true,
-        "live_reason": "Aggregates 27 live child scope(s).",
+        "live_reason": "Aggregates 26 live child scope(s).",
         "reasoning_confidence": 0.0,
         "reasoning_state": "",
         "status": "implementation",
@@ -9424,7 +9336,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -9537,7 +9449,7 @@
         "policy": 0,
         "renderer": 1836,
         "runbook": 0,
-        "runtime": 24398,
+        "runtime": 24395,
         "spec": 24033
       },
       "claim_guard": {
@@ -9700,7 +9612,7 @@
         "explicit_count": 143,
         "implementation_count": 143,
         "live_actionable": true,
-        "live_reason": "Aggregates 27 live child scope(s).",
+        "live_reason": "Aggregates 26 live child scope(s).",
         "reasoning_confidence": 0.0,
         "reasoning_state": "",
         "status": "implementation",
@@ -10160,7 +10072,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -10273,7 +10185,7 @@
         "policy": 0,
         "renderer": 29,
         "runbook": 0,
-        "runtime": 1177,
+        "runtime": 1176,
         "spec": 646
       },
       "claim_guard": {
@@ -10781,7 +10693,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -42791,7 +42703,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -53457,7 +53369,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -67080,7 +66992,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -67634,7 +67546,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -68188,7 +68100,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -68742,7 +68654,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -69742,7 +69654,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -81433,7 +81345,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -81545,7 +81457,7 @@
         "policy": 0,
         "renderer": 18,
         "runbook": 0,
-        "runtime": 192,
+        "runtime": 191,
         "spec": 181
       },
       "confidence": "Medium",
@@ -81576,9 +81488,8 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_prewrite_gate.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -81590,7 +81501,8 @@
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
           "src/odylith/runtime/domain_intelligence/robot_swarm_profile.py",
           "tests/unit/runtime/test_greenfield_proposals.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_transaction.py"
+          "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
+          "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -81659,9 +81571,8 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_prewrite_gate.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -81847,7 +81758,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-05-03T10:46:04-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-06-02T20:19:36-07:00",
+        "latest_event_ts_iso": "2026-06-02T20:34:29-07:00",
         "latest_explicit_ts_iso": "2026-06-02T18:33:07-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -82014,7 +81925,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 184,
+          "meaningful_change_count": 183,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -82082,7 +81993,7 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 178,
+        "runtime": 177,
         "spec": 182
       },
       "confidence": "Medium",
@@ -82113,9 +82024,8 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_prewrite_gate.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -82127,7 +82037,8 @@
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
           "src/odylith/runtime/domain_intelligence/robot_swarm_profile.py",
           "tests/unit/runtime/test_greenfield_proposals.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_transaction.py"
+          "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
+          "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -82196,9 +82107,8 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_prewrite_gate.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -82379,7 +82289,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-06-02T11:59:19-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-06-02T20:19:36-07:00",
+        "latest_event_ts_iso": "2026-06-02T20:34:29-07:00",
         "latest_explicit_ts_iso": "2026-06-02T19:32:56-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -82516,7 +82426,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 179,
+          "meaningful_change_count": 178,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -82573,9 +82483,7 @@
       "trajectory": "hardening"
     },
     {
-      "case_refs": [
-        "case-workstream-B-143"
-      ],
+      "case_refs": [],
       "change_vector": {
         "build_ci": 0,
         "cli": 0,
@@ -82584,7 +82492,7 @@
         "policy": 0,
         "renderer": 18,
         "runbook": 0,
-        "runtime": 171,
+        "runtime": 170,
         "spec": 174
       },
       "confidence": "Medium",
@@ -82599,8 +82507,8 @@
         "idea_file": "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md",
         "implementation_count": 83,
         "latest_event_attribution": "shared_component_only",
-        "live_actionable": true,
-        "live_reason": "Implementation workstream is still live.",
+        "live_actionable": false,
+        "live_reason": "",
         "other_workstream_event_count": 82,
         "plan_path": "",
         "reasoning_confidence": 0.0,
@@ -82608,16 +82516,15 @@
         "render_drift": false,
         "runbook_count": 0,
         "shared_component_event_count": 73,
-        "status": "implementation",
+        "status": "queued",
         "successor_event_count": 0,
         "synthetic_count": 1
       },
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_prewrite_gate.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -82629,7 +82536,8 @@
           "src/odylith/runtime/domain_intelligence/proposal_scaffold.py",
           "src/odylith/runtime/domain_intelligence/robot_swarm_profile.py",
           "tests/unit/runtime/test_greenfield_proposals.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_transaction.py"
+          "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
+          "odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -82688,9 +82596,8 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_prewrite_gate.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
@@ -82867,7 +82774,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-06-02T20:19:36-07:00",
+        "latest_event_ts_iso": "2026-06-02T20:34:29-07:00",
         "latest_explicit_ts_iso": "2026-06-02T11:59:19-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -82923,7 +82830,7 @@
         }
       ],
       "explanation_facts": [
-        "Status is implementation.",
+        "Status is queued.",
         "Evidence quality is mixed.",
         "Linked components: dashboard, domain-intelligence, and odylith.",
         "Lineage successors: none.",
@@ -82985,7 +82892,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 175,
+          "meaningful_change_count": 174,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -83011,7 +82918,7 @@
       "scope_type": "workstream",
       "scores": {
         "blast_radius_severity": 58,
-        "closure_readiness": 90,
+        "closure_readiness": 82,
         "cross_surface_convergence": 100,
         "decision_debt": 16,
         "governance_lag": 64,
@@ -84309,7 +84216,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -84744,7 +84651,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -84879,7 +84786,7 @@
         "fresh_diagrams": false,
         "implementation_count": 24,
         "live_actionable": true,
-        "live_reason": "Linked to live workstream B-022, B-021, and +12 more.",
+        "live_reason": "Linked to live workstream B-022, B-021, and +11 more.",
         "reasoning_confidence": 0.0,
         "reasoning_state": "",
         "runbook_count": 0,
@@ -85185,7 +85092,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -85572,7 +85479,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -85687,7 +85594,7 @@
         "policy": 0,
         "renderer": 0,
         "runbook": 0,
-        "runtime": 38,
+        "runtime": 37,
         "spec": 16
       },
       "confidence": "Medium",
@@ -85699,7 +85606,7 @@
         "fresh_diagrams": true,
         "implementation_count": 28,
         "live_actionable": true,
-        "live_reason": "Linked to live workstream B-141, B-142, and +1 more.",
+        "live_reason": "Linked to live workstream B-141 and B-142.",
         "reasoning_confidence": 0.0,
         "reasoning_state": "",
         "runbook_count": 0,
@@ -85764,7 +85671,7 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-06-02T20:19:36-07:00",
+        "latest_event_ts_iso": "2026-06-02T20:34:29-07:00",
         "latest_explicit_ts_iso": "2026-06-02T11:59:19-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -87412,7 +87319,7 @@
         "fresh_diagrams": false,
         "implementation_count": 72,
         "live_actionable": true,
-        "live_reason": "Linked to live workstream B-021, B-033, and +17 more.",
+        "live_reason": "Linked to live workstream B-021, B-033, and +16 more.",
         "reasoning_confidence": 0.0,
         "reasoning_state": "",
         "runbook_count": 0,
@@ -87779,7 +87686,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -88162,7 +88069,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -88613,7 +88520,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -90529,7 +90436,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -93208,7 +93115,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -100668,7 +100575,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "abed7dfe8c57d7cf1767bf39807e056358592350",
+          "local_head": "48abf033f6ec98ddd3bb272266d91179bd7069b8",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -105336,7 +105243,7 @@
         "basis": "mixed",
         "blast_radius_class": "local",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-06-02T20:19:36-07:00",
+        "latest_event_ts_iso": "2026-06-02T20:34:29-07:00",
         "latest_explicit_ts_iso": "2026-03-01T21:38:40-08:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -105879,7 +105786,7 @@
       "scope_signal_token": "actionable_priority",
       "severity": "watch"
     },
-    "queue_size": 78,
+    "queue_size": 77,
     "top_queue_item": {
       "action_label": "Review proposed fix",
       "brief": "Cross-host hook latency budget and fast-path startup looks coherent across Registry, Radar, Compass, and Atlas, but Odylith still cannot show enough named ownership to make that cross-surface story authoritative. Strongest rival: The authority-gap story may be overstated if CURRENT_SPEC.md already anchors ownership and Odylith is merely narrating that coherence poorly. Do not treat shared-surface churn as authoritative ownership until a concrete owner is named. Name the owner behind CURRENT_SPEC.md before treating Cross-host hook latency budget and fast-path startup as authoritative across Registry, Radar, Compass, and Atlas.",
@@ -105961,8 +105868,8 @@
         "scope_type": "workstream",
         "severity": "watch"
       },
-      "selection_reason": "Selected as the highest-ranked unsafe closeout workstream so the queue covers a distinct case class before same-scenario priority fill. Live rationale: Implementation workstream is still live. It sits in a 3-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
-      "selection_score_band_size": 3,
+      "selection_reason": "Selected as the highest-ranked unsafe closeout workstream so the queue covers a distinct case class before same-scenario priority fill. Live rationale: Implementation workstream is still live. It sits in a 2-scope score band tied on scenario, severity, decision debt, governance lag, and blast radius, so Tribunal uses explicit scope-id order as the final stable tie-break.",
+      "selection_score_band_size": 2,
       "selection_slot": "scenario_coverage",
       "systemic_theme_tags": [
         "authority",

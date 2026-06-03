@@ -681,6 +681,23 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   tests/integration/runtime/test_project_tab_browser.py` passed (`2 passed`);
   an ad hoc temp-repo create measurement completed in 11.67 seconds with six
   diagrams, no missing assets, and no slop hits.
+- 2026-06-03 confirmed-create prewrite-gate decomposition moved semantic model
+  completion plus proposal, component, Registry-spec, greenfield Tribunal, and
+  governed-artifact Tribunal preflight aggregation into
+  `greenfield_confirmed_prewrite_gate.py`. The parent completion orchestrator
+  now delegates those checks and stays below the source-size hard threshold
+  (`greenfield_confirmed_completion.py`: 1294 to 1192 lines), preserving the
+  under-30-second confirmed-create contract while reducing hot-path ownership
+  pressure. Proof: `.venv/bin/python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_prewrite_gate.py`
+  passed; `.venv/bin/python -m pytest -q
+  tests/unit/runtime/test_greenfield_confirmed_repair.py` passed (`3 passed`);
+  the broader greenfield artifact-quality bundle passed 94 tests before the
+  browser sandbox blocked Chromium launch; rerunning
+  `.venv/bin/python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` with browser
+  permissions passed (`1 passed in 9.81s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

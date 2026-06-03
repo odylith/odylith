@@ -12,7 +12,6 @@ from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence.greenfield_component_contract import (
     boundary_from_contract,
-    component_contract_issues,
     contract_is_complete,
     dependencies_from_contract,
     ensure_component_contract,
@@ -24,28 +23,24 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract import (
 )
 from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import normalize_contract
 from odylith.runtime.domain_intelligence.greenfield_component_contract_differentiation import (
-    component_spec_preflight_issues,
     differentiate_component_contracts,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_project_intelligence import complete_project_intelligence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_title_repair import repair_project_title
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prewrite_gate import complete_semantic_model as _complete_semantic_model
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prewrite_gate import preflight_issues as _preflight_issues
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_generated_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_text as _sentence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import set_sentence_list as _set_list
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import set_sentence_text as _set_text
 from odylith.runtime.domain_intelligence.greenfield_product_risks import build_product_risks_from_proposal
 from odylith.runtime.domain_intelligence.greenfield_product_risks import risk_text_has_framework_leak
-from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
-from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
-from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
-from odylith.runtime.domain_intelligence.proposal_validation import collect_host_reasoned_proposal_issues
 from odylith.runtime.domain_intelligence.proposal_validation import format_proposal_issue_report
-from odylith.runtime.governance import artifact_tribunal
 
 
 _MAX_COMPLETION_PASSES = 10
@@ -90,7 +85,13 @@ def greenfield_repair_until_clean(
         changed |= _complete_components(payload)
         changed |= differentiate_component_contracts(payload)
         changed |= _reconcile_backlog_with_components(payload)
-        changed |= _complete_semantic_model(payload)
+        changed |= _complete_semantic_model(
+            payload,
+            title=_project_title(payload),
+            state_object=_state_object(payload),
+            first_path=_first_path(payload),
+            proof_boundary=_proof_boundary(payload),
+        )
         changed |= _complete_diagrams(payload)
         issues = _preflight_issues(payload, release_selector=release_selector)
         if not issues:
@@ -506,11 +507,6 @@ def _row_is_release_proof(row: Mapping[str, Any]) -> bool:
     return "proof" in text or "release evidence" in text or "release readiness" in text
 
 
-def _first_text(value: Any) -> str:
-    values = text_values(value)
-    return _sentence(values[0], limit=260) if values else ""
-
-
 def _complete_diagrams(proposal: dict[str, Any]) -> bool:
     rows = proposal.get("diagrams")
     if not isinstance(rows, list):
@@ -546,94 +542,6 @@ def _complete_diagrams(proposal: dict[str, Any]) -> bool:
             row["related_components"] = component_ids[:4]
             changed = True
     return changed
-
-
-def _complete_semantic_model(proposal: dict[str, Any]) -> bool:
-    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
-    model = semantic_model_mapping(
-        build_greenfield_semantic_model(
-            title=_project_title(proposal),
-            state_object=_clean(intent.get("state_object")) or _state_object(proposal),
-            first_path=_first_path(proposal),
-            proof_boundary=_proof_boundary(proposal),
-            components=_dict_rows(proposal.get("components")),
-            human_actors=text_values(intent.get("human_actors")),
-            internal_systems=text_values(intent.get("internal_systems")),
-            external_systems=text_values(intent.get("external_systems")),
-            non_goals=text_values(proposal.get("non_goals") or intent.get("non_goals")),
-            workstreams=_mapping_rows(proposal.get("backlog")),
-        )
-    )
-    if proposal.get("semantic_model") == model:
-        return False
-    proposal["semantic_model"] = model
-    return True
-
-
-def _preflight_issues(proposal: Mapping[str, Any], *, release_selector: str) -> list[str]:
-    issues: list[str] = []
-    issues.extend(collect_host_reasoned_proposal_issues(proposal))
-    issues.extend(component_contract_issues(proposal))
-    issues.extend(component_spec_preflight_issues(proposal))
-    selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
-    tribunal = run_greenfield_tribunal(proposal, release_selector=selector)
-    issues.extend(tribunal.issues)
-    issues.extend(_artifact_issues(proposal))
-    return list(unique_text(issues))
-
-
-def _artifact_issues(proposal: Mapping[str, Any]) -> list[str]:
-    issues: list[str] = []
-    for index, row in enumerate(_mapping_rows(proposal.get("backlog")), start=1):
-        decision = artifact_tribunal.run_governed_artifact_tribunal(
-            artifact_kind="backlog",
-            payload={
-                "title": row.get("title", ""),
-                "problem": row.get("problem", ""),
-                "customer": row.get("customer", ""),
-                "opportunity": row.get("opportunity", ""),
-                "product_view": row.get("product_view", ""),
-                "success_metrics": row.get("success_metrics", ""),
-                "risks": [row.get("domain_risk", ""), row.get("security_posture", ""), row.get("risks", "")],
-                "validation": row.get("validation", ""),
-            },
-        )
-        issues.extend(f"backlog row {index}: {issue}" for issue in decision.issues)
-    for index, row in enumerate(_mapping_rows(proposal.get("components")), start=1):
-        decision = artifact_tribunal.run_governed_artifact_tribunal(
-            artifact_kind="component",
-            payload={
-                "component_id": row.get("component_id", ""),
-                "label": row.get("label", ""),
-                "path": row.get("intended_path", "") or row.get("path", ""),
-                "kind": row.get("kind", ""),
-                "responsibility": row.get("responsibility", ""),
-                "boundary": row.get("boundary", ""),
-                "interfaces": row.get("interfaces", ""),
-                "dependencies": row.get("dependencies", ""),
-                "validation": row.get("validation", ""),
-                "risks": row.get("risks", ""),
-            },
-        )
-        issues.extend(f"component row {index}: {issue}" for issue in decision.issues)
-    for index, row in enumerate(_mapping_rows(proposal.get("diagrams")), start=1):
-        decision = artifact_tribunal.run_governed_artifact_tribunal(
-            artifact_kind="atlas_diagram",
-            payload={
-                "diagram_id": row.get("diagram_id", "") or f"DRAFT-{index:03d}",
-                "slug": row.get("slug", ""),
-                "title": row.get("title", ""),
-                "kind": row.get("kind", ""),
-                "owner": row.get("owner", "repo"),
-                "summary": row.get("summary", ""),
-                "components": row.get("components", "") or row.get("related_components", ""),
-                "watch_paths": row.get("watch_paths", ""),
-                "related_backlog": row.get("related_backlog", "") or row.get("related_diagrams", ""),
-                "related_code": row.get("related_code", ""),
-            },
-        )
-        issues.extend(f"diagram row {index}: {issue}" for issue in decision.issues)
-    return issues
 
 
 def _repair_preflight_issues(
@@ -1204,12 +1112,6 @@ def _repair_bad_scalar(row: dict[str, Any], key: str, *, fallback: str = "") -> 
     return _set_text(row, key, value)
 
 
-def _mapping_rows(value: Any) -> list[Mapping[str, Any]]:
-    if not isinstance(value, list):
-        return []
-    return [row for row in value if isinstance(row, Mapping)]
-
-
 def _component_label(row: Mapping[str, Any], index: int) -> str:
     return _clean(row.get("label")) or _clean(row.get("component_id")) or f"Component {index}"
 
@@ -1276,10 +1178,6 @@ def _actor_summary(proposal: Mapping[str, Any]) -> str:
         if actors:
             return _sentence("; ".join(actors), limit=280)
     return f"{_project_title(proposal)} users, reviewers, owners, and release decision makers"
-
-
-def _fragment(value: Any, *, fallback: str, limit: int = 180) -> str:
-    return _sentence(value, fallback=fallback, limit=limit).rstrip(".")
 
 
 def _lower_first(value: str) -> str:
