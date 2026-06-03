@@ -32,6 +32,31 @@ from odylith.runtime.project_intelligence.greenfield import build_greenfield_pay
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 
 
+ROOT = Path(__file__).resolve().parents[3]
+POST_CONFIRM_COMPLETION_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py"
+)
+POST_CONFIRM_SEMANTIC_DRIFT_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_drift.py"
+)
+
+
+def test_greenfield_post_confirm_semantic_drift_stays_in_dedicated_owner() -> None:
+    parent_source = POST_CONFIRM_COMPLETION_PATH.read_text(encoding="utf-8")
+    drift_source = POST_CONFIRM_SEMANTIC_DRIFT_PATH.read_text(encoding="utf-8")
+
+    assert len(parent_source.splitlines()) < 1200
+    assert "def _generated_artifact_sentences" not in parent_source
+    assert "def _term_signature" not in parent_source
+    assert "def _semantic_overlap_ratio" not in parent_source
+    assert "contrastive_domain_drift_issues as _contrastive_domain_drift_issues" in parent_source
+    assert "semantic_repetition_issues as _semantic_repetition_issues" in parent_source
+    assert "semantic_overlap_ratio as _semantic_overlap_ratio" in parent_source
+    assert "def contrastive_domain_drift_issues" in drift_source
+    assert "def semantic_repetition_issues" in drift_source
+    assert "def semantic_overlap_ratio" in drift_source
+
+
 GENERIC_DECISION_REVIEW_INTENT = """# Decision Review Workspace
 
 ## Product Story

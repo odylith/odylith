@@ -713,6 +713,27 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   tests/unit/runtime/test_greenfield_confirmed_intent.py` passed (`27 passed`);
   the broader greenfield artifact-quality bundle passed (`95 passed in
   205.10s`).
+- 2026-06-03 post-confirm semantic drift decomposition moved contrastive
+  domain-drift detection, semantic repetition clustering, generated-artifact
+  sentence extraction, intent/component signature building, and semantic
+  overlap scoring into `greenfield_post_confirm_semantic_drift.py`. The
+  post-confirm completion gate now keeps package orchestration, prewrite
+  preview checks, and formatted failure reporting separate from drift-token
+  ownership (`greenfield_post_confirm_completion.py`: 1214 to 853 lines), while
+  `test_greenfield_general_artifact_quality.py` pins the dedicated owner and
+  parent line-count ceiling. Proof: `.venv/bin/python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py
+  src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_drift.py
+  tests/unit/runtime/test_greenfield_general_artifact_quality.py` passed;
+  `.venv/bin/python -m pytest -q
+  tests/unit/runtime/test_greenfield_general_artifact_quality.py` passed (`39
+  passed in 154.23s`); `.venv/bin/python -m pytest -q
+  tests/unit/runtime/test_greenfield_prewrite_transaction.py` passed (`22
+  passed in 108.95s`); the broader greenfield artifact-quality bundle passed
+  (`118 passed in 311.35s`); and the escalated Chromium-capable run of
+  `PYTHONPATH=src .venv/bin/python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 14.83s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

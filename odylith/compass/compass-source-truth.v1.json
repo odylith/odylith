@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-06-03T03:56:27Z",
+  "generated_utc": "2026-06-03T15:18:50Z",
   "release_summary": {
     "catalog": [
       {
@@ -314,20 +314,20 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 3,
-            "file_touch_count": 94
-          },
-          "48h": {
             "commit_count": 4,
             "local_change_count": 3,
-            "file_touch_count": 169
+            "file_touch_count": 95
+          },
+          "48h": {
+            "commit_count": 5,
+            "local_change_count": 3,
+            "file_touch_count": 170
           }
         },
         "timeline": {
           "start_date": "2026-05-01",
-          "last_activity_iso": "2026-06-02T20:55:23-07:00",
-          "age_days": 32,
+          "last_activity_iso": "2026-06-03T08:18:34-07:00",
+          "age_days": 33,
           "eta_days": 1,
           "eta_confidence": "high"
         },
@@ -342,11 +342,11 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 70,
+            "index": 73,
             "band": "High"
           },
           "48h": {
-            "index": 73,
+            "index": 75,
             "band": "High"
           }
         },
@@ -556,7 +556,7 @@
         "timeline": {
           "start_date": "2026-05-01",
           "last_activity_iso": "2026-05-26T12:14:37-07:00",
-          "age_days": 32,
+          "age_days": 33,
           "eta_days": 1,
           "eta_confidence": "high"
         },
@@ -1902,7 +1902,7 @@
         "timeline": {
           "start_date": "2026-04-17",
           "last_activity_iso": "2026-06-02T19:50:21-07:00",
-          "age_days": 46,
+          "age_days": 47,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -2089,7 +2089,7 @@
         "timeline": {
           "start_date": "2026-04-17",
           "last_activity_iso": "2026-06-02T19:50:21-07:00",
-          "age_days": 46,
+          "age_days": 47,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -2283,8 +2283,8 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "2026-04-09T10:38:07-07:00",
-          "age_days": 65,
-          "eta_days": 28,
+          "age_days": 66,
+          "eta_days": 29,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -2457,7 +2457,7 @@
         "timeline": {
           "start_date": "2026-03-31",
           "last_activity_iso": "2026-04-28T14:07:28-07:00",
-          "age_days": 63,
+          "age_days": 64,
           "eta_days": 7,
           "eta_confidence": "high"
         },
@@ -2635,8 +2635,8 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "2026-04-29T15:06:03-07:00",
-          "age_days": 65,
-          "eta_days": 9,
+          "age_days": 66,
+          "eta_days": 10,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -2817,8 +2817,8 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "2026-04-15T23:17:55-07:00",
-          "age_days": 64,
-          "eta_days": 24,
+          "age_days": 65,
+          "eta_days": 25,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -2991,7 +2991,7 @@
         "timeline": {
           "start_date": "2026-03-31",
           "last_activity_iso": "2026-04-28T14:07:28-07:00",
-          "age_days": 63,
+          "age_days": 64,
           "eta_days": 7,
           "eta_confidence": "high"
         },
@@ -3210,8 +3210,8 @@
         "timeline": {
           "start_date": "2026-04-01",
           "last_activity_iso": "2026-04-12T10:37:07-07:00",
-          "age_days": 62,
-          "eta_days": 1674,
+          "age_days": 63,
+          "eta_days": 1701,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -3380,8 +3380,8 @@
         "timeline": {
           "start_date": "2026-04-04",
           "last_activity_iso": "2026-04-05T22:15:26-07:00",
-          "age_days": 59,
-          "eta_days": 944,
+          "age_days": 60,
+          "eta_days": 960,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -3550,8 +3550,8 @@
         "timeline": {
           "start_date": "2026-04-06",
           "last_activity_iso": "2026-04-10T09:39:13-07:00",
-          "age_days": 57,
-          "eta_days": 171,
+          "age_days": 58,
+          "eta_days": 174,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -3724,8 +3724,8 @@
         "timeline": {
           "start_date": "2026-04-07",
           "last_activity_iso": "2026-04-09T17:44:39-07:00",
-          "age_days": 56,
-          "eta_days": 38,
+          "age_days": 57,
+          "eta_days": 39,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -3886,7 +3886,7 @@
         "timeline": {
           "start_date": "2026-04-08",
           "last_activity_iso": "2026-04-12T10:37:07-07:00",
-          "age_days": 55,
+          "age_days": 56,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -4065,7 +4065,7 @@
         "timeline": {
           "start_date": "2026-04-09",
           "last_activity_iso": "2026-04-29T15:06:03-07:00",
-          "age_days": 54,
+          "age_days": 55,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -4264,7 +4264,7 @@
         "timeline": {
           "start_date": "2026-04-10",
           "last_activity_iso": "2026-06-01T15:47:44-07:00",
-          "age_days": 53,
+          "age_days": 54,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -4467,8 +4467,8 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-12T10:09:12-07:00",
-          "age_days": 52,
-          "eta_days": 20,
+          "age_days": 53,
+          "eta_days": 21,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -4506,7 +4506,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+            "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -4701,7 +4701,7 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-11T10:45:08-07:00",
-          "age_days": 52,
+          "age_days": 53,
           "eta_days": 24,
           "eta_confidence": "high"
         },
@@ -4856,7 +4856,7 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-15T23:39:21-07:00",
-          "age_days": 52,
+          "age_days": 53,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -5051,7 +5051,7 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-12T10:18:23-07:00",
-          "age_days": 52,
+          "age_days": 53,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -5246,8 +5246,8 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-14T10:30:13-07:00",
-          "age_days": 52,
-          "eta_days": 250,
+          "age_days": 53,
+          "eta_days": 255,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -5412,7 +5412,7 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-11T17:40:14-07:00",
-          "age_days": 52,
+          "age_days": 53,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -5571,7 +5571,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-04-11T19:44:39-07:00",
-          "age_days": 51,
+          "age_days": 52,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -5742,7 +5742,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-04-27T14:24:28-07:00",
-          "age_days": 51,
+          "age_days": 52,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -5937,7 +5937,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-04-12T16:26:24-07:00",
-          "age_days": 51,
+          "age_days": 52,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -6132,8 +6132,8 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-04-28T14:07:28-07:00",
-          "age_days": 51,
-          "eta_days": 43,
+          "age_days": 52,
+          "eta_days": 44,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -6365,7 +6365,7 @@
         "timeline": {
           "start_date": "2026-04-15",
           "last_activity_iso": "2026-04-15T09:38:42-07:00",
-          "age_days": 48,
+          "age_days": 49,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -6549,7 +6549,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "2026-04-17T22:57:33-07:00",
-          "age_days": 45,
+          "age_days": 46,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -6788,7 +6788,7 @@
         "timeline": {
           "start_date": "2026-03-26",
           "last_activity_iso": "2026-05-06T13:14:35-07:00",
-          "age_days": 68,
+          "age_days": 69,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -6976,7 +6976,7 @@
         "timeline": {
           "start_date": "2026-03-27",
           "last_activity_iso": "",
-          "age_days": 67,
+          "age_days": 68,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -7131,7 +7131,7 @@
         "timeline": {
           "start_date": "2026-03-27",
           "last_activity_iso": "",
-          "age_days": 67,
+          "age_days": 68,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -7291,7 +7291,7 @@
         "timeline": {
           "start_date": "2026-03-27",
           "last_activity_iso": "2026-05-19T16:16:54-07:00",
-          "age_days": 67,
+          "age_days": 68,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -7463,7 +7463,7 @@
         "timeline": {
           "start_date": "2026-03-28",
           "last_activity_iso": "2026-05-19T16:16:54-07:00",
-          "age_days": 66,
+          "age_days": 67,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -7639,7 +7639,7 @@
         "timeline": {
           "start_date": "2026-03-27",
           "last_activity_iso": "",
-          "age_days": 67,
+          "age_days": 68,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -7798,7 +7798,7 @@
         "timeline": {
           "start_date": "2026-03-28",
           "last_activity_iso": "",
-          "age_days": 66,
+          "age_days": 67,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -7958,7 +7958,7 @@
         "timeline": {
           "start_date": "2026-03-28",
           "last_activity_iso": "",
-          "age_days": 66,
+          "age_days": 67,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -8126,7 +8126,7 @@
         "timeline": {
           "start_date": "2026-03-28",
           "last_activity_iso": "",
-          "age_days": 66,
+          "age_days": 67,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -8290,7 +8290,7 @@
         "timeline": {
           "start_date": "2026-03-28",
           "last_activity_iso": "2026-03-28T21:05:40-07:00",
-          "age_days": 66,
+          "age_days": 67,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -8454,7 +8454,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -8614,7 +8614,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -8798,7 +8798,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -8954,7 +8954,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -9120,7 +9120,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 5,
           "eta_confidence": "high"
         },
@@ -9284,7 +9284,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -9456,7 +9456,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -9628,7 +9628,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -9792,7 +9792,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -9956,7 +9956,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "2026-04-28T14:07:28-07:00",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -10112,7 +10112,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -10292,7 +10292,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -10444,7 +10444,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -10604,7 +10604,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "2026-05-19T16:16:54-07:00",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -10760,7 +10760,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -10912,7 +10912,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -11076,7 +11076,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "2026-04-27T15:19:58-07:00",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -11288,7 +11288,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "2026-05-06T13:14:35-07:00",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -11456,7 +11456,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -11620,7 +11620,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -11783,7 +11783,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -11946,7 +11946,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -12109,7 +12109,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -12268,7 +12268,7 @@
         "timeline": {
           "start_date": "2026-03-31",
           "last_activity_iso": "",
-          "age_days": 63,
+          "age_days": 64,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -12433,7 +12433,7 @@
         "timeline": {
           "start_date": "2026-04-02",
           "last_activity_iso": "",
-          "age_days": 61,
+          "age_days": 62,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -12598,7 +12598,7 @@
         "timeline": {
           "start_date": "2026-04-02",
           "last_activity_iso": "",
-          "age_days": 61,
+          "age_days": 62,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -12767,7 +12767,7 @@
         "timeline": {
           "start_date": "2026-04-02",
           "last_activity_iso": "",
-          "age_days": 61,
+          "age_days": 62,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -12932,7 +12932,7 @@
         "timeline": {
           "start_date": "2026-04-02",
           "last_activity_iso": "",
-          "age_days": 61,
+          "age_days": 62,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -13093,7 +13093,7 @@
         "timeline": {
           "start_date": "2026-04-04",
           "last_activity_iso": "",
-          "age_days": 59,
+          "age_days": 60,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -13262,7 +13262,7 @@
         "timeline": {
           "start_date": "2026-04-04",
           "last_activity_iso": "",
-          "age_days": 59,
+          "age_days": 60,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -13417,7 +13417,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 35,
+          "age_days": 36,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -13573,7 +13573,7 @@
         "timeline": {
           "start_date": "2026-04-27",
           "last_activity_iso": "2026-04-27T21:33:02-07:00",
-          "age_days": 36,
+          "age_days": 37,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -13729,7 +13729,7 @@
         "timeline": {
           "start_date": "2026-04-06",
           "last_activity_iso": "",
-          "age_days": 57,
+          "age_days": 58,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -13885,7 +13885,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 35,
+          "age_days": 36,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -14041,7 +14041,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 35,
+          "age_days": 36,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -14197,7 +14197,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 35,
+          "age_days": 36,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -14353,7 +14353,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 35,
+          "age_days": 36,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -14509,7 +14509,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 35,
+          "age_days": 36,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -14669,7 +14669,7 @@
         "timeline": {
           "start_date": "2026-04-06",
           "last_activity_iso": "",
-          "age_days": 57,
+          "age_days": 58,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -14888,7 +14888,7 @@
         "timeline": {
           "start_date": "2026-04-07",
           "last_activity_iso": "2026-05-06T13:14:35-07:00",
-          "age_days": 56,
+          "age_days": 57,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -15116,7 +15116,7 @@
         "timeline": {
           "start_date": "2026-04-07",
           "last_activity_iso": "2026-05-06T13:14:35-07:00",
-          "age_days": 56,
+          "age_days": 57,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -15284,7 +15284,7 @@
         "timeline": {
           "start_date": "2026-04-07",
           "last_activity_iso": "",
-          "age_days": 56,
+          "age_days": 57,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -15468,7 +15468,7 @@
         "timeline": {
           "start_date": "2026-04-08",
           "last_activity_iso": "2026-05-06T13:14:35-07:00",
-          "age_days": 55,
+          "age_days": 56,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -15507,7 +15507,7 @@
           ],
           "linked_bug_id": "CB-077",
           "deployment_truth": {
-            "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+            "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -15696,7 +15696,7 @@
         "timeline": {
           "start_date": "2026-04-08",
           "last_activity_iso": "2026-05-06T13:14:35-07:00",
-          "age_days": 55,
+          "age_days": 56,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -15854,7 +15854,7 @@
         "timeline": {
           "start_date": "2026-04-08",
           "last_activity_iso": "",
-          "age_days": 55,
+          "age_days": 56,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -16018,7 +16018,7 @@
         "timeline": {
           "start_date": "2026-04-09",
           "last_activity_iso": "",
-          "age_days": 54,
+          "age_days": 55,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -16176,7 +16176,7 @@
         "timeline": {
           "start_date": "2026-04-08",
           "last_activity_iso": "",
-          "age_days": 55,
+          "age_days": 56,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -16332,7 +16332,7 @@
         "timeline": {
           "start_date": "2026-04-08",
           "last_activity_iso": "",
-          "age_days": 55,
+          "age_days": 56,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -16504,7 +16504,7 @@
         "timeline": {
           "start_date": "2026-04-09",
           "last_activity_iso": "2026-06-01T15:47:44-07:00",
-          "age_days": 54,
+          "age_days": 55,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -16695,7 +16695,7 @@
         "timeline": {
           "start_date": "2026-04-09",
           "last_activity_iso": "",
-          "age_days": 54,
+          "age_days": 55,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -17831,7 +17831,7 @@
         "timeline": {
           "start_date": "2026-04-09",
           "last_activity_iso": "2026-05-06T13:14:35-07:00",
-          "age_days": 54,
+          "age_days": 55,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -18015,7 +18015,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 51,
+          "age_days": 52,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -18199,7 +18199,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 51,
+          "age_days": 52,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -18391,7 +18391,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 51,
+          "age_days": 52,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -18575,7 +18575,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 51,
+          "age_days": 52,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -18763,7 +18763,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 51,
+          "age_days": 52,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -18959,7 +18959,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 51,
+          "age_days": 52,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -19147,7 +19147,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-04-27T14:24:28-07:00",
-          "age_days": 51,
+          "age_days": 52,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -19315,7 +19315,7 @@
         "timeline": {
           "start_date": "2026-04-09",
           "last_activity_iso": "",
-          "age_days": 54,
+          "age_days": 55,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -19477,7 +19477,7 @@
         "timeline": {
           "start_date": "2026-04-10",
           "last_activity_iso": "",
-          "age_days": 53,
+          "age_days": 54,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -19670,7 +19670,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 51,
+          "age_days": 52,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -19826,7 +19826,7 @@
         "timeline": {
           "start_date": "2026-04-13",
           "last_activity_iso": "2026-03-23T17:32:23-07:00",
-          "age_days": 50,
+          "age_days": 51,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -19981,7 +19981,7 @@
         "timeline": {
           "start_date": "2026-04-13",
           "last_activity_iso": "",
-          "age_days": 50,
+          "age_days": 51,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -20885,7 +20885,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-05-06T13:14:35-07:00",
-          "age_days": 49,
+          "age_days": 50,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -21041,7 +21041,7 @@
         "timeline": {
           "start_date": "2026-04-15",
           "last_activity_iso": "",
-          "age_days": 48,
+          "age_days": 49,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -21946,7 +21946,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-05-06T13:14:35-07:00",
-          "age_days": 47,
+          "age_days": 48,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -22138,7 +22138,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-04-16T14:54:04-07:00",
-          "age_days": 47,
+          "age_days": 48,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -22330,7 +22330,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-04-16T14:54:04-07:00",
-          "age_days": 47,
+          "age_days": 48,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -22522,7 +22522,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-04-16T14:54:04-07:00",
-          "age_days": 47,
+          "age_days": 48,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -22714,7 +22714,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-04-16T14:54:04-07:00",
-          "age_days": 47,
+          "age_days": 48,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -22906,7 +22906,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-04-16T14:54:04-07:00",
-          "age_days": 47,
+          "age_days": 48,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -23110,7 +23110,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-03-23T17:32:23-07:00",
-          "age_days": 49,
+          "age_days": 50,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -23310,7 +23310,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-03-23T17:32:23-07:00",
-          "age_days": 49,
+          "age_days": 50,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -23502,7 +23502,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-03-23T17:32:23-07:00",
-          "age_days": 49,
+          "age_days": 50,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -23694,7 +23694,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-03-23T17:32:23-07:00",
-          "age_days": 49,
+          "age_days": 50,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -23918,7 +23918,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-03-23T17:32:23-07:00",
-          "age_days": 49,
+          "age_days": 50,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -24102,7 +24102,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
-          "age_days": 38,
+          "age_days": 39,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -24140,7 +24140,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+            "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24327,7 +24327,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
-          "age_days": 38,
+          "age_days": 39,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -24365,7 +24365,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+            "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24552,7 +24552,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
-          "age_days": 38,
+          "age_days": 39,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -24590,7 +24590,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+            "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24777,7 +24777,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
-          "age_days": 38,
+          "age_days": 39,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -24815,7 +24815,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+            "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -25002,7 +25002,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-06-01T15:47:44-07:00",
-          "age_days": 38,
+          "age_days": 39,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -25189,7 +25189,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
-          "age_days": 38,
+          "age_days": 39,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -25227,7 +25227,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+            "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -25882,7 +25882,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 45,
+          "age_days": 46,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -26100,7 +26100,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 45,
+          "age_days": 46,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -26316,7 +26316,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 45,
+          "age_days": 46,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -26532,7 +26532,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 45,
+          "age_days": 46,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -26748,7 +26748,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 45,
+          "age_days": 46,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -26964,7 +26964,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 45,
+          "age_days": 46,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -27180,7 +27180,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 45,
+          "age_days": 46,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -27396,7 +27396,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 45,
+          "age_days": 46,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -27555,7 +27555,7 @@
         "timeline": {
           "start_date": "2026-04-27",
           "last_activity_iso": "2026-04-27T18:15:04-07:00",
-          "age_days": 36,
+          "age_days": 37,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -27707,7 +27707,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -27858,7 +27858,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -28009,7 +28009,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -28160,7 +28160,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -28311,7 +28311,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -28462,7 +28462,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -28613,7 +28613,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -28764,7 +28764,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -28915,7 +28915,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -29066,7 +29066,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -29217,7 +29217,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -29368,7 +29368,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -29519,7 +29519,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-06-01T15:47:44-07:00",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -29553,7 +29553,7 @@
             "docs"
           ],
           "deployment_truth": {
-            "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+            "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -29748,20 +29748,20 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 3,
-            "file_touch_count": 94
-          },
-          "48h": {
             "commit_count": 4,
             "local_change_count": 3,
-            "file_touch_count": 169
+            "file_touch_count": 95
+          },
+          "48h": {
+            "commit_count": 5,
+            "local_change_count": 3,
+            "file_touch_count": 170
           }
         },
         "timeline": {
           "start_date": "2026-05-01",
-          "last_activity_iso": "2026-06-02T20:55:23-07:00",
-          "age_days": 32,
+          "last_activity_iso": "2026-06-03T08:18:34-07:00",
+          "age_days": 33,
           "eta_days": 1,
           "eta_confidence": "high"
         },
@@ -29776,11 +29776,11 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 70,
+            "index": 73,
             "band": "High"
           },
           "48h": {
-            "index": 73,
+            "index": 75,
             "band": "High"
           }
         },
@@ -29990,7 +29990,7 @@
         "timeline": {
           "start_date": "2026-05-01",
           "last_activity_iso": "2026-05-26T12:14:37-07:00",
-          "age_days": 32,
+          "age_days": 33,
           "eta_days": 1,
           "eta_confidence": "high"
         },
@@ -30335,7 +30335,7 @@
         "timeline": {
           "start_date": "2026-04-17",
           "last_activity_iso": "2026-06-02T19:50:21-07:00",
-          "age_days": 46,
+          "age_days": 47,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -30538,7 +30538,7 @@
         "timeline": {
           "start_date": "2026-04-10",
           "last_activity_iso": "2026-06-01T15:47:44-07:00",
-          "age_days": 53,
+          "age_days": 54,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -30709,7 +30709,7 @@
         "timeline": {
           "start_date": "2026-04-09",
           "last_activity_iso": "2026-06-01T15:47:44-07:00",
-          "age_days": 54,
+          "age_days": 55,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -31896,7 +31896,7 @@
         "timeline": {
           "start_date": "2026-04-17",
           "last_activity_iso": "2026-06-02T19:50:21-07:00",
-          "age_days": 46,
+          "age_days": 47,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -32083,7 +32083,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-06-01T15:47:44-07:00",
-          "age_days": 38,
+          "age_days": 39,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -32238,7 +32238,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-06-01T15:47:44-07:00",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -32272,7 +32272,7 @@
             "docs"
           ],
           "deployment_truth": {
-            "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+            "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -32463,8 +32463,8 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "2026-04-09T10:38:07-07:00",
-          "age_days": 65,
-          "eta_days": 28,
+          "age_days": 66,
+          "eta_days": 29,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -32637,7 +32637,7 @@
         "timeline": {
           "start_date": "2026-03-31",
           "last_activity_iso": "2026-04-28T14:07:28-07:00",
-          "age_days": 63,
+          "age_days": 64,
           "eta_days": 7,
           "eta_confidence": "high"
         },
@@ -32815,8 +32815,8 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "2026-04-29T15:06:03-07:00",
-          "age_days": 65,
-          "eta_days": 9,
+          "age_days": 66,
+          "eta_days": 10,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -32997,8 +32997,8 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "2026-04-15T23:17:55-07:00",
-          "age_days": 64,
-          "eta_days": 24,
+          "age_days": 65,
+          "eta_days": 25,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -33171,7 +33171,7 @@
         "timeline": {
           "start_date": "2026-03-31",
           "last_activity_iso": "2026-04-28T14:07:28-07:00",
-          "age_days": 63,
+          "age_days": 64,
           "eta_days": 7,
           "eta_confidence": "high"
         },
@@ -33390,8 +33390,8 @@
         "timeline": {
           "start_date": "2026-04-01",
           "last_activity_iso": "2026-04-12T10:37:07-07:00",
-          "age_days": 62,
-          "eta_days": 1674,
+          "age_days": 63,
+          "eta_days": 1701,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -33560,8 +33560,8 @@
         "timeline": {
           "start_date": "2026-04-04",
           "last_activity_iso": "2026-04-05T22:15:26-07:00",
-          "age_days": 59,
-          "eta_days": 944,
+          "age_days": 60,
+          "eta_days": 960,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -33730,8 +33730,8 @@
         "timeline": {
           "start_date": "2026-04-06",
           "last_activity_iso": "2026-04-10T09:39:13-07:00",
-          "age_days": 57,
-          "eta_days": 171,
+          "age_days": 58,
+          "eta_days": 174,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -33904,8 +33904,8 @@
         "timeline": {
           "start_date": "2026-04-07",
           "last_activity_iso": "2026-04-09T17:44:39-07:00",
-          "age_days": 56,
-          "eta_days": 38,
+          "age_days": 57,
+          "eta_days": 39,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -34066,7 +34066,7 @@
         "timeline": {
           "start_date": "2026-04-08",
           "last_activity_iso": "2026-04-12T10:37:07-07:00",
-          "age_days": 55,
+          "age_days": 56,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -34245,7 +34245,7 @@
         "timeline": {
           "start_date": "2026-04-09",
           "last_activity_iso": "2026-04-29T15:06:03-07:00",
-          "age_days": 54,
+          "age_days": 55,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -34448,8 +34448,8 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-12T10:09:12-07:00",
-          "age_days": 52,
-          "eta_days": 20,
+          "age_days": 53,
+          "eta_days": 21,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -34487,7 +34487,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+            "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -34682,7 +34682,7 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-11T10:45:08-07:00",
-          "age_days": 52,
+          "age_days": 53,
           "eta_days": 24,
           "eta_confidence": "high"
         },
@@ -34837,7 +34837,7 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-15T23:39:21-07:00",
-          "age_days": 52,
+          "age_days": 53,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -35032,7 +35032,7 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-12T10:18:23-07:00",
-          "age_days": 52,
+          "age_days": 53,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -35227,8 +35227,8 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-14T10:30:13-07:00",
-          "age_days": 52,
-          "eta_days": 250,
+          "age_days": 53,
+          "eta_days": 255,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -35393,7 +35393,7 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-11T17:40:14-07:00",
-          "age_days": 52,
+          "age_days": 53,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -35552,7 +35552,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-04-11T19:44:39-07:00",
-          "age_days": 51,
+          "age_days": 52,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -35723,7 +35723,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-04-27T14:24:28-07:00",
-          "age_days": 51,
+          "age_days": 52,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -35918,7 +35918,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-04-12T16:26:24-07:00",
-          "age_days": 51,
+          "age_days": 52,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -36113,8 +36113,8 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-04-28T14:07:28-07:00",
-          "age_days": 51,
-          "eta_days": 43,
+          "age_days": 52,
+          "eta_days": 44,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -36346,7 +36346,7 @@
         "timeline": {
           "start_date": "2026-04-15",
           "last_activity_iso": "2026-04-15T09:38:42-07:00",
-          "age_days": 48,
+          "age_days": 49,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -36530,7 +36530,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "2026-04-17T22:57:33-07:00",
-          "age_days": 45,
+          "age_days": 46,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -36769,7 +36769,7 @@
         "timeline": {
           "start_date": "2026-03-26",
           "last_activity_iso": "2026-05-06T13:14:35-07:00",
-          "age_days": 68,
+          "age_days": 69,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -36957,7 +36957,7 @@
         "timeline": {
           "start_date": "2026-03-27",
           "last_activity_iso": "",
-          "age_days": 67,
+          "age_days": 68,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -37112,7 +37112,7 @@
         "timeline": {
           "start_date": "2026-03-27",
           "last_activity_iso": "",
-          "age_days": 67,
+          "age_days": 68,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -37272,7 +37272,7 @@
         "timeline": {
           "start_date": "2026-03-27",
           "last_activity_iso": "2026-05-19T16:16:54-07:00",
-          "age_days": 67,
+          "age_days": 68,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -37444,7 +37444,7 @@
         "timeline": {
           "start_date": "2026-03-28",
           "last_activity_iso": "2026-05-19T16:16:54-07:00",
-          "age_days": 66,
+          "age_days": 67,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -37620,7 +37620,7 @@
         "timeline": {
           "start_date": "2026-03-27",
           "last_activity_iso": "",
-          "age_days": 67,
+          "age_days": 68,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -37779,7 +37779,7 @@
         "timeline": {
           "start_date": "2026-03-28",
           "last_activity_iso": "",
-          "age_days": 66,
+          "age_days": 67,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -37939,7 +37939,7 @@
         "timeline": {
           "start_date": "2026-03-28",
           "last_activity_iso": "",
-          "age_days": 66,
+          "age_days": 67,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -38107,7 +38107,7 @@
         "timeline": {
           "start_date": "2026-03-28",
           "last_activity_iso": "",
-          "age_days": 66,
+          "age_days": 67,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -38271,7 +38271,7 @@
         "timeline": {
           "start_date": "2026-03-28",
           "last_activity_iso": "2026-03-28T21:05:40-07:00",
-          "age_days": 66,
+          "age_days": 67,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -38435,7 +38435,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -38595,7 +38595,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -38779,7 +38779,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -38935,7 +38935,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -39101,7 +39101,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 5,
           "eta_confidence": "high"
         },
@@ -39265,7 +39265,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -39437,7 +39437,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -39609,7 +39609,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -39773,7 +39773,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -39937,7 +39937,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "2026-04-28T14:07:28-07:00",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -40093,7 +40093,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -40273,7 +40273,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -40425,7 +40425,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 65,
+          "age_days": 66,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -40585,7 +40585,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "2026-05-19T16:16:54-07:00",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -40741,7 +40741,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -40893,7 +40893,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -41057,7 +41057,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "2026-04-27T15:19:58-07:00",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -41269,7 +41269,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "2026-05-06T13:14:35-07:00",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -41437,7 +41437,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -41601,7 +41601,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -41764,7 +41764,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -41927,7 +41927,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -42090,7 +42090,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -42249,7 +42249,7 @@
         "timeline": {
           "start_date": "2026-03-31",
           "last_activity_iso": "",
-          "age_days": 63,
+          "age_days": 64,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -42414,7 +42414,7 @@
         "timeline": {
           "start_date": "2026-04-02",
           "last_activity_iso": "",
-          "age_days": 61,
+          "age_days": 62,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -42579,7 +42579,7 @@
         "timeline": {
           "start_date": "2026-04-02",
           "last_activity_iso": "",
-          "age_days": 61,
+          "age_days": 62,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -42748,7 +42748,7 @@
         "timeline": {
           "start_date": "2026-04-02",
           "last_activity_iso": "",
-          "age_days": 61,
+          "age_days": 62,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -42913,7 +42913,7 @@
         "timeline": {
           "start_date": "2026-04-02",
           "last_activity_iso": "",
-          "age_days": 61,
+          "age_days": 62,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -43074,7 +43074,7 @@
         "timeline": {
           "start_date": "2026-04-04",
           "last_activity_iso": "",
-          "age_days": 59,
+          "age_days": 60,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -43243,7 +43243,7 @@
         "timeline": {
           "start_date": "2026-04-04",
           "last_activity_iso": "",
-          "age_days": 59,
+          "age_days": 60,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -43398,7 +43398,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 35,
+          "age_days": 36,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -43554,7 +43554,7 @@
         "timeline": {
           "start_date": "2026-04-27",
           "last_activity_iso": "2026-04-27T21:33:02-07:00",
-          "age_days": 36,
+          "age_days": 37,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -43710,7 +43710,7 @@
         "timeline": {
           "start_date": "2026-04-06",
           "last_activity_iso": "",
-          "age_days": 57,
+          "age_days": 58,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -43866,7 +43866,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 35,
+          "age_days": 36,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -44022,7 +44022,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 35,
+          "age_days": 36,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -44178,7 +44178,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 35,
+          "age_days": 36,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -44334,7 +44334,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 35,
+          "age_days": 36,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -44490,7 +44490,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 35,
+          "age_days": 36,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -44650,7 +44650,7 @@
         "timeline": {
           "start_date": "2026-04-06",
           "last_activity_iso": "",
-          "age_days": 57,
+          "age_days": 58,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -44869,7 +44869,7 @@
         "timeline": {
           "start_date": "2026-04-07",
           "last_activity_iso": "2026-05-06T13:14:35-07:00",
-          "age_days": 56,
+          "age_days": 57,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -45097,7 +45097,7 @@
         "timeline": {
           "start_date": "2026-04-07",
           "last_activity_iso": "2026-05-06T13:14:35-07:00",
-          "age_days": 56,
+          "age_days": 57,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -45265,7 +45265,7 @@
         "timeline": {
           "start_date": "2026-04-07",
           "last_activity_iso": "",
-          "age_days": 56,
+          "age_days": 57,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -45449,7 +45449,7 @@
         "timeline": {
           "start_date": "2026-04-08",
           "last_activity_iso": "2026-05-06T13:14:35-07:00",
-          "age_days": 55,
+          "age_days": 56,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -45488,7 +45488,7 @@
           ],
           "linked_bug_id": "CB-077",
           "deployment_truth": {
-            "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+            "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -45677,7 +45677,7 @@
         "timeline": {
           "start_date": "2026-04-08",
           "last_activity_iso": "2026-05-06T13:14:35-07:00",
-          "age_days": 55,
+          "age_days": 56,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -45835,7 +45835,7 @@
         "timeline": {
           "start_date": "2026-04-08",
           "last_activity_iso": "",
-          "age_days": 55,
+          "age_days": 56,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -45999,7 +45999,7 @@
         "timeline": {
           "start_date": "2026-04-09",
           "last_activity_iso": "",
-          "age_days": 54,
+          "age_days": 55,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -46157,7 +46157,7 @@
         "timeline": {
           "start_date": "2026-04-08",
           "last_activity_iso": "",
-          "age_days": 55,
+          "age_days": 56,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -46313,7 +46313,7 @@
         "timeline": {
           "start_date": "2026-04-08",
           "last_activity_iso": "",
-          "age_days": 55,
+          "age_days": 56,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -46502,7 +46502,7 @@
         "timeline": {
           "start_date": "2026-04-09",
           "last_activity_iso": "",
-          "age_days": 54,
+          "age_days": 55,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -47638,7 +47638,7 @@
         "timeline": {
           "start_date": "2026-04-09",
           "last_activity_iso": "2026-05-06T13:14:35-07:00",
-          "age_days": 54,
+          "age_days": 55,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -47822,7 +47822,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 51,
+          "age_days": 52,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -48006,7 +48006,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 51,
+          "age_days": 52,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -48198,7 +48198,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 51,
+          "age_days": 52,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -48382,7 +48382,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 51,
+          "age_days": 52,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -48570,7 +48570,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 51,
+          "age_days": 52,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -48766,7 +48766,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 51,
+          "age_days": 52,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -48954,7 +48954,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-04-27T14:24:28-07:00",
-          "age_days": 51,
+          "age_days": 52,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -49122,7 +49122,7 @@
         "timeline": {
           "start_date": "2026-04-09",
           "last_activity_iso": "",
-          "age_days": 54,
+          "age_days": 55,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -49284,7 +49284,7 @@
         "timeline": {
           "start_date": "2026-04-10",
           "last_activity_iso": "",
-          "age_days": 53,
+          "age_days": 54,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -49477,7 +49477,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 51,
+          "age_days": 52,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -49633,7 +49633,7 @@
         "timeline": {
           "start_date": "2026-04-13",
           "last_activity_iso": "2026-03-23T17:32:23-07:00",
-          "age_days": 50,
+          "age_days": 51,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -49788,7 +49788,7 @@
         "timeline": {
           "start_date": "2026-04-13",
           "last_activity_iso": "",
-          "age_days": 50,
+          "age_days": 51,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -50692,7 +50692,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-05-06T13:14:35-07:00",
-          "age_days": 49,
+          "age_days": 50,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -50848,7 +50848,7 @@
         "timeline": {
           "start_date": "2026-04-15",
           "last_activity_iso": "",
-          "age_days": 48,
+          "age_days": 49,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -51753,7 +51753,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-05-06T13:14:35-07:00",
-          "age_days": 47,
+          "age_days": 48,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -51945,7 +51945,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-04-16T14:54:04-07:00",
-          "age_days": 47,
+          "age_days": 48,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -52137,7 +52137,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-04-16T14:54:04-07:00",
-          "age_days": 47,
+          "age_days": 48,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -52329,7 +52329,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-04-16T14:54:04-07:00",
-          "age_days": 47,
+          "age_days": 48,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -52521,7 +52521,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-04-16T14:54:04-07:00",
-          "age_days": 47,
+          "age_days": 48,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -52713,7 +52713,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-04-16T14:54:04-07:00",
-          "age_days": 47,
+          "age_days": 48,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -52917,7 +52917,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-03-23T17:32:23-07:00",
-          "age_days": 49,
+          "age_days": 50,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -53117,7 +53117,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-03-23T17:32:23-07:00",
-          "age_days": 49,
+          "age_days": 50,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -53309,7 +53309,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-03-23T17:32:23-07:00",
-          "age_days": 49,
+          "age_days": 50,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -53501,7 +53501,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-03-23T17:32:23-07:00",
-          "age_days": 49,
+          "age_days": 50,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -53725,7 +53725,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-03-23T17:32:23-07:00",
-          "age_days": 49,
+          "age_days": 50,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -53909,7 +53909,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
-          "age_days": 38,
+          "age_days": 39,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -53947,7 +53947,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+            "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54134,7 +54134,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
-          "age_days": 38,
+          "age_days": 39,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -54172,7 +54172,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+            "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54359,7 +54359,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
-          "age_days": 38,
+          "age_days": 39,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -54397,7 +54397,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+            "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54584,7 +54584,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
-          "age_days": 38,
+          "age_days": 39,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -54622,7 +54622,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+            "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54809,7 +54809,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
-          "age_days": 38,
+          "age_days": 39,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -54847,7 +54847,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+            "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -55502,7 +55502,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 45,
+          "age_days": 46,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -55720,7 +55720,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 45,
+          "age_days": 46,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -55936,7 +55936,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 45,
+          "age_days": 46,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -56152,7 +56152,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 45,
+          "age_days": 46,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -56368,7 +56368,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 45,
+          "age_days": 46,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -56584,7 +56584,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 45,
+          "age_days": 46,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -56800,7 +56800,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 45,
+          "age_days": 46,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -57016,7 +57016,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 45,
+          "age_days": 46,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -57175,7 +57175,7 @@
         "timeline": {
           "start_date": "2026-04-27",
           "last_activity_iso": "2026-04-27T18:15:04-07:00",
-          "age_days": 36,
+          "age_days": 37,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -57327,7 +57327,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -57478,7 +57478,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -57629,7 +57629,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -57780,7 +57780,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -57931,7 +57931,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -58082,7 +58082,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -58233,7 +58233,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -58384,7 +58384,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -58535,7 +58535,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -58686,7 +58686,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -58837,7 +58837,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -58988,7 +58988,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 34,
+          "age_days": 35,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -59183,20 +59183,20 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 3,
-          "file_touch_count": 94
-        },
-        "48h": {
           "commit_count": 4,
           "local_change_count": 3,
-          "file_touch_count": 169
+          "file_touch_count": 95
+        },
+        "48h": {
+          "commit_count": 5,
+          "local_change_count": 3,
+          "file_touch_count": 170
         }
       },
       "timeline": {
         "start_date": "2026-05-01",
-        "last_activity_iso": "2026-06-02T20:55:23-07:00",
-        "age_days": 32,
+        "last_activity_iso": "2026-06-03T08:18:34-07:00",
+        "age_days": 33,
         "eta_days": 1,
         "eta_confidence": "high"
       },
@@ -59211,11 +59211,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 70,
+          "index": 73,
           "band": "High"
         },
         "48h": {
-          "index": 73,
+          "index": 75,
           "band": "High"
         }
       },
@@ -59425,7 +59425,7 @@
       "timeline": {
         "start_date": "2026-05-01",
         "last_activity_iso": "2026-05-26T12:14:37-07:00",
-        "age_days": 32,
+        "age_days": 33,
         "eta_days": 1,
         "eta_confidence": "high"
       },
@@ -59770,7 +59770,7 @@
       "timeline": {
         "start_date": "2026-04-17",
         "last_activity_iso": "2026-06-02T19:50:21-07:00",
-        "age_days": 46,
+        "age_days": 47,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -59973,7 +59973,7 @@
       "timeline": {
         "start_date": "2026-04-10",
         "last_activity_iso": "2026-06-01T15:47:44-07:00",
-        "age_days": 53,
+        "age_days": 54,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -60144,7 +60144,7 @@
       "timeline": {
         "start_date": "2026-04-09",
         "last_activity_iso": "2026-06-01T15:47:44-07:00",
-        "age_days": 54,
+        "age_days": 55,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -61331,7 +61331,7 @@
       "timeline": {
         "start_date": "2026-04-17",
         "last_activity_iso": "2026-06-02T19:50:21-07:00",
-        "age_days": 46,
+        "age_days": 47,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -61518,7 +61518,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-06-01T15:47:44-07:00",
-        "age_days": 38,
+        "age_days": 39,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -61673,7 +61673,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-06-01T15:47:44-07:00",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -61707,7 +61707,7 @@
           "docs"
         ],
         "deployment_truth": {
-          "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+          "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -61898,8 +61898,8 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "2026-04-09T10:38:07-07:00",
-        "age_days": 65,
-        "eta_days": 28,
+        "age_days": 66,
+        "eta_days": 29,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -62072,7 +62072,7 @@
       "timeline": {
         "start_date": "2026-03-31",
         "last_activity_iso": "2026-04-28T14:07:28-07:00",
-        "age_days": 63,
+        "age_days": 64,
         "eta_days": 7,
         "eta_confidence": "high"
       },
@@ -62250,8 +62250,8 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "2026-04-29T15:06:03-07:00",
-        "age_days": 65,
-        "eta_days": 9,
+        "age_days": 66,
+        "eta_days": 10,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -62432,8 +62432,8 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "2026-04-15T23:17:55-07:00",
-        "age_days": 64,
-        "eta_days": 24,
+        "age_days": 65,
+        "eta_days": 25,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -62606,7 +62606,7 @@
       "timeline": {
         "start_date": "2026-03-31",
         "last_activity_iso": "2026-04-28T14:07:28-07:00",
-        "age_days": 63,
+        "age_days": 64,
         "eta_days": 7,
         "eta_confidence": "high"
       },
@@ -62825,8 +62825,8 @@
       "timeline": {
         "start_date": "2026-04-01",
         "last_activity_iso": "2026-04-12T10:37:07-07:00",
-        "age_days": 62,
-        "eta_days": 1674,
+        "age_days": 63,
+        "eta_days": 1701,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -62995,8 +62995,8 @@
       "timeline": {
         "start_date": "2026-04-04",
         "last_activity_iso": "2026-04-05T22:15:26-07:00",
-        "age_days": 59,
-        "eta_days": 944,
+        "age_days": 60,
+        "eta_days": 960,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -63165,8 +63165,8 @@
       "timeline": {
         "start_date": "2026-04-06",
         "last_activity_iso": "2026-04-10T09:39:13-07:00",
-        "age_days": 57,
-        "eta_days": 171,
+        "age_days": 58,
+        "eta_days": 174,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -63339,8 +63339,8 @@
       "timeline": {
         "start_date": "2026-04-07",
         "last_activity_iso": "2026-04-09T17:44:39-07:00",
-        "age_days": 56,
-        "eta_days": 38,
+        "age_days": 57,
+        "eta_days": 39,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -63501,7 +63501,7 @@
       "timeline": {
         "start_date": "2026-04-08",
         "last_activity_iso": "2026-04-12T10:37:07-07:00",
-        "age_days": 55,
+        "age_days": 56,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -63680,7 +63680,7 @@
       "timeline": {
         "start_date": "2026-04-09",
         "last_activity_iso": "2026-04-29T15:06:03-07:00",
-        "age_days": 54,
+        "age_days": 55,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -63883,8 +63883,8 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-12T10:09:12-07:00",
-        "age_days": 52,
-        "eta_days": 20,
+        "age_days": 53,
+        "eta_days": 21,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -63922,7 +63922,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+          "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -64117,7 +64117,7 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-11T10:45:08-07:00",
-        "age_days": 52,
+        "age_days": 53,
         "eta_days": 24,
         "eta_confidence": "high"
       },
@@ -64272,7 +64272,7 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-15T23:39:21-07:00",
-        "age_days": 52,
+        "age_days": 53,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -64467,7 +64467,7 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-12T10:18:23-07:00",
-        "age_days": 52,
+        "age_days": 53,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -64662,8 +64662,8 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-14T10:30:13-07:00",
-        "age_days": 52,
-        "eta_days": 250,
+        "age_days": 53,
+        "eta_days": 255,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -64828,7 +64828,7 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-11T17:40:14-07:00",
-        "age_days": 52,
+        "age_days": 53,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -64987,7 +64987,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-04-11T19:44:39-07:00",
-        "age_days": 51,
+        "age_days": 52,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -65158,7 +65158,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-04-27T14:24:28-07:00",
-        "age_days": 51,
+        "age_days": 52,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -65353,7 +65353,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-04-12T16:26:24-07:00",
-        "age_days": 51,
+        "age_days": 52,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -65548,8 +65548,8 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-04-28T14:07:28-07:00",
-        "age_days": 51,
-        "eta_days": 43,
+        "age_days": 52,
+        "eta_days": 44,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -65781,7 +65781,7 @@
       "timeline": {
         "start_date": "2026-04-15",
         "last_activity_iso": "2026-04-15T09:38:42-07:00",
-        "age_days": 48,
+        "age_days": 49,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -65965,7 +65965,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "2026-04-17T22:57:33-07:00",
-        "age_days": 45,
+        "age_days": 46,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -66204,7 +66204,7 @@
       "timeline": {
         "start_date": "2026-03-26",
         "last_activity_iso": "2026-05-06T13:14:35-07:00",
-        "age_days": 68,
+        "age_days": 69,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -66392,7 +66392,7 @@
       "timeline": {
         "start_date": "2026-03-27",
         "last_activity_iso": "",
-        "age_days": 67,
+        "age_days": 68,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -66547,7 +66547,7 @@
       "timeline": {
         "start_date": "2026-03-27",
         "last_activity_iso": "",
-        "age_days": 67,
+        "age_days": 68,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -66707,7 +66707,7 @@
       "timeline": {
         "start_date": "2026-03-27",
         "last_activity_iso": "2026-05-19T16:16:54-07:00",
-        "age_days": 67,
+        "age_days": 68,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -66879,7 +66879,7 @@
       "timeline": {
         "start_date": "2026-03-28",
         "last_activity_iso": "2026-05-19T16:16:54-07:00",
-        "age_days": 66,
+        "age_days": 67,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -67055,7 +67055,7 @@
       "timeline": {
         "start_date": "2026-03-27",
         "last_activity_iso": "",
-        "age_days": 67,
+        "age_days": 68,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -67214,7 +67214,7 @@
       "timeline": {
         "start_date": "2026-03-28",
         "last_activity_iso": "",
-        "age_days": 66,
+        "age_days": 67,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -67374,7 +67374,7 @@
       "timeline": {
         "start_date": "2026-03-28",
         "last_activity_iso": "",
-        "age_days": 66,
+        "age_days": 67,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -67542,7 +67542,7 @@
       "timeline": {
         "start_date": "2026-03-28",
         "last_activity_iso": "",
-        "age_days": 66,
+        "age_days": 67,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -67706,7 +67706,7 @@
       "timeline": {
         "start_date": "2026-03-28",
         "last_activity_iso": "2026-03-28T21:05:40-07:00",
-        "age_days": 66,
+        "age_days": 67,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -67870,7 +67870,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -68030,7 +68030,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -68214,7 +68214,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -68370,7 +68370,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -68536,7 +68536,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 5,
         "eta_confidence": "high"
       },
@@ -68700,7 +68700,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -68872,7 +68872,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -69044,7 +69044,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -69208,7 +69208,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -69372,7 +69372,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "2026-04-28T14:07:28-07:00",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -69528,7 +69528,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -69708,7 +69708,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -69860,7 +69860,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -70020,7 +70020,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "2026-05-19T16:16:54-07:00",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -70176,7 +70176,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -70328,7 +70328,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -70492,7 +70492,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "2026-04-27T15:19:58-07:00",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -70704,7 +70704,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "2026-05-06T13:14:35-07:00",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -70872,7 +70872,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -71036,7 +71036,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -71199,7 +71199,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -71362,7 +71362,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -71525,7 +71525,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -71684,7 +71684,7 @@
       "timeline": {
         "start_date": "2026-03-31",
         "last_activity_iso": "",
-        "age_days": 63,
+        "age_days": 64,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -71849,7 +71849,7 @@
       "timeline": {
         "start_date": "2026-04-02",
         "last_activity_iso": "",
-        "age_days": 61,
+        "age_days": 62,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -72014,7 +72014,7 @@
       "timeline": {
         "start_date": "2026-04-02",
         "last_activity_iso": "",
-        "age_days": 61,
+        "age_days": 62,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -72183,7 +72183,7 @@
       "timeline": {
         "start_date": "2026-04-02",
         "last_activity_iso": "",
-        "age_days": 61,
+        "age_days": 62,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -72348,7 +72348,7 @@
       "timeline": {
         "start_date": "2026-04-02",
         "last_activity_iso": "",
-        "age_days": 61,
+        "age_days": 62,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -72509,7 +72509,7 @@
       "timeline": {
         "start_date": "2026-04-04",
         "last_activity_iso": "",
-        "age_days": 59,
+        "age_days": 60,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -72678,7 +72678,7 @@
       "timeline": {
         "start_date": "2026-04-04",
         "last_activity_iso": "",
-        "age_days": 59,
+        "age_days": 60,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -72833,7 +72833,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 35,
+        "age_days": 36,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -72989,7 +72989,7 @@
       "timeline": {
         "start_date": "2026-04-27",
         "last_activity_iso": "2026-04-27T21:33:02-07:00",
-        "age_days": 36,
+        "age_days": 37,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -73145,7 +73145,7 @@
       "timeline": {
         "start_date": "2026-04-06",
         "last_activity_iso": "",
-        "age_days": 57,
+        "age_days": 58,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -73301,7 +73301,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 35,
+        "age_days": 36,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -73457,7 +73457,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 35,
+        "age_days": 36,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -73613,7 +73613,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 35,
+        "age_days": 36,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -73769,7 +73769,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 35,
+        "age_days": 36,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -73925,7 +73925,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 35,
+        "age_days": 36,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -74085,7 +74085,7 @@
       "timeline": {
         "start_date": "2026-04-06",
         "last_activity_iso": "",
-        "age_days": 57,
+        "age_days": 58,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -74304,7 +74304,7 @@
       "timeline": {
         "start_date": "2026-04-07",
         "last_activity_iso": "2026-05-06T13:14:35-07:00",
-        "age_days": 56,
+        "age_days": 57,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -74532,7 +74532,7 @@
       "timeline": {
         "start_date": "2026-04-07",
         "last_activity_iso": "2026-05-06T13:14:35-07:00",
-        "age_days": 56,
+        "age_days": 57,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -74700,7 +74700,7 @@
       "timeline": {
         "start_date": "2026-04-07",
         "last_activity_iso": "",
-        "age_days": 56,
+        "age_days": 57,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -74884,7 +74884,7 @@
       "timeline": {
         "start_date": "2026-04-08",
         "last_activity_iso": "2026-05-06T13:14:35-07:00",
-        "age_days": 55,
+        "age_days": 56,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -74923,7 +74923,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+          "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -75112,7 +75112,7 @@
       "timeline": {
         "start_date": "2026-04-08",
         "last_activity_iso": "2026-05-06T13:14:35-07:00",
-        "age_days": 55,
+        "age_days": 56,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -75270,7 +75270,7 @@
       "timeline": {
         "start_date": "2026-04-08",
         "last_activity_iso": "",
-        "age_days": 55,
+        "age_days": 56,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -75434,7 +75434,7 @@
       "timeline": {
         "start_date": "2026-04-09",
         "last_activity_iso": "",
-        "age_days": 54,
+        "age_days": 55,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -75592,7 +75592,7 @@
       "timeline": {
         "start_date": "2026-04-08",
         "last_activity_iso": "",
-        "age_days": 55,
+        "age_days": 56,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -75748,7 +75748,7 @@
       "timeline": {
         "start_date": "2026-04-08",
         "last_activity_iso": "",
-        "age_days": 55,
+        "age_days": 56,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -75937,7 +75937,7 @@
       "timeline": {
         "start_date": "2026-04-09",
         "last_activity_iso": "",
-        "age_days": 54,
+        "age_days": 55,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -77073,7 +77073,7 @@
       "timeline": {
         "start_date": "2026-04-09",
         "last_activity_iso": "2026-05-06T13:14:35-07:00",
-        "age_days": 54,
+        "age_days": 55,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -77257,7 +77257,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 51,
+        "age_days": 52,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -77441,7 +77441,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 51,
+        "age_days": 52,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -77633,7 +77633,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 51,
+        "age_days": 52,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -77817,7 +77817,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 51,
+        "age_days": 52,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -78005,7 +78005,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 51,
+        "age_days": 52,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -78201,7 +78201,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 51,
+        "age_days": 52,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -78389,7 +78389,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-04-27T14:24:28-07:00",
-        "age_days": 51,
+        "age_days": 52,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -78557,7 +78557,7 @@
       "timeline": {
         "start_date": "2026-04-09",
         "last_activity_iso": "",
-        "age_days": 54,
+        "age_days": 55,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -78719,7 +78719,7 @@
       "timeline": {
         "start_date": "2026-04-10",
         "last_activity_iso": "",
-        "age_days": 53,
+        "age_days": 54,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -78912,7 +78912,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 51,
+        "age_days": 52,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -79068,7 +79068,7 @@
       "timeline": {
         "start_date": "2026-04-13",
         "last_activity_iso": "2026-03-23T17:32:23-07:00",
-        "age_days": 50,
+        "age_days": 51,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -79223,7 +79223,7 @@
       "timeline": {
         "start_date": "2026-04-13",
         "last_activity_iso": "",
-        "age_days": 50,
+        "age_days": 51,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -80127,7 +80127,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-05-06T13:14:35-07:00",
-        "age_days": 49,
+        "age_days": 50,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -80283,7 +80283,7 @@
       "timeline": {
         "start_date": "2026-04-15",
         "last_activity_iso": "",
-        "age_days": 48,
+        "age_days": 49,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -81188,7 +81188,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-05-06T13:14:35-07:00",
-        "age_days": 47,
+        "age_days": 48,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -81380,7 +81380,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-04-16T14:54:04-07:00",
-        "age_days": 47,
+        "age_days": 48,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -81572,7 +81572,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-04-16T14:54:04-07:00",
-        "age_days": 47,
+        "age_days": 48,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -81764,7 +81764,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-04-16T14:54:04-07:00",
-        "age_days": 47,
+        "age_days": 48,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -81956,7 +81956,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-04-16T14:54:04-07:00",
-        "age_days": 47,
+        "age_days": 48,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -82148,7 +82148,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-04-16T14:54:04-07:00",
-        "age_days": 47,
+        "age_days": 48,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -82352,7 +82352,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-03-23T17:32:23-07:00",
-        "age_days": 49,
+        "age_days": 50,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -82552,7 +82552,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-03-23T17:32:23-07:00",
-        "age_days": 49,
+        "age_days": 50,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -82744,7 +82744,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-03-23T17:32:23-07:00",
-        "age_days": 49,
+        "age_days": 50,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -82936,7 +82936,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-03-23T17:32:23-07:00",
-        "age_days": 49,
+        "age_days": 50,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -83160,7 +83160,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-03-23T17:32:23-07:00",
-        "age_days": 49,
+        "age_days": 50,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -83344,7 +83344,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
-        "age_days": 38,
+        "age_days": 39,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -83382,7 +83382,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+          "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -83569,7 +83569,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
-        "age_days": 38,
+        "age_days": 39,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -83607,7 +83607,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+          "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -83794,7 +83794,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
-        "age_days": 38,
+        "age_days": 39,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -83832,7 +83832,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+          "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -84019,7 +84019,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
-        "age_days": 38,
+        "age_days": 39,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -84057,7 +84057,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+          "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -84244,7 +84244,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
-        "age_days": 38,
+        "age_days": 39,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -84282,7 +84282,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+          "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -84937,7 +84937,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 45,
+        "age_days": 46,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -85155,7 +85155,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 45,
+        "age_days": 46,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -85371,7 +85371,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 45,
+        "age_days": 46,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -85587,7 +85587,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 45,
+        "age_days": 46,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -85803,7 +85803,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 45,
+        "age_days": 46,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -86019,7 +86019,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 45,
+        "age_days": 46,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -86235,7 +86235,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 45,
+        "age_days": 46,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -86451,7 +86451,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 45,
+        "age_days": 46,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -86610,7 +86610,7 @@
       "timeline": {
         "start_date": "2026-04-27",
         "last_activity_iso": "2026-04-27T18:15:04-07:00",
-        "age_days": 36,
+        "age_days": 37,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -86762,7 +86762,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -86913,7 +86913,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -87064,7 +87064,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -87215,7 +87215,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -87366,7 +87366,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -87517,7 +87517,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -87668,7 +87668,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -87819,7 +87819,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -87970,7 +87970,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -88121,7 +88121,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -88272,7 +88272,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -88423,7 +88423,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -88615,8 +88615,8 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "2026-04-09T10:38:07-07:00",
-        "age_days": 65,
-        "eta_days": 28,
+        "age_days": 66,
+        "eta_days": 29,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -88789,7 +88789,7 @@
       "timeline": {
         "start_date": "2026-03-31",
         "last_activity_iso": "2026-04-28T14:07:28-07:00",
-        "age_days": 63,
+        "age_days": 64,
         "eta_days": 7,
         "eta_confidence": "high"
       },
@@ -88967,8 +88967,8 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "2026-04-29T15:06:03-07:00",
-        "age_days": 65,
-        "eta_days": 9,
+        "age_days": 66,
+        "eta_days": 10,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -89149,8 +89149,8 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "2026-04-15T23:17:55-07:00",
-        "age_days": 64,
-        "eta_days": 24,
+        "age_days": 65,
+        "eta_days": 25,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -89323,7 +89323,7 @@
       "timeline": {
         "start_date": "2026-03-31",
         "last_activity_iso": "2026-04-28T14:07:28-07:00",
-        "age_days": 63,
+        "age_days": 64,
         "eta_days": 7,
         "eta_confidence": "high"
       },
@@ -89542,8 +89542,8 @@
       "timeline": {
         "start_date": "2026-04-01",
         "last_activity_iso": "2026-04-12T10:37:07-07:00",
-        "age_days": 62,
-        "eta_days": 1674,
+        "age_days": 63,
+        "eta_days": 1701,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -89712,8 +89712,8 @@
       "timeline": {
         "start_date": "2026-04-04",
         "last_activity_iso": "2026-04-05T22:15:26-07:00",
-        "age_days": 59,
-        "eta_days": 944,
+        "age_days": 60,
+        "eta_days": 960,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -89882,8 +89882,8 @@
       "timeline": {
         "start_date": "2026-04-06",
         "last_activity_iso": "2026-04-10T09:39:13-07:00",
-        "age_days": 57,
-        "eta_days": 171,
+        "age_days": 58,
+        "eta_days": 174,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -90056,8 +90056,8 @@
       "timeline": {
         "start_date": "2026-04-07",
         "last_activity_iso": "2026-04-09T17:44:39-07:00",
-        "age_days": 56,
-        "eta_days": 38,
+        "age_days": 57,
+        "eta_days": 39,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -90218,7 +90218,7 @@
       "timeline": {
         "start_date": "2026-04-08",
         "last_activity_iso": "2026-04-12T10:37:07-07:00",
-        "age_days": 55,
+        "age_days": 56,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -90397,7 +90397,7 @@
       "timeline": {
         "start_date": "2026-04-09",
         "last_activity_iso": "2026-04-29T15:06:03-07:00",
-        "age_days": 54,
+        "age_days": 55,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -90596,7 +90596,7 @@
       "timeline": {
         "start_date": "2026-04-10",
         "last_activity_iso": "2026-06-01T15:47:44-07:00",
-        "age_days": 53,
+        "age_days": 54,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -90799,8 +90799,8 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-12T10:09:12-07:00",
-        "age_days": 52,
-        "eta_days": 20,
+        "age_days": 53,
+        "eta_days": 21,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -90838,7 +90838,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+          "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -91033,7 +91033,7 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-11T10:45:08-07:00",
-        "age_days": 52,
+        "age_days": 53,
         "eta_days": 24,
         "eta_confidence": "high"
       },
@@ -91188,7 +91188,7 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-15T23:39:21-07:00",
-        "age_days": 52,
+        "age_days": 53,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -91383,7 +91383,7 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-12T10:18:23-07:00",
-        "age_days": 52,
+        "age_days": 53,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -91578,8 +91578,8 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-14T10:30:13-07:00",
-        "age_days": 52,
-        "eta_days": 250,
+        "age_days": 53,
+        "eta_days": 255,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -91744,7 +91744,7 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-11T17:40:14-07:00",
-        "age_days": 52,
+        "age_days": 53,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -91903,7 +91903,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-04-11T19:44:39-07:00",
-        "age_days": 51,
+        "age_days": 52,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -92074,7 +92074,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-04-27T14:24:28-07:00",
-        "age_days": 51,
+        "age_days": 52,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -92269,7 +92269,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-04-12T16:26:24-07:00",
-        "age_days": 51,
+        "age_days": 52,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -92464,8 +92464,8 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-04-28T14:07:28-07:00",
-        "age_days": 51,
-        "eta_days": 43,
+        "age_days": 52,
+        "eta_days": 44,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -92697,7 +92697,7 @@
       "timeline": {
         "start_date": "2026-04-15",
         "last_activity_iso": "2026-04-15T09:38:42-07:00",
-        "age_days": 48,
+        "age_days": 49,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -92881,7 +92881,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "2026-04-17T22:57:33-07:00",
-        "age_days": 45,
+        "age_days": 46,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -93110,7 +93110,7 @@
       "timeline": {
         "start_date": "2026-05-01",
         "last_activity_iso": "2026-05-26T12:14:37-07:00",
-        "age_days": 32,
+        "age_days": 33,
         "eta_days": 1,
         "eta_confidence": "high"
       },
@@ -93305,20 +93305,20 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 3,
-          "file_touch_count": 94
-        },
-        "48h": {
           "commit_count": 4,
           "local_change_count": 3,
-          "file_touch_count": 169
+          "file_touch_count": 95
+        },
+        "48h": {
+          "commit_count": 5,
+          "local_change_count": 3,
+          "file_touch_count": 170
         }
       },
       "timeline": {
         "start_date": "2026-05-01",
-        "last_activity_iso": "2026-06-02T20:55:23-07:00",
-        "age_days": 32,
+        "last_activity_iso": "2026-06-03T08:18:34-07:00",
+        "age_days": 33,
         "eta_days": 1,
         "eta_confidence": "high"
       },
@@ -93333,11 +93333,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 70,
+          "index": 73,
           "band": "High"
         },
         "48h": {
-          "index": 73,
+          "index": 75,
           "band": "High"
         }
       },
@@ -93557,7 +93557,7 @@
       "timeline": {
         "start_date": "2026-03-26",
         "last_activity_iso": "2026-05-06T13:14:35-07:00",
-        "age_days": 68,
+        "age_days": 69,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -93745,7 +93745,7 @@
       "timeline": {
         "start_date": "2026-03-27",
         "last_activity_iso": "",
-        "age_days": 67,
+        "age_days": 68,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -93900,7 +93900,7 @@
       "timeline": {
         "start_date": "2026-03-27",
         "last_activity_iso": "",
-        "age_days": 67,
+        "age_days": 68,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -94060,7 +94060,7 @@
       "timeline": {
         "start_date": "2026-03-27",
         "last_activity_iso": "2026-05-19T16:16:54-07:00",
-        "age_days": 67,
+        "age_days": 68,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -94232,7 +94232,7 @@
       "timeline": {
         "start_date": "2026-03-28",
         "last_activity_iso": "2026-05-19T16:16:54-07:00",
-        "age_days": 66,
+        "age_days": 67,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -94408,7 +94408,7 @@
       "timeline": {
         "start_date": "2026-03-27",
         "last_activity_iso": "",
-        "age_days": 67,
+        "age_days": 68,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -94567,7 +94567,7 @@
       "timeline": {
         "start_date": "2026-03-28",
         "last_activity_iso": "",
-        "age_days": 66,
+        "age_days": 67,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -94727,7 +94727,7 @@
       "timeline": {
         "start_date": "2026-03-28",
         "last_activity_iso": "",
-        "age_days": 66,
+        "age_days": 67,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -94895,7 +94895,7 @@
       "timeline": {
         "start_date": "2026-03-28",
         "last_activity_iso": "",
-        "age_days": 66,
+        "age_days": 67,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -95059,7 +95059,7 @@
       "timeline": {
         "start_date": "2026-03-28",
         "last_activity_iso": "2026-03-28T21:05:40-07:00",
-        "age_days": 66,
+        "age_days": 67,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -95223,7 +95223,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -95383,7 +95383,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -95567,7 +95567,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -95723,7 +95723,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -95889,7 +95889,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 5,
         "eta_confidence": "high"
       },
@@ -96053,7 +96053,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -96225,7 +96225,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -96397,7 +96397,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -96561,7 +96561,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -96725,7 +96725,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "2026-04-28T14:07:28-07:00",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -96881,7 +96881,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -97061,7 +97061,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -97213,7 +97213,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 65,
+        "age_days": 66,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -97373,7 +97373,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "2026-05-19T16:16:54-07:00",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -97529,7 +97529,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -97681,7 +97681,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -97845,7 +97845,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "2026-04-27T15:19:58-07:00",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -98057,7 +98057,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "2026-05-06T13:14:35-07:00",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -98225,7 +98225,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -98389,7 +98389,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -98552,7 +98552,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -98715,7 +98715,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -98878,7 +98878,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -99037,7 +99037,7 @@
       "timeline": {
         "start_date": "2026-03-31",
         "last_activity_iso": "",
-        "age_days": 63,
+        "age_days": 64,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -99202,7 +99202,7 @@
       "timeline": {
         "start_date": "2026-04-02",
         "last_activity_iso": "",
-        "age_days": 61,
+        "age_days": 62,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -99367,7 +99367,7 @@
       "timeline": {
         "start_date": "2026-04-02",
         "last_activity_iso": "",
-        "age_days": 61,
+        "age_days": 62,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -99536,7 +99536,7 @@
       "timeline": {
         "start_date": "2026-04-02",
         "last_activity_iso": "",
-        "age_days": 61,
+        "age_days": 62,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -99701,7 +99701,7 @@
       "timeline": {
         "start_date": "2026-04-02",
         "last_activity_iso": "",
-        "age_days": 61,
+        "age_days": 62,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -99862,7 +99862,7 @@
       "timeline": {
         "start_date": "2026-04-04",
         "last_activity_iso": "",
-        "age_days": 59,
+        "age_days": 60,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -100031,7 +100031,7 @@
       "timeline": {
         "start_date": "2026-04-04",
         "last_activity_iso": "",
-        "age_days": 59,
+        "age_days": 60,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -100186,7 +100186,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 35,
+        "age_days": 36,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -100342,7 +100342,7 @@
       "timeline": {
         "start_date": "2026-04-27",
         "last_activity_iso": "2026-04-27T21:33:02-07:00",
-        "age_days": 36,
+        "age_days": 37,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -100498,7 +100498,7 @@
       "timeline": {
         "start_date": "2026-04-06",
         "last_activity_iso": "",
-        "age_days": 57,
+        "age_days": 58,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -100654,7 +100654,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 35,
+        "age_days": 36,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -100810,7 +100810,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 35,
+        "age_days": 36,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -100966,7 +100966,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 35,
+        "age_days": 36,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -101122,7 +101122,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 35,
+        "age_days": 36,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -101278,7 +101278,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 35,
+        "age_days": 36,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -101438,7 +101438,7 @@
       "timeline": {
         "start_date": "2026-04-06",
         "last_activity_iso": "",
-        "age_days": 57,
+        "age_days": 58,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -101657,7 +101657,7 @@
       "timeline": {
         "start_date": "2026-04-07",
         "last_activity_iso": "2026-05-06T13:14:35-07:00",
-        "age_days": 56,
+        "age_days": 57,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -101885,7 +101885,7 @@
       "timeline": {
         "start_date": "2026-04-07",
         "last_activity_iso": "2026-05-06T13:14:35-07:00",
-        "age_days": 56,
+        "age_days": 57,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -102053,7 +102053,7 @@
       "timeline": {
         "start_date": "2026-04-07",
         "last_activity_iso": "",
-        "age_days": 56,
+        "age_days": 57,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -102237,7 +102237,7 @@
       "timeline": {
         "start_date": "2026-04-08",
         "last_activity_iso": "2026-05-06T13:14:35-07:00",
-        "age_days": 55,
+        "age_days": 56,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -102276,7 +102276,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+          "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -102465,7 +102465,7 @@
       "timeline": {
         "start_date": "2026-04-08",
         "last_activity_iso": "2026-05-06T13:14:35-07:00",
-        "age_days": 55,
+        "age_days": 56,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -102623,7 +102623,7 @@
       "timeline": {
         "start_date": "2026-04-08",
         "last_activity_iso": "",
-        "age_days": 55,
+        "age_days": 56,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -102787,7 +102787,7 @@
       "timeline": {
         "start_date": "2026-04-09",
         "last_activity_iso": "",
-        "age_days": 54,
+        "age_days": 55,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -102945,7 +102945,7 @@
       "timeline": {
         "start_date": "2026-04-08",
         "last_activity_iso": "",
-        "age_days": 55,
+        "age_days": 56,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -103101,7 +103101,7 @@
       "timeline": {
         "start_date": "2026-04-08",
         "last_activity_iso": "",
-        "age_days": 55,
+        "age_days": 56,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -103273,7 +103273,7 @@
       "timeline": {
         "start_date": "2026-04-09",
         "last_activity_iso": "2026-06-01T15:47:44-07:00",
-        "age_days": 54,
+        "age_days": 55,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -103464,7 +103464,7 @@
       "timeline": {
         "start_date": "2026-04-09",
         "last_activity_iso": "",
-        "age_days": 54,
+        "age_days": 55,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -104600,7 +104600,7 @@
       "timeline": {
         "start_date": "2026-04-09",
         "last_activity_iso": "2026-05-06T13:14:35-07:00",
-        "age_days": 54,
+        "age_days": 55,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -104784,7 +104784,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 51,
+        "age_days": 52,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -104968,7 +104968,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 51,
+        "age_days": 52,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -105160,7 +105160,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 51,
+        "age_days": 52,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -105344,7 +105344,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 51,
+        "age_days": 52,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -105532,7 +105532,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 51,
+        "age_days": 52,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -105728,7 +105728,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 51,
+        "age_days": 52,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -105916,7 +105916,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-04-27T14:24:28-07:00",
-        "age_days": 51,
+        "age_days": 52,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -106084,7 +106084,7 @@
       "timeline": {
         "start_date": "2026-04-09",
         "last_activity_iso": "",
-        "age_days": 54,
+        "age_days": 55,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -106246,7 +106246,7 @@
       "timeline": {
         "start_date": "2026-04-10",
         "last_activity_iso": "",
-        "age_days": 53,
+        "age_days": 54,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -106439,7 +106439,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 51,
+        "age_days": 52,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -106595,7 +106595,7 @@
       "timeline": {
         "start_date": "2026-04-13",
         "last_activity_iso": "2026-03-23T17:32:23-07:00",
-        "age_days": 50,
+        "age_days": 51,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -106750,7 +106750,7 @@
       "timeline": {
         "start_date": "2026-04-13",
         "last_activity_iso": "",
-        "age_days": 50,
+        "age_days": 51,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -107654,7 +107654,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-05-06T13:14:35-07:00",
-        "age_days": 49,
+        "age_days": 50,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -107810,7 +107810,7 @@
       "timeline": {
         "start_date": "2026-04-15",
         "last_activity_iso": "",
-        "age_days": 48,
+        "age_days": 49,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -108715,7 +108715,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-05-06T13:14:35-07:00",
-        "age_days": 47,
+        "age_days": 48,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -108907,7 +108907,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-04-16T14:54:04-07:00",
-        "age_days": 47,
+        "age_days": 48,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -109099,7 +109099,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-04-16T14:54:04-07:00",
-        "age_days": 47,
+        "age_days": 48,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -109291,7 +109291,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-04-16T14:54:04-07:00",
-        "age_days": 47,
+        "age_days": 48,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -109483,7 +109483,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-04-16T14:54:04-07:00",
-        "age_days": 47,
+        "age_days": 48,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -109675,7 +109675,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-04-16T14:54:04-07:00",
-        "age_days": 47,
+        "age_days": 48,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -109879,7 +109879,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-03-23T17:32:23-07:00",
-        "age_days": 49,
+        "age_days": 50,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -110079,7 +110079,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-03-23T17:32:23-07:00",
-        "age_days": 49,
+        "age_days": 50,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -110271,7 +110271,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-03-23T17:32:23-07:00",
-        "age_days": 49,
+        "age_days": 50,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -110463,7 +110463,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-03-23T17:32:23-07:00",
-        "age_days": 49,
+        "age_days": 50,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -110687,7 +110687,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-03-23T17:32:23-07:00",
-        "age_days": 49,
+        "age_days": 50,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -111872,7 +111872,7 @@
       "timeline": {
         "start_date": "2026-04-17",
         "last_activity_iso": "2026-06-02T19:50:21-07:00",
-        "age_days": 46,
+        "age_days": 47,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -112059,7 +112059,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
-        "age_days": 38,
+        "age_days": 39,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -112097,7 +112097,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+          "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -112284,7 +112284,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
-        "age_days": 38,
+        "age_days": 39,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -112322,7 +112322,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+          "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -112509,7 +112509,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
-        "age_days": 38,
+        "age_days": 39,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -112547,7 +112547,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+          "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -112734,7 +112734,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
-        "age_days": 38,
+        "age_days": 39,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -112772,7 +112772,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+          "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -112959,7 +112959,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-06-01T15:47:44-07:00",
-        "age_days": 38,
+        "age_days": 39,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -113146,7 +113146,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
-        "age_days": 38,
+        "age_days": 39,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -113184,7 +113184,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+          "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -113371,7 +113371,7 @@
       "timeline": {
         "start_date": "2026-04-17",
         "last_activity_iso": "2026-06-02T19:50:21-07:00",
-        "age_days": 46,
+        "age_days": 47,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -114026,7 +114026,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 45,
+        "age_days": 46,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -114244,7 +114244,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 45,
+        "age_days": 46,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -114460,7 +114460,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 45,
+        "age_days": 46,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -114676,7 +114676,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 45,
+        "age_days": 46,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -114892,7 +114892,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 45,
+        "age_days": 46,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -115108,7 +115108,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 45,
+        "age_days": 46,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -115324,7 +115324,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 45,
+        "age_days": 46,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -115540,7 +115540,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 45,
+        "age_days": 46,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -115699,7 +115699,7 @@
       "timeline": {
         "start_date": "2026-04-27",
         "last_activity_iso": "2026-04-27T18:15:04-07:00",
-        "age_days": 36,
+        "age_days": 37,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -115851,7 +115851,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -116002,7 +116002,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -116153,7 +116153,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -116304,7 +116304,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -116455,7 +116455,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -116606,7 +116606,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -116757,7 +116757,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -116908,7 +116908,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -117059,7 +117059,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -117210,7 +117210,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -117361,7 +117361,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -117512,7 +117512,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -117663,7 +117663,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-06-01T15:47:44-07:00",
-        "age_days": 34,
+        "age_days": 35,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -117697,7 +117697,7 @@
           "docs"
         ],
         "deployment_truth": {
-          "local_head": "599eef71b49b48efea6e6ca2d956acaab4aa0eff",
+          "local_head": "eab8042b889e1cebeedaeb4fe2b40f4414fd5116",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
