@@ -87,6 +87,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-03: Split generated Registry component contract target parsing into `greenfield_component_contract_targets.py`. Rendered-spec issue parsing, duplicate repair-target dedupe, and operator-facing component-spec blocker copy now sit outside `greenfield_component_contract_differentiation.py`, which stays below the 800-line soft limit as the contract repair orchestrator. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split confirmed-create apply-prewrite component and diagram rendering into `greenfield_apply_components.py` and `greenfield_apply_diagrams.py`. First-release Registry input shaping, dry-run component preview, in-memory Registry spec rendering, component dependency/risk/responsibility copy, Atlas source preview, and diagram ID allocation now sit outside `greenfield_apply_prewrite.py`, which stays below the 800-line soft limit as the staged package and remapping owner. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split confirmed-create final governed writes into `greenfield_apply_write.py`. The owner now applies Radar source files, stale workstream cleanup, release targeting, program waves, Atlas scaffold/upsert writes, Registry component authoring, accepted-project memory, dashboard refresh, and next-step shaping while `greenfield_proposals.py` stays below the 800-line soft limit as the intent/proposal/prewrite transaction entrypoint. The same pass aligned blank component `release_scope` with the semantic builder and refreshed stale apply semantic models before completion gates run. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-03: Split first-path clause rendering into `greenfield_first_path_clauses.py` and shared first-path records into `greenfield_first_path_types.py`. `greenfield_first_path_semantics.py` now owns parsing and semantic model extraction only, while the clause owner renders action, capability, visible-result, action-chain, and trivial-start grammar for Radar, Registry, Atlas, runtime JSON, and dashboard copy. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -131,6 +132,14 @@ This section captures synchronized requirement and contract signals derived from
   runtime JSON text still contains parser debris, role/action splices, bare
   outcome nouns, generic proof scaffolds, component-boundary boilerplate, or
   unclear human-visible copy.
+- First-path parsing must stay in `greenfield_first_path_semantics.py`;
+  generated first-path action, capability, visible-result, action-chain,
+  trivial-start, and visible-result cleanup grammar must stay in
+  `greenfield_first_path_clauses.py`; shared `FirstPathModel` and
+  `FirstPathClauses` records must stay in `greenfield_first_path_types.py`.
+  Domain Intelligence may reuse those helpers through
+  `greenfield_semantic_quality.py`, but it must not reintroduce first-path
+  clause rendering into the parser.
 - Confirmed-intent actor completion must stay in
   `greenfield_confirmed_actor_completion.py`. The parent completion module may
   call `completed_actor_rows`, `actor_labels`, and `actor_row_description`, but

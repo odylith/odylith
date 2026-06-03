@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.domain_intelligence.greenfield_component_contract import public_prose_quality_issues
@@ -14,6 +15,39 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import firs
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import first_path_flowchart_mermaid
 from odylith.runtime.governance.component_spec_narrative import build_narrative_component_spec
+
+
+ROOT = Path(__file__).resolve().parents[3]
+FIRST_PATH_SEMANTICS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py"
+FIRST_PATH_CLAUSES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py"
+FIRST_PATH_TYPES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_types.py"
+
+
+def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
+    parser_source = FIRST_PATH_SEMANTICS_PATH.read_text(encoding="utf-8")
+    clause_source = FIRST_PATH_CLAUSES_PATH.read_text(encoding="utf-8")
+    type_source = FIRST_PATH_TYPES_PATH.read_text(encoding="utf-8")
+
+    assert len(parser_source.splitlines()) < 800
+    for moved in (
+        "def first_path_clauses",
+        "def first_path_action_phrase",
+        "def first_path_capability_phrase",
+        "def first_path_outcome_phrase",
+        "def _first_path_capability_text",
+        "def _first_path_action_text",
+        "def _first_path_outcome_text",
+        "def clean_visible_result_phrase",
+        "def visible_result_object",
+        "def action_chain_fragment",
+    ):
+        assert moved not in parser_source
+    assert "def first_path_model" in parser_source
+    assert "def first_path_clauses" in clause_source
+    assert "def action_chain_fragment" in clause_source
+    assert "def clean_visible_result_phrase" in clause_source
+    assert "class FirstPathModel" in type_source
+    assert "class FirstPathClauses" in type_source
 
 
 def test_confirmed_completion_repairs_actor_and_visible_result_splices() -> None:

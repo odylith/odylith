@@ -967,6 +967,24 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `PYTHONPATH=src .venv/bin/python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 11.41s`).
+- 2026-06-03 first-path clause-renderer decomposition moved generated
+  action/capability/outcome clause rendering, visible-result cleanup, trivial
+  start detection, and action-chain grammar into
+  `greenfield_first_path_clauses.py`; shared typed records now live in
+  `greenfield_first_path_types.py`. `greenfield_first_path_semantics.py` now
+  owns first-path parsing and model extraction only (`1054` to `358` lines),
+  while the clause owner is `734` lines and the type owner is `27` lines.
+  `test_greenfield_post_confirm_slop_regressions.py::test_first_path_clause_rendering_stays_in_dedicated_owner`
+  pins the owner boundary. Proof: `.venv/bin/python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py
+  src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py
+  src/odylith/runtime/domain_intelligence/greenfield_first_path_types.py
+  src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py
+  tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py`
+  passed; first-path slop proof passed (`14 passed in 2.73s`); broader
+  artifact-quality proof passed (`61 passed in 174.67s`); the full
+  confirmed-greenfield regression bundle passed (`131 passed in 322.94s`);
+  and confirmed-create performance proof passed (`1 passed in 10.11s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

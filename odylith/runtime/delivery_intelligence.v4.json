@@ -1338,7 +1338,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4043,7 +4043,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4163,7 +4163,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4283,7 +4283,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4403,7 +4403,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4614,7 +4614,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4734,7 +4734,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4854,7 +4854,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4974,7 +4974,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -5185,7 +5185,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -7281,7 +7281,7 @@
       ]
     }
   ],
-  "generated_utc": "2026-06-03 18:33:34Z",
+  "generated_utc": "2026-06-03 18:56:48Z",
   "indexes": {
     "cases": {
       "case-component-atlas": "component:atlas",
@@ -7607,7 +7607,7 @@
         "policy": 0,
         "renderer": 3809,
         "runbook": 0,
-        "runtime": 57289,
+        "runtime": 57290,
         "spec": 49330
       },
       "claim_guard": {
@@ -8090,7 +8090,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -8600,7 +8600,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -9336,7 +9336,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -10072,7 +10072,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -10185,7 +10185,7 @@
         "policy": 0,
         "renderer": 29,
         "runbook": 0,
-        "runtime": 1309,
+        "runtime": 1310,
         "spec": 646
       },
       "claim_guard": {
@@ -10693,7 +10693,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -43859,7 +43859,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -54919,7 +54919,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -69029,7 +69029,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -69600,7 +69600,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -70171,7 +70171,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -70742,7 +70742,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -71776,7 +71776,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -83875,7 +83875,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -84018,10 +84018,10 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_alignment.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_first_path_types.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py",
@@ -84101,10 +84101,10 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_alignment.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_first_path_types.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py",
@@ -84127,9 +84127,9 @@
           "tests/unit/runtime/test_greenfield_confirmed_intent.py",
           "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py",
           "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rows.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_alignment.py",
           "tests/unit/runtime/test_greenfield_general_artifact_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_drift.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
           "tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py",
           "odylith/install.json",
@@ -84148,6 +84148,7 @@
           "src/odylith/install/manager.py",
           "src/odylith/install/runtime.py",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
@@ -84312,7 +84313,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-05-03T10:46:04-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-06-03T11:32:55-07:00",
+        "latest_event_ts_iso": "2026-06-03T11:56:31-07:00",
         "latest_explicit_ts_iso": "2026-06-03T10:34:20-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -84479,7 +84480,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 207,
+          "meaningful_change_count": 208,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -84578,10 +84579,10 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_alignment.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_first_path_types.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py",
@@ -84661,10 +84662,10 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_alignment.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_first_path_types.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py",
@@ -84687,9 +84688,9 @@
           "tests/unit/runtime/test_greenfield_confirmed_intent.py",
           "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py",
           "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rows.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_alignment.py",
           "tests/unit/runtime/test_greenfield_general_artifact_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_drift.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
           "tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py",
           "odylith/install.json",
@@ -84708,6 +84709,7 @@
           "src/odylith/install/manager.py",
           "src/odylith/install/runtime.py",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
@@ -84867,7 +84869,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-06-03T09:48:51-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-06-03T11:32:55-07:00",
+        "latest_event_ts_iso": "2026-06-03T11:56:31-07:00",
         "latest_explicit_ts_iso": "2026-06-03T11:08:02-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -85004,7 +85006,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 202,
+          "meaningful_change_count": 203,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -85101,10 +85103,10 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_alignment.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_first_path_types.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py",
@@ -85174,10 +85176,10 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_alignment.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_first_path_types.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py",
           "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
           "tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py",
@@ -85200,9 +85202,9 @@
           "tests/unit/runtime/test_greenfield_confirmed_intent.py",
           "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py",
           "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rows.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_alignment.py",
           "tests/unit/runtime/test_greenfield_general_artifact_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_drift.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
           "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
           "tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py",
           "odylith/install.json",
@@ -85221,6 +85223,7 @@
           "src/odylith/install/manager.py",
           "src/odylith/install/runtime.py",
           "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
           "src/odylith/runtime/domain_intelligence/proposal_validation.py",
           "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
           "src/odylith/runtime/domain_intelligence/archetypes.py",
@@ -85376,7 +85379,7 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-06-03T11:32:55-07:00",
+        "latest_event_ts_iso": "2026-06-03T11:56:31-07:00",
         "latest_explicit_ts_iso": "2026-06-03T10:34:20-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -85494,7 +85497,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 198,
+          "meaningful_change_count": 199,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -86818,7 +86821,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -87253,7 +87256,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -87694,7 +87697,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -88081,7 +88084,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -88196,7 +88199,7 @@
         "policy": 0,
         "renderer": 0,
         "runbook": 0,
-        "runtime": 61,
+        "runtime": 62,
         "spec": 16
       },
       "confidence": "Medium",
@@ -88273,7 +88276,7 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-06-03T11:32:55-07:00",
+        "latest_event_ts_iso": "2026-06-03T11:56:31-07:00",
         "latest_explicit_ts_iso": "2026-06-03T10:34:20-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -90288,7 +90291,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -90671,7 +90674,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -91122,7 +91125,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -93038,7 +93041,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -95717,7 +95720,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -103177,7 +103180,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "cf432124056471f6b03f88e9886566c64e6619de",
+          "local_head": "64a423ff9818136c1abb8dd19d41787c7ed2782e",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -107845,7 +107848,7 @@
         "basis": "mixed",
         "blast_radius_class": "local",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-06-03T11:32:55-07:00",
+        "latest_event_ts_iso": "2026-06-03T11:56:31-07:00",
         "latest_explicit_ts_iso": "2026-03-01T21:38:40-08:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
