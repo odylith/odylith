@@ -173,8 +173,9 @@ This section captures synchronized requirement and contract signals derived from
 - Generated list-row coercion must stay in `greenfield_rows.py`. Confirmed
   prewrite gates, Tribunal checks, title repair, apply-prewrite remapping,
   confirmed completion, and post-confirm semantic/package checks may call
-  `mapping_rows` or `dict_rows`, but they must not reintroduce local
-  `_mapping_rows`/`_dict_rows` helpers or a phase-specific row wrapper.
+  `mapping_rows`, `dict_rows`, `row_count`, or `mapping_count`, but they must
+  not reintroduce local `_mapping_rows`/`_dict_rows` helpers, package-local
+  `_row_count`/`_mapping_count` helpers, or a phase-specific row wrapper.
 - Confirmed-intent actor completion must stay in
   `greenfield_confirmed_actor_completion.py`. The parent completion module may
   call `completed_actor_rows`, `actor_labels`, and `actor_row_description`, but

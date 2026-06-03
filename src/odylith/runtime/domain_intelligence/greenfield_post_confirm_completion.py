@@ -28,6 +28,8 @@ from odylith.runtime.domain_intelligence.greenfield_project_brief import PROJECT
 from odylith.runtime.domain_intelligence.greenfield_project_brief import project_brief_issues
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
+from odylith.runtime.domain_intelligence.greenfield_rows import mapping_count
+from odylith.runtime.domain_intelligence.greenfield_rows import row_count
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_alignment import (
     rendered_spec_alignment_issues as _rendered_spec_alignment_issues,
 )
@@ -131,9 +133,9 @@ def build_greenfield_completion_report(
         version="greenfield-post-confirm-completion-v1",
         semantic_model=isinstance(proposal.get("semantic_model"), Mapping),
         artifact_counts={
-            "workstreams": _row_count(proposal.get("backlog")),
-            "components": _row_count(proposal.get("components")),
-            "diagrams": _row_count(proposal.get("diagrams")),
+            "workstreams": row_count(proposal.get("backlog")),
+            "components": row_count(proposal.get("components")),
+            "diagrams": row_count(proposal.get("diagrams")),
             "rendered_component_specs": len(rendered_specs),
         },
         tribunal_status=tribunal_status,
@@ -159,8 +161,8 @@ def build_greenfield_package_report(package: GreenfieldCompletionPackage) -> Gre
         semantic_model=report.semantic_model,
         artifact_counts={
             **report.artifact_counts,
-            "rendered_workstream_files": _mapping_count((package.backlog_result or {}).get("idea_files")),
-            "rendered_atlas_sources": _mapping_count(package.rendered_atlas_sources),
+            "rendered_workstream_files": mapping_count((package.backlog_result or {}).get("idea_files")),
+            "rendered_atlas_sources": mapping_count(package.rendered_atlas_sources),
             "component_registry_previews": len(package.component_registry_preview),
             "project_brief_previews": 1 if isinstance(package.project_brief_preview, Mapping) else 0,
             "tribunal_previews": 1 if isinstance(package.tribunal_preview, Mapping) else 0,
@@ -672,14 +674,6 @@ def _format_completion_issue_report(report: GreenfieldCompletionReport) -> str:
         ]
     )
     return "\n".join(rows)
-
-
-def _row_count(value: Any) -> int:
-    return len([row for row in value if isinstance(row, Mapping)]) if isinstance(value, list) else 0
-
-
-def _mapping_count(value: Any) -> int:
-    return len(value) if isinstance(value, Mapping) else 0
 
 
 __all__ = [
