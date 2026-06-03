@@ -88,6 +88,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-03: Split confirmed-create apply-prewrite component and diagram rendering into `greenfield_apply_components.py` and `greenfield_apply_diagrams.py`. First-release Registry input shaping, dry-run component preview, in-memory Registry spec rendering, component dependency/risk/responsibility copy, Atlas source preview, and diagram ID allocation now sit outside `greenfield_apply_prewrite.py`, which stays below the 800-line soft limit as the staged package and remapping owner. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split confirmed-create final governed writes into `greenfield_apply_write.py`. The owner now applies Radar source files, stale workstream cleanup, release targeting, program waves, Atlas scaffold/upsert writes, Registry component authoring, accepted-project memory, dashboard refresh, and next-step shaping while `greenfield_proposals.py` stays below the 800-line soft limit as the intent/proposal/prewrite transaction entrypoint. The same pass aligned blank component `release_scope` with the semantic builder and refreshed stale apply semantic models before completion gates run. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split first-path clause rendering into `greenfield_first_path_clauses.py` and shared first-path records into `greenfield_first_path_types.py`. `greenfield_first_path_semantics.py` now owns parsing and semantic model extraction only, while the clause owner renders action, capability, visible-result, action-chain, and trivial-start grammar for Radar, Registry, Atlas, runtime JSON, and dashboard copy. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-03: Split confirmed generated-artifact substance checks into `proposal_tribunal_substance.py`. The new owner handles confirmed Radar thinness, Registry component-contract substance, cross-axis proof leakage, Atlas scaffold-node rejection, first-path tail preservation, and first-boundary routing while `proposal_tribunal.py` stays focused on deterministic prewrite adjudication and topology/security/actor gates. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -179,6 +180,12 @@ This section captures synchronized requirement and contract signals derived from
   expectations, whose diagrams do not connect to backlog and Registry
   components, or whose release/program structure cannot make Compass visibly
   useful.
+- Confirmed generated-artifact substance checks must stay in
+  `proposal_tribunal_substance.py`. `proposal_tribunal.py` may call
+  `check_confirmed_artifact_substance`, but it must not re-own confirmed Radar
+  thinness checks, Registry local-proof leakage checks, Atlas scaffold-node
+  rejection, first-path tail preservation, first-boundary routing, or the
+  project-term analysis used to judge generated artifact specificity.
 - Apply-ready proposal output must include observed source posture, user intent,
   Odylith assumptions, backlog candidates, program formation, program waves,
   release plan, planned Registry components, proposal draft Atlas Mermaid sources,

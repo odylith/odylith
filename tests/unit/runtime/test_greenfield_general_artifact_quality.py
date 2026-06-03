@@ -45,6 +45,10 @@ POST_CONFIRM_SEMANTIC_ALIGNMENT_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_alignment.py"
 )
 POST_CONFIRM_ROWS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rows.py"
+PROPOSAL_TRIBUNAL_PATH = ROOT / "src/odylith/runtime/domain_intelligence/proposal_tribunal.py"
+PROPOSAL_TRIBUNAL_SUBSTANCE_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py"
+)
 
 
 def test_greenfield_post_confirm_semantic_drift_stays_in_dedicated_owner() -> None:
@@ -73,6 +77,29 @@ def test_greenfield_post_confirm_semantic_drift_stays_in_dedicated_owner() -> No
     assert "def semantic_diagram_alignment_issues" in alignment_source
     assert "def rendered_spec_alignment_issues" in alignment_source
     assert "def mapping_rows" in rows_source
+
+
+def test_greenfield_tribunal_substance_gate_stays_in_dedicated_owner() -> None:
+    parent_source = PROPOSAL_TRIBUNAL_PATH.read_text(encoding="utf-8")
+    substance_source = PROPOSAL_TRIBUNAL_SUBSTANCE_PATH.read_text(encoding="utf-8")
+
+    assert len(parent_source.splitlines()) < 800
+    assert "check_confirmed_artifact_substance(" in parent_source
+    for moved in (
+        "def _check_confirmed_radar_substance",
+        "def _check_confirmed_registry_substance",
+        "def _check_confirmed_atlas_substance",
+        "def _check_atlas_source_preserves_first_path_tail",
+        "def _term_set",
+        "def _accepted_public_text",
+        "def _repeated_scaffold_count",
+    ):
+        assert moved not in parent_source
+        assert moved in substance_source
+    assert "def _check_release_plan" in parent_source
+    assert "def _check_backlog_topology" in parent_source
+    assert "def _check_domain_security_posture" in parent_source
+    assert "def check_confirmed_artifact_substance" in substance_source
 
 
 GENERIC_DECISION_REVIEW_INTENT = """# Decision Review Workspace

@@ -985,6 +985,23 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   artifact-quality proof passed (`61 passed in 174.67s`); the full
   confirmed-greenfield regression bundle passed (`131 passed in 322.94s`);
   and confirmed-create performance proof passed (`1 passed in 10.11s`).
+- 2026-06-03 Tribunal substance-gate decomposition moved confirmed generated
+  Radar thinness checks, Registry component-contract substance checks,
+  cross-axis proof leakage checks, Atlas scaffold-node checks, first-path
+  tail-preservation checks, and first-boundary routing checks into
+  `proposal_tribunal_substance.py`. `proposal_tribunal.py` now stays focused
+  on deterministic adjudication orchestration, release/program topology,
+  backlog/component/diagram traceability, domain security posture, and visible
+  Tribunal actors (`972` to `522` lines), while the substance owner is `466`
+  lines. `test_greenfield_general_artifact_quality.py::test_greenfield_tribunal_substance_gate_stays_in_dedicated_owner`
+  pins the owner boundary. Proof: `.venv/bin/python -m py_compile
+  src/odylith/runtime/domain_intelligence/proposal_tribunal.py
+  src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py
+  tests/unit/runtime/test_greenfield_general_artifact_quality.py` passed;
+  focused Tribunal proof passed (`5 passed in 10.58s`); broader
+  artifact-quality proof passed (`62 passed in 165.34s`); full
+  confirmed-greenfield regression proof passed (`132 passed in 315.92s`); and
+  confirmed-create performance proof passed (`1 passed in 9.77s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component
