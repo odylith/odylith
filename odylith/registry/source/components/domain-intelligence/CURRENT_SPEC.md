@@ -91,6 +91,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-03: Split confirmed generated-artifact substance checks into `proposal_tribunal_substance.py`. The new owner handles confirmed Radar thinness, Registry component-contract substance, cross-axis proof leakage, Atlas scaffold-node rejection, first-path tail preservation, and first-boundary routing while `proposal_tribunal.py` stays focused on deterministic prewrite adjudication and topology/security/actor gates. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split confirmed-intent internal-system completion into `greenfield_confirmed_system_completion.py`. The owner now completes internal system rows, fallback systems, system labels, state labels, and context-clause matching while `greenfield_confirmed_intent_completion.py` stays focused on orchestration, core fields, product posture, title repair, and first-path/proof wording. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split Atlas first-path event-step derivation into `greenfield_sequence_steps.py`. The step owner now handles semantic events, launcher-only filtering, first-path fallback parsing, compound-step expansion, and dedupe while `greenfield_sequence_diagram.py` stays below the 800-line soft limit as the participant/component routing and Mermaid rendering owner. The pass also preserves final `act later` decision tails and short role-qualified component artifacts such as `person follow list` in confirmed create output. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-03: Split Domain Intelligence artifact enrichment so `artifact_graph.py` owns graph normalization and `artifact_tribunal_actors.py` owns visible Tribunal actor projection. `artifact_enrichment.py` now stays below the 800-line soft limit as the artifact projection owner, and project-intelligence callers import graph and actor helpers from their dedicated owners. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -203,6 +204,12 @@ This section captures synchronized requirement and contract signals derived from
   thinness checks, Registry local-proof leakage checks, Atlas scaffold-node
   rejection, first-path tail preservation, first-boundary routing, or the
   project-term analysis used to judge generated artifact specificity.
+- Artifact enrichment must keep workstream graph normalization and visible
+  Tribunal actor naming in dedicated owners. `artifact_enrichment.py` may call
+  `artifact_graph.domain_graph_from_workstream` and
+  `artifact_tribunal_actors.tribunal_actor_projection`, but it must not re-own
+  `DomainIntelligenceGraph`, state-object/actor/approval row selection, domain
+  actor naming, proposal actor candidate selection, or visible actor dedupe.
 - Apply-ready proposal output must include observed source posture, user intent,
   Odylith assumptions, backlog candidates, program formation, program waves,
   release plan, planned Registry components, proposal draft Atlas Mermaid sources,

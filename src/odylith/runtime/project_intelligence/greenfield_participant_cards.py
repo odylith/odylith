@@ -6,8 +6,8 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from odylith.runtime.domain_intelligence.artifact_enrichment import domain_graph_from_workstream
-from odylith.runtime.domain_intelligence.artifact_enrichment import tribunal_actor_projection
+from odylith.runtime.domain_intelligence.artifact_graph import domain_graph_from_workstream
+from odylith.runtime.domain_intelligence.artifact_tribunal_actors import tribunal_actor_projection
 from odylith.runtime.project_intelligence.greenfield_project_text import _capitalize_first
 from odylith.runtime.project_intelligence.greenfield_project_text import _partition_casefold
 from odylith.runtime.project_intelligence.participants import participant_body

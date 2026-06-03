@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from odylith.runtime.domain_intelligence import artifact_enrichment
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_apply_components import component_dependency_lines
@@ -14,7 +15,7 @@ from odylith.runtime.domain_intelligence.greenfield_project_intelligence import 
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import render_project_intelligence_section
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import render_domain_intelligence_section
-from odylith.runtime.domain_intelligence.artifact_enrichment import tribunal_actor_projection
+from odylith.runtime.domain_intelligence.artifact_tribunal_actors import tribunal_actor_projection
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import build_traceability_graph
 from odylith.runtime.governance import release_planning_view_model
@@ -33,6 +34,9 @@ from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governan
 ROOT = Path(__file__).resolve().parents[3]
 GREENFIELD_PROPOSALS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
 GREENFIELD_APPLY_WRITE_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py"
+ARTIFACT_ENRICHMENT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/artifact_enrichment.py"
+ARTIFACT_GRAPH_PATH = ROOT / "src/odylith/runtime/domain_intelligence/artifact_graph.py"
+ARTIFACT_TRIBUNAL_ACTORS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/artifact_tribunal_actors.py"
 
 
 def test_greenfield_apply_write_stays_in_dedicated_owner() -> None:
@@ -60,6 +64,45 @@ def test_greenfield_apply_write_stays_in_dedicated_owner() -> None:
     assert "def _raise_for_component_spec_quality" in write_source
     assert "record_greenfield_acceptance" in write_source
     assert "component_authoring.register_component" in write_source
+
+
+def test_artifact_enrichment_graph_and_tribunal_actors_stay_in_dedicated_owners() -> None:
+    enrichment_source = ARTIFACT_ENRICHMENT_PATH.read_text(encoding="utf-8")
+    graph_source = ARTIFACT_GRAPH_PATH.read_text(encoding="utf-8")
+    actors_source = ARTIFACT_TRIBUNAL_ACTORS_PATH.read_text(encoding="utf-8")
+
+    assert len(enrichment_source.splitlines()) < 800
+    assert "artifact_tribunal_actors.tribunal_actor_projection" in enrichment_source
+    assert "from odylith.runtime.domain_intelligence.artifact_graph import domain_graph_from_workstream" in enrichment_source
+    assert "DomainIntelligenceGraph" not in artifact_enrichment.__all__
+    assert "domain_graph_from_workstream" not in artifact_enrichment.__all__
+    for moved in (
+        "class DomainIntelligenceGraph",
+        "def domain_graph_from_workstream",
+        "def _pick_state_objects",
+        "def _primary_lens",
+        "def tribunal_actor_projection",
+        "def _domain_actor_names",
+        "def _proposal_actor_candidates",
+        "def _actor_candidate_label",
+        "def _dedupe_visible_actor_names",
+    ):
+        assert moved not in enrichment_source
+    for moved in (
+        "class DomainIntelligenceGraph",
+        "def domain_graph_from_workstream",
+        "def _pick_state_objects",
+        "def _primary_lens",
+    ):
+        assert moved in graph_source
+    for moved in (
+        "def tribunal_actor_projection",
+        "def _domain_actor_names",
+        "def _proposal_actor_candidates",
+        "def _actor_candidate_label",
+        "def _dedupe_visible_actor_names",
+    ):
+        assert moved in actors_source
 
 
 def _write(path: Path, text: str) -> None:

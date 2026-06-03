@@ -8,7 +8,7 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
-from odylith.runtime.domain_intelligence.artifact_enrichment import domain_graph_from_workstream
+from odylith.runtime.domain_intelligence.artifact_graph import domain_graph_from_workstream
 from odylith.runtime.project_intelligence.product_story import summarize_first_path
 from odylith.runtime.project_intelligence.product_story import summarize_proof
 from odylith.runtime.project_intelligence.utils import dict_value, display_text, list_value, sentence, short, strings

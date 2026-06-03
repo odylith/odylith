@@ -12,7 +12,7 @@ import re
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine.types import slugify
-from odylith.runtime.domain_intelligence.artifact_enrichment import tribunal_actor_projection
+from odylith.runtime.domain_intelligence.artifact_tribunal_actors import tribunal_actor_projection
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_text import collect_text_values
 from odylith.runtime.domain_intelligence.greenfield_text import text_values

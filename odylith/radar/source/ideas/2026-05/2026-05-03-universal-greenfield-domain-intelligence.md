@@ -1032,6 +1032,17 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed (`48 passed in 69.77s`); broader artifact-quality proof passed (`98
   passed in 244.93s`); and confirmed-create performance proof passed (`1
   passed in 12.44s`).
+- 2026-06-03 artifact-enrichment graph and Tribunal actor decomposition moved
+  Domain Intelligence graph normalization into `artifact_graph.py` and visible
+  Tribunal actor projection into `artifact_tribunal_actors.py`.
+  `artifact_enrichment.py` now owns artifact projections only (`843` to `228`
+  lines), while the graph owner is `180` lines and the actor owner is `465`
+  lines. `test_greenfield_proposals.py::test_artifact_enrichment_graph_and_tribunal_actors_stay_in_dedicated_owners`
+  pins the owner boundary and public export list. Proof: syntax proof passed
+  for touched Domain Intelligence and project-intelligence modules; focused
+  projection proof passed (`13 passed, 74 deselected in 13.48s`); standard
+  greenfield artifact-quality proof passed (`143 passed in 235.82s`); and
+  confirmed-create performance proof passed (`1 passed in 11.44s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component
