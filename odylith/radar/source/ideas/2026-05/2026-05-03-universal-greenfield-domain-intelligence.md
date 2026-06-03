@@ -1056,6 +1056,22 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   21.26s`); standard greenfield artifact-quality proof passed (`144 passed in
   238.94s`); and confirmed-create performance proof passed (`1 passed in
   11.48s`).
+- 2026-06-03 component contract phrase-owner consolidation moved natural short
+  list rendering into `greenfield_component_terms.py` and migrated base
+  component contracts, semantic contracts, and contract differentiation away
+  from local `_term_phrase`, `_phrase`, and `_content_terms` clones. The shared
+  terms owner now exports `natural_phrase` beside the existing comma-clause
+  `phrase`, while `greenfield_component_contract_differentiation.py` uses
+  `domain_terms` for fallback contract term filtering (`772` to `755` lines);
+  `greenfield_component_contract.py` is `593` lines,
+  `greenfield_component_semantic_contract.py` is `626` lines, and
+  `greenfield_component_terms.py` remains below the soft limit at `779` lines.
+  `test_greenfield_component_spec_quality.py::test_component_contract_phrase_helpers_stay_in_terms_owner`
+  pins the owner boundary and formatter behavior. Proof: syntax proof passed
+  for the touched component-contract and test modules; focused component-spec
+  proof passed (`12 passed in 0.23s`); standard greenfield artifact-quality
+  proof passed (`145 passed in 243.87s`); and confirmed-create performance
+  proof passed (`1 passed in 11.93s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

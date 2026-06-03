@@ -583,6 +583,17 @@ def phrase(values: Sequence[str]) -> str:
     return ", ".join(clean(value) for value in unique_text(values) if clean(value))
 
 
+def natural_phrase(values: Sequence[str]) -> str:
+    rows = [clean(value) for value in values if clean(value)]
+    if not rows:
+        return ""
+    if len(rows) == 1:
+        return rows[0]
+    if len(rows) == 2:
+        return f"{rows[0]} and {rows[1]}"
+    return f"{', '.join(rows[:-1])}, and {rows[-1]}"
+
+
 def content_terms(value: str) -> list[str]:
     return unique_text(term for term in ordered_domain_terms(value) if term not in GENERIC_TERMS and not term.isdigit())
 
@@ -757,6 +768,7 @@ __all__ = [
     "enrich_owned_state_from_io",
     "local_terms",
     "looks_action_term",
+    "natural_phrase",
     "object_clause_focus",
     "phrase",
     "phrase_identity_terms",

@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_quality i
     public_prose_quality_issues,
     rendered_component_spec_quality_issues,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_terms import natural_phrase
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -358,11 +359,11 @@ def _focus_phrase(*, label: str, description: str, context: str) -> str:
         return ", ".join(label_compounds[:4])
     label_terms = _label_semantic_terms(label)
     if label_terms:
-        return _term_phrase(label_terms[:4])
+        return natural_phrase(label_terms[:4])
     terms = ordered_domain_terms(" ".join([label, _clean_focus_context(description), context]))
     if not terms:
         return _component_subject(label)
-    return _term_phrase(terms[:5])
+    return natural_phrase(terms[:5])
 
 
 def _label_compound_focus(label: str) -> list[str]:
@@ -490,17 +491,6 @@ def _generic_action_object(text: str) -> bool:
         "review evidence",
     )
     return any(marker in lowered for marker in generic_markers)
-
-
-def _term_phrase(terms: Sequence[str]) -> str:
-    rows = [str(term or "").strip() for term in terms if str(term or "").strip()]
-    if not rows:
-        return ""
-    if len(rows) == 1:
-        return rows[0]
-    if len(rows) == 2:
-        return f"{rows[0]} and {rows[1]}"
-    return f"{', '.join(rows[:-1])}, and {rows[-1]}"
 
 
 def _singular_phrase(value: str) -> str:

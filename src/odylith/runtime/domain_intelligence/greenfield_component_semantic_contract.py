@@ -74,6 +74,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import (
 from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     phrase_identity_terms as _component_phrase_identity_terms,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase as _phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import strip_action as _strip_action
 from odylith.runtime.domain_intelligence.greenfield_component_terms import trim_phrase as _trim_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import (
@@ -614,10 +615,6 @@ def _summary_object_phrases(values: Sequence[str], *, required_phrases: Sequence
         if phrase not in result:
             result.append(phrase)
     return result[:limit]
-
-
-def _phrase(values: Sequence[str]) -> str:
-    return ", ".join(_clean(value) for value in values if _clean(value))
 
 
 def _clean(value: Any) -> str:

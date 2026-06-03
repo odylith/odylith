@@ -29,7 +29,9 @@ from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract 
     derive_component_semantic_contract,
 )
 from odylith.runtime.domain_intelligence.greenfield_component_terms import (
+    domain_terms,
     enrich_owned_state_from_io,
+    natural_phrase,
     split_contract_clauses,
 )
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
@@ -342,8 +344,8 @@ def _axis_for(*, row: Mapping[str, Any] | None, proposal: Mapping[str, Any]) -> 
 
 
 def _fallback_axis(label: str, context: str, *, focus: str = "") -> ComponentAxis:
-    label_terms = _content_terms(label)
-    context_terms = _content_terms(context)
+    label_terms = domain_terms(label, noise_terms=_FALLBACK_NOISE_TERMS)
+    context_terms = domain_terms(context, noise_terms=_FALLBACK_NOISE_TERMS)
     nearby_terms = _nearby_content_terms(label_terms, context)
     extra_terms = _unique_terms(
         [
@@ -352,9 +354,9 @@ def _fallback_axis(label: str, context: str, *, focus: str = "") -> ComponentAxi
         ]
     )
     primary = " ".join(label_terms[:4]) or _clean(label).casefold() or "component"
-    secondary = focus or _phrase(extra_terms[:4]) or _phrase(context_terms[:4]) or "local result context"
-    input_focus = _phrase(extra_terms[4:7]) or secondary
-    output_focus = _phrase(extra_terms[7:10]) or secondary
+    secondary = focus or natural_phrase(extra_terms[:4]) or natural_phrase(context_terms[:4]) or "local result context"
+    input_focus = natural_phrase(extra_terms[4:7]) or secondary
+    output_focus = natural_phrase(extra_terms[7:10]) or secondary
     states = ", ".join(_unique_terms([*extra_terms[:5], "blocked", "validated", "handed-off"])[:7])
     return ComponentAxis(
         key=f"fallback_{_slug(primary)}",
@@ -467,7 +469,7 @@ def _join_contract_clauses(*values: Any) -> str:
     for value in values:
         clauses.extend(_clean_contract_clause(clause) for clause in split_contract_clauses(value))
     clauses = [clause for clause in clauses if clause]
-    return _phrase(_unique_terms(clauses))
+    return natural_phrase(_unique_terms(clauses))
 
 
 def _outside_boundary(*, axis: ComponentAxis, sibling_axis: ComponentAxis | None, sibling_label: str) -> str:
@@ -630,14 +632,6 @@ def _focus_phrase(context: str) -> str:
     return first if 4 <= len(first.split()) <= 18 else ""
 
 
-def _content_terms(value: str) -> list[str]:
-    return [
-        term
-        for term in ordered_domain_terms(value)
-        if term not in _FALLBACK_NOISE_TERMS and not term.isdigit()
-    ]
-
-
 def _nearby_content_terms(label_terms: Sequence[str], context: str, *, window: int = 5) -> list[str]:
     if not label_terms:
         return []
@@ -645,12 +639,12 @@ def _nearby_content_terms(label_terms: Sequence[str], context: str, *, window: i
     result: list[str] = []
     label_set = set(label_terms)
     for index, token in enumerate(tokens):
-        normalized = _content_terms(token)
+        normalized = domain_terms(token, noise_terms=_FALLBACK_NOISE_TERMS)
         if not normalized or normalized[0] not in label_set:
             continue
         start = max(0, index - window)
         end = min(len(tokens), index + window + 1)
-        result.extend(_content_terms(" ".join(tokens[start:end])))
+        result.extend(domain_terms(" ".join(tokens[start:end]), noise_terms=_FALLBACK_NOISE_TERMS))
     return _unique_terms(result)
 
 
@@ -743,17 +737,6 @@ def _contract_marker(value: str) -> str:
         if marker in text:
             return marker
     return ""
-
-
-def _phrase(values: Sequence[str]) -> str:
-    rows = [_clean(value).casefold() for value in values if _clean(value)]
-    if not rows:
-        return ""
-    if len(rows) == 1:
-        return rows[0]
-    if len(rows) == 2:
-        return f"{rows[0]} and {rows[1]}"
-    return f"{', '.join(rows[:-1])}, and {rows[-1]}"
 
 
 def _slug(value: str) -> str:

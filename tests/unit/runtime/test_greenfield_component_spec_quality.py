@@ -10,6 +10,8 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_targets i
     operator_component_spec_issues,
     repair_targets_from_spec_issues,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_terms import natural_phrase
+from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import derive_component_semantic_contract
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import first_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import sentence_fragment
@@ -25,10 +27,14 @@ CONFIRMED_PROPOSAL_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenf
 GREENFIELD_COMMAND_TEXT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_command_text.py"
 COMPONENT_CONTRACT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py"
 COMPONENT_CONTRACT_PROFILES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_contract_profiles.py"
+COMPONENT_TERMS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_terms.py"
 COMPONENT_CONTRACT_DIFFERENTIATION_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py"
 )
 COMPONENT_CONTRACT_TARGETS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_contract_targets.py"
+COMPONENT_SEMANTIC_CONTRACT_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py"
+)
 
 
 def test_confirmed_components_helper_shape_stays_below_soft_limit() -> None:
@@ -103,6 +109,28 @@ def test_component_contract_targets_stay_in_dedicated_owner() -> None:
         "Odylith could not derive enough component-local product terms from the accepted intent after deterministic "
         "repair: Intake Service remained too generic."
     ]
+
+
+def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
+    contract_source = COMPONENT_CONTRACT_PATH.read_text(encoding="utf-8")
+    differentiation_source = COMPONENT_CONTRACT_DIFFERENTIATION_PATH.read_text(encoding="utf-8")
+    semantic_source = COMPONENT_SEMANTIC_CONTRACT_PATH.read_text(encoding="utf-8")
+    terms_source = COMPONENT_TERMS_PATH.read_text(encoding="utf-8")
+
+    assert len(terms_source.splitlines()) < 800
+    assert len(differentiation_source.splitlines()) < 800
+    assert "def natural_phrase" in terms_source
+    assert "def _term_phrase" not in contract_source
+    assert "def _phrase(" not in differentiation_source
+    assert "def _content_terms" not in differentiation_source
+    assert "def _phrase(" not in semantic_source
+    assert "natural_phrase(" in contract_source
+    assert "natural_phrase(" in differentiation_source
+    assert "domain_terms(" in differentiation_source
+
+    assert natural_phrase(["alpha", "beta"]) == "alpha and beta"
+    assert natural_phrase(["alpha", "beta", "gamma"]) == "alpha, beta, and gamma"
+    assert phrase(["alpha", "beta", "gamma"]) == "alpha, beta, gamma"
 
 
 def test_greenfield_component_spec_renderer_uses_narrative_distinct_contract_sections() -> None:
